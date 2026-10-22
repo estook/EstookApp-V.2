@@ -3126,6 +3126,42 @@ dominio), `la-carta-que-trabaja.prueba.ts` (la base y la API, como cada persona:
 agota, a qué móvil suena, que vuelve solo, que nadie de fuera lo toca, el precio del cierre,
 leer y Fogón) y `la-carta-que-trabaja.spec.ts` (la pantalla, con un PDF de verdad).
 
+### M10 · 2 · Los menús y «Analiza mi zona»
+
+_22 de octubre de 2026._ Migración `0079`, decisiones
+[0103](decisiones/0103-las-respuestas-de-m10-2.md) (las respuestas de Richi) y
+[0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md) (lo construido). La segunda mitad de M10.
+
+- **Los menús** (`menu`, `seccion_de_menu`): el del día, uno por local, y los demás; un precio,
+  si entra pan y café, los días que se sirve y el producto del pan y del café. «¿Tu local sirve
+  menús?» (`local.sirve_menus`): nulo se pregunta, falso esconde la pestaña
+  (`laAppParaElLocal`); IKATZ, encendido por la migración.
+- **Cada día, el suyo** (`dia_de_menu`, `plato_de_menu`): un día sin fila vale el último montado
+  (`elDiaQueVale`); tocar uno lo monta con lo que valía (`montarElDia`); lo pasado no se toca;
+  «Copiar la semana pasada» solo rellena los días vacíos.
+- **El plato del menú** (`plato.en_la_carta`): nace solo en el menú; fuera de la carta, de su
+  equilibrio, de «leer tu carta» y de la revisión de Fogón; `crear_platos` y
+  `poner_en_la_carta` lo pasan a la carta.
+- **Lo que deja** (`loQueDejaElMenu`): lo peor y lo mejor sin IVA, con el plato que lo hunde;
+  «Postre o café»; sin escandallo, cuáles faltan.
+- **Descargar**: `el_menu_en_pdf` (el cartel en A3 sin cabecera ni pie, `documentoDelMenu`, y la
+  hoja en A4), el texto para WhatsApp (`elMenuEnTexto`) y la imagen cuadrada, dibujada en el
+  móvil (`dibujarLaImagen`).
+- **Escandallos › Menús** (la vista «Todos» pasa a «Carta»; los enlaces viejos, con
+  `VISTA_RENOMBRADA`), **el widget «Menú del día»** del Panel de la sala y **el menú en el
+  cierre**.
+- **Analiza mi zona** (`analisis_de_zona`, `precio_de_la_zona`): Fogón con la búsqueda en internet
+  de Anthropic (`buscarEnInternet`, plan B en Sonnet 5.5), los enlaces que ha visto
+  (`losEnlacesDeLaRespuesta`) y las cuentas en la base (`compararConLaZona`); una vez cada 24
+  horas (`cuandoSePuedeOtraVez`), 25 créditos, con las búsquedas apuntadas.
+- **De paso**: las letras rotas de «Tu carta y su QR», arregladas y vigiladas por `pnpm textos`
+  (lección 216).
+
+Las pruebas: `menus.prueba.ts` y `tu-zona.prueba.ts` (el dominio), `los-menus.prueba.ts` y
+`analiza-mi-zona.prueba.ts` (la base y la API, como cada persona), el menú en
+`documentos.prueba.ts`, las frases en `contratoDeLosMenus.prueba.ts` y `los-menus.spec.ts` (la
+pantalla, en escritorio y en móvil).
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

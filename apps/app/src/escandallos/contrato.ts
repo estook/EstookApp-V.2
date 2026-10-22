@@ -24,6 +24,9 @@ export interface PlatoEnLaLista {
   readonly vinculadoA: string | null;
   readonly alergenos: readonly Alergeno[];
   readonly picante: number;
+  /** M10 · 2 (0104): si sale en la carta, y en qué menús. Una API de antes no los manda. */
+  readonly enLaCarta?: boolean;
+  readonly enMenus?: readonly string[];
   readonly coste?: {
     readonly costeCentimos: number | null;
     readonly faltanPrecios: number;

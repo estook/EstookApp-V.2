@@ -87,13 +87,19 @@ export function enBase64(bytes: Uint8Array): string {
 export async function hacerElPdf(
   contexto: Contexto,
   html: string,
-  opciones: { readonly nombre: string; readonly pie: string; readonly apaisado?: boolean },
+  opciones: {
+    readonly nombre: string;
+    readonly pie: string;
+    readonly apaisado?: boolean;
+    readonly sinPie?: boolean;
+  },
 ): Promise<UnPdf> {
   if (contexto.pdf === null) throw new FalloDeAplicacion('pdf_sin_encender');
   try {
     const bytes = await contexto.pdf.hacer(html, {
       apaisado: opciones.apaisado === true,
       pie: pieDelDocumento(opciones.pie),
+      ...(opciones.sinPie === true ? { sinPie: true } : {}),
     });
     return { nombre: opciones.nombre, tipo: 'application/pdf', base64: enBase64(bytes) };
   } catch (fallo) {

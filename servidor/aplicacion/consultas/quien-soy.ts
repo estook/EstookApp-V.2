@@ -112,6 +112,12 @@ export interface QuienSoy {
      * que se imprime (0047), así que no cambia ni al renombrar el local.
      */
     readonly direccionDeLaCarta: string;
+    /**
+     * Si sirve menús (M10 · 2, 0103): nulo mientras no lo ha dicho. Con falso, Carta ›
+     * Menús no sale en la barra ni en el menú; va aquí porque la barra se pinta antes
+     * que cualquier pantalla.
+     */
+    readonly sirveMenus: boolean | null;
   } | null;
 
   /** Para el selector: todo lo que alcanza. */
@@ -403,10 +409,12 @@ async function leerLocal(
       color_en_la_app: boolean;
       logo_clave: string | null;
       direccion_de_la_carta: string;
+      sirve_menus: boolean | null;
     }[]
   >`
     select l.id, l.nombre, l.codigo, a.nombre as area,
-           l.color_de_marca, l.color_en_la_app, l.logo_clave, l.direccion_de_la_carta
+           l.color_de_marca, l.color_en_la_app, l.logo_clave, l.direccion_de_la_carta,
+           l.sirve_menus
       from estook.local l
       left join estook.area a on a.id = l.area_id
      where l.id = ${id}
@@ -432,6 +440,7 @@ async function leerLocal(
     colorEnLaApp: fila.color_en_la_app,
     logo,
     direccionDeLaCarta: fila.direccion_de_la_carta,
+    sirveMenus: fila.sirve_menus,
   };
 }
 

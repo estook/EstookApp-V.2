@@ -115,8 +115,22 @@ function noEsUnaFrase(trozo) {
 
 const hallazgos = [];
 
+/**
+ * Letras rotas: un fichero que se guardó dos veces en UTF-8 («EnseÃ±a», «dÃ³nde»,
+ * «â€”»). Estuvo en producción del 8 al 22-oct en «Tu carta y su QR», también en el
+ * cartel que se imprime, y nadie lo vio (M10 · 2, lección 216). Se mira el fichero
+ * entero, comentarios incluidos: si el fichero está roto, lo está todo.
+ */
+const LETRAS_ROTAS = /Ã[\u0080-\u00BF¡-ÿ]|â€|Â[·«»ªº¿¡ ]/;
+const rotos = [];
+
 for (const fichero of ficheros) {
-  const limpio = sinComentarios(readFileSync(fichero, 'utf8'));
+  const entero = readFileSync(fichero, 'utf8');
+  const linea = entero.split('\n').findIndex((l) => LETRAS_ROTAS.test(l));
+  if (linea >= 0) {
+    rotos.push(`${fichero.replace(RAIZ, '').replaceAll('\\', '/')}:${String(linea + 1)}`);
+  }
+  const limpio = sinComentarios(entero);
 
   const trozos = [
     ...[...limpio.matchAll(/>([^<>{}]{4,})</g)].map((m) => m[1]),
@@ -148,6 +162,14 @@ for (const fichero of ficheros) {
 }
 
 console.log('Revision de los textos de pantalla\n');
+
+if (rotos.length > 0) {
+  for (const donde of rotos) {
+    console.log(`  ${donde}  ·  letras rotas: el fichero se guardó dos veces en UTF-8`);
+  }
+  console.log(`\n  ${String(rotos.length)} fichero(s) con letras rotas\n`);
+  process.exit(1);
+}
 
 if (hallazgos.length === 0) {
   console.log('  todo el texto que lee una persona esta en espanol de Espana\n');

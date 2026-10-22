@@ -50,6 +50,12 @@ export {
   type DatosDeLasFichas,
   type IngredienteEnPapel,
 } from './ficha.ts';
+export {
+  documentoDelMenu,
+  type DatosDelMenu,
+  type PlatoDelMenuEnPapel,
+  type SeccionDelMenuEnPapel,
+} from './menu.ts';
 export { MONTSERRAT_WOFF2_BASE64 } from './letra.ts';
 
 export const PAQUETE = '@estook/documentos' as const;

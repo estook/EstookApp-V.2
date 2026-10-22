@@ -38,6 +38,7 @@ import { comoDinero } from '../almacen/contrato.ts';
 import {
   canalesConPrecio,
   losAlergenosDe,
+  soloLoDeLaCarta,
   type MiCarta,
   type UnCanal,
   type UnPlato,
@@ -70,7 +71,11 @@ export function LaCarta({ vista }: { readonly vista: string }) {
     null,
   );
 
-  const datos = consulta.data;
+  // Lo que nació en un menú no está en la carta (0104): sale en Carta › Menús.
+  const datos = useMemo(
+    () => (consulta.data === undefined ? undefined : soloLoDeLaCarta(consulta.data)),
+    [consulta.data],
+  );
   // Con los permisos de la sesión, que están desde el principio: con los de la carta,
   // el «Añadir platos» del «+» se perdía si llegaba antes que ella (repaso, 15-oct).
   const { permisos } = usarSesion();

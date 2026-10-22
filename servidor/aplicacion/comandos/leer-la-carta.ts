@@ -65,6 +65,9 @@ export const leerLaCarta = comando<EntradaLeerLaCarta, LaCartaLeida>({
     >`
       select id, nombre, precio_centimos, activo from estook.plato
        where local_id = ${localId}::uuid
+         -- Lo del menú no está en la carta (0104): no sale como «ya no está». Si la carta
+         -- en papel lo trae, se propone y, al crearlo, pasa a la carta (crear_platos).
+         and en_la_carta
     `;
     const cambia = compararConLaCarta(
       leida.platos,

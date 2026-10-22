@@ -370,8 +370,12 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
     // **El precio de la carta** (M10 · 1, 0102; Plan, M10: «y le da el precio al cierre
     // de caja»): el de sala, que es el canal de la caja. Se escribe «croquetas, 3» y los
     // 28,50 € ya están puestos.
+    // Y los menús (M10 · 2, 0104): «Menú del día, 23» sale con su precio, como un plato.
     const deLaCarta = await contexto.sql<{ nombre: string; precio: number }[]>`
       select nombre, precio_centimos as precio from estook.plato
+       where local_id = ${localId} and activo and precio_centimos > 0
+      union all
+      select nombre, precio_centimos as precio from estook.menu
        where local_id = ${localId} and activo and precio_centimos > 0
     `;
     // Y lo que no está en la carta (el fuera de carta de hoy), con lo que costó **la

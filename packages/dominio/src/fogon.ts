@@ -39,6 +39,10 @@ export const CREDITOS_DE_FOGON = {
   responder_resena: 1,
   // ── M10 · 1 · Leer tu carta (0102): una página, por foto o escaneada ────────
   leer_carta: 3,
+  // ── M10 · 2 · Analiza mi zona (0104): busca en internet, y eso se paga aparte.
+  // Richi, 21-oct: «gastando muchos créditos y solo 1 al día cada 24 horas». 25 cabe en
+  // el día de Esencial (30) y deja sitio para alguna pregunta.
+  analizar_zona: 25,
 } as const;
 
 export type QueSeLePide = keyof typeof CREDITOS_DE_FOGON;
@@ -134,7 +138,15 @@ export interface TokensDeUnaLlamada {
   readonly cacheLeidos: number;
   readonly cacheEscritos: number;
   readonly salida: number;
+  /** Las búsquedas en internet que hizo («Analiza mi zona», 0104): se pagan aparte. */
+  readonly busquedas?: number;
 }
+
+/**
+ * Lo que cuesta una búsqueda en internet, en dólares. COMPROBADO el 21-oct-2026 en la
+ * documentación de Anthropic: 10 $ cada mil búsquedas, además de los tokens.
+ */
+export const DOLARES_POR_BUSQUEDA = 0.01;
 
 /** Lo que ha costado una llamada, en millonésimas de euro, redondeado hacia arriba. */
 export function costeEnMicroEuros(modelo: string, tokens: TokensDeUnaLlamada): number {
@@ -145,7 +157,8 @@ export function costeEnMicroEuros(modelo: string, tokens: TokensDeUnaLlamada): n
     precio.entrada * tokens.entrada +
     precio.cacheLeida * tokens.cacheLeidos +
     precio.cacheEscrita * tokens.cacheEscritos +
-    precio.salida * tokens.salida;
+    precio.salida * tokens.salida +
+    DOLARES_POR_BUSQUEDA * 1_000_000 * (tokens.busquedas ?? 0);
   return Math.ceil(microDolares * EUROS_POR_DOLAR);
 }
 

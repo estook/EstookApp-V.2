@@ -15,6 +15,7 @@ import {
   SiAlgoFalla,
   appPorPermiso,
   laAppParaQuien,
+  laAppParaElLocal,
   destinoPorId,
   dondeEntra,
   rutaDe,
@@ -73,6 +74,7 @@ export function Esqueleto() {
   const navegar = useNavigate();
   const { pathname } = useLocation();
   const { permisos, yo, salir, cambiarDeSitio } = usarSesion();
+  const sirveMenus = yo?.local?.sirveMenus ?? null;
   const { sePuedeDeshacer } = usarDeshacer();
   // Mientras se vea la app, cuenta como «en línea» para su equipo (0042).
   usarSigoAqui();
@@ -154,8 +156,10 @@ export function Esqueleto() {
         .map((permiso) => appPorPermiso(permiso))
         .filter((app): app is App => app !== undefined)
         // Sin las pestañas que no son suyas: Compras y Mermas, a la cocina (19-oct).
-        .map((app) => laAppParaQuien(app, (permiso) => puedeVer(permisos, permiso))),
-    [permisos],
+        .map((app) => laAppParaQuien(app, (permiso) => puedeVer(permisos, permiso)))
+        // Y sin lo que el local dice que no usa: Menús, si no los sirve (0103).
+        .map((app) => laAppParaElLocal(app, sirveMenus === false ? ['carta/menus'] : [])),
+    [permisos, sirveMenus],
   );
 
   // De la direccion a donde se esta: `/{app}/{destino}/{vista}`. La vista **no

@@ -406,7 +406,7 @@ describe('el reloj avisa cuando un plato cruza la raya', () => {
     const avisos = await deTipo(rosa, 'plato.raya');
     const suyo = avisos.find((a) => a.titulo === 'Lentejas guisadas m93 pasa de tu objetivo');
     expect(suyo?.detalle).toContain('Lo ha movido lentejas m93');
-    expect(suyo?.ir).toBe(`/escandallos/escandallos/todos?ficha=plato.${guiso}`);
+    expect(suyo?.ir).toBe(`/escandallos/escandallos/carta?ficha=plato.${guiso}`);
     // La sala y la cocina no ven costes: no les llega.
     expect(await deTipo(sara, 'plato.raya')).toEqual([]);
     expect(await deTipo(marcos, 'plato.raya')).toEqual([]);

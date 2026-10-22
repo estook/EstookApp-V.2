@@ -850,3 +850,8 @@
      catálogo de acciones, y la ventana de Fogón, que enseña las cuatro primeras del Panel,
      dejó de ofrecer «Ver qué hay que atender»: lo cazó su prueba de pantalla. Una acción
      nueva va donde le toca en el día (las de cada día, primero), no donde se escribe (0102).
+216. **Un texto se mira en la pantalla, no solo en el código.** «Tu carta y su QR» llevaba
+     del 8 al 22-oct «EnseÃ±a», «dÃ³nde» y «Escanea con la cÃ¡mara del mÃ³vil» —también en
+     el cartel del QR que se imprime—: el fichero se había guardado dos veces en UTF-8. Lo vi
+     al recorrer Ajustes buscando otra cosa. `pnpm textos` mira ahora las letras rotas en todo
+     el fichero, y se ha visto fallar con el fichero de antes (0104).

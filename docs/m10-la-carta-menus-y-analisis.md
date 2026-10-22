@@ -1,9 +1,10 @@
 # M10 · La carta, los menús y el análisis
 
 > **Estado: M10 · 1, en producción** desde el 20-oct-2026 (#125, migración 0078, decisión
-> [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)). **M10 · 2, contestada el 21-oct**
-> ([0103](decisiones/0103-las-respuestas-de-m10-2.md)): los menús y «Analiza mi zona», a falta de dos
-> preguntas. Es el último módulo antes de Estook TPV ([0061](decisiones/0061-el-orden-y-la-infraestructura.md)): **la
+> [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)). **M10 · 2, construida el 22-oct** en la
+> rama `m10-2-los-menus` (migración 0079, decisión [0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md)):
+> los menús y «Analiza mi zona»; en producción cuando Richi fusione, migre y despliegue. Es el
+> último módulo antes de Estook TPV ([0061](decisiones/0061-el-orden-y-la-infraestructura.md)): **la
 > carta es lo que se va a picar en el TPV**.
 
 ## Lo que ya estaba hecho
@@ -91,9 +92,9 @@ entera), y la relación calidad-precio de Omnes, que necesita lo vendido plato a
 
 ## M10 · 2 · Los menús y «Analiza mi zona»
 
-**Contestado por Richi el 21-oct** ([0103](decisiones/0103-las-respuestas-de-m10-2.md), con sus palabras). Se
-construye cuando conteste **las dos preguntas de abajo**. Lo que no entra, y cuándo llega, en la
-última tabla: **nada se pierde por el camino**.
+**Contestado por Richi el 21-oct** ([0103](decisiones/0103-las-respuestas-de-m10-2.md), con sus palabras) y
+**construido el 22-oct** ([0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md), con lo que decidí al
+construirlo). Lo que no entra, y cuándo llega, en la última tabla: **nada se pierde por el camino**.
 
 ### 1 · Los menús
 
@@ -111,49 +112,44 @@ el menú pierde dinero. Con Estook se monta en el móvil, se imprime o se manda,
 | **¿Tu local sirve menús?**    | En IKATZ, **encendido**. En los demás, la primera vez que se abre Menús lo pregunta: con «No» la pestaña se esconde. Se cambia en **Ajustes › Tu local, debajo de «Tu carta»**                                              |
 | **Escandallos › Escandallos** | Las vistas pasan a **Carta · Menús · Bajo objetivo** («Todos» se llama «Carta»; las elaboraciones siguen en ella, al final). «Menús» junta los platos de todos los menús, por menú                                          |
 | **Agotados y el cierre**      | Un plato agotado sale **tachado** en el menú; en el cierre de caja se apunta **«Menú del día × 23»** con su precio, como un plato más                                                                                       |
+| **El Panel de la sala**       | El widget **«Menú del día»**: el de hoy, su precio, los suplementos y lo agotado tachado, para contestar en la mesa sin abrir nada                                                                                          |
 
-**Se guarda el menú de cada día** desde el primero: es la historia que Fogón necesitará para
-proponerlo (más adelante) y la que leerá Estook TPV para venderlo «paso a paso» (Anexo, cap. 10).
+**Cada día, el suyo** (A1): la pantalla es la semana; un día que no se toca **repite el último
+montado** y lo dice; cambiar uno no mueve los demás; lo que ya pasó no se toca; y «Copiar la semana
+pasada» rellena solo los días vacíos. **Se guarda el menú de cada día** desde el primero: es la
+historia que Fogón necesitará para proponerlo (más adelante) y la que leerá Estook TPV para venderlo
+«paso a paso» (Anexo, cap. 10).
 
 ### 2 · «Analiza mi zona», con Fogón
 
 **En la cocina.** «Tus bravas a 7 € están 1,50 € por encima de lo que cobran los de tu calle; tu
 menú a 13,50 €, en la media (de 12 a 15 €).» Hoy eso se sabe dando una vuelta por el barrio.
 
-- **Dónde**: un botón **«Analiza mi zona»** en **Carta › Análisis**, y se le puede pedir en el chat de
-  Fogón. **No es una pestaña** (Fogón nunca lo es, Plan M22): lo que encuentra se guarda y se ve en
-  Análisis **con su fecha**, sin volver a gastar.
+- **Dónde**: un botón **«Analiza mi zona»** en **Carta › Análisis › Tu zona**; Fogón lo ofrece entre
+  sus acciones y, si se le pregunta, dice dónde está. Lo que encuentra se guarda y se ve **con su
+  fecha**, sin volver a gastar; y antes de pulsar dice si falta algo (Fogón apagado, la dirección del
+  local o los precios).
 - **Cómo trabaja, para que sea rápido**: Estook le da el local (dirección, tipo de cocina y su «€€»
   de Google) y **los platos con su precio, sin costes**. Fogón busca en internet los locales de
   alrededor que publican su carta y devuelve, por plato, lo que cobran **con el enlace y la fecha** de
   dónde lo ha leído, y el precio del menú del día de la zona.
 - **Sin inventar**: con menos de tres locales para comparar un plato, no lo juzga; las medias y «1,50 €
   por encima» las calcula la base, no Fogón; y lo que viene de internet es dato, nunca instrucción.
-- **Lo que cuesta**: unas diez búsquedas, **unos 0,10 €** por análisis (cada búsqueda, 1 céntimo, más
-  la lectura). Cuántas veces se puede, en la pregunta B. **[VERIFICAR] al construir**: que la búsqueda
-  en internet de Anthropic funcione con Haiku 5.5, en su documentación oficial; si no, con el modelo
-  más barato que la tenga, y se recalcula el coste.
+- **Lo que cuesta**: como mucho 8 búsquedas, **unos 0,08-0,10 €** por análisis (cada búsqueda, 1
+  céntimo de dólar, comprobado en la documentación de Anthropic el 21-oct, más la lectura). **Una vez
+  cada 24 horas y 25 créditos** (B1 de Richi: «gastando muchos créditos y solo 1 al día»), dentro del
+  tope de 5 € al mes. La búsqueda es la herramienta básica de Anthropic; si Haiku 5.5 no la admitiera,
+  se pide una vez a Sonnet 5.5, sin tocar nada (0104).
 - **Lo que se guarda de los otros**: solo lo público (nombre, plato, precio, enlace y fecha), de ese
   local y para ese local. Va a las preguntas al asesor.
 
-### 3 · Las dos preguntas que quedan
+### 3 · Las dos preguntas, contestadas el 21-oct
 
-**Pregunta A · ¿Cómo cambia el menú del día en IKATZ?** Decide cómo es la pantalla principal.
-
-- **A1 · Cada día distinto** (lo más común): la pantalla es **la semana**, de lunes a viernes; un día
-  que no tocas **repite el anterior**, y «Copiar la semana pasada» la rellena en un toque.
-- **A2 · Igual varios días o semanas**: la pantalla es **un menú** que editas cuando cambia.
-
-**Recomiendo A1**: a quien lo cambia poco le sirve igual (se repite solo), y guarda lo de cada día.
-
-**Pregunta B · ¿Cuántas veces se puede «Analizar mi zona»?** El tope de IA de cada local es 5 € al mes.
-
-- **B1 · Buscar una vez a la semana, comparar cada día gratis**: si cambias tus precios, la
-  comparación se rehace al momento sin buscar otra vez. Unos 0,40 € al mes por local.
-- **B2 · Una vez al día**: hasta 3 € al mes, más de la mitad del tope, y casi siempre encuentra lo
-  mismo.
-
-**Recomiendo B1**, con **15 créditos** por análisis y en todos los planes.
+- **A · ¿Cómo cambia el menú del día en IKATZ?** **A1: cada día distinto.** La pantalla es la semana,
+  y un día que no se toca repite el anterior.
+- **B · ¿Cuántas veces se puede «Analizar mi zona»?** **«B1, gastando muchos créditos y solo 1 al día
+  cada 24 horas»**: una vez cada 24 horas, 25 créditos; la comparación con tus precios de hoy se
+  rehace sola, sin buscar otra vez.
 
 ### 4 · Lo que no entra en M10 · 2, y cuándo llega
 
@@ -188,3 +184,23 @@ menú a 13,50 €, en la media (de 12 a 15 €).» Hoy eso se sabe dando una vue
 | 20 · ¿Avisa solo cuando hace falta? | El agotado, solo a quien está trabajando. El equilibrio no avisa: está en Análisis cuando se mira                           |
 | 21 · ¿Con datos a medias?           | El equilibrio dice qué sección no juzga y por qué; la carta leída dice lo que no ha entendido                               |
 | 22 · ¿Señala a alguien?             | No: el agotado dice quién lo marcó, como cualquier mensaje del chat, y nada más                                             |
+
+## La regla 14 y la prueba de la plantilla, de M10 · 2
+
+| Pregunta                            | Respuesta                                                                                                                                           |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ¿Qué datos usa?                     | Los platos y sus escandallos (M9), los precios de la carta, el Almacén para el pan y el café, la dirección del local y lo que Fogón lee en internet |
+| ¿Quién más se entera?               | El equipo ve el menú de hoy (Panel de la sala y Carta). Lo que deja, solo quien ve el coste de los platos                                           |
+| ¿Qué automatiza Fogón?              | Buscar lo que cobran los de alrededor. **Propone; nadie cambia un precio por él**                                                                   |
+| ¿Qué aprueba una persona?           | Todo: el menú, su precio y cualquier cambio de la carta                                                                                             |
+| Permisos                            | Montar y descargar: Carta para editar. Verlo: quien ve la Carta. Lo que deja: `dato.coste_de_plato`. Analizar la zona: Carta para editar            |
+| ¿Sin internet?                      | No: el menú es del local y lo leen varios a la vez                                                                                                  |
+| ¿Dos veces?                         | Poner un plato que ya está lo deja igual; copiar la semana no pisa lo montado; analizar la zona dos veces en 24 horas no llega a Fogón              |
+| Auditoría                           | Cada cambio del menú (precio, secciones, platos, días copiados), en su historial; el plato nuevo y su paso a la carta, en el del plato              |
+| 16 · ¿Trabajo nuevo?                | No: sustituye a la pizarra, y el cartel y el texto para WhatsApp salen solos                                                                        |
+| 17 · ¿Duplica algo?                 | No: los platos son los de la carta (el nuevo es un plato más) y su coste, el de su escandallo                                                       |
+| 18 · ¿Bloquea el servicio?          | No: nada impide vender; lo que ya pasó no se toca, pero no se pide nada para seguir                                                                 |
+| 19 · ¿Fácil?                        | La semana a la vista, un toque para poner un plato de la carta, el precio grande y «Descargar» en un botón                                          |
+| 20 · ¿Avisa solo cuando hace falta? | No avisa: lo que deja está en el menú cuando se mira, y la zona, en Análisis                                                                        |
+| 21 · ¿Con datos a medias?           | Sin escandallo no da una cifra de lo que deja: dice cuál falta. Con menos de tres precios de la zona, no compara                                    |
+| 22 · ¿Señala a alguien?             | No: el menú no lleva nombres, y la zona solo locales con sus precios públicos                                                                       |

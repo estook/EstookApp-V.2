@@ -92,6 +92,9 @@ export function FichaDelPlato({
   return (
     <PanelLateral abierta alCerrar={alCerrar} titulo={datos.plato.nombre}>
       {datos.plato.activo && <ElAgotado plato={datos.plato} />}
+      {datos.plato.enLaCarta === false && (
+        <SoloDelMenu platoId={datos.plato.id} puede={datos.puedeEditar} />
+      )}
       {datos.puedeEditar ? (
         <ParaEditar
           key={datos.plato.version}
@@ -107,6 +110,37 @@ export function FichaDelPlato({
         <ParaMirar datos={datos} carta={carta} />
       )}
     </PanelLateral>
+  );
+}
+
+/**
+ * El plato que nació en un menú (M10 · 2, 0104): no sale en la carta. Se dice, y se puede
+ * poner también en ella, «por si un día se queda».
+ */
+function SoloDelMenu({ platoId, puede }: { readonly platoId: string; readonly puede: boolean }) {
+  const { cliente } = usarSesion();
+  const refrescar = usarRefrescarLaCarta();
+  const [poniendo, setPoniendo] = useState(false);
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+
+  async function ponerlo() {
+    setPoniendo(true);
+    setError(null);
+    const respuesta = await cliente.ejecutar('poner_en_la_carta', { plato_id: platoId });
+    setPoniendo(false);
+    if (!respuesta.ok) setError(respuesta.error);
+    await refrescar();
+  }
+
+  return (
+    <Aviso tono="info" titulo="Solo del menú: no sale en la carta">
+      {error !== null && <ErrorEnCristiano error={error} />}
+      {puede && (
+        <Boton tono="secundario" tamano="s" cargando={poniendo} onClick={() => void ponerlo()}>
+          Ponerlo también en la carta
+        </Boton>
+      )}
+    </Aviso>
   );
 }
 
@@ -487,7 +521,7 @@ function ParaEditar({
             await refrescarLasFichas();
           }}
           alVerLaFicha={() => {
-            navegar(`/escandallos/escandallos/todos?ficha=plato.${plato.id}`);
+            navegar(`/escandallos/escandallos/carta?ficha=plato.${plato.id}`);
           }}
         />
       )}

@@ -22,6 +22,8 @@ export const elEquilibrioDeLaCarta = consulta<Record<string, never>, EquilibrioD
         from estook.plato p
         left join estook.seccion_de_carta s on s.id = p.seccion_id
        where p.local_id = ${localId}::uuid and p.activo
+         -- Lo que nace en un menú no está en la carta (0104): no la desequilibra.
+         and p.en_la_carta
        order by s.orden nulls last, s.nombre, p.orden, p.nombre
     `;
     const secciones = new Map<

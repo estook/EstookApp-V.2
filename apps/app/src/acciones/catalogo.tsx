@@ -8,6 +8,7 @@ import {
   IconoEntrar,
   IconoEscandallos,
   IconoEquipo,
+  IconoFogon,
   IconoAlmacen,
   IconoOrganizacion,
   IconoPersona,
@@ -122,7 +123,7 @@ export const ACCIONES: readonly Accion[] = [
     queHace: 'Lo que lleva un plato de tu carta y en qué cantidad: el coste sale solo',
     icono: IconoEscandallos,
     permiso: { cual: 'app.escandallos', como: 'editar' },
-    ir: '/escandallos/escandallos/todos',
+    ir: '/escandallos/escandallos/carta',
   },
   {
     id: 'que-atender',
@@ -258,6 +259,27 @@ export const ACCIONES: readonly Accion[] = [
     icono: IconoDocumento,
     permiso: { cual: 'app.carta', como: 'editar' },
     ir: '/carta/carta/por-secciones?hacer=leer',
+  },
+  {
+    // M10 · 2 (0104): el menú del día de esta semana, con su precio y lo que deja.
+    id: 'montar-el-menu',
+    app: 'carta',
+    nombre: 'Montar el menú del día',
+    queHace: 'Los platos de cada día, el precio, y el cartel para la puerta',
+    icono: IconoDocumento,
+    permiso: { cual: 'app.carta', como: 'editar' },
+    ir: '/carta/menus',
+  },
+  {
+    // M10 · 2 (0104; Richi: «una burbuja de Fogón, que puedas decirle analiza mi
+    // zona»). Lleva a Tu zona, donde se pulsa: un enlace no gasta 25 créditos solo.
+    id: 'analizar-mi-zona',
+    app: 'carta',
+    nombre: 'Analiza mi zona',
+    queHace: 'Fogón busca lo que cobran los de alrededor por tus platos y tu menú',
+    icono: IconoFogon,
+    permiso: { cual: 'app.carta', como: 'editar' },
+    ir: '/carta/analisis/tu-zona',
   },
   {
     // Entrega O · contar lo que hay. Es lo que cierra el día de un jefe de cocina, y

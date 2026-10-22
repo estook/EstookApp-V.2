@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-**Ahora, Estook TPV**, empezando por **M16a · La jornada**: contestada y **construida en su pull request** el 22-oct (migración 0080, [0105](decisiones/0105-m16a-la-jornada.md)). **M10 · La carta, menús y análisis está terminado** ([el plan](m10-la-carta-menus-y-analisis.md)): **M10 · 1 · La carta que trabaja** —agotados, el precio del cierre desde la carta, leer tu carta y el equilibrio— en producción desde el 20-oct (migración 0078, [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)), y **M10 · 2 · Los menús y «Analiza mi zona»** desde el 22-oct (migración 0079, [0103](decisiones/0103-las-respuestas-de-m10-2.md) y [0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md)). **Fogón 1 está entero en producción** (19-oct, [0097](decisiones/0097-fogon-1-las-respuestas-y-la-base.md) y [0098](decisiones/0098-fogon-1-entero.md)), con los repasos del 19 y del 20-oct y la auditoría del 20-oct ([0099](decisiones/0099-el-repaso-del-19-oct.md) a [0101](decisiones/0101-la-auditoria-del-20-oct.md)). **M9 · Escandallos está terminado** (M9 · 3 en producción desde el 18-oct, [0092](decisiones/0092-las-respuestas-de-m9-3.md) a [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+**Ahora, Estook TPV**: **M16a · La jornada, en producción** desde el 22-oct (migración 0080, [0105](decisiones/0105-m16a-la-jornada.md)), **las pantallas de la sala y la cocina, decididas con Richi** ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)), y **lo siguiente es M20A · 1 · la sala y la cocina en pantalla**. **M20 · Ventas y consumo** ([el plan](m20-ventas-y-consumo.md)) va con el cobro (M20C): sin cobro no hay ventas plato a plato. **M10 · La carta, menús y análisis está terminado** ([el plan](m10-la-carta-menus-y-analisis.md)): **M10 · 1 · La carta que trabaja** —agotados, el precio del cierre desde la carta, leer tu carta y el equilibrio— en producción desde el 20-oct (migración 0078, [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)), y **M10 · 2 · Los menús y «Analiza mi zona»** desde el 22-oct (migración 0079, [0103](decisiones/0103-las-respuestas-de-m10-2.md) y [0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md)). **Fogón 1 está entero en producción** (19-oct, [0097](decisiones/0097-fogon-1-las-respuestas-y-la-base.md) y [0098](decisiones/0098-fogon-1-entero.md)), con los repasos del 19 y del 20-oct y la auditoría del 20-oct ([0099](decisiones/0099-el-repaso-del-19-oct.md) a [0101](decisiones/0101-la-auditoria-del-20-oct.md)). **M9 · Escandallos está terminado** (M9 · 3 en producción desde el 18-oct, [0092](decisiones/0092-las-respuestas-de-m9-3.md) a [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -8,8 +8,8 @@
 ANTES DE M8   H · Horarios  →  I · La app instalable  →  C · El chat
               →  A3 · Vendedores  →  A4 · Ventas del admin
 FASE 2        M8 → M9 → M10
-ESTOOK TPV    M16a · La jornada → M20 · Ventas y consumo → M19a · Estook Link
-              → M20A · Sala y cocina → M20B · Facturación → M20C · Cobro y caja
+ESTOOK TPV    M16a · La jornada → M20A · 1 · Sala y cocina en pantalla → M19a · Estook Link
+              → M20A · 2 · En papel → M20B · Facturación → M20C · Cobro y caja, con M20
 DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b
               → Fase 5 (M21 a M25) → Fase 6 (M26 a M28) → Fase 7 (M29 y M30)
 ```
@@ -82,7 +82,7 @@ Modo quiosco en un aparato del local, comparativa de lo planificado contra lo fi
 
 ### M16 · Servicio, APPCC y trazabilidad
 
-**M16a · La jornada**, que va delante del TPV: su fecha operativa decidida por el servidor y el cierre del día en sesenta segundos. **Construida el 22-oct** ([0105](decisiones/0105-m16a-la-jornada.md), migración 0080): el día que se abre solo y dura lo que dura (25 horas la noche del cambio de hora), «En marcha», cerrar en tres pasos —el APPCC será el cuarto, con M16b— y reabrir con motivo, que lo hace quien puede cerrar. **M16b · APPCC y trazabilidad**, que se queda aquí: el APPCC con acción correctiva obligatoria y la trazabilidad de lote.
+**M16a · La jornada**, que va delante del TPV: su fecha operativa decidida por el servidor y el cierre del día en sesenta segundos. **En producción desde el 22-oct** ([0105](decisiones/0105-m16a-la-jornada.md), migración 0080): el día que se abre solo y dura lo que dura (25 horas la noche del cambio de hora), «En marcha», cerrar en tres pasos —el APPCC será el cuarto, con M16b— y reabrir con motivo, que lo hace quien puede cerrar. **M16b · APPCC y trazabilidad**, que se queda aquí: el APPCC con acción correctiva obligatoria y la trazabilidad de lote.
 
 ### M17 · Cuaderno
 
@@ -92,19 +92,19 @@ Incidencias del turno que lee el siguiente, notas, y el mantenimiento de los equ
 
 ## Fase 4 · Las ventas, y Estook TPV
 
-**El orden es M16a → M20 → M19a → M20A → M20B → M20C, justo después de M10; y M18 y M19b, al final de la Fase 3.**
+**El orden es M16a → M20A · 1 → M19a → M20A · 2 → M20B → M20C con M20, justo después de M10; y M18 y M19b, al final de la Fase 3** ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)).
 
 ### M20 · Ventas, emparejamiento y consumo
 
-**El motor, y va primero.** Trae también **cómo detecta Estook lo que se escapa** ([el diseño](como-detecta-estook-lo-que-se-escapa.md), 0093): cuatro filtros, sin porcentajes inventados ni avisos mientras aprende. Convierte una venta —venga de donde venga— en movimientos del almacén, con su coste congelado. Sirve para las cuatro vías a la vez, así que se escribe una sola vez. **Y trae de M10 lo que deja cada plato: estrella, caballo, puzzle y perro, por canal** (0103), porque necesita lo vendido de cada uno.
+**El motor, y va con el cobro (M20C)**: sin cobro no hay ventas que mover ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). **En plan desde el 22-oct** ([el plan](m20-ventas-y-consumo.md)), en dos entregas: **M20 · 1 · Lo vendido mueve el almacén** y **M20 · 2 · Lo que se escapa y lo que deja cada plato**. Trae también **cómo detecta Estook lo que se escapa** ([el diseño](como-detecta-estook-lo-que-se-escapa.md), 0093): cuatro filtros, sin porcentajes inventados ni avisos mientras aprende. Convierte una venta —venga de donde venga— en movimientos del almacén, con su coste congelado. Sirve para las cuatro vías a la vez, así que se escribe una sola vez. **Y trae de M10 lo que deja cada plato: estrella, caballo, puzzle y perro, por canal** (0103), porque necesita lo vendido de cada uno.
 
 ### M19a · Estook Link · el centro del local
 
-El programa que se instala en el local, en un aparato siempre encendido. Hace tres cosas: **imprime** en cualquier impresora (ESC/POS) y abre el cajón; **mantiene la sala y la cocina hablándose sin internet**, por la red del local; y **guarda lo pendiente** para subirlo al volver. **Va antes de la sala porque una comanda que no llega a cocina no vale para nada** ([0056](decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)).
+El programa que se instala en el local, en un aparato siempre encendido. Hace tres cosas: **imprime** en cualquier impresora (ESC/POS) y abre el cajón; **mantiene la sala y la cocina hablándose sin internet**, por la red del local; y **guarda lo pendiente** para subirlo al volver. **Va entre M20A · 1 y M20A · 2**: la sala y la cocina se prueban primero en pantalla, y Link les da el papel y el aguante a los cortes antes de cobrar ([0056](decisiones/0056-estook-tpv-su-puerta-y-estook-link.md), [0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)).
 
 ### M20A · Sala y cocina
 
-Mesas, barra y para llevar; tomar nota con comensal asignado; tandas y marchar; aviso de alergia; traspasar mesas al cambio de turno. Y la cocina: **cada partida ve lo suyo**, pantalla de pase, tiempos en tres tramos, y **la ficha técnica abierta desde cualquier plato**. Todavía sin cobrar.
+**Decidido sobre las pantallas el 22-oct** ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)): mesas, barra y para llevar; tomar nota en **Bebidas · Carta · Menú del día**; los pases (1.º y 2.º) y **marcha el camarero**, avisado cuando ha salido todo el 1.º; aviso de alergia; pasar mesas a otro camarero. Y la cocina: **el ticket entero de la mesa, sin partidas**, tachar lo que sale, «Esperando la marcha», «Fuera» y el delivery, y **la ficha técnica abierta desde cualquier plato**. **M20A · 1** en pantalla (lo siguiente) y **M20A · 2** en papel (tras Link). Todavía sin cobrar.
 
 ### M20B · Facturación VeriFactu
 

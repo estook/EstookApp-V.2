@@ -1,7 +1,7 @@
 ---
 titulo: Anexo · TPV y facturación
 tipo: Documento maestro de especificación
-fecha: Septiembre de 2026 · versión 1.2
+fecha: Octubre de 2026 · versión 1.3
 nota: Cómo Estook toma nota, cobra y emite tickets y facturas cumpliendo VeriFactu, y cómo se ve y se usa Estook TPV en un día de servicio. Manda sobre los demás documentos en su tema. Se lee entero antes de tocar sala, cocina, cobro, caja o facturación.
 ---
 
@@ -14,6 +14,8 @@ Va dirigido a quien construya Estook, que será en su mayor parte una IA. Cubre 
 Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (cómo está hecho: las piezas, el modelo, los aparatos y qué funciona sin conexión), **Plan de desarrollo** (cómo se construye y en qué orden), **Roles y administración** (quién puede qué, apartado 1.12) y **Auditoría de flujos** (efectos en cadena 2.27 a 2.34, estados, fallos y las listas de comprobación de Facturación y Caja). Lo que cambió en cada versión, en el [registro de cambios](CAMBIOS.md).
 
 **La versión 1.2** (30 de septiembre de 2026) recoge la auditoría profunda ([0055](../decisiones/0055-la-auditoria-profunda.md)): Estook TPV con su propia puerta y **Estook Link** como centro del local sin internet ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)); el terminal, el operador y la aprobación con PIN ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)); el cobro, sus pagos, la caja y la bolsa del camarero ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md)); la emisión con estados y lo que dice de verdad la AEAT sin conexión ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)); y la empresa fiscal ([0060](../decisiones/0060-la-empresa-fiscal.md)).
+
+**La versión 1.3** (22 de octubre de 2026, [0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)) recoge lo que Richi decidió sobre las pantallas dibujadas: **a cocina llega el ticket entero de la mesa, sin partidas**; **marcha el camarero**, avisado cuando ha salido todo el pase; se tacha lo que sale y la mesa se va sola a «Fuera»; tomar nota en **Bebidas · Carta · Menú del día**, con notas solo escritas; las copas por marca con «¿Con qué?»; y las bebidas y los cafés, configurados una vez en Estook desde el almacén. Donde lo de abajo diga otra cosa, manda la 0106.
 
 > **Lo marcado [VERIFICAR] no se programa hasta comprobarlo** contra la documentación oficial de la AEAT, la de Verifacti o el asesor, y lo comprobado se escribe con su fuente y su fecha. Las preguntas al asesor están todas en [`docs/legal/preguntas-al-asesor.md`](../legal/preguntas-al-asesor.md). Es la regla 13 del Plan aplicada al sitio donde equivocarse sale más caro.
 
@@ -28,6 +30,7 @@ Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (có
 | ¿Qué impresoras?                           | **Cualquiera ESC/POS**, por Estook Link. Ninguna marca en el núcleo (capítulo 6)                                                                            |
 | ¿Sin internet?                             | **Se sigue trabajando** con Estook Link en el local; el ticket, con justificante y al volver (3.6 y 4.11)                                                   |
 | ¿Un «modo formación»?                      | **No existe en producción.** Se practica en el local de ejemplo (4.12)                                                                                      |
+| ¿Partidas en cocina?                       | **No.** A cocina llega el ticket entero de la mesa, y marcha el camarero ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md))                     |
 
 ## Lo que sigue pendiente de Richi, y no frena nada hasta la Fase 4
 
@@ -167,7 +170,7 @@ Un bar de tapas no abre mesas, y un local con barra y comedor hace las dos cosas
 
 | Camino          | Cómo va                                                | Para                         |
 | --------------- | ------------------------------------------------------ | ---------------------------- |
-| **Mesa**        | Se abre, se pide en tandas, se cobra al final          | Restaurante de carta         |
+| **Mesa**        | Se abre, se pide por pases, se cobra al final          | Restaurante de carta         |
 | **Barra**       | Se pide y se cobra en el mismo gesto, sin abrir nada   | Bar de tapas, cafetería      |
 | **Para llevar** | Como barra, con nombre o número de recogida y su canal | Take away, recogida en local |
 
@@ -175,13 +178,13 @@ Los tres acaban en una venta con su ticket. Lo que cambia es cuánto vive la cue
 
 ### Abrir mesa y tomar nota
 
-**Abrir:** un toque en la mesa libre, con los comensales que se ajustan después. El camarero es **el operador** del terminal, que entró con su PIN (3.4).
+**Abrir:** un toque en la mesa libre, con los comensales que se ajustan después, y **«por pases» o «todo junto»** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). El camarero es **el operador** del terminal, que entró con su PIN (3.4).
 
 **La carta que se ve es la del canal de esa mesa** (M10): la terraza puede tener otro precio que el salón, y el de reparto otro distinto. De ahí sale el precio, y de ahí sale el tipo de IVA de cada línea.
 
-**Tomar nota:** buscador tolerante a erratas, los más vendidos primero, extras y modificadores del plato, y una nota libre por línea. Cantidades con el `+` y el `−`, nunca escribiendo.
+**Tomar nota** (10.3): **Bebidas · Carta · Menú del día**, la carta por sus secciones y con foto, buscador tolerante a erratas y **una nota escrita por línea** («al punto», «sin sal»: el TPV no sabe qué plato es carne, así que no pregunta el punto). Cantidades con el `+` y el `−`, nunca escribiendo.
 
-**Cada línea se puede asignar a un comensal.** No es un lujo: **sin esto, «dividir por comensal» al cobrar es imposible**. Se hace con un toque —comensal 1, 2, 3— y **se puede dejar sin asignar**, que es lo normal en una mesa que comparte. Al cobrar, lo no asignado se reparte o se elige a mano.
+**El comensal no se pide al tomar nota** (0106: «P1, P2…» en la nota no lo entiende nadie). Al **dividir la cuenta** (5.1) se eligen los platos de cada uno o se reparte a partes iguales.
 
 **Aviso de alergia de la mesa.** Se marca al abrirla o después, eligiendo de los catorce alérgenos oficiales que Estook ya tiene (M9). A partir de ahí:
 
@@ -192,15 +195,11 @@ Esto Estook lo puede hacer sin pedir un dato más, porque los alérgenos ya est�
 
 ### Mandar a cocina, y marchar
 
-**Las tandas son del servicio, no del software:** entrantes, principales, postres, y las que el local quiera. Al mandar, cada línea va a su tanda.
+**Los pases son del servicio, no del software**: el 1.º (entrantes y primeros del menú) y el 2.º (principales y segundos), y cada plato va solo al suyo por su sección de la carta; se cambia tocando la línea. **Los postres no se piden por adelantado**: se piden al final, como una comanda nueva de la misma mesa, ya en marcha. Una mesa «todo junto» no tiene pases: todo sale en marcha.
 
-**Marchar** es decirle a la cocina «empieza con la siguiente tanda». Tres formas, y el local elige:
+**Marcha el camarero, nunca la cocina** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)): la cocina no ve cuándo una mesa va acabando el primero. Así lo hacen Toast, Aloha y Zonal. Lo que sí hace Estook es **avisar**: cuando la cocina ha tachado todo el 1.º, la sala recibe «Mesa 6 · ha salido todo el 1.º» en el plano y en el móvil, la mesa se pone en azul («Toca marchar el 2.º») y **el botón grande de la mesa pasa a ser «Marchar el 2.º»**. **Ese botón dice siempre lo siguiente**: «Mandar a cocina» si hay algo sin mandar, «Marchar el 2.º» cuando toca, y si no, «Cobrar».
 
-1. **A mano desde sala**, que es lo normal: el camarero ve que la mesa va por la mitad y marcha los segundos.
-2. **Al retirar la tanda anterior**, si la sala la marca como retirada.
-3. **Por tiempo**, con un margen configurable desde que la anterior salió. Apagado por defecto.
-
-Una tanda sin marchar **se ve en cocina en espera, no desaparece**: el cocinero sabe lo que viene.
+Un pase sin marchar **se ve en cocina en espera, no desaparece**: el cocinero sabe lo que viene.
 
 ### Corregir lo que ya se mandó
 
@@ -223,21 +222,17 @@ Se marca desde la comanda y desaparece de la carta y de la carta digital (M10 y 
 
 **La función de cocina de Estook TPV**, para un aparato fijo en cocina, a pantalla completa. Letra grande, contraste alto, botones grandes: se usa de lejos y con las manos ocupadas. Admite **teclados de cocina** (los «bump bar»), que escriben como un teclado. No es el **modo cocina** de Estook, que sirve para leer fichas en la gestión: son dos cosas y se llaman distinto.
 
-### Cada partida ve lo suyo
+### El ticket entero de la mesa
 
-**Es la función más importante de una pantalla de cocina y la que más se nota.** Un cocinero de plancha que tiene que leer los postres de otras cuatro mesas para encontrar lo suyo trabaja peor y más lento.
+**A cocina llega la mesa entera, con todos sus platos** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). **No se separa por partidas** (caliente, frío, plancha): Richi lo descartó porque es un lío, más difícil y más toques. **Cada tarjeta es el pase de su mesa**: arriba la mesa, sus comensales, el camarero, cuánto lleva y la alergia; dentro, el 1.º en marcha y el 2.º en espera, cada plato con su nota y con «menú» si es del menú.
 
-- Cada plato lleva **su partida** —fría, caliente, plancha, postres, barra—, heredada de su sección de carta (M10) y ajustable plato a plato.
-- **Cada pantalla se configura con las partidas que enseña.** Un local con una sola pantalla las ve todas; uno con tres, cada una la suya.
-- Un plato sin partida sale en **todas**, y aparece en una lista de «platos sin partida» para arreglarlo. **Nunca se pierde un plato por un fallo de configuración.**
-
-### El pase
-
-Una pantalla más, con un trabajo distinto: **ve el pedido completo de la mesa** y cuánto lleva listo cada partida. Es lo que permite que todo salga a la vez y caliente, que es de lo que se queja un comedor.
-
-Cuando todas las partidas han marcado lo suyo, el pase marca el pedido servido y **la sala recibe el aviso**.
-
-En un local pequeño, la pantalla de cocina hace de pase. **Se configura, no se impone.**
+- **Se toca un plato al sacarlo y queda tachado con su hora.** Otro toque lo destacha. La sala ve ✓ y la hora en la cuenta.
+- **Cuando sale todo el 1.º**, la mesa **baja a «Esperando a que la sala marche»**, pequeña, con su 2.º a la vista para ir preparando. **Al marcharlo la sala**, sube arriba con **«¡MARCHA EL 2.º!»** y suena distinto.
+- **Al tachar el último plato, la mesa se va sola a «Fuera»**, con 5 segundos para deshacer; también **«Todo fuera»** de un toque. En «Fuera» se ve cuándo salió cada mesa y lo que tardó, con **«Recuperar»**.
+- **Pestañas: En marcha · Delivery · Fuera.** El pedido de reparto lleva la moto, la plataforma, el nombre, **la hora a la que pasa el repartidor** y lo que va a la bolsa, y se cierra con «Listo para el repartidor».
+- **Lo que cambia sale en la misma tarjeta**: «NUEVO» con su hora, «ANULADO» en rojo y con sonido, «CAMBIO» de nota, y «VUELVE» arriba del todo cuando un plato devuelto se rehace.
+- **Pantalla, papel o las dos**, a elección del local. En papel sale el ticket entero con sus pases, y un papelito por cada marcha, plato nuevo o anulado.
+- **Las bebidas, los cafés y las copas no van a cocina**: van a la barra.
 
 ### Los tiempos
 
@@ -247,11 +242,11 @@ En un local pequeño, la pantalla de cocina hace de pase. **Se configura, no se 
 
 ### Trabajar
 
-- **Marcar un plato listo**, o el pedido entero.
+- **Tachar un plato al sacarlo**, o la mesa entera con «Todo fuera».
 - **Deshacer, dentro de un margen corto.** Se marca sin querer y ahora mismo no hay vuelta atrás; en cocina eso es un plato que nadie hace. Se puede recuperar lo marcado durante unos minutos, queda con autor, y pasado ese margen lo desmarca un jefe.
 - **Aviso sonoro** al entrar un pedido, y distinto cuando entra uno marcado por alergia o uno con prioridad.
-- **Prioridad** que la sala puede pedir desde una mesa.
-- **Lo que llevamos hoy**, por plato: «14 solomillos». Sirve para producción, para saber qué se está acabando y para cuadrar el pase.
+- **Prioridad** que la sala puede pedir desde una mesa, con su nota («tienen prisa») arriba de la tarjeta.
+- **Lo que llevamos hoy**, por plato: «14 solomillos». Sirve para producción y para saber qué se está acabando.
 
 ### La ficha, que es lo que nadie más tiene
 
@@ -271,13 +266,13 @@ Las prioridades, los retrasos y los avisos son **reglas en código**, no llamada
 
 Aquí está la ventaja que un KDS suelto no puede tener, porque no está conectado a nada:
 
-| Lo que se mide                                        | A dónde va                                                     |
-| ----------------------------------------------------- | -------------------------------------------------------------- |
-| Tiempo real de cada plato, por partida y por franja   | La ficha de M9, junto a su tiempo estimado                     |
-| Platos que van tarde siempre                          | Aviso de Fogón: el problema es la receta, la partida o la hora |
-| Lo vendido por franja frente a quién había trabajando | El cuadrante de M14                                            |
-| Agotados y su hora                                    | Previsión de compra de M7                                      |
-| Devoluciones y platos tirados                         | Merma con su motivo (M8)                                       |
+| Lo que se mide                                        | A dónde va                                         |
+| ----------------------------------------------------- | -------------------------------------------------- |
+| Tiempo real de cada plato y de cada mesa, por franja  | La ficha de M9, junto a su tiempo estimado         |
+| Platos que van tarde siempre                          | Aviso de Fogón: el problema es la receta o la hora |
+| Lo vendido por franja frente a quién había trabajando | El cuadrante de M14                                |
+| Agotados y su hora                                    | Previsión de compra de M7                          |
+| Devoluciones y platos tirados                         | Merma con su motivo (M8)                           |
 
 **Ningún dato se pide dos veces**, que es el principio 2 del Manifiesto: todo esto sale de trabajar, no de rellenar nada.
 
@@ -334,8 +329,9 @@ La versión 1.1 prometía que la cocina seguía imprimiendo sin internet con una
 
 ## 3.7 Lo que hay que probar
 
-- Un servicio de una mesa de seis con tres tandas, dos alergias y un plato quitado ya en cocina: **cuadra en sala, en cocina y en el pase**.
-- Un local con tres pantallas: **cada partida ve solo lo suyo**, y un plato sin partida sale en todas y en la lista de fallos.
+- Un servicio de una mesa de seis, **dos con menú y cuatro con carta**, dos alergias y un plato quitado ya en cocina: **cuadra en la sala y en la tarjeta de cocina**.
+- **A cocina llega el ticket entero**; al tachar todo el 1.º, la sala recibe el aviso y su botón pasa a «Marchar el 2.º»; al tachar el último, la mesa se va a «Fuera» y se recupera desde allí.
+- **La cocina no puede marchar**: solo la sala.
 - Marchar desde sala llega a cocina **en menos de 2 segundos**.
 - Un plato marcado por error se recupera dentro del margen, y fuera del margen lo desmarca un jefe.
 - Se vende en barra sin abrir mesa, y se cobra en el mismo gesto.
@@ -847,16 +843,16 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 - `mesa` — zona, nombre, plazas, posición en el plano
 - `cuenta` — **tipo** (`mesa`, `barra`, `para_llevar`, `reparto`, `consumo_interno`), mesa si la tiene, **nombre o número de recogida** si es para llevar o de reparto, estado, camarero **actual**, comensales, canal, apertura, cierre, versión. **`reparto` solo lo crea el adaptador del canal** (M29) y lleva el identificador del pedido en la plataforma: es la comanda que va a cocina (10.8), no una tabla de pedidos aparte. **Su identificador nace en el aparato**, para que subirla dos veces no cree dos
 - `alergeno_de_la_cuenta` — cuenta, alérgeno, quién lo marcó y cuándo
-- `linea_de_cuenta` — plato, cantidad, **precio y tipo de impuesto congelados**, modificadores elegidos (cada uno con su precio y su escandallo), nota, **comensal** (número o nulo), **tanda**, **partida** (copiada al mandar, no leída después), estado (`pedida`, `en_cocina`, `lista`, `servida`, `quitada`), y autor, motivo y aprobación si se quita. **Su identificador también nace en el aparato**, y a una cuenta **se le añaden líneas, nunca se sobreescriben**
+- `linea_de_cuenta` — plato, cantidad, **precio y tipo de impuesto congelados**, modificadores elegidos (cada uno con su precio y su escandallo), nota, **comensal** (número o nulo, solo al dividir), **tanda** (el pase: 1.º, 2.º), **salió en y quién la tachó** (0106), estado (`pedida`, `en_cocina`, `salio`, `servida`, `quitada`), y autor, motivo y aprobación si se quita. **Su identificador también nace en el aparato**, y a una cuenta **se le añaden líneas, nunca se sobreescriben**
 - `traspaso_de_cuenta` — cuenta, de quién, a quién, cuándo, quién lo hizo
 
-**Por qué `partida` se copia en la línea y no se lee del plato:** si mañana el plato cambia de partida, la comanda de ayer tiene que seguir contando lo que pasó de verdad. Es la misma regla que congela el precio y el coste.
+**Si un día vuelve `partida`**, se copia en la línea y no se lee del plato: si mañana el plato cambia de partida, la comanda de ayer tiene que seguir contando lo que pasó de verdad. Es la misma regla que congela el precio y el coste.
 
 ## 7.3 Cocina
 
-- `partida` — nombre, orden en el pase, color. Sembradas por tipo de local
-- `pantalla_de_cocina` — terminal, **qué partidas enseña**, si es **pantalla de pase**
-- `tanda` — cuenta, número de tanda, estado (`pendiente`, `marchada`, `en_cocina`, `lista`, `servida`), **cuándo se marchó y quién**
+- `partida` — nombre, orden en el pase, color. Sembradas por tipo de local. **Sin construir en el primer paso** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)): a cocina llega el ticket entero; vuelve si un local grande la pide
+- `pantalla_de_cocina` — terminal, **qué partidas enseña**, si es **pantalla de pase**. **Sin construir en el primer paso**, como `partida`: hoy cada pantalla de cocina enseña todas las mesas (0106)
+- `tanda` — **el pase** (0106): cuenta, número (1.º, 2.º), estado (`en_espera`, `marchada`, `fuera`), **cuándo se marchó y quién** (siempre la sala), y cuándo salió todo. La cuenta guarda si va **por pases o todo junto**
 - `linea_de_cuenta` gana los tiempos: `mandada_en`, `marchada_en`, `lista_en`, `servida_en`, **quién la marcó lista** (persona o terminal) y, si se deshizo, **quién y cuándo**
 - `tiempo_objetivo` — por local y, si se quiere, por plato: los minutos de cada tramo del semáforo
 
@@ -874,7 +870,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 
 ## 7.5 Impresión
 
-- `impresora` — local, nombre, **agente** (`link`, `cascara`, `pregunta_sola`), dirección o identificador, ancho de papel, **partidas que imprime**, activa, último contacto, **último estado que mandó**
+- `impresora` — local, nombre, **agente** (`link`, `cascara`, `pregunta_sola`), dirección o identificador, ancho de papel, **qué imprime** (cocina o barra), activa, último contacto, **último estado que mandó**
 - `trabajo_de_impresion` — local, impresora, tipo (`comanda`, `ticket`, `justificante`, `precuenta`, `informe`), **contenido ya compuesto en el formato intermedio**, estado (`pendiente`, `entregado`, `impreso`, `error`), intentos, momentos de cada paso, referencia a lo que lo originó
 - **Identificador único por trabajo**, que es lo que hace que un reintento —o un trabajo que Link imprimió sin internet y sube después— no imprima dos veces
 
@@ -914,8 +910,8 @@ Cada promesa del producto, con el sitio donde se guarda. **Si alguna se queda si
 | Para llevar con nombre de recogida             | `cuenta.tipo` y su nombre                                    |
 | Aviso de alergia de la mesa                    | `alergeno_de_la_cuenta`                                      |
 | Mandar por tandas y marchar                    | `linea_de_cuenta.tanda` + `tanda`                            |
-| Cada partida ve lo suyo                        | `linea_de_cuenta.partida` + `pantalla_de_cocina`             |
-| Pantalla de pase                               | `pantalla_de_cocina.es_pase`                                 |
+| El ticket entero de la mesa, y tachar          | `linea_de_cuenta` con su salió en (0106)                     |
+| La mesa a «Fuera» y «Recuperar»                | `tanda.estado` y lo tachado, por consulta                    |
 | Semáforo con los minutos del local             | `tiempo_objetivo`                                            |
 | Deshacer un plato marcado                      | los tiempos y el autor de `linea_de_cuenta`                  |
 | Contador del día y «Quedan N»                  | consultas, no se guardan                                     |
@@ -1049,7 +1045,8 @@ La tablet apaisada es la referencia:
 
 ```
 ┌───────────────────────────────┬──────────────────────────────────────────┐
-│ MESA 12 · 4 pax · Ana         │ Entrantes  Principales  Postres  Bebidas │
+│ MESA 12 · 4 pax · Ana         │ [Bebidas]  [Carta]  [Menú del día]       │
+│                               │ Entrantes  Principales  Postres          │
 │ ! Alergia: frutos secos       │ [ Buscar ]                               │
 │                               │ ┌────────┐┌────────┐┌────────┐┌────────┐ │
 │ TANDA 1                       │ │Croqueta││Bravas  ││Ensalada││Pulpo   │ │
@@ -1063,15 +1060,15 @@ La tablet apaisada es la referencia:
 └───────────────────────────────┴──────────────────────────────────────────┘
 ```
 
-- **A la derecha, la carta del canal de esa mesa** (M10): sus secciones arriba y los platos en botones grandes, con el color de su sección y su foto si la tiene. **Primero lo que más se vende a esa hora**, después el resto. El buscador tolera erratas (3.1).
-- **Un toque añade uno.** Si el plato tiene **opciones obligatorias** —«¿al punto?», «¿qué guarnición?»— se abre una hoja pequeña, y **no se puede mandar sin contestarlas**: es lo que evita que el cocinero salga a preguntar. Los extras, en la misma hoja, con su precio.
-- **Toque largo** sobre una línea: nota libre, comensal, tanda, quitar.
-- **A la izquierda, la cuenta, por tandas**, cada línea con su comensal si se asignó. Arriba, la mesa: nombre, comensales, camarero y **el aviso de alergia con icono y texto**.
+- **Arriba, tres pestañas en el orden de una comida: Bebidas · Carta · Menú del día** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). **La carta del canal de esa mesa** (M10) va **por sus secciones, como está montada en Estook**, con los platos en botones grandes con su nombre entero y su foto. El buscador tolera erratas (3.1).
+- **Un toque añade uno.** **Solo preguntan las copas** («¿Con qué?», con los refrescos del almacén) y el menú. **El punto de la carne no es una pregunta**: el TPV no sabe qué plato es carne. Va en la nota.
+- **Tocar una línea** de la cuenta: la nota escrita (con «Ej.: al punto, poco hecho, sin sal…» en gris), el pase y quitar.
+- **A la izquierda, la cuenta, por pases**, cada plato con ✓ y su hora cuando sale. Arriba, la mesa: nombre, comensales, camarero y **el aviso de alergia con icono y texto**.
 - **Abajo, siempre a la vista: Mandar** (lo nuevo va a cocina), **Cuenta** (la precuenta, 3.5) **y Cobrar** (10.5).
-- **El menú del día** pide sus pasos uno detrás de otro —primero, segundo, postre, bebida— y cada elección va a cocina como su plato (M10).
+- **El menú del día, en el orden de la comida** (0106): «¿Cuántos menús?» y **se cuentan los platos** (1 lentejas, 1 ensalada); **primeros y segundos juntos**, con el 2.º en espera; **postre o café al final**. Las bebidas que la mesa ya pidió **entran solas en el menú** si son de las suyas, una por menú. Una mesa puede tener **menú y carta a la vez**: es una sola cuenta. Cada elección va a cocina como su plato (M10).
 - **Agotado** sale en gris y no se puede tocar; con pocas raciones, **«Quedan 3»**, calculado con el escandallo, el stock y lo que ya está en cocina (3.1).
 - **«Otra ronda»**: repite lo último que pidió la mesa en dos toques. En un bar es lo que más se hace.
-- **Grupos de opciones que se reutilizan** —«punto de la carne» para cinco platos, «guarnición»—, con mínimo, máximo, precio por canal y **su propio escandallo**: «extra de queso» gasta queso. Sin eso, el almacén miente. **Se configuran en Estook TPV**, plato a plato, sobre la carta que el TPV lee de Estook ([0092](../decisiones/0092-las-respuestas-de-m9-3.md)): cada extra sale **de los ingredientes del escandallo del plato** («doble de queso») **o de cualquier producto del almacén**, con su precio; una sustitución cambia un ingrediente por otro («pan sin gluten»); y **el extra libre**, fuera de la receta, lleva nombre y precio y **no descuenta género**, porque no se sabe qué es. El precio del plato y lo que cuesta siguen viniendo de Estook: el TPV no inventa un dato.
+- **Grupos de opciones que se reutilizan** —el refresco de las copas, la guarnición si el local la quiere preguntar; **nunca el punto** (0106)—, con mínimo, máximo, precio por canal y **su propio escandallo**: «extra de queso» gasta queso. Sin eso, el almacén miente. **Se configuran en Estook TPV**, plato a plato, sobre la carta que el TPV lee de Estook ([0092](../decisiones/0092-las-respuestas-de-m9-3.md)): cada extra sale **de los ingredientes del escandallo del plato** («doble de queso») **o de cualquier producto del almacén**, con su precio; una sustitución cambia un ingrediente por otro («pan sin gluten»); y **el extra libre**, fuera de la receta, lleva nombre y precio y **no descuenta género**, porque no se sabe qué es. El precio del plato y lo que cuesta siguen viniendo de Estook: el TPV no inventa un dato.
 - **Artículo libre**, con precio y permiso («varios, 3 €»), y siempre con su descripción, que el ticket la necesita.
 - **Productos a peso** —pescado, jamón—: se escribe el peso o lo da la balanza, y el precio sale solo.
 
@@ -1081,11 +1078,15 @@ La tablet apaisada es la referencia:
 
 **En la barra**, arriba del todo y siempre: **«Venta rápida»**. Se pide y se cobra sin abrir nada (3.1).
 
+**Las bebidas, los cafés y las copas** salen en la pestaña Bebidas con las secciones de bebida de la carta, y **van a la barra, no a cocina**. Qué sección es de comida y cuál de bebida **se marca una vez en Estook**, y todo se configura allí desde el almacén —**el TPV no configura nada**— (0106, apartado 2: tal cual entero, a raciones —la copa de vino de 150 ml, la caña— o con receta —las copas, que se hacen solas con la dosis de la casa, y los cafés, que vienen hechos—).
+
 ## 10.4 El plano
 
 - **Las zonas en pestañas** (Salón · Terraza · Barra) y las mesas donde están de verdad.
 - **Cada mesa dice, sin abrirla:** su estado con color e icono (3.1), cuánto lleva abierta, sus comensales, su total y las iniciales de su camarero. «Pidió la cuenta» destaca sobre todo lo demás.
 - **«Mis mesas»**, un filtro que en el móvil del camarero viene puesto.
+- **Al tocar una mesa, sus opciones** (0106): «Marchar el 2.º» cuando toca, abrir la mesa, cobro rápido; imprimir la cuenta, dividirla, cambiar de mesa, juntar, **pasar a otro camarero**, pasar a la barra o para llevar, la nota, las personas y alergias, «lo que ha pasado» y anular con permiso y motivo. **Sin «forzar desbloquear»**: en Estook nadie bloquea una mesa (7.2).
+- **Las mesas de quien ha fichado la salida** se marcan, para pasarlas a otro sin que se queden sin dueño.
 - **El plano se dibuja arrastrando** en Ajustes › Sala, empezando por una plantilla del tipo de local. Se hace con `@dnd-kit`, que ya está en el proyecto por el Panel ([0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)): **ninguna dependencia nueva**.
 - **Lo que cambia en un aparato se ve en los demás en menos de 2 segundos**, lo mismo que marchar (3.7).
 
@@ -1164,7 +1165,7 @@ _Cuando el local tiene un canal conectado (M29) **y** cobra con Estook._ Es lo q
 La plataforma avisa (webhook) → Estook trae el pedido (M29)
 ├─ suena en Estook TPV y en Servicio · Delivery: «Uber Eats · 3 platos · Laura»
 ├─ se acepta con su tiempo de preparacion (o solo, si el local lo enciende)
-├─ va a COCINA como una comanda mas, por partidas, con la etiqueta del
+├─ va a COCINA como una comanda mas, entera, con la moto, la etiqueta del
 │  canal y el nombre de recogida (cuenta de tipo «reparto», 7.1)
 ├─ cocina lo marca listo → se le dice a la plataforma, si su API lo permite
 └─ NO pasa por el cobro de la sala: el cliente ya pago a la plataforma
@@ -1233,7 +1234,7 @@ Que un local que viene de otro TPV **no tenga que reescribir nada**:
 - **El arqueo ciego** no enseña lo esperado hasta haber contado.
 - Un cobro «con tarjeta» que no está en el total del datáfono **sale como descuadre** al cerrar.
 - Lo que cambia en un aparato se ve en otro en menos de 2 segundos.
-- Con un canal conectado, **un pedido aceptado sale en cocina por sus partidas y no pasa por el cobro**.
+- Con un canal conectado, **un pedido aceptado sale en cocina entero, con la moto y la hora del repartidor, y no pasa por el cobro**.
 - Un datáfono conectado que no responde **no para el cobro**: se cobra como en el nivel 1 y queda marcado.
 - **«Otra ronda»** repite lo último en dos toques; **un grupo de opciones** con su escandallo descuenta su género; un **producto a peso** cobra lo que pesa.
 - **Estook TPV no se actualiza en mitad de un servicio**: con cuentas abiertas espera, y avisa si una versión es incompatible.

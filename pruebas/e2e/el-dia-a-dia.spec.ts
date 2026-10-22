@@ -363,9 +363,16 @@ test('se cierra la caja a mano, y el día sale en Negocio › Ventas', async ({
   await page.getByLabel('Efectivo').fill('134,50');
   await page.getByLabel('Tarjeta').fill('700');
   await page.getByLabel('Tickets').fill('31');
-  await page.getByRole('button', { name: 'Cerrar la caja' }).click();
+  // M16a (0105): el cierre del día va en tres pasos —las ventas, las mermas y el repaso—.
+  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await expect(page.getByRole('heading', { name: 'Lo que se ha tirado' })).toBeVisible();
+  await page.getByRole('button', { name: 'Siguiente' }).click();
+  await expect(page.getByText(/Queda a tu nombre/)).toBeVisible();
+  await page.getByRole('button', { name: 'Cerrar el día' }).click();
 
-  await expect(page.getByText(/Caja cerrada/).first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/Día cerrado/).first()).toBeVisible({ timeout: 15_000 });
+  // Cerrado, ya no se corrige sin más: se reabre con un motivo.
+  await expect(page.getByRole('button', { name: 'Reabrir' })).toBeVisible();
 
   // Y Negocio lo lee de ahí: el mismo cierre, sin volver a escribirlo.
   await abrirSinQueSeCaiga(page, `${APP}#/negocio/ventas`);

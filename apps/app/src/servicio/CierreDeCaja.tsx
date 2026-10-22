@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { nombreEn } from '../datos/nombreEn.ts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -30,7 +30,13 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { ComoEntranTusVentas } from './ComoEntranTusVentas.tsx';
-import { comoSeLeeElDia, type ElCierreDeUnDia } from './contrato.ts';
+import {
+  comoSeLeeElDia,
+  comoSeLeeLaHoraDe,
+  conLaJornada,
+  type ElCierreDeUnDia,
+} from './contrato.ts';
+import { ElRepaso, LasMermasDelDia, LosPasos, type Paso } from './LosPasosDelCierre.tsx';
 import { comoDinero } from '../almacen/contrato.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { FotoParaFogon } from '../fogon/FotoParaFogon.tsx';
@@ -38,7 +44,15 @@ import { AvisoDelBorrador } from '../fogon/PedirleAFogon.tsx';
 import type { CierreLeido, FogonYYo } from '../fogon/contrato.ts';
 
 /**
- * Servicio · Jornada · Cierre (M6½).
+ * Servicio · Jornada · Cierre (M6½), que desde M16a es **cerrar el día** (0105).
+ *
+ * «Cierre en cuatro pasos y sesenta segundos» (Manifiesto): de dónde salen las ventas, las
+ * mermas, el APPCC que falte y un repaso que queda a nombre de quien cierra. **Son tres
+ * mientras no exista el APPCC** (M16b): un paso que no tiene nada que hacer no se enseña.
+ * Y queda a tu nombre por tu sesión, sin PIN en tu móvil (Richi, 22-oct).
+ *
+ * Un día cerrado ya no se corrige sin más: se **reabre con un motivo**, que queda a la
+ * vista en el cierre, y se vuelve a cerrar (Auditoría de Flujos, la jornada).
  *
  * «Poner cierre de caja a mano, CSV o foto, para los que no quieren conectar:
  * cuánto dinero has sacado, qué platos han salido y cuántos, así la app puede
@@ -68,7 +82,6 @@ export function CierreDeCaja() {
   const [parametros, ponerParametros] = useSearchParams();
   const navegar = useNavigate();
   const fecha = parametros.get('fecha');
-  const [editando, setEditando] = useState(false);
 
   const consulta = useQuery({
     queryKey: ['un_cierre', fecha ?? ''],
@@ -79,7 +92,7 @@ export function CierreDeCaja() {
         fecha === null ? {} : { fecha },
       );
       if (!respuesta.ok) throw new Error(respuesta.error.codigo);
-      return respuesta.datos;
+      return conLaJornada(respuesta.datos);
     },
   });
 
@@ -122,7 +135,6 @@ export function CierreDeCaja() {
     if (nueva === '') nuevos.delete('fecha');
     else nuevos.set('fecha', nueva);
     ponerParametros(nuevos, { replace: true });
-    setEditando(false);
   };
 
   return (
@@ -150,27 +162,12 @@ export function CierreDeCaja() {
         </Boton>
       </div>
 
-      {datos.cierre !== null && !editando ? (
-        <Resumen
-          datos={datos}
-          alCorregir={() => {
-            setEditando(true);
-          }}
-        />
+      {datos.cierre !== null && datos.jornada.estado === 'cerrada' ? (
+        <Resumen datos={datos} />
       ) : datos.puedeCerrar ? (
         <Formulario
-          key={`${datos.fecha}-${datos.cierre?.cierreId ?? 'nuevo'}`}
+          key={`${datos.fecha}-${datos.cierre?.cierreId ?? 'nuevo'}-${datos.jornada.estado}`}
           datos={datos}
-          alTerminar={() => {
-            setEditando(false);
-          }}
-          {...(datos.cierre === null
-            ? {}
-            : {
-                alDejarlo: () => {
-                  setEditando(false);
-                },
-              })}
         />
       ) : (
         <Tarjeta titulo={`Sin cerrar · ${comoSeLeeElDia(datos.fecha)}`}>
@@ -192,13 +189,8 @@ export function CierreDeCaja() {
 
 // ── Un cierre ya hecho ───────────────────────────────────────────────────────
 
-function Resumen({
-  datos,
-  alCorregir,
-}: {
-  readonly datos: ElCierreDeUnDia;
-  readonly alCorregir: () => void;
-}) {
+function Resumen({ datos }: { readonly datos: ElCierreDeUnDia }) {
+  const [reabriendo, setReabriendo] = useState(false);
   const cierre = datos.cierre;
   if (cierre === null) return null;
   const medio = ticketMedio(cierre.totalCentimos, cierre.tickets);
@@ -206,17 +198,31 @@ function Resumen({
 
   return (
     <Tarjeta
-      titulo={`Caja cerrada · ${comoSeLeeElDia(datos.fecha)}`}
+      titulo={`Día cerrado · ${comoSeLeeElDia(datos.fecha)}`}
       acento="var(--color-app-servicio)"
-      origen={`${nombreEn(NOMBRE_DEL_ORIGEN_DEL_CIERRE, cierre.origen, cierre.origen)}${cierre.quien === null ? '' : ` · por ${cierre.quien}`}`}
+      origen={`${nombreEn(NOMBRE_DEL_ORIGEN_DEL_CIERRE, cierre.origen, cierre.origen)}${cierre.quien === null ? '' : ` · por ${cierre.quien}`} · a las ${comoSeLeeLaHoraDe(cierre.cerradoEn)}`}
       accion={
-        datos.puedeCerrar ? (
-          <Boton tono="texto" onClick={alCorregir}>
-            Corregir
+        datos.puedeCerrar && !reabriendo ? (
+          <Boton
+            tono="texto"
+            onClick={() => {
+              setReabriendo(true);
+            }}
+          >
+            Reabrir
           </Boton>
         ) : undefined
       }
     >
+      {reabriendo && (
+        <Reabrir
+          fecha={datos.fecha}
+          alDejarlo={() => {
+            setReabriendo(false);
+          }}
+        />
+      )}
+
       <div className="grid gap-e3 sm:grid-cols-3">
         <Cifra
           etiqueta="Facturado"
@@ -276,7 +282,89 @@ function Resumen({
       {cierre.notas !== null && cierre.notas.trim() !== '' && (
         <p className="mt-e3 text-secundario text-texto-suave">«{cierre.notas}»</p>
       )}
+
+      <LasReaperturas reaperturas={datos.jornada.reaperturas} />
     </Tarjeta>
+  );
+}
+
+/** Las veces que se reabrió el día, con su motivo: a la vista de quien mira el cierre. */
+function LasReaperturas({
+  reaperturas,
+}: {
+  readonly reaperturas: ElCierreDeUnDia['jornada']['reaperturas'];
+}) {
+  if (reaperturas.length === 0) return null;
+  return (
+    <ul className="mt-e3 flex flex-col gap-e1 border-t border-borde pt-e3 text-secundario text-texto-suave">
+      {reaperturas.map((r) => (
+        <li key={r.cuando}>
+          Reabierto {r.quien === null ? '' : `por ${r.quien} `}el{' '}
+          {comoSeLeeElDia(r.cuando.slice(0, 10))} a las {comoSeLeeLaHoraDe(r.cuando)}: «{r.motivo}»
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Reabrir un día cerrado (M16a, 0105): el motivo se escribe siempre.
+ *
+ * Lo reabre quien puede cerrar la caja (Richi, 22-oct). Reabrir no cambia nada: el día
+ * vuelve al formulario con lo que tenía, para corregirlo y cerrarlo otra vez.
+ */
+function Reabrir({ fecha, alDejarlo }: { readonly fecha: string; readonly alDejarlo: () => void }) {
+  const { cliente } = usarSesion();
+  const cache = useQueryClient();
+  const [motivo, setMotivo] = useState('');
+  const [reabriendo, setReabriendo] = useState(false);
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+
+  async function reabrir() {
+    setError(null);
+    setReabriendo(true);
+    const respuesta = await cliente.ejecutar('reabrir_la_jornada', {
+      fecha,
+      motivo: motivo.trim(),
+    });
+    setReabriendo(false);
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    await cache.invalidateQueries({ queryKey: ['un_cierre'] });
+    await cache.invalidateQueries({ queryKey: ['la_jornada'] });
+  }
+
+  return (
+    <div className="mb-e4 flex flex-col gap-e3 rounded-medio border border-borde bg-fondo p-e3">
+      {error !== null && <ErrorEnCristiano error={error} />}
+      <Campo
+        etiqueta="¿Por qué lo reabres?"
+        ayuda="Queda escrito en el cierre. «Me equivoqué con la tarjeta: eran 412, no 421.»"
+        value={motivo}
+        autoFocus
+        onChange={(e) => {
+          setMotivo(e.currentTarget.value);
+        }}
+      />
+      <Botones>
+        <Boton tono="texto" onClick={alDejarlo}>
+          Dejarlo cerrado
+        </Boton>
+        <Boton
+          tono="principal"
+          disabled={motivo.trim().length < 3 || reabriendo}
+          cargando={reabriendo}
+          textoCargando="Reabriendo"
+          onClick={() => {
+            void reabrir();
+          }}
+        >
+          Reabrir el día
+        </Boton>
+      </Botones>
+    </div>
   );
 }
 
@@ -293,18 +381,18 @@ interface LineaEnElFormulario {
   readonly importeTocado: boolean;
 }
 
-function Formulario({
-  datos,
-  alTerminar,
-  alDejarlo,
-}: {
-  readonly datos: ElCierreDeUnDia;
-  readonly alTerminar: () => void;
-  readonly alDejarlo?: () => void;
-}) {
+function Formulario({ datos }: { readonly datos: ElCierreDeUnDia }) {
   const { cliente } = usarSesion();
   const cache = useQueryClient();
   const antes = datos.cierre;
+  const [paso, setPaso] = useState<Paso>(0);
+  // Cada paso empieza arriba de la tarjeta: en el móvil «Siguiente» queda abajo del
+  // todo, y el paso nuevo se quedaba fuera de la vista.
+  const arriba = useRef<HTMLDivElement>(null);
+  const irAlPaso = (nuevo: Paso) => {
+    setPaso(nuevo);
+    arriba.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  };
 
   const [total, setTotal] = useState<Centimos | null>(
     (antes?.totalCentimos ?? null) as Centimos | null,
@@ -342,7 +430,6 @@ function Formulario({
   const [noEntendidas, setNoEntendidas] = useState<readonly number[]>([]);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
-  const [hecho, setHecho] = useState<string | null>(null);
 
   /*
     ── El importe de cada plato, propuesto y no pedido ─────────────────────────
@@ -438,7 +525,7 @@ function Formulario({
     setGuardando(true);
     const numero = (texto: string) => (texto.trim() === '' ? null : Math.trunc(Number(texto)));
 
-    const respuesta = await cliente.ejecutar<{ seHaCorregido: boolean }>('cerrar_la_caja', {
+    const respuesta = await cliente.ejecutar('cerrar_la_caja', {
       fecha: datos.fecha,
       total_centimos: total,
       efectivo_centimos: efectivo,
@@ -463,129 +550,160 @@ function Formulario({
       return;
     }
 
-    setHecho(respuesta.datos.seHaCorregido ? 'Cierre corregido' : 'Caja cerrada');
+    // Cerrado, la pantalla pasa sola al resumen del día: lo dice su título.
     await cache.invalidateQueries({ queryKey: ['un_cierre'] });
     await cache.invalidateQueries({ queryKey: ['mis_cierres'] });
     await cache.invalidateQueries({ queryKey: ['un_indicador'] });
-    alTerminar();
+    await cache.invalidateQueries({ queryKey: ['la_jornada'] });
+    await cache.invalidateQueries({ queryKey: ['lo_de_hoy'] });
   }
 
+  const lineasQueCuentan = lineas.filter(
+    (l) => l.concepto.trim() !== '' && Number(l.unidades.replace(',', '.')) > 0,
+  ).length;
+  const ultimaReapertura = datos.jornada.reaperturas[0];
+
   return (
-    <Tarjeta
-      titulo={
-        antes === null
-          ? `Cerrar la caja · ${comoSeLeeElDia(datos.fecha)}`
-          : `Corregir el cierre · ${comoSeLeeElDia(datos.fecha)}`
-      }
-      acento="var(--color-app-servicio)"
-    >
-      <div className="flex flex-col gap-e4">
-        {error !== null && <ErrorEnCristiano error={error} />}
-        {hecho !== null && (
-          <Aviso tono="bien" titulo={hecho} esNoticia>
-            Ya cuenta en las ventas del día.
-          </Aviso>
-        )}
-
-        {/* ── Con una foto del Z, lo lee Fogón (0098) ──────────────────── */}
-        {fogon.data?.habla === true && !leidoPorFogon && (
-          <FotoParaFogon
-            titulo="¿Te lo lee Fogón?"
-            ayuda="Hazle una foto al Z de la caja y Fogón rellena el total, el efectivo, la tarjeta y lo vendido por plato si lo trae."
-            boton="Foto del Z"
-            gasta={CREDITOS_DE_FOGON.leer_cierre}
-            alLeer={leerElZ}
-          />
-        )}
-        {leidoPorFogon && <AvisoDelBorrador />}
-
-        {/* ── Cómo se hace, en tres líneas ───────────────────────────────── */}
-        <ol className="flex list-decimal flex-col gap-e1 pl-e4 text-secundario text-texto-suave">
-          <li>Saca el cierre (el «Z») de tu caja y escribe el total.</li>
-          <li>Si quieres, cuánto fue en efectivo y cuánto con tarjeta.</li>
-          <li>Si tu TPV saca un fichero con las ventas por plato, súbelo y se rellenan solos.</li>
-        </ol>
-
-        {/* ── 1 · El total ─────────────────────────────────────────────── */}
-        <CampoMoneda
-          etiqueta="Total facturado"
-          ayuda="Con IVA, como lo dice la caja."
-          valor={total}
-          alCambiar={setTotal}
-        />
-
-        {/* ── 2 · Cómo se cobró ────────────────────────────────────────── */}
-        <div className="grid gap-e3 sm:grid-cols-3">
-          <CampoMoneda etiqueta="Efectivo" valor={efectivo} alCambiar={setEfectivo} />
-          <CampoMoneda etiqueta="Tarjeta" valor={tarjeta} alCambiar={setTarjeta} />
-          <CampoMoneda etiqueta="Otros" valor={otros} alCambiar={setOtros} />
-        </div>
-        {diferencia !== null && diferencia !== 0 && (
-          <p aria-live="polite" className="text-secundario text-atencion">
-            El desglose {diferencia > 0 ? 'se pasa' : 'se queda corto'} en{' '}
-            {comoDinero(Math.abs(diferencia))}. Se puede guardar igual.
-          </p>
-        )}
-
-        <div className="grid gap-e3 sm:grid-cols-2">
-          <Campo
-            etiqueta="Tickets"
-            tipo="numero"
-            ayuda="Opcional. Con esto sale el ticket medio."
-            value={tickets}
-            onChange={(e) => {
-              setTickets(e.currentTarget.value);
-            }}
-          />
-          <Campo
-            etiqueta="Comensales"
-            tipo="numero"
-            ayuda="Opcional."
-            value={comensales}
-            onChange={(e) => {
-              setComensales(e.currentTarget.value);
-            }}
-          />
-        </div>
-
-        {/* ── 3 · Qué salió ────────────────────────────────────────────── */}
-        <section className="flex flex-col gap-e2">
-          <div className="flex flex-wrap items-center justify-between gap-e2">
-            <h3 className="text-seccion font-semibold">Qué platos salieron</h3>
-            <div className="flex flex-wrap gap-e2">
-              <label className="inline-flex min-h-toque cursor-pointer items-center gap-e2 rounded-medio border border-borde-fuerte bg-superficie px-e3 text-secundario font-medium hover:bg-fondo">
-                <IconoDocumento size={16} />
-                Subir el fichero del TPV
-                <input
-                  type="file"
-                  accept=".csv,.txt,text/csv,text/plain"
-                  className="sr-only"
-                  onChange={(e) => {
-                    const fichero = e.currentTarget.files?.[0];
-                    if (fichero !== undefined) void leerFichero(fichero);
-                  }}
-                />
-              </label>
-              {/* Leer el Z de una foto llega con Fogón (M22); el botón apagado que
-                  había aquí se quitó en la entrega V (0045). */}
-            </div>
-          </div>
-
-          {noEntendidas.length > 0 && (
-            <Aviso tono="atencion" titulo="Hay filas que no he entendido">
-              Las filas {noEntendidas.join(', ')} del fichero no tenían un plato y una cantidad. El
-              resto está abajo: revísalo antes de guardar.
+    <div ref={arriba} className="scroll-mt-[5rem]">
+      <Tarjeta
+        titulo={
+          datos.jornada.estado === 'reabierta'
+            ? `Reabierto · ${comoSeLeeElDia(datos.fecha)}`
+            : `Cerrar el día · ${comoSeLeeElDia(datos.fecha)}`
+        }
+        acento="var(--color-app-servicio)"
+      >
+        <div className="flex flex-col gap-e4">
+          {datos.jornada.estado === 'reabierta' && ultimaReapertura !== undefined && (
+            <Aviso tono="atencion" titulo="Sin volver a cerrar">
+              {ultimaReapertura.quien === null
+                ? 'Se reabrió'
+                : `Lo reabrió ${ultimaReapertura.quien}`}
+              : «{ultimaReapertura.motivo}». Corrige lo que haga falta y ciérralo otra vez.
             </Aviso>
           )}
 
-          {/* Los platos que ya se han apuntado alguna vez, para elegirlos. */}
-          <datalist id="platos-conocidos">
-            {datos.platosConocidos.map((plato) => (
-              <option key={plato.clave} value={plato.concepto} />
-            ))}
-          </datalist>
+          <LosPasos paso={paso} />
 
-          {/*
+          {paso === 1 && <LasMermasDelDia fecha={datos.fecha} esHoy={datos.jornada.esHoy} />}
+
+          {paso === 2 && (
+            <ElRepaso
+              total={total}
+              efectivo={efectivo}
+              tarjeta={tarjeta}
+              otros={otros}
+              tickets={tickets}
+              platos={lineasQueCuentan}
+              fecha={datos.fecha}
+              siguenDentro={datos.jornada.siguenDentro}
+            />
+          )}
+          {paso === 2 && error !== null && <ErrorEnCristiano error={error} />}
+
+          {paso === 0 && (
+            <>
+              {/* ── Con una foto del Z, lo lee Fogón (0098) ──────────────────── */}
+              {fogon.data?.habla === true && !leidoPorFogon && (
+                <FotoParaFogon
+                  titulo="¿Te lo lee Fogón?"
+                  ayuda="Hazle una foto al Z de la caja y Fogón rellena el total, el efectivo, la tarjeta y lo vendido por plato si lo trae."
+                  boton="Foto del Z"
+                  gasta={CREDITOS_DE_FOGON.leer_cierre}
+                  alLeer={leerElZ}
+                />
+              )}
+              {leidoPorFogon && <AvisoDelBorrador />}
+
+              {/* ── Cómo se hace, en tres líneas ───────────────────────────────── */}
+              <ol className="flex list-decimal flex-col gap-e1 pl-e4 text-secundario text-texto-suave">
+                <li>Saca el cierre (el «Z») de tu caja y escribe el total.</li>
+                <li>Si quieres, cuánto fue en efectivo y cuánto con tarjeta.</li>
+                <li>
+                  Si tu TPV saca un fichero con las ventas por plato, súbelo y se rellenan solos.
+                </li>
+              </ol>
+
+              {/* ── 1 · El total ─────────────────────────────────────────────── */}
+              <CampoMoneda
+                etiqueta="Total facturado"
+                ayuda="Con IVA, como lo dice la caja."
+                valor={total}
+                alCambiar={setTotal}
+              />
+
+              {/* ── 2 · Cómo se cobró ────────────────────────────────────────── */}
+              <div className="grid gap-e3 sm:grid-cols-3">
+                <CampoMoneda etiqueta="Efectivo" valor={efectivo} alCambiar={setEfectivo} />
+                <CampoMoneda etiqueta="Tarjeta" valor={tarjeta} alCambiar={setTarjeta} />
+                <CampoMoneda etiqueta="Otros" valor={otros} alCambiar={setOtros} />
+              </div>
+              {diferencia !== null && diferencia !== 0 && (
+                <p aria-live="polite" className="text-secundario text-atencion">
+                  El desglose {diferencia > 0 ? 'se pasa' : 'se queda corto'} en{' '}
+                  {comoDinero(Math.abs(diferencia))}. Se puede guardar igual.
+                </p>
+              )}
+
+              <div className="grid gap-e3 sm:grid-cols-2">
+                <Campo
+                  etiqueta="Tickets"
+                  tipo="numero"
+                  ayuda="Opcional. Con esto sale el ticket medio."
+                  value={tickets}
+                  onChange={(e) => {
+                    setTickets(e.currentTarget.value);
+                  }}
+                />
+                <Campo
+                  etiqueta="Comensales"
+                  tipo="numero"
+                  ayuda="Opcional."
+                  value={comensales}
+                  onChange={(e) => {
+                    setComensales(e.currentTarget.value);
+                  }}
+                />
+              </div>
+
+              {/* ── 3 · Qué salió ────────────────────────────────────────────── */}
+              <section className="flex flex-col gap-e2">
+                <div className="flex flex-wrap items-center justify-between gap-e2">
+                  <h3 className="text-seccion font-semibold">Qué platos salieron</h3>
+                  <div className="flex flex-wrap gap-e2">
+                    <label className="inline-flex min-h-toque cursor-pointer items-center gap-e2 rounded-medio border border-borde-fuerte bg-superficie px-e3 text-secundario font-medium hover:bg-fondo">
+                      <IconoDocumento size={16} />
+                      Subir el fichero del TPV
+                      <input
+                        type="file"
+                        accept=".csv,.txt,text/csv,text/plain"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const fichero = e.currentTarget.files?.[0];
+                          if (fichero !== undefined) void leerFichero(fichero);
+                        }}
+                      />
+                    </label>
+                    {/* Leer el Z de una foto llega con Fogón (M22); el botón apagado que
+                  había aquí se quitó en la entrega V (0045). */}
+                  </div>
+                </div>
+
+                {noEntendidas.length > 0 && (
+                  <Aviso tono="atencion" titulo="Hay filas que no he entendido">
+                    Las filas {noEntendidas.join(', ')} del fichero no tenían un plato y una
+                    cantidad. El resto está abajo: revísalo antes de guardar.
+                  </Aviso>
+                )}
+
+                {/* Los platos que ya se han apuntado alguna vez, para elegirlos. */}
+                <datalist id="platos-conocidos">
+                  {datos.platosConocidos.map((plato) => (
+                    <option key={plato.clave} value={plato.concepto} />
+                  ))}
+                </datalist>
+
+                {/*
             ── Lo que se vendió desde Almacén, propuesto ──────────────────
 
             Quien saca un botellín de la cámara y dice «vendido» apunta lo que ha
@@ -597,202 +715,224 @@ function Formulario({
             contaría el día dos veces. Lo sabe quien cierra la caja, no Estook,
             así que lo decide quien cierra la caja.
           */}
-          {porPoner.length > 0 && (
-            <div className="flex flex-col gap-e2 rounded-medio border border-borde bg-fondo p-e3">
-              <p className="text-secundario">
-                <strong>Se ha vendido esto desde Almacén hoy.</strong> Si tu total de arriba sale
-                del TPV o del Z, ya está contado: no lo añadas.
-              </p>
-              <ul className="flex flex-col gap-e1">
-                {porPoner.map((v) => (
-                  <li
-                    key={v.concepto}
-                    className="flex flex-wrap items-baseline justify-between gap-e2"
-                  >
-                    <span>
-                      {v.concepto}{' '}
-                      <span className="text-texto-suave">
-                        · {v.unidades.toLocaleString('es-ES')}
-                      </span>
-                    </span>
-                    {/*
+                {porPoner.length > 0 && (
+                  <div className="flex flex-col gap-e2 rounded-medio border border-borde bg-fondo p-e3">
+                    <p className="text-secundario">
+                      <strong>Se ha vendido esto desde Almacén hoy.</strong> Si tu total de arriba
+                      sale del TPV o del Z, ya está contado: no lo añadas.
+                    </p>
+                    <ul className="flex flex-col gap-e1">
+                      {porPoner.map((v) => (
+                        <li
+                          key={v.concepto}
+                          className="flex flex-wrap items-baseline justify-between gap-e2"
+                        >
+                          <span>
+                            {v.concepto}{' '}
+                            <span className="text-texto-suave">
+                              · {v.unidades.toLocaleString('es-ES')}
+                            </span>
+                          </span>
+                          {/*
                       El importe sale de lo que costó ese mismo concepto la última
                       vez que se cerró la caja, **no del producto**: un ingrediente
                       no tiene precio de venta. Si nunca se ha cerrado, se dice que
                       falta en vez de inventarlo.
                     */}
-                    <span className="font-medium">
-                      {v.precioUnidadCentimos === null ? (
-                        <span className="font-normal text-texto-suave">pon tú el importe</span>
-                      ) : (
-                        comoDinero(v.precioUnidadCentimos * v.unidades)
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <div>
-                <Boton
-                  tono="secundario"
-                  onClick={() => {
-                    setLineas((todas) => [
-                      ...todas,
-                      ...porPoner.map((v) => ({
-                        concepto: v.concepto,
-                        unidades: String(v.unidades),
-                        importe:
-                          v.precioUnidadCentimos === null
-                            ? null
-                            : ((v.precioUnidadCentimos * v.unidades) as Centimos),
-                        // Sin tocar cuando no se sabía: así, si luego se escribe
-                        // el concepto de otra forma, el importe se vuelve a
-                        // proponer solo en vez de quedarse en blanco para siempre.
-                        importeTocado: v.precioUnidadCentimos !== null,
-                      })),
-                    ]);
-                  }}
-                >
-                  Añadirlas a la lista
-                </Boton>
-              </div>
-            </div>
-          )}
+                          <span className="font-medium">
+                            {v.precioUnidadCentimos === null ? (
+                              <span className="font-normal text-texto-suave">
+                                pon tú el importe
+                              </span>
+                            ) : (
+                              comoDinero(v.precioUnidadCentimos * v.unidades)
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div>
+                      <Boton
+                        tono="secundario"
+                        onClick={() => {
+                          setLineas((todas) => [
+                            ...todas,
+                            ...porPoner.map((v) => ({
+                              concepto: v.concepto,
+                              unidades: String(v.unidades),
+                              importe:
+                                v.precioUnidadCentimos === null
+                                  ? null
+                                  : ((v.precioUnidadCentimos * v.unidades) as Centimos),
+                              // Sin tocar cuando no se sabía: así, si luego se escribe
+                              // el concepto de otra forma, el importe se vuelve a
+                              // proponer solo en vez de quedarse en blanco para siempre.
+                              importeTocado: v.precioUnidadCentimos !== null,
+                            })),
+                          ]);
+                        }}
+                      >
+                        Añadirlas a la lista
+                      </Boton>
+                    </div>
+                  </div>
+                )}
 
-          {lineas.length === 0 ? (
-            <p className="text-secundario text-texto-suave">
-              Opcional. El importe se pone solo con el precio de la última vez; cuando exista la
-              carta, con el de la carta.
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-e2">
-              {lineas.map((linea, indice) => (
-                <li
-                  key={indice}
-                  className="grid grid-cols-[1fr_5rem_8rem_auto] items-end gap-e2 border-b border-borde pb-e2"
-                >
-                  <Campo
-                    etiqueta="Plato"
-                    list="platos-conocidos"
-                    value={linea.concepto}
-                    onChange={(e) => {
-                      const valor = e.currentTarget.value;
-                      setLineas((todas) =>
-                        todas.map((l, i) =>
-                          i === indice
-                            ? {
-                                ...l,
-                                concepto: valor,
-                                ...(l.importeTocado
-                                  ? {}
-                                  : { importe: propuesto(valor, l.unidades) }),
-                              }
-                            : l,
-                        ),
-                      );
-                    }}
-                  />
-                  <Campo
-                    etiqueta="Cuántos"
-                    tipo="numero"
-                    value={linea.unidades}
-                    onChange={(e) => {
-                      const valor = e.currentTarget.value;
-                      setLineas((todas) =>
-                        todas.map((l, i) =>
-                          i === indice
-                            ? {
-                                ...l,
-                                unidades: valor,
-                                ...(l.importeTocado
-                                  ? {}
-                                  : { importe: propuesto(l.concepto, valor) }),
-                              }
-                            : l,
-                        ),
-                      );
-                    }}
-                  />
-                  <CampoMoneda
-                    etiqueta="Importe"
-                    valor={linea.importe}
-                    alCambiar={(valor) => {
-                      // Borrarlo devuelve la propuesta: vacío no es «lo he tocado».
-                      setLineas((todas) =>
-                        todas.map((l, i) =>
-                          i === indice
-                            ? { ...l, importe: valor, importeTocado: valor !== null }
-                            : l,
-                        ),
-                      );
-                    }}
-                  />
-                  <button
-                    type="button"
-                    aria-label={`Quitar ${linea.concepto === '' ? 'esta línea' : linea.concepto}`}
+                {lineas.length === 0 ? (
+                  <p className="text-secundario text-texto-suave">
+                    Opcional. El importe se pone solo con el precio de la última vez; cuando exista
+                    la carta, con el de la carta.
+                  </p>
+                ) : (
+                  <ul className="flex flex-col gap-e2">
+                    {lineas.map((linea, indice) => (
+                      <li
+                        key={indice}
+                        className="grid grid-cols-[1fr_5rem_8rem_auto] items-end gap-e2 border-b border-borde pb-e2"
+                      >
+                        <Campo
+                          etiqueta="Plato"
+                          list="platos-conocidos"
+                          value={linea.concepto}
+                          onChange={(e) => {
+                            const valor = e.currentTarget.value;
+                            setLineas((todas) =>
+                              todas.map((l, i) =>
+                                i === indice
+                                  ? {
+                                      ...l,
+                                      concepto: valor,
+                                      ...(l.importeTocado
+                                        ? {}
+                                        : { importe: propuesto(valor, l.unidades) }),
+                                    }
+                                  : l,
+                              ),
+                            );
+                          }}
+                        />
+                        <Campo
+                          etiqueta="Cuántos"
+                          tipo="numero"
+                          value={linea.unidades}
+                          onChange={(e) => {
+                            const valor = e.currentTarget.value;
+                            setLineas((todas) =>
+                              todas.map((l, i) =>
+                                i === indice
+                                  ? {
+                                      ...l,
+                                      unidades: valor,
+                                      ...(l.importeTocado
+                                        ? {}
+                                        : { importe: propuesto(l.concepto, valor) }),
+                                    }
+                                  : l,
+                              ),
+                            );
+                          }}
+                        />
+                        <CampoMoneda
+                          etiqueta="Importe"
+                          valor={linea.importe}
+                          alCambiar={(valor) => {
+                            // Borrarlo devuelve la propuesta: vacío no es «lo he tocado».
+                            setLineas((todas) =>
+                              todas.map((l, i) =>
+                                i === indice
+                                  ? { ...l, importe: valor, importeTocado: valor !== null }
+                                  : l,
+                              ),
+                            );
+                          }}
+                        />
+                        <button
+                          type="button"
+                          aria-label={`Quitar ${linea.concepto === '' ? 'esta línea' : linea.concepto}`}
+                          onClick={() => {
+                            setLineas((todas) => todas.filter((_, i) => i !== indice));
+                          }}
+                          className="grid size-[44px] place-items-center rounded-medio text-texto-suave hover:bg-fondo hover:text-mal"
+                        >
+                          <IconoBorrar size={18} />
+                        </button>
+                        {!linea.importeTocado &&
+                          linea.importe !== null &&
+                          precioDelPlato(linea.concepto) !== null && (
+                            <p className="col-span-full text-etiqueta text-texto-suave">
+                              A {comoDinero(precioDelPlato(linea.concepto))} cada uno, como la
+                              última vez. Cámbialo si no es así.
+                            </p>
+                          )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div>
+                  <Boton
+                    tono="texto"
+                    icono={<IconoAnadir size={16} />}
                     onClick={() => {
-                      setLineas((todas) => todas.filter((_, i) => i !== indice));
+                      setLineas((todas) => [
+                        ...todas,
+                        { concepto: '', unidades: '1', importe: null, importeTocado: false },
+                      ]);
                     }}
-                    className="grid size-[44px] place-items-center rounded-medio text-texto-suave hover:bg-fondo hover:text-mal"
                   >
-                    <IconoBorrar size={18} />
-                  </button>
-                  {!linea.importeTocado &&
-                    linea.importe !== null &&
-                    precioDelPlato(linea.concepto) !== null && (
-                      <p className="col-span-full text-etiqueta text-texto-suave">
-                        A {comoDinero(precioDelPlato(linea.concepto))} cada uno, como la última vez.
-                        Cámbialo si no es así.
-                      </p>
-                    )}
-                </li>
-              ))}
-            </ul>
+                    Añadir un plato
+                  </Boton>
+                </div>
+              </section>
+
+              <Campo
+                etiqueta="Notas"
+                ayuda="Opcional. «Faltan 10 € de un vale», «cerró Marta»."
+                value={notas}
+                onChange={(e) => {
+                  setNotas(e.currentTarget.value);
+                }}
+              />
+            </>
           )}
 
-          <div>
-            <Boton
-              tono="texto"
-              icono={<IconoAnadir size={16} />}
-              onClick={() => {
-                setLineas((todas) => [
-                  ...todas,
-                  { concepto: '', unidades: '1', importe: null, importeTocado: false },
-                ]);
-              }}
-            >
-              Añadir un plato
-            </Boton>
-          </div>
-        </section>
-
-        <Campo
-          etiqueta="Notas"
-          ayuda="Opcional. «Faltan 10 € de un vale», «cerró Marta»."
-          value={notas}
-          onChange={(e) => {
-            setNotas(e.currentTarget.value);
-          }}
-        />
-
-        <Botones>
-          {alDejarlo !== undefined && (
-            <Boton tono="texto" onClick={alDejarlo}>
-              Dejarlo como estaba
-            </Boton>
-          )}
-          <Boton
-            tono="principal"
-            disabled={total === null || guardando}
-            cargando={guardando}
-            textoCargando="Guardando"
-            onClick={() => {
-              void guardar();
-            }}
-          >
-            {antes === null ? 'Cerrar la caja' : 'Guardar la corrección'}
-          </Boton>
-        </Botones>
-      </div>
-    </Tarjeta>
+          <Botones>
+            {paso > 0 && (
+              <Boton
+                tono="texto"
+                onClick={() => {
+                  irAlPaso((paso - 1) as Paso);
+                }}
+              >
+                Atrás
+              </Boton>
+            )}
+            {paso < 2 ? (
+              <Boton
+                tono="principal"
+                disabled={total === null}
+                onClick={() => {
+                  irAlPaso((paso + 1) as Paso);
+                }}
+              >
+                Siguiente
+              </Boton>
+            ) : (
+              <Boton
+                tono="principal"
+                disabled={total === null || guardando}
+                cargando={guardando}
+                textoCargando="Cerrando"
+                onClick={() => {
+                  void guardar();
+                }}
+              >
+                Cerrar el día
+              </Boton>
+            )}
+          </Botones>
+        </div>
+      </Tarjeta>
+    </div>
   );
 }

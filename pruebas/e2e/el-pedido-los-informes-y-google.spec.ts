@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
+import { cerrarLaCajaDe, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
 
 /**
  * R2 · los informes y la nota en Google (decisión 0053), desde la pantalla.
@@ -51,11 +51,7 @@ test('Negocio → Informes: Tu día frente al mismo día de la semana anterior, 
     [lunes, 123_400],
     [antes, 100_000],
   ] as const) {
-    await ejecutarEnLaApi(request, rosa, 'cerrar_la_caja', {
-      fecha,
-      total_centimos: total,
-      tickets: 30,
-    });
+    await cerrarLaCajaDe(request, rosa, { fecha, total_centimos: total, tickets: 30 });
   }
 
   await entrarEnLaApp(page, ROSA);

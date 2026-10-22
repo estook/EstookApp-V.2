@@ -143,15 +143,19 @@ async function laJornadaDelLocal(contexto: Contexto, localId: string): Promise<s
 }
 
 /**
- * Cerrar la caja de una jornada.
+ * Cerrar la caja de una jornada, que es **cerrar el día** (M16a, 0105).
  *
- * ── Volver a cerrar el mismo día corrige, no duplica ────────────────────────
+ * ── Un día cerrado no se cambia sin reabrirlo ───────────────────────────────
  *
- * La clave única de la 0029 lo impone en la base, y aquí se aprovecha: `on
- * conflict do update`. Es lo que una persona espera cuando se ha equivocado en una
- * cifra y vuelve a entrar, y sobre todo es lo que evita el fallo que no se ve —dos
- * cierres del mismo día haciendo que el total del mes salga mal mientras todo lo
- * demás parece correcto—.
+ * Hasta M16a volver a cerrar el mismo día lo corregía sin más. Ahora el día cerrado
+ * se queda como está, y para cambiarlo se reabre con un motivo (`reabrir_la_jornada`):
+ * lo pide la Auditoría de Flujos, «reabrir exige motivo y queda en auditoría». La base
+ * lo impone también (0080), así que ni una app de antes con «Corregir» lo salta.
+ *
+ * Un día **reabierto** sí se vuelve a cerrar aquí, y entonces **corrige, no duplica**:
+ * la clave única de la 0029 lo impone en la base, y aquí se aprovecha con `on conflict
+ * do update`. Es lo que evita el fallo que no se ve —dos cierres del mismo día haciendo
+ * que el total del mes salga mal mientras todo lo demás parece correcto—.
  *
  * Las líneas se **reemplazan** enteras, no se acumulan. Un cierre corregido es el
  * cierre de ese día, no el de antes más el de ahora.
@@ -167,10 +171,14 @@ export const cerrarLaCaja = comando<EntradaCerrarLaCaja, SalidaCerrarLaCaja>({
     const organizacionId = laOrganizacionDeLaSesion(contexto);
     const fecha = entrada.fecha ?? (await laJornadaDelLocal(contexto, localId));
 
-    const habia = await contexto.sql<{ id: string }[]>`
-      select id from estook.cierre_de_caja
+    // `for update`: dos personas cerrando el mismo día a la vez no se pisan; la segunda
+    // espera y se encuentra el día cerrado.
+    const habia = await contexto.sql<{ id: string; estado: string }[]>`
+      select id, estado from estook.cierre_de_caja
        where local_id = ${localId} and fecha_operativa = ${fecha}::date
+       for update
     `;
+    if (habia[0]?.estado === 'cerrada') throw new FalloDeAplicacion('jornada_cerrada', { fecha });
     const seHaCorregido = habia.length > 0;
 
     const puestos = await contexto.sql<{ id: string }[]>`
@@ -196,6 +204,9 @@ export const cerrarLaCaja = comando<EntradaCerrarLaCaja, SalidaCerrarLaCaja>({
             origen = excluded.origen,
             notas = excluded.notas,
             cerrado_por = excluded.cerrado_por,
+            -- El día reabierto queda cerrado otra vez, y a nombre de quien lo cierra ahora.
+            estado = 'cerrada',
+            cerrado_en = now(),
             actualizado_en = now()
       returning id
     `;
@@ -254,5 +265,96 @@ export const cerrarLaCaja = comando<EntradaCerrarLaCaja, SalidaCerrarLaCaja>({
       lineas: lineas.length,
       seHaCorregido,
     };
+  },
+});
+
+// ── Reabrir un día cerrado (M16a, 0105) ──────────────────────────────────────
+
+export const entradaReabrirLaJornada = z
+  .object({
+    fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'La fecha se escribe así: 2026-09-30.'),
+    /** Por qué: «me equivoqué con la tarjeta, eran 412». Queda a la vista en el cierre. */
+    motivo: z
+      .string()
+      .trim()
+      .min(3, 'Escribe por qué lo reabres.')
+      .max(500, 'El motivo, en menos de 500 letras.'),
+  })
+  .strict();
+
+export type EntradaReabrirLaJornada = z.infer<typeof entradaReabrirLaJornada>;
+
+export interface SalidaReabrirLaJornada {
+  readonly fecha: string;
+  /** Si ya estaba reabierto: no se apunta otra reapertura. */
+  readonly yaEstabaReabierta: boolean;
+}
+
+/**
+ * Reabrir un día cerrado, con su motivo escrito.
+ *
+ * **Lo reabre quien puede cerrar la caja** (Richi, 22-oct): a la una de la mañana no hay
+ * que despertar a nadie por un euro mal puesto. El motivo es obligatorio y queda en el
+ * cierre, a la vista de quien lo mire («Reabierto por Ana: …»), y en la auditoría.
+ *
+ * Reabrir no cambia ninguna cifra: deja el día como estaba, para corregirlo y volver a
+ * cerrarlo con `cerrar_la_caja`. Hasta entonces el día sale «Reabierto, sin cerrar».
+ */
+export const reabrirLaJornada = comando<EntradaReabrirLaJornada, SalidaReabrirLaJornada>({
+  nombre: 'reabrir_la_jornada',
+  entrada: entradaReabrirLaJornada,
+  exige: 'dato.ventas',
+
+  async ejecutar(contexto, entrada) {
+    if (!contexto.personaId) throw new FalloDeAplicacion('sin_sesion');
+    const localId = elLocalDeLaSesion(contexto);
+    const organizacionId = laOrganizacionDeLaSesion(contexto);
+
+    // Las mismas dos llaves que cerrar (0029): las ventas y el Servicio, para editar.
+    const permisos = await contexto.sql<{ puede: boolean }[]>`
+      select estook.puede_editar('app.servicio', ${localId}::uuid)
+             and estook.puede_editar('dato.ventas', ${localId}::uuid) as puede
+    `;
+    if (permisos[0]?.puede !== true) throw new FalloDeAplicacion('sin_permiso');
+
+    const filas = await contexto.sql<{ id: string; estado: string }[]>`
+      select id, estado from estook.cierre_de_caja
+       where local_id = ${localId} and fecha_operativa = ${entrada.fecha}::date
+       for update
+    `;
+    const cierre = filas[0];
+    if (cierre === undefined)
+      throw new FalloDeAplicacion('jornada_abierta', { fecha: entrada.fecha });
+    if (cierre.estado === 'reabierta') return { fecha: entrada.fecha, yaEstabaReabierta: true };
+
+    // Primero el porqué y después el estado: la base solo deja pasar a «reabierta» un
+    // día que tiene escrito, en esta misma transacción, por qué se reabre (0080).
+    await contexto.sql`
+      insert into estook.reapertura_de_jornada (cierre_id, local_id, motivo, reabierta_por)
+      values (${cierre.id}, ${localId}, ${entrada.motivo}, ${contexto.personaId})
+    `;
+    await contexto.sql`
+      update estook.cierre_de_caja set estado = 'reabierta', actualizado_en = now()
+       where id = ${cierre.id}
+    `;
+
+    await contexto.sql`
+      select estook.anotar(
+        ${organizacionId}::uuid, 'cambiar', 'cierre_de_caja',
+        ${cierre.id}, ${localId}::uuid, null,
+        ${JSON.stringify({ fecha: entrada.fecha, estado: 'reabierta' })}::text::jsonb,
+        ${entrada.motivo}
+      )
+    `;
+
+    await publicar(contexto.sql, {
+      tipo: 'jornada.reabierta',
+      organizacionId,
+      localId,
+      datos: { cierreId: cierre.id, fecha: entrada.fecha, motivo: entrada.motivo },
+      correlacionId: contexto.correlacionId,
+    });
+
+    return { fecha: entrada.fecha, yaEstabaReabierta: false };
   },
 });

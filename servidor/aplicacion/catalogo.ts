@@ -113,7 +113,7 @@ import {
   quitarJustificacion,
 } from './comandos/equipo.ts';
 import { lasIncidenciasDelEquipo } from './consultas/incidencias.ts';
-import { cerrarLaCaja, elegirComoSeCierra } from './comandos/cierre.ts';
+import { cerrarLaCaja, elegirComoSeCierra, reabrirLaJornada } from './comandos/cierre.ts';
 import { ponerPrecio } from './comandos/precios.ts';
 import {
   cambiarProducto,
@@ -321,6 +321,7 @@ import {
   unaPersona,
 } from './consultas/equipo.ts';
 import { misCierres, unCierre } from './consultas/cierre.ts';
+import { laJornada } from './consultas/jornada.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
 import { quienSoy } from './consultas/quien-soy.ts';
@@ -450,6 +451,7 @@ export const catalogo = {
     //        lo que se factura, que es la mitad del negocio.
     [misCierres.nombre]: misCierres,
     [unCierre.nombre]: unCierre,
+    [laJornada.nombre]: laJornada,
     // M7 · compras: lo que se pide, lo que llega, lo que se cobra y a quién.
     [misPedidos.nombre]: misPedidos,
     [unPedido.nombre]: unPedido,
@@ -652,6 +654,7 @@ export const catalogo = {
     [guardarMargenDeRetraso.nombre]: guardarMargenDeRetraso,
     [elegirComoSeCierra.nombre]: elegirComoSeCierra,
     [cerrarLaCaja.nombre]: cerrarLaCaja,
+    [reabrirLaJornada.nombre]: reabrirLaJornada,
 
     // ── M7 · proveedores y compras ────────────────────────────────────────
     //

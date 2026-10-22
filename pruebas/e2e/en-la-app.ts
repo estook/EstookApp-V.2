@@ -88,3 +88,36 @@ export async function ejecutarEnLaApi<T>(
   expect(respuesta.status(), `${nombre}: ${JSON.stringify(cuerpo.error)}`).toBe(200);
   return cuerpo.datos as T;
 }
+
+/**
+ * Cierra la caja de un día **aunque ya esté cerrado** (M16a, 0105).
+ *
+ * Desde M16a un día cerrado no se vuelve a cerrar: se reabre con un motivo. Las pruebas
+ * que preparan sus cifras cerrando un día concreto lo hacen en cada navegador contra la
+ * misma base, y la segunda vez se encontraba el día cerrado. Así lo reabre y lo cierra
+ * con lo suyo, que es lo que hacía antes volver a cerrar.
+ */
+export async function cerrarLaCajaDe(
+  peticion: APIRequestContext,
+  token: string,
+  entrada: { readonly fecha: string } & Record<string, unknown>,
+): Promise<void> {
+  const cabeceras = (nombre: string) => ({
+    authorization: `Bearer ${token}`,
+    'x-idempotencia': `${nombre}-${Date.now()}-${Math.random()}`,
+  });
+  const cerrar = () =>
+    peticion.post(`${API}/v1/comandos/cerrar_la_caja`, {
+      headers: cabeceras('cerrar_la_caja'),
+      data: entrada,
+    });
+  let respuesta = await cerrar();
+  if (respuesta.status() === 409) {
+    await ejecutarEnLaApi(peticion, token, 'reabrir_la_jornada', {
+      fecha: entrada.fecha,
+      motivo: 'La prueba lo vuelve a cerrar con sus cifras',
+    });
+    respuesta = await cerrar();
+  }
+  expect(respuesta.status(), `cerrar_la_caja: ${await respuesta.text()}`).toBe(200);
+}

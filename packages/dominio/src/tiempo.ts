@@ -177,6 +177,41 @@ export function instanteEnElLocal(fecha: FechaOperativa, hora: string, zonaHorar
   return new Date(instante);
 }
 
+/** Una jornada de principio a fin, con lo que dura de verdad (M16a, 0105). */
+export interface JornadaEntera {
+  readonly fecha: FechaOperativa;
+  /** El instante en que empieza: la hora de corte de ese día. */
+  readonly empieza: Date;
+  /** El instante en que acaba: la hora de corte del día siguiente. */
+  readonly termina: Date;
+  /** Lo que dura, en minutos: 1500 la noche en que se atrasa la hora, 1380 en marzo. */
+  readonly minutos: number;
+}
+
+/**
+ * Cuándo empieza y cuándo acaba una jornada (M16a · La jornada, 0105).
+ *
+ * «Y la jornada de la noche del cambio de hora dura lo que tiene que durar» (Plan, M16a).
+ * Se cuenta **de hora de corte a hora de corte en el reloj del local**, no sumando 24
+ * horas: el sábado del último fin de semana de octubre va de las 05:00 de verano a las
+ * 05:00 de invierno, y son 25 horas; el de marzo, 23. Sumar un día al instante pondría el
+ * final a las 04:00 o a las 06:00, y una venta de esa hora caería en el día equivocado.
+ */
+export function laJornadaEntera(
+  fecha: FechaOperativa,
+  zonaHoraria: string,
+  corte: HoraDeCorte = CORTE_POR_DEFECTO,
+): JornadaEntera {
+  const empieza = instanteEnElLocal(fecha, corte, zonaHoraria);
+  const termina = instanteEnElLocal(masDias(fecha, 1), corte, zonaHoraria);
+  return {
+    fecha,
+    empieza,
+    termina,
+    minutos: Math.trunc((termina.getTime() - empieza.getTime()) / 60_000),
+  };
+}
+
 /**
  * El día de la semana de una fecha, del 1 (lunes) al 7 (domingo) (M7).
  *

@@ -426,16 +426,18 @@ describe('el cierre de caja', () => {
 
   it('el concepto se normaliza solo, para que M20 pueda emparejar', async () => {
     const centro = await base.localPorCodigo('bar-centro');
-    const [cierre] = await comoDuena<{ id: string }>(
-      `select id from estook.cierre_de_caja where local_id = $1 limit 1`,
-      [centro],
-    );
-
+    // El día y su plato en la misma orden: un día cerrado antes ya no admite platos
+    // nuevos (M16a, 0080), y lo que se prueba aquí es el normalizado.
     const [linea] = await comoDuena<{ concepto_normalizado: string }>(
-      `insert into estook.linea_de_cierre (cierre_id, concepto, concepto_normalizado, unidades)
-       values ($1, '  Tortilla de Patatas  ', '', 12)
+      `with cierre as (
+         insert into estook.cierre_de_caja (local_id, fecha_operativa, total_centimos)
+         values ($1, current_date - 1, 1200)
+         returning id
+       )
+       insert into estook.linea_de_cierre (cierre_id, concepto, concepto_normalizado, unidades)
+       select id, '  Tortilla de Patatas  ', '', 12 from cierre
        returning concepto_normalizado`,
-      [cierre?.id],
+      [centro],
     );
     expect(linea?.concepto_normalizado).toBe('tortilla de patatas');
   });

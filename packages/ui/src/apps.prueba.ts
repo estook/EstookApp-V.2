@@ -390,8 +390,8 @@ describe('lo construido y lo que llega', () => {
     expect(dondeEntra(laApp('almacen'))?.id).toBe('resumen');
     // Equipo entra en su Resumen, que ya no es un cartel: quién ha fichado y quién no.
     expect(dondeEntra(laApp('equipo'))?.id).toBe('resumen');
-    // Y Servicio entra en la jornada por el cierre, que es lo que funciona.
-    expect(rutaDe(laApp('servicio'))).toBe('/servicio/jornada/cierre');
+    // Y Servicio entra en la jornada por «En marcha», lo que pasa ahora (M16a, 0105).
+    expect(rutaDe(laApp('servicio'))).toBe('/servicio/jornada/en-marcha');
   });
 
   it('la ruta lleva la vista de entrada cuando el destino tiene vistas', () => {
@@ -420,9 +420,17 @@ describe('lo construido y lo que llega', () => {
     // El orden de la tabla del Plan se respeta tal cual: no se reordena el
     // catálogo para esquivar el problema.
     expect(jornada.vistas.map((v) => v.nombre)).toEqual(['En marcha', 'Caja', 'Cierre']);
-    // Y aun así se entra por la que existe.
-    expect(dondeEntraEnElDestino(jornada)?.id).toBe('cierre');
-    expect(vistasConstruidas(jornada).map((v) => v.id)).toEqual(['cierre']);
+    // Con M16a «En marcha» ya existe, y se entra por ella; la caja sigue esperando a M20C.
+    expect(dondeEntraEnElDestino(jornada)?.id).toBe('en-marcha');
+    expect(vistasConstruidas(jornada).map((v) => v.id)).toEqual(['en-marcha', 'cierre']);
+
+    // Y la regla, con un destino cuya primera vista está por construir: hasta M16a era
+    // la jornada misma, y la pantalla que funcionaba no puede quedar detrás del cartel.
+    const conLaPrimeraPendiente = {
+      ...jornada,
+      vistas: [{ id: 'en-marcha', nombre: 'En marcha', modulo: 'M16' }, ...jornada.vistas.slice(1)],
+    };
+    expect(dondeEntraEnElDestino(conLaPrimeraPendiente)?.id).toBe('cierre');
   });
 
   it('si ninguna vista esta construida, se entra por la primera', () => {

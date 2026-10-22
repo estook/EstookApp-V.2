@@ -23,6 +23,7 @@ import {
 import {
   Almacen,
   CierreDeCaja,
+  EnMarcha,
   Carta,
   Escandallos,
   Delivery,
@@ -299,10 +300,13 @@ function Contenido({
   // todo el equipo, y quien lo publica tiene además «Montarlo».
   if (app.id === 'calendario' && destino.id === 'turnos') return <ElHorario conTitulo={false} />;
 
-  // El cierre es una **vista** de la jornada: el resto de la jornada —«En
-  // marcha»— sigue siendo M16 y cae abajo, a su cartel.
+  // El cierre es una **vista** de la jornada, y «En marcha» la otra (M16a, 0105). La
+  // caja, M20C, cae abajo, a su cartel.
   if (app.id === 'servicio' && destino.id === 'jornada' && vista?.id === 'cierre') {
     return <CierreDeCaja />;
+  }
+  if (app.id === 'servicio' && destino.id === 'jornada' && vista?.id === 'en-marcha') {
+    return <EnMarcha />;
   }
   if (app.id === 'negocio' && destino.id === 'ventas') return <Ventas />;
   // R2 (0053): Tu día, Tu semana y Tu mes, y la nota en Google.

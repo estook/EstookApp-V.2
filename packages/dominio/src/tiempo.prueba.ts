@@ -8,6 +8,7 @@ import {
   fechaOperativa,
   horaDeCorte,
   jornadaDe,
+  laJornadaEntera,
   masDias,
 } from './tiempo.ts';
 
@@ -105,6 +106,33 @@ describe('el cambio de hora', () => {
     expect(jornadaDe(enUtc('2026-10-25T01:30:00'), MADRID)).toBe('2026-10-24');
     // Y a las 06:00 locales, jornada nueva.
     expect(jornadaDe(enUtc('2026-10-25T05:00:00'), MADRID)).toBe('2026-10-25');
+  });
+
+  // M16a (0105): «la jornada de la noche del cambio de hora dura lo que tiene que durar».
+  it('la jornada del sábado 24 de octubre dura 25 horas, de corte a corte', () => {
+    const sabado = laJornadaEntera(fechaOperativa('2026-10-24'), MADRID, horaDeCorte('05:00'));
+    // Empieza a las 05:00 de verano (03:00 UTC) y acaba a las 05:00 de invierno (04:00 UTC).
+    expect(sabado.empieza.toISOString()).toBe('2026-10-24T03:00:00.000Z');
+    expect(sabado.termina.toISOString()).toBe('2026-10-25T04:00:00.000Z');
+    expect(sabado.minutos).toBe(25 * 60);
+    // Y lo que pasa en su última hora es suyo, no del domingo.
+    expect(jornadaDe(enUtc('2026-10-25T03:30:00'), MADRID, horaDeCorte('05:00'))).toBe(
+      '2026-10-24',
+    );
+  });
+
+  it('la de marzo dura 23, y un día cualquiera 24', () => {
+    expect(laJornadaEntera(fechaOperativa('2027-03-27'), MADRID).minutos).toBe(23 * 60);
+    expect(laJornadaEntera(fechaOperativa('2026-10-22'), MADRID).minutos).toBe(24 * 60);
+    // Canarias cambia a la vez, una hora antes en el reloj de todos.
+    expect(laJornadaEntera(fechaOperativa('2026-10-24'), CANARIAS).minutos).toBe(25 * 60);
+  });
+
+  it('con un corte a las 02:00, la hora repetida cae dentro y no la parte', () => {
+    // Las 02:00 del domingo 25 existen dos veces; el corte es la primera que llega.
+    const sabado = laJornadaEntera(fechaOperativa('2026-10-24'), MADRID, horaDeCorte('02:00'));
+    expect(sabado.minutos).toBeGreaterThanOrEqual(24 * 60);
+    expect(sabado.minutos).toBeLessThanOrEqual(25 * 60);
   });
 });
 

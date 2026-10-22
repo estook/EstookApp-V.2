@@ -55,6 +55,7 @@ export const ElHorario = perezosa(async () => (await import('../horario/ElHorari
 export const CierreDeCaja = perezosa(
   async () => (await import('../servicio/CierreDeCaja.tsx')).CierreDeCaja,
 );
+export const EnMarcha = perezosa(async () => (await import('../servicio/EnMarcha.tsx')).EnMarcha);
 export const Ventas = perezosa(async () => (await import('../servicio/Ventas.tsx')).Ventas);
 export const Delivery = perezosa(async () => (await import('../servicio/Delivery.tsx')).Delivery);
 export const Informes = perezosa(async () => (await import('../negocio/Informes.tsx')).Informes);

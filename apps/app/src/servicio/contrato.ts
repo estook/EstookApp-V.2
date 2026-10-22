@@ -67,6 +67,19 @@ export interface ElCierreDeUnDia {
     readonly importeCentimos: number | null;
   }[];
   readonly fecha: string;
+  /** El estado del día (M16a, 0105). Abierto si no tiene cierre. */
+  readonly jornada: {
+    readonly estado: EstadoDeLaJornada;
+    readonly esHoy: boolean;
+    /** Las veces que se reabrió, la última primero, con su motivo. */
+    readonly reaperturas: readonly {
+      readonly motivo: string;
+      readonly quien: string | null;
+      readonly cuando: string;
+    }[];
+    /** Cuántos siguen fichados ahora, si es hoy. */
+    readonly siguenDentro: number | null;
+  };
   readonly comoSeCierra: string;
   readonly puedeCerrar: boolean;
   /**
@@ -92,4 +105,62 @@ export interface ElCierreDeUnDia {
     readonly precioUnidadCentimos: number | null;
     readonly yaEstaPuesto: boolean;
   }[];
+}
+
+// ── M16a · La jornada (0105) ─────────────────────────────────────────────────
+
+/**
+ * Lo que llega de `un_cierre`, con la jornada puesta aunque la API sea la de antes.
+ *
+ * Entre fusionar y desplegar la API, la app nueva habla unos minutos con la de antes, que
+ * no manda `jornada`. Sin esto, la pantalla del cierre se caería entera; así, un día con
+ * cierre se ve cerrado y uno sin cierre, abierto, que es lo que la API de antes sabía.
+ */
+export function conLaJornada(
+  datos: Omit<ElCierreDeUnDia, 'jornada'> & { readonly jornada?: ElCierreDeUnDia['jornada'] },
+): ElCierreDeUnDia {
+  return {
+    ...datos,
+    jornada: datos.jornada ?? {
+      estado: datos.cierre === null ? 'abierta' : 'cerrada',
+      esHoy: false,
+      reaperturas: [],
+      siguenDentro: null,
+    },
+  };
+}
+
+export type EstadoDeLaJornada = 'abierta' | 'cerrada' | 'reabierta';
+
+/** Lo que devuelve `la_jornada`: el día de ahora, de corte a corte, sin un euro. */
+export interface LaJornada {
+  readonly fecha: string;
+  readonly empiezaEn: string;
+  readonly terminaEn: string;
+  /** Lo que dura: 1440 casi siempre, 1500 o 1380 las noches del cambio de hora. */
+  readonly minutos: number;
+  readonly quedan: number;
+  readonly horaDelLocal: string;
+  readonly corte: string;
+  readonly estado: EstadoDeLaJornada;
+  readonly cerradaEn: string | null;
+  readonly cerradaPor: string | null;
+  readonly puedeCerrar: boolean;
+  readonly ayerSinCerrar: string | null;
+}
+
+/** «a las 23:41»: la hora de un instante, en el reloj de quien mira. */
+export function comoSeLeeLaHoraDe(instante: string): string {
+  return new Date(instante).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}
+
+/**
+ * Lo que dura el día, si no es lo de siempre: la noche del cambio de hora (M16a).
+ * «Hoy dura 25 horas: esta noche se atrasa la hora.» Nulo un día normal.
+ */
+export function loQueDuraHoy(minutos: number): string | null {
+  if (minutos === 24 * 60) return null;
+  return minutos > 24 * 60
+    ? `Hoy dura ${String(Math.trunc(minutos / 60))} horas: esta noche se atrasa la hora.`
+    : `Hoy dura ${String(Math.trunc(minutos / 60))} horas: esta noche se adelanta la hora.`;
 }

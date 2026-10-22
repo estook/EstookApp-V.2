@@ -202,7 +202,7 @@ async function losImportes(
  * quien no ha empezado a cerrar caja no tiene nada pendiente, tiene algo por
  * empezar, y eso lo dice «Lo que te falta».
  */
-async function laCajaSinCerrar(
+export async function laCajaSinCerrar(
   contexto: Contexto,
   localId: string,
   hoy: FechaOperativa,

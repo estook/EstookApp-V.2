@@ -13,22 +13,25 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 export function TusMenus() {
   const { cliente, yo, permisos, refrescar } = usarSesion();
   const cache = useQueryClient();
-  const [cambiando, setCambiando] = useState(false);
+  // Lo pulsado, mientras se guarda y se relee la sesión: sin esto, el interruptor
+  // volvía un momento a como estaba (y una prueba lo cazó con la máquina cargada).
+  const [pulsado, setPulsado] = useState<boolean | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const local = yo?.local ?? null;
   if (local === null) return null;
 
-  async function cambiar(sirve: boolean) {
-    setCambiando(true);
+  async function cambiar(nuevo: boolean) {
+    setPulsado(nuevo);
     setError(null);
-    const respuesta = await cliente.ejecutar('sirve_menus', { sirve });
-    setCambiando(false);
-    if (!respuesta.ok) {
+    const respuesta = await cliente.ejecutar('sirve_menus', { sirve: nuevo });
+    if (respuesta.ok) {
+      await Promise.all([refrescar(), cache.invalidateQueries({ queryKey: ['mis_menus'] })]);
+    } else {
       setError(respuesta.error);
-      return;
     }
-    await Promise.all([refrescar(), cache.invalidateQueries({ queryKey: ['mis_menus'] })]);
+    setPulsado(null);
   }
+  const sirve = pulsado ?? local.sirveMenus === true;
 
   return (
     <div className="flex flex-col gap-e2">
@@ -36,14 +39,14 @@ export function TusMenus() {
       <Interruptor
         etiqueta="Tu local sirve menús"
         ayuda={
-          local.sirveMenus === true
+          sirve
             ? 'El menú del día está en Carta › Menús.'
             : 'Apagado, Carta › Menús no sale. Encendido, el menú del día nace hecho.'
         }
-        puesto={local.sirveMenus === true}
-        disabled={cambiando || !puedeEditar(permisos, 'app.carta')}
-        alCambiar={(sirve) => {
-          void cambiar(sirve);
+        puesto={sirve}
+        disabled={pulsado !== null || !puedeEditar(permisos, 'app.carta')}
+        alCambiar={(nuevo) => {
+          void cambiar(nuevo);
         }}
       />
     </div>

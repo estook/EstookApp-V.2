@@ -147,12 +147,14 @@ function SirvesMenus({ datos }: { readonly datos: MisMenus }) {
     setTrabajando(sirve);
     setError(null);
     const respuesta = await cliente.ejecutar('sirve_menus', { sirve });
-    setTrabajando(null);
     if (!respuesta.ok) {
+      setTrabajando(null);
       setError(respuesta.error);
       return;
     }
+    // Girando hasta que la pantalla cambia: sin dos toques ni un botón quieto en medio.
     await Promise.all([refrescar(), refrescarLaSesion()]);
+    setTrabajando(null);
     if (!sirve) navegar('/carta', { replace: true });
   }
 

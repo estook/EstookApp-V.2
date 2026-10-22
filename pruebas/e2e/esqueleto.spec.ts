@@ -238,10 +238,11 @@ test.describe('las ocho apps', () => {
     // posicion**, pero cuando se llega a el escribiendo la direccion tiene que
     // decir la verdad y con su modulo, no quedarse en blanco.
     await comoGerente(page);
-    await abrir(page, '/carta/menus');
+    // Antes eran los Menús, que M10 · 2 ya construyó (0104): ahora, las Tareas.
+    await abrir(page, '/calendario/tareas');
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Menús');
-    await expect(page.getByText('M10 · Carta, menús y análisis')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tareas');
+    await expect(page.getByText('M14 · Calendario').first()).toBeVisible();
   });
 
   test('siempre hay forma de volver que no es el boton del navegador', async ({ page }) => {

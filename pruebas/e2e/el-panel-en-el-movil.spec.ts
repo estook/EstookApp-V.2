@@ -138,6 +138,11 @@ test('el «+» se aparta al bajar y vuelve al subir, solo en el móvil', async (
     null,
     { timeout: 15_000 },
   );
+  // Y que el Panel haya llegado entero: sin siluetas de carga. Si «Hoy» o un widget
+  // llegan mientras se baja, Safari mueve la página él solo para no perder lo que se
+  // mira, y el «+» se aparta con razón. Lo cazó GitHub el 22-oct (M16a): el «+» volvía
+  // al subir y se iba otra vez cuando terminaba de cargar lo de arriba.
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
 
   // `scrollBy` y no la rueda: en el Safari de móvil de las pruebas no hay rueda.
   await page.evaluate(() => {

@@ -1052,3 +1052,17 @@ export {
   resumenDeLoQueCambia,
 } from './cartaLeida.ts';
 export type { CartaLeida, LoQueCambia, PlatoDeLaCarta, PlatoLeido } from './cartaLeida.ts';
+export {
+  elPaseHaSalido,
+  elPaseQueTocaMarchar,
+  laMesaEnCocina,
+  loSiguienteDeLaMesa,
+  losPasesQueSalenAlMandar,
+} from './sala.ts';
+export type {
+  DestinoDeLaLinea,
+  LaMesaEnCocina,
+  LoSiguiente,
+  PaseDeLaMesa,
+  PlatoDeLaMesa,
+} from './sala.ts';

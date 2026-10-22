@@ -67,6 +67,11 @@ export const PERMISOS_DE_ACCION = [
   // M7 · mandar un pedido compromete dinero del local. Prepararlo y recibir lo
   // que llega es de quien lleva Almacén; mandarlo, de quien tenga esto.
   'accion.enviar_pedidos',
+  // M20A · la sala y la cocina (Roles 1.12, 0106): la sala toma nota y marcha; la
+  // cocina tacha lo que sale y nunca marcha; y lo que ya está en cocina lo quita un jefe.
+  'accion.tomar_nota',
+  'accion.cocinar',
+  'accion.quitar_de_cocina',
 ] as const;
 
 export const PERMISOS = [...PERMISOS_DE_APP, ...PERMISOS_DE_DATO, ...PERMISOS_DE_ACCION] as const;

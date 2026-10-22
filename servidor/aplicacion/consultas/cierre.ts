@@ -267,6 +267,20 @@ export interface SalidaUnCierre {
     readonly importeCentimos: number | null;
   }[];
   readonly fecha: string;
+  /** El estado del día (M16a, 0105). Abierto si no tiene cierre. */
+  readonly jornada: {
+    readonly estado: 'abierta' | 'cerrada' | 'reabierta';
+    /** Si es la jornada de ahora: lo único que se puede cerrar con gente dentro. */
+    readonly esHoy: boolean;
+    /** Las veces que se reabrió, la última primero, con su motivo. */
+    readonly reaperturas: readonly {
+      readonly motivo: string;
+      readonly quien: string | null;
+      readonly cuando: string;
+    }[];
+    /** Cuántos siguen fichados ahora, si es hoy. */
+    readonly siguenDentro: number | null;
+  };
   readonly comoSeCierra: string;
   readonly puedeCerrar: boolean;
   /**
@@ -340,9 +354,10 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
         notas: string | null;
         quien: string | null;
         cerrado_en: string;
+        estado: string;
       }[]
     >`
-      select c.id, to_char(c.fecha_operativa, 'YYYY-MM-DD') as fecha,
+      select c.id, to_char(c.fecha_operativa, 'YYYY-MM-DD') as fecha, c.estado,
              c.total_centimos::text as total,
              c.efectivo_centimos::text as efectivo,
              c.tarjeta_centimos::text as tarjeta,
@@ -356,6 +371,28 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
     `;
 
     const fila = filas[0];
+
+    // ── La jornada (M16a, 0105): cerrada, reabierta y por qué ──────────────
+    const reaperturas =
+      fila === undefined
+        ? []
+        : await contexto.sql<{ motivo: string; quien: string | null; cuando: string }[]>`
+            select r.motivo, p.nombre as quien,
+                   to_char(r.reabierta_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cuando
+              from estook.reapertura_de_jornada r
+              left join estook.persona p on p.id = r.reabierta_por
+             where r.cierre_id = ${fila.id}
+             order by r.reabierta_en desc
+             limit 20
+          `;
+    // Quién sigue fichado al cerrar hoy: «quedan dos dentro» es el olvido de cada noche.
+    // Solo cuántos, sin nombres: lo que se viene a hacer es cerrar la caja (0078).
+    const esHoy = fecha === ficha.jornada;
+    const dentro = esHoy
+      ? await contexto.sql<{ cuantos: number }[]>`
+          select count(*)::int as cuantos from estook.quien_trabaja_ahora(${localId}::uuid)
+        `
+      : [];
 
     const lineas =
       fila === undefined
@@ -470,6 +507,13 @@ export const unCierre = consulta<{ fecha?: string | undefined }, SalidaUnCierre>
         importeCentimos: l.importe === null ? null : Number(l.importe),
       })),
       fecha,
+      jornada: {
+        estado:
+          fila === undefined ? 'abierta' : fila.estado === 'reabierta' ? 'reabierta' : 'cerrada',
+        esHoy,
+        reaperturas,
+        siguenDentro: dentro[0]?.cuantos ?? null,
+      },
       comoSeCierra: ficha.comoSeCierra,
       puedeCerrar: permisos[0]?.cerrar === true,
       platosConocidos,

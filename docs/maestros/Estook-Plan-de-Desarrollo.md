@@ -719,7 +719,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Se entrega en dos partes: M16a va delante del TPV y M16b se queda aquí** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)): lo que el TPV necesita de este módulo es la jornada, no el APPCC.
 
-**M16a · La jornada.** Apertura automática de jornada · **fecha operativa en el servidor**, incluida la noche del cambio de hora · panel en vivo · cierre del día en cuatro pasos y sesenta segundos · reapertura con motivo. **Terminado cuando** un cierre real se completa en menos de sesenta segundos, y la jornada de la noche del cambio de hora dura lo que tiene que durar, probada con `pnpm prueba:semana`.
+**M16a · La jornada** (**construida el 22-oct**, [0105](../decisiones/0105-m16a-la-jornada.md): lo reabre quien puede cerrar la caja, sin PIN en el propio móvil, y el cierre va en tres pasos hasta que M16b traiga el APPCC). Apertura automática de jornada · **fecha operativa en el servidor**, incluida la noche del cambio de hora · panel en vivo · cierre del día en cuatro pasos y sesenta segundos · reapertura con motivo. **Terminado cuando** un cierre real se completa en menos de sesenta segundos, y la jornada de la noche del cambio de hora dura lo que tiene que durar, probada con `pnpm prueba:semana`.
 
 **M16b · APPCC y trazabilidad.** Plan de APPCC versionado con plantillas · registro en dos toques, que queda a nombre de quien lo hace con su PIN, y **acción correctiva obligatoria** · `NO REGISTRADO` en rojo · informe de trazabilidad de lote. **Terminado cuando** un mes de APPCC se exporta listo para inspección, y de un lote sale el listado de días y platos en que se sirvió.
 

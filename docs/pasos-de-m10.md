@@ -2,13 +2,16 @@
 
 > ## Cómo está
 >
-> Leído el 21 de octubre de 2026 en producción (solo lectura).
+> Leído el 22 de octubre de 2026 en producción (solo lectura).
 >
-> | Qué              | Cómo está                                                                                                           |
-> | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
-> | Pull requests    | **#125 y #126 fusionadas** (M10 · 1 y las respuestas de M10 · 2). Abierta: **#127 · M10 · 2 · Los menús y tu zona** |
-> | La base de datos | **78 de 78** migraciones. M10 · 2 trae **la 0079** (los menús y lo de tu zona)                                      |
-> | La API           | **Desplegada** con M10 · 1: 98 consultas y 215 comandos. M10 · 2 la deja en **101 y 229**                           |
+> | Qué              | Cómo está                                                                                                  |
+> | ---------------- | ---------------------------------------------------------------------------------------------------------- |
+> | Pull requests    | **#125, #126 y #127 fusionadas**: M10 está entero. Lo siguiente, en [`pasos-de-m16a.md`](pasos-de-m16a.md) |
+> | La base de datos | **79 de 79** migraciones: la 0079 (los menús y lo de tu zona), migrada                                     |
+> | La API           | **Desplegada** con M10 · 2: 101 consultas y 229 comandos                                                   |
+>
+> Lo de abajo se queda para **probarlo en el iPhone** si no lo has hecho: los pasos 1 a 3 ya
+> están hechos.
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de antes, en [`pasos-de-la-auditoria-del-20-oct.md`](pasos-de-la-auditoria-del-20-oct.md).
 

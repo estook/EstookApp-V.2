@@ -1036,7 +1036,7 @@ Y la **trazabilidad de lote**: de un lote concreto, en qué elaboraciones entró
 
 Al cerrar se calcula el consumo teórico, se descuenta del almacén, se guarda la jornada con su origen y fiabilidad, y se dispara el análisis nocturno de Fogón. **Reabrir exige motivo escrito y queda en auditoría.**
 
-**Lo que ya existe es el primer paso**: la caja de cada día, a mano o con CSV, con su origen guardado. Los platos que se apuntan quedan listos para cruzarse con la carta y sus fichas —y de ahí con el almacén— cuando existan (M9 y M10); descontar el consumo teórico es M20.
+**Lo que ya existe desde M16a** ([0105](../decisiones/0105-m16a-la-jornada.md)): **el día se abre solo** a la hora de corte y dura lo que dura —25 horas la noche en que se atrasa la hora—; **se cierra en tres pasos**, las ventas, las mermas y el repaso, porque el del APPCC llega con M16b; queda a nombre de quien cierra por su sesión, **sin PIN en su móvil** (el PIN, cuando se cierre desde un aparato del local); y **lo reabre quien puede cerrar la caja**, escribiendo por qué, a la vista en el cierre. Servicio › Jornada › **En marcha** enseña el día y lo que pasa ahora, y se pone al día sola cada minuto. Descontar el consumo teórico y el análisis de Fogón al cerrar son M20 y Fogón 2, con las ventas plato a plato.
 
 ---
 

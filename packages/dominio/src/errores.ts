@@ -322,6 +322,22 @@ export const ERRORES = {
     { texto: 'Reabrir con motivo', accion: 'abrir_reapertura' },
   ),
 
+  // M16a (0105): un día cerrado no se cambia sin reabrirlo. Lo devuelve también a una app
+  // de antes que todavía tenga «Corregir»: la pantalla nueva ya no lo ofrece.
+  jornada_cerrada: error(
+    'jornada_cerrada',
+    'Ese día ya está cerrado.',
+    'Para cambiar algo, pulsa «Reabrir» en su cierre y escribe por qué.',
+    409,
+  ),
+
+  jornada_abierta: error(
+    'jornada_abierta',
+    'Ese día no está cerrado.',
+    'No hace falta reabrirlo: se puede cerrar directamente.',
+    409,
+  ),
+
   // ── Lo que se pide ─────────────────────────────────────────────────────────
   // Una merma de más de lo que hay (23-sep). El motivo concreto —cuánto queda y
   // cuánto se tira— va en `detalle.porque`, que la pantalla enseña debajo.

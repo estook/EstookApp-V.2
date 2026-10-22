@@ -137,6 +137,13 @@ export const EVENTOS = [
   //                       cinco minutos», llegar tarde y el Calendario (M14) miran
   //                       el horario publicado en vez del de siempre
   'horario.publicado',
+  // ── M16a · la jornada (0105) ────────────────────────────────────────────
+  //
+  //   jornada.reabierta   lo que se calculó con ese día se vuelve a calcular: hoy lo
+  //                       leído en Negocio sale de la caja al pedirlo; con M20, el
+  //                       consumo de lo vendido ese día se rehace con el cierre nuevo.
+  //                       Cerrarlo otra vez publica `caja.cerrada`, como siempre
+  'jornada.reabierta',
 ] as const;
 
 export type TipoDeEvento = (typeof EVENTOS)[number];

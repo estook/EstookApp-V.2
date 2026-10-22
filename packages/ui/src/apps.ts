@@ -565,9 +565,9 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // una de las cuatro posiciones de la app en algo que se hace una vez al
         // día, dejando fuera el reparto.
         //
-        // Y el cierre **ya no espera a M16**: es el cierre de caja de M6½, que es
-        // por donde entran las ventas de quien no conecta un TPV. Lo que sigue
-        // siendo M16 es «En marcha», que necesita el APPCC y la jornada abierta.
+        // El cierre es el cierre de caja de M6½, por donde entran las ventas de quien
+        // no conecta un TPV, y desde M16a **cierra el día** en tres pasos (0105).
+        // «En marcha» es lo que pasa ahora en el local, y se refresca sola (M16a).
         //
         // **Caja es la del TPV de Estook** (M20C): apertura con fondo, entradas y
         // salidas con motivo y arqueo. No es lo mismo que «Cierre», y por eso son
@@ -579,8 +579,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // El orden es el de la tabla de B5, que es el de un día: qué está pasando,
         // la caja mientras se sirve, y el cierre al final. **No es el orden en el
         // que se han construido**, y por eso se entra por `dondeEntraEnElDestino`
-        // y no por la primera.
-        vistas: vistas(['En marcha', 'M16'], ['Caja', 'M20C'], 'Cierre'),
+        // y no por la primera. Con M16a, la primera ya es la que funciona.
+        vistas: vistas('En marcha', ['Caja', 'M20C'], 'Cierre'),
       },
       {
         id: 'ventas',

@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 22 de octubre, por la tarde** ([0105](../decisiones/0105-m16a-la-jornada.md)), sin cambiar de versión: el **Manifiesto** (el cierre en cuatro pasos) cuenta lo que ya hace M16a —el día que se abre solo, tres pasos mientras no hay APPCC, sin PIN en tu móvil, reabrir con motivo quien puede cerrar—, el **Plan** dice M16a construida y **Roles** dice que reabre el día quien cierra la caja, con motivo.
+
 **El 22 de octubre** ([0104](../decisiones/0104-m10-2-los-menus-y-tu-zona.md)), sin cambiar de versión: el **Plan** dice M10 · 2 construida y cambia dos filas de B5 —Escandallos · Escandallos pasa a «Carta · Menús · Bajo objetivo», y Carta · Análisis gana «Tu zona» y deja lo de cada plato para M20—; y el **Manifiesto** pone «Analizar tu zona» en la tabla de créditos (25) y dice que se puede una vez cada 24 horas.
 
 **El 21 de octubre** ([0103](../decisiones/0103-las-respuestas-de-m10-2.md)), sin cambiar de versión: el **Plan** recoge las respuestas de M10 · 2 —los menús y «Analiza mi zona» con Fogón entran; estrella, caballo, puzzle y perro pasan a M20 con Estook TPV; los destacados y las columnas, a M11 y M12; la propuesta del menú del día de Fogón, a cuando un local lleve cuatro semanas de menús (M22); y la competencia de M23 parte de lo que guarda «Analiza mi zona»—; y el **Manifiesto** (14) cuenta los menús como los quiere Richi, la comparación con la zona hecha por Fogón y que el cuadro de los platos llega con el TPV.

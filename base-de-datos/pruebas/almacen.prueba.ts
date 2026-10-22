@@ -692,6 +692,10 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // suena solo a quien está fichado, y una camarera no lee los fichajes de los demás
     // (0027). Devuelve **solo identificadores**, que no salen del servidor, y solo de un
     // local que quien pregunta ve. Son cincuenta y ocho.
+    //
+    // **Y la 0080 (M16a) añade una: `como_esta_la_jornada`.** «En marcha» lo mira también
+    // una camarera, que no lee la caja (0029): si el día está cerrado, cuándo y quién, y
+    // **ni una cifra**, de un local que quien pregunta ve. Son cincuenta y nueve.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -714,6 +718,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'cerrar_demostracion',
       'cerrar_sesiones_de',
       'como_esta_fogon',
+      'como_esta_la_jornada',
       'como_le_suena',
       'crear_cuenta_con_negocio',
       'credencial_para_entrar',

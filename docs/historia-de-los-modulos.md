@@ -3162,6 +3162,31 @@ Las pruebas: `menus.prueba.ts` y `tu-zona.prueba.ts` (el dominio), `los-menus.pr
 `documentos.prueba.ts`, las frases en `contratoDeLosMenus.prueba.ts` y `los-menus.spec.ts` (la
 pantalla, en escritorio y en móvil).
 
+### M16a · La jornada
+
+_22 de octubre de 2026._ Migración `0080`, decisión
+[0105](decisiones/0105-m16a-la-jornada.md). La primera pieza de Estook TPV (0061).
+
+- **El día se abre solo**: sin cierre está abierto. `laJornadaEntera` (dominio) lo cuenta de
+  hora de corte a hora de corte en el reloj del local: 25 horas el sábado 24 de octubre de 2026.
+- **El estado del día** (`cierre_de_caja.estado`, `cerrada` o `reabierta`) y **las
+  reaperturas** (`reapertura_de_jornada`, solo se lee y se añade). Dos reglas en la base
+  (`el_dia_cerrado_no_se_toca`, `los_platos_del_dia_cerrado_no_se_tocan`): un día cerrado solo
+  pasa a reabierto, y solo con su motivo escrito en la misma transacción.
+- **`la_jornada`**: el día, su principio y su final, lo que queda, si está cerrado y quién lo
+  cerró (`como_esta_la_jornada`, sin un euro) y «falta cerrar el martes» (`laCajaSinCerrar`).
+- **`reabrir_la_jornada`**, con motivo; **`cerrar_la_caja`** ya no corrige un día cerrado
+  (`jornada_cerrada`) y al volver a cerrar uno reabierto corrige sin duplicar. Evento
+  `jornada.reabierta`.
+- **En marcha** (`EnMarcha.tsx`): el día y los widgets del Panel de quien mira, cada minuto.
+- **Cerrar el día en tres pasos** (`LosPasosDelCierre.tsx`): las ventas, las mermas
+  (`LasMermasDelDia`) y el repaso (`ElRepaso`); el día cerrado, con «Reabrir» y sus
+  reaperturas a la vista. `conLaJornada` deja la pantalla en pie con la API de antes.
+
+Las pruebas: `tiempo.prueba.ts` (las 25 y las 23 horas), `la-jornada.prueba.ts` (la base y la
+API, como cada persona, y la noche del cambio de hora), `apps.prueba.ts` (Servicio entra por «En
+marcha») y `la-jornada.spec.ts` (la pantalla, en escritorio y en móvil).
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

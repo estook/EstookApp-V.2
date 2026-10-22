@@ -60,6 +60,7 @@ export {
   fechaEnElLocal,
   horaEnElLocal,
   instanteEnElLocal,
+  laJornadaEntera,
   diaDeLaSemana,
   masDias,
   diasEntre,
@@ -72,7 +73,7 @@ export {
   desdeCuandoMira,
 } from './tiempo.ts';
 
-export type { FechaOperativa, HoraDeCorte, TramoQueSeMira } from './tiempo.ts';
+export type { FechaOperativa, HoraDeCorte, JornadaEntera, TramoQueSeMira } from './tiempo.ts';
 
 // ── M2 · unidades y coste · precio ÷ (factor × rendimiento) ───────────────────
 export {

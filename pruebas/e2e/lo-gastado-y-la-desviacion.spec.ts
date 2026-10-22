@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { APP, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
+import { APP, cerrarLaCajaDe, ejecutarEnLaApi, entrarEnLaApp, irA, tokenDe } from './en-la-app.ts';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 
 /**
@@ -60,7 +60,7 @@ test('el consumo: el food cost real y lo gastado de verdad, sin emparejar la caj
     },
   );
   // La caja lo vende con su nombre de la caja.
-  await ejecutarEnLaApi(page.request, rosa, 'cerrar_la_caja', {
+  await cerrarLaCajaDe(page.request, rosa, {
     fecha: unDiaDeCaja(info.project.name, info.repeatEachIndex),
     total_centimos: 2400,
     lineas: [{ concepto: producto, unidades: 12, importe_centimos: 2400 }],

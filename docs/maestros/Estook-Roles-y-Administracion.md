@@ -177,11 +177,11 @@ _Solo en locales que cobran con Estook TPV. Es la propuesta por defecto: el gere
 | **Marcar un plato agotado**                           | Sí                                                 | Sí                                 | Sí                  | **Cocinero y jefe de cocina: son los primeros en saberlo** |
 | Quitar un plato **antes** de mandarlo                 | Sí                                                 | Sí                                 | Sí                  |                                                            |
 | Quitar un plato **ya en cocina**                      | Lo pide; lo aprueba un jefe con su PIN             | Sí, con motivo                     | Sí, con motivo      |                                                            |
-| **Marchar** la siguiente tanda                        | Sí                                                 | Sí                                 | Sí                  | Jefe de cocina                                             |
+| **Marchar** el siguiente pase                         | Sí                                                 | Sí                                 | Sí                  | **Nunca la cocina**: no ve la mesa (0106)                  |
 | **Traspasar una mesa** a otro camarero                | La suya                                            | Cualquiera                         | Cualquiera          |                                                            |
-| **Marcar un plato listo** en cocina                   | No                                                 | No                                 | Sí                  | Cocinero y jefe de cocina                                  |
-| **Deshacer** un plato marcado, pasado el margen       | No                                                 | No                                 | Sí                  | Jefe de cocina                                             |
-| Configurar **partidas y pantallas** de cocina         | No                                                 | No                                 | Sí                  | Jefe de cocina                                             |
+| **Tachar un plato** que sale de cocina                | No                                                 | No                                 | Sí                  | Cocinero y jefe de cocina                                  |
+| **Recuperar** una mesa que se fue a «Fuera»           | No                                                 | No                                 | Sí                  | Cocinero y jefe de cocina                                  |
+| Configurar **las pantallas** de cocina                | No                                                 | No                                 | Sí                  | Jefe de cocina                                             |
 | Invitar o descontar                                   | No: lo pide, y lo aprueba un jefe con su PIN       | **Hasta su límite**, con motivo    | Sí, con motivo      |                                                            |
 | Cobrar                                                | Sí, si el local lo permite (encendido por defecto) | Sí                                 | Sí                  |                                                            |
 | Factura a petición del cliente (canje del ticket)     | No                                                 | Sí                                 | Sí                  |                                                            |
@@ -212,7 +212,7 @@ _Solo en locales que cobran con Estook TPV. Es la propuesta por defecto: el gere
 
 **Dónde abre cada uno.** En un terminal, en la función del terminal. Con su sesión en un aparato propio, el camarero y el jefe de sala abren Estook TPV en **Sala**; el cocinero y el jefe de cocina, en **Cocina**; el gerente, en el **Panel** de siempre, con Estook TPV a un toque. Cada uno puede cambiarlo para sí mismo, salvo que el local lo tenga fijado.
 
-**Cocina:** el cocinero ve la pantalla de cocina sin importes; el jefe de cocina, además, ordena prioridades.
+**Cocina:** el cocinero ve la pantalla de cocina sin importes: **el ticket entero de cada mesa**, sin partidas, y tacha lo que sale; **marchar es siempre de la sala** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). El jefe de cocina, además, ordena prioridades.
 
 **La caja:** el arqueo es **ciego de fábrica** y solo el gerente lo apaga en su local. Cada apertura del cajón sin venta sale en el informe X y en el Z **con quién y cuándo**, y eso no lo apaga nadie (Anexo, 10.6). **Con bolsa**, cada camarero liquida la suya en un cajón al acabar, contando sin ver lo esperado, y su descuadre queda a su nombre (Anexo, 5.5).
 

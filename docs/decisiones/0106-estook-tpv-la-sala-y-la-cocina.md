@@ -4,7 +4,7 @@
 **Estado:** decidido con Richi sobre las pantallas dibujadas («todo correcto, lo dejamos así»), sin construir.
 **Sigue:** el Anexo de TPV y facturación (capítulos 3 y 10), que pasa a la versión 1.3 con esto, y el
 [plan de M20](../m20-ventas-y-consumo.md). **Cambia:** el Anexo 3.1, 3.2, 3.7, 10.3 y 10.4; el Plan
-(M20A y el orden de la Fase 4); el mapa y ESTADO.
+(M20A y el orden de la Fase 4); Roles 1.12 (marchar es de la sala; la cocina tacha); el mapa y ESTADO.
 
 Las pantallas, en una página privada de Richi:
 [Estook TPV · las pantallas](https://claude.ai/artifact/RFZz75ttJGLyZpGpdpmrX8) (18 pantallas). Mandan

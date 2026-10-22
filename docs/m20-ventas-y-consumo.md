@@ -2,8 +2,8 @@
 
 > **Estado: plan, sin construir.** Escrito el 22-oct-2026, con M16a ya en producción (80
 > migraciones, API 102/230), y **corregido el mismo día con lo que dijo Richi**: el cierre a mano es
-> una prueba y no trae platos; los platos llegarán **de Estook TPV o de Revo conectado**. Antes de
-> construir, **una sola pregunta: cuándo se hace M20** (apartado 4).
+> una prueba y no trae platos; los platos llegarán **de Estook TPV o de Revo conectado**. **Se hace con
+> el cobro (M20C)**: lo contestó Richi el 22-oct ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md), apartado 4).
 
 ## 1 · Por qué toca M20, si acabamos de terminar M10
 
@@ -62,23 +62,12 @@ se tira; y el recuento cuadra la diferencia**. Con eso:
 5. **Revo, cuando se conecte, entra por el mismo motor**: emparejar una vez «Croq. caseras» de Revo con
    «Croquetas de jamón» de tu carta (Estook lo propone, tú dices sí) y desde ahí, igual que Estook TPV.
 
-## 4 · La pregunta: ¿cuándo se hace M20?
+## 4 · Cuándo se hace: con el cobro
 
-**De dónde sale.** Del orden de la 0061 y de lo del apartado 2: M20 va primero en el papel, pero sin
-Estook TPV cobrando no tiene ventas que mover.
-
-- **A · Ahora, como está escrito.** Se construye el motor y se prueba con ventas de ejemplo. En IKATZ
-  **no cambia nada que se vea** hasta que Estook TPV cobre, dentro de varias entregas.
-- **B · Justo antes de cobrar (con M20C).** Ahora se sigue con lo que sí se ve: **M19a · Estook Link**
-  (el programa del local que imprime las comandas y mantiene sala y cocina sin internet) y **M20A ·
-  Sala y cocina** (tomar nota en la tablet o el móvil y que llegue a cocina). M20 se hace cuando nace
-  la primera venta de verdad, y se prueba con ella.
-- **C · Volver al orden de los números**: M11 a M17 primero (los PDF y diseños, la carta con QR,
-  equipo, calendario, fichajes, APPCC y cuaderno) y el TPV después. Solo tiene sentido si Hacienda
-  aplaza VeriFactu a 2028 en el BOE, y todavía no lo ha hecho.
-
-**Recomiendo B**: se construye lo que se puede probar en IKATZ, y M20 llega con ventas reales en vez de
-a ciegas, que es la misma regla con la que se partió Fogón en dos (0095). **Lo que decides: A, B o C.**
+**Contestado el 22-oct** ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)): **B, justo antes de cobrar**. Lo siguiente es
+**M20A · 1 · la sala y la cocina en pantalla**; después **M19a · Estook Link** (el papel y sin internet),
+**M20A · 2**, **M20B** y **M20C**, y **M20 va con M20C**, cuando nazca la primera venta de verdad. Las
+pantallas que se aprobaron antes, con todo lo que hacen la sala y la cocina, en la 0106.
 
 ## 5 · Lo que será M20 cuando toque, en dos entregas
 

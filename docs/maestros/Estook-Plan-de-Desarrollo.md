@@ -480,8 +480,8 @@ HECHO         M0 a M7, y M6½
 ANTES DE M8   H · Horarios  →  I · La app instalable  →  C · El chat
               →  A3 · Vendedores  →  A4 · Ventas del admin
 FASE 2        M8 → M9 → M10
-ESTOOK TPV    M16a · La jornada → M20 · Ventas y consumo → M19a · Estook Link
-              → M20A · Sala y cocina → M20B · Facturación → M20C · Cobro y caja
+ESTOOK TPV    M16a · La jornada → M20A · 1 · Sala y cocina en pantalla → M19a · Estook Link
+              → M20A · 2 · En papel → M20B · Facturación → M20C · Cobro y caja, con M20
 DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b
               → Fase 5 (M21 a M25) → Fase 6 (M26 a M28) → Fase 7 (M29 y M30)
 ```
@@ -731,15 +731,15 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ## Fase 4 · Las ventas
 
-> **Orden de construcción, desde la versión 1.4:**
+> **Orden de construcción, desde el 22-oct-2026** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)):
 >
-> **M16a → M20 → M19a → M20A → M20B → M20C**, justo después de M10; y **M18 y M19b**, al final de la Fase 3.
+> **M16a → M20A · 1 → M19a → M20A · 2 → M20B → M20C con M20**, justo después de M10; y **M18 y M19b**, al final de la Fase 3.
 >
-> M20 va primero porque su motor de consumo sirve para todas las vías —cierre a mano, CSV, Estook TPV y conectores— y ya trabaja con lo que dejó M6½.
+> **M20A · 1, la sala y la cocina en pantalla, va primero**: se prueba en IKATZ con dos tablets y por internet, sin imprimir ni cobrar. **M20 deja de ir el primero**: el cierre a mano no trae platos, así que sin cobro no tiene ventas que mover; va con M20C, donde nace la venta ([el plan](../m20-ventas-y-consumo.md)). Hasta la 0106 el orden era M16a → M20 → M19a → M20A (1.4).
 >
 > **Y Estook Link se parte en dos, porque hace dos cosas que se necesitan en momentos distintos:**
 >
-> - **M19a · el centro del local.** El programa, su emparejamiento con el local, el centro que mantiene sala y cocina sin internet, y la impresión. Va **antes de M20A**, porque la sala y la cocina no sirven de nada sin imprimir ni sin aguantar un corte.
+> - **M19a · el centro del local.** El programa, su emparejamiento con el local, el centro que mantiene sala y cocina sin internet, y la impresión. Va **entre M20A · 1 y M20A · 2**: la sala y la cocina se prueban primero en pantalla y con internet, y Link les da el papel y el aguante a los cortes antes de que cobren.
 > - **M19b · el conector de TPV.** Vigilar la carpeta y los lectores de formato de cada marca. Va con M18, porque solo lo necesita quien sigue con su TPV.
 
 ### M18 · El conector · vía nube
@@ -756,7 +756,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M19 · Estook Link · se entrega en dos partes
 
-**M19a va antes de M20A y M19b va al final**, por lo dicho en la cabecera de la fase. Lo de abajo es el módulo entero; lo que entra en cada parte se dice al final de la ficha.
+**M19a va entre M20A · 1 y M20A · 2, y M19b al final**, por lo dicho en la cabecera de la fase. Lo de abajo es el módulo entero; lo que entra en cada parte se dice al final de la ficha.
 
 **Entra.** Servicio en Rust, firmado, **para Windows, Linux y macOS** —vale un mini PC o una Raspberry—, que **vigila una carpeta** y sube los ficheros nuevos · emparejamiento con un código de un solo uso · solo lectura, sin puertos abiertos, saliente y cifrado · latido cada 15 minutos · cola local si no hay red · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
 
@@ -766,18 +766,18 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Mantiene la sala y la cocina sin internet.** Los terminales le hablan por la red del local: la comanda llega a la pantalla de cocina y a la impresora aunque no haya internet, y Link sube todo al volver, en orden y sin duplicar.
 - **Guarda la cola del local.** Lo que no ha subido se queda en su disco, no en la memoria de una tablet.
 
-**Reglas críticas.** **Link no entra en la base de datos del TPV ajeno.** Si un formato cambia, guarda el fichero original, avisa y no rompe nada. **Si se cae internet, Link sigue repartiendo e imprimiendo.** **Link no decide nada**: no calcula precios, no numera tickets y no guarda una clave de servicio; lo que sube pasa por los mismos comandos, los mismos permisos y las mismas claves de idempotencia que todo lo demás. **El navegador le habla por la red local**, y eso pide el permiso de red local del navegador y un certificado: cómo, en la Arquitectura, capítulo 7, y **se comprueba con un prototipo antes de escribir M20A**.
+**Reglas críticas.** **Link no entra en la base de datos del TPV ajeno.** Si un formato cambia, guarda el fichero original, avisa y no rompe nada. **Si se cae internet, Link sigue repartiendo e imprimiendo.** **Link no decide nada**: no calcula precios, no numera tickets y no guarda una clave de servicio; lo que sube pasa por los mismos comandos, los mismos permisos y las mismas claves de idempotencia que todo lo demás. **El navegador le habla por la red local**, y eso pide el permiso de red local del navegador y un certificado: cómo, en la Arquitectura, capítulo 7, y **se comprueba con un prototipo antes de escribir M20A · 2** (M20A · 1 va por internet).
 
 **Terminado cuando.** M19a: **con el router de internet desenchufado, una comanda tomada en una tablet sale en la pantalla de cocina y en la impresora en menos de 2 segundos**, y al volver la conexión está en la nube una sola vez. M19b: con el PC apagado dos días, al arrancar sube lo pendiente sin duplicar; y un fichero con formato inesperado se queda guardado con su aviso.
 
 **Qué entra en cada parte.**
 
-- **M19a · el centro del local** (antes de M20A): el servicio en Rust para Windows, Linux y macOS, firmado · emparejamiento con código de un solo uso · hacia internet, saliente y cifrado, sin puertos abiertos al exterior · **el centro de la red local**, con su cola en disco · latido · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · **la cola de impresión, su traducción a ESC/POS y el envío a la impresora por red, USB o Bluetooth** · el cajón.
+- **M19a · el centro del local** (entre M20A · 1 y M20A · 2): el servicio en Rust para Windows, Linux y macOS, firmado · emparejamiento con código de un solo uso · hacia internet, saliente y cifrado, sin puertos abiertos al exterior · **el centro de la red local**, con su cola en disco · latido · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · **la cola de impresión, su traducción a ESC/POS y el envío a la impresora por red, USB o Bluetooth** · el cajón.
 - **M19b · el conector de TPV** (con M18, al final): vigilancia de la carpeta, subida de ficheros nuevos y lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
 
 ### M20 · Ventas, emparejamiento y consumo
 
-**En plan desde el 22-oct**, en dos entregas: [`m20-ventas-y-consumo.md`](../m20-ventas-y-consumo.md). Los platos uno a uno llegan de Estook TPV (M20C) o de un conector (M18), no del cierre a mano; por eso **Richi decide cuándo se hace**. Y con ventas plato a plato, **«Gastado en cocina» y «Vendido a un cliente» (0037) dejan de restar**, para no contar nada dos veces.
+**En plan desde el 22-oct**, en dos entregas: [`m20-ventas-y-consumo.md`](../m20-ventas-y-consumo.md). Los platos uno a uno llegan de Estook TPV (M20C) o de un conector (M18), no del cierre a mano; por eso **va con M20C**, donde nace la venta (lo contestó Richi el 22-oct, [0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). Y con ventas plato a plato, **«Gastado en cocina» y «Vendido a un cliente» (0037) dejan de restar**, para no contar nada dos veces.
 
 **Entra.** Pantalla de ventas con **el origen y su fiabilidad siempre a la vista** · emparejamiento de artículos con propuesta por parecido y confirmación · explosión de menús y modificadores · caminos manuales explicados por marca y por sistema · foto del Z y total del día · consumo teórico descontando del almacén · lo no emparejado cuenta en dinero y no descuenta género, avisado · **lo que deja cada plato, por canal: estrella, caballo, puzzle y perro**, con su precio recomendado y los candidatos a retirar, en Carta › Análisis (de M10, 0103: «no te olvides», dijo Richi).
 
@@ -800,7 +800,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M20A · Sala y cocina
 
-**Objetivo.** Que la sala tome nota en tablet o en móvil y la cocina lo reciba al momento, sin papel. Todavía sin cobrar.
+**Objetivo.** Que la sala tome nota en tablet o en móvil y la cocina lo reciba al momento. Todavía sin cobrar.
+
+**Cómo se ve y cómo trabaja, decidido con Richi sobre las pantallas** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)): **a cocina llega el ticket entero de la mesa, sin partidas**; **marcha el camarero**, avisado cuando ha salido todo el pase; la cocina tacha lo que sale y la mesa se va sola a «Fuera»; tomar nota en **Bebidas · Carta · Menú del día**, con notas escritas y sin preguntar el punto; las copas por marca con «¿Con qué?»; y las bebidas y los cafés, configurados una vez en Estook. **Se entrega en dos**: **M20A · 1**, todo en pantalla y por internet (antes de Link), y **M20A · 2**, la comanda en papel, la cuenta impresa y sin internet (después de M19a). Donde lo de abajo diga otra cosa, manda la 0106.
 
 **Entra** (el detalle, en el capítulo 3 del Anexo).
 

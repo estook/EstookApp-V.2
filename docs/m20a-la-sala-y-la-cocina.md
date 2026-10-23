@@ -1,7 +1,7 @@
 # M20A · 1 · La sala y la cocina en pantalla
 
-> **Estado: en construcción desde el 22-oct-2026**, en la rama `m20a-1-la-sala-y-la-cocina`. Lo que
-> hace cada pantalla lo decidió Richi sobre los dibujos ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md));
+> **Estado: 1 · 1 hecha el 23-oct-2026** (la base y la API, sin pantallas; rama
+> `m20a-1-la-sala-y-la-cocina`). **Lo siguiente, 1 · 2: la sala.** Lo que hace cada pantalla lo decidió Richi sobre los dibujos ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md));
 > aquí está **cómo se construye y en qué orden**. Es la primera pieza de Estook TPV que se toca con
 > las manos: **la sala toma nota en una tablet o en el móvil y la cocina lo ve en su pantalla, por
 > internet**. Sin imprimir (eso es M19a y M20A · 2) y **sin cobrar** (M20C).
@@ -42,7 +42,8 @@ la sesión de cada uno.
 
 | Operación                               | Quién (Roles 1.12)                                                                                                          | Lo que no deja                                                  |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Abrir una mesa, pedir, cambiar una nota | Sala                                                                                                                        | Pedir en una mesa cerrada o anulada                             |
+| **Dibujar el plano**: zonas y mesas     | Quien toca los ajustes del local (Ajustes › Sala)                                                                           | Archivar una mesa abierta, o dos mesas con el mismo nombre      |
+| Abrir una mesa, pedir, cambiar una nota | Sala                                                                                                                        | Pedir en una mesa cerrada o anulada, o un plato agotado         |
 | **Mandar a cocina**                     | Sala                                                                                                                        | Mandar dos veces lo mismo: cada línea nace con su identificador |
 | **Marchar el 2.º**                      | Sala; **nunca la cocina**                                                                                                   | Marchar un pase ya marchado                                     |
 | **Tachar y destachar** un plato         | Cocina (y quien lleva el local)                                                                                             | Tachar lo que no se ha mandado                                  |
@@ -78,3 +79,39 @@ mismo toque del chat (0073). Si el toque no llega, la pantalla pregunta cada poc
 | 20 · ¿Avisa solo cuando hace falta? | A la sala, cuando ha salido todo un pase; a la cocina, lo nuevo, lo anulado y la marcha                                                                                |
 | 21 · ¿Con datos a medias?           | Sin plano, se pide en barra o para llevar; un plato sin foto sale con su nombre                                                                                        |
 | 22 · ¿Señala a alguien?             | No: lo que ha pasado dice quién, como cualquier historial, y nada más                                                                                                  |
+
+## 1 · 1, entregada (23-oct-2026)
+
+**La base**: la migración 0081 (cinco tablas, tres permisos y las reglas que la base vuelve a mirar
+aunque alguien se salte la API: marchar es de la sala, tachar de la cocina, lo mandado no se
+reescribe y quitarlo pide motivo y un jefe). **La API**: 3 consultas (`el_plano`, `la_mesa`,
+`la_cocina`) y 23 comandos (el plano, la sala y la cocina), que la dejan en **105 consultas y 253
+comandos**. **El dominio** (`packages/dominio/src/sala.ts`): qué pase sale al mandar, cuándo toca
+marchar, qué dice el botón grande y dónde está la mesa en la cocina, en una sola función para la
+sala y la cocina.
+
+**La prueba** (`base-de-datos/pruebas/la-sala-y-la-cocina.prueba.ts`) juega la mesa 6 entera: Rosa
+dibuja el plano; Sara abre para cuatro, pide primero las bebidas y luego dos de carta y dos menús;
+sale el 1.º y el 2.º espera; Marcos lo ve sin un euro, tacha y a Sara le toca marchar; NUEVO,
+CAMBIO, ANULADO y VUELVE; «Fuera», «Recuperar» y «Todo fuera»; los postres salen solos; pasar la
+mesa, cambiarla, juntarla y liberarla; anular; «todo junto» y la barra. Y Luis, de otro negocio,
+no ve nada.
+
+### Lo que decidí al construirlo
+
+1. **El plano entra en 1 · 1** (seis operaciones), aunque su pantalla sea de 1 · 2: sin mesas no se
+   abre ninguna, y la API no se podía probar entera.
+2. **Una mesa recién abierta dice «Pedir»**, no «Cobrar», y sale en el plano como «sin pedir».
+3. **Una mesa anulada no desaparece de la cocina**: pasa a «Fuera» marcada ANULADA, con su motivo,
+   para que nadie siga haciéndola sin saber por qué se fue.
+4. **Quitar el último plato que faltaba de un pase da el pase por salido**, igual que tacharlo.
+5. **Lo agotado no se pide**: la pantalla lo enseñará apagado, y la API lo vuelve a mirar.
+6. **Liberar la mesa no quita nada de la cocina**: lo que quede sigue en «En marcha» hasta tacharlo.
+7. **Quitar lo que ya está en cocina** lo hace directamente quien tiene «Quitar de cocina» (un
+   jefe). Que el camarero lo pida y el jefe lo apruebe con su PIN llega con los terminales (1 · 2).
+8. **El plato de un menú se cobra por su suplemento** del último día montado; la línea del menú no
+   va a cocina, van sus platos.
+9. **«Recuperar» devuelve lo último que se tachó** del último pase que salió: es lo que se dio por
+   salido sin querer.
+10. **Pasar mesas**: el camarero, las suyas; quien tiene «Quitar de cocina», cualquiera; y solo a
+    quien toma nota en el local.

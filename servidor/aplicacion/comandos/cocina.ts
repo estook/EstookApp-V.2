@@ -1,14 +1,13 @@
 import { z } from 'zod';
-import { elPaseHaSalido } from '@estook/dominio';
 import { tocarElServicio } from '../al-segundo.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import {
   apuntarEnLaMesa,
-  comoPlatoDeLaMesa,
   elLocalDelServicio,
   lasCuentas,
   losPases,
   losPlatos,
+  rehacerElFueraDelPase,
   type FilaDeLinea,
 } from '../sala.ts';
 
@@ -51,22 +50,6 @@ async function elPlatoEnCocina(
     throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese plato se anuló: no hay que sacarlo.' });
   }
   return linea;
-}
-
-/** Si el pase de este plato ha salido entero, lo marca fuera; si no, lo deja abierto. */
-async function rehacerElFueraDelPase(
-  contexto: Contexto,
-  cuentaId: string,
-  pase: number,
-): Promise<void> {
-  const platos = (await losPlatos(contexto, [cuentaId])).map(comoPlatoDeLaMesa);
-  const salio = elPaseHaSalido(platos, pase);
-  await contexto.sql`
-    update estook.pase
-       set fuera_en = ${salio ? contexto.ahora.toISOString() : null}::timestamptz
-     where cuenta_id = ${cuentaId}::uuid and numero = ${pase}
-       and (fuera_en is null) = ${salio}
-  `;
 }
 
 export const tachar = comando<{ linea_id: string }, { lineaId: string; paseFuera: boolean }>({

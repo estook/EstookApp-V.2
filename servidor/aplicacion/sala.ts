@@ -1,4 +1,9 @@
-import type { LaMesaEnCocina, PaseDeLaMesa, PlatoDeLaMesa } from '@estook/dominio';
+import {
+  elPaseHaSalido,
+  type LaMesaEnCocina,
+  type PaseDeLaMesa,
+  type PlatoDeLaMesa,
+} from '@estook/dominio';
 import { laOrganizacionDeLaSesion } from './alta.ts';
 import { FalloDeAplicacion, type Contexto } from './contrato.ts';
 import { comoLista } from './listas.ts';
@@ -35,6 +40,7 @@ export interface FilaDeCuenta {
   readonly abierta_en: string;
   readonly liberada_en: string | null;
   readonly anulada_en: string | null;
+  readonly motivo_de_anular: string | null;
 }
 
 export interface FilaDeLinea {
@@ -79,7 +85,8 @@ export async function lasCuentas(
            c.nota_para_cocina,
            to_char(c.abierta_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as abierta_en,
            to_char(c.liberada_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as liberada_en,
-           to_char(c.anulada_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as anulada_en
+           to_char(c.anulada_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as anulada_en,
+           c.motivo_de_anular
       from estook.cuenta c
       left join estook.mesa m on m.id = c.mesa_id
       left join estook.persona p on p.id = c.camarero_id
@@ -168,6 +175,22 @@ export function elTituloDeLaCuenta(cuenta: FilaDeCuenta): string {
   if (cuenta.tipo === 'barra') return cuenta.nombre === null ? 'Barra' : `Barra · ${cuenta.nombre}`;
   const tipo = cuenta.tipo === 'reparto' ? 'Reparto' : 'Para llevar';
   return cuenta.nombre === null ? tipo : `${tipo} · ${cuenta.nombre}`;
+}
+
+/** Si el pase de este plato ha salido entero, lo marca fuera; si no, lo deja abierto. */
+export async function rehacerElFueraDelPase(
+  contexto: Contexto,
+  cuentaId: string,
+  pase: number,
+): Promise<void> {
+  const platos = (await losPlatos(contexto, [cuentaId])).map(comoPlatoDeLaMesa);
+  const salio = elPaseHaSalido(platos, pase);
+  await contexto.sql`
+    update estook.pase
+       set fuera_en = ${salio ? contexto.ahora.toISOString() : null}::timestamptz
+     where cuenta_id = ${cuentaId}::uuid and numero = ${pase}
+       and (fuera_en is null) = ${salio}
+  `;
 }
 
 /** Lo que pasa en una mesa, en la auditoría de siempre: quién, cuándo y qué. */

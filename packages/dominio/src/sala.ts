@@ -12,8 +12,9 @@
  *     come el 1.º, espera.
  *   · **Cuándo toca marchar.** Cuando la cocina ha sacado todo lo de antes. **Marcha la
  *     sala, nunca la cocina** (0106): esto solo le dice a la sala que ya puede.
- *   · **Qué dice el botón grande.** Lo siguiente: mandar lo que no se ha mandado, marchar
- *     lo que toca, y si no, cobrar. El camarero no tiene que pensar.
+ *   · **Qué dice el botón grande.** Lo siguiente: pedir en una mesa recién abierta, mandar
+ *     lo que no se ha mandado, marchar lo que toca, y si no, cobrar. El camarero no tiene
+ *     que pensar.
  *   · **Dónde está la mesa en la cocina.** En marcha, esperando a que la sala marche, o
  *     fuera, cuando ha salido todo.
  */
@@ -103,6 +104,7 @@ export function elPaseQueTocaMarchar(
 
 /** Lo que dice el botón grande de la mesa. */
 export type LoSiguiente =
+  | { readonly que: 'pedir' }
   | { readonly que: 'mandar' }
   | { readonly que: 'marchar'; readonly pase: number }
   | { readonly que: 'cobrar' };
@@ -111,6 +113,8 @@ export function loSiguienteDeLaMesa(
   platos: readonly PlatoDeLaMesa[],
   pases: readonly PaseDeLaMesa[],
 ): LoSiguiente {
+  // Recién abierta (o con todo quitado): lo primero es tomar nota.
+  if (platos.every((p) => p.quitado)) return { que: 'pedir' };
   if (platos.some((p) => !p.mandado && !p.quitado && p.destino !== 'ninguno')) {
     return { que: 'mandar' };
   }

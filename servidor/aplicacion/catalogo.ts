@@ -191,6 +191,14 @@ import {
   quitarPlato,
 } from './comandos/sala.ts';
 import { destachar, recuperar, tachar, todoFuera } from './comandos/cocina.ts';
+import {
+  archivarMesa,
+  archivarZonaDeSala,
+  cambiarMesa,
+  cambiarZonaDeSala,
+  crearMesa,
+  crearZonaDeSala,
+} from './comandos/plano.ts';
 import { leerLaCarta, leerPaginaConFogon } from './comandos/leer-la-carta.ts';
 import { elMenuEnPdf, misMenus } from './consultas/menus.ts';
 import { miZona } from './consultas/mi-zona.ts';
@@ -678,6 +686,14 @@ export const catalogo = {
     [reabrirLaJornada.nombre]: reabrirLaJornada,
 
     // ── M20A · 1 · la sala y la cocina (0106) ─────────────────────────────
+    //
+    // El plano lo dibuja quien toca los ajustes del local.
+    [crearZonaDeSala.nombre]: crearZonaDeSala,
+    [cambiarZonaDeSala.nombre]: cambiarZonaDeSala,
+    [archivarZonaDeSala.nombre]: archivarZonaDeSala,
+    [crearMesa.nombre]: crearMesa,
+    [cambiarMesa.nombre]: cambiarMesa,
+    [archivarMesa.nombre]: archivarMesa,
     //
     // La sala abre, pide, manda y **marcha**; la cocina tacha lo que sale y nunca marcha.
     [abrirMesa.nombre]: abrirMesa,

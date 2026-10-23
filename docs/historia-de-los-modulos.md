@@ -3187,6 +3187,28 @@ Las pruebas: `tiempo.prueba.ts` (las 25 y las 23 horas), `la-jornada.prueba.ts` 
 API, como cada persona, y la noche del cambio de hora), `apps.prueba.ts` (Servicio entra por «En
 marcha») y `la-jornada.spec.ts` (la pantalla, en escritorio y en móvil).
 
+### M20A · 1 · 1 · La sala y la cocina, por dentro
+
+_23 de octubre de 2026._ Migración `0081`, decisión
+[0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md), plan
+[`m20a-la-sala-y-la-cocina.md`](m20a-la-sala-y-la-cocina.md). Estook TPV sin pantallas todavía.
+
+- **El plano** (`zona_de_sala`, `mesa`) y **la mesa abierta** (`cuenta`, `pase`,
+  `linea_de_cuenta`): cada plato con su precio congelado, su nota, su pase y cuándo salió. Lo
+  mandado no se reescribe: quitarlo es una marca con quién y por qué.
+- **Tres permisos** (Roles 1.12): `accion.tomar_nota` (la sala, que también marcha),
+  `accion.cocinar` (la cocina, que tacha y nunca marcha) y `accion.quitar_de_cocina` (los jefes).
+  Dos reglas en la base: `el_pase_lo_marcha_la_sala` y `lo_mandado_no_se_reescribe`.
+- **El dominio** (`sala.ts`): `losPasesQueSalenAlMandar`, `elPaseQueTocaMarchar`,
+  `loSiguienteDeLaMesa` (pedir, mandar, marchar o cobrar) y `laMesaEnCocina`.
+- **La API**: `el_plano`, `la_mesa` y `la_cocina` (sin un importe); el plano (`crear_mesa`…), la
+  sala (`abrir_mesa`, `pedir`, `mandar_a_cocina`, `marchar`, `quitar_plato`, `juntar_mesas`,
+  `pasar_a_otro_camarero`, `anular_mesa`…) y la cocina (`tachar`, `todo_fuera`, `recuperar`…).
+  Cada cambio, a la auditoría y al segundo a la sala y la cocina (`tocarElServicio`).
+
+Las pruebas: `sala.prueba.ts` (el dominio) y `la-sala-y-la-cocina.prueba.ts` (la mesa 6 entera,
+contra la base y como cada persona). Las pantallas, en M20A · 1 · 2 y 1 · 3.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

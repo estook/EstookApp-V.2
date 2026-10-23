@@ -122,10 +122,18 @@ describe('el botón grande dice lo siguiente', () => {
     });
   });
 
-  it('lo quitado sin mandar no cuenta para mandar', () => {
+  it('una mesa recién abierta, sin nada: pedir (no «cobrar»)', () => {
+    expect(loSiguienteDeLaMesa([], [])).toEqual({ que: 'pedir' });
+  });
+
+  it('lo quitado sin mandar no cuenta: la mesa vuelve a estar por pedir', () => {
     expect(loSiguienteDeLaMesa([plato(1, { mandado: false, quitado: true })], [])).toEqual({
-      que: 'cobrar',
+      que: 'pedir',
     });
+  });
+
+  it('con solo las bebidas servidas: cobrar, como en la barra', () => {
+    expect(loSiguienteDeLaMesa([bebida({ mandado: true })], [])).toEqual({ que: 'cobrar' });
   });
 });
 

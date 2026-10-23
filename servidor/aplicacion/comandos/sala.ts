@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { horaDeCorte, jornadaDe, losPasesQueSalenAlMandar } from '@estook/dominio';
+import { losAgotadosDelLocal } from '../agotados.ts';
 import { tocarElServicio } from '../al-segundo.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
@@ -12,6 +13,7 @@ import {
   laCuentaAbierta,
   losPases,
   losPlatos,
+  rehacerElFueraDelPase,
   type FilaDeLinea,
 } from '../sala.ts';
 
@@ -199,6 +201,8 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
     const nuevos = entrada.platos.filter((p) => !yaEstan.has(p.id));
     const hoy = await laJornadaDeHoy(contexto, localId);
     const lineasDeMenu = new Set(nuevos.filter((p) => p.menu_id !== undefined).map((p) => p.id));
+    // Lo agotado no se pide (M10 · 1): la pantalla lo enseña apagado, y esto lo vuelve a mirar.
+    const agotados = await losAgotadosDelLocal(contexto, localId);
 
     for (const p of nuevos) {
       if ((p.plato_id === undefined) === (p.menu_id === undefined)) {
@@ -243,6 +247,11 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
           });
         }
         nombre = plato.nombre;
+        if (agotados.has(p.plato_id ?? '')) {
+          throw new FalloDeAplicacion('faltan_datos', {
+            porque: `«${plato.nombre}» está agotado: elige otro, o quítalo de agotados si ya hay.`,
+          });
+        }
         if (p.parte_de !== undefined) {
           // El plato elegido de un menú: se cobra solo su suplemento, el del último día montado.
           const padre = await contexto.sql<{ menu_id: string | null }[]>`
@@ -409,6 +418,8 @@ export const quitarPlato = comando<EntradaQuitarPlato, { lineaId: string; borrad
              motivo_de_quitar = ${entrada.motivo}
        where (id = ${linea.id}::uuid or parte_de = ${linea.id}::uuid) and quitada_en is null
     `;
+    // Si era lo último que faltaba de su pase, el pase ha salido.
+    if (linea.pase !== null) await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase);
     await avisar(contexto, localId, 'quitar_plato', linea.cuenta_id, {
       plato: linea.nombre,
       motivo: entrada.motivo,

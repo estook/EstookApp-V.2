@@ -696,6 +696,11 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // **Y la 0080 (M16a) añade una: `como_esta_la_jornada`.** «En marcha» lo mira también
     // una camarera, que no lee la caja (0029): si el día está cerrado, cuándo y quién, y
     // **ni una cifra**, de un local que quien pregunta ve. Son cincuenta y nueve.
+    //
+    // **Y la 0081 (M20A · 1) añade una: `quien_lleva_el_servicio`.** Lo que cambia una
+    // mesa se avisa al segundo a quien toma nota o cocina en ese local, y una camarera no
+    // puede leer las membresías de la cocina. Como `quien_trabaja_ahora`: solo sus ids, que
+    // no salen del servidor, de un local que quien pregunta ve. Son sesenta.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -748,6 +753,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'poner_credencial',
       'poner_de_la_casa',
       'puede_ver_el_canal',
+      'quien_lleva_el_servicio',
       'quien_recibe',
       'quien_trabaja_ahora',
       'quien_ve_el_canal',

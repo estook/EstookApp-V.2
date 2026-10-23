@@ -75,7 +75,8 @@ function lasIniciales(nombre: string | null): string | null {
 
 // ═══ El plano ═════════════════════════════════════════════════════════════════
 
-export type EstadoDeLaMesa = 'libre' | 'comiendo' | 'toca_marchar' | 'por_mandar';
+/** Libre; sentados y sin pedir; comiendo; ha salido el pase y toca marchar; con algo sin mandar. */
+export type EstadoDeLaMesa = 'libre' | 'sin_pedir' | 'comiendo' | 'toca_marchar' | 'por_mandar';
 
 export interface CuentaEnElPlano {
   readonly cuentaId: string;
@@ -137,6 +138,7 @@ function enElPlano(
 
 function elEstado(cuenta: CuentaEnElPlano | null): EstadoDeLaMesa {
   if (cuenta === null) return 'libre';
+  if (cuenta.loSiguiente.que === 'pedir') return 'sin_pedir';
   if (cuenta.loSiguiente.que === 'marchar') return 'toca_marchar';
   if (cuenta.loSiguiente.que === 'mandar') return 'por_mandar';
   return 'comiendo';
@@ -350,6 +352,8 @@ export interface TarjetaDeCocina {
   readonly notaParaCocina: string | null;
   readonly porPases: boolean;
   readonly estado: LaMesaEnCocina;
+  /** La anuló un jefe: la cocina deja de hacerla. Va a «Fuera» con su motivo. */
+  readonly anulada: string | null;
   readonly llegoEn: string;
   /** Desde la llegada, o desde la última marcha si la hubo. */
   readonly minutos: number;
@@ -390,7 +394,11 @@ function laTarjeta(
 ): TarjetaDeCocina | null {
   const deCocina = platos.filter((l) => l.destino === 'cocina' && l.mandada_en !== null);
   if (deCocina.length === 0) return null;
-  const estado = laMesaEnCocina(platos.map(comoPlatoDeLaMesa), pases.map(comoPaseDeLaMesa));
+  const anulada = cuenta.anulada_en === null ? null : (cuenta.motivo_de_anular ?? '');
+  const estado =
+    anulada === null
+      ? laMesaEnCocina(platos.map(comoPlatoDeLaMesa), pases.map(comoPaseDeLaMesa))
+      : 'fuera';
   const llegoEn = deCocina.map((l) => l.mandada_en as string).sort()[0] as string;
   const marchas = pases.flatMap((p) => (p.marchado_en === null ? [] : [p.marchado_en])).sort();
   const ultimaMarcha = marchas.length > 1 ? (marchas[marchas.length - 1] ?? null) : null;
@@ -405,10 +413,16 @@ function laTarjeta(
     notaParaCocina: cuenta.nota_para_cocina,
     porPases: cuenta.por_pases,
     estado,
+    anulada,
     llegoEn,
     minutos: minutosDesde(contexto, ultimaMarcha ?? llegoEn) ?? 0,
     ultimaMarcha,
-    fueraEn: estado === 'fuera' ? (fueras[fueras.length - 1] ?? null) : null,
+    fueraEn:
+      anulada !== null
+        ? cuenta.anulada_en
+        : estado === 'fuera'
+          ? (fueras[fueras.length - 1] ?? null)
+          : null,
     pases: numeros.map((numero) => {
       const pase = pases.find((p) => p.numero === numero);
       return {
@@ -443,13 +457,13 @@ export const laCocina = consulta<Record<string, never>, SalidaLaCocina>({
   async ejecutar(contexto) {
     const localId = elLocalDelServicio(contexto);
     const desde = await elPrincipioDeHoy(contexto, localId);
-    // Las abiertas, y las de hoy ya liberadas para «Fuera».
+    // Las abiertas, y las de hoy ya liberadas o anuladas, para «Fuera»: una mesa anulada
+    // no desaparece sin más, la cocina la ve anulada y sabe que deja de hacerla.
     const filas = await contexto.sql<{ id: string }[]>`
       select c.id::text as id
         from estook.cuenta c
        where c.local_id = ${localId}::uuid
-         and c.anulada_en is null
-         and (c.liberada_en is null or c.abierta_en >= ${desde}::timestamptz)
+         and ((c.liberada_en is null and c.anulada_en is null) or c.abierta_en >= ${desde}::timestamptz)
          and c.unida_a is null
          and exists (
            select 1 from estook.linea_de_cuenta l

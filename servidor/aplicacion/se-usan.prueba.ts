@@ -93,6 +93,42 @@ const NO_LAS_LLAMA_NADIE: Readonly<Record<string, string>> = {
   la_desviacion_de_los_platos:
     'Construida y probada; se enseña con Estook TPV, cuando la caja traiga lo vendido plato a plato (0086 · 3B)',
 
+  // M20A · 1 · 1 (0106): la sala y la cocina **por dentro**, sin pantallas. Se entregan
+  // así a propósito: la API entera, probada contra la base con la mesa 6 de principio a
+  // fin (`la-sala-y-la-cocina.prueba.ts`). Las pantallas llegan en las dos entregas
+  // siguientes, y **en cuanto lleguen estas líneas sobran**: si alguna sigue aquí después
+  // de M20A · 1 · 3, es una operación que nadie usa.
+  //
+  // El plano, para Ajustes › Sala (M20A · 1 · 2).
+  crear_zona_de_sala: 'La llama Ajustes › Sala (M20A · 1 · 2)',
+  cambiar_zona_de_sala: 'La llama Ajustes › Sala (M20A · 1 · 2)',
+  archivar_zona_de_sala: 'La llama Ajustes › Sala (M20A · 1 · 2)',
+  crear_mesa: 'La llama Ajustes › Sala (M20A · 1 · 2)',
+  cambiar_mesa: 'La llama Ajustes › Sala (M20A · 1 · 2)',
+  archivar_mesa: 'La llama Ajustes › Sala (M20A · 1 · 2)',
+  // La sala, en la tablet y en el móvil (M20A · 1 · 2).
+  el_plano: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  la_mesa: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  abrir_mesa: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  pedir: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  cambiar_plato_de_la_mesa: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  quitar_plato: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  devolver_a_cocina: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  mandar_a_cocina: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  marchar: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  cambiar_la_mesa: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  cambiar_de_mesa: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  juntar_mesas: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  pasar_a_otro_camarero: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  liberar_mesa: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  anular_mesa: 'La llama la sala de Estook TPV (M20A · 1 · 2)',
+  // La cocina, en su pantalla (M20A · 1 · 3).
+  la_cocina: 'La llama la pantalla de cocina (M20A · 1 · 3)',
+  tachar: 'La llama la pantalla de cocina (M20A · 1 · 3)',
+  destachar: 'La llama la pantalla de cocina (M20A · 1 · 3)',
+  todo_fuera: 'La llama la pantalla de cocina (M20A · 1 · 3)',
+  recuperar: 'La llama la pantalla de cocina (M20A · 1 · 3)',
+
   // `reactivar_producto` **ya no está aquí**, y la razón por la que estuvo es de
   // las que hay que recordar. Decía «su pantalla es la lista de desactivados, que
   // llega con M8», y sonaba razonable. Lo que ocultaba era esto: se podía

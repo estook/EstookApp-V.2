@@ -175,6 +175,30 @@ import { miCarta, unPlato } from './consultas/mi-carta.ts';
 import { losAgotados } from './consultas/agotados.ts';
 import { elEquilibrioDeLaCarta } from './consultas/equilibrio.ts';
 import { marcarAgotado, quitarAgotado } from './comandos/agotados.ts';
+import {
+  abrirMesa,
+  anularMesa,
+  cambiarDeMesa,
+  cambiarLaMesa,
+  cambiarPlatoDeLaMesa,
+  devolverACocina,
+  juntarMesas,
+  liberarMesa,
+  mandarACocina,
+  marchar,
+  pasarAOtroCamarero,
+  pedir,
+  quitarPlato,
+} from './comandos/sala.ts';
+import { destachar, recuperar, tachar, todoFuera } from './comandos/cocina.ts';
+import {
+  archivarMesa,
+  archivarZonaDeSala,
+  cambiarMesa,
+  cambiarZonaDeSala,
+  crearMesa,
+  crearZonaDeSala,
+} from './comandos/plano.ts';
 import { leerLaCarta, leerPaginaConFogon } from './comandos/leer-la-carta.ts';
 import { elMenuEnPdf, misMenus } from './consultas/menus.ts';
 import { miZona } from './consultas/mi-zona.ts';
@@ -322,6 +346,7 @@ import {
 } from './consultas/equipo.ts';
 import { misCierres, unCierre } from './consultas/cierre.ts';
 import { laJornada } from './consultas/jornada.ts';
+import { elPlano, laCocina, laMesa } from './consultas/sala.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
 import { quienSoy } from './consultas/quien-soy.ts';
@@ -452,6 +477,10 @@ export const catalogo = {
     [misCierres.nombre]: misCierres,
     [unCierre.nombre]: unCierre,
     [laJornada.nombre]: laJornada,
+    // M20A · 1 · la sala y la cocina (0106): el plano, una mesa y la cocina sin un euro.
+    [elPlano.nombre]: elPlano,
+    [laMesa.nombre]: laMesa,
+    [laCocina.nombre]: laCocina,
     // M7 · compras: lo que se pide, lo que llega, lo que se cobra y a quién.
     [misPedidos.nombre]: misPedidos,
     [unPedido.nombre]: unPedido,
@@ -655,6 +684,35 @@ export const catalogo = {
     [elegirComoSeCierra.nombre]: elegirComoSeCierra,
     [cerrarLaCaja.nombre]: cerrarLaCaja,
     [reabrirLaJornada.nombre]: reabrirLaJornada,
+
+    // ── M20A · 1 · la sala y la cocina (0106) ─────────────────────────────
+    //
+    // El plano lo dibuja quien toca los ajustes del local.
+    [crearZonaDeSala.nombre]: crearZonaDeSala,
+    [cambiarZonaDeSala.nombre]: cambiarZonaDeSala,
+    [archivarZonaDeSala.nombre]: archivarZonaDeSala,
+    [crearMesa.nombre]: crearMesa,
+    [cambiarMesa.nombre]: cambiarMesa,
+    [archivarMesa.nombre]: archivarMesa,
+    //
+    // La sala abre, pide, manda y **marcha**; la cocina tacha lo que sale y nunca marcha.
+    [abrirMesa.nombre]: abrirMesa,
+    [pedir.nombre]: pedir,
+    [cambiarPlatoDeLaMesa.nombre]: cambiarPlatoDeLaMesa,
+    [quitarPlato.nombre]: quitarPlato,
+    [devolverACocina.nombre]: devolverACocina,
+    [mandarACocina.nombre]: mandarACocina,
+    [marchar.nombre]: marchar,
+    [cambiarLaMesa.nombre]: cambiarLaMesa,
+    [cambiarDeMesa.nombre]: cambiarDeMesa,
+    [juntarMesas.nombre]: juntarMesas,
+    [pasarAOtroCamarero.nombre]: pasarAOtroCamarero,
+    [liberarMesa.nombre]: liberarMesa,
+    [anularMesa.nombre]: anularMesa,
+    [tachar.nombre]: tachar,
+    [destachar.nombre]: destachar,
+    [todoFuera.nombre]: todoFuera,
+    [recuperar.nombre]: recuperar,
 
     // ── M7 · proveedores y compras ────────────────────────────────────────
     //

@@ -3234,6 +3234,10 @@ lógica de la sala), `la-sala-y-la-cocina.prueba.ts` (la base y la API) y `la-sa
 Ajustes a mandar, en escritorio y en móvil). La regla `apps-no-se-importan-entre-si` vigila que lo
 común viva en `packages/`.
 
+**El mismo día, Richi rechazó estas pantallas**: un comandero dentro de Estook, no un TPV. Decidió
+**Estook TPV entero** ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md), Anexo capítulo 11): el
+servidor de 1 · 1 y 1 · 2 se queda, y las pantallas se rehacen en T1 a T3.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

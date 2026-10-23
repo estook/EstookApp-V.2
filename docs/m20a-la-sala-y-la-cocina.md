@@ -1,27 +1,90 @@
-# M20A · 1 · La sala y la cocina en pantalla
+# M20A · Estook TPV entero: cómo se construye
 
-> **Estado: 1 · 1 en producción** (23-oct, #130) **y 1 · 2 hecha** (la sala en Estook TPV y
-> Ajustes › Sala, rama `m20a-1-2-la-sala`). **Lo siguiente, 1 · 3: la cocina.** Lo que hace cada pantalla lo decidió Richi sobre los dibujos ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md));
-> aquí está **cómo se construye y en qué orden**. Es la primera pieza de Estook TPV que se toca con
-> las manos: **la sala toma nota en una tablet o en el móvil y la cocina lo ve en su pantalla, por
-> internet**. Sin imprimir (eso es M19a y M20A · 2) y **sin cobrar** (M20C).
+> **Estado (23-oct):** M20A · 1 · 1 (#130) y M20A · 1 · 2 (#131) **en producción**: la base y la API
+> de la sala y la cocina, y unas primeras pantallas en `estook.com/tpv/`. **Richi las rechazó** el
+> mismo día —un comandero dentro de Estook, no un TPV— y decidió **Estook TPV entero**
+> ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md)). **Qué hace cada pantalla** está en el
+> [Anexo, capítulo 11](maestros/Estook-Anexo-TPV-y-Facturacion.md); aquí, **cómo se construye, en qué
+> orden y cuándo se da cada entrega por buena**. **Lo siguiente: T1 · La puerta.**
 
-## Por qué en cuatro entregas
+## Cómo se trabaja cada entrega, para que no haya nada inventado
 
-M16a, que era un día y su cierre, fueron 43 ficheros. La sala y la cocina son varias veces eso, y
-una entrega que no se puede probar entera es la que se rompe. Cada una se fusiona, se prueba en IKATZ
-y deja algo que funciona.
+1. **Antes de escribir código**, se relee el capítulo 11 del Anexo y los apartados que cita la
+   entrega. **Si falta algo para construir, se para y se pregunta a Richi en lenguaje llano**; no se
+   decide al vuelo. Lo que sí se decide al construir (un nombre interno, una consulta) se apunta en
+   «Lo que decidí al construirlo» de esa entrega, como siempre.
+2. **Cada entrega sale de `main`, en su rama, con su pull request**, y Richi la prueba en IKATZ
+   antes de la siguiente. Si se queda grande, se parte en dos y se dice aquí.
+3. **Las maquetas mandan sobre el aspecto**
+   ([Estook TPV · el TPV completo](https://claude.ai/artifact/EUZuQhUJSg13As8qeUWk5X)): una pantalla
+   que no está dibujada se dibuja y se enseña antes de construirla.
+4. **Se da por buena** cuando pasa su «Terminado cuando», las pruebas de siempre en verde, y la
+   prueba de la plantilla (Plan, regla 14).
 
-| Entrega                                      | Qué deja                                                                                                                                                                                                                                                    | Cómo se prueba                                                                           |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| **1 · 1 · La mesa y la comanda, por dentro** | La base y la API: zonas, mesas, cuentas, sus platos y sus pases; abrir, pedir, mandar, marchar, tachar, «Fuera», quitar con motivo, cambiar de mesa, juntar, pasar a otro camarero y anular. El aviso al segundo a la sala y a la cocina. **Sin pantallas** | Con pruebas que juegan la mesa 6 entera, de principio a fin, y atacan desde otro negocio |
-| **1 · 2 · La sala**                          | Estook TPV en su función de sala, en tablet y en móvil: el plano, abrir la mesa, **Bebidas · Carta · Menú del día**, la nota, las opciones de la mesa y «Marchar el 2.º». Y en Estook, **Ajustes › Sala** para dibujar las mesas                            | En IKATZ, con su carta, desde el móvil                                                   |
-| **1 · 3 · La cocina**                        | La pantalla de cocina: **En marcha · Delivery · Fuera**, tachar, «Esperando la marcha», NUEVO, ANULADO, CAMBIO y VUELVE, con su sonido                                                                                                                      | En IKATZ, con dos aparatos: uno pide y el otro cocina                                    |
-| **1 · 4 · Las bebidas en Estook**            | Cada sección de la carta, **comida o bebida**; «Monta tus bebidas»; varias raciones del mismo producto (caña, doble y jarra); **las copas que se hacen solas**; **los cafés hechos**                                                                        | En IKATZ, montando sus bebidas de una vez                                                |
+## Las entregas
 
-**Los terminales del local** (la tablet de sala o la pantalla de cocina con su PIN, Anexo 3.4) llegan
-en 1 · 2 y 1 · 3, sobre la tabla `terminal` que ya existe para fichar (0068). Mientras, se entra con
-la sesión de cada uno.
+| Entrega                                            | Qué deja (y dónde está escrito)                                                                                                                                                                                                                                                                                                                                                                                                 | Lo que sale de Estook                      |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| **T1 · La puerta**                                 | **Vincular** (el primero con el correo, los demás con el código de 6 cifras o su QR, desvincular y el latido, 11.3) · **las cinco funciones** y el comandero personal · **solo el PIN** y el turno del operador · **el bloqueo** (11.4) · **la aprobación con el PIN de un encargado** (3.4) · **el inicio** con las baldosas que ya funcionan (11.5) · **el tema oscuro** (11.12) · Ajustes del TPV › Aparatos y PIN y bloqueo | «Abrir la sala» de Servicio › En marcha    |
+| **T2 · La sala**                                   | **El editor del plano en el TPV**, a ojo, con formas, giro, barra, paredes, salas y plantillas (11.9) · **el plano con sus dueños**, Todas · Mías y los estados (11.8), «Quedármela» · **pedir con los pases en pestañas** (11.10), con una página por sección de la carta hasta T3 · **el comandero en el móvil**                                                                                                              | «Tu sala» de Ajustes › Tu local            |
+| **T3 · Los productos**                             | **La botonera** con sus tres caminos, «¿Quién lo prepara?» y «¿En qué pase sale?» (11.11) · **las opciones y los extras** (10.3) · **«Monta tus bebidas»**, varias raciones, las copas que se hacen solas y los cafés hechos (0106, 21 a 23) · `es_bebida` pasa a la botonera y se quita                                                                                                                                        | El interruptor «Es de bebidas» de la Carta |
+| **T4 · La cocina y la barra**                      | **La pantalla de cocina** (3.2): En marcha · Delivery · Fuera, tachar, «Esperando la marcha», NUEVO, ANULADO, CAMBIO y VUELVE, con su sonido · **la pantalla de barra**, con lo que prepara la barra                                                                                                                                                                                                                            | —                                          |
+| **T5 · Estook Link** (M19a y M20A · 2)             | **Imprimir** la comanda y la cuenta, **el cajón**, y sala y cocina **sin internet** (capítulo 6, 3.6) · Ajustes del TPV › Impresoras y cajón                                                                                                                                                                                                                                                                                    | —                                          |
+| **T6 · La facturación** (M20B)                     | **VeriFactu con Verifacti**, entero (capítulo 4), con el asesor                                                                                                                                                                                                                                                                                                                                                                 | —                                          |
+| **T7 · Cobrar, la caja y las ventas** (M20C y M20) | **Cobrar** (10.5), **la caja** (11.6), **las ventas de hoy** (11.7), venta rápida y para llevar, y **el motor que resta del almacén** lo vendido (M20)                                                                                                                                                                                                                                                                          | —                                          |
+| **Después, local a local**                         | El datáfono conectado (10.7), los pedidos de reparto (10.8, M29) y Revo conectado (M18)                                                                                                                                                                                                                                                                                                                                         | —                                          |
+
+**Por qué en este orden.** Sin la puerta no hay TPV: todo lo demás necesita saber qué aparato es y
+quién lo usa. La sala y los productos van antes que la cocina porque son lo que Richi ve primero y lo
+que rechazó; la cocina ya tiene su base y su API desde 1 · 1. Link va antes del cobro porque el cajón
+y el ticket salen por la impresora. **Y nadie cobra con Estook TPV hasta que T6 esté entera** (Anexo,
+capítulo 9): vender un programa de facturación que no cumple ya está prohibido desde el 29-jul-2025.
+
+### T1 · La puerta, terminado cuando
+
+- **En IKATZ**: Richi vincula **la caja** (un ordenador o una tablet) entrando con su correo, y su
+  sesión ya no está al acabar; desde ella saca un código y vincula **un móvil como comandero
+  personal** de un camarero y **una tablet como comandero compartido**.
+- Pasan las pruebas de 11.15 de **vincular, el código, desvincular, el comandero que no abre el
+  cajón, el comandero personal, el bloqueo y dónde cae cada uno**.
+- **Estook TPV no se abre con la sesión de Estook** en ningún aparato, y «Abrir la sala» ya no está.
+- **El PIN nuevo nunca es fácil** (cuatro iguales o una escalera).
+- **Lo de la base**: `terminal.funcion` con las cinco, de quién es y su cajón; `codigo_para_vincular`;
+  `turno_del_operador` (Anexo 7.1). Una migración, con su `.revertir.sql`.
+
+### T2 · La sala, terminado cuando
+
+- **En IKATZ**: Richi dibuja su salón y su terraza **sin escribir un número**, desde una plantilla, con
+  la barra y una pared, y gira una mesa; lo ve al momento en el móvil.
+- Pasan las pruebas de 11.15 de **las mesas, el plano y los pases en pestañas**, y las de 10.13 de
+  abrir una mesa, añadir un plato y mandar.
+- **Una comanda de cuatro platos en diez toques o menos**, desde el plano (10.3), medida.
+- **«Tu sala» ya no está en Estook**, y lo que se dibujó allí está en el editor del TPV, igual.
+- **Lo de la base**: `mesa` con su tipo y su giro (Anexo 7.2), y lo que ya había, migrado tal cual.
+
+### T3 · Los productos, terminado cuando
+
+- **En IKATZ**: Richi monta su botonera con «Traer toda la carta» y, en otro local de prueba, con
+  «Elegir»; crea un producto desde cero y lo ve en la carta de Estook, «sin escandallo»; monta sus
+  bebidas con «Monta tus bebidas» y vende un Havana 7 con Coca-Cola.
+- Pasan las pruebas de 11.15 de **productos y de «¿Quién lo prepara?»**, y las de 10.12 de las opciones
+  obligatorias, los grupos con su escandallo y el producto a peso.
+- **Lo que estaba «de bebidas» va a la barra sin que nadie toque nada**, y «Es de bebidas» ya no está
+  en Estook.
+- **Lo de la base**: `pagina_del_tpv`, `boton_del_tpv` y lo de `local` (Anexo 7.2); `es_bebida` pasa a
+  ellas y se quita.
+
+### T4 a T7
+
+Su «Terminado cuando» es el del Plan para cada módulo (M20A, M19a, M20B y M20C) con las pruebas de
+3.7, 6.8, el capítulo 8, 10.12 y 11.15 que les tocan. Se escribe aquí entero **antes de empezar cada
+una**, con lo que se haya aprendido en las anteriores.
+
+## Lo que ya está hecho (M20A · 1 · 1 y 1 · 2)
+
+Lo de abajo es lo que se construyó antes de la 0107 y está en producción. **El servidor se queda**: las
+mesas, las cuentas, los pases, mandar, marchar, tachar, «Fuera» y la carta de la sala no cambian.
+**Las pantallas de 1 · 2 se rehacen** en T1 a T3, y lo que puso en Estook sale (la tabla de arriba).
 
 ## 1 · 1 · La mesa y la comanda, por dentro
 

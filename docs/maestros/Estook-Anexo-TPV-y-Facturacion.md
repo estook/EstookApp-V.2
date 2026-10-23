@@ -1,8 +1,8 @@
 ---
 titulo: Anexo · TPV y facturación
 tipo: Documento maestro de especificación
-fecha: Octubre de 2026 · versión 1.3
-nota: Cómo Estook toma nota, cobra y emite tickets y facturas cumpliendo VeriFactu, y cómo se ve y se usa Estook TPV en un día de servicio. Manda sobre los demás documentos en su tema. Se lee entero antes de tocar sala, cocina, cobro, caja o facturación.
+fecha: Octubre de 2026 · versión 1.4
+nota: Cómo Estook toma nota, cobra y emite tickets y facturas cumpliendo VeriFactu, cómo se ve y se usa Estook TPV en un día de servicio, y Estook TPV como aplicación entera, pantalla a pantalla (capítulo 11). Manda sobre los demás documentos en su tema. Se lee entero antes de tocar sala, cocina, cobro, caja o facturación.
 ---
 
 # Qué es este documento
@@ -13,24 +13,23 @@ Va dirigido a quien construya Estook, que será en su mayor parte una IA. Cubre 
 
 Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (cómo está hecho: las piezas, el modelo, los aparatos y qué funciona sin conexión), **Plan de desarrollo** (cómo se construye y en qué orden), **Roles y administración** (quién puede qué, apartado 1.12) y **Auditoría de flujos** (efectos en cadena 2.27 a 2.34, estados, fallos y las listas de comprobación de Facturación y Caja). Lo que cambió en cada versión, en el [registro de cambios](CAMBIOS.md).
 
-**La versión 1.2** (30 de septiembre de 2026) recoge la auditoría profunda ([0055](../decisiones/0055-la-auditoria-profunda.md)): Estook TPV con su propia puerta y **Estook Link** como centro del local sin internet ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)); el terminal, el operador y la aprobación con PIN ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)); el cobro, sus pagos, la caja y la bolsa del camarero ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md)); la emisión con estados y lo que dice de verdad la AEAT sin conexión ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)); y la empresa fiscal ([0060](../decisiones/0060-la-empresa-fiscal.md)).
-
-**La versión 1.3** (22 de octubre de 2026, [0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)) recoge lo que Richi decidió sobre las pantallas dibujadas: **a cocina llega el ticket entero de la mesa, sin partidas**; **marcha el camarero**, avisado cuando ha salido todo el pase; se tacha lo que sale y la mesa se va sola a «Fuera»; tomar nota en **Bebidas · Carta · Menú del día**, con notas solo escritas; las copas por marca con «¿Con qué?»; y las bebidas y los cafés, configurados una vez en Estook desde el almacén. Donde lo de abajo diga otra cosa, manda la 0106.
+**La versión 1.4** (23 de octubre de 2026, [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)) hace de Estook TPV **una aplicación entera, aparte de Estook**, con las once respuestas de Richi: su inicio, **los aparatos que se vinculan con un código y se les dice qué son** (caja, comandero, pantalla de cocina o de barra, fichar), **el PIN y el bloqueo** (al cobrar y a los 2 minutos; 10 en el móvil personal), **la caja** (una por cajón, cierre ciego), las ventas de hoy, **todas las mesas a la vista de todos** con su camarero y el filtro «Mías», **el plano dibujado en el TPV a ojo**, los pases en pestañas encima de la cuenta, y **la botonera**, que sustituye a «Es de bebidas» por «¿Quién lo prepara?» y «¿En qué pase sale?». **Todo eso está en el capítulo 11**, y los capítulos 3, 6, 7 y 10 se han corregido para que digan lo mismo.
 
 > **Lo marcado [VERIFICAR] no se programa hasta comprobarlo** contra la documentación oficial de la AEAT, la de Verifacti o el asesor, y lo comprobado se escribe con su fuente y su fecha. Las preguntas al asesor están todas en [`docs/legal/preguntas-al-asesor.md`](../legal/preguntas-al-asesor.md). Es la regla 13 del Plan aplicada al sitio donde equivocarse sale más caro.
 
 ## Lo que está decidido y no se reabre
 
-|                                            | Decisión                                                                                                                                                    |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ¿Web o nativo?                             | **Web, una sola base de código.** La cáscara nativa es opcional (iPad y food truck sin Link)                                                                |
-| ¿Una aplicación aparte para el TPV?        | **Una puerta propia del mismo código**, `apps/tpv`: mismos datos, permisos, PIN y diseño ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)) |
-| ¿Estook toca el dinero?                    | **Nunca.** El efectivo va al cajón y la tarjeta al datáfono del local. Estook apunta ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md))           |
-| ¿Quién hace la parte técnica de VeriFactu? | **Verifacti**, detrás de un adaptador. Estook responde de su parte (1.5)                                                                                    |
-| ¿Qué impresoras?                           | **Cualquiera ESC/POS**, por Estook Link. Ninguna marca en el núcleo (capítulo 6)                                                                            |
-| ¿Sin internet?                             | **Se sigue trabajando** con Estook Link en el local; el ticket, con justificante y al volver (3.6 y 4.11)                                                   |
-| ¿Un «modo formación»?                      | **No existe en producción.** Se practica en el local de ejemplo (4.12)                                                                                      |
-| ¿Partidas en cocina?                       | **No.** A cocina llega el ticket entero de la mesa, y marcha el camarero ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md))                     |
+|                                            | Decisión                                                                                                                                                                                                                                        |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ¿Web o nativo?                             | **Web, una sola base de código.** La cáscara nativa es opcional (iPad y food truck sin Link)                                                                                                                                                    |
+| ¿Una aplicación aparte para el TPV?        | **Sí, con su inicio**, `apps/tpv`, del mismo código: mismos datos, permisos y PIN, y **solo en aparatos vinculados** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md), [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)) |
+| ¿Estook toca el dinero?                    | **Nunca.** El efectivo va al cajón y la tarjeta al datáfono del local. Estook apunta ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md))                                                                                               |
+| ¿Quién hace la parte técnica de VeriFactu? | **Verifacti**, detrás de un adaptador. Estook responde de su parte (1.5)                                                                                                                                                                        |
+| ¿Qué impresoras?                           | **Cualquiera ESC/POS**, por Estook Link. Ninguna marca en el núcleo (capítulo 6)                                                                                                                                                                |
+| ¿Sin internet?                             | **Se sigue trabajando** con Estook Link en el local; el ticket, con justificante y al volver (3.6 y 4.11)                                                                                                                                       |
+| ¿Un «modo formación»?                      | **No existe en producción.** Se practica en el local de ejemplo (4.12)                                                                                                                                                                          |
+| ¿Partidas en cocina?                       | **No.** A cocina llega el ticket entero de la mesa, y marcha el camarero ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md))                                                                                                         |
+| ¿Dónde se monta lo de vender?              | **En Estook TPV**: el plano, la botonera, los aparatos, la caja y el PIN. En Estook no se añade nada más ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md), 11.1)                                                                         |
 
 ## Lo que sigue pendiente de Richi, y no frena nada hasta la Fase 4
 
@@ -158,7 +157,7 @@ Lo que **sí** hace Verifacti: generar el XML del registro, calcular la huella, 
 
 ## 3.1 Sala
 
-**Sala es una función de Estook TPV** (`apps/tpv`, [0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)), no un destino de Servicio: una pantalla completa, sin barra de navegación, para un aparato que hace una sola cosa durante el servicio. Un terminal de sala arranca directamente en ella; desde un móvil personal se entra con un botón desde Estook.
+**La sala son las mesas de Estook TPV** (`apps/tpv`, [0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md) y [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)): en la caja y en el comandero, a pantalla completa y sin la navegación de Estook. **No se entra desde Estook**: el móvil de un camarero es un comandero personal vinculado (11.3). Cómo se ven y cómo se dibujan, en 11.8 y 11.9.
 
 ### El plano
 
@@ -182,7 +181,7 @@ Los tres acaban en una venta con su ticket. Lo que cambia es cuánto vive la cue
 
 **La carta que se ve es la del canal de esa mesa** (M10): la terraza puede tener otro precio que el salón, y el de reparto otro distinto. De ahí sale el precio, y de ahí sale el tipo de IVA de cada línea.
 
-**Tomar nota** (10.3): **Bebidas · Carta · Menú del día**, la carta por sus secciones y con foto, buscador tolerante a erratas y **una nota escrita por línea** («al punto», «sin sal»: el TPV no sabe qué plato es carne, así que no pregunta el punto). Cantidades con el `+` y el `−`, nunca escribiendo.
+**Tomar nota** (11.10): **los pases en pestañas encima de la cuenta** y **la botonera por páginas** (11.11), con foto, buscador tolerante a erratas y **una nota escrita por línea** («al punto», «sin sal»: el TPV no sabe qué plato es carne, así que no pregunta el punto). Cantidades con el `+` y el `−`, nunca escribiendo.
 
 **El comensal no se pide al tomar nota** (0106: «P1, P2…» en la nota no lo entiende nadie). Al **dividir la cuenta** (5.1) se eligen los platos de cada uno o se reparte a partes iguales.
 
@@ -210,7 +209,7 @@ Un pase sin marchar **se ve en cocina en espera, no desaparece**: el cocinero sa
 
 - **Mover** una mesa a otra, **juntar** dos y **pasar platos** de una a otra, todo con rastro.
 - **Dividir** una mesa en dos cuentas antes de cobrar.
-- **Traspasar la mesa a otro camarero.** Es el cambio de turno: a las 16:00 entra otro y las mesas abiertas tienen que cambiar de dueño. **Sin esto, o el que se va se queda hasta que cierre la mesa, o las ventas se le apuntan a quien no es.** Se traspasa una mesa o todas las de una persona, con su rastro.
+- **Traspasar la mesa a otro camarero.** Es el cambio de turno: a las 16:00 entra otro y las mesas abiertas tienen que cambiar de dueño. **Sin esto, o el que se va se queda hasta que cierre la mesa, o las ventas se le apuntan a quien no es.** Se traspasa una mesa o todas las de una persona, con su rastro. **Cualquier camarero puede quedarse una mesa o pasarla a otro** (11.8): toda la sala la controla toda la sala, y lo que queda es quién lo hizo.
 
 ### Agotado
 
@@ -232,7 +231,7 @@ Se marca desde la comanda y desaparece de la carta y de la carta digital (M10 y 
 - **Pestañas: En marcha · Delivery · Fuera.** El pedido de reparto lleva la moto, la plataforma, el nombre, **la hora a la que pasa el repartidor** y lo que va a la bolsa, y se cierra con «Listo para el repartidor».
 - **Lo que cambia sale en la misma tarjeta**: «NUEVO» con su hora, «ANULADO» en rojo y con sonido, «CAMBIO» de nota, y «VUELVE» arriba del todo cuando un plato devuelto se rehace.
 - **Pantalla, papel o las dos**, a elección del local. En papel sale el ticket entero con sus pases, y un papelito por cada marcha, plato nuevo o anulado.
-- **Las bebidas, los cafés y las copas no van a cocina**: van a la barra.
+- **Lo que no prepara la cocina no va a cocina**: va a la barra, o a ninguna parte, según **«¿Quién lo prepara?»** de su página (11.11).
 
 ### Los tiempos
 
@@ -282,11 +281,11 @@ Una tablet de sala la usan cinco camareros, y la pantalla de cocina lleva encend
 
 El modelo entero —persona, terminal, operador, aprobación— está en la [Arquitectura](Estook-Arquitectura.md), capítulo 5, y su porqué en la [0057](../decisiones/0057-quien-es-quien-en-el-tpv.md). Aquí, cómo se usa.
 
-**El terminal es del local, no de nadie.** Tiene su propia sesión, emparejada con el local y revocable si se pierde, y **una función**: sala, barra, cocina, pase o fichar. Sigue ahí cuando cambia la plantilla.
+**El terminal es del local, no de nadie.** Tiene su propia sesión, emparejada con el local y revocable si se pierde, y **una función**: caja, comandero (compartido o personal), pantalla de cocina, pantalla de barra o fichar (11.3). Sigue ahí cuando cambia la plantilla.
 
 **El operador es quien lo usa ahora.** Entra tecleando **solo su PIN** —el terminal ya sabe de qué local es— y todo lo que hace queda **a su nombre, con la hora y el aparato**: abrir una mesa, mandar, cobrar, invitar, quitar un plato. No es una firma electrónica: es identificarse en un aparato del local. **Una persona sin correo** entra igual, con su PIN (0057).
 
-**Se bloquea solo:** tras un minuto sin tocar —lo cambia el local— y, si el local lo quiere, **al mandar o al cobrar**. Bloqueado enseña el teclado del PIN, y el siguiente entra en un segundo. **Fichar y entrar son el mismo PIN**: a quien no ha fichado se le ofrece en un toque, y el local puede pedir que **solo quien está fichado use el TPV** (apagado de fábrica).
+**Se bloquea solo** (11.4): la caja y el comandero compartido **al acabar cada cobro y a los 2 minutos** sin tocar; el comandero personal, a los 10; las pantallas de cocina y de barra, nunca. Bloqueado enseña el teclado del PIN, y el siguiente entra en un segundo. **Fichar y entrar son el mismo PIN**: a quien no ha fichado se le ofrece en un toque, y el local puede pedir que **solo quien está fichado use el TPV** (apagado de fábrica).
 
 **Lo que pide un encargado se aprueba ahí mismo.** Quitar un plato ya en cocina, un descuento por encima del límite, abrir el cajón sin venta: sale «lo aprueba un encargado» y el encargado teclea su PIN en el mismo terminal. **Una aprobación sirve para una cosa, una vez**, y caduca en dos minutos; queda quién lo pidió, quién lo aprobó, qué y por qué.
 
@@ -300,15 +299,9 @@ El modelo entero —persona, terminal, operador, aprobación— está en la [Arq
 
 **Sin conexión, los PIN los comprueba Estook Link**, que guarda los del local cifrados y solo para el servicio. Sin nube y sin Link, solo siguen quienes ya entraron ese día en ese terminal: guardar las huellas de los PIN en una tablet no es seguro.
 
-**Dar de alta un terminal** (Richi, 23-sep-2026):
+**Vincular un terminal**, en 11.3: **el primero** lo vincula quien lleva el local entrando con su correo en ese aparato, y su sesión se cierra al acabar; **los demás**, con **un código de 6 cifras o su QR** que se saca en Ajustes del TPV › Aparatos, con la función y el nombre elegidos antes, de un solo uso y que caduca a los 10 minutos. **El terminal queda vinculado al local, no a nadie** (salvo el comandero personal, que es de su dueño), y se desvincula desde la misma pantalla si se pierde.
 
-1. Quien lleva el local entra en **Ajustes › Terminales › Añadir terminal** y le pone **un nombre** («Tablet terraza», «Pantalla pase») y **una función**. Sala y Barra son la misma función de Sala (3.1) con su forma de vender por defecto —mesa o barra—; Cocina y Pase son la pantalla de cocina (3.2); Fichar es el quiosco de fichajes (M15).
-2. Estook enseña **un código corto y un QR**, de un solo uso y con caducidad de pocos minutos, como el emparejamiento de Link (M19a).
-3. En el aparato se abre Estook TPV, se elige «Es un terminal del local» y se escribe el código o se lee el QR. **El terminal queda emparejado con el local, no con nadie**, y se revoca desde la misma pantalla si se pierde.
-4. Al encenderse, **carga su función directamente**, a pantalla completa y sin la barra de navegación.
-5. Los trabajadores **entran con su PIN**, y todo lo que hacen queda a su nombre.
-
-El terminal es **una pieza aparte, del local**, con su propia sesión, y la sesión personal de M4 se queda como está (decidido el 23-sep, completado en la [0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)).
+El terminal es **una pieza aparte, del local**, con su propia llave (la de fichar, 0068). **Estook TPV no se abre con la sesión personal de Estook** ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)), que se queda como está.
 
 ## 3.5 Precuenta
 
@@ -341,7 +334,7 @@ La versión 1.1 prometía que la cocina seguía imprimiendo sin internet con una
 - Se corta internet **sin Link**: se sigue tomando nota, la sala ve en grande que la cocina no recibe, y al volver sube todo sin duplicar.
 - Un cocinero abre la ficha desde la comanda y **no recibe ni un importe**, comprobado llamando a la API a pelo.
 - Dos camareros en la **misma tablet**: cada venta queda a nombre de quien la hizo, no del aparato ni del primero que entró.
-- El terminal **se bloquea solo** al minuto sin tocar, y el siguiente entra con su PIN sin correo.
+- El terminal **se bloquea solo** a los 2 minutos sin tocar y al acabar un cobro (11.4), y el siguiente entra con su PIN sin correo.
 - **Una persona sin correo** entra en el terminal con su PIN, ficha y toma nota.
 - Quitar un plato ya en cocina **pide la aprobación de un encargado**, y la aprobación no sirve dos veces ni pasados dos minutos.
 - Desde un terminal **no se llega a la gestión** sin el PIN de alguien con permiso.
@@ -787,9 +780,9 @@ La puesta en marcha pregunta qué tiene, no qué le vendemos:
 
 **Reintentos.** Un trabajo `entregado` que no se confirma en un tiempo razonable vuelve a `pendiente`, con un límite de intentos para no imprimir la misma comanda quince veces.
 
-**Varias impresoras.** Cada plato lleva **a qué impresora va**, heredado de su sección de carta. Una comanda que toca cocina y barra genera **dos trabajos**, cada uno con lo suyo.
+**Varias impresoras.** Cada plato va **a quien lo prepara** —cocina o barra—, según **«¿Quién lo prepara?»** de su página de la botonera o del propio plato (11.11); lo de «Nadie» no imprime. Una comanda que toca cocina y barra genera **dos trabajos**, cada uno con lo suyo.
 
-**Ajustes › Impresoras.** Dar de alta, ver el estado y cuándo se supo de ella por última vez, y un botón de **imprimir prueba**. Sin ese botón, configurar una impresora es adivinar.
+**Ajustes del TPV › Impresoras y cajón** (11.13). Dar de alta, ver el estado y cuándo se supo de ella por última vez, y un botón de **imprimir prueba**. Sin ese botón, configurar una impresora es adivinar.
 
 ## 6.6 Térmica o de impacto
 
@@ -832,7 +825,8 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 ## 7.1 Quién, y desde qué
 
 - `persona` — **el correo pasa a ser opcional** ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)); sin correo, entra solo en los terminales, con su PIN. Se hace en H
-- `terminal` — local, nombre, **función** (`sala`, `barra`, `cocina`, `pase`, `fichar`), huella de su sesión, emparejado cuándo y por quién, revocado cuándo y por quién, **versión que lleva**, último latido
+- `terminal` — local, nombre, **función** (`caja`, `comandero`, `cocina`, `barra`, `fichar`), **de quién es** si es un comandero personal, **su cajón** si es caja, huella de su sesión, emparejado cuándo y por quién, revocado cuándo y por quién, **versión que lleva**, último latido
+- `codigo_para_vincular` — local, **función, nombre y de quién** del aparato que se va a vincular, quién lo creó, **huella del código** (nunca el código), caduca en (10 minutos), intentos fallidos (muere a los 5), usado en y por qué aparato (11.3)
 - `turno_del_operador` — terminal, persona, desde, hasta, por qué acabó (bloqueo, otro operador, salir)
 - `aprobacion` — qué operación y sobre qué, **quién la pidió** y **quién la aprobó**, motivo, terminal, cuándo, **usada**; caduca a los dos minutos y sirve una vez
 - `empresa` — la empresa fiscal ([0060](../decisiones/0060-la-empresa-fiscal.md)): organización, razón social, NIF, nombre comercial, domicilio fiscal, SII, foral, **titular** (una persona), representación ante Hacienda con quién firmó y cuándo, estado del alta. Y `local.empresa_id`
@@ -840,11 +834,14 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 ## 7.2 Sala
 
 - `zona_de_sala` — nombre, orden, canal por defecto (M10)
-- `mesa` — zona, nombre, plazas, posición en el plano
+- `mesa` — zona (la sala), **tipo** (cuadrada, redonda, rectangular, ovalada, alargada, taburete; y lo que no se abre: barra, pared, columna, puerta, planta, texto), nombre, plazas, y **su sitio, ancho, fondo y giro en las unidades del plano** (11.9), **nunca en centímetros**
 - `cuenta` — **tipo** (`mesa`, `barra`, `para_llevar`, `reparto`, `consumo_interno`), mesa si la tiene, **nombre o número de recogida** si es para llevar o de reparto, estado, camarero **actual**, comensales, canal, apertura, cierre, versión. **`reparto` solo lo crea el adaptador del canal** (M29) y lleva el identificador del pedido en la plataforma: es la comanda que va a cocina (10.8), no una tabla de pedidos aparte. **Su identificador nace en el aparato**, para que subirla dos veces no cree dos
 - `alergeno_de_la_cuenta` — cuenta, alérgeno, quién lo marcó y cuándo
 - `linea_de_cuenta` — plato, cantidad, **precio y tipo de impuesto congelados**, modificadores elegidos (cada uno con su precio y su escandallo), nota, **comensal** (número o nulo, solo al dividir), **tanda** (el pase: 1.º, 2.º), **salió en y quién la tachó** (0106), estado (`pedida`, `en_cocina`, `salio`, `servida`, `quitada`), y autor, motivo y aprobación si se quita. **Su identificador también nace en el aparato**, y a una cuenta **se le añaden líneas, nunca se sobreescriben**
 - `traspaso_de_cuenta` — cuenta, de quién, a quién, cuándo, quién lo hizo
+- `pagina_del_tpv` — la página de la botonera (11.11): local, nombre, orden, color, **quién lo prepara** (`cocina`, `barra`, `nadie`) y **en qué pase sale** (`bebidas`, `1`, `2`, `3`, `postre`)
+- `boton_del_tpv` — página, **el plato de la carta al que apunta** (no una copia), orden, color, y quién lo prepara o el pase **solo si cambian** los de su página
+- En `local`: cómo se montó la botonera y **si lo nuevo de la carta entra solo** (11.11). `es_bebida` de la 0082 **se quita** al pasar a quién lo prepara y al pase
 
 **Si un día vuelve `partida`**, se copia en la línea y no se lee del plato: si mañana el plato cambia de partida, la comanda de ayer tiene que seguir contando lo que pasó de verdad. Es la misma regla que congela el precio y el coste.
 
@@ -898,40 +895,43 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 
 Cada promesa del producto, con el sitio donde se guarda. **Si alguna se queda sin fila, el modelo está mal.**
 
-| Lo que promete el producto                     | Dónde vive                                                   |
-| ---------------------------------------------- | ------------------------------------------------------------ |
-| Entrar solo con el PIN en un terminal          | `terminal` + `turno_del_operador`                            |
-| Un trabajador sin correo                       | `persona` con correo opcional                                |
-| Que un encargado apruebe con su PIN            | `aprobacion`                                                 |
-| Dividir la cuenta por comensal                 | `linea_de_cuenta.comensal` + `cobro` (qué paga)              |
-| Pagar una parte en efectivo y otra con tarjeta | varios `pago` del mismo `cobro`                              |
-| La bolsa del camarero                          | `turno_de_caja` de una persona + `liquidacion_de_bolsa`      |
-| Vender en barra sin abrir mesa                 | `cuenta.tipo`                                                |
-| Para llevar con nombre de recogida             | `cuenta.tipo` y su nombre                                    |
-| Aviso de alergia de la mesa                    | `alergeno_de_la_cuenta`                                      |
-| Mandar por tandas y marchar                    | `linea_de_cuenta.tanda` + `tanda`                            |
-| El ticket entero de la mesa, y tachar          | `linea_de_cuenta` con su salió en (0106)                     |
-| La mesa a «Fuera» y «Recuperar»                | `tanda.estado` y lo tachado, por consulta                    |
-| Semáforo con los minutos del local             | `tiempo_objetivo`                                            |
-| Deshacer un plato marcado                      | los tiempos y el autor de `linea_de_cuenta`                  |
-| Contador del día y «Quedan N»                  | consultas, no se guardan                                     |
-| Traspasar una mesa de camarero                 | `cuenta.camarero` + `traspaso_de_cuenta`                     |
-| Tiempo real de cocina hacia la ficha           | los tiempos de `linea_de_cuenta`                             |
-| Trabajar sin conexión sin duplicar             | identificadores nacidos en el aparato + idempotencia         |
-| Imprimir en cualquier impresora                | `impresora.agente` + formato intermedio                      |
-| Reimprimir idéntico                            | `trabajo_de_impresion.contenido` congelado                   |
-| Un reintento no duplica                        | identificador único del trabajo                              |
-| Ticket con su QR y su estado                   | `documento` + `registro` + `envio`                           |
-| Una respuesta perdida no duplica               | la clave de idempotencia del `documento`                     |
-| Cobrar sin conexión                            | `justificante`                                               |
-| Corregir sin tocar lo emitido                  | `sustituye_a` y `rectifica_a`                                |
-| Demostrar lo emitido sin el proveedor          | `xml_del_registro`                                           |
-| Abrir el cajón sin venta, con rastro           | `movimiento_de_caja` (apertura sin venta) + `aprobacion`     |
-| Arqueo ciego y cuadre de la tarjeta            | `turno_de_caja`                                              |
-| Informes X y Z, y el cierre del día            | consultas, no se guardan; el cierre rellena `cierre_de_caja` |
-| Cobrar con el datáfono conectado               | la operación del proveedor en `pago`                         |
-| Pedido de reparto en la cocina                 | `cuenta.tipo = reparto` y sus líneas                         |
-| Varias empresas en una cuenta                  | `empresa` + `local.empresa_id`                               |
+| Lo que promete el producto                          | Dónde vive                                                   |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| Entrar solo con el PIN en un terminal               | `terminal` + `turno_del_operador`                            |
+| Vincular con un código, y saber qué es cada aparato | `codigo_para_vincular` + `terminal.funcion`                  |
+| El plano a ojo, con formas, giro y paredes          | `mesa` con su tipo, sitio, tamaño y giro                     |
+| Qué se vende en el TPV y quién lo prepara           | `pagina_del_tpv` + `boton_del_tpv`                           |
+| Un trabajador sin correo                            | `persona` con correo opcional                                |
+| Que un encargado apruebe con su PIN                 | `aprobacion`                                                 |
+| Dividir la cuenta por comensal                      | `linea_de_cuenta.comensal` + `cobro` (qué paga)              |
+| Pagar una parte en efectivo y otra con tarjeta      | varios `pago` del mismo `cobro`                              |
+| La bolsa del camarero                               | `turno_de_caja` de una persona + `liquidacion_de_bolsa`      |
+| Vender en barra sin abrir mesa                      | `cuenta.tipo`                                                |
+| Para llevar con nombre de recogida                  | `cuenta.tipo` y su nombre                                    |
+| Aviso de alergia de la mesa                         | `alergeno_de_la_cuenta`                                      |
+| Mandar por tandas y marchar                         | `linea_de_cuenta.tanda` + `tanda`                            |
+| El ticket entero de la mesa, y tachar               | `linea_de_cuenta` con su salió en (0106)                     |
+| La mesa a «Fuera» y «Recuperar»                     | `tanda.estado` y lo tachado, por consulta                    |
+| Semáforo con los minutos del local                  | `tiempo_objetivo`                                            |
+| Deshacer un plato marcado                           | los tiempos y el autor de `linea_de_cuenta`                  |
+| Contador del día y «Quedan N»                       | consultas, no se guardan                                     |
+| Traspasar una mesa de camarero                      | `cuenta.camarero` + `traspaso_de_cuenta`                     |
+| Tiempo real de cocina hacia la ficha                | los tiempos de `linea_de_cuenta`                             |
+| Trabajar sin conexión sin duplicar                  | identificadores nacidos en el aparato + idempotencia         |
+| Imprimir en cualquier impresora                     | `impresora.agente` + formato intermedio                      |
+| Reimprimir idéntico                                 | `trabajo_de_impresion.contenido` congelado                   |
+| Un reintento no duplica                             | identificador único del trabajo                              |
+| Ticket con su QR y su estado                        | `documento` + `registro` + `envio`                           |
+| Una respuesta perdida no duplica                    | la clave de idempotencia del `documento`                     |
+| Cobrar sin conexión                                 | `justificante`                                               |
+| Corregir sin tocar lo emitido                       | `sustituye_a` y `rectifica_a`                                |
+| Demostrar lo emitido sin el proveedor               | `xml_del_registro`                                           |
+| Abrir el cajón sin venta, con rastro                | `movimiento_de_caja` (apertura sin venta) + `aprobacion`     |
+| Arqueo ciego y cuadre de la tarjeta                 | `turno_de_caja`                                              |
+| Informes X y Z, y el cierre del día                 | consultas, no se guardan; el cierre rellena `cierre_de_caja` |
+| Cobrar con el datáfono conectado                    | la operación del proveedor en `pago`                         |
+| Pedido de reparto en la cocina                      | `cuenta.tipo = reparto` y sus líneas                         |
+| Varias empresas en una cuenta                       | `empresa` + `local.empresa_id`                               |
 
 ---
 
@@ -1016,14 +1016,14 @@ _Añadido en la versión 1.1 (27 de septiembre de 2026, [decisión 0054](../deci
 | **Estook**           | Gestionar: almacén, escandallos, carta, equipo, Negocio… | `apps/app`, la de siempre, con conexión                                      |
 | **Estook TPV**       | El servicio: tomar nota, cocina, cobrar, la caja         | `apps/tpv`, **su propia puerta del mismo código**, que funciona sin conexión |
 
-**Estook TPV es una puerta propia, no otra aplicación de producto** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)): comparte la API, la base, el login, el PIN, los permisos y el diseño, así que **no duplica nada**; y gana lo que un TPV necesita —instalarse aparte con su icono, arrancar en la función del terminal, trabajar sin conexión y actualizarse cuando lo decide el local—. Un terminal del local (3.4) enciende directamente en Estook TPV; un móvil personal abre Estook y entra al TPV con un botón, sin volver a entrar.
+**Estook TPV es una puerta propia, no otra aplicación de producto** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)): comparte la API, la base, el login, el PIN, los permisos y el diseño, así que **no duplica nada**; y gana lo que un TPV necesita —instalarse aparte con su icono, arrancar en la función del terminal, trabajar sin conexión y actualizarse cuando lo decide el local—. **Estook TPV solo se abre en un aparato vinculado** (11.3): el móvil de un camarero se vincula como comandero personal, y desde Estook no se entra al TPV ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)).
 
 **Lo que eso le da al local:** el mismo PIN, los mismos permisos y los mismos datos. Lo que se cobra a las 14:31 está en Negocio a las 14:31, y el género ya ha salido del almacén. **No hay exportar, ni CSV, ni emparejar, ni sincronizar**: es la razón por la que un local que cobra con Estook trabaja menos que uno que conecta su TPV (Manifiesto, capítulo 1).
 
 ## 10.2 Un día, de principio a fin
 
 ```
-08:30  El terminal enciende en su funcion (Sala, Barra o Cocina)
+08:30  El terminal enciende en su funcion (Caja, Comandero o Cocina)
        └─ quien abre entra con su PIN y ABRE CAJA: cuenta el fondo
           (se propone el que quedo ayer) y el cajon se abre para meterlo
 13:00  Servicio: mesas, barra y para llevar. Los pedidos de reparto
@@ -1041,26 +1041,8 @@ descontado, los tiempos de cocina, Negocio y el «Tu dia» de mañana
 
 ## 10.3 Tomar nota
 
-La tablet apaisada es la referencia:
+**Cómo es la pantalla, en 11.10**: los pases en pestañas encima de la cuenta (Bebidas · 1.º · 2.º · 3.º · Postre), y la botonera por páginas (11.11), con «Lo más pedido» la primera y «Menú» los días que hay. **Sustituye a las tres pestañas Bebidas · Carta · Menú del día** de la 0106 ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)). Lo de abajo sigue valiendo tal cual.
 
-```
-┌───────────────────────────────┬──────────────────────────────────────────┐
-│ MESA 12 · 4 pax · Ana         │ [Bebidas]  [Carta]  [Menú del día]       │
-│                               │ Entrantes  Principales  Postres          │
-│ ! Alergia: frutos secos       │ [ Buscar ]                               │
-│                               │ ┌────────┐┌────────┐┌────────┐┌────────┐ │
-│ TANDA 1                       │ │Croqueta││Bravas  ││Ensalada││Pulpo   │ │
-│ (1) 2 Croquetas       14,00   │ │        ││        ││        ││Quedan 3│ │
-│ (2) 1 Ensalada         9,50   │ └────────┘└────────┘└────────┘└────────┘ │
-│ TANDA 2                       │ ┌────────┐┌────────┐┌────────┐┌────────┐ │
-│ (1) 1 Entrecot · al punto 24  │ │Entrecot││Merluza ││Risotto ││AGOTADO │ │
-│                               │ └────────┘└────────┘└────────┘└────────┘ │
-│ Total               47,50 €   │                                          │
-│ [Mandar] [Cuenta] [Cobrar]    │                                          │
-└───────────────────────────────┴──────────────────────────────────────────┘
-```
-
-- **Arriba, tres pestañas en el orden de una comida: Bebidas · Carta · Menú del día** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). **La carta del canal de esa mesa** (M10) va **por sus secciones, como está montada en Estook**, con los platos en botones grandes con su nombre entero y su foto. El buscador tolera erratas (3.1).
 - **Un toque añade uno.** **Solo preguntan las copas** («¿Con qué?», con los refrescos del almacén) y el menú. **El punto de la carne no es una pregunta**: el TPV no sabe qué plato es carne. Va en la nota.
 - **Tocar una línea** de la cuenta: la nota escrita (con «Ej.: al punto, poco hecho, sin sal…» en gris), el pase y quitar.
 - **A la izquierda, la cuenta, por pases**, cada plato con ✓ y su hora cuando sale. Arriba, la mesa: nombre, comensales, camarero y **el aviso de alergia con icono y texto**.
@@ -1078,16 +1060,16 @@ La tablet apaisada es la referencia:
 
 **En la barra**, arriba del todo y siempre: **«Venta rápida»**. Se pide y se cobra sin abrir nada (3.1).
 
-**Las bebidas, los cafés y las copas** salen en la pestaña Bebidas con las secciones de bebida de la carta, y **van a la barra, no a cocina**. Qué sección es de comida y cuál de bebida **se marca una vez en Estook**, y todo se configura allí desde el almacén —**el TPV no configura nada**— (0106, apartado 2: tal cual entero, a raciones —la copa de vino de 150 ml, la caña— o con receta —las copas, que se hacen solas con la dosis de la casa, y los cafés, que vienen hechos—).
+**Las bebidas, los cafés y las copas** salen en sus páginas de la botonera, con «¿Quién lo prepara? Barra» y «¿En qué pase sale? Bebidas» (11.11), y **se montan en Ajustes del TPV › Productos** con «Monta tus bebidas»: tal cual entero, a raciones —la copa de vino de 150 ml, la caña— o con receta —las copas, que se hacen solas con la dosis de la casa, y los cafés, que vienen hechos— (0106, apartado 2; dónde se monta, [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)).
 
 ## 10.4 El plano
 
 - **Las zonas en pestañas** (Salón · Terraza · Barra) y las mesas donde están de verdad.
 - **Cada mesa dice, sin abrirla:** su estado con color e icono (3.1), cuánto lleva abierta, sus comensales, su total y las iniciales de su camarero. «Pidió la cuenta» destaca sobre todo lo demás.
-- **«Mis mesas»**, un filtro que en el móvil del camarero viene puesto.
-- **Al tocar una mesa, sus opciones** (0106): «Marchar el 2.º» cuando toca, abrir la mesa, cobro rápido; imprimir la cuenta, dividirla, cambiar de mesa, juntar, **pasar a otro camarero**, pasar a la barra o para llevar, la nota, las personas y alergias, «lo que ha pasado» y anular con permiso y motivo. **Sin «forzar desbloquear»**: en Estook nadie bloquea una mesa (7.2).
+- **«Todas · Mías»** (11.8): todos ven todas, con las iniciales de su camarero; el comandero personal empieza en «Mías».
+- **Al tocar una mesa, sus opciones** (0106): «Marchar el 2.º» cuando toca, abrir la mesa, cobro rápido; imprimir la cuenta, dividirla, cambiar de mesa, juntar, **quedármela**, **pasar a otro camarero**, pasar a la barra o para llevar, la nota, las personas y alergias, «lo que ha pasado» y anular con permiso y motivo. **Sin «forzar desbloquear»**: en Estook nadie bloquea una mesa (7.2).
 - **Las mesas de quien ha fichado la salida** se marcan, para pasarlas a otro sin que se queden sin dueño.
-- **El plano se dibuja arrastrando** en Ajustes › Sala, empezando por una plantilla del tipo de local. Se hace con `@dnd-kit`, que ya está en el proyecto por el Panel ([0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)): **ninguna dependencia nueva**.
+- **El plano se dibuja en Estook TPV, a ojo** (11.9): Ajustes del TPV › La sala, empezando por una plantilla del tipo de local, sin un solo centímetro. Se hace con `@dnd-kit`, que ya está en el proyecto por el Panel ([0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)): **ninguna dependencia nueva**.
 - **Lo que cambia en un aparato se ve en los demás en menos de 2 segundos**, lo mismo que marchar (3.7).
 
 ## 10.5 Cobrar
@@ -1215,10 +1197,10 @@ Lo que ninguno de los investigados tiene junto, porque ninguno tiene detrás el 
 
 Que un local que viene de otro TPV **no tenga que reescribir nada**:
 
-1. **La carta.** Si ya está en Estook (M10), ya está. Si viene de otro TPV, se importa su catálogo de artículos con el mismo lector de M18 y se empareja con las fichas.
-2. **El plano**, desde la plantilla del tipo de local, ajustándolo con el dedo.
+1. **Los productos**, por uno de los tres caminos de 11.11: traer toda la carta, elegir lo que se vende, o empezar de cero. Si viene de otro TPV, se importa su catálogo de artículos con el mismo lector de M18 y se empareja con las fichas.
+2. **El plano**, desde la plantilla del tipo de local, a ojo (11.9).
 3. **Estook Link**, si la cocina quiere papel o el local quiere trabajar sin internet (6.4). Lo instalamos en una sesión remota.
-4. **Los terminales** (3.4) y **las impresoras**, con su botón de imprimir prueba (6.5). El cajón se prueba desde ahí.
+4. **Los aparatos** (11.3) y **las impresoras**, con su botón de imprimir prueba (6.5). El cajón se prueba desde ahí.
 5. **La caja:** el fondo de siempre, y si el local usa **bolsa del camarero** o caja central (5.5).
 6. **La facturación:** los cinco pasos de 4.3. Hasta el último, **el botón de cobrar sale bloqueado diciendo qué falta**.
 7. **Practicar, en el local de ejemplo**, nunca en el de verdad. **No hay «modo formación» en producción** (4.12): una venta de mentira en el local real es justo lo que persigue la ley antifraude.
@@ -1259,3 +1241,437 @@ La vara de 10.3 —cuatro platos en diez toques— no basta: un camarero decide 
 | Cambiar de camarero              | Su PIN, en menos de un segundo   |
 | Abrir la caja                    | 3 toques, con el fondo propuesto |
 | Cerrar la caja                   | Lo que se tarde en contar        |
+
+---
+
+# 11 · Estook TPV entero, pantalla a pantalla
+
+_Añadido en la versión 1.4 (23 de octubre de 2026, [decisión 0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)), con las once respuestas de Richi sobre las maquetas [Estook TPV · el TPV completo](https://claude.ai/artifact/EUZuQhUJSg13As8qeUWk5X). Las maquetas mandan sobre el aspecto; este capítulo, sobre lo que hace cada pantalla. Se miró Square, Toast, Revo, Lightspeed, Loyverse, TableIn, ClassicGes, Glop y Sysme: **se copia cómo funcionan, no cómo se ven** (Manifiesto, capítulo 27)._
+
+> **Cómo se lee este capítulo.** Es la especificación de Estook TPV como aplicación: los aparatos, cómo se vinculan, quién entra, el inicio, la caja, las ventas, las mesas, el plano, pedir y los productos. **Lo que pasa por dentro** —la cocina (3.2), la facturación (4), el cobro (5), la impresión (6), el modelo (7) y cobrar en pantalla (10.5)— sigue en su capítulo, y aquí se enlaza. **Si algo de aquí choca con otro capítulo, el otro está mal y se corrige**: no hay dos versiones de la misma regla.
+>
+> **El listón:** un camarero que no ha visto nunca Estook TPV abre una mesa, pide cuatro platos y los manda **sin que nadie le explique nada**; y un dueño que viene de Revo **monta su local en una tarde** sin medir una mesa ni copiar su carta a mano.
+
+## 11.1 Qué se hace en Estook y qué en Estook TPV
+
+**Estook gestiona y Estook TPV vende.** Las dos escriben en **los mismos datos**: no hay copia, ni exportar, ni sincronizar. Lo que se cambia en un sitio está en el otro al momento.
+
+| Se hace en **Estook**                                      | Se hace en **Estook TPV** (Ajustes del TPV, 11.13)                                         |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| La carta: platos, secciones, precios por canal, IVA, fotos | **Qué se vende en el TPV y en qué botón** (la botonera, 11.11)                             |
+| Los escandallos, las fichas y los alérgenos                | **Quién lo prepara y en qué pase sale** (11.11)                                            |
+| El menú del día y los otros menús (M10)                    | Las opciones y los extras de cada plato (10.3), las copas, los cafés y «Monta tus bebidas» |
+| El almacén, las compras, el inventario                     | **El plano**: salas, mesas, barra y paredes (11.9)                                         |
+| El equipo, sus roles y **su PIN** (Mi acceso y Equipo, M1) | **Los aparatos** y su función (11.3); las impresoras y el cajón (capítulo 6)               |
+| Negocio, Ventas y la jornada (consultar lo vendido)        | **La caja**: abrir, entradas y salidas, cerrar (11.6); y las ventas de hoy (11.7)          |
+| La facturación: el alta, las series (4.3)                  | El PIN y el bloqueo de cada aparato (11.4)                                                 |
+
+**En Estook no se añade nada más para el TPV** (0107). Lo que la 1 · 2 puso allí —«Tu sala», «Abrir la sala» y el interruptor «Es de bebidas»— sale de Estook en las entregas T1 y T3. **Crear un plato desde el TPV lo crea en la carta**, y cambiar su precio desde el TPV cambia el de la carta: es el mismo dato con dos pantallas, nunca dos datos.
+
+## 11.2 Los aparatos que valen
+
+**Estook TPV se vende a cualquier local**, así que vale lo que cada local ya tenga (respuesta 2 de la 0107). **Es la misma aplicación web en todos**; lo que cambia es cómo se instala y qué aparatos se le enchufan.
+
+| Aparato                                                            | Para qué suele ser             | Cómo se instala                                                                              | Pantalla mínima      | Quiosco (que no se salga nadie)                     |
+| ------------------------------------------------------------------ | ------------------------------ | -------------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------- |
+| **Ordenador con Windows, táctil** (el TPV de caja de toda la vida) | Caja                           | Edge o Chrome › «Instalar Estook TPV». Link en el mismo ordenador (6.3)                      | 12″, apaisado        | El «acceso asignado» de Windows con Edge en quiosco |
+| **Tablet Android**                                                 | Caja o comandero de sala       | Chrome › «Instalar aplicación»                                                               | 8″; 10″ para la caja | «Fijar pantalla» de Android, o la cáscara           |
+| **iPad**                                                           | Caja o comandero de sala       | Safari › Compartir › «Añadir a pantalla de inicio». **La cáscara** si imprime sin Link (6.3) | 9″; 10″ para la caja | «Acceso guiado» del iPad                            |
+| **Móvil Android o iPhone**                                         | Comandero (personal o de sala) | Chrome o Safari, igual que arriba                                                            | 5,8″, en vertical    | No hace falta: es el móvil de alguien               |
+| **Pantalla de cocina o de barra**                                  | Pantalla de cocina o de barra  | Una tablet de 13″ o más, o una tele con un mini PC con Chrome; en quiosco                    | 13″, apaisada        | El del sistema que tenga, como arriba               |
+
+- **Navegadores:** Edge y Chrome de los dos últimos años; **Safari 16.4 o más nuevo** (es el que deja instalar con avisos en el iPhone y el iPad). Uno más viejo ve «Actualiza el navegador para usar Estook TPV», nunca una pantalla rota.
+- **En vertical y en apaisado** (Arquitectura, capítulo 8): la caja y la cocina se piensan apaisadas; el comandero en el móvil, en vertical; la tablet de sala, en las dos.
+- **Lo que se le enchufa**, y quién habla con ello:
+
+| Periférico                                              | Cómo se conecta                                                                                                    | Quién le habla                                                                   |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Impresora de tickets o de cocina (ESC/POS)              | Por red, USB o Bluetooth                                                                                           | **Estook Link** (o la cáscara, o la que pregunta sola): nunca el navegador (6.1) |
+| Cajón                                                   | **Enchufado a la impresora de tickets** (el conector RJ-11 que traen todas)                                        | La orden de abrir va dentro del trabajo de impresión (10.6)                      |
+| Datáfono del banco                                      | No se conecta: se teclea el importe y se confirma en Estook TPV (nivel 1, 10.7)                                    | El camarero; se cuadra al cerrar la caja                                         |
+| Datáfono conectado                                      | Por internet (Stripe Terminal, Viva.com, SumUp) o por Link (Redsys TPV-PC con su pinpad) **[VERIFICAR al llegar]** | La API de Estook, detrás de `ProveedorDatafono` (10.7)                           |
+| Lector de códigos, teclado de cocina, llave de camarero | USB o Bluetooth: escriben como un teclado                                                                          | El navegador, sin nada más                                                       |
+| Balanza                                                 | Puerto serie                                                                                                       | Chrome o Edge, o Link                                                            |
+| Pantalla para el cliente (el total a la vista)          | Segunda pantalla del ordenador de caja                                                                             | **Más adelante**: no entra en T1 a T7                                            |
+
+**Ninguna marca en el núcleo** (6.7, regla 6): en la web se dice «funciona con tu impresora», no «compra esta».
+
+## 11.3 Vincular un aparato, y qué es cada uno
+
+**La función de cada aparato se elige al vincularlo y no se adivina nunca**: es lo que hacen Square (cada código de aparato va con su modo) y Toast (al montarlo se le dice su modo, su impresora y su cajón). Un aparato no puede saber solo si es la caja o el móvil de un camarero, y si se equivoca, el servicio se rompe.
+
+### Las cinco funciones
+
+| Función                | Qué hace                                                                                       | Quién lo usa                                                        | Se bloquea                                                     | Lo que se le pone                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------- |
+| **Caja**               | Todo: mesas, venta rápida, cobrar, **la caja de su cajón**, ventas de hoy y Ajustes del TPV    | Cualquiera, con su PIN                                              | Al acabar cada cobro y a los 2 min sin tocar                   | **Su cajón** (uno) y su impresora de tickets                |
+| **Comandero**          | Mesas, pedir, mandar y marchar, la cuenta, y cobrar si el local lo deja (con datáfono o bolsa) | **Compartido**: cualquiera con su PIN · **Personal**: solo su dueño | Compartido: tras cobrar y a los 2 min · Personal: a los 10 min | Opcional, una impresora para la cuenta; nunca un cajón      |
+| **Pantalla de cocina** | La cocina (3.2): el ticket entero de cada mesa, tachar, «Fuera»                                | La cocina, **sin PIN**                                              | Nunca: no tiene operador                                       | Nada; si quiere papel, la impresora es de la cocina (11.11) |
+| **Pantalla de barra**  | Lo mismo que la de cocina, con lo que prepara la barra (11.11)                                 | La barra, sin PIN                                                   | Nunca                                                          | Nada                                                        |
+| **Fichar**             | El quiosco de fichajes que ya existe (0068)                                                    | Cada uno, con su PIN                                                | Después de cada fichaje                                        | Nada                                                        |
+
+- **Lo que separa la caja del comandero es el cajón**: un aparato de caja tiene siempre el suyo, y el efectivo que cobra va a la caja de ese cajón. **Dos aparatos de caja pueden compartir un cajón** (la barra con dos pantallas), y entonces comparten su caja abierta. Un comandero no tiene cajón: si cobra en efectivo, va a la bolsa de quien cobra (5.5), y si el local no usa bolsa, el comandero cobra solo con tarjeta.
+- **El comandero personal** es el móvil de alguien: se vincula a nombre de esa persona y **solo entra su PIN** («Este móvil es de Sara»). Si esa persona deja el local, el aparato se desvincula solo.
+- **Cambiar la función o el nombre** de un aparato se hace desde Ajustes del TPV › Aparatos, sin volver a vincularlo.
+
+### El primer aparato del local
+
+```
+estook.com/tpv/  →  «Vincular este aparato»
+  ├─ «Tengo un código»   → (los siguientes, abajo)
+  └─ «Es el primero: entro con mi correo»
+        → correo y contraseña (y el doble factor, si lo tiene)
+        → solo si tiene «Dar de alta un terminal» en algún local (Roles 1.12)
+        → elige el local (si lleva más de uno)
+        → elige la función y el nombre («Caja 1»)
+        → si es Caja: elige o crea su cajón
+        → LISTO: el aparato guarda SU llave y la sesión personal SE CIERRA
+        → pantalla del PIN
+```
+
+**La sesión personal no se queda en el aparato.** Lo que se queda es **la llave del aparato**, la misma pieza que ya usa fichar (0068): 32 bytes al azar que solo tiene el aparato; Estook guarda su huella (SHA-256) y nada más.
+
+### Los demás aparatos
+
+```
+En un TPV ya vinculado (cualquiera con Ajustes del TPV)
+  Ajustes del TPV › Aparatos › «Añadir aparato»
+  → PIN de alguien con «Dar de alta un terminal»
+  → la función y el nombre PRIMERO («Comandero · Móvil de Sara», y de quién es si es personal)
+  → sale el CÓDIGO de 6 cifras y su QR · «caduca en 10:00 · sirve una vez»
+
+En el aparato nuevo
+  estook.com/tpv/  →  «Vincular este aparato» → «Tengo un código»
+  → se escriben las 6 cifras, o se lee el QR con la cámara
+  → LISTO: llega ya con su función, su nombre y su local · pantalla del PIN
+  (y en el TPV que dio el código: «Móvil de Sara, vinculado»)
+```
+
+**Por qué así es lo más seguro** (respuesta 3):
+
+1. **El código no vale nada solo**: sirve **una vez**, para **ese local, esa función y ese nombre**, y **caduca a los 10 minutos**. Lo crea alguien con permiso y con su PIN, y queda a su nombre.
+2. **Seis cifras al azar** (las del generador seguro de `secretos.ts`, como el PIN), y **a los 5 intentos fallidos el código muere**. Además, **una misma dirección no prueba más de 20 códigos por hora**: con eso, probar códigos a ciegas no sale nunca.
+3. **El QR lleva `https://estook.com/tpv/vincular#482913`**: el código va detrás del `#`, que el navegador no manda en ninguna petición ni queda en ningún registro de servidor; la aplicación lo lee y lo manda una vez, por POST.
+4. **Lo que se queda en el aparato es su llave**, que no se enseña nunca, no se puede volver a pedir y no se deriva de nada del aparato (Arquitectura, capítulo 6: nada de huellas del hardware). Se guarda en el almacén del navegador de Estook TPV, **aparte de la sesión de Estook** (`estook.sesion`): un mismo navegador puede tener las dos sin mezclarlas.
+5. **La llave sola no hace nada**: abre la pantalla del PIN (y la de cocina, que no tiene operador). **Cada petición lleva la llave del aparato y el turno del operador**, y la API mira las dos: que el aparato es de ese local y sigue vinculado, que su función deja hacer eso, y que la persona tiene el permiso en ese local (Roles 1.12). **Un comandero no abre un cajón aunque teclee el gerente.**
+6. **Desvincular** (Ajustes del TPV › Aparatos › el aparato › «Desvincular», con PIN de quien puede) deja la llave sin valer **en la petición siguiente**, y el aparato enseña «Este aparato ya no está vinculado» y vuelve a «Vincular este aparato». Lo que tenía sin subir se sube antes si hay conexión, o se pierde, y la pantalla de desvincular lo avisa con el número («Tiene 2 cosas sin subir»).
+7. **Si se pierden todos los aparatos**, quien lleva el local vincula uno nuevo entrando con su correo (el primer aparato, arriba) y desvincula los demás desde él. **No hace falta tocar Estook.**
+8. **Cada aparato late cada minuto**: Ajustes del TPV › Aparatos dice «En línea» o «Visto hace 2 días», su versión y su función. Soporte lo ve igual en el panel interno (capítulo 9, punto 10).
+
+**Un aparato vinculado no es una puerta a la gestión** (3.4): Estook TPV no lleva a Estook, ni con un enlace. Quien quiera gestionar abre Estook en su móvil.
+
+## 11.4 Entrar con el PIN, y el bloqueo
+
+**Se entra tecleando el PIN, y ya está** (decidido por la IA, 0107): sin buscar antes la cara. El PIN es único en el local (`pin_unico_en_su_local`, desde M1), así que dice quién es. Es lo que hacen Toast y Square con el código de cada empleado.
+
+```
+┌──────────────────────────────────────────────┐
+│ Caja 1 · Bar Centro              14:32  ● en línea │
+│                                              │
+│            Teclea tu PIN                     │
+│              ○ ○ ○ ○                         │
+│          [1] [2] [3]                         │
+│          [4] [5] [6]                         │
+│          [7] [8] [9]                         │
+│              [0] [⌫]                         │
+│                                              │
+│  Fichados ahora: Sara · Marcos · Ana         │
+└──────────────────────────────────────────────┘
+```
+
+- **El PIN lo da Estook, al azar**, donde ya se da (Mi acceso y Equipo, M1): nadie lo elige, así que nadie pone 1234. **Desde T1 se descartan al generarlo los que se adivinan**: cuatro iguales (1111) y las escaleras (1234, 4321). Quien no tiene PIN en ese local ve «No tienes PIN en este local: pídeselo a quien lo lleva».
+- **Los fallos** (lo que ya existe, 0018 y 0068): cinco seguidos de la misma persona la paran 15 minutos; diez seguidos en un aparato lo paran 5. La pantalla dice cuánto falta, sin decir nunca si el PIN era de alguien.
+- **El bloqueo** (respuesta 4):
+
+| Aparato                       | Se bloquea                                               | Lo cambia el gerente                     |
+| ----------------------------- | -------------------------------------------------------- | ---------------------------------------- |
+| Caja y comandero compartido   | **Al acabar cada cobro** y a los **2 minutos** sin tocar | De 1 a 10 minutos; lo del cobro, sí o no |
+| Comandero personal            | A los **10 minutos** sin tocar                           | De 5 a 30 minutos                        |
+| Pantalla de cocina y de barra | Nunca                                                    | —                                        |
+| Fichar                        | Después de cada fichaje                                  | —                                        |
+
+- **«Bloquear»** está siempre arriba a la derecha: un toque y el siguiente entra con su PIN.
+- **No se bloquea en mitad de algo**: con el teclado del cobro abierto o escribiendo una nota, el tiempo cuenta desde el último toque, y lo que se estaba pidiendo **se queda en la mesa sin mandar** (1 · 2, decisión 4), con aviso al siguiente que la abra.
+- **Fichar y entrar son el mismo PIN** (3.4): a quien no ha fichado le sale, después del PIN, «No has fichado. ¿Entrada ahora?» con un toque. Si el local pide que **solo quien ha fichado use el TPV** (apagado de fábrica), sin fichar no entra. **Fichar la salida** está en el inicio, y si tiene mesas abiertas pregunta a quién se las pasa.
+- **Lo que pide un encargado** se aprueba en el mismo aparato con su PIN (3.4): una cosa, una vez, dos minutos.
+- **Sin conexión**, los PIN los comprueba Link; sin Link, el aparato los cifra con su llave pública y la API los mira al volver (0070). Sin nube y sin Link solo entra quien ya entró ese día en ese aparato (3.4).
+
+## 11.5 El inicio
+
+**Lo primero que ve el primero que entra cada día.** Lo que no puede hacer en ese aparato, o no tiene permiso para hacer, **no sale**, ni apagado.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ ESTOOK TPV · Bar Centro · Caja 1        Sara · camarera   [Bloquear] │
+├────────────────────────────────────────────┬────────────────────────┤
+│ [ Mesas        ] [ Venta rápida ] [ Caja  ]│ AHORA                  │
+│   12 abiertas      barra y llevar  abierta │ Caja abierta · 300 €   │
+│ [ Ventas de hoy] [ Llevar y      ] [Fichar]│ 12 mesas · 2 toca      │
+│   1.240 €          reparto · 1             │   marchar              │
+│ [ Agotados     ] [ Pantalla de   ] [Ajustes│ ⚠ Impresora de cocina  │
+│   3 platos         cocina          del TPV]│   sin papel            │
+└────────────────────────────────────────────┴────────────────────────┘
+```
+
+| Baldosa                | Qué abre                                                | En qué aparatos               | Quién la ve (Roles 1.12)                      |
+| ---------------------- | ------------------------------------------------------- | ----------------------------- | --------------------------------------------- |
+| **Mesas**              | El plano (11.8)                                         | Caja y comandero              | Quien toma nota                               |
+| **Venta rápida**       | Pedir y cobrar sin abrir mesa (3.1)                     | Caja                          | Quien cobra                                   |
+| **Llevar y reparto**   | Para llevar con nombre, y los pedidos de reparto (10.8) | Caja y comandero              | Quien toma nota                               |
+| **Caja**               | Abrir, entradas y salidas, X, cerrar (11.6)             | Caja                          | Jefe de sala y gerente; el camarero, su bolsa |
+| **Ventas de hoy**      | Los tickets del día (11.7)                              | Caja y comandero              | Todos; el camarero, **los suyos**             |
+| **Fichar**             | Entrada, pausa, vuelta y salida del que está            | Todos con operador            | Todos                                         |
+| **Agotados**           | Marcar y desmarcar (3.1)                                | Caja y comandero              | Quien puede agotar                            |
+| **Pantalla de cocina** | La cocina en grande, para mirar (sin tachar)            | Caja                          | Jefe de sala y gerente                        |
+| **Ajustes del TPV**    | 11.13                                                   | Caja (y comandero compartido) | Gerente; el jefe de cocina, lo de cocina      |
+
+- **«Ahora»**, a la derecha (abajo en el móvil): la caja (abierta con su fondo, o «Sin abrir»), las mesas abiertas y las que **toca marchar**, los pedidos de reparto por aceptar y **lo que falla** (impresora sin papel, «sin internet», cosas sin subir), cada uno con su botón de qué hacer. Si no hay nada que decir, no dice nada.
+- **Arriba, siempre**: el local, el aparato, quién está y **Bloquear**; el estado de la conexión, solo si no va bien (10.9).
+- **Dónde cae cada uno** (decidido por la IA, 0107): **el primero del día, en el inicio**; **tras un bloqueo, el siguiente cae en Mesas** (o en Venta rápida si el local no tiene mesas), que es a lo que viene. El inicio está a un toque en la esquina de arriba a la izquierda.
+- **Con la caja sin abrir** en un aparato de caja, la baldosa Caja sale la primera y en naranja: **«Abrir caja»**. No impide nada más (11.6).
+
+## 11.6 La caja
+
+**Una caja por cajón, y el cierre ciego de fábrica** (respuesta 9). Lo de dentro —turno de caja, bolsa del camarero, X, Z y el cierre del día— está en 5.5 y 10.6; aquí, cómo se hace.
+
+**Abrir** (3 toques con el fondo propuesto, 10.13):
+
+1. Caja › **Abrir caja**. Se propone **lo que se dejó en el cajón al cerrar la última vez** («Se queda para mañana», abajo).
+2. «Es eso» con un toque, o **«Contar»**: billetes y monedas, de 500 € a 1 céntimo, con el `+` y el `−` o escribiendo la cantidad de cada uno, y el total sumándose solo.
+3. **Abrir**: el cajón se abre para meter el fondo, y queda a nombre de quien abrió.
+
+**Durante el día:**
+
+- **Entrada o salida de dinero** (Caja › Entrada o salida): importe y motivo, que se elige —**cambio, pago a un proveedor, propina, retirada al banco, otro**— y, si es «otro», se escribe. El cajón se abre. Sale en el X y en el Z.
+- **Abrir el cajón sin venta**: con permiso, motivo y rastro (10.6). En la caja, un botón; quien no puede, lo pide y lo aprueba un encargado con su PIN.
+- **El informe X**: cómo va sin cerrarla —ventas por forma de pago, entradas y salidas, lo que debería haber en efectivo— **a quien tiene permiso de verlo**; el camarero ve el de su bolsa.
+- **Cobrar en efectivo con la caja cerrada** no se puede, pero **no frena a nadie**: el cobro dice «Abre la caja para cobrar en efectivo», se abre ahí mismo con el fondo propuesto y el cobro sigue. **Tomar nota, mandar y cobrar con tarjeta no piden la caja.**
+
+**Cerrar** (lo que se tarde en contar):
+
+1. Caja › **Cerrar caja**. Si hay mesas abiertas, lo dice («Quedan 3 mesas abiertas: el efectivo que cobren irá a la caja de mañana») y deja seguir.
+2. **Contar sin ver lo esperado** (ciego, de fábrica; el gerente lo puede apagar): billetes y monedas como al abrir.
+3. **El total del cierre del datáfono**: se escribe (nivel 1) o viene solo (nivel 2, 10.7).
+4. **«Se queda para mañana»**: se propone el fondo de hoy; lo demás es lo que se retira.
+5. **Solo entonces** se enseña la diferencia, en efectivo y en tarjeta, **sin bloquear el cierre** y a nombre de quien cerró (5.5). Se imprime el Z.
+
+**Dos cajones** (barra y comedor) son dos cajas, cada una con su fondo, su cierre y su Z; el cierre del día los suma (5.5). **Una caja que se quedó abierta ayer** no deja abrir la de hoy en ese cajón: sale «La caja de ayer sigue abierta · Cerrarla», y mientras tanto se sigue vendiendo con ella.
+
+## 11.7 Ventas de hoy
+
+Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos arriba:
+
+| Hora  | Dónde        | Camarero | Pago     | Total   |
+| ----- | ------------ | -------- | -------- | ------- |
+| 14:31 | Mesa 6       | SA       | Tarjeta  | 73,10 € |
+| 14:28 | Venta rápida | MA       | Efectivo | 3,20 €  |
+
+- **Arriba, lo que importa**: el total del día, por forma de pago, y el número de tickets; y los filtros **Todos · Míos**, por camarero y por forma de pago, y un buscador por número o importe.
+- **Al tocar un ticket**, se ve entero (como se imprimió) y lo que se puede hacer:
+  - **Reimprimir**: sale marcado como copia y no genera nada fiscal (6.7).
+  - **Factura**: el canje F3 con los datos del cliente (5.3).
+  - **Cambiar la forma de pago** (efectivo por tarjeta, o al revés), con permiso, motivo y rastro: mueve la caja y no toca el ticket **[VERIFICAR con el asesor]** (0107, 6.8).
+  - **Devolver**: la rectificativa (5.4), entera o por platos, con permiso y motivo. **Un ticket emitido no se reabre**: se devuelve y, si hace falta, se vuelve a cobrar.
+- **El camarero ve los suyos del turno** («solo lo mío», Roles 1.12); el jefe de sala y el gerente, todos. **Lo que no es de hoy se mira en Estook** (Servicio · Ventas).
+
+## 11.8 Las mesas
+
+**Todos ven todas las mesas, y cualquiera puede hacer de todo en cualquiera** (respuesta 5). El control es de la sala entera: lo que queda es **quién lo hizo**.
+
+- **Cada mesa dice, sin abrirla:** su nombre o número, **su estado con color, icono y texto** (nunca solo color, B1), cuánto lleva abierta, sus comensales, su total **y las iniciales de su camarero** (SA, MA…) en una pastilla de su color.
+
+| Estado                       | Se ve                                     | Cuándo                                               |
+| ---------------------------- | ----------------------------------------- | ---------------------------------------------------- |
+| **Libre**                    | Oscura con borde, «Libre · 4»             | Sin cuenta                                           |
+| **Sin pedir**                | Ámbar, icono de libreta                   | Abierta y sin nada mandado                           |
+| **Sin mandar**               | Ámbar con borde, «Sin mandar»             | Tiene platos pedidos que no han ido a cocina         |
+| **Comiendo**                 | Verde, con su tiempo y su total           | Mandada                                              |
+| **Toca marchar**             | **Azul, «Marchar 2.º»**                   | Ha salido todo el pase anterior (3.1)                |
+| **Pide la cuenta**           | **Naranja, «Cuenta»**, lo que más resalta | Se imprimió la precuenta o se marcó «pide la cuenta» |
+| **De alguien que se ha ido** | Con el aviso «Ana ha fichado la salida»   | Su camarero ya no está fichado (0106)                |
+
+- **Filtros**: **Todas · Mías**, y las salas en pestañas (Salón · Terraza · Barra). El aparato recuerda el último filtro; en el comandero personal empieza en **Mías**.
+- **En la tablet y en la caja, el plano** tal como se dibujó (11.9). **En el móvil, una cuadrícula** con las mismas mesas y sus estados, de tres en fila, en el orden de sus nombres: un plano dibujado no cabe en una mano.
+- **Tocar una mesa libre**: «¿Cuántos sois?» (un toque) y, si el local trabaja por pases, «Por pases · Todo junto» con «Por pases» marcado. Y a pedir.
+- **Tocar una mesa con cuenta**: sus opciones, pegadas a la mesa (como Revo, 0106): **el botón grande con lo siguiente** (Pedir, Mandar, Marchar el 2.º o Cobrar), Abrir la mesa, Cobro rápido; y Imprimir la cuenta, Dividir, Cambiar de mesa, Juntar, **Quedármela**, **Pasar a otro camarero**, Pasar a la barra o para llevar, Nota, Personas y alergias, Lo que ha pasado y Anular (con permiso y motivo).
+- **Quién se queda la venta**: **el camarero de la mesa** (el que la abrió, o el que se la quedó o la recibió). Cada plato queda además a nombre de quien lo pidió, y «Lo que ha pasado» lo cuenta. **Cualquier camarero puede quedarse una mesa o pasarla a otro**, y queda en el rastro (0107: el control de todo).
+- **Lo que cambia en un aparato se ve en los demás en menos de 2 segundos** (3.7).
+
+## 11.9 El plano, dibujado en el TPV
+
+**Se dibuja en Estook TPV, a ojo** (respuesta 7): **ningún número de centímetros**, ni para el tamaño ni para la posición. Nadie mide sus mesas: las pone como las ve. Es lo que hacen Lightspeed, TableIn y los TPV españoles (el salón se monta en el propio TPV).
+
+**Dónde:** Ajustes del TPV › **La sala**, y el lápiz de arriba del plano para quien tiene el permiso. **En la caja y en las tablets**; en el móvil no («Edita la sala en una tablet o en la caja»).
+
+**Lo que hay en la paleta:**
+
+| Se abre (es una mesa)                                                                    | No se abre (es la sala)                               |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Cuadrada · Redonda · Rectangular · Ovalada · Alargada (de banco) · **Taburete de barra** | **Barra** · Pared · Columna · Puerta · Planta · Texto |
+
+**Cómo se dibuja, ahorrando trabajo:**
+
+- **Se arrastra** de la paleta a la sala. La mesa nueva **nace con el número siguiente** (si la última es la 12, es la 13) y **con su tamaño según sus plazas**: al cambiar «Plazas: 2 · 4 · 6 · 8 · 10 · 12», la mesa crece sola a un tamaño razonable. Lo normal es no tocar nada más.
+- **El tamaño se cambia estirando las esquinas**, y **se gira con el asa** de arriba, que se queda sola en 0°, 45° y 90° si se pasa cerca. Las paredes y la barra se estiran igual: son un rectángulo largo.
+- **Imán y guías**: lo que se mueve se pega a una rejilla que no se ve, y salen líneas de guía al alinearse con otra mesa. **Las mesas quedan rectas y en fila sin intentarlo.**
+- **Duplicar** (la mesa de al lado, igual, con el número siguiente), **elegir varias** y moverlas a la vez, **deshacer y rehacer**.
+- **Las salas, como pestañas**: «+ Sala», renombrar, ordenar arrastrando. Una sala con mesas abiertas no se borra.
+- **Para empezar, una plantilla** del tipo de local («Bar con barra y 6 mesas», «Restaurante de 12 mesas», «Terraza de 8»), que se ajusta con el dedo; o la sala vacía.
+- **Se guarda solo**, al soltar, y los demás aparatos lo ven al momento. Se puede tocar en pleno servicio: **mover una mesa abierta no toca su cuenta**. Borrar una mesa abierta, no se puede.
+
+**Lo que se guarda**, sin centímetros: cada elemento con su tipo, su sala, su nombre, sus plazas, **su sitio, su ancho y su fondo en las unidades del espacio del plano** (el espacio de 1000 × 1000 con su forma 16:10 que ya usa `packages/ui/src/sala/plano.ts`) y **su giro**. La pantalla los escala a cada aparato.
+
+## 11.10 Pedir
+
+```
+┌──────────────────────────────┬───────────────────────────────────────────┐
+│ ‹ Mesa 6 · 4 pax · SA · 34′  │ [Lo más pedido] [Entrantes] [Principales]  │
+│ ! Sin frutos secos           │ [Postres] [Bebidas] [Vinos] [Menú]   [🔍]   │
+│ [Bebidas][1.º ✓][2.º][3.º][Postre]                                        │
+│  Bebidas · en la barra       │ ┌────────┐┌────────┐┌────────┐┌────────┐   │
+│   2 Caña              5,00   │ │Chuletón││Hambur- ││Merluza ││Risotto │   │
+│  1.º · salió ✓ 14:10         │ │  32,00 ││guesa   ││  21,00 ││ Quedan3│   │
+│   2 Croquetas  ✓     14,00   │ └────────┘└────────┘└────────┘└────────┘   │
+│  2.º · en espera             │ ┌────────┐┌────────┐┌────────┐┌────────┐   │
+│   1 Chuletón · al punto 32,00│ │Bacalao ││Carri-  ││AGOTADO ││ ...    │   │
+│                              │ └────────┘└────────┘└────────┘└────────┘   │
+│ Total               73,10 €  │                                           │
+│ [Más] [Nota] [Cuenta]  [   MARCHAR EL 2.º   ]                           │
+└──────────────────────────────┴───────────────────────────────────────────┘
+```
+
+**Las pestañas de los pases, encima de la cuenta** (0107, punto 14), como las «órdenes» de Revo:
+
+- **Bebidas · 1.º · 2.º · 3.º · Postre.** **Lo que se toca va al pase marcado.** Cada pestaña dice cómo va su pase: ✓ si salió, «en marcha», «en espera».
+- **Al cambiar de página de la botonera se marca sola la pestaña de esa página** («¿En qué pase sale?», 11.11): Entrantes marca el 1.º, Principales el 2.º, Bebidas marca Bebidas. **Así casi nunca se toca la pestaña**: solo para mandar un principal en el 1.º (se marca el 1.º y se toca el plato) o una bebida con el postre.
+- **Bebidas no es un pase**: sale **al momento** a quien la prepara (la barra) al mandar. **El 3.º sale solo si se usa**: la pestaña está, y la cuenta lo enseña cuando tiene algo.
+- **Las reglas de la 0106 no cambian**: el primer pase con algo sale al mandar y los siguientes esperan a que el camarero los marche; un pase que ya esperaba no sale solo al añadirle algo; si todo lo de antes ha salido, lo nuevo sale al momento (los postres al final); una mesa «todo junto» no tiene pestañas de pase.
+- **El botón grande dice siempre lo siguiente** (0106, 7): Mandar · Marchar el 2.º · Cobrar.
+
+**La botonera, a la derecha** (11.11): sus páginas en pestañas, **«Lo más pedido» la primera** (lo más vendido a esa hora en las últimas cuatro semanas, sola; se pueden fijar productos), el buscador que tolera erratas, y la página **Menú** los días que hay menú (M10 · 2). Cada producto, un botón con su nombre entero, su precio, su color y su foto si la tiene; **agotado** en gris y sin tocar, **«Quedan 3»** cuando bajan (3.1).
+
+- **Un toque añade uno.** Si ya está en la cuenta en ese pase, suma. **Tocar la línea**: la nota escrita, el `+` y el `−`, «Va en el» para cambiar de pase y Quitar (0106, 4).
+- **Las opciones obligatorias** (el «¿Con qué?» de una copa, la guarnición si el local la pregunta) salen al tocar el producto, una pregunta y un toque cada una (10.13), y **no se manda sin contestarlas**.
+- **«Más»** junta lo que no se usa en cada mesa: Otra ronda, Artículo libre, A peso, Invitar o descontar, Dividir, Cambiar de mesa, Juntar, Pasar a otro camarero.
+- **«Cuenta»** imprime la precuenta (3.5) y pone la mesa en «Pide la cuenta».
+- **En el móvil**, una columna: la mesa y las pestañas de los pases arriba, las páginas debajo, los productos en dos columnas, y abajo **la cuenta (con su total y lo nuevo) y el botón grande**, siempre a mano.
+
+## 11.11 Los productos del TPV: la botonera
+
+**«Es de bebidas» desaparece** (respuesta 6: no se entendía). Lo que hacía lo dicen ahora dos preguntas que cualquiera entiende, y la decisión de **qué se vende en el TPV** pasa a ser del TPV.
+
+### La carta y la botonera, cada una con lo suyo
+
+| La **carta** (Estook) guarda                             | La **botonera** (Estook TPV) guarda                  |
+| -------------------------------------------------------- | ---------------------------------------------------- |
+| El plato: nombre, precio por canal, IVA, foto, alérgenos | **Qué productos salen** en el TPV                    |
+| Su escandallo y su ficha                                 | **En qué página** y en qué orden, y **de qué color** |
+| Su sección de la carta (la que ve el cliente)            | **Quién lo prepara** y **en qué pase sale** (abajo)  |
+| Si está agotado                                          | Sus opciones y extras (10.3)                         |
+
+**La botonera no copia nada de la carta**: guarda a qué plato apunta cada botón. Si el plato cambia de precio en Estook, el botón cobra el nuevo. Es el «Item grid» de Square: el catálogo es uno y la botonera es la forma de ponerlo en la pantalla.
+
+### Las dos preguntas
+
+- **«¿Quién lo prepara?» · Cocina · Barra · Nadie (se sirve tal cual).** Decide **a qué pantalla o impresora va** al mandar: lo de la cocina, al ticket de cocina (3.2); lo de la barra, a la pantalla o la impresora de la barra; lo de «Nadie» (una botella de agua, el pan, un artículo libre), a ninguna. **Si la barra no tiene pantalla ni impresora**, lo suyo no va a ninguna parte y lo prepara el camarero, que es lo normal en un bar. Es lo que Lightspeed llama «centro de producción».
+- **«¿En qué pase sale?» · Bebidas (al momento) · 1.º · 2.º · 3.º · Postre.** Decide **qué pestaña se marca sola** al abrir la página (11.10).
+
+**Se contestan por página**, y lo hereda cada producto de la página; **un producto puede cambiarlas** (el pan, en Entrantes, es de «Nadie»). **Vienen propuestas por el nombre** de la sección, y se cambian con un toque:
+
+| Si la sección se llama…                                                                        | Quién lo prepara | Pase    |
+| ---------------------------------------------------------------------------------------------- | ---------------- | ------- |
+| Bebidas, Refrescos, Cervezas, Vinos, Cavas, Cafés, Infusiones, Copas, Cócteles, Licores, Aguas | Barra            | Bebidas |
+| Entrantes, Para picar, Tapas, Raciones, Ensaladas, Primeros, Sopas, Para compartir             | Cocina           | 1.º     |
+| Principales, Segundos, Carnes, Pescados, Arroces, Pizzas, Hamburguesas                         | Cocina           | 2.º     |
+| Postres, Dulces                                                                                | Cocina           | Postre  |
+| Cualquier otra                                                                                 | Cocina           | 1.º     |
+
+**Lo que ya estaba marcado «de bebidas»** (`es_bebida`, la 0082) pasa a «Barra» y «Bebidas» al migrar, sin que nadie toque nada, y la columna se quita (T3).
+
+### Al empezar: tres caminos
+
+La primera vez que se abre Ajustes del TPV › **Productos** (o en la puesta en marcha, 10.11):
+
+```
+¿Cómo quieres montar los botones del TPV?
+ ( ) Traer toda la carta         Cada sección de tu carta, una página. Lo nuevo entra solo.
+ ( ) Elegir lo que se vende aquí  Tu carta con casillas. Lo nuevo te lo preguntamos.
+ ( ) Empezar de cero             Creas los productos aquí; van también a tu carta.
+```
+
+1. **Traer toda la carta** (recomendado si la carta ya está en Estook): cada sección, una página con su nombre, en el orden de la carta, con las dos preguntas propuestas. **Lo que se añade a la carta después entra solo** en su página.
+2. **Elegir lo que se vende aquí**: la carta entera, sección a sección, con una casilla por plato y **«Todos»** en cada sección. Lo marcado se coloca en su página. **Lo nuevo de la carta no entra solo**: sale en Productos como **«Nuevos en la carta · 3»**, con «Añadir» de un toque (es el «eligiéndolos, no que se añadan directamente» de Richi).
+3. **Empezar de cero**: páginas vacías, y **«Nuevo producto»**: nombre, precio, página y quién lo prepara; **el IVA se propone** (10 % en hostelería, el de la carta para su canal) y se cambia. **Se crea a la vez en la carta de Estook**, en la sección del mismo nombre que la página (se crea si no existe), **marcado «sin escandallo»** para completarlo allí cuando se quiera (0095). Sin eso, el almacén no podría descontarlo.
+
+**Se puede cambiar de camino cuando se quiera**: «Traer lo que falta de la carta» o «Que lo nuevo entre solo: sí/no» están en Productos.
+
+### Lo demás de Productos
+
+- **Ordenar y colorear**: se arrastran los botones y las páginas; cada página tiene su color y cada botón lo hereda o tiene el suyo.
+- **Cambiar el precio desde el TPV** (con el permiso de la carta): es el precio de la carta para ese canal, con su historial. **No hay un precio del TPV.**
+- **Las opciones y los extras** de cada plato (10.3): los grupos reutilizables, con su mínimo, su máximo, su precio y su escandallo.
+- **«Monta tus bebidas»** (de la 0106, puntos 21 a 23, que se monta aquí y no en Estook): coge las bebidas del almacén, propone su página por el nombre y se ponen todos los precios de una vez; **varias raciones del mismo producto** (caña, doble y jarra; la copa de 150 ml y la botella); **las copas que se hacen solas** («Añadir botellas del almacén», 50 ml de la botella, el refresco del «¿Con qué?» y hielo); y **los cafés hechos**, con su coste aproximado si falta el café o la leche. Lo que guarda es lo de siempre: el plato en la carta y su escandallo «tal cual» o con receta, así que **el almacén descuenta igual**.
+- **Agotados**, como en 3.1, desde aquí o desde la mesa.
+- **El menú del día y los otros menús** vienen de Estook (M10 · 2) y salen solos en la página **Menú** los días que hay: no se montan en la botonera.
+
+## 11.12 Cómo se ve
+
+**Oscuro** (respuesta 8), denso y de mucho contraste, como un TPV de verdad: se usa con prisa, con poca luz o con el sol de la terraza. **Solo oscuro**: no hay tema claro en Estook TPV.
+
+| Pieza                     | Valor                                                                                                                                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Fondo · barras · tarjetas | `#0f1719` · `#111c1f` · `#18252a` (y `#22343a` para lo marcado)                                                                                                                                        |
+| Texto · secundario        | `#f1efea` · `#9fb0b3`                                                                                                                                                                                  |
+| La acción principal       | Naranja `#ff7a00`, con el texto oscuro: **un solo botón naranja por pantalla**, el de lo siguiente                                                                                                     |
+| Estados de las mesas      | Comiendo verde `#1f6b4a` · Toca marchar azul `#2c6e9b` · Sin mandar ámbar `#8a6a12` · Cuenta naranja · Alergia o retraso, borde rojo `#e2574c` · Libre, borde `#4a5c61`; **siempre con icono y texto** |
+| Letra                     | Montserrat, la de Estook; números con cifras del mismo ancho (`tabular-nums`)                                                                                                                          |
+| Toques                    | **48 px o más** en la caja y la tablet; **44 px** en el móvil; nada que se toque a menos de 8 px de otra cosa                                                                                          |
+
+- **Las piezas del sistema de diseño** son las de `packages/ui`, con los colores de arriba como tokens de Estook TPV; **ningún color escrito a mano en una pantalla**.
+- **Sin animaciones que hagan esperar**: lo que se toca responde al momento (10.13) y la red va detrás.
+
+## 11.13 Ajustes del TPV
+
+En la caja (y en el comandero compartido), con el PIN de quien puede (Roles 1.12). **Solo lo de vender**: la carta, los precios del día a día y el equipo se cambian en Estook.
+
+| Apartado               | Qué tiene                                                                                  | Quién                    |
+| ---------------------- | ------------------------------------------------------------------------------------------ | ------------------------ |
+| **La sala**            | El editor del plano (11.9)                                                                 | Gerente                  |
+| **Productos**          | La botonera, las dos preguntas, opciones y extras, «Monta tus bebidas» (11.11)             | Gerente                  |
+| **Aparatos**           | Los vinculados, añadir (el código), cambiar función o nombre, desvincular (11.3)           | Gerente                  |
+| **Impresoras y cajón** | Darlas de alta, qué imprime cada una, «Imprimir prueba» y «Abrir el cajón» de prueba (6.5) | Gerente                  |
+| **Caja y arqueo**      | Ciego sí o no, los motivos de entrada y salida, caja central o bolsa (5.5)                 | Gerente                  |
+| **PIN y bloqueo**      | Los minutos de cada aparato, bloquear al cobrar, solo quien ha fichado (11.4)              | Gerente                  |
+| **Formas de pago**     | Efectivo, tarjeta y las del banco del local; el datáfono conectado cuando llegue (10.7)    | Gerente                  |
+| **Tickets**            | Lo que va arriba y abajo del ticket y si se imprime solo (6.5)                             | Gerente                  |
+| **Cocina y barra**     | Los minutos del semáforo, el sonido, pantalla o papel (3.2)                                | Gerente y jefe de cocina |
+
+## 11.14 La seguridad, en una lista
+
+1. **Estook TPV solo funciona en un aparato vinculado**; vincular es la única vez que se entra con correo.
+2. **El código de vincular**: un uso, su local, su función y su nombre; 10 minutos; muere a los 5 fallos; 20 intentos por hora por dirección; detrás del `#` en el QR.
+3. **La llave del aparato** no sale nunca de él ni se enseña; Estook guarda su huella. Desvincular la mata en la petición siguiente.
+4. **Cada petición, aparato + operador**, mirados los dos en la API y en la base: el local del aparato, su función y el permiso de la persona.
+5. **El PIN**: al azar, único en el local, derivado con la sal del local; sin los fáciles; 5 fallos y 15 minutos por persona, 10 fallos y 5 minutos por aparato.
+6. **El bloqueo** de 11.4, y nadie hace nada a nombre de otro: lo que se hace queda a nombre del operador, con la hora y el aparato.
+7. **Ninguna puerta a la gestión** desde el TPV; **la cocina nunca recibe un importe**, tampoco en la respuesta (3.2).
+8. **Lo que pide un encargado**, con su PIN, una vez y dos minutos (3.4).
+9. **Todo queda en la auditoría**: vincular, desvincular, entrar, abrir y cerrar caja, abrir el cajón, cada cobro, cada cambio de forma de pago y cada devolución.
+
+## 11.15 Lo que hay que probar, además de 3.7, 10.12 y el capítulo 8
+
+- **Vincular**: el primer aparato con el correo del gerente, y la sesión personal ya no está al acabar; el segundo con el código, que llega con su función y su nombre.
+- **El código** no sirve dos veces, ni pasados 10 minutos, ni en otro local, y muere al quinto fallo; y la dirección que prueba 21 códigos en una hora no prueba el 21.
+- **Desvincular** una tablet: su petición siguiente falla, enseña «Este aparato ya no está vinculado», y lo que tenía sin subir se ha subido o se ha avisado antes.
+- **Un comandero no abre el cajón** ni con el PIN del gerente; **una pantalla de cocina no recibe un importe**.
+- **El comandero personal de Sara** no deja entrar a Marcos.
+- **El bloqueo**: la caja se bloquea al acabar un cobro y a los 2 minutos; el comandero personal, a los 10; la pantalla de cocina, nunca; lo pedido sin mandar sigue en la mesa después del bloqueo.
+- **El primero del día cae en el inicio; el siguiente, tras un bloqueo, en las mesas.**
+- **Abrir la caja en 3 toques** con el fondo propuesto; **cobrar en efectivo con la caja cerrada** la abre en el mismo gesto; **cerrar a ciegas** no enseña lo esperado hasta haber contado, y el fondo que se queda es el que se propone mañana.
+- **Todas las mesas a la vista de todos**, con las iniciales de su camarero; **«Mías»** enseña solo las suyas; **Marcos pide en la mesa de Sara** y la venta sigue siendo de Sara, con el plato a nombre de Marcos; **«Quedármela»** la pasa a Marcos con su rastro.
+- **El plano**: una mesa de 6 plazas nace más grande que una de 2; se estira y se gira sin ver un número; una mesa abierta se mueve sin tocar su cuenta y no se puede borrar; lo dibujado en la caja se ve en la tablet en menos de 2 segundos.
+- **Los pases en pestañas**: al abrir Principales se marca el 2.º; marcando el 1.º, un principal sale en el 1.º; Bebidas va a la barra al momento.
+- **Productos**: «Traer toda la carta» monta una página por sección y lo nuevo de la carta entra solo; «Elegir» no lo mete solo y lo enseña en «Nuevos en la carta»; un producto creado desde cero está en la carta de Estook, «sin escandallo», y se vende; lo marcado antes «de bebidas» va a la barra sin tocar nada.
+- **«¿Quién lo prepara?» Nadie**: el agua no sale en ninguna pantalla ni impresora; con la barra sin pantalla ni impresora, la caña no va a ninguna parte y la mesa no se queda esperando.
+- **Cambiar la forma de pago** de un ticket mueve la caja y no genera ningún documento fiscal; **devolver** genera su rectificativa.
+- **Ningún número de centímetros** en ninguna pantalla del TPV.

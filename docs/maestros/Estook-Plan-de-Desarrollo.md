@@ -480,8 +480,9 @@ HECHO         M0 a M7, y M6½
 ANTES DE M8   H · Horarios  →  I · La app instalable  →  C · El chat
               →  A3 · Vendedores  →  A4 · Ventas del admin
 FASE 2        M8 → M9 → M10
-ESTOOK TPV    M16a · La jornada → M20A · 1 · Sala y cocina en pantalla → M19a · Estook Link
-              → M20A · 2 · En papel → M20B · Facturación → M20C · Cobro y caja, con M20
+ESTOOK TPV    M16a · La jornada → M20A · 1 (base y API) → T1 · La puerta → T2 · La sala
+              → T3 · Los productos → T4 · Cocina y barra → T5 · Estook Link (M19a y M20A · 2)
+              → T6 · Facturación (M20B) → T7 · Cobro, caja y ventas (M20C, con M20)
 DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b
               → Fase 5 (M21 a M25) → Fase 6 (M26 a M28) → Fase 7 (M29 y M30)
 ```
@@ -731,11 +732,11 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ## Fase 4 · Las ventas
 
-> **Orden de construcción, desde el 22-oct-2026** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)):
+> **Orden de construcción, desde el 23-oct-2026** ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)), en siete entregas de Estook TPV:
 >
-> **M16a → M20A · 1 → M19a → M20A · 2 → M20B → M20C con M20**, justo después de M10; y **M18 y M19b**, al final de la Fase 3.
+> **M16a → M20A · 1 → T1 · La puerta → T2 · La sala → T3 · Los productos → T4 · La cocina y la barra → T5 · Estook Link (M19a y M20A · 2) → T6 · M20B → T7 · M20C con M20**, justo después de M10; y **M18 y M19b**, al final de la Fase 3. Qué deja cada una y cuándo se da por buena, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md); qué hace cada pantalla, en el Anexo, capítulo 11.
 >
-> **M20A · 1, la sala y la cocina en pantalla, va primero**: se prueba en IKATZ con dos tablets y por internet, sin imprimir ni cobrar. **M20 deja de ir el primero**: el cierre a mano no trae platos, así que sin cobro no tiene ventas que mover; va con M20C, donde nace la venta ([el plan](../m20-ventas-y-consumo.md)). Hasta la 0106 el orden era M16a → M20 → M19a → M20A (1.4).
+> **M20A · 1 (la base y la API de la sala y la cocina) ya está en producción**, y sus primeras pantallas se rehacen en T1 a T3: Richi pidió **un TPV entero, aparte de Estook**, no un comandero (0107). **M20 deja de ir el primero**: el cierre a mano no trae platos, así que sin cobro no tiene ventas que mover; va con M20C, donde nace la venta ([el plan](../m20-ventas-y-consumo.md)). Hasta la 0106 el orden era M16a → M20 → M19a → M20A (1.4).
 >
 > **Y Estook Link se parte en dos, porque hace dos cosas que se necesitan en momentos distintos:**
 >
@@ -802,17 +803,17 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Objetivo.** Que la sala tome nota en tablet o en móvil y la cocina lo reciba al momento. Todavía sin cobrar.
 
-**Cómo se ve y cómo trabaja, decidido con Richi sobre las pantallas** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)): **a cocina llega el ticket entero de la mesa, sin partidas**; **marcha el camarero**, avisado cuando ha salido todo el pase; la cocina tacha lo que sale y la mesa se va sola a «Fuera»; tomar nota en **Bebidas · Carta · Menú del día**, con notas escritas y sin preguntar el punto; las copas por marca con «¿Con qué?»; y las bebidas y los cafés, configurados una vez en Estook. **Se entrega en dos**: **M20A · 1**, todo en pantalla y por internet (antes de Link), y **M20A · 2**, la comanda en papel, la cuenta impresa y sin internet (después de M19a). Donde lo de abajo diga otra cosa, manda la 0106.
+**Cómo se ve y cómo trabaja, decidido con Richi sobre las pantallas** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md) y [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)): **Estook TPV es una aplicación aparte con su inicio**, que solo se abre en **aparatos vinculados** con un código y con su función (caja, comandero, pantalla de cocina o de barra, fichar), donde **se entra con el PIN** y se bloquea solo; **todas las mesas a la vista de todos**, con su camarero y «Mías»; **el plano se dibuja en el TPV, a ojo**; los pases en pestañas encima de la cuenta; **la botonera** con «¿Quién lo prepara?» y «¿En qué pase sale?»; **a cocina llega el ticket entero de la mesa, sin partidas**; **marcha el camarero**; y lo de vender —el plano, los productos, las bebidas y los cafés— **se monta en el TPV**, sobre los mismos datos de Estook. **Se entrega en T1 a T5** ([el plan](../m20a-la-sala-y-la-cocina.md)), y **manda el Anexo, capítulos 3 y 11**: donde lo de abajo diga otra cosa, manda el Anexo.
 
 **Entra** (el detalle, en el capítulo 3 del Anexo).
 
-- **`apps/tpv`, la puerta de Estook TPV** (A5, B5 y [0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)): se instala aparte, arranca en la función del terminal y guarda en el aparato lo que necesita para trabajar sin conexión · **terminal, operador y bloqueo** ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)): el aparato se da de alta una vez, entra quien teclea su PIN, y se bloquea solo · `apps/movil`, la cáscara de Capacitor, **opcional**.
-- **Sala:** plano de mesas por zonas · **tres caminos de venta: mesa, barra y para llevar** · tomar nota con la carta del canal (M10), extras, modificadores y notas · **asignar líneas a comensales**, porque sin eso no se puede dividir la cuenta después · **aviso de alergia de la mesa** con los alérgenos de M9 · tandas y **marchar** —a mano, al retirar la anterior o por tiempo— · quitar una línea ya mandada con motivo, permiso y **aviso a cocina** · mover, juntar, dividir y **traspasar una mesa a otro camarero**, que es el cambio de turno · agotado desde la comanda, con aviso previo calculado con el stock real.
-- **Cocina:** **enrutado por partida**, con cada pantalla configurada y los platos sin partida saliendo en todas y en una lista de fallos · **pantalla de pase** · tiempos en tres tramos con los minutos que pone el local · marcar listo, **deshacer dentro de un margen** · aviso sonoro distinto para alergia y prioridad · **contador del día por plato** · **la ficha técnica de M9 en modo cocina desde cualquier plato** · **sin un solo importe**, tampoco en la respuesta del servidor.
-- **Cómo se ve y cómo se usa** (capítulo 10 del Anexo): la pantalla de tomar nota con lo más vendido a esa hora primero, **opciones obligatorias que no dejan mandar sin contestarlas**, menú del día paso a paso y **una comanda de cuatro platos en diez toques o menos** · el comandero en el móvil del camarero, con la misma pantalla en una columna · «Venta rápida» en barra · el plano con «Mis mesas», dibujado arrastrando con `@dnd-kit` (ya en el proyecto) · lo que cambia en un aparato, en los demás en menos de 2 segundos.
+- **`apps/tpv`, Estook TPV** (A5, B5, [0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md) y [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)): se instala aparte, **solo funciona en un aparato vinculado**, arranca en su función con **su inicio** y guarda en el aparato lo que necesita para trabajar sin conexión · **vincular, funciones, PIN y bloqueo** (Anexo 11.3 y 11.4) · **Ajustes del TPV** (11.13) · `apps/movil`, la cáscara de Capacitor, **opcional**.
+- **Sala:** **el plano dibujado en el TPV a ojo** (11.9) y **todas las mesas para todos** (11.8) · **tres caminos de venta: mesa, barra y para llevar** · tomar nota con **los pases en pestañas** y **la botonera** (11.10 y 11.11), extras, modificadores y notas · **aviso de alergia de la mesa** con los alérgenos de M9 · pases y **marchar**, siempre el camarero (0106) · quitar una línea ya mandada con motivo, permiso y **aviso a cocina** · mover, juntar, dividir y **traspasar una mesa a otro camarero**, que es el cambio de turno · agotado desde la comanda, con aviso previo calculado con el stock real.
+- **Cocina:** **el ticket entero de la mesa, sin partidas** (0106), y lo que prepara la barra en **la pantalla de barra** (11.11) · tiempos en tres tramos con los minutos que pone el local · marcar listo, **deshacer dentro de un margen** · aviso sonoro distinto para alergia y prioridad · **contador del día por plato** · **la ficha técnica de M9 desde cualquier plato** · **sin un solo importe**, tampoco en la respuesta del servidor.
+- **Cómo se ve y cómo se usa** (capítulos 10 y 11 del Anexo): **oscuro**, la pantalla de pedir con «Lo más pedido» primero, **opciones obligatorias que no dejan mandar sin contestarlas**, menú del día paso a paso y **una comanda de cuatro platos en diez toques o menos** · el comandero en el móvil del camarero, con la misma pantalla en una columna · «Venta rápida» en barra · el plano con «Todas · Mías», dibujado a ojo con `@dnd-kit` (ya en el proyecto) · lo que cambia en un aparato, en los demás en menos de 2 segundos.
 - **Lo que la cocina devuelve:** tiempo real por plato y partida hacia M9 y M21, agotados hacia M7, devoluciones hacia la merma de M8.
 - **Precuenta** con «PRECUENTA · No válido como factura», sin serie ni QR.
-- **Cola de impresión** con su formato intermedio propio, con Ajustes › Impresoras y su botón de imprimir prueba (capítulo 6 del Anexo).
+- **Cola de impresión** con su formato intermedio propio, con Ajustes del TPV › Impresoras y cajón y su botón de imprimir prueba (capítulo 6 del Anexo).
 - **Sin internet**, con Estook Link la sala y la cocina siguen igual; sin Link, la comanda se guarda en el aparato y sube al volver (Anexo 3.6).
 
 **Y su capa inteligente.** Prioridades, retrasos y el aviso de «quedan pocas raciones» son **reglas en código**, sin gastar créditos. Lo que sí es de Fogón —por qué un plato va tarde siempre— llega con M22 y se alimenta de lo que se mide aquí.
@@ -823,7 +824,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Reglas críticas.** **Sala y Cocina viven en Estook TPV, no son destinos de Servicio.** **Ni una regla, ni una tabla, ni un botón duplicados** entre `apps/app` y `apps/tpv`. Una comanda no es una factura y no lleva nada que lo parezca. Lo que se quita queda con autor y motivo. La cocina funciona sin IA. Un cocinero no recibe importes, tampoco en la respuesta del servidor.
 
-**Terminado cuando.** Pasan **todas las pruebas del apartado 3.7 del Anexo**. En corto: un servicio de una mesa de seis con tres tandas, dos alergias y un plato retirado ya en cocina cuadra en sala, en cocina y en el pase; con tres pantallas cada partida ve solo lo suyo; se vende en barra sin abrir mesa; se traspasa una mesa a otro camarero; **la misma comanda sale idéntica por tres marcas de impresora, una de impacto, en menos de 6 segundos y con todas las tablets apagadas**; **con internet cortado y Link encendido, la cocina sigue recibiendo**; con el wifi cortado se sigue tomando nota; y un cocinero no recibe ni un importe llamando a la API a pelo.
+**Terminado cuando.** Pasan **todas las pruebas del apartado 3.7 del Anexo**. En corto: pasan las de 11.15 que tocan a cada entrega (T1 a T5, con su «Terminado cuando» en [el plan](../m20a-la-sala-y-la-cocina.md)); un servicio de una mesa de seis con tres pases, dos alergias y un plato retirado ya en cocina cuadra en la sala y en la tarjeta de cocina; se vende en barra sin abrir mesa; se traspasa una mesa a otro camarero; **la misma comanda sale idéntica por tres marcas de impresora, una de impacto, en menos de 6 segundos y con todas las tablets apagadas**; **con internet cortado y Link encendido, la cocina sigue recibiendo**; con el wifi cortado se sigue tomando nota; y un cocinero no recibe ni un importe llamando a la API a pelo.
 
 ### M20B · Facturación VeriFactu
 

@@ -1,6 +1,6 @@
 # El mapa · qué queda, en qué orden y por qué
 
-**Ahora, Estook TPV**: **M16a · La jornada, en producción** desde el 22-oct (migración 0080, [0105](decisiones/0105-m16a-la-jornada.md)), **las pantallas de la sala y la cocina, decididas con Richi** ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)), y **M20A · 1 · la sala y la cocina en pantalla, en marcha** ([el plan](m20a-la-sala-y-la-cocina.md)): **1 · 1 en producción** (la base y la API, migración 0081, #130), **1 · 2 · la sala, hecha** (Estook TPV en `estook.com/tpv/` y Ajustes › Sala, migración 0082), y lo siguiente es **1 · 3 · la cocina**. **M20 · Ventas y consumo** ([el plan](m20-ventas-y-consumo.md)) va con el cobro (M20C): sin cobro no hay ventas plato a plato. **M10 · La carta, menús y análisis está terminado** ([el plan](m10-la-carta-menus-y-analisis.md)): **M10 · 1 · La carta que trabaja** —agotados, el precio del cierre desde la carta, leer tu carta y el equilibrio— en producción desde el 20-oct (migración 0078, [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)), y **M10 · 2 · Los menús y «Analiza mi zona»** desde el 22-oct (migración 0079, [0103](decisiones/0103-las-respuestas-de-m10-2.md) y [0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md)). **Fogón 1 está entero en producción** (19-oct, [0097](decisiones/0097-fogon-1-las-respuestas-y-la-base.md) y [0098](decisiones/0098-fogon-1-entero.md)), con los repasos del 19 y del 20-oct y la auditoría del 20-oct ([0099](decisiones/0099-el-repaso-del-19-oct.md) a [0101](decisiones/0101-la-auditoria-del-20-oct.md)). **M9 · Escandallos está terminado** (M9 · 3 en producción desde el 18-oct, [0092](decisiones/0092-las-respuestas-de-m9-3.md) a [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
+**Ahora, Estook TPV**: **M16a · La jornada, en producción** desde el 22-oct (migración 0080, [0105](decisiones/0105-m16a-la-jornada.md)), **M20A · 1 en producción** (la base y la API de la sala y la cocina, 0081, #130; y unas primeras pantallas en `estook.com/tpv/`, 0082, #131), y **Estook TPV entero, decidido el 23-oct** ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md), Anexo capítulo 11): una aplicación aparte con su inicio, aparatos vinculados, PIN, caja, el plano en el TPV y la botonera. **Lo siguiente es T1 · La puerta** ([el plan](m20a-la-sala-y-la-cocina.md)). **M20 · Ventas y consumo** ([el plan](m20-ventas-y-consumo.md)) va con el cobro (M20C): sin cobro no hay ventas plato a plato. **M10 · La carta, menús y análisis está terminado** ([el plan](m10-la-carta-menus-y-analisis.md)): **M10 · 1 · La carta que trabaja** —agotados, el precio del cierre desde la carta, leer tu carta y el equilibrio— en producción desde el 20-oct (migración 0078, [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)), y **M10 · 2 · Los menús y «Analiza mi zona»** desde el 22-oct (migración 0079, [0103](decisiones/0103-las-respuestas-de-m10-2.md) y [0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md)). **Fogón 1 está entero en producción** (19-oct, [0097](decisiones/0097-fogon-1-las-respuestas-y-la-base.md) y [0098](decisiones/0098-fogon-1-entero.md)), con los repasos del 19 y del 20-oct y la auditoría del 20-oct ([0099](decisiones/0099-el-repaso-del-19-oct.md) a [0101](decisiones/0101-la-auditoria-del-20-oct.md)). **M9 · Escandallos está terminado** (M9 · 3 en producción desde el 18-oct, [0092](decisiones/0092-las-respuestas-de-m9-3.md) a [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md)). **M8 está entero en producción**, con sus repasos, la experiencia (0083), las bases firmes (0084) y la 0085; **«antes de M8»**, desde el 8-oct ([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), [`panel-de-administracion.md`](panel-de-administracion.md)). El chat se adelantó el 30-sep ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): su contenido, en el capítulo 23 del Manifiesto.
 
 ## El orden, desde el 30 de septiembre de 2026
 
@@ -8,8 +8,9 @@
 ANTES DE M8   H · Horarios  →  I · La app instalable  →  C · El chat
               →  A3 · Vendedores  →  A4 · Ventas del admin
 FASE 2        M8 → M9 → M10
-ESTOOK TPV    M16a · La jornada → M20A · 1 · Sala y cocina en pantalla → M19a · Estook Link
-              → M20A · 2 · En papel → M20B · Facturación → M20C · Cobro y caja, con M20
+ESTOOK TPV    M16a · La jornada → M20A · 1 (base y API) → T1 · La puerta → T2 · La sala
+              → T3 · Los productos → T4 · Cocina y barra → T5 · Estook Link (M19a y M20A · 2)
+              → T6 · Facturación (M20B) → T7 · Cobro, caja y ventas (M20C, con M20)
 DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b
               → Fase 5 (M21 a M25) → Fase 6 (M26 a M28) → Fase 7 (M29 y M30)
 ```
@@ -92,7 +93,7 @@ Incidencias del turno que lee el siguiente, notas, y el mantenimiento de los equ
 
 ## Fase 4 · Las ventas, y Estook TPV
 
-**El orden es M16a → M20A · 1 → M19a → M20A · 2 → M20B → M20C con M20, justo después de M10; y M18 y M19b, al final de la Fase 3** ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)).
+**El orden es M16a → M20A · 1 → T1 a T4 (la puerta, la sala, los productos, la cocina y la barra) → T5 · Estook Link → T6 · M20B → T7 · M20C con M20, justo después de M10; y M18 y M19b, al final de la Fase 3** ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md)).
 
 ### M20 · Ventas, emparejamiento y consumo
 
@@ -104,7 +105,7 @@ El programa que se instala en el local, en un aparato siempre encendido. Hace tr
 
 ### M20A · Sala y cocina
 
-**Decidido sobre las pantallas el 22-oct** ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)): mesas, barra y para llevar; tomar nota en **Bebidas · Carta · Menú del día**; los pases (1.º y 2.º) y **marcha el camarero**, avisado cuando ha salido todo el 1.º; aviso de alergia; pasar mesas a otro camarero. Y la cocina: **el ticket entero de la mesa, sin partidas**, tachar lo que sale, «Esperando la marcha», «Fuera» y el delivery, y **la ficha técnica abierta desde cualquier plato**. **M20A · 1** en pantalla (**1 · 1, la base y la API**, en producción; **1 · 2, la sala**, hecha el 23-oct; [el plan](m20a-la-sala-y-la-cocina.md)) y **M20A · 2** en papel (tras Link). Todavía sin cobrar.
+**Decidido sobre las pantallas el 22 y el 23-oct** ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md) y [0107](decisiones/0107-estook-tpv-el-tpv-entero.md)): **Estook TPV entero**, con su inicio, los aparatos vinculados con su función, el PIN, el plano dibujado a ojo en el TPV, todas las mesas para todos y la botonera; mesas, barra y para llevar; los pases en pestañas y **marcha el camarero**, avisado cuando ha salido todo el 1.º; aviso de alergia; pasar mesas a otro camarero. Y la cocina: **el ticket entero de la mesa, sin partidas**, tachar lo que sale, «Esperando la marcha», «Fuera» y el delivery, y **la ficha técnica abierta desde cualquier plato**. **M20A · 1** (la base y la API) en producción; lo demás, en **T1 a T5** ([el plan](m20a-la-sala-y-la-cocina.md)). Todavía sin cobrar.
 
 ### M20B · Facturación VeriFactu
 
@@ -207,7 +208,7 @@ Lo que ya existe a medias y el módulo que lo acaba. Vivía en `ESTADO.md` hasta
 | Lo gastado de verdad, food cost real y desviación          | **M8**, la 2.ª         | Contar en dos pasos, el valor en una fecha y FEFO (0078)       |
 | Desviación de los platos y calibración del aprovechamiento | **M20** (0092)         | Lo contado con su hora, y la pantalla que deja M8 (0078)       |
 | Descontar lo vendido del inventario                        | **M20**                | El cierre guarda los platos con el nombre normalizado          |
-| Los terminales del local                                   | **M20A**               | `estook.terminal`, hoy solo para fichar (H1); Anexo 3.4        |
+| Los terminales del local                                   | **T1**                 | `estook.terminal`, hoy solo para fichar (H1); Anexo 11.3       |
 | Leer los platos de la carta subida y proponer los cambios  | **Hecho** (M10 · 1)    | Del PDF sin IA o de las fotos con Fogón (0102)                 |
 | Estrella, caballo, puzzle y perro (lo que deja cada plato) | **M20** (0103)         | Lo que deja cada plato por canal, del escandallo (M9 · 2)      |
 | Fogón propone el menú del día                              | **M22** (0103)         | Con cuatro semanas de menús: M10 · 2 guarda el de cada día     |

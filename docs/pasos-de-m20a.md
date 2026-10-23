@@ -1,62 +1,53 @@
-# Pasos de M20A · La sala y la cocina
+# Pasos de M20A · Estook TPV
 
 > ## Cómo está
 >
 > Leído el 23 de octubre de 2026, en producción y en solo lectura.
 >
-> | Qué              | Cómo está                                                                        |
-> | ---------------- | -------------------------------------------------------------------------------- |
-> | Pull requests    | **#130 fusionada** (M20A · 1 · 1). **M20A · 1 · 2 · La sala**, abierta           |
-> | La base de datos | **81 de 81** migraciones (la 0081, migrada); con 1 · 2 llega la **0082**         |
-> | La API           | Desplegada con 1 · 1: **105 consultas y 253 comandos**; con 1 · 2, **107 y 253** |
+> | Qué              | Cómo está                                                                               |
+> | ---------------- | --------------------------------------------------------------------------------------- |
+> | Pull requests    | **#130 y #131 fusionadas** (M20A · 1). **Estook TPV entero** (solo documentos), abierta |
+> | La base de datos | **82 de 82** migraciones (la 0082, migrada)                                             |
+> | La API           | Desplegada con M20A · 1 · 2: **107 consultas y 253 comandos**                           |
 >
-> **M20A · 1 · 1 está hecha entera**: fusionada, migrada, desplegada y comprobada el 23-oct.
+> **M20A · 1 está en producción entera**: fusionada, migrada, desplegada y comprobada el 23-oct.
 > Lo de antes, en [`pasos-de-m16a.md`](pasos-de-m16a.md).
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
 ---
 
-## Lo que te toca ahora · M20A · 1 · 2, la sala
+## Lo que te toca ahora · leer Estook TPV entero y fusionarlo
 
-Lo hecho y por qué, en [el plan de M20A](m20a-la-sala-y-la-cocina.md) («1 · 2, entregada»).
-**Con migración (0082) y con la API.** Hazlo **en este orden y seguido**: hasta que despliegues,
-Estook TPV abre pero no encuentra su carta.
+Es **solo documentos**: no hay migración ni API que desplegar.
 
-1. **En GitHub**: abre el pull request **«M20A · 1 · 2 · La sala»** y, con las **tres
-   comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
-2. **En PowerShell**, en la carpeta del proyecto, uno por uno: `git checkout main`, `git pull` y
-   `.\estook.cmd bd:migrar`. Tiene que decir que aplica **la 0082** y que hay **82 en total**.
-3. **En GitHub**: **Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe
-   **`desplegar`**, y espera al **círculo verde**.
-4. **Pruébalo en IKATZ** (en el móvil, cierra la app y ábrela dos veces, que la primera trae la
-   versión nueva):
-   - **Dibuja tu sala**: Estook → **Ajustes › Tu local › Tu sala**. Pulsa **+ Zona**, escribe
-     «Salón» y **Añadir**. Pulsa **Añadir mesa** unas cuantas veces: salen numeradas. **Arrastra**
-     cada una a su sitio. Toca una para cambiarle las plazas o la forma (redonda, alargada).
-   - **Tus bebidas**: en **Carta**, toca el nombre de una sección de bebidas (Bebidas, Vinos,
-     Cafés…). Tiene que tener **«Es de bebidas»** encendido. Si alguna no lo tiene, enciéndelo.
-   - **Abre la sala**: **Servicio › En marcha › Abrir la sala**. Sale el plano con tus mesas.
-   - **Una mesa entera**: toca una mesa libre → **2** → **Abrir**. Empieza en **Bebidas**: pide
-     dos cañas. Pasa a **Carta**, deja **«Va en el 1.º»** y pide un entrante; cambia a **2.º** y
-     pide un principal. Toca el principal en la cuenta y escribe una nota. Pulsa **Mandar**: tiene
-     que decir «Mandado: a cocina 2 y a la barra 1 · sale el 1.º, el 2.º espera». En la cuenta,
-     junto a «2.º · en espera», pulsa **Marchar ya**: pasa a «en marcha».
-   - **El menú del día**, si lo tienes montado hoy: pestaña **Menú del día**, elige los primeros
-     y los segundos, **Añadir** y **Mandar**.
-   - **Las opciones**: en el plano, toca la mesa abierta. Prueba **Cambiar de mesa** y
-     **Liberar la mesa**.
-5. **En GitHub**, después de fusionar: la vuelta de `main` tiene que salir en verde.
+1. **Lee la decisión**: [`docs/decisiones/0107-estook-tpv-el-tpv-entero.md`](decisiones/0107-estook-tpv-el-tpv-entero.md).
+   Tus once respuestas están en el apartado 2, tal cual las diste. **Mira sobre todo el
+   apartado 6, «Lo que decidí yo»**: son diez cosas que no me dijiste y he decidido como lo hacen
+   los mejores. Si alguna no te cuadra, dímelo con su número.
+2. **Mira las maquetas** en [Estook TPV · el TPV completo](https://claude.ai/artifact/EUZuQhUJSg13As8qeUWk5X).
+   Están corregidas con tus respuestas: el editor de la sala, sin centímetros; la pantalla nueva
+   de **Productos**, con los tres caminos; y las mesas con las iniciales de su camarero.
+3. **Si quieres el detalle**, está en el Anexo, **capítulo 11**: pantalla a pantalla, y al final
+   (11.15) lo que se va a probar.
+4. **En GitHub**: abre el pull request **«Estook TPV entero»** y, con las **tres comprobaciones en
+   verde**, **Merge pull request** → **Confirm merge**.
+5. **En PowerShell**, en la carpeta del proyecto, uno por uno: `git checkout main` y `git pull`.
+   **No hace falta `bd:migrar`**: no hay migración.
 
-**Si algo falla:** dime qué pantalla y, si puedes, una captura. No hace falta deshacer nada.
+**Si algo falla, o algo no te cuadra:** dímelo antes de fusionar. No hace falta deshacer nada.
 
-## Lo que no está todavía, para que no lo busques
+## Lo que hay hoy en `estook.com/tpv/`, para que no te líe
 
-- **La pantalla de cocina** (En marcha · Delivery · Fuera, tachar, con su sonido), y la **tablet
-  del local con el PIN de cada uno**: M20A · 1 · 3. Mientras, nadie tacha, así que el aviso
-  «ha salido todo el 1.º» no llega: marcha tú con **Marchar ya**. Cada camarero entra con su
-  sesión de Estook.
-- **Las copas que se hacen solas, varias raciones (caña, doble, jarra) y los cafés hechos**:
-  M20A · 1 · 4.
-- **Imprimir, cobrar, dividir la cuenta y la venta rápida**: Estook Link (M19a) y M20C. Hasta
-  entonces se cobra en tu TPV de siempre y en la sala se libera la mesa.
+- **Son las primeras pantallas (M20A · 1 · 2)**, las que no te gustaron: entran con tu sesión de
+  Estook y el plano se dibuja en Estook › Ajustes › Tu sala. **Se rehacen enteras** en T1 a T3.
+  Puedes seguir probándolas, pero **no las uses en un servicio de verdad**.
+- **No hay todavía**: vincular aparatos, el PIN de cada uno, el inicio, la caja, el editor del plano
+  en el TPV, la botonera, la pantalla de cocina, imprimir ni cobrar. Cada cosa tiene su entrega en
+  [el plan](m20a-la-sala-y-la-cocina.md).
+
+## Lo siguiente · T1 · La puerta
+
+Cuando fusiones, empiezo **T1**: vincular aparatos con un código y su función (caja, comandero,
+pantalla de cocina, pantalla de barra o fichar), entrar con el PIN, el bloqueo, el inicio y el
+tema oscuro, y quitar «Abrir la sala» de Estook. Sus pasos de prueba estarán aquí cuando esté hecha.

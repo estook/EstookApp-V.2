@@ -206,26 +206,26 @@ navegador ── cliente-api ──►  API (servidor/api)          transporte y
 Seis cosas que se tienden a mezclar, y no se mezclan: **persona, usuario, empleado,
 aparato, terminal y caja**.
 
-| Pieza                     | Qué es                                                                                            | Cómo se relaciona                                                                    | Hoy                               |
-| ------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------- |
-| **Organización**          | El cliente de Estook: quien contrata y paga la cuota                                              | Tiene empresas, áreas y locales                                                      | Existe                            |
-| **Empresa fiscal**        | El obligado tributario: NIF, razón social, domicilio fiscal, SII, foral, titular y representación | De una organización; tiene locales ([0060](../decisiones/0060-la-empresa-fiscal.md)) | Primera necesidad o M20B          |
-| **Área**                  | Agrupación opcional de locales                                                                    | De una organización                                                                  | Existe                            |
-| **Local**                 | El establecimiento: dirección, zona horaria, hora de corte, territorio, series                    | De una organización (y de una empresa)                                               | Existe                            |
-| **Persona**               | Alguien, **con o sin correo**                                                                     | Tiene membresías y un PIN por local                                                  | Existe; el correo, opcional con H |
-| **Membresía**             | Persona + alcance + rol, con vigencia                                                             | Da los permisos de la matriz, recortados por local                                   | Existe                            |
-| **Aparato personal**      | El móvil o el PC de alguien                                                                       | Su sesión es de la persona: 30 días, revocable                                       | Existe                            |
-| **Terminal**              | Aparato **del local** con su función: sala, barra, cocina, pase o fichar                          | Emparejado por código o QR; su sesión es del aparato, revocable                      | M20A                              |
-| **Operador**              | Quien usa el terminal ahora, entrado con su PIN                                                   | Todo lo que hace queda a su nombre; se bloquea solo                                  | M20A                              |
-| **Aprobación**            | Un encargado autoriza algo con su PIN                                                             | Una cosa, una vez, dos minutos; queda quién pidió y quién aprobó                     | M20A                              |
-| **Cajón y turno de caja** | El cajón físico, y su apertura → arqueo → cierre (el Z)                                           | Un turno abierto por cajón; varios terminales pueden compartirlo                     | M20C                              |
-| **Bolsa del camarero**    | El efectivo que lleva encima quien cobra en la mesa                                               | Un turno de caja de una persona; se liquida en un cajón                              | M20C                              |
-| **Cuenta**                | El pedido: mesa, barra, para llevar o reparto                                                     | Tiene líneas con comensal, tanda, partida, precio e impuesto congelados              | M20A                              |
-| **Cobro**                 | Lo que se cobra de una vez                                                                        | Un documento fiscal y uno o varios pagos                                             | M20C                              |
-| **Pago**                  | Cómo se pagó: efectivo, tarjeta, Bizum del banco…                                                 | El efectivo mueve su turno de caja o su bolsa                                        | M20C                              |
-| **Venta**                 | Lo que mueve el almacén y cuenta en Negocio                                                       | **Nace al cobrar**, una por cobro                                                    | M20                               |
-| **Documento fiscal**      | Ticket, factura, canje o rectificativa                                                            | Acompaña al cobro; vive en `facturacion` con su registro y sus envíos                | M20B                              |
-| **Cierre del día**        | La suma de los Z del día                                                                          | Rellena el cierre de caja de Servicio (uno por jornada, como ya es)                  | Existe (a mano o con CSV)         |
+| Pieza                     | Qué es                                                                                                                        | Cómo se relaciona                                                                          | Hoy                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------- |
+| **Organización**          | El cliente de Estook: quien contrata y paga la cuota                                                                          | Tiene empresas, áreas y locales                                                            | Existe                             |
+| **Empresa fiscal**        | El obligado tributario: NIF, razón social, domicilio fiscal, SII, foral, titular y representación                             | De una organización; tiene locales ([0060](../decisiones/0060-la-empresa-fiscal.md))       | Primera necesidad o M20B           |
+| **Área**                  | Agrupación opcional de locales                                                                                                | De una organización                                                                        | Existe                             |
+| **Local**                 | El establecimiento: dirección, zona horaria, hora de corte, territorio, series                                                | De una organización (y de una empresa)                                                     | Existe                             |
+| **Persona**               | Alguien, **con o sin correo**                                                                                                 | Tiene membresías y un PIN por local                                                        | Existe; el correo, opcional con H  |
+| **Membresía**             | Persona + alcance + rol, con vigencia                                                                                         | Da los permisos de la matriz, recortados por local                                         | Existe                             |
+| **Aparato personal**      | El móvil o el PC de alguien                                                                                                   | Su sesión es de la persona: 30 días, revocable                                             | Existe                             |
+| **Terminal**              | Aparato **del local** con su función: caja, comandero (compartido o personal), pantalla de cocina, pantalla de barra o fichar | Vinculado con un código de un uso o su QR (Anexo 11.3); su llave es del aparato, revocable | Fichar existe; lo demás, T1 (M20A) |
+| **Operador**              | Quien usa el terminal ahora, entrado con su PIN                                                                               | Todo lo que hace queda a su nombre; se bloquea solo                                        | M20A                               |
+| **Aprobación**            | Un encargado autoriza algo con su PIN                                                                                         | Una cosa, una vez, dos minutos; queda quién pidió y quién aprobó                           | M20A                               |
+| **Cajón y turno de caja** | El cajón físico, y su apertura → arqueo → cierre (el Z)                                                                       | Un turno abierto por cajón; varios terminales pueden compartirlo                           | M20C                               |
+| **Bolsa del camarero**    | El efectivo que lleva encima quien cobra en la mesa                                                                           | Un turno de caja de una persona; se liquida en un cajón                                    | M20C                               |
+| **Cuenta**                | El pedido: mesa, barra, para llevar o reparto                                                                                 | Tiene líneas con comensal, tanda, partida, precio e impuesto congelados                    | M20A                               |
+| **Cobro**                 | Lo que se cobra de una vez                                                                                                    | Un documento fiscal y uno o varios pagos                                                   | M20C                               |
+| **Pago**                  | Cómo se pagó: efectivo, tarjeta, Bizum del banco…                                                                             | El efectivo mueve su turno de caja o su bolsa                                              | M20C                               |
+| **Venta**                 | Lo que mueve el almacén y cuenta en Negocio                                                                                   | **Nace al cobrar**, una por cobro                                                          | M20                                |
+| **Documento fiscal**      | Ticket, factura, canje o rectificativa                                                                                        | Acompaña al cobro; vive en `facturacion` con su registro y sus envíos                      | M20B                               |
+| **Cierre del día**        | La suma de los Z del día                                                                                                      | Rellena el cierre de caja de Servicio (uno por jornada, como ya es)                        | Existe (a mano o con CSV)          |
 
 **La pregunta, contestada en orden:** quién es la persona → qué puede, su membresía en
 ese local → dónde, el local del terminal → desde qué, el terminal → qué sesión, la del
@@ -241,15 +241,18 @@ terminal y el turno del operador → con qué caja, el turno del cajón o su bol
 | Tablet Android                                          | Estook TPV instalado desde Chrome, o la cáscara                                                    |
 | iPad                                                    | **La cáscara**: Safari no deja hablar con la red del local                                         |
 | Móvil del camarero                                      | El comandero: Estook TPV en una columna, desde su propia sesión                                    |
-| Pantalla de cocina y de pase                            | Estook TPV en su función de cocina, en quiosco; sin internet recibe por Link                       |
+| Pantalla de cocina y de barra                           | Estook TPV en su función de cocina o de barra, en quiosco; sin internet recibe por Link            |
 | Impresora de cocina y de tickets                        | Cualquiera ESC/POS, por Link (o las que preguntan solas a la nube)                                 |
 | Cajón                                                   | Enchufado a la impresora de tickets: se abre con una línea del ticket                              |
 | Datáfono                                                | El del banco, sin conectar (se cuadra al cierre); o uno conectado por internet, a nombre del local |
 | Lector de códigos, llave de camarero, teclado de cocina | Escriben como un teclado: el navegador ya los lee (el lector, desde la entrega L)                  |
 | Balanza                                                 | Por el puerto serie desde Chrome o Edge, o por Link                                                |
 
-**Cómo se identifica cada uno:** el terminal, por su emparejamiento con el local (un
-código de un solo uso) y su sesión propia; el aparato personal, por una huella opaca que
+**Cuáles valen, cómo se instala cada uno y qué se les enchufa**, en el Anexo, 11.2.
+
+**Cómo se identifica cada uno:** el terminal, por su vinculación con el local (un
+código de un solo uso, Anexo 11.3) y su llave propia, y **Estook TPV solo se abre en uno así**
+([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)); el aparato personal, por una huella opaca que
 guarda el navegador, nunca por datos del aparato físico.
 
 ---
@@ -314,13 +317,14 @@ Verifacti en su servidor. Que lo genere Link en el local es futuro
   o el PC que solo cobra usa Edge en modo quiosco.
 - **A pantalla completa** y en cualquier orientación (el manifiesto de Estook fija hoy la
   vertical: se quita en la entrega I).
-- **La sesión del terminal** dura hasta que se revoca; **el operador** entra y sale con
-  su PIN.
+- **La llave del terminal** dura hasta que se desvincula; **el operador** entra y sale con
+  su PIN (Anexo 11.3 y 11.4). Se guarda aparte de la sesión de Estook (`estook.sesion`): un
+  mismo navegador puede tener las dos sin mezclarlas.
 - **Al cerrar o reiniciar** vuelve a su función, bloqueado, con lo pendiente intacto.
 - **Las actualizaciones** se descargan solas y se aplican con la caja cerrada o sin
   cuentas abiertas, o al tocar «Actualizar». Si una versión es incompatible, la API lo
   dice y el TPV lo avisa antes de que nada falle. **La versión de cada terminal** se ve
-  en Ajustes › Terminales y en el panel interno.
+  en Ajustes del TPV › Aparatos y en el panel interno.
 - **El navegador nunca habla con una impresora.** Imprime Link (o la cáscara).
 
 ---

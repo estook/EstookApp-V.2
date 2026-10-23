@@ -988,7 +988,7 @@ Se abre una mesa con sus comensales, se toma nota con la carta de su canal, y **
 
 **Tickets y facturas.** Todos los emitidos, con su estado ante Hacienda. Si un cliente pide factura, se hace desde su ticket en un toque (el ticket se canjea, no se borra). Una devolución es una rectificativa, nunca una edición.
 
-**Dónde vive.** En **Estook TPV**, su propia puerta: un terminal del local enciende directamente en su función —sala, barra, cocina o pase— y entra quien teclea su PIN. Lo que se consulta vive dentro de Servicio, en Estook: **la caja es una vista de Jornada** y **los tickets y facturas, una vista de Ventas**.
+**Dónde vive.** En **Estook TPV**, una aplicación aparte con su inicio ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md), Anexo capítulo 11): cada aparato del local se vincula con un código y se le dice qué es —caja, comandero, pantalla de cocina o de barra—, y entra quien teclea su PIN. Lo que se consulta vive dentro de Servicio, en Estook: **la caja es una vista de Jornada** y **los tickets y facturas, una vista de Ventas**.
 
 ## Jornada
 

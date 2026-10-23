@@ -43,7 +43,7 @@
  * Los tipos van escritos aqui y **no se importan de `vite`**.
  *
  * Este fichero vive en `herramientas/`, que no tiene `vite` entre sus
- * dependencias —lo tienen las cuatro aplicaciones, cada una la suya— y con pnpm
+ * dependencias —lo tienen las cinco aplicaciones, cada una la suya— y con pnpm
  * eso quiere decir que desde aqui no se resuelve. Escribir la forma que Vite
  * espera es media docena de lineas y evita meter una dependencia entera en la
  * raiz para un tipo.
@@ -125,7 +125,7 @@ export function politicaDeSeguridad({
   ].join('; ');
 }
 
-/** El complemento de Vite que la mete en el HTML de las cuatro aplicaciones. */
+/** El complemento de Vite que la mete en el HTML de las cinco aplicaciones. */
 export function laPoliticaDeSeguridad({
   direccionDeLaApi,
   direccionDeSupabase,

@@ -3209,6 +3209,31 @@ _23 de octubre de 2026._ Migración `0081`, decisión
 Las pruebas: `sala.prueba.ts` (el dominio) y `la-sala-y-la-cocina.prueba.ts` (la mesa 6 entera,
 contra la base y como cada persona). Las pantallas, en M20A · 1 · 2 y 1 · 3.
 
+### M20A · 1 · 2 · La sala
+
+_23 de octubre de 2026._ Migración `0082`, plan
+[`m20a-la-sala-y-la-cocina.md`](m20a-la-sala-y-la-cocina.md). **Estook TPV estrena su puerta**,
+`apps/tpv` (`estook.com/tpv/`), y entra con la sesión de Estook.
+
+- **La sala** (`apps/tpv`): el plano (`ElPlano`, `MesaEnElPlano`), abrir la mesa (`AbrirMesa`),
+  la mesa con su cuenta y lo que se pide (`LaMesa`, `LaCuenta`, `LoQueSePide`, `ElMenuDelDia`) y
+  sus opciones (`OpcionesDeLaMesa`). Lo pedido se queda en la tablet hasta «Mandar»
+  (`logica/comanda.ts`); la cuenta se lee por bebidas, menús y pases (`logica/laCuenta.ts`).
+- **Al segundo**, con el toque del chat, ahora en `@estook/cliente-api/al-segundo` para la app y
+  para Estook TPV; **la mesa en el plano**, con `elSitioDeLaMesa` de `@estook/ui`, la misma en la
+  sala y en Ajustes.
+- **En Estook**: Ajustes › Tu local › **Tu sala** (`TuSala.tsx`), «Es de bebidas» en las
+  secciones de la Carta y «Abrir la sala» en Servicio › En marcha.
+- **La base y la API**: `es_bebida` en las secciones de la carta y del menú (0082),
+  `la_carta_de_la_sala`, `el_plano_del_local` y quién toma nota en `el_plano`. `pedir` decide el
+  destino por la sección y mira el menú de hoy; **un pase que ya esperaba no sale solo** al
+  mandar (`losPasesQueSalenAlMandar`, con `yaEsperaban`).
+
+Las pruebas: `sala.prueba.ts` y `plano.prueba.ts`, `comanda.prueba.ts` y `texto.prueba.ts` (la
+lógica de la sala), `la-sala-y-la-cocina.prueba.ts` (la base y la API) y `la-sala.spec.ts` (de
+Ajustes a mandar, en escritorio y en móvil). La regla `apps-no-se-importan-entre-si` vigila que lo
+común viva en `packages/`.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

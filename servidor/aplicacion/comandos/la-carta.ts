@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { ALERGENOS, CANALES_DE_VENTA, CODIGOS_DE_CANAL, type CanalDeVenta } from '@estook/dominio';
+import {
+  ALERGENOS,
+  CANALES_DE_VENTA,
+  CODIGOS_DE_CANAL,
+  esDeBebidas,
+  type CanalDeVenta,
+} from '@estook/dominio';
 import {
   TIPOS_DE_FOTO,
   TOPE_DE_LA_FOTO,
@@ -58,8 +64,8 @@ async function anotar(
 /** La sección, si es de este local; si no, «no existe» (lo mismo que si no es suya). */
 async function laSeccion(contexto: Contexto, localId: string, seccionId: string | null) {
   if (seccionId === null) return null;
-  const filas = await contexto.sql<{ id: string; nombre: string }[]>`
-    select id, nombre from estook.seccion_de_carta
+  const filas = await contexto.sql<{ id: string; nombre: string; es_bebida: boolean }[]>`
+    select id, nombre, es_bebida from estook.seccion_de_carta
      where id = ${seccionId}::uuid and local_id = ${localId}::uuid
   `;
   const seccion = filas[0];
@@ -87,11 +93,13 @@ export const crearSeccion = comando<{ nombre: string }, { seccionId: string; yaE
     if (ya[0] !== undefined) return { seccionId: ya[0].id, yaExistia: true };
 
     const filas = await contexto.sql<{ id: string }[]>`
-      insert into estook.seccion_de_carta (local_id, nombre, orden)
+      insert into estook.seccion_de_carta (local_id, nombre, orden, es_bebida)
       values (
         ${localId}::uuid, ${entrada.nombre},
         coalesce((select max(orden) + 1 from estook.seccion_de_carta
-                   where local_id = ${localId}::uuid), 0)
+                   where local_id = ${localId}::uuid), 0),
+        -- «Vinos» nace de bebidas: va a la pestaña Bebidas de Estook TPV y a la barra (0106).
+        ${esDeBebidas(entrada.nombre)}
       )
       returning id
     `;
@@ -104,22 +112,30 @@ export const crearSeccion = comando<{ nombre: string }, { seccionId: string; yaE
   },
 });
 
-export const cambiarSeccion = comando<
-  { seccion_id: string; nombre: string },
-  { seccionId: string }
->({
+export const entradaCambiarSeccion = z
+  .object({
+    seccion_id: z.string().uuid(),
+    nombre: nombreDeSeccion.optional(),
+    /** De bebidas: sale en la pestaña Bebidas de Estook TPV y va a la barra (0106). */
+    es_bebida: z.boolean().optional(),
+  })
+  .strict();
+export type EntradaCambiarSeccion = z.infer<typeof entradaCambiarSeccion>;
+
+export const cambiarSeccion = comando<EntradaCambiarSeccion, { seccionId: string }>({
   nombre: 'cambiar_seccion',
-  entrada: z.object({ seccion_id: z.string().uuid(), nombre: nombreDeSeccion }).strict(),
+  entrada: entradaCambiarSeccion,
   exige: 'app.carta',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaCarta(contexto);
     const antes = await laSeccion(contexto, localId, entrada.seccion_id);
     if (antes === null) throw new FalloDeAplicacion('no_existe');
+    const nombre = entrada.nombre ?? antes.nombre;
     const otra = await contexto.sql<{ id: string }[]>`
         select id from estook.seccion_de_carta
          where local_id = ${localId}::uuid and id <> ${entrada.seccion_id}::uuid
-           and estook.sin_acentos(nombre) = estook.sin_acentos(${entrada.nombre})
+           and estook.sin_acentos(nombre) = estook.sin_acentos(${nombre})
       `;
     if (otra[0] !== undefined) {
       throw new FalloDeAplicacion('faltan_datos', {
@@ -127,8 +143,10 @@ export const cambiarSeccion = comando<
         porque: 'Ya hay una sección que se llama así.',
       });
     }
+    const esBebida = entrada.es_bebida ?? antes.es_bebida;
     await contexto.sql`
-        update estook.seccion_de_carta set nombre = ${entrada.nombre}, actualizado_en = now()
+        update estook.seccion_de_carta
+           set nombre = ${nombre}, es_bebida = ${esBebida}, actualizado_en = now()
          where id = ${entrada.seccion_id}::uuid
       `;
     await anotar(
@@ -137,10 +155,8 @@ export const cambiarSeccion = comando<
       'seccion_de_carta',
       entrada.seccion_id,
       localId,
-      {
-        nombre: antes.nombre,
-      },
-      { nombre: entrada.nombre },
+      { nombre: antes.nombre, es_bebida: antes.es_bebida },
+      { nombre, es_bebida: esBebida },
     );
     return { seccionId: entrada.seccion_id };
   },

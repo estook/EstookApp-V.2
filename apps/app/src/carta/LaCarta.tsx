@@ -11,6 +11,7 @@ import {
   Etiqueta,
   FotoDeProducto,
   Hoja,
+  Interruptor,
   Lista,
   NadaConEso,
   Selector,
@@ -725,6 +726,8 @@ function HojaDeSeccion({
   const { cliente } = usarSesion();
   const refrescar = usarRefrescarLaCarta();
   const [nombre, setNombre] = useState(seccion.nombre);
+  const eraDeBebidas = secciones.find((s) => s.id === seccion.id)?.esBebida;
+  const [deBebidas, setDeBebidas] = useState(eraDeBebidas === true);
   const [trabajando, setTrabajando] = useState<'guardando' | 'quitando' | null>(null);
   const [quitar, setQuitar] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
@@ -751,6 +754,9 @@ function HojaDeSeccion({
       : await cliente.ejecutar('cambiar_seccion', {
           seccion_id: seccion.id,
           nombre: nombre.trim(),
+          ...(eraDeBebidas === undefined || deBebidas === eraDeBebidas
+            ? {}
+            : { es_bebida: deBebidas }),
         });
     setTrabajando(null);
     if (!respuesta.ok) {
@@ -852,6 +858,16 @@ function HojaDeSeccion({
                 setNombre(evento.target.value);
               }}
             />
+            {/* Lo de bebidas va a la barra y sale en la pestaña Bebidas de la sala (0106).
+                Una sección nueva se marca sola por su nombre: «Vinos», «Cafés»… */}
+            {!nueva && eraDeBebidas !== undefined && (
+              <Interruptor
+                etiqueta="Es de bebidas"
+                ayuda="En Estook TPV sale en Bebidas, y lo que se pide va a la barra, no a la cocina."
+                puesto={deBebidas}
+                alCambiar={setDeBebidas}
+              />
+            )}
             {!nueva && secciones.length > 1 && (
               <div className="flex flex-wrap items-center gap-e2">
                 <span className="text-secundario text-texto-suave">

@@ -1,5 +1,7 @@
 import {
   elPaseHaSalido,
+  horaDeCorte,
+  jornadaDe,
   type LaMesaEnCocina,
   type PaseDeLaMesa,
   type PlatoDeLaMesa,
@@ -148,6 +150,17 @@ export async function losPases(
      where cuenta_id = any (${comoLista(cuentaIds)}::text::uuid[])
      order by numero
   `;
+}
+
+/** La jornada de hoy del local: el día del menú que se sirve ahora (M16a). */
+export async function laJornadaDeHoy(contexto: Contexto, localId: string): Promise<string> {
+  const filas = await contexto.sql<{ zona_horaria: string; hora_de_corte: string }[]>`
+    select zona_horaria, to_char(hora_de_corte, 'HH24:MI') as hora_de_corte
+      from estook.local where id = ${localId}::uuid
+  `;
+  const local = filas[0];
+  if (local === undefined) throw new FalloDeAplicacion('local_ajeno');
+  return jornadaDe(contexto.ahora, local.zona_horaria, horaDeCorte(local.hora_de_corte));
 }
 
 /** Un plato de la base, como lo entiende el dominio. */

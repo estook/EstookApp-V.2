@@ -61,12 +61,15 @@ interface Plano {
         camarero: string | null;
         esMia: boolean;
         totalCentimos: number;
+        porPases: boolean;
+        notaParaCocina: string | null;
         loSiguiente: { que: string; pase?: number };
       } | null;
     }[];
   }[];
   sinMesa: { cuentaId: string; titulo: string }[];
-  tocaMarchar: { cuentaId: string; titulo: string; pase: number }[];
+  tocaMarchar: { cuentaId: string; titulo: string; pase: number; salioEl: number }[];
+  camareros: { id: string; nombre: string }[];
 }
 
 interface Mesa {
@@ -290,13 +293,150 @@ describe('el plano lo dibuja quien lleva el local', () => {
       ['Terraza', ['T1']],
     ]);
     expect(plano.zonas.flatMap((z) => z.mesas).every((m) => m.estado === 'libre')).toBe(true);
+    // A quién se le pueden pasar las mesas: quien toma nota, y no la cocina.
+    expect(plano.camareros.map((c) => c.nombre)).toEqual(['Rosa', 'Sara']);
     expect(elFallo(await api.consultar(marcos, 'el_plano'))).toBe('sin_permiso');
+  });
+
+  it('Ajustes › Sala lo lee para dibujarlo; la camarera no', async () => {
+    const plano = losDatos<{
+      puedeEditar: boolean;
+      zonas: { nombre: string; mesas: { nombre: string; plazas: number; forma: string }[] }[];
+    }>(await api.consultar(rosa, 'el_plano_del_local'));
+    expect(plano.puedeEditar).toBe(true);
+    expect(plano.zonas[0]?.mesas.find((m) => m.nombre === '5')).toMatchObject({
+      plazas: 2,
+      forma: 'redonda',
+    });
+    expect(elFallo(await api.consultar(sara, 'el_plano_del_local'))).toBe('sin_permiso');
   });
 
   it('una mesa que sobra se archiva', async () => {
     losDatos(await api.ejecutar(rosa, 'archivar_mesa', { mesa_id: mesa['8'] }));
     const plano = await elPlano(sara);
     expect(plano.zonas[0]?.mesas.map((m) => m.nombre)).toEqual(['5', '6', '7']);
+  });
+});
+
+// ═══ Lo que se pide ═════════════════════════════════════════════════════════════
+
+interface LaCartaDeLaSala {
+  hoy: string;
+  secciones: {
+    id: string | null;
+    nombre: string;
+    esBebida: boolean;
+    platos: { id: string; nombre: string; precioCentimos: number; agotado: boolean }[];
+  }[];
+  menus: {
+    id: string;
+    nombre: string;
+    precioCentimos: number;
+    secciones: {
+      nombre: string;
+      esPostre: boolean;
+      esBebida: boolean;
+      pase: number | null;
+      platos: { platoId: string; nombre: string; suplementoCentimos: number }[];
+    }[];
+  }[];
+}
+
+describe('lo que se pide: la carta de la sala y el menú de hoy', () => {
+  it('la carta por secciones, con las de bebidas marcadas solas por su nombre', async () => {
+    const carta = losDatos<LaCartaDeLaSala>(await api.consultar(sara, 'la_carta_de_la_sala'));
+    expect(carta.hoy).toBe(HOY);
+    expect(carta.secciones.map((s) => [s.nombre, s.esBebida])).toEqual([
+      ['Entrantes', false],
+      ['Principales', false],
+      ['Postres', false],
+      ['Bebidas', true],
+    ]);
+    // Las lentejas nacieron en el menú: no se piden sueltas.
+    const nombres = carta.secciones.flatMap((s) => s.platos.map((p) => p.nombre));
+    expect(nombres).not.toContain('Lentejas');
+    expect(carta.secciones[1]?.platos.map((p) => [p.nombre, p.precioCentimos])).toEqual([
+      ['Entrecot', 2200],
+      ['Pollo asado', 1200],
+    ]);
+    // Y la cocina no la lee: no ve un euro.
+    expect(elFallo(await api.consultar(marcos, 'la_carta_de_la_sala'))).toBe('sin_permiso');
+  });
+
+  it('el menú de hoy, con el pase de cada sección: primeros el 1.º, segundos el 2.º', async () => {
+    const carta = losDatos<LaCartaDeLaSala>(await api.consultar(sara, 'la_carta_de_la_sala'));
+    const menu = carta.menus[0];
+    expect(menu).toMatchObject({ id: menuDelDia, nombre: 'Menú del día', precioCentimos: 1350 });
+    expect(menu?.secciones.map((s) => [s.nombre, s.pase, s.esBebida])).toEqual([
+      ['Primeros', 1, false],
+      ['Segundos', 2, false],
+      ['Bebida', null, true],
+    ]);
+    expect(menu?.secciones[1]?.platos.map((p) => [p.nombre, p.suplementoCentimos])).toEqual([
+      ['Pollo asado', 0],
+      ['Entrecot', 400],
+    ]);
+  });
+
+  it('una sección nueva «Vinos» nace de bebidas, y se cambia con un toque', async () => {
+    const vinos = losDatos<{ seccionId: string }>(
+      await api.ejecutar(rosa, 'crear_seccion', { nombre: 'Vinos' }),
+    ).seccionId;
+    const leer = async () =>
+      losDatos<{ secciones: { id: string; esBebida: boolean }[] }>(
+        await api.consultar(rosa, 'mi_carta'),
+      ).secciones.find((s) => s.id === vinos)?.esBebida;
+    expect(await leer()).toBe(true);
+    losDatos(await api.ejecutar(rosa, 'cambiar_seccion', { seccion_id: vinos, es_bebida: false }));
+    expect(await leer()).toBe(false);
+    losDatos(await api.ejecutar(rosa, 'cambiar_seccion', { seccion_id: vinos, es_bebida: true }));
+    expect(await leer()).toBe(true);
+    expect(
+      elFallo(await api.ejecutar(sara, 'cambiar_seccion', { seccion_id: vinos, es_bebida: false })),
+    ).toBe('sin_permiso');
+  });
+
+  it('lo que no está hoy en el menú no entra en el menú, ni lo del menú se pide suelto', async () => {
+    const cuenta = crypto.randomUUID();
+    const menu = crypto.randomUUID();
+    losDatos(await api.ejecutar(sara, 'abrir_mesa', { cuenta_id: cuenta, tipo: 'barra' }));
+    expect(
+      elFallo(
+        await api.ejecutar(sara, 'pedir', {
+          cuenta_id: cuenta,
+          platos: [
+            { id: menu, menu_id: menuDelDia },
+            { id: crypto.randomUUID(), plato_id: plato['Croquetas'], parte_de: menu, pase: 1 },
+          ],
+        }),
+      ),
+    ).toBe('faltan_datos');
+    expect(
+      elFallo(
+        await api.ejecutar(sara, 'pedir', {
+          cuenta_id: cuenta,
+          platos: [{ id: crypto.randomUUID(), plato_id: plato['Lentejas'], pase: 1 }],
+        }),
+      ),
+    ).toBe('faltan_datos');
+    // La caña, sin decir a dónde va: a la barra, porque su sección es de bebidas.
+    const cana = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(sara, 'pedir', {
+        cuenta_id: cuenta,
+        platos: [{ id: cana, plato_id: plato['Caña'] }],
+      }),
+    );
+    const lamesa = losDatos<{ platos: { id: string; destino: string; pase: number | null }[] }>(
+      await api.consultar(sara, 'la_mesa', { cuenta_id: cuenta }),
+    );
+    expect(lamesa.platos.find((p) => p.id === cana)).toMatchObject({
+      destino: 'barra',
+      pase: null,
+    });
+    losDatos(
+      await api.ejecutar(rosa, 'anular_mesa', { cuenta_id: cuenta, motivo: 'era una prueba' }),
+    );
   });
 });
 
@@ -486,7 +626,7 @@ describe('la mesa 6, de principio a fin', () => {
     ).toBe(true);
 
     const plano = await elPlano(sara);
-    expect(plano.tocaMarchar).toEqual([{ cuentaId: seis, titulo: 'Mesa 6', pase: 2 }]);
+    expect(plano.tocaMarchar).toEqual([{ cuentaId: seis, titulo: 'Mesa 6', pase: 2, salioEl: 1 }]);
     expect(laMesaDelPlano(plano, '6').estado).toBe('toca_marchar');
     expect((await laMesa(seis)).loSiguiente).toEqual({ que: 'marchar', pase: 2 });
     // La cocina la tiene esperando: no puede marchar, pero sabe que viene.
@@ -544,6 +684,26 @@ describe('la mesa 6, de principio a fin', () => {
     );
     expect(borrado.affectedRows ?? 0).toBe(0);
     expect((await laMesa(seis)).platos.some((p) => p.id === l.entrecot)).toBe(true);
+  });
+
+  it('pedir otro principal mientras el 2.º espera no lo marcha: lo marcha Sara', async () => {
+    const otro = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(sara, 'pedir', {
+        cuenta_id: seis,
+        platos: [{ id: otro, plato_id: plato['Pollo asado'], pase: 2 }],
+      }),
+    );
+    expect(
+      losDatos<{ salen: number[]; esperan: number[] }>(
+        await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: seis }),
+      ),
+    ).toMatchObject({ aCocina: 1, salen: [], esperan: [2] });
+    expect((await laMesa(seis)).loSiguiente).toEqual({ que: 'marchar', pase: 2 });
+    // No era: se quita antes de que la cocina lo haga (lo quita un jefe, ya está mandado).
+    losDatos(
+      await api.ejecutar(rosa, 'quitar_plato', { linea_id: otro, motivo: 'era para otra mesa' }),
+    );
   });
 
   it('Sara marcha el 2.º; marcharlo otra vez no hace nada', async () => {
@@ -963,6 +1123,11 @@ describe('«todo junto», «marchar todo» y la barra', () => {
     const tarjeta = enCocina(await laCocina(), terraza);
     expect(tarjeta?.[0]).toBe('enMarcha');
     expect(tarjeta?.[1]).toMatchObject({ notaParaCocina: 'tienen prisa', porPases: false });
+    // El plano también lo sabe: sus opciones no empiezan con la nota en blanco.
+    expect(laMesaDelPlano(await elPlano(sara), 'T1').cuenta).toMatchObject({
+      notaParaCocina: 'tienen prisa',
+      porPases: false,
+    });
   });
 
   it('la barra se abre sin mesa, con un nombre; una mesa sin elegir mesa no', async () => {

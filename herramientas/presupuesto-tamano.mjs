@@ -36,7 +36,7 @@ import { fileURLToPath } from 'node:url';
 const RAIZ = fileURLToPath(new URL('../', import.meta.url));
 /** La referencia de B7. Se informa al pasarla; no se falla. */
 const REFERENCIA_KB = 250;
-const APLICACIONES = ['web', 'app', 'carta', 'admin'];
+const APLICACIONES = ['web', 'app', 'carta', 'admin', 'tpv'];
 
 function referenciasDe(html) {
   const referencias = new Set();

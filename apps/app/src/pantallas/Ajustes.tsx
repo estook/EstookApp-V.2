@@ -10,6 +10,7 @@ import {
   IconoNegocio,
   IconoPausa,
   IconoReloj,
+  IconoServicio,
   IconoTeclado,
   IconoBuscar,
   IconoColor,
@@ -67,6 +68,7 @@ import { TusObjetivos } from './TusObjetivos.tsx';
 import { TuCartaYSuQr } from './TuCartaYSuQr.tsx';
 import { TuCartaSubida } from './TuCartaSubida.tsx';
 import { TusMenus } from './TusMenus.tsx';
+import { TuSala } from './TuSala.tsx';
 import { TuSuscripcion } from './TuSuscripcion.tsx';
 import { TusAvisos } from './TusAvisos.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
@@ -390,6 +392,14 @@ function LaSeccion({
             frase: 'Una tablet del local donde cada uno ficha con su PIN',
             icono: IconoTeclado,
             contenido: <ElAparatoParaFichar />,
+          },
+          {
+            id: 'sala',
+            titulo: 'Tu sala',
+            frase: 'Las zonas y las mesas que ve el camarero en Estook TPV',
+            icono: IconoServicio,
+            amplia: true,
+            contenido: <TuSala />,
           },
         ]
       : []),

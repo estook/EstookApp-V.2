@@ -1,0 +1,51 @@
+import { fileURLToPath } from 'node:url';
+import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwind from '@tailwindcss/vite';
+import { laPoliticaDeSeguridad } from '../../herramientas/politica-de-seguridad.ts';
+
+/**
+ * Estook TPV (M20A, 0056): la sala y la cocina, en su propia puerta del mismo código.
+ *
+ * Las cinco aplicaciones se publican bajo un mismo dominio (decision 0001):
+ *   web -> VITE_BASE            carta -> VITE_BASE + carta/
+ *   app -> VITE_BASE + app/     admin -> VITE_BASE + admin/     tpv -> VITE_BASE + tpv/
+ *
+ * VITE_BASE se declara una sola vez en las variables del repositorio, para no
+ * tener cuatro sitios donde equivocarse con la barra final.
+ */
+const RAIZ = fileURLToPath(new URL('../../', import.meta.url));
+
+export default defineConfig(({ mode }) => {
+  const variables = loadEnv(mode, RAIZ, '');
+  const raiz = variables['VITE_BASE'] ?? '/';
+  const conBarra = raiz.endsWith('/') ? raiz : `${raiz}/`;
+  const base = `${conBarra}tpv/`;
+
+  return {
+    base,
+    envDir: RAIZ,
+    plugins: [
+      react(),
+      tailwind(),
+      // La politica de seguridad de contenido. Se calcula al construir porque
+      // depende de donde este la API, que se decide al construir. Vive entera en
+      // herramientas/politica-de-seguridad.mjs, que es su unico dueno.
+      laPoliticaDeSeguridad({
+        direccionDeLaApi: variables['VITE_API_URL'] ?? '',
+        // La sala y la cocina se avisan al segundo por Supabase Realtime (0106).
+        direccionDeSupabase: variables['VITE_SUPABASE_URL'] ?? '',
+        enDesarrollo: mode !== 'production',
+      }),
+    ],
+    build: {
+      outDir: 'dist',
+      sourcemap: true,
+      target: 'es2022',
+      // El presupuesto de B7 se comprueba aparte, en herramientas/presupuesto-tamano.mjs
+      chunkSizeWarningLimit: 250,
+    },
+    server: { port: 5178, strictPort: true },
+    preview: { port: 5178, strictPort: true },
+  };
+});

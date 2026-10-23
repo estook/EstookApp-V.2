@@ -1,7 +1,7 @@
 name: Publicar en GitHub Pages
 
-# Decision 0001. Las cuatro aplicaciones comparten dominio y se reparten por
-# subcarpeta: web en la raiz, y app, carta y admin debajo.
+# Decision 0001. Las cinco aplicaciones comparten dominio y se reparten por
+# subcarpeta: web en la raiz, y app, carta, admin y tpv debajo.
 #
 # Antes de que esto funcione hay que activar Pages con origen "GitHub Actions":
 #   Settings -> Pages -> Source: GitHub Actions
@@ -37,7 +37,7 @@ jobs:
       # depender de acordarse de declarar una variable en otra pantalla (0036).
       #
       # Con dominio propio la raiz es "/" y las cuatro aplicaciones cuelgan de
-      # ella: estook.com, /app/, /carta/ y /admin/.
+      # ella: estook.com, /app/, /carta/, /admin/ y /tpv/ (Estook TPV, M20A).
       VITE_BASE: '/'
       VITE_APP_URL: 'https://estook.com/'
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
@@ -82,7 +82,7 @@ jobs:
           mkdir -p _publicacion
 
           cp -r apps/web/dist/. _publicacion/
-          for aplicacion in app carta admin; do
+          for aplicacion in app carta admin tpv; do
             mkdir -p "_publicacion/$aplicacion"
             cp -r "apps/$aplicacion/dist/." "_publicacion/$aplicacion/"
           done

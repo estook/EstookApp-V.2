@@ -855,3 +855,14 @@
      el cartel del QR que se imprime—: el fichero se había guardado dos veces en UTF-8. Lo vi
      al recorrer Ajustes buscando otra cosa. `pnpm textos` mira ahora las letras rotas en todo
      el fichero, y se ha visto fallar con el fichero de antes (0104).
+217. **Una hoja que se abre desde dos sitios tiene que recibir lo mismo desde los dos.** Las
+     opciones de una mesa se abrían desde la mesa (con su nota) y desde el plano (sin ella):
+     desde el plano, «Nota para cocina» empezaba en blanco y al guardar **borraba la nota que
+     había**. Lo encontró la auditoría que pidió Richi, no una prueba. Ahora la mesa del plano
+     trae su nota y cómo sale la cocina, y la prueba de pantalla abre las opciones desde el
+     plano y mira que la nota se queda (M20A · 1 · 2).
+218. **Una regla que hace algo sola tiene que distinguir lo nuevo de lo que ya esperaba.**
+     «Sale solo el pase que no tiene nada delante» estaba pensada para los postres del final,
+     y también sacaba el 2.º que esperaba a que lo marchara el camarero en cuanto se le
+     añadía un plato. Lo vi probándolo con las manos, no en las pruebas, que solo pedían
+     platos nuevos (M20A · 1 · 2).

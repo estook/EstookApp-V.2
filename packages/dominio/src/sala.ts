@@ -19,7 +19,22 @@
  *     fuera, cuando ha salido todo.
  */
 
+import { sinAcentos } from './parecido.ts';
+
 export type DestinoDeLaLinea = 'cocina' | 'barra' | 'ninguno';
+
+/**
+ * Las palabras que hacen de una sección una de bebidas (0106), las mismas que marcaron
+ * lo que ya había en la migración 0082. Una sección nueva que se llama así nace de
+ * bebidas; el local lo cambia en la Carta con un toque.
+ */
+const PALABRAS_DE_BEBIDAS =
+  /(bebida|vino|cerveza|refresco|cafe|infusion|copa|combinado|coctel|licor|cava|champan|zumo|vermut|sidra)/;
+
+/** Si el nombre de una sección dice que es de bebidas: «Vinos», «Cafés e infusiones». */
+export function esDeBebidas(nombre: string): boolean {
+  return PALABRAS_DE_BEBIDAS.test(sinAcentos(nombre));
+}
 
 /** Lo que hace falta de un plato de la cuenta para saber cómo va la mesa. */
 export interface PlatoDeLaMesa {
@@ -63,18 +78,27 @@ function lePendiente(platos: readonly PlatoDeLaMesa[], pase: number): boolean {
  * comanda saca el 1.º y deja el 2.º en espera, y los postres del final salen solos. Un
  * pase ya marchado no se vuelve a marchar.
  *
+ * **Un pase que ya estaba esperando sigue esperando** aunque se le añada algo
+ * (`yaEsperaban`): si el 1.º ha salido de cocina pero la mesa aún se lo está comiendo,
+ * pedir otro principal no saca el 2.º. Ese lo marcha el camarero (0106). Solo sale solo
+ * un pase **nuevo**: el postre que se pide al final, los principales de una mesa que
+ * primero pidió solo entrantes.
+ *
  * `platos` son todos los de la mesa, con lo que se manda ahora ya como `mandado`.
  */
 export function losPasesQueSalenAlMandar(
   platos: readonly PlatoDeLaMesa[],
   pases: readonly PaseDeLaMesa[],
   porPases: boolean,
+  yaEsperaban: readonly number[] = [],
 ): number[] {
   const marchados = new Set(pases.filter((p) => p.marchado).map((p) => p.numero));
+  const esperando = new Set(yaEsperaban);
   const conPlatos = losPasesConPlatos(platos.filter((p) => p.mandado));
   const salen: number[] = [];
   for (const numero of conPlatos) {
     if (marchados.has(numero)) continue;
+    if (porPases && esperando.has(numero)) continue;
     const delante = conPlatos.filter((n) => n < numero);
     const nadieDelante = delante.every((n) => !lePendiente(platos, n));
     if (!porPases || nadieDelante) salen.push(numero);
@@ -155,4 +179,36 @@ export function elPaseHaSalido(platos: readonly PlatoDeLaMesa[], pase: number): 
       pase,
     )
   );
+}
+
+/** Una sección de un menú, para saber en qué pase sale lo que se elige de ella. */
+export interface SeccionDelMenuEnLaSala {
+  readonly id: string;
+  readonly orden: number;
+  readonly esPostre: boolean;
+  readonly esBebida: boolean;
+}
+
+/**
+ * En qué pase sale lo de cada sección de un menú (0106): las de comida, una detrás de
+ * otra (Primeros el 1.º, Segundos el 2.º); **el postre, al final**, en el pase siguiente;
+ * y la bebida no tiene pase, porque va a la barra (nulo).
+ */
+export function losPasesDelMenu(
+  secciones: readonly SeccionDelMenuEnLaSala[],
+): ReadonlyMap<string, number | null> {
+  const enOrden = [...secciones].sort((a, b) => a.orden - b.orden);
+  const pases = new Map<string, number | null>();
+  let pase = 0;
+  for (const s of enOrden) {
+    if (s.esBebida || s.esPostre) continue;
+    pase = Math.min(pase + 1, 9);
+    pases.set(s.id, pase);
+  }
+  const elDelPostre = Math.min(pase + 1, 9);
+  for (const s of enOrden) {
+    if (s.esBebida) pases.set(s.id, null);
+    else if (s.esPostre) pases.set(s.id, elDelPostre);
+  }
+  return pases;
 }

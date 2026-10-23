@@ -3,18 +3,23 @@ import {
   elPaseHaSalido,
   horaDeCorte,
   jornadaDe,
+  fechaOperativa,
   laJornadaEntera,
   laMesaEnCocina,
   loSiguienteDeLaMesa,
+  losPasesDelMenu,
   type LaMesaEnCocina,
   type LoSiguiente,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { lasSeccionesDeLosMenus, losMenusDelLocal, losPlatosDelDia } from '../menus.ts';
+import { losPlatos as losPlatosDeLaCarta } from './mi-carta.ts';
 import {
   comoPaseDeLaMesa,
   comoPlatoDeLaMesa,
   elLocalDelServicio,
   elTituloDeLaCuenta,
+  laJornadaDeHoy,
   lasCuentas,
   losPases,
   losPlatos,
@@ -29,6 +34,7 @@ import {
  *   el_plano    las zonas y sus mesas, cada una con cómo va
  *   la_mesa     una cuenta con sus platos, sus pases y lo siguiente que toca
  *   la_cocina   las mesas en marcha, esperando o fuera, **sin un solo importe**
+ *   la_carta_de_la_sala  lo que se pide: la carta por secciones y los menús de hoy
  *
  * Lo de cada mesa sale del dominio (`sala.ts`): la sala y la cocina no pueden decir
  * cosas distintas porque las calcula la misma función.
@@ -67,6 +73,8 @@ function elTotal(platos: readonly FilaDeLinea[]): number {
 function lasIniciales(nombre: string | null): string | null {
   if (nombre === null) return null;
   const partes = nombre.trim().split(/\s+/);
+  // «Sara» es «SA», como «Ana» es «AN»: una sola letra no se distingue en el plano.
+  if (partes.length === 1) return (partes[0] ?? '').slice(0, 2).toUpperCase();
   return partes
     .slice(0, 2)
     .map((p) => p.charAt(0).toUpperCase())
@@ -84,10 +92,14 @@ export interface CuentaEnElPlano {
   readonly tipo: string;
   readonly personas: number | null;
   readonly camarero: string | null;
+  readonly camareroId: string | null;
   readonly iniciales: string | null;
   readonly esMia: boolean;
   readonly minutos: number;
   readonly totalCentimos: number;
+  /** Para las opciones de la mesa desde el plano, sin tener que abrirla. */
+  readonly porPases: boolean;
+  readonly notaParaCocina: string | null;
   readonly loSiguiente: LoSiguiente;
 }
 
@@ -113,7 +125,11 @@ export interface SalidaElPlano {
     readonly cuentaId: string;
     readonly titulo: string;
     readonly pase: number;
+    /** El pase que ha salido entero: «ha salido todo el 1.º». */
+    readonly salioEl: number;
   }[];
+  /** Quién toma nota en el local: a quién se le pueden pasar las mesas. */
+  readonly camareros: readonly { readonly id: string; readonly nombre: string }[];
 }
 
 function enElPlano(
@@ -128,12 +144,25 @@ function enElPlano(
     tipo: cuenta.tipo,
     personas: cuenta.personas,
     camarero: cuenta.camarero,
+    camareroId: cuenta.camarero_id,
     iniciales: lasIniciales(cuenta.camarero),
     esMia: cuenta.camarero_id !== null && cuenta.camarero_id === contexto.personaId,
     minutos: minutosDesde(contexto, cuenta.abierta_en) ?? 0,
     totalCentimos: elTotal(platos),
+    porPases: cuenta.por_pases,
+    notaParaCocina: cuenta.nota_para_cocina,
     loSiguiente: loSiguienteDeLaMesa(platos.map(comoPlatoDeLaMesa), pases.map(comoPaseDeLaMesa)),
   };
+}
+
+/** El pase de cocina más alto antes de este, que es el que acaba de salir. */
+function elDeAntes(platos: readonly FilaDeLinea[], pase: number): number {
+  const antes = platos
+    .filter(
+      (l) => l.destino === 'cocina' && l.pase !== null && l.pase < pase && l.quitada_en === null,
+    )
+    .map((l) => l.pase as number);
+  return antes.length === 0 ? pase - 1 : Math.max(...antes);
 }
 
 function elEstado(cuenta: CuentaEnElPlano | null): EstadoDeLaMesa {
@@ -174,6 +203,13 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
     `;
     const ids = await lasAbiertas(contexto, localId);
     const cuentas = await lasCuentas(contexto, localId, ids);
+    const camareros = await contexto.sql<{ id: string; nombre: string }[]>`
+      select p.id::text as id, p.nombre
+        from estook.persona p
+       where p.id in (select estook.quien_lleva_el_servicio(${localId}::uuid))
+         and estook.nivel_de_permiso(p.id, ${localId}::uuid, 'accion.tomar_nota')::text = 'ver_y_editar'
+       order by p.nombre
+    `;
     const platos = porCuenta(await losPlatos(contexto, ids));
     const pases = porCuenta(await losPases(contexto, ids));
     const enPlano = cuentas.map((c) => ({
@@ -212,10 +248,12 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
                 cuentaId: c.cuenta.cuentaId,
                 titulo: c.cuenta.titulo,
                 pase: c.cuenta.loSiguiente.pase,
+                salioEl: elDeAntes(platos.get(c.fila.id) ?? [], c.cuenta.loSiguiente.pase),
               },
             ]
           : [],
       ),
+      camareros,
     };
   },
 });
@@ -490,5 +528,154 @@ export const laCocina = consulta<Record<string, never>, SalidaLaCocina>({
         .filter((t) => t.estado === 'fuera')
         .sort((a, b) => (b.fueraEn ?? '').localeCompare(a.fueraEn ?? '')),
     };
+  },
+});
+
+// ═══ La carta de la sala ══════════════════════════════════════════════════════
+
+export interface PlatoDeLaSala {
+  readonly id: string;
+  readonly nombre: string;
+  readonly precioCentimos: number;
+  readonly miniatura: string | null;
+  readonly agotado: boolean;
+  /** Los puestos a mano y los que trae su receta, juntos: la sala no distingue. */
+  readonly alergenos: readonly string[];
+}
+
+export interface SeccionDeLaSala {
+  readonly id: string | null;
+  readonly nombre: string;
+  readonly esBebida: boolean;
+  readonly platos: readonly PlatoDeLaSala[];
+}
+
+export interface MenuDeLaSala {
+  readonly id: string;
+  readonly nombre: string;
+  readonly precioCentimos: number;
+  readonly entraPan: boolean;
+  readonly entraCafe: boolean;
+  readonly secciones: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly esPostre: boolean;
+    readonly esBebida: boolean;
+    /** En qué pase sale lo de esta sección; nulo, a la barra (`losPasesDelMenu`). */
+    readonly pase: number | null;
+    readonly platos: readonly {
+      readonly platoId: string;
+      readonly nombre: string;
+      readonly suplementoCentimos: number;
+      readonly agotado: boolean;
+    }[];
+  }[];
+}
+
+export interface SalidaLaCartaDeLaSala {
+  readonly hoy: string;
+  /** Las de comida y las de bebida, en el orden de la Carta; sin platos, no salen. */
+  readonly secciones: readonly SeccionDeLaSala[];
+  /** Los menús que se sirven hoy, con precio y lo que vale hoy (M10 · 2). */
+  readonly menus: readonly MenuDeLaSala[];
+}
+
+/** Del 1 (lunes) al 7 (domingo), como `menu.dias`. */
+function elDiaDeLaSemana(fecha: string): number {
+  const dia = new Date(`${fecha}T12:00:00Z`).getUTCDay();
+  return dia === 0 ? 7 : dia;
+}
+
+export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLaSala>({
+  nombre: 'la_carta_de_la_sala',
+  entrada: z.object({}).strict(),
+  exige: 'accion.tomar_nota',
+
+  async ejecutar(contexto) {
+    const localId = elLocalDelServicio(contexto);
+    // La jornada, no el calendario: la cena que acaba a la una es del menú del día de antes.
+    const hoy = fechaOperativa(await laJornadaDeHoy(contexto, localId));
+    const [secciones, platos, sirve, menus] = await Promise.all([
+      contexto.sql<{ id: string; nombre: string; es_bebida: boolean }[]>`
+        select id::text as id, nombre, es_bebida from estook.seccion_de_carta
+         where local_id = ${localId}::uuid
+         order by orden, nombre
+      `,
+      losPlatosDeLaCarta(contexto, localId),
+      contexto.sql<{ sirve: boolean | null }[]>`
+        select sirve_menus as sirve from estook.local where id = ${localId}::uuid
+      `,
+      losMenusDelLocal(contexto, localId),
+    ]);
+
+    // Lo que se pide de la carta: activo, en la carta y con precio. Lo agotado sale
+    // apagado, para que el camarero lo vea y no lo ofrezca (M10 · 1).
+    const deLaCarta = platos.filter((p) => p.activo && p.enLaCarta && p.precioCentimos !== null);
+    const agotados = new Set(platos.filter((p) => p.agotado !== null).map((p) => p.id));
+    const comoDeLaSala = (p: (typeof platos)[number]): PlatoDeLaSala => ({
+      id: p.id,
+      nombre: p.nombre,
+      precioCentimos: p.precioCentimos ?? 0,
+      miniatura: p.miniatura,
+      agotado: p.agotado !== null,
+      alergenos: [...new Set([...p.alergenos, ...p.alergenosDeLaReceta])],
+    });
+    const conPlatos: SeccionDeLaSala[] = secciones
+      .map((s) => ({
+        id: s.id,
+        nombre: s.nombre,
+        esBebida: s.es_bebida,
+        platos: deLaCarta.filter((p) => p.seccionId === s.id).map(comoDeLaSala),
+      }))
+      .filter((s) => s.platos.length > 0);
+    const sueltos = deLaCarta.filter((p) => p.seccionId === null).map(comoDeLaSala);
+    if (sueltos.length > 0) {
+      conPlatos.push({ id: null, nombre: 'Sin sección', esBebida: false, platos: sueltos });
+    }
+
+    // Los menús de hoy: el del día si hoy se sirve, y los otros siempre; con precio.
+    const hoyEs = elDiaDeLaSemana(hoy);
+    const queSeSirven =
+      sirve[0]?.sirve === true
+        ? menus.filter(
+            (m) =>
+              m.precioCentimos !== null &&
+              (m.clase !== 'del_dia' || m.diasQueSeSirve.includes(hoyEs)),
+          )
+        : [];
+    const seccionesDeLosMenus = await lasSeccionesDeLosMenus(
+      contexto,
+      queSeSirven.map((m) => m.id),
+    );
+    const delMenu: MenuDeLaSala[] = [];
+    for (const menu of queSeSirven) {
+      const susSecciones = seccionesDeLosMenus.filter((s) => s.menuId === menu.id && s.incluida);
+      const pases = losPasesDelMenu(susSecciones);
+      const losDeHoy = await losPlatosDelDia(contexto, menu.id, hoy);
+      if (losDeHoy.length === 0) continue;
+      delMenu.push({
+        id: menu.id,
+        nombre: menu.nombre,
+        precioCentimos: menu.precioCentimos ?? 0,
+        entraPan: menu.entraPan,
+        entraCafe: menu.entraCafe,
+        secciones: susSecciones.map((s) => ({
+          id: s.id,
+          nombre: s.nombre,
+          esPostre: s.esPostre,
+          esBebida: s.esBebida,
+          pase: pases.get(s.id) ?? null,
+          platos: losDeHoy
+            .filter((p) => p.seccionId === s.id)
+            .map((p) => ({
+              platoId: p.platoId,
+              nombre: p.nombre,
+              suplementoCentimos: p.suplementoCentimos,
+              agotado: agotados.has(p.platoId),
+            })),
+        })),
+      });
+    }
+    return { hoy, secciones: conPlatos, menus: delMenu };
   },
 });

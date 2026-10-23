@@ -47,6 +47,8 @@ export interface SeccionLeida {
   readonly nombre: string;
   readonly orden: number;
   readonly esPostre: boolean;
+  /** La bebida del menú: lo que se elige de ella va a la barra (0106). */
+  readonly esBebida: boolean;
   readonly incluida: boolean;
 }
 
@@ -138,10 +140,11 @@ export async function lasSeccionesDeLosMenus(
       nombre: string;
       orden: number;
       es_postre: boolean;
+      es_bebida: boolean;
       incluida: boolean;
     }[]
   >`
-    select id, menu_id, nombre, orden, es_postre, incluida
+    select id, menu_id, nombre, orden, es_postre, es_bebida, incluida
       from estook.seccion_de_menu
      where menu_id = any (${comoLista(menuIds)}::text::uuid[])
      order by orden, nombre
@@ -152,6 +155,7 @@ export async function lasSeccionesDeLosMenus(
     nombre: f.nombre,
     orden: f.orden,
     esPostre: f.es_postre,
+    esBebida: f.es_bebida,
     incluida: f.incluida,
   }));
 }

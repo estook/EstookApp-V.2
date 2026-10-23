@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * Pruebas de extremo a extremo.
  *
- * Levantan las cuatro aplicaciones ya construidas **y la API** (M4), y comprueban
+ * Levantan las cinco aplicaciones ya construidas **y la API** (M4), y comprueban
  * que arrancan, que no escupen errores en consola y que lo hacen dentro del
  * presupuesto de velocidad de B7.
  *
@@ -41,6 +41,7 @@ const APLICACIONES = [
   { nombre: 'app', puerto: 5174 },
   { nombre: 'carta', puerto: 5175 },
   { nombre: 'admin', puerto: 5176 },
+  { nombre: 'tpv', puerto: 5178 },
 ];
 
 /**

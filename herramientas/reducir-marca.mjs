@@ -29,7 +29,7 @@ import { escribirPng, leerPng, recortar, reducir } from './png.mjs';
 const RAIZ = fileURLToPath(new URL('../', import.meta.url));
 const MARCA = join(RAIZ, 'packages/ui/marca');
 
-const APLICACIONES = ['web', 'app', 'carta', 'admin'];
+const APLICACIONES = ['web', 'app', 'carta', 'admin', 'tpv'];
 
 const QUE_REDUCIR = [
   {

@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
  * semillas puestas. Ese es literalmente el criterio de aceptacion del modulo.
  *
  * Pasos: comprobar Node, preparar `.env.local`, instalar, migrar, sembrar y
- * levantar las cuatro aplicaciones.
+ * levantar las cinco aplicaciones.
  */
 const RAIZ = fileURLToPath(new URL('../', import.meta.url));
 const MINIMO_NODE = 22;
@@ -89,10 +89,11 @@ if (!sembrado) {
   console.log('  Cuando tengas DATABASE_URL en .env.local: `pnpm bd:migrar && pnpm bd:sembrar`.');
 }
 
-// 5 · Las cuatro aplicaciones
-paso(5, 'Levantando las cuatro aplicaciones');
+// 5 · Las cinco aplicaciones
+paso(5, 'Levantando las cinco aplicaciones');
 console.log('  web http://localhost:5173');
 console.log('  app http://localhost:5174');
 console.log('  carta http://localhost:5175');
-console.log('  admin http://localhost:5176\n');
+console.log('  admin http://localhost:5176');
+console.log('  tpv http://localhost:5178\n');
 ejecutar('pnpm', ['dev']);

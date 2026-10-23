@@ -5,14 +5,16 @@
   "type": "module",
   "description": "Cliente tipado contra la API. Unica via de salida a red del navegador.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./al-segundo": "./src/al-segundo.ts"
   },
   "scripts": {
     "tipos": "tsc --noEmit"
   },
   "dependencies": {
     "@estook/dominio": "workspace:*",
-    "@estook/utiles": "workspace:*"
+    "@estook/utiles": "workspace:*",
+    "@supabase/realtime-js": "^2.117.2"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

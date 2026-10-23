@@ -47,6 +47,14 @@ module.exports = {
       to: { path: '^servidor/' },
     },
     {
+      name: 'apps-no-se-importan-entre-si',
+      severity: 'error',
+      comment:
+        'Estook y Estook TPV son dos puertas del mismo código (0056): lo que comparten vive en packages/, nunca una app dentro de otra.',
+      from: { path: '^apps/([^/]+)/' },
+      to: { path: '^apps/', pathNot: '^apps/$1/' },
+    },
+    {
       name: 'apps-no-importan-servidor',
       severity: 'error',
       comment: 'El cliente habla con el servidor por packages/cliente-api, nunca importandolo.',

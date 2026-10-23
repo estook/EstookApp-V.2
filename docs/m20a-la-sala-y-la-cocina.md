@@ -1,7 +1,7 @@
 # M20A · 1 · La sala y la cocina en pantalla
 
-> **Estado: 1 · 1 hecha el 23-oct-2026** (la base y la API, sin pantallas; rama
-> `m20a-1-la-sala-y-la-cocina`). **Lo siguiente, 1 · 2: la sala.** Lo que hace cada pantalla lo decidió Richi sobre los dibujos ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md));
+> **Estado: 1 · 1 en producción** (23-oct, #130) **y 1 · 2 hecha** (la sala en Estook TPV y
+> Ajustes › Sala, rama `m20a-1-2-la-sala`). **Lo siguiente, 1 · 3: la cocina.** Lo que hace cada pantalla lo decidió Richi sobre los dibujos ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md));
 > aquí está **cómo se construye y en qué orden**. Es la primera pieza de Estook TPV que se toca con
 > las manos: **la sala toma nota en una tablet o en el móvil y la cocina lo ve en su pantalla, por
 > internet**. Sin imprimir (eso es M19a y M20A · 2) y **sin cobrar** (M20C).
@@ -115,3 +115,79 @@ no ve nada.
    salido sin querer.
 10. **Pasar mesas**: el camarero, las suyas; quien tiene «Quitar de cocina», cualquiera; y solo a
     quien toma nota en el local.
+
+## 1 · 2, entregada (23-oct-2026)
+
+**Estook TPV ya tiene su puerta**, `apps/tpv` (`estook.com/tpv/`): el plano con cada mesa y cómo
+va, el aviso «Mesa 6 · ha salido todo el 1.º» con su «Marchar el 2.º», abrir la mesa (cuántos son y
+por pases o todo junto), **Bebidas · Carta · Menú del día**, la nota de cada plato, lo que se hace
+con lo ya mandado (cambiar la nota, devolver, quitar con motivo) y las opciones de la mesa (cambiar
+de mesa, juntar, pasar a otro camarero, nota para cocina, personas, sacadlo todo, liberar y
+anular). En la tablet, la cuenta a la izquierda; en el móvil, lo que se pide ocupa la pantalla.
+
+**En Estook**: Ajustes › Tu local › **Tu sala** (las zonas y las mesas, arrastrándolas), el
+interruptor **«Es de bebidas»** en cada sección de la Carta, y **«Abrir la sala»** en Servicio ›
+En marcha para quien toma nota.
+
+**La base y la API**: la migración 0082 (`es_bebida` en las secciones de la carta y del menú),
+`la_carta_de_la_sala` (la carta por secciones y los menús de hoy con el pase de cada sección),
+`el_plano_del_local` (para dibujarlo con el permiso de Ajustes) y quién toma nota en `el_plano`.
+La API queda en **107 consultas y 253 comandos**.
+
+**Las pruebas**: la mesa 6 suma la carta de la sala, las bebidas que van solas a la barra, lo del
+menú que no está hoy y el 2.º que no sale solo (35 contra la base); el dominio (33), el plano dibujado (3), la lógica de
+la comanda (10); y `la-sala.spec.ts`, de Ajustes › Tu sala a mandar desde Estook TPV, en escritorio
+y en móvil.
+
+### Lo que decidí al construirlo
+
+1. **Estook TPV entra con la sesión de Estook**: los dos viven en `estook.com` y comparten el token.
+   La tablet compartida del local, con el PIN de cada uno (los terminales, Anexo 3.4), llega con
+   la cocina, que es donde hace más falta.
+2. **«Es de bebidas» se adelanta de 1 · 4**: sin ella, la pestaña Bebidas no sabe qué enseñar ni
+   la caña a dónde va. Lo que ya había se marcó por su nombre (Bebidas, Vinos, Cafés, Copas…), y
+   una sección nueva con esos nombres nace marcada.
+3. **El destino lo decide la API**, por la sección: la pantalla no puede mandar una caña a cocina.
+4. **Lo que se pide se queda en la tablet hasta «Mandar»**: cada toque no espera a la red, y si
+   se recarga no se pierde. Al salir de la mesa con algo sin mandar, se pregunta.
+5. **Un pase que ya esperaba no sale solo al añadirle algo** (un fallo que salió probándolo: el
+   1.º había salido de cocina, se pidió otro principal y el 2.º salía en marcha). Ahora solo sale
+   solo un pase nuevo, como los postres; el que espera lo marcha el camarero.
+6. **«Va en el»**: lo de comida va en el 1.º en una mesa sin nada y, si no, en el último pase con
+   algo; se cambia con un toque. Una mesa recién abierta empieza en Bebidas.
+7. **El plato de un menú tiene que estar en el menú de hoy**, el de la jornada (la cena que acaba a
+   la una es del día de antes), y lo que solo está en el menú no se pide suelto.
+8. **Los menús se reparten en orden** (el primer menú lleva el primero de cada sección) y **el
+   postre del menú se elige al final**, dentro de su menú.
+9. **Al segundo, con el toque del chat**; si no llega, la pantalla pregunta cada 8 segundos, y si
+   llega, una vez por minuto por si acaso.
+10. **«Marchar ya»** junto a cada pase que espera: el aviso llega cuando la cocina ha sacado todo
+    lo de antes, pero marcha el camarero cuando quiera, que es quien ve la mesa.
+11. **Liberar la mesa** dice «ya han pagado en el TPV de siempre» hasta M20C. **Cobrar, imprimir,
+    dividir, venta rápida, las alergias de la mesa, «pide la cuenta» y «lo que ha pasado»**
+    llegan con lo suyo (M19a, M20C), no se enseñan apagados.
+
+### La auditoría de después (23-oct)
+
+Richi pidió revisarla entera antes de fusionar. Los dos rojos de GitHub no eran del código: la
+tanda 4 de pantallas se quedó 15 minutos bajando los navegadores, y «Construcción y
+presupuestos» junta las cuatro. Lo que sí salió, ya arreglado y probado:
+
+- **La nota de la mesa se borraba** al guardarla desde el plano: empezaba en blanco (lección
+  217). Y desde el plano no salía «Sacadlo todo». La mesa del plano trae ahora su nota, si va
+  por pases y quién la lleva.
+- **Una mesa que se cierra en otro aparato** (liberada, anulada o juntada) lo dice, enseña lo
+  que no se llegó a mandar y vuelve al plano, en vez de dejar pedir y fallar al mandar.
+- **«Marchar ya» pregunta** si lo de antes aún no ha salido entero: marchar no tiene vuelta
+  atrás. Cuando ya toca, lo hace el botón grande y «Marchar ya» no sale.
+- **Lo ya mandado**: un menú solo se quita; lo que ya salió abre en «Devolver», sin nota; la
+  nota de una bebida es «para la barra»; y quien no es jefe sabe antes de escribir que lo
+  quita un jefe.
+- **«Mandar ahora»** al salir con algo sin mandar lleva al plano; **liberar** avisa si hay
+  platos sin mandar; **pasar a otro camarero** elige por la persona, no por el nombre; el
+  aviso de arriba dice el pase que ha salido de verdad («todo el 1.º»).
+- **En el móvil**: «Menú» en vez de «Menú del día 16,50» en tres líneas, el buscador en su
+  línea, los platos a una columna y sin cortar el nombre.
+- **En Ajustes › Tu sala**, quitar una zona o una mesa pide un segundo toque.
+- **La escucha al segundo**, una sola para toda la sala: entrar y salir de una mesa no vuelve
+  a conectar. Y el nombre de arriba lleva de vuelta a Estook.

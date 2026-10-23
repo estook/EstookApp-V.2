@@ -18,12 +18,13 @@ import { fileURLToPath } from 'node:url';
  */
 const RAIZ = fileURLToPath(new URL('../', import.meta.url));
 
-/** web va en la raiz; las otras tres, cada una en su subcarpeta. */
+/** web va en la raiz; las otras cuatro, cada una en su subcarpeta. */
 const APLICACIONES = [
   { nombre: 'web', subruta: '' },
   { nombre: 'app', subruta: 'app/' },
   { nombre: 'carta', subruta: 'carta/' },
   { nombre: 'admin', subruta: 'admin/' },
+  { nombre: 'tpv', subruta: 'tpv/' },
 ];
 
 const declarada = process.env['VITE_BASE'] ?? '/';
@@ -82,4 +83,4 @@ if (hayFallo) {
   process.exit(1);
 }
 
-console.log('\n  las cuatro aplicaciones apuntan a donde se publican');
+console.log('\n  las cinco aplicaciones apuntan a donde se publican');

@@ -1055,6 +1055,8 @@ export type { CartaLeida, LoQueCambia, PlatoDeLaCarta, PlatoLeido } from './cart
 export {
   elPaseHaSalido,
   elPaseQueTocaMarchar,
+  esDeBebidas,
+  losPasesDelMenu,
   laMesaEnCocina,
   loSiguienteDeLaMesa,
   losPasesQueSalenAlMandar,
@@ -1065,4 +1067,5 @@ export type {
   LoSiguiente,
   PaseDeLaMesa,
   PlatoDeLaMesa,
+  SeccionDelMenuEnLaSala,
 } from './sala.ts';

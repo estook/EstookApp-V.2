@@ -22,6 +22,8 @@ export interface UnaSeccion {
   readonly id: string;
   readonly nombre: string;
   readonly orden: number;
+  /** De bebidas (0106): sale en la pestaña Bebidas de Estook TPV y va a la barra. */
+  readonly esBebida: boolean;
 }
 
 export interface UnPlato {
@@ -190,8 +192,8 @@ export const miCarta = consulta<Record<string, never>, MiCarta>({
     const puedeEditar = await puedeEditarLaCarta(contexto, localId);
     const [canales, secciones, platos] = await Promise.all([
       losCanalesDelLocal(contexto, localId, puedeEditar),
-      contexto.sql<UnaSeccion[]>`
-        select id, nombre, orden from estook.seccion_de_carta
+      contexto.sql<{ id: string; nombre: string; orden: number; es_bebida: boolean }[]>`
+        select id, nombre, orden, es_bebida from estook.seccion_de_carta
          where local_id = ${localId}::uuid
          order by orden, nombre
       `,
@@ -200,7 +202,12 @@ export const miCarta = consulta<Record<string, never>, MiCarta>({
     return {
       puedeEditar,
       canales,
-      secciones: secciones.map((s) => ({ id: s.id, nombre: s.nombre, orden: s.orden })),
+      secciones: secciones.map((s) => ({
+        id: s.id,
+        nombre: s.nombre,
+        orden: s.orden,
+        esBebida: s.es_bebida,
+      })),
       platos,
     };
   },

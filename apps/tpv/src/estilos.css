@@ -1,0 +1,6 @@
+/*
+ * Estook TPV comparte el sistema de diseño con la app (0056): las fichas, Montserrat y
+ * los componentes salen de `@estook/ui`. «Sin CSS suelto por ahí» (A3).
+ */
+@import '@estook/ui/estilos';
+@source "./";

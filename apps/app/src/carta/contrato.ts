@@ -31,6 +31,11 @@ export interface UnaSeccion {
   readonly id: string;
   readonly nombre: string;
   readonly orden: number;
+  /**
+   * De bebidas (0106): sale en la pestaña Bebidas de Estook TPV y va a la barra. Opcional
+   * porque una API de antes de M20A · 1 · 2 no lo dice.
+   */
+  readonly esBebida?: boolean;
 }
 
 export interface UnPlato {

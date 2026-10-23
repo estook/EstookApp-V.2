@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { horaDeCorte, jornadaDe, losPasesQueSalenAlMandar } from '@estook/dominio';
+import { fechaOperativa, losPasesQueSalenAlMandar } from '@estook/dominio';
 import { losAgotadosDelLocal } from '../agotados.ts';
+import { lasSeccionesDeLosMenus, losPlatosDelDia } from '../menus.ts';
 import { tocarElServicio } from '../al-segundo.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
@@ -11,6 +12,7 @@ import {
   comoPlatoDeLaMesa,
   elLocalDelServicio,
   laCuentaAbierta,
+  laJornadaDeHoy,
   losPases,
   losPlatos,
   rehacerElFueraDelPase,
@@ -49,17 +51,6 @@ async function avisar(
 ): Promise<void> {
   await apuntarEnLaMesa(contexto, accion, cuentaId, localId, despues);
   await tocarElServicio(contexto, localId);
-}
-
-/** La jornada de hoy del local: el día del menú que se sirve ahora (M16a). */
-async function laJornadaDeHoy(contexto: Contexto, localId: string): Promise<string> {
-  const filas = await contexto.sql<{ zona_horaria: string; hora_de_corte: string }[]>`
-    select zona_horaria, to_char(hora_de_corte, 'HH24:MI') as hora_de_corte
-      from estook.local where id = ${localId}::uuid
-  `;
-  const local = filas[0];
-  if (local === undefined) throw new FalloDeAplicacion('local_ajeno');
-  return jornadaDe(contexto.ahora, local.zona_horaria, horaDeCorte(local.hora_de_corte));
 }
 
 /** Un plato de la cuenta, de este local. */
@@ -200,6 +191,24 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
     );
     const nuevos = entrada.platos.filter((p) => !yaEstan.has(p.id));
     const hoy = await laJornadaDeHoy(contexto, localId);
+    const menusDeHoy = new Map<
+      string,
+      { platos: Awaited<ReturnType<typeof losPlatosDelDia>>; deBebidas: Set<string> }
+    >();
+    async function elMenuDeHoy(menuId: string) {
+      const leido = menusDeHoy.get(menuId);
+      if (leido !== undefined) return leido;
+      const [platos, secciones] = await Promise.all([
+        losPlatosDelDia(contexto, menuId, fechaOperativa(hoy)),
+        lasSeccionesDeLosMenus(contexto, [menuId]),
+      ]);
+      const nuevo = {
+        platos,
+        deBebidas: new Set(secciones.filter((x) => x.esBebida).map((x) => x.id)),
+      };
+      menusDeHoy.set(menuId, nuevo);
+      return nuevo;
+    }
     const lineasDeMenu = new Set(nuevos.filter((p) => p.menu_id !== undefined).map((p) => p.id));
     // Lo agotado no se pide (M10 · 1): la pantalla lo enseña apagado, y esto lo vuelve a mirar.
     const agotados = await losAgotadosDelLocal(contexto, localId);
@@ -235,10 +244,19 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
         menuId = p.menu_id;
       } else {
         const filas = await contexto.sql<
-          { nombre: string; precio_centimos: number | null; activo: boolean }[]
+          {
+            nombre: string;
+            precio_centimos: number | null;
+            activo: boolean;
+            en_la_carta: boolean;
+            es_bebida: boolean;
+          }[]
         >`
-          select nombre, precio_centimos, activo from estook.plato
-           where id = ${p.plato_id ?? null}::uuid and local_id = ${localId}::uuid
+          select p.nombre, p.precio_centimos, p.activo, p.en_la_carta,
+                 coalesce(s.es_bebida, false) as es_bebida
+            from estook.plato p
+            left join estook.seccion_de_carta s on s.id = p.seccion_id
+           where p.id = ${p.plato_id ?? null}::uuid and p.local_id = ${localId}::uuid
         `;
         const plato = filas[0];
         if (plato === undefined || !plato.activo) {
@@ -268,15 +286,27 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
               porque: 'El plato de un menú va dentro de la línea de su menú.',
             });
           }
-          const suplemento = await contexto.sql<{ suplemento_centimos: number }[]>`
-            select suplemento_centimos from estook.plato_de_menu
-             where menu_id = ${menuDelPadre}::uuid and plato_id = ${p.plato_id ?? null}::uuid
-               and fecha <= ${hoy}::date
-             order by fecha desc
-             limit 1
-          `;
-          precio = suplemento[0]?.suplemento_centimos ?? 0;
+          // Tiene que estar en el menú de hoy (o en el último día montado, que es lo que
+          // vale hoy, M10 · 2), y se cobra su suplemento de hoy.
+          const elDia = await elMenuDeHoy(menuDelPadre);
+          const enElMenu = elDia.platos.find((x) => x.platoId === p.plato_id);
+          if (enElMenu === undefined) {
+            throw new FalloDeAplicacion('faltan_datos', {
+              porque: `«${plato.nombre}» no está hoy en ese menú.`,
+            });
+          }
+          precio = enElMenu.suplementoCentimos;
+          if (p.destino === undefined && elDia.deBebidas.has(enElMenu.seccionId)) {
+            destino = 'barra';
+          }
         } else {
+          if (!plato.en_la_carta) {
+            throw new FalloDeAplicacion('faltan_datos', {
+              porque: `«${plato.nombre}» solo está en el menú: pídelo dentro del menú.`,
+            });
+          }
+          // La sección dice a dónde va: lo de bebidas, a la barra (0106).
+          if (p.destino === undefined && plato.es_bebida) destino = 'barra';
           if (plato.precio_centimos === null) {
             throw new FalloDeAplicacion('faltan_datos', {
               porque: `«${plato.nombre}» no tiene precio en la carta: pónselo en Carta.`,
@@ -484,6 +514,10 @@ export const mandarACocina = comando<{ cuenta_id: string }, SalidaMandar>({
     const nuevos = antes.filter((l) => l.mandada_en === null && l.quitada_en === null);
     if (nuevos.length === 0) return { aCocina: 0, aLaBarra: 0, salen: [], esperan: [] };
 
+    // Los pases que ya esperaban la marcha antes de esto: siguen esperando al camarero.
+    const yaEsperaban = (await losPases(contexto, [cuenta.id]))
+      .filter((p) => p.marchado_en === null)
+      .map((p) => p.numero);
     const ahora = contexto.ahora.toISOString();
     await contexto.sql`
       update estook.linea_de_cuenta
@@ -508,6 +542,7 @@ export const mandarACocina = comando<{ cuenta_id: string }, SalidaMandar>({
       platos.map(comoPlatoDeLaMesa),
       pases.map(comoPaseDeLaMesa),
       cuenta.por_pases,
+      yaEsperaban,
     );
     for (const numero of salen) {
       await contexto.sql`

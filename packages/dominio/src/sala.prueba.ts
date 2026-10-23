@@ -4,6 +4,8 @@ import {
   elPaseQueTocaMarchar,
   laMesaEnCocina,
   loSiguienteDeLaMesa,
+  esDeBebidas,
+  losPasesDelMenu,
   losPasesQueSalenAlMandar,
   type PaseDeLaMesa,
   type PlatoDeLaMesa,
@@ -54,6 +56,15 @@ describe('qué pase sale al mandar (0106)', () => {
       pase(2, { marchado: true, fuera: true }),
     ];
     expect(losPasesQueSalenAlMandar(platos, pases, true)).toEqual([3]);
+  });
+
+  it('añadir al 2.º que espera no lo marcha: lo marcha el camarero, aunque el 1.º ya saliera', () => {
+    // El 1.º salió de cocina, pero la mesa aún se lo está comiendo; piden otro principal.
+    const platos = [plato(1, { salio: true }), plato(2), plato(2)];
+    const pases = [pase(1, { marchado: true }), pase(2)];
+    expect(losPasesQueSalenAlMandar(platos, pases, true, [2])).toEqual([]);
+    // Con «todo junto», en cambio, sale todo.
+    expect(losPasesQueSalenAlMandar(platos, pases, false, [2])).toEqual([2]);
   });
 
   it('un postre pedido por adelantado espera, como un 2.º', () => {
@@ -188,5 +199,56 @@ describe('si un pase ha salido entero', () => {
   });
   it('lo quitado no cuenta', () => {
     expect(elPaseHaSalido([plato(1, { salio: true }), plato(1, { quitado: true })], 1)).toBe(true);
+  });
+});
+
+describe('qué sección es de bebidas', () => {
+  it('por su nombre, con o sin acentos ni mayúsculas', () => {
+    for (const nombre of [
+      'Bebidas',
+      'Vinos',
+      'CERVEZAS',
+      'Cafés e infusiones',
+      'Copas',
+      'Cócteles',
+      'Refrescos y zumos',
+    ]) {
+      expect(esDeBebidas(nombre), nombre).toBe(true);
+    }
+  });
+
+  it('y la comida no', () => {
+    for (const nombre of ['Entrantes', 'Principales', 'Postres', 'Para picar', 'Arroces']) {
+      expect(esDeBebidas(nombre), nombre).toBe(false);
+    }
+  });
+});
+
+describe('en qué pase sale cada sección del menú', () => {
+  const seccion = (id: string, orden: number, esPostre = false, esBebida = false) => ({
+    id,
+    orden,
+    esPostre,
+    esBebida,
+  });
+
+  it('primeros el 1.º, segundos el 2.º, el postre al final y la bebida a la barra', () => {
+    const pases = losPasesDelMenu([
+      seccion('bebida', 3, false, true),
+      seccion('primeros', 0),
+      seccion('postre', 2, true),
+      seccion('segundos', 1),
+    ]);
+    expect(Object.fromEntries(pases)).toEqual({
+      primeros: 1,
+      segundos: 2,
+      postre: 3,
+      bebida: null,
+    });
+  });
+
+  it('un menú de plato único: el plato en el 1.º y el postre en el 2.º', () => {
+    const pases = losPasesDelMenu([seccion('plato', 0), seccion('postre', 1, true)]);
+    expect(Object.fromEntries(pases)).toEqual({ plato: 1, postre: 2 });
   });
 });

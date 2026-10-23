@@ -80,11 +80,11 @@ function origenesPermitidos(): string[] {
     .map((o) => o.trim())
     .filter((o) => o !== '');
 
-  // En desarrollo, las cuatro aplicaciones en su puerto. En produccion no: ahi
+  // En desarrollo, las cinco aplicaciones en su puerto. En produccion no: ahi
   // valen los nuestros y lo que anada `ORIGENES_PERMITIDOS`.
   const enDesarrollo = variable('ENTORNO') !== 'produccion';
   const locales = enDesarrollo
-    ? [5173, 5174, 5175, 5176].map((puerto) => `http://localhost:${puerto}`)
+    ? [5173, 5174, 5175, 5176, 5178].map((puerto) => `http://localhost:${puerto}`)
     : [];
 
   // Sin repetidos: quien lo tuviera declarado en el entorno no rompe nada.

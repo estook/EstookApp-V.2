@@ -346,7 +346,8 @@ import {
 } from './consultas/equipo.ts';
 import { misCierres, unCierre } from './consultas/cierre.ts';
 import { laJornada } from './consultas/jornada.ts';
-import { elPlano, laCocina, laMesa } from './consultas/sala.ts';
+import { elPlano, laCartaDeLaSala, laCocina, laMesa } from './consultas/sala.ts';
+import { elPlanoDelLocal } from './consultas/plano.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
 import { quienSoy } from './consultas/quien-soy.ts';
@@ -481,6 +482,8 @@ export const catalogo = {
     [elPlano.nombre]: elPlano,
     [laMesa.nombre]: laMesa,
     [laCocina.nombre]: laCocina,
+    [laCartaDeLaSala.nombre]: laCartaDeLaSala,
+    [elPlanoDelLocal.nombre]: elPlanoDelLocal,
     // M7 · compras: lo que se pide, lo que llega, lo que se cobra y a quién.
     [misPedidos.nombre]: misPedidos,
     [unPedido.nombre]: unPedido,

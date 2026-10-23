@@ -36,7 +36,7 @@ export const SECCIONES: readonly Seccion[] = [
   {
     id: 'local',
     nombre: 'Tu local',
-    queHay: 'Marca, dónde está, fichar, objetivos, carta, menús y precios',
+    queHay: 'Marca, dónde está, fichar, sala, objetivos, carta, menús y precios',
   },
   { id: 'conexiones', nombre: 'Conexiones', queHay: 'Cómo entran tus ventas' },
   // La suscripción, a mano de quien la paga (Richi, 25-sep · 0048).
@@ -126,6 +126,13 @@ export const AJUSTES: readonly Ajuste[] = [
     seccion: 'local',
     nombre: 'El aparato para fichar',
     palabras: 'aparato tablet quiosco terminal fichar pin sin correo entrada ordenador',
+  },
+  // M20A · 1 · 2 (0106): el plano que ve el camarero en Estook TPV.
+  {
+    id: 'sala',
+    seccion: 'local',
+    nombre: 'Tu sala: las zonas y las mesas',
+    palabras: 'sala mesas mesa plano zonas zona terraza salón barra tpv comandero camarero',
   },
   {
     id: 'objetivos',

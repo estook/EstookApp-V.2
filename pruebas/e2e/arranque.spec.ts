@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 
 /**
- * M0 · aceptacion. Las cuatro aplicaciones arrancan, sin errores y a tiempo.
+ * M0 · aceptacion. Las cinco aplicaciones arrancan, sin errores y a tiempo.
  *
  * Desde M3, `app` ya no es la pantalla de cimientos. Y desde M4 lo primero que
  * ensena **no es el Panel sino la puerta**: sin haber entrado no se pinta ni una
@@ -31,6 +31,13 @@ const APLICACIONES = [
   // Desde la 0041 el admin también empieza por su puerta: el catálogo que se veía
   // aquí sin entrar está detrás.
   { nombre: 'admin', url: 'http://localhost:5176/', titulo: /Estook/, puerta: 'Entra en el admin' },
+  // Estook TPV (M20A · 1 · 2) entra con la sesión de Estook: sin ella, lo dice y lleva allí.
+  {
+    nombre: 'tpv',
+    url: 'http://localhost:5178/',
+    titulo: /Estook TPV/,
+    puerta: 'Entra en Estook primero',
+  },
 ];
 
 /** B7 · abrir una aplicacion. Se deja holgura porque la maquina de CI es lenta. */
@@ -83,7 +90,7 @@ for (const aplicacion of APLICACIONES) {
 /**
  * Las que no eligen tema se quedan claras, **aunque el sistema sea oscuro**.
  *
- * De las cuatro aplicaciones, solo `app` tiene modo oscuro: la web pública y la
+ * De las cinco aplicaciones, solo `app` y `tpv` tienen modo oscuro: la web pública y la
  * carta no llaman a `usarTema`, así que su `<html>` no lleva `data-tema`. Si el
  * gancho que decide el logotipo respondiera «lo que diga el sistema» por defecto,
  * con el móvil en oscuro esas dos pintarían **el logotipo claro sobre una página
@@ -92,7 +99,10 @@ for (const aplicacion of APLICACIONES) {
 test.describe('con el sistema en oscuro', () => {
   test.use({ colorScheme: 'dark' });
 
-  for (const { nombre, url } of APLICACIONES.filter((a) => a.nombre !== 'app')) {
+  // La app y Estook TPV siguen el tema del aparato (el mismo, que es el mismo sitio).
+  for (const { nombre, url } of APLICACIONES.filter(
+    (a) => a.nombre !== 'app' && a.nombre !== 'tpv',
+  )) {
     test(`${nombre} sigue clara, y su logotipo se lee`, async ({ page }) => {
       await abrirSinQueSeCaiga(page, url);
 

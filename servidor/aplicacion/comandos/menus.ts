@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   DIAS_DEL_MENU_DEL_DIA,
   SECCIONES_DEL_MENU_DEL_DIA,
+  esDeBebidas,
   fechaOperativa,
   losDiasQueSeSirve,
   masDias,
@@ -91,8 +92,10 @@ async function crearElMenu(
   let orden = 0;
   for (const s of SECCIONES_DEL_MENU_DEL_DIA) {
     await contexto.sql`
-      insert into estook.seccion_de_menu (menu_id, local_id, nombre, orden, es_postre, incluida)
-      values (${menuId}::uuid, ${localId}::uuid, ${s.nombre}, ${orden}, ${s.esPostre}, ${s.incluida})
+      insert into estook.seccion_de_menu
+        (menu_id, local_id, nombre, orden, es_postre, es_bebida, incluida)
+      values (${menuId}::uuid, ${localId}::uuid, ${s.nombre}, ${orden}, ${s.esPostre},
+              ${!s.esPostre && esDeBebidas(s.nombre)}, ${s.incluida})
     `;
     orden += 1;
   }
@@ -373,10 +376,11 @@ export const ponerSeccionDeMenu = comando<
     await elMenuDelLocal(contexto, localId, entrada.menu_id);
     await laSeccionEstaLibre(contexto, entrada.menu_id, entrada.nombre, null);
     const filas = await contexto.sql<{ id: string }[]>`
-      insert into estook.seccion_de_menu (menu_id, local_id, nombre, orden)
+      insert into estook.seccion_de_menu (menu_id, local_id, nombre, orden, es_bebida)
       values (${entrada.menu_id}::uuid, ${localId}::uuid, ${entrada.nombre},
               coalesce((select max(orden) + 1 from estook.seccion_de_menu
-                         where menu_id = ${entrada.menu_id}::uuid), 0))
+                         where menu_id = ${entrada.menu_id}::uuid), 0),
+              ${esDeBebidas(entrada.nombre)})
       returning id
     `;
     const seccionId = filas[0]?.id;
@@ -400,8 +404,10 @@ export const cambiarSeccionDeMenu = comando<
     const localId = elLocalDeLaCarta(contexto);
     const seccion = await laSeccionDelMenu(contexto, localId, entrada.seccion_id);
     await laSeccionEstaLibre(contexto, seccion.menuId, entrada.nombre, entrada.seccion_id);
+    // El nombre dice si es la bebida del menú, como al crearla: «Bebida» va a la barra.
     await contexto.sql`
-      update estook.seccion_de_menu set nombre = ${entrada.nombre}
+      update estook.seccion_de_menu
+         set nombre = ${entrada.nombre}, es_bebida = ${!seccion.esPostre && esDeBebidas(entrada.nombre)}
        where id = ${entrada.seccion_id}::uuid and local_id = ${localId}::uuid
     `;
     await anotar(

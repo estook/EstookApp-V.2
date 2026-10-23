@@ -14,7 +14,7 @@ import { nuevaSesionId } from './correlacion.ts';
 export interface OpcionesDeObservabilidad {
   readonly dsn: string | undefined;
   readonly entorno: Entorno;
-  readonly aplicacion: 'web' | 'app' | 'carta' | 'admin';
+  readonly aplicacion: 'web' | 'app' | 'carta' | 'admin' | 'tpv';
   readonly version: string;
   /** El hilo de esta visita. Si no se pasa, se crea uno. */
   readonly sesion_id?: string;

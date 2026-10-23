@@ -1,0 +1,473 @@
+import { useState, type ReactNode } from 'react';
+import type { ErrorDeLaApi } from '@estook/cliente-api';
+import { puedeEditar } from '@estook/permisos';
+import { Boton, CAJA, Envoltorio, ErrorEnCristiano, Hoja } from '@estook/ui';
+import { usarSesion } from '../sesion/Sesion.tsx';
+import { usarAcciones } from '../ganchos/usarLaSala.ts';
+import type { CuentaEnElPlano, ElPlano } from '../datos/tipos.ts';
+import { elPase } from '../logica/laCuenta.ts';
+import { cuantoLlevan, euros, personas as lasPersonas } from '../logica/texto.ts';
+import { irAlPlano } from '../navegar.ts';
+
+/**
+ * Lo que se puede hacer con una mesa abierta (0106, «MesaAcciones»), al tocarla en el
+ * plano o desde «Opciones» dentro de ella. Lo de cobrar, imprimir la cuenta y dividirla
+ * llega con el cobro (M20C) y con Estook Link (M19a): hasta entonces, se cobra en el TPV
+ * de siempre y aquí se libera la mesa.
+ */
+
+type Paso = 'lista' | 'cambiar' | 'juntar' | 'pasar' | 'nota' | 'personas' | 'liberar' | 'anular';
+
+export function OpcionesDeLaMesa({
+  cuenta,
+  plano,
+  alCerrar,
+  alAbrir,
+  porPases,
+  notaParaCocina,
+}: {
+  readonly cuenta: CuentaEnElPlano;
+  readonly plano: ElPlano;
+  readonly alCerrar: () => void;
+  /** «Abrir la mesa»: solo desde el plano; dentro de la mesa ya se está. */
+  readonly alAbrir?: () => void;
+  readonly porPases?: boolean;
+  readonly notaParaCocina?: string | null;
+}) {
+  const { yo } = usarSesion();
+  const ejecutar = usarAcciones();
+  const [paso, setPaso] = useState<Paso>('lista');
+  const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
+  const [haciendo, setHaciendo] = useState(false);
+  const [texto, setTexto] = useState('');
+  const esJefe = puedeEditar(yo.permisos, 'accion.quitar_de_cocina');
+
+  async function hacer(nombre: string, entrada: unknown, despues: () => void = alCerrar) {
+    setHaciendo(true);
+    setFallo(null);
+    const hecho = await ejecutar(nombre, entrada);
+    setHaciendo(false);
+    if (hecho.ok) despues();
+    else setFallo(hecho.error);
+  }
+
+  const libres = plano.zonas.flatMap((z) =>
+    z.mesas.filter((m) => m.cuenta === null).map((m) => ({ ...m, zona: z.nombre })),
+  );
+  const otras = [
+    ...plano.zonas.flatMap((z) => z.mesas.flatMap((m) => (m.cuenta === null ? [] : [m.cuenta]))),
+    ...plano.sinMesa,
+  ].filter((c) => c.cuentaId !== cuenta.cuentaId);
+  const toca = cuenta.loSiguiente.que === 'marchar' ? cuenta.loSiguiente.pase : null;
+
+  const volver = () => {
+    setPaso('lista');
+    setFallo(null);
+    setTexto('');
+  };
+
+  return (
+    <Hoja abierta alCerrar={alCerrar} titulo={cuenta.titulo}>
+      <p className="mb-e4 text-secundario text-texto-suave">
+        {[
+          lasPersonas(cuenta.personas),
+          cuenta.camarero,
+          cuantoLlevan(cuenta.minutos),
+          `${euros(cuenta.totalCentimos)} €`,
+        ]
+          .filter((x) => x !== null)
+          .join(' · ')}
+      </p>
+
+      {fallo !== null && (
+        <div className="mb-e4">
+          <ErrorEnCristiano error={fallo} />
+        </div>
+      )}
+
+      {paso === 'lista' && (
+        <div className="flex flex-col gap-e2">
+          {toca !== null && (
+            <Boton
+              tono="principal"
+              tamano="l"
+              ancho
+              cargando={haciendo}
+              onClick={() => {
+                void hacer('marchar', { cuenta_id: cuenta.cuentaId, pase: toca });
+              }}
+            >
+              Marchar el {elPase(toca)}
+            </Boton>
+          )}
+          {alAbrir !== undefined && (
+            <Opcion titulo="Abrir la mesa" detalle="pedir y cambiar" onClick={alAbrir} fuerte />
+          )}
+          {cuenta.tipo === 'mesa' || libres.length > 0 ? (
+            <Opcion
+              titulo="Cambiar de mesa"
+              detalle="se cambian de sitio"
+              onClick={() => {
+                setPaso('cambiar');
+              }}
+            />
+          ) : null}
+          <Opcion
+            titulo="Juntar mesas"
+            detalle="una sola cuenta"
+            onClick={() => {
+              setPaso('juntar');
+            }}
+          />
+          <Opcion
+            titulo="Pasar a otro camarero"
+            detalle="al cambiar de turno"
+            onClick={() => {
+              setPaso('pasar');
+            }}
+          />
+          <Opcion
+            titulo="Nota para cocina"
+            detalle={notaParaCocina ?? 'para toda la mesa: «tienen prisa»'}
+            onClick={() => {
+              setTexto(notaParaCocina ?? '');
+              setPaso('nota');
+            }}
+          />
+          <Opcion
+            titulo="Personas"
+            detalle={lasPersonas(cuenta.personas) ?? 'cuántos son'}
+            onClick={() => {
+              setTexto(cuenta.personas === null ? '' : String(cuenta.personas));
+              setPaso('personas');
+            }}
+          />
+          {porPases === true && (
+            <Opcion
+              titulo="Sacadlo todo"
+              detalle="lo que espera sale ya, y lo nuevo, todo junto"
+              onClick={() => {
+                void hacer('cambiar_la_mesa', { cuenta_id: cuenta.cuentaId, por_pases: false });
+              }}
+            />
+          )}
+          {porPases === false && (
+            <Opcion
+              titulo="Por pases"
+              detalle="lo nuevo, en su pase"
+              onClick={() => {
+                void hacer('cambiar_la_mesa', { cuenta_id: cuenta.cuentaId, por_pases: true });
+              }}
+            />
+          )}
+          <Opcion
+            titulo="Liberar la mesa"
+            detalle="ya han pagado en el TPV de siempre"
+            onClick={() => {
+              setPaso('liberar');
+            }}
+          />
+          {esJefe && (
+            <Opcion
+              titulo="Anular la mesa"
+              detalle="con su motivo: queda apuntado"
+              peligro
+              onClick={() => {
+                setPaso('anular');
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      {paso === 'cambiar' && (
+        <Elegir
+          titulo="¿A qué mesa se cambian?"
+          vacio="No hay ninguna mesa libre."
+          alVolver={volver}
+          opciones={libres.map((m) => ({
+            id: m.id,
+            texto: `Mesa ${m.nombre}`,
+            detalle: `${m.zona} · ${m.plazas} plazas`,
+          }))}
+          alElegir={(id) => {
+            void hacer('cambiar_de_mesa', { cuenta_id: cuenta.cuentaId, mesa_id: id });
+          }}
+        />
+      )}
+
+      {paso === 'juntar' && (
+        <Elegir
+          titulo="¿Con qué mesa se juntan?"
+          vacio="No hay otra mesa abierta."
+          ayuda={`Lo de la otra pasa a ${cuenta.titulo}, y la otra queda libre.`}
+          alVolver={volver}
+          opciones={otras.map((c) => ({
+            id: c.cuentaId,
+            texto: c.titulo,
+            detalle: `${euros(c.totalCentimos)} € · ${c.camarero ?? ''}`,
+          }))}
+          alElegir={(id) => {
+            void hacer('juntar_mesas', { cuenta_id: cuenta.cuentaId, con: id });
+          }}
+        />
+      )}
+
+      {paso === 'pasar' && (
+        <Elegir
+          titulo="¿A quién se la pasas?"
+          vacio="No hay nadie más que tome nota en el local."
+          alVolver={volver}
+          opciones={plano.camareros
+            .filter((c) => c.nombre !== cuenta.camarero)
+            .map((c) => ({ id: c.id, texto: c.nombre, detalle: '' }))}
+          alElegir={(id) => {
+            void hacer('pasar_a_otro_camarero', {
+              cuenta_ids: [cuenta.cuentaId],
+              camarero_id: id,
+            });
+          }}
+        />
+      )}
+
+      {paso === 'nota' && (
+        <Escribir
+          etiqueta="Nota para cocina"
+          valor={texto}
+          alCambiar={setTexto}
+          ejemplo="Tienen prisa · cumpleaños, el postre con vela…"
+          alVolver={volver}
+          haciendo={haciendo}
+          boton="Guardar la nota"
+          alGuardar={() => {
+            void hacer('cambiar_la_mesa', {
+              cuenta_id: cuenta.cuentaId,
+              nota_para_cocina: texto.trim() === '' ? null : texto.trim(),
+            });
+          }}
+        />
+      )}
+
+      {paso === 'personas' && (
+        <div className="flex flex-col gap-e4">
+          <Envoltorio id="personas-de-la-mesa" etiqueta="¿Cuántos son?">
+            <input
+              id="personas-de-la-mesa"
+              inputMode="numeric"
+              className={CAJA}
+              value={texto}
+              onChange={(e) => {
+                setTexto(e.target.value.replace(/\D/g, '').slice(0, 2));
+              }}
+            />
+          </Envoltorio>
+          <Botonera alVolver={volver}>
+            <Boton
+              tono="principal"
+              disabled={texto === '' || Number(texto) < 1}
+              cargando={haciendo}
+              onClick={() => {
+                void hacer('cambiar_la_mesa', {
+                  cuenta_id: cuenta.cuentaId,
+                  personas: Number(texto),
+                });
+              }}
+            >
+              Guardar
+            </Boton>
+          </Botonera>
+        </div>
+      )}
+
+      {paso === 'liberar' && (
+        <div className="flex flex-col gap-e4">
+          <p>
+            La mesa queda libre en el plano. Hasta que se cobre con Estook TPV, cóbrala en tu TPV de
+            siempre. Lo que quede en cocina se sigue haciendo.
+          </p>
+          <Botonera alVolver={volver}>
+            <Boton
+              tono="principal"
+              cargando={haciendo}
+              onClick={() => {
+                void hacer('liberar_mesa', { cuenta_id: cuenta.cuentaId }, () => {
+                  alCerrar();
+                  irAlPlano();
+                });
+              }}
+            >
+              Liberar la mesa
+            </Boton>
+          </Botonera>
+        </div>
+      )}
+
+      {paso === 'anular' && (
+        <Escribir
+          etiqueta="¿Por qué se anula?"
+          valor={texto}
+          alCambiar={setTexto}
+          ejemplo="Se fueron sin pedir · se abrió por error…"
+          alVolver={volver}
+          haciendo={haciendo}
+          boton="Anular la mesa"
+          peligro
+          minimo={3}
+          alGuardar={() => {
+            void hacer('anular_mesa', { cuenta_id: cuenta.cuentaId, motivo: texto.trim() }, () => {
+              alCerrar();
+              irAlPlano();
+            });
+          }}
+        />
+      )}
+    </Hoja>
+  );
+}
+
+function Opcion({
+  titulo,
+  detalle,
+  onClick,
+  fuerte = false,
+  peligro = false,
+}: {
+  readonly titulo: string;
+  readonly detalle: string;
+  readonly onClick: () => void;
+  readonly fuerte?: boolean;
+  readonly peligro?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        'flex min-h-toque-cocina flex-col items-start justify-center rounded-grande px-e4 py-e2 text-left',
+        fuerte ? 'bg-charcoal text-white' : 'border border-borde bg-superficie',
+        peligro ? 'text-mal' : '',
+      ].join(' ')}
+    >
+      <span className="font-bold">{titulo}</span>
+      <span
+        className={['text-secundario', fuerte ? 'text-white/80' : 'text-texto-suave'].join(' ')}
+      >
+        {detalle}
+      </span>
+    </button>
+  );
+}
+
+function Botonera({
+  alVolver,
+  children,
+}: {
+  readonly alVolver: () => void;
+  readonly children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap justify-end gap-e2">
+      <Boton tono="texto" onClick={alVolver}>
+        Volver
+      </Boton>
+      {children}
+    </div>
+  );
+}
+
+function Elegir({
+  titulo,
+  vacio,
+  ayuda,
+  opciones,
+  alElegir,
+  alVolver,
+}: {
+  readonly titulo: string;
+  readonly vacio: string;
+  readonly ayuda?: string;
+  readonly opciones: readonly { id: string; texto: string; detalle: string }[];
+  readonly alElegir: (id: string) => void;
+  readonly alVolver: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-e3">
+      <h3 className="text-seccion font-bold">{titulo}</h3>
+      {ayuda !== undefined && <p className="text-secundario text-texto-suave">{ayuda}</p>}
+      {opciones.length === 0 ? (
+        <p className="text-texto-suave">{vacio}</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-e2 sm:grid-cols-3">
+          {opciones.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => {
+                alElegir(o.id);
+              }}
+              className="flex min-h-toque-cocina flex-col items-start justify-center rounded-grande border border-borde bg-superficie px-e4 py-e2 text-left"
+            >
+              <span className="font-bold">{o.texto}</span>
+              {o.detalle !== '' && (
+                <span className="text-secundario text-texto-suave">{o.detalle}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+      <Botonera alVolver={alVolver}>{null}</Botonera>
+    </div>
+  );
+}
+
+function Escribir({
+  etiqueta,
+  valor,
+  alCambiar,
+  ejemplo,
+  alVolver,
+  alGuardar,
+  haciendo,
+  boton,
+  peligro = false,
+  minimo = 0,
+}: {
+  readonly etiqueta: string;
+  readonly valor: string;
+  readonly alCambiar: (valor: string) => void;
+  readonly ejemplo: string;
+  readonly alVolver: () => void;
+  readonly alGuardar: () => void;
+  readonly haciendo: boolean;
+  readonly boton: string;
+  readonly peligro?: boolean;
+  readonly minimo?: number;
+}) {
+  return (
+    <div className="flex flex-col gap-e4">
+      <Envoltorio id="texto-de-la-mesa" etiqueta={etiqueta}>
+        <textarea
+          id="texto-de-la-mesa"
+          rows={3}
+          maxLength={200}
+          className={[CAJA, 'min-h-[6rem] py-e2'].join(' ')}
+          placeholder={ejemplo}
+          value={valor}
+          onChange={(e) => {
+            alCambiar(e.target.value);
+          }}
+        />
+      </Envoltorio>
+      <Botonera alVolver={alVolver}>
+        <Boton
+          tono={peligro ? 'peligro' : 'principal'}
+          disabled={valor.trim().length < minimo}
+          cargando={haciendo}
+          onClick={alGuardar}
+        >
+          {boton}
+        </Boton>
+      </Botonera>
+    </div>
+  );
+}

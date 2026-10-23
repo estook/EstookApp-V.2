@@ -255,14 +255,14 @@ for (const { nombre, lado, fondo, margen, monocromo = null } of QUE_HACE_FALTA) 
 }
 
 /*
- * Y se reparten a las cuatro aplicaciones.
+ * Y se reparten a las cinco aplicaciones.
  *
  * Vite copia `public/` tal cual, y un `<link rel="icon">` lo pide por su
  * direccion, no por un import: no hay forma de que salga de `packages/ui` sin
  * copiarlo. Se copia desde aqui, y no a mano, para que las cinco copias no
  * puedan separarse nunca: son cinco kilobytes y un solo dueno.
  */
-const APLICACIONES = ['web', 'app', 'carta', 'admin'];
+const APLICACIONES = ['web', 'app', 'carta', 'admin', 'tpv'];
 const AL_PUBLICO = ['favicon.svg', ...QUE_HACE_FALTA.map((q) => q.nombre)];
 
 for (const aplicacion of APLICACIONES) {

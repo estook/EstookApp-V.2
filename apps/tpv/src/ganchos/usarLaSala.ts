@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { escucharAlSegundo, haySegundo } from '@estook/cliente-api/al-segundo';
@@ -28,8 +28,12 @@ function esDelServicio(canal: string): boolean {
   return canal.startsWith('servicio:');
 }
 
-/** Escucha los toques de la sala mientras la pantalla está abierta. Dice si llegan. */
-export function usarAlSegundo(): boolean {
+/**
+ * Escucha los toques de la sala mientras Estook TPV está abierto. Dice si llegan. Se
+ * llama **una vez**, arriba (`ConElSegundo`): cada pantalla lo lee con `usarAlSegundo`,
+ * y entrar y salir de una mesa no vuelve a conectar.
+ */
+export function usarEscucharAlSegundo(): boolean {
   const { cliente } = usarSesion();
   const cache = useQueryClient();
   const [conectado, setConectado] = useState(false);
@@ -59,6 +63,13 @@ export function usarAlSegundo(): boolean {
   }, [cliente, cache]);
 
   return conectado;
+}
+
+export const ContextoAlSegundo = createContext(false);
+
+/** Si los toques llegan, para preguntar menos (`cadaCuanto`). */
+export function usarAlSegundo(): boolean {
+  return useContext(ContextoAlSegundo);
 }
 
 function cadaCuanto(conectado: boolean): number {

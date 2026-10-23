@@ -91,6 +91,8 @@ test('la sala: dibujar el plano en Estook, abrir la mesa en Estook TPV, pedir y 
   }
   await expect(page.getByRole('heading', { name: '2.º · en espera' })).toBeVisible();
   await page.getByRole('button', { name: 'Marchar ya' }).click();
+  // El 1.º aún no ha salido de cocina: marchar no tiene vuelta atrás, así que pregunta.
+  await page.getByRole('button', { name: 'Marchar el 2.º' }).click();
   await expect(page.getByRole('heading', { name: '2.º · en marcha' })).toBeVisible({
     timeout: 15_000,
   });
@@ -104,4 +106,16 @@ test('la sala: dibujar el plano en Estook, abrir la mesa en Estook TPV, pedir y 
     timeout: 15_000,
   });
   await expect(page.getByRole('button', { name: /^Mesa 2: Libre/ })).toBeVisible();
+
+  // Las opciones de la mesa, desde el plano: la nota para cocina se pone y se queda.
+  await page.getByRole('button', { name: /^Mesa 1: / }).click();
+  await page.getByRole('button', { name: /^Nota para cocina/ }).click();
+  await page.getByLabel('Nota para cocina').fill('Tienen prisa');
+  await page.getByRole('button', { name: 'Guardar la nota' }).click();
+  await page.getByRole('button', { name: /^Mesa 1: / }).click();
+  await expect(page.getByRole('button', { name: /^Nota para cocina\s*Tienen prisa/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.getByRole('button', { name: /^Nota para cocina/ }).click();
+  await expect(page.getByLabel('Nota para cocina')).toHaveValue('Tienen prisa');
 });

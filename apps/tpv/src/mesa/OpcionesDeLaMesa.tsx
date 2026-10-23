@@ -23,17 +23,17 @@ export function OpcionesDeLaMesa({
   plano,
   alCerrar,
   alAbrir,
-  porPases,
-  notaParaCocina,
+  sinMandarAqui = 0,
 }: {
   readonly cuenta: CuentaEnElPlano;
   readonly plano: ElPlano;
   readonly alCerrar: () => void;
   /** «Abrir la mesa»: solo desde el plano; dentro de la mesa ya se está. */
   readonly alAbrir?: () => void;
-  readonly porPases?: boolean;
-  readonly notaParaCocina?: string | null;
+  /** Lo pedido en esta tablet que aún no ha salido de ella (`comanda.ts`). */
+  readonly sinMandarAqui?: number;
 }) {
+  const { porPases, notaParaCocina } = cuenta;
   const { yo } = usarSesion();
   const ejecutar = usarAcciones();
   const [paso, setPaso] = useState<Paso>('lista');
@@ -103,15 +103,13 @@ export function OpcionesDeLaMesa({
           {alAbrir !== undefined && (
             <Opcion titulo="Abrir la mesa" detalle="pedir y cambiar" onClick={alAbrir} fuerte />
           )}
-          {cuenta.tipo === 'mesa' || libres.length > 0 ? (
-            <Opcion
-              titulo="Cambiar de mesa"
-              detalle="se cambian de sitio"
-              onClick={() => {
-                setPaso('cambiar');
-              }}
-            />
-          ) : null}
+          <Opcion
+            titulo={cuenta.tipo === 'mesa' ? 'Cambiar de mesa' : 'Llevar a una mesa'}
+            detalle={cuenta.tipo === 'mesa' ? 'se cambian de sitio' : 'de la barra a una mesa'}
+            onClick={() => {
+              setPaso('cambiar');
+            }}
+          />
           <Opcion
             titulo="Juntar mesas"
             detalle="una sola cuenta"
@@ -128,7 +126,7 @@ export function OpcionesDeLaMesa({
           />
           <Opcion
             titulo="Nota para cocina"
-            detalle={notaParaCocina ?? 'para toda la mesa: «tienen prisa»'}
+            detalle={notaParaCocina ?? 'Sin nota: «tienen prisa», «es un cumpleaños»…'}
             onClick={() => {
               setTexto(notaParaCocina ?? '');
               setPaso('nota');
@@ -142,7 +140,7 @@ export function OpcionesDeLaMesa({
               setPaso('personas');
             }}
           />
-          {porPases === true && (
+          {porPases && (
             <Opcion
               titulo="Sacadlo todo"
               detalle="lo que espera sale ya, y lo nuevo, todo junto"
@@ -151,7 +149,7 @@ export function OpcionesDeLaMesa({
               }}
             />
           )}
-          {porPases === false && (
+          {!porPases && (
             <Opcion
               titulo="Por pases"
               detalle="lo nuevo, en su pase"
@@ -219,7 +217,7 @@ export function OpcionesDeLaMesa({
           vacio="No hay nadie más que tome nota en el local."
           alVolver={volver}
           opciones={plano.camareros
-            .filter((c) => c.nombre !== cuenta.camarero)
+            .filter((c) => c.id !== cuenta.camareroId)
             .map((c) => ({ id: c.id, texto: c.nombre, detalle: '' }))}
           alElegir={(id) => {
             void hacer('pasar_a_otro_camarero', {
@@ -281,6 +279,11 @@ export function OpcionesDeLaMesa({
 
       {paso === 'liberar' && (
         <div className="flex flex-col gap-e4">
+          {(cuenta.loSiguiente.que === 'mandar' || sinMandarAqui > 0) && (
+            <p className="rounded-medio bg-atencion-suave px-e3 py-e2 font-semibold text-atencion">
+              Tiene platos sin mandar: si la liberas, no llegarán a la cocina.
+            </p>
+          )}
           <p>
             La mesa queda libre en el plano. Hasta que se cobre con Estook TPV, cóbrala en tu TPV de
             siempre. Lo que quede en cocina se sigue haciendo.

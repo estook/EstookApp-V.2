@@ -319,6 +319,7 @@ export function TuSala() {
                   hacer('cambiar_zona_de_sala', { zona_id: zona.id, nombre })
                 }
                 alArchivar={() => hacer('archivar_zona_de_sala', { zona_id: zona.id })}
+                fallo={fallo}
               />
             </div>
           )}
@@ -352,22 +353,27 @@ export function TuSala() {
 function OpcionesDeLaZona({
   zona,
   haciendo,
+  fallo,
   alRenombrar,
   alArchivar,
 }: {
   readonly zona: { readonly nombre: string; readonly mesas: readonly MesaDelPlano[] };
   readonly haciendo: boolean;
+  readonly fallo: ErrorDeLaApi | null;
   readonly alRenombrar: (nombre: string) => Promise<boolean>;
   readonly alArchivar: () => Promise<boolean>;
 }) {
   const [abierta, setAbierta] = useState(false);
   const [nombre, setNombre] = useState(zona.nombre);
+  // Quitar una zona se lleva sus mesas: se pide un segundo toque.
+  const [seguro, setSeguro] = useState(false);
   return (
     <>
       <Boton
         tono="secundario"
         onClick={() => {
           setNombre(zona.nombre);
+          setSeguro(false);
           setAbierta(true);
         }}
       >
@@ -390,17 +396,27 @@ function OpcionesDeLaZona({
                 setNombre(e.target.value);
               }}
             />
+            {fallo !== null && <ErrorEnCristiano error={fallo} />}
+            {seguro && (
+              <p className="font-semibold text-mal">
+                ¿Seguro? {zona.nombre} y sus {zona.mesas.length} mesas dejan de salir en la sala.
+              </p>
+            )}
             <div className="flex flex-wrap justify-between gap-e2">
               <Boton
                 tono="peligro"
                 cargando={haciendo}
                 onClick={() => {
+                  if (!seguro) {
+                    setSeguro(true);
+                    return;
+                  }
                   void alArchivar().then((bien) => {
                     if (bien) setAbierta(false);
                   });
                 }}
               >
-                Quitar la zona y sus {zona.mesas.length} mesas
+                {seguro ? 'Sí, quitarla' : `Quitar la zona y sus ${zona.mesas.length} mesas`}
               </Boton>
               <Boton
                 tono="principal"
@@ -447,6 +463,7 @@ function LaMesa({
   const [plazas, setPlazas] = useState(String(mesa.plazas));
   const [forma, setForma] = useState<FormaDeMesa>(mesa.forma);
   const [zona, setZona] = useState(zonaId);
+  const [seguro, setSeguro] = useState(false);
   const cambios: Record<string, unknown> = {
     ...(nombre.trim() !== mesa.nombre ? { nombre: nombre.trim() } : {}),
     ...(Number(plazas) !== mesa.plazas ? { plazas: Number(plazas) } : {}),
@@ -531,10 +548,14 @@ function LaMesa({
               disabled={mesa.abierta}
               cargando={haciendo}
               onClick={() => {
+                if (!seguro) {
+                  setSeguro(true);
+                  return;
+                }
                 void alArchivar();
               }}
             >
-              Quitar la mesa
+              {seguro ? 'Sí, quitarla' : 'Quitar la mesa'}
             </Boton>
             <Boton
               tono="principal"

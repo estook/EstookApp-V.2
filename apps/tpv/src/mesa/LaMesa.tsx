@@ -85,6 +85,34 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
     );
   }
 
+  // Otro la liberó, la anuló o la juntó con otra mientras se miraba: se dice, y lo que
+  // no se llegó a mandar se enseña para pedirlo donde toque, en vez de perderlo callado.
+  if (!datos.abierta) {
+    return (
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-e4 bg-fondo p-e5">
+        <div className="w-full max-w-[32rem]">
+          <Aviso tono="atencion" titulo={`${datos.titulo} ya no está abierta`}>
+            Se liberó, se anuló o se juntó con otra desde otro aparato.
+            {borrador.length > 0 &&
+              ` No se llegó a mandar: ${borrador
+                .filter((l) => l.parteDe === null)
+                .map((l) => `${l.cantidad} ${l.nombre}`)
+                .join(', ')}.`}
+          </Aviso>
+        </div>
+        <Boton
+          tono="principal"
+          onClick={() => {
+            guardarBorrador(cuentaId, []);
+            irAlPlano();
+          }}
+        >
+          Volver al plano
+        </Boton>
+      </main>
+    );
+  }
+
   const guardadas = datos.platos.filter((p) => p.estado === 'sin_mandar').length;
   const porMandar = borrador.length + guardadas;
   const grupos = losGruposDeLaCuenta(datos, borrador);
@@ -97,7 +125,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
     ...(plano.data?.sinMesa ?? []),
   ].find((c) => c.cuentaId === cuentaId);
 
-  async function mandar() {
+  async function mandar(): Promise<boolean> {
     setMandando(true);
     setFallo(null);
     if (borrador.length > 0) {
@@ -105,7 +133,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
       if (!pedido.ok) {
         setMandando(false);
         setFallo(pedido.error);
-        return;
+        return false;
       }
       setBorrador([]);
     }
@@ -118,10 +146,11 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
     setMandando(false);
     if (!mandado.ok) {
       setFallo(mandado.error);
-      return;
+      return false;
     }
     setHecho(loQueSeMando(mandado.datos));
     setCuentaEnElMovil(false);
+    return true;
   }
 
   async function marchar(pase: number) {
@@ -180,6 +209,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
       alCambiarElBorrador={setBorrador}
       porPases={datos.porPases}
       pases={datos.pases.map((p) => p.numero)}
+      tocaMarchar={siguiente.que === 'marchar' ? siguiente.pase : null}
       alMarchar={(pase) => {
         void marchar(pase);
       }}
@@ -206,6 +236,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
           alOpciones={() => {
             setOpciones(true);
           }}
+          opcionesListas={enElPlano !== undefined}
         />
         <div className="flex-1 overflow-y-auto px-e4">{laCuenta}</div>
         <div className="flex flex-col gap-e3 border-t border-borde p-e4">
@@ -232,6 +263,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
             alOpciones={() => {
               setOpciones(true);
             }}
+            opcionesListas={enElPlano !== undefined}
           />
         </div>
         <LoQueSePide
@@ -280,8 +312,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
         <OpcionesDeLaMesa
           cuenta={enElPlano}
           plano={plano.data}
-          porPases={datos.porPases}
-          notaParaCocina={datos.notaParaCocina}
+          sinMandarAqui={borrador.length}
           alCerrar={() => {
             setOpciones(false);
           }}
@@ -307,8 +338,9 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
               ancho
               cargando={mandando}
               onClick={() => {
-                void mandar().then(() => {
+                void mandar().then((bien) => {
                   setSalir(false);
+                  if (bien) irAlPlano();
                 });
               }}
             >
@@ -330,12 +362,15 @@ function Cabecera({
   nota,
   alVolver,
   alOpciones,
+  opcionesListas,
 }: {
   readonly titulo: string;
   readonly subtitulo: string;
   readonly nota: string | null;
   readonly alVolver: () => void;
   readonly alOpciones: () => void;
+  /** Las opciones necesitan el plano (las mesas libres, quién toma nota): hasta que llega, espera. */
+  readonly opcionesListas: boolean;
 }) {
   return (
     <div className="flex items-center gap-e3 border-b border-borde bg-superficie px-e3 py-e3">
@@ -356,7 +391,12 @@ function Cabecera({
           </span>
         )}
       </div>
-      <Boton tono="secundario" onClick={alOpciones}>
+      <Boton
+        tono="secundario"
+        cargando={!opcionesListas}
+        textoCargando="Opciones"
+        onClick={alOpciones}
+      >
         Opciones
       </Boton>
     </div>

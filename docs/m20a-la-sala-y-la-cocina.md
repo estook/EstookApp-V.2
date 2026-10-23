@@ -166,3 +166,28 @@ y en móvil.
 11. **Liberar la mesa** dice «ya han pagado en el TPV de siempre» hasta M20C. **Cobrar, imprimir,
     dividir, venta rápida, las alergias de la mesa, «pide la cuenta» y «lo que ha pasado»**
     llegan con lo suyo (M19a, M20C), no se enseñan apagados.
+
+### La auditoría de después (23-oct)
+
+Richi pidió revisarla entera antes de fusionar. Los dos rojos de GitHub no eran del código: la
+tanda 4 de pantallas se quedó 15 minutos bajando los navegadores, y «Construcción y
+presupuestos» junta las cuatro. Lo que sí salió, ya arreglado y probado:
+
+- **La nota de la mesa se borraba** al guardarla desde el plano: empezaba en blanco (lección
+  217). Y desde el plano no salía «Sacadlo todo». La mesa del plano trae ahora su nota, si va
+  por pases y quién la lleva.
+- **Una mesa que se cierra en otro aparato** (liberada, anulada o juntada) lo dice, enseña lo
+  que no se llegó a mandar y vuelve al plano, en vez de dejar pedir y fallar al mandar.
+- **«Marchar ya» pregunta** si lo de antes aún no ha salido entero: marchar no tiene vuelta
+  atrás. Cuando ya toca, lo hace el botón grande y «Marchar ya» no sale.
+- **Lo ya mandado**: un menú solo se quita; lo que ya salió abre en «Devolver», sin nota; la
+  nota de una bebida es «para la barra»; y quien no es jefe sabe antes de escribir que lo
+  quita un jefe.
+- **«Mandar ahora»** al salir con algo sin mandar lleva al plano; **liberar** avisa si hay
+  platos sin mandar; **pasar a otro camarero** elige por la persona, no por el nombre; el
+  aviso de arriba dice el pase que ha salido de verdad («todo el 1.º»).
+- **En el móvil**: «Menú» en vez de «Menú del día 16,50» en tres líneas, el buscador en su
+  línea, los platos a una columna y sin cortar el nombre.
+- **En Ajustes › Tu sala**, quitar una zona o una mesa pide un segundo toque.
+- **La escucha al segundo**, una sola para toda la sala: entrar y salir de una mesa no vuelve
+  a conectar. Y el nombre de arriba lleva de vuelta a Estook.

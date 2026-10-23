@@ -61,12 +61,14 @@ interface Plano {
         camarero: string | null;
         esMia: boolean;
         totalCentimos: number;
+        porPases: boolean;
+        notaParaCocina: string | null;
         loSiguiente: { que: string; pase?: number };
       } | null;
     }[];
   }[];
   sinMesa: { cuentaId: string; titulo: string }[];
-  tocaMarchar: { cuentaId: string; titulo: string; pase: number }[];
+  tocaMarchar: { cuentaId: string; titulo: string; pase: number; salioEl: number }[];
   camareros: { id: string; nombre: string }[];
 }
 
@@ -624,7 +626,7 @@ describe('la mesa 6, de principio a fin', () => {
     ).toBe(true);
 
     const plano = await elPlano(sara);
-    expect(plano.tocaMarchar).toEqual([{ cuentaId: seis, titulo: 'Mesa 6', pase: 2 }]);
+    expect(plano.tocaMarchar).toEqual([{ cuentaId: seis, titulo: 'Mesa 6', pase: 2, salioEl: 1 }]);
     expect(laMesaDelPlano(plano, '6').estado).toBe('toca_marchar');
     expect((await laMesa(seis)).loSiguiente).toEqual({ que: 'marchar', pase: 2 });
     // La cocina la tiene esperando: no puede marchar, pero sabe que viene.
@@ -1121,6 +1123,11 @@ describe('«todo junto», «marchar todo» y la barra', () => {
     const tarjeta = enCocina(await laCocina(), terraza);
     expect(tarjeta?.[0]).toBe('enMarcha');
     expect(tarjeta?.[1]).toMatchObject({ notaParaCocina: 'tienen prisa', porPases: false });
+    // El plano también lo sabe: sus opciones no empiezan con la nota en blanco.
+    expect(laMesaDelPlano(await elPlano(sara), 'T1').cuenta).toMatchObject({
+      notaParaCocina: 'tienen prisa',
+      porPases: false,
+    });
   });
 
   it('la barra se abre sin mesa, con un nombre; una mesa sin elegir mesa no', async () => {

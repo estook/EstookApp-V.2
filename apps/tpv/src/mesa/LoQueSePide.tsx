@@ -99,9 +99,16 @@ export function LoQueSePide({
               setPestana('menu');
             }}
           >
-            {menus.length === 1 ? 'Menú del día' : 'Menús'}
+            {/* En el móvil, «Menú» a secas, como en el dibujo: la pestaña no cabe en tres líneas. */}
+            {menus.length === 1 ? (
+              <>
+                Menú<span className="hidden sm:inline">&nbsp;del día</span>
+              </>
+            ) : (
+              'Menús'
+            )}
             {menus.length === 1 && menus[0] !== undefined && (
-              <span className="ml-e2 rounded-redondo bg-fondo px-e2 text-etiqueta text-texto-suave">
+              <span className="ml-e2 hidden rounded-redondo bg-fondo px-e2 text-etiqueta text-texto-suave sm:inline">
                 {euros(menus[0].precioCentimos)}
               </span>
             )}
@@ -149,7 +156,7 @@ export function LoQueSePide({
               onChange={(e) => {
                 setBuscando(e.target.value);
               }}
-              className="min-h-toque w-[9rem] rounded-redondo border border-borde bg-superficie px-e4"
+              className="min-h-toque w-full rounded-redondo border border-borde bg-superficie px-e4 sm:w-[9rem]"
             />
           </div>
           {pestana === 'carta' && mesa.porPases && (
@@ -175,6 +182,10 @@ export function LoQueSePide({
                 dibujo="platos"
                 sinAccionPorque="La carta se cambia en Estook, no en la sala."
               />
+            ) : encontradas.every((s) => s.platos.length === 0) ? (
+              <p className="py-e5 text-center text-texto-suave">
+                Nada se parece a «{buscando.trim()}».
+              </p>
             ) : (
               encontradas.map((s) => (
                 <div key={s.id ?? 'sin'} className="mb-e5">
@@ -184,7 +195,7 @@ export function LoQueSePide({
                   >
                     {s.nombre}
                   </h2>
-                  <div className="grid grid-cols-2 gap-e2 sm:grid-cols-3 xl:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-e2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {s.platos.map((p) => (
                       <Plato
                         key={p.id}
@@ -249,7 +260,7 @@ function Plato({
       onClick={alPedir}
       aria-label={`${plato.nombre}, ${euros(plato.precioCentimos)} €${plato.agotado ? ', agotado' : ''}`}
       className={[
-        'relative flex min-h-[5.5rem] items-stretch gap-e2 overflow-hidden rounded-grande border bg-superficie text-left transition-transform active:scale-[0.98]',
+        'relative flex min-h-[4rem] items-stretch sm:min-h-[5.5rem] gap-e2 overflow-hidden rounded-grande border bg-superficie text-left transition-transform active:scale-[0.98]',
         cuantos > 0 ? 'border-naranja' : 'border-borde',
         plato.agotado ? 'opacity-50' : '',
       ].join(' ')}
@@ -257,7 +268,7 @@ function Plato({
       {plato.miniatura === null ? (
         <span
           aria-hidden="true"
-          className="flex w-[4.5rem] shrink-0 items-center justify-center bg-app-carta/10 text-seccion font-bold text-app-carta"
+          className="flex w-[3.5rem] shrink-0 sm:w-[4.5rem] items-center justify-center bg-app-carta/10 text-seccion font-bold text-app-carta"
         >
           {plato.nombre.charAt(0).toUpperCase()}
         </span>
@@ -265,7 +276,7 @@ function Plato({
         <img
           src={plato.miniatura}
           alt=""
-          className="w-[4.5rem] shrink-0 object-cover"
+          className="w-[3.5rem] shrink-0 sm:w-[4.5rem] object-cover"
           loading="lazy"
         />
       )}

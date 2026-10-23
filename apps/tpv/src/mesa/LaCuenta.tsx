@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
+import { puedeEditar } from '@estook/permisos';
 import { Boton, CAJA, Envoltorio, ErrorEnCristiano, Hoja } from '@estook/ui';
 import { usarAcciones } from '../ganchos/usarLaSala.ts';
+import { usarSesion } from '../sesion/Sesion.tsx';
 import { cambiarLinea, quitarLinea, type Borrador } from '../logica/comanda.ts';
 import { elPase, type GrupoDeLaCuenta, type LineaALaVista } from '../logica/laCuenta.ts';
 import { euros } from '../logica/texto.ts';
@@ -20,6 +22,7 @@ export function LaCuenta({
   alCambiarElBorrador,
   porPases,
   pases,
+  tocaMarchar,
   alMarchar,
 }: {
   readonly grupos: readonly GrupoDeLaCuenta[];
@@ -32,8 +35,12 @@ export function LaCuenta({
    * acabando, y a veces se marcha antes de que salga todo lo de antes (0106).
    */
   readonly alMarchar: (pase: number) => void;
+  /** El pase que ya toca marchar (lo de antes ha salido entero), o nulo. */
+  readonly tocaMarchar: number | null;
 }) {
   const [tocada, setTocada] = useState<LineaALaVista | null>(null);
+  // Marchar no tiene vuelta atrás: si lo de antes aún no ha salido, se pregunta.
+  const [antesDeTiempo, setAntesDeTiempo] = useState<number | null>(null);
 
   if (grupos.length === 0) {
     return (
@@ -62,12 +69,15 @@ export function LaCuenta({
             >
               {g.titulo}
             </h2>
-            {g.como === 'en_espera' && (
+            {/* Si ya toca, lo dice el botón grande: aquí sobraría. */}
+            {g.como === 'en_espera' && g.clave !== `pase-${String(tocaMarchar)}` && (
               <Boton
                 tono="secundario"
                 tamano="s"
                 onClick={() => {
-                  alMarchar(Number(g.clave.replace('pase-', '')));
+                  const pase = Number(g.clave.replace('pase-', ''));
+                  if (pase === tocaMarchar) alMarchar(pase);
+                  else setAntesDeTiempo(pase);
                 }}
               >
                 Marchar ya
@@ -118,6 +128,42 @@ export function LaCuenta({
         </div>
       ))}
 
+      {antesDeTiempo !== null && (
+        <Hoja
+          abierta
+          titulo={`¿Marchar ya el ${elPase(antesDeTiempo)}?`}
+          alCerrar={() => {
+            setAntesDeTiempo(null);
+          }}
+        >
+          <div className="flex flex-col gap-e4 pb-e4">
+            <p>
+              Lo de antes aún no ha salido entero de cocina. Si la mesa ya va acabando, márchalo: la
+              cocina empieza con el {elPase(antesDeTiempo)} ahora.
+            </p>
+            <div className="flex flex-wrap justify-end gap-e2">
+              <Boton
+                tono="texto"
+                onClick={() => {
+                  setAntesDeTiempo(null);
+                }}
+              >
+                No, esperar
+              </Boton>
+              <Boton
+                tono="principal"
+                onClick={() => {
+                  alMarchar(antesDeTiempo);
+                  setAntesDeTiempo(null);
+                }}
+              >
+                Marchar el {elPase(antesDeTiempo)}
+              </Boton>
+            </div>
+          </div>
+        </Hoja>
+      )}
+
       {tocada !== null && (
         <ElPlato
           linea={tocada}
@@ -152,12 +198,19 @@ function ElPlato({
   readonly alCerrar: () => void;
 }) {
   const ejecutar = usarAcciones();
+  const { yo } = usarSesion();
+  const esJefe = puedeEditar(yo.permisos, 'accion.quitar_de_cocina');
   const enElBorrador = borrador.find((l) => l.id === linea.id);
   const [cantidad, setCantidad] = useState(linea.cantidad);
   const [nota, setNota] = useState(linea.nota ?? '');
   const [pase, setPase] = useState(linea.pase);
   const [motivo, setMotivo] = useState('');
-  const [modo, setModo] = useState<'cambiar' | 'quitar' | 'devolver'>('cambiar');
+  // Lo que ya salió no se cambia de nota (está en la mesa): se devuelve si hace falta.
+  const sinNota = linea.esMenu || linea.salio;
+  const [modo, setModo] = useState<'cambiar' | 'quitar' | 'devolver'>(
+    linea.esMenu ? 'quitar' : linea.salio ? 'devolver' : 'cambiar',
+  );
+  const paraQuien = linea.destino === 'barra' ? 'Nota para la barra' : 'Nota para cocina';
   const [haciendo, setHaciendo] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
   const esMenu = enElBorrador?.menuId != null;
@@ -222,7 +275,7 @@ function ElPlato({
         <div className="flex flex-col gap-e5 pt-e2">
           {!esMenu && !linea.delMenu && <Contador valor={cantidad} alCambiar={setCantidad} />}
           {!esMenu && (
-            <Envoltorio id="nota-del-plato" etiqueta="Nota para cocina">
+            <Envoltorio id="nota-del-plato" etiqueta={paraQuien}>
               <textarea
                 id="nota-del-plato"
                 rows={2}
@@ -250,14 +303,16 @@ function ElPlato({
     <Hoja abierta alCerrar={alCerrar} titulo={`${linea.cantidad} ${linea.nombre}`}>
       <div className="flex flex-col gap-e4 pt-e2 pb-e4">
         <div className="flex gap-e2" role="tablist" aria-label="Qué hacer con el plato">
-          <Pestana
-            puesta={modo === 'cambiar'}
-            onClick={() => {
-              setModo('cambiar');
-            }}
-          >
-            La nota
-          </Pestana>
+          {!sinNota && (
+            <Pestana
+              puesta={modo === 'cambiar'}
+              onClick={() => {
+                setModo('cambiar');
+              }}
+            >
+              La nota
+            </Pestana>
+          )}
           {linea.salio && (
             <Pestana
               puesta={modo === 'devolver'}
@@ -282,8 +337,10 @@ function ElPlato({
           <>
             <Envoltorio
               id="nota-en-cocina"
-              etiqueta="Nota para cocina"
-              {...(enCocina ? { ayuda: 'La cocina lo verá marcado como CAMBIO.' } : {})}
+              etiqueta={paraQuien}
+              {...(enCocina && linea.destino === 'cocina'
+                ? { ayuda: 'La cocina lo verá marcado como CAMBIO.' }
+                : {})}
             >
               <textarea
                 id="nota-en-cocina"
@@ -343,36 +400,48 @@ function ElPlato({
           </>
         )}
 
+        {modo === 'quitar' && enCocina && !esJefe && (
+          <p className="rounded-medio bg-fondo px-e3 py-e2">
+            Ya está mandado: lo quita un jefe de sala o quien lleva el local, con su motivo, desde
+            su Estook TPV. Díselo y la cocina lo verá ANULADO.
+          </p>
+        )}
         {modo === 'quitar' &&
           (enCocina ? (
-            <>
-              <Envoltorio
-                id="motivo-de-quitar"
-                etiqueta="¿Por qué se quita?"
-                ayuda="Ya está en cocina: lo quita un jefe de sala, y la cocina lo ve ANULADO."
-              >
-                <input
+            esJefe && (
+              <>
+                <Envoltorio
                   id="motivo-de-quitar"
-                  className={CAJA}
-                  maxLength={300}
-                  placeholder="No lo pidieron, se equivocó de mesa…"
-                  value={motivo}
-                  onChange={(e) => {
-                    setMotivo(e.target.value);
+                  etiqueta="¿Por qué se quita?"
+                  ayuda={
+                    linea.destino === 'cocina'
+                      ? 'Ya está en cocina: la cocina lo verá ANULADO.'
+                      : 'Ya está mandado: queda apuntado con su motivo.'
+                  }
+                >
+                  <input
+                    id="motivo-de-quitar"
+                    className={CAJA}
+                    maxLength={300}
+                    placeholder="No lo pidieron, se equivocó de mesa…"
+                    value={motivo}
+                    onChange={(e) => {
+                      setMotivo(e.target.value);
+                    }}
+                  />
+                </Envoltorio>
+                <Boton
+                  tono="peligro"
+                  disabled={motivo.trim().length < 3}
+                  cargando={haciendo}
+                  onClick={() => {
+                    void hacer('quitar_plato', { linea_id: linea.id, motivo: motivo.trim() });
                   }}
-                />
-              </Envoltorio>
-              <Boton
-                tono="peligro"
-                disabled={motivo.trim().length < 3}
-                cargando={haciendo}
-                onClick={() => {
-                  void hacer('quitar_plato', { linea_id: linea.id, motivo: motivo.trim() });
-                }}
-              >
-                Quitar de cocina
-              </Boton>
-            </>
+                >
+                  {linea.destino === 'cocina' ? 'Quitar de cocina' : 'Quitar'}
+                </Boton>
+              </>
+            )
           ) : (
             <Boton
               tono="peligro"

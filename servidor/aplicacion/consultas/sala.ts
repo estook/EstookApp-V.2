@@ -92,10 +92,14 @@ export interface CuentaEnElPlano {
   readonly tipo: string;
   readonly personas: number | null;
   readonly camarero: string | null;
+  readonly camareroId: string | null;
   readonly iniciales: string | null;
   readonly esMia: boolean;
   readonly minutos: number;
   readonly totalCentimos: number;
+  /** Para las opciones de la mesa desde el plano, sin tener que abrirla. */
+  readonly porPases: boolean;
+  readonly notaParaCocina: string | null;
   readonly loSiguiente: LoSiguiente;
 }
 
@@ -121,6 +125,8 @@ export interface SalidaElPlano {
     readonly cuentaId: string;
     readonly titulo: string;
     readonly pase: number;
+    /** El pase que ha salido entero: «ha salido todo el 1.º». */
+    readonly salioEl: number;
   }[];
   /** Quién toma nota en el local: a quién se le pueden pasar las mesas. */
   readonly camareros: readonly { readonly id: string; readonly nombre: string }[];
@@ -138,12 +144,25 @@ function enElPlano(
     tipo: cuenta.tipo,
     personas: cuenta.personas,
     camarero: cuenta.camarero,
+    camareroId: cuenta.camarero_id,
     iniciales: lasIniciales(cuenta.camarero),
     esMia: cuenta.camarero_id !== null && cuenta.camarero_id === contexto.personaId,
     minutos: minutosDesde(contexto, cuenta.abierta_en) ?? 0,
     totalCentimos: elTotal(platos),
+    porPases: cuenta.por_pases,
+    notaParaCocina: cuenta.nota_para_cocina,
     loSiguiente: loSiguienteDeLaMesa(platos.map(comoPlatoDeLaMesa), pases.map(comoPaseDeLaMesa)),
   };
+}
+
+/** El pase de cocina más alto antes de este, que es el que acaba de salir. */
+function elDeAntes(platos: readonly FilaDeLinea[], pase: number): number {
+  const antes = platos
+    .filter(
+      (l) => l.destino === 'cocina' && l.pase !== null && l.pase < pase && l.quitada_en === null,
+    )
+    .map((l) => l.pase as number);
+  return antes.length === 0 ? pase - 1 : Math.max(...antes);
 }
 
 function elEstado(cuenta: CuentaEnElPlano | null): EstadoDeLaMesa {
@@ -229,6 +248,7 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
                 cuentaId: c.cuenta.cuentaId,
                 titulo: c.cuenta.titulo,
                 pase: c.cuenta.loSiguiente.pase,
+                salioEl: elDeAntes(platos.get(c.fila.id) ?? [], c.cuenta.loSiguiente.pase),
               },
             ]
           : [],

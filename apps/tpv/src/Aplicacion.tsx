@@ -5,6 +5,7 @@ import { LaPuerta } from './sesion/LaPuerta.tsx';
 import { ElPlano } from './plano/ElPlano.tsx';
 import { LaMesa } from './mesa/LaMesa.tsx';
 import { escucharLaDireccion, laDireccion } from './navegar.ts';
+import { ContextoAlSegundo, usarEscucharAlSegundo } from './ganchos/usarLaSala.ts';
 
 /**
  * Estook TPV, la sala (M20A · 1 · 2, decisión 0106): **el plano** y **una mesa**. Una
@@ -14,8 +15,14 @@ import { escucharLaDireccion, laDireccion } from './navegar.ts';
 
 function LaSala() {
   const direccion = useSyncExternalStore(escucharLaDireccion, laDireccion);
+  // Una sola escucha para toda la sala: entrar y salir de una mesa no vuelve a conectar.
+  const conectado = usarEscucharAlSegundo();
   const mesa = /^mesa\/([0-9a-f-]{36})$/.exec(direccion)?.[1];
-  return mesa === undefined ? <ElPlano /> : <LaMesa key={mesa} cuentaId={mesa} />;
+  return (
+    <ContextoAlSegundo.Provider value={conectado}>
+      {mesa === undefined ? <ElPlano /> : <LaMesa key={mesa} cuentaId={mesa} />}
+    </ContextoAlSegundo.Provider>
+  );
 }
 
 export function Aplicacion() {

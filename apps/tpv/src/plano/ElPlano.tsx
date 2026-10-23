@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Aviso, Boton, Cargando, EstadoVacio, ErrorEnCristiano } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { EnlaceAEstook } from '../sesion/LaPuerta.tsx';
+import { DIRECCION_DE_ESTOOK } from '../datos/cliente.ts';
 import { FalloDeLaSala, usarAcciones, usarAlSegundo, usarElPlano } from '../ganchos/usarLaSala.ts';
 import type { CuentaEnElPlano, ElPlano as ElPlanoDeLaApi, MesaDelPlano } from '../datos/tipos.ts';
 import { elPase } from '../logica/laCuenta.ts';
@@ -123,12 +124,17 @@ export function ElPlano() {
           Mis mesas
         </button>
         <div className="flex-1" />
-        <span className="flex min-h-toque items-center gap-e2 rounded-redondo bg-fondo py-e1 pl-e1 pr-e4 font-semibold">
+        {/* Quien está dentro, y por dónde se vuelve a Estook (cambiar de local, salir). */}
+        <a
+          href={DIRECCION_DE_ESTOOK}
+          aria-label={`${yo.nombre}: volver a Estook`}
+          className="flex min-h-toque items-center gap-e2 rounded-redondo bg-fondo py-e1 pl-e1 pr-e4 font-semibold"
+        >
           <span className="flex size-8 items-center justify-center rounded-redondo bg-app-servicio text-etiqueta text-white">
             {iniciales(yo.nombre)}
           </span>
           {yo.nombre}
-        </span>
+        </a>
       </header>
 
       {datos.tocaMarchar.map((t) => (
@@ -137,7 +143,7 @@ export function ElPlano() {
           className="mx-e4 mt-e3 flex flex-wrap items-center gap-e3 rounded-grande bg-info-suave py-e2 pl-e4 pr-e2 md:mx-e5"
         >
           <span className="flex-1 font-bold text-info">
-            {t.titulo} · ha salido todo el {elPase(t.pase - 1)}
+            {t.titulo} · ha salido todo el {elPase(t.salioEl)}
           </span>
           <Boton
             tono="principal"

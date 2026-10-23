@@ -17,10 +17,13 @@ export interface CuentaEnElPlano {
   readonly tipo: string;
   readonly personas: number | null;
   readonly camarero: string | null;
+  readonly camareroId: string | null;
   readonly iniciales: string | null;
   readonly esMia: boolean;
   readonly minutos: number;
   readonly totalCentimos: number;
+  readonly porPases: boolean;
+  readonly notaParaCocina: string | null;
   readonly loSiguiente: LoSiguiente;
 }
 
@@ -46,6 +49,7 @@ export interface ElPlano {
     readonly cuentaId: string;
     readonly titulo: string;
     readonly pase: number;
+    readonly salioEl: number;
   }[];
   readonly camareros: readonly { readonly id: string; readonly nombre: string }[];
 }

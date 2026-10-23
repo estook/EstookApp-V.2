@@ -21,6 +21,9 @@ export interface LineaALaVista {
   readonly importeCentimos: number | null;
   readonly nota: string | null;
   readonly delMenu: boolean;
+  /** La línea del menú, la que se cobra: no se cocina, así que no lleva nota. */
+  readonly esMenu: boolean;
+  readonly destino: 'cocina' | 'barra' | 'ninguno';
   readonly salio: boolean;
   readonly quitada: string | null;
   readonly vuelve: string | null;
@@ -49,6 +52,8 @@ function deLaApi(p: PlatoDeLaCuenta): LineaALaVista {
       p.parteDe !== null && p.precioCentimos === 0 ? null : p.precioCentimos * p.cantidad,
     nota: p.nota,
     delMenu: p.parteDe !== null,
+    esMenu: p.menuId !== null && p.parteDe === null,
+    destino: p.destino,
     salio: p.estado === 'salio',
     quitada: p.estado === 'quitado' ? (p.motivoDeQuitar ?? '') : null,
     vuelve: p.vuelve,
@@ -67,6 +72,8 @@ function delBorrador(l: LineaNueva): LineaALaVista {
       l.parteDe !== null && l.precioCentimos === 0 ? null : l.precioCentimos * l.cantidad,
     nota: l.nota,
     delMenu: l.parteDe !== null,
+    esMenu: l.menuId !== null && l.parteDe === null,
+    destino: l.destino,
     salio: false,
     quitada: null,
     vuelve: null,

@@ -22,6 +22,7 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  *   · bloquear deja el turno sin valer, y lo pedido sin mandar sigue en la mesa
  *   · lo que Sara no puede quitar de cocina **lo aprueba Rosa con su PIN** ahí mismo
  *   · «solo entra quien ha fichado», fichar la salida pasando las mesas
+ *   · la tablet de la barra pasa a ser la caja 2 sin volver a vincularla
  *   · desvincular la tablet: su siguiente petición ya no vale
  */
 let base: BaseDePrueba;
@@ -507,6 +508,56 @@ describe('servicio', () => {
       await api.consultar(rosa.token, 'yo_en_el_tpv'),
     );
     expect(deRosa.misMesas.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('cambiar lo que es un aparato', () => {
+  it('la tablet de la barra pasa a ser la caja 2, con el cajón de la barra, sin volver a vincularla', async () => {
+    const rosa = await entrarEn(llaveDeLaCaja, ROSA);
+    const codigo = await codigoPara(rosa.token, {
+      funcion: 'comandero',
+      nombre: 'Tablet de la barra',
+    });
+    const vinculado = losDatos<{ llave: string; aparato: Aparato }>(
+      await api.ejecutar(null, 'vincular_con_codigo', { codigo }),
+    );
+    // Rosa, que sigue fichada: el local pide fichar para usar el TPV desde la prueba de antes.
+    const enLaTablet = await entrarEn(vinculado.llave, ROSA);
+
+    const { cajones } = losDatos<{ cajones: { id: string; nombre: string }[] }>(
+      await api.consultar(rosa.token, 'los_aparatos'),
+    );
+    const delaBarra = cajones.find((c) => c.nombre === 'Cajón de la barra')?.id;
+
+    // Un comandero nunca tiene cajón, tampoco al cambiarlo.
+    expect(
+      elFallo(
+        await api.ejecutar(rosa.token, 'cambiar_aparato', {
+          terminal_id: vinculado.aparato.terminalId,
+          funcion: 'comandero',
+          nombre: 'Tablet de la barra',
+          cajon_id: delaBarra,
+        }),
+      ),
+    ).toBe('faltan_datos');
+
+    expect(
+      losDatos(
+        await api.ejecutar(rosa.token, 'cambiar_aparato', {
+          terminal_id: vinculado.aparato.terminalId,
+          funcion: 'caja',
+          nombre: 'Caja 2',
+          cajon_id: delaBarra,
+        }),
+      ),
+    ).toEqual({ terminalId: vinculado.aparato.terminalId });
+
+    // La misma llave sigue valiendo, ya como caja y con el cajón compartido…
+    expect(
+      losDatos<Aparato>(await api.ejecutar(null, 'latir_el_aparato', { llave: vinculado.llave })),
+    ).toMatchObject({ nombre: 'Caja 2', funcion: 'caja', cajon: 'Cajón de la barra' });
+    // …y quien estaba dentro vuelve a teclear su PIN: el aparato ya es otra cosa.
+    expect(elFallo(await api.consultar(enLaTablet.token, 'yo_en_el_tpv'))).toBe('sin_sesion');
   });
 });
 

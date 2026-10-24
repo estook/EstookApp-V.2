@@ -1,6 +1,5 @@
 import { leerElTokenDelAparato, type FuncionDelAparato } from '@estook/dominio';
 import { huellaDeToken } from '../dominio/secretos.ts';
-import type { SesionViva } from './postgres.ts';
 
 /**
  * Quién llama, a partir del token que trae la petición (M4, y desde T1 también Estook
@@ -26,6 +25,36 @@ import type { SesionViva } from './postgres.ts';
  * un segundo tipo de token eran seis copias. Ahora es una: cada sitio le pasa su forma
  * de consultar, y esto hace el resto.
  */
+
+/** La sesión viva detrás de una petición. Nula en `entrar` y en lo publico. */
+export interface SesionViva {
+  readonly id: string;
+  readonly personaId: string;
+  readonly organizacionId: string | null;
+  readonly localId: string | null;
+  readonly dobleFactorSuperado: boolean;
+  readonly debeCambiarClave: boolean;
+  /** Una visita al restaurante de ejemplo (M5). Mira todo y no escribe nada. */
+  readonly esDemostracion: boolean;
+  /**
+   * Una sesión abierta desde el admin (0041). Solo vale para el admin, dura ocho
+   * horas como mucho, y el admin no acepta ninguna otra.
+   */
+  readonly paraAdmin: boolean;
+  /**
+   * **Estook TPV** (0107): el aparato vinculado desde el que opera quien tecleó su PIN.
+   * Nulo, o sin poner, en la app y en el admin. Lo resuelve `quien-llama.ts`.
+   */
+  readonly aparato?: AparatoDeLaSesion | null;
+}
+
+/** El aparato de una petición de Estook TPV, con su función (Anexo 11.3). */
+export interface AparatoDeLaSesion {
+  readonly terminalId: string;
+  readonly funcion: FuncionDelAparato;
+  /** El móvil de un camarero, en el que solo entra él. */
+  readonly esPersonal: boolean;
+}
 
 /** Consulta con parámetros numerados: `postgres.unsafe` o `PGlite.query`. */
 export type ConsultarFilas = (

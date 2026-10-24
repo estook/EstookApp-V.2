@@ -13,6 +13,8 @@ import { consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
  *   · Ajustes del TPV › Aparatos › Añadir: un comandero para todos, y su código
  *   · **la tablet**, otro aparato: escribe el código y llega con su función y su nombre
  *   · PIN y bloqueo: «Solo entra quien ha fichado», guardado
+ *   · **cambiar lo que es** sin volver a vincular: la tablet pasa a ser la caja 2, con el
+ *     cajón de la caja 1
  *   · desde la caja, **desvincular** la tablet: en su siguiente toque, «ya no está
  *     vinculado»
  *   · y **Bloquear** devuelve la caja al PIN
@@ -123,15 +125,30 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await page.getByLabel(/^Solo entra quien ha fichado/).check();
   await expect(page.getByRole('status')).toContainText('Guardado');
 
-  // ── Desvincular la tablet, desde la caja ──
+  // ── Cambiar lo que es, sin volver a vincular: la tablet pasa a ser la caja 2 ──
   await page.getByRole('button', { name: 'Aparatos' }).click();
   await page.getByRole('button', { name: /Tablet terraza/ }).click();
+  await expect(page.getByRole('radio', { name: /^Comandero/ })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  // Sin cambiar nada, no hay nada que guardar.
+  await expect(page.getByRole('button', { name: 'Guardar' })).toBeDisabled();
+  await page.getByRole('radio', { name: /^Caja/ }).click();
+  await page.getByRole('radio', { name: 'Compartir Cajón 1' }).click();
+  await expect(page.getByLabel('Cómo se llama')).toHaveValue('Caja 2');
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.getByRole('status')).toContainText('Guardado');
+  await expect(page.getByRole('heading', { name: 'Caja 2' })).toBeVisible();
+  await expect(page.getByText(/^Caja · Cajón 1/)).toBeVisible();
+
+  // ── Desvincularla, desde la caja 1 ──
   await page.getByRole('button', { name: 'Desvincular', exact: true }).click();
   await page.getByRole('button', { name: 'Sí, desvincular' }).click();
   await expect(page.getByRole('button', { name: 'Añadir aparato' })).toBeVisible({
     timeout: 15_000,
   });
-  await expect(page.getByRole('button', { name: /Tablet terraza/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Caja 2/ })).toHaveCount(0);
 
   // En su siguiente toque, la tablet lo dice y deja vincularla otra vez.
   await recargarSinQueSeCaiga(tablet);

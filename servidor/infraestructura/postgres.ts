@@ -1,7 +1,6 @@
 import postgres from 'postgres';
 import { variable } from '@estook/utiles';
-import type { FuncionDelAparato } from '@estook/dominio';
-import { resolverLaSesion } from './quien-llama.ts';
+import { resolverLaSesion, type SesionViva } from './quien-llama.ts';
 
 /**
  * La unica puerta a Postgres (M2, ampliada en M4).
@@ -45,35 +44,9 @@ import { resolverLaSesion } from './quien-llama.ts';
 
 export type Sql = postgres.TransactionSql;
 
-/** La sesion viva detras de una peticion. Nula en `entrar` y en lo publico. */
-export interface SesionViva {
-  readonly id: string;
-  readonly personaId: string;
-  readonly organizacionId: string | null;
-  readonly localId: string | null;
-  readonly dobleFactorSuperado: boolean;
-  readonly debeCambiarClave: boolean;
-  /** Una visita al restaurante de ejemplo (M5). Mira todo y no escribe nada. */
-  readonly esDemostracion: boolean;
-  /**
-   * Una sesión abierta desde el admin (0041). Solo vale para el admin, dura ocho
-   * horas como mucho, y el admin no acepta ninguna otra.
-   */
-  readonly paraAdmin: boolean;
-  /**
-   * **Estook TPV** (0107): el aparato vinculado desde el que opera quien tecleó su PIN.
-   * Nulo, o sin poner, en la app y en el admin. Lo resuelve `quien-llama.ts`.
-   */
-  readonly aparato?: AparatoDeLaSesion | null;
-}
-
-/** El aparato de una petición de Estook TPV, con su función (Anexo 11.3). */
-export interface AparatoDeLaSesion {
-  readonly terminalId: string;
-  readonly funcion: FuncionDelAparato;
-  /** El móvil de un camarero, en el que solo entra él. */
-  readonly esPersonal: boolean;
-}
+// La sesión viva vive con quien la resuelve (`quien-llama.ts`): si viviera aquí, los dos
+// ficheros se importarían el uno al otro.
+export type { AparatoDeLaSesion, SesionViva } from './quien-llama.ts';
 
 export interface QuienPregunta {
   /**

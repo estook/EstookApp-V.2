@@ -14,8 +14,17 @@ import type { QueSera } from '../datos/tipos.ts';
  * El nombre se propone solo.
  *
  * La usan el primer aparato (con el correo) y «Añadir aparato» en Ajustes del TPV, que
- * es lo mismo dicho antes de sacar el código.
+ * es lo mismo dicho antes de sacar el código; y la ficha de cada aparato, para cambiar lo
+ * que es sin volver a vincularlo (Anexo 11.3), con lo que ya es marcado (`yaEs`).
  */
+
+/** Lo que ya es un aparato, para cambiarlo. */
+export interface LoQueYaEs {
+  readonly funcion: FuncionDelAparato;
+  readonly nombre: string;
+  readonly personaId: string | null;
+  readonly cajonId: string | null;
+}
 
 const QUE_HACE: Record<(typeof FUNCIONES_QUE_SE_ELIGEN)[number], string> = {
   caja: 'El mostrador. Mesas, barra, para llevar y cobrar. Tiene el cajón del dinero.',
@@ -32,6 +41,8 @@ export function ElegirQueSera({
   textoDelBoton,
   ocupado,
   alElegir,
+  yaEs,
+  funciones = FUNCIONES_QUE_SE_ELIGEN,
 }: {
   readonly cajones: readonly { readonly id: string; readonly nombre: string }[];
   readonly personas: readonly { readonly id: string; readonly nombre: string }[];
@@ -40,21 +51,31 @@ export function ElegirQueSera({
   readonly textoDelBoton: string;
   readonly ocupado: boolean;
   readonly alElegir: (que: QueSera) => void;
+  /** Al cambiar un aparato: lo que ya es, marcado de entrada. */
+  readonly yaEs?: LoQueYaEs;
+  readonly funciones?: readonly (typeof FUNCIONES_QUE_SE_ELIGEN)[number][];
 }) {
-  const [funcion, setFuncion] = useState<FuncionDelAparato>('caja');
-  const [deQuien, setDeQuien] = useState<string | null>(null);
+  const [funcion, setFuncion] = useState<FuncionDelAparato>(yaEs?.funcion ?? 'caja');
+  const [deQuien, setDeQuien] = useState<string | null>(yaEs?.personaId ?? null);
   // Una caja por cajón (0107): lo de fábrica es uno nuevo; compartir se elige.
-  const [cajon, setCajon] = useState<string | null>(null);
-  const [nombreEscrito, setNombreEscrito] = useState<string | null>(null);
+  const [cajon, setCajon] = useState<string | null>(yaEs?.cajonId ?? null);
+  const [nombreEscrito, setNombreEscrito] = useState<string | null>(yaEs?.nombre ?? null);
 
   const dueno = personas.find((p) => p.id === deQuien);
   const propuesto = nombrePropuesto(funcion, losQueHay, dueno?.nombre);
   const nombre = nombreEscrito ?? propuesto;
   const cajonNuevo = `Cajón ${String(cajones.length + 1)}`;
   const listo = nombre.trim() !== '' && (funcion !== 'comandero' || deQuien !== 'elegir');
+  // Al cambiar un aparato, el botón no hace nada hasta que algo cambia.
+  const cambiaAlgo =
+    yaEs === undefined ||
+    funcion !== yaEs.funcion ||
+    nombre.trim() !== yaEs.nombre ||
+    (funcion === 'comandero' && deQuien !== yaEs.personaId) ||
+    (funcion === 'caja' && cajon !== yaEs.cajonId);
 
   function elegir() {
-    if (!listo) return;
+    if (!listo || !cambiaAlgo) return;
     alElegir({
       funcion,
       nombre: nombre.trim(),
@@ -69,17 +90,25 @@ export function ElegirQueSera({
 
   return (
     <div className="flex flex-col gap-e5">
-      <div role="radiogroup" aria-label="Qué es" className="grid gap-e3 sm:grid-cols-3">
-        {FUNCIONES_QUE_SE_ELIGEN.map((f) => (
+      <div
+        role="radiogroup"
+        aria-label="Qué es"
+        className={`grid gap-e3 ${funciones.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}
+      >
+        {funciones.map((f) => (
           <button
             key={f}
             type="button"
             role="radio"
             aria-checked={funcion === f}
             onClick={() => {
+              if (f === funcion) return;
               setFuncion(f);
-              setNombreEscrito(null);
-              if (f !== 'comandero') setDeQuien(null);
+              // Volver a lo que ya era lo deja como estaba; otra cosa propone su nombre.
+              const vuelve = yaEs?.funcion === f;
+              setNombreEscrito(vuelve ? yaEs.nombre : null);
+              setDeQuien(vuelve ? yaEs.personaId : null);
+              setCajon(vuelve ? yaEs.cajonId : null);
             }}
             className={[
               'flex flex-col gap-e2 rounded-mayor p-e4 text-left',
@@ -156,7 +185,7 @@ export function ElegirQueSera({
                   setCajon(c.id);
                 }}
               >
-                {cajones.length > 0 ? `Compartir ${c.nombre}` : c.nombre}
+                {c.id === yaEs?.cajonId ? c.nombre : `Compartir ${c.nombre}`}
               </Pastilla>
             ))}
             <Pastilla
@@ -185,7 +214,7 @@ export function ElegirQueSera({
         </label>
         <button
           type="button"
-          disabled={!listo || ocupado}
+          disabled={!listo || !cambiaAlgo || ocupado}
           onClick={elegir}
           className="min-h-toque-cocina rounded-grande bg-naranja px-e6 text-seccion font-bold text-sobre-naranja disabled:opacity-60"
         >

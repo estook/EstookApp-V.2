@@ -879,10 +879,10 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
   const enUnAparato = (
     funcion: 'caja' | 'comandero' | 'cocina' | 'barra' | 'fichar',
     esPersonal = false,
-  ): Contexto['sesion'] =>
-    SESION_NORMAL === null
-      ? null
-      : { ...SESION_NORMAL, aparato: { terminalId: 'un-aparato', funcion, esPersonal } };
+  ): Contexto['sesion'] => ({
+    ...SESION_NORMAL,
+    aparato: { terminalId: 'un-aparato', funcion, esPersonal },
+  });
 
   it('un aparato vinculado no es una puerta a la gestión: lo que no lo declara no pasa', () => {
     expect(porQueNoPasaElAparato({}, enUnAparato('caja'))).toBe('sin_permiso');

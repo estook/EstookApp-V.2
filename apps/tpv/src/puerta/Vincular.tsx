@@ -171,12 +171,17 @@ function ConCodigo({ alVincular }: { readonly alVincular: (v: AparatoVinculado) 
   return (
     <div className="flex w-full max-w-[24rem] flex-col items-center gap-e5">
       <span className="text-seccion font-semibold text-texto-suave">El código de vinculación</span>
-      <div className="flex gap-e2" role="img" aria-label={`${String(codigo.length)} de 6 cifras`}>
+      {/* En el móvil más pequeño (320 px) las seis casillas encogen en vez de desbordar. */}
+      <div
+        className="flex w-full justify-center gap-e2"
+        role="img"
+        aria-label={`${String(codigo.length)} de 6 cifras`}
+      >
         {Array.from({ length: CODIGO_PARA_VINCULAR.cifras }, (_, i) => (
           <span
             key={i}
             className={[
-              'flex h-16 w-12 items-center justify-center rounded-grande bg-superficie text-cifra-media font-bold',
+              'flex h-16 w-12 min-w-0 items-center justify-center rounded-grande bg-superficie text-cifra-media font-bold',
               i < codigo.length
                 ? 'border-2 border-naranja'
                 : 'border-2 border-borde text-texto-tenue',

@@ -31,12 +31,13 @@ const APLICACIONES = [
   // Desde la 0041 el admin también empieza por su puerta: el catálogo que se veía
   // aquí sin entrar está detrás.
   { nombre: 'admin', url: 'http://localhost:5176/', titulo: /Estook/, puerta: 'Entra en el admin' },
-  // Estook TPV (M20A · 1 · 2) entra con la sesión de Estook: sin ella, lo dice y lleva allí.
+  // Estook TPV, desde T1 (0107), no entra con la sesión de Estook: un aparato sin vincular
+  // empieza por vincularse a su local.
   {
     nombre: 'tpv',
     url: 'http://localhost:5178/',
     titulo: /Estook TPV/,
-    puerta: 'Entra en Estook primero',
+    puerta: 'Vincula este aparato a tu local',
   },
 ];
 
@@ -90,8 +91,8 @@ for (const aplicacion of APLICACIONES) {
 /**
  * Las que no eligen tema se quedan claras, **aunque el sistema sea oscuro**.
  *
- * De las cinco aplicaciones, solo `app` y `tpv` tienen modo oscuro: la web pública y la
- * carta no llaman a `usarTema`, así que su `<html>` no lleva `data-tema`. Si el
+ * De las cinco aplicaciones, solo `app` tiene modo oscuro, y `tpv` es siempre oscura (T1):
+ * la web pública y la carta no llaman a `usarTema`, así que su `<html>` no lleva `data-tema`. Si el
  * gancho que decide el logotipo respondiera «lo que diga el sistema» por defecto,
  * con el móvil en oscuro esas dos pintarían **el logotipo claro sobre una página
  * clara**: invisible. Es el mismo fallo del logotipo, al revés.
@@ -99,7 +100,7 @@ for (const aplicacion of APLICACIONES) {
 test.describe('con el sistema en oscuro', () => {
   test.use({ colorScheme: 'dark' });
 
-  // La app y Estook TPV siguen el tema del aparato (el mismo, que es el mismo sitio).
+  // La app sigue el tema del aparato, y Estook TPV es siempre oscuro (T1, 0107).
   for (const { nombre, url } of APLICACIONES.filter(
     (a) => a.nombre !== 'app' && a.nombre !== 'tpv',
   )) {

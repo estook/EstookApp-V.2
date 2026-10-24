@@ -50,4 +50,4 @@ Es **solo documentos**: no hay migración ni API que desplegar.
 
 Cuando fusiones, empiezo **T1**: vincular aparatos con un código y su función (caja, comandero,
 pantalla de cocina, pantalla de barra o fichar), entrar con el PIN, el bloqueo, el inicio y el
-tema oscuro, y quitar «Abrir la sala» de Estook. Sus pasos de prueba estarán aquí cuando esté hecha.
+tema oscuro, y quitar «Abrir la sala» de Estook. **Hecha el 24-oct: sus pasos, en [`pasos-de-t1.md`](pasos-de-t1.md).**

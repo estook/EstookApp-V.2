@@ -9,6 +9,7 @@ import { irA } from '../navegar.ts';
 import { ElegirQueSera } from '../puerta/ElegirQueSera.tsx';
 import type {
   CodigoParaVincular,
+  QueSera,
   LosAparatos as LosAparatosDeLaApi,
   UnAparato,
 } from '../datos/tipos.ts';
@@ -16,8 +17,9 @@ import type {
 /**
  * **Ajustes del TPV › Aparatos** (maquetas 11, 16 y 20; Anexo 11.3): los vinculados, con
  * «En línea» o «Visto hace 2 días»; **Añadir aparato**, que pide primero qué será y de
- * quién, y saca el código de 6 cifras con su QR; y en cada uno, su nombre y
- * **Desvincular**, que lo deja sin valer en su petición siguiente.
+ * quién, y saca el código de 6 cifras con su QR; y en cada uno, **qué es y cómo se
+ * llama**, que se cambia sin volver a vincularlo, y **Desvincular**, que lo deja sin valer
+ * en su petición siguiente.
  */
 export function LosAparatos({ resto }: { readonly resto: string }) {
   const { cliente } = usarSesion();
@@ -40,7 +42,9 @@ export function LosAparatos({ resto }: { readonly resto: string }) {
   const datos = aparatos.data;
   if (resto === 'anadir') return <AnadirAparato datos={datos} />;
   const uno = datos.aparatos.find((a) => a.id === resto);
-  if (uno !== undefined) return <ElAparato aparato={uno} esEste={uno.id === datos.este} />;
+  if (uno !== undefined) {
+    return <ElAparato aparato={uno} esEste={uno.id === datos.este} datos={datos} />;
+  }
 
   return (
     <div className="flex max-w-[48rem] flex-col gap-e4">
@@ -258,9 +262,25 @@ function ElCodigo({
   );
 }
 
-// ── Uno: su nombre, y desvincular ────────────────────────────────────────────
+// ── Uno: qué es, cómo se llama, y desvincular ────────────────────────────────
 
-function ElAparato({ aparato, esEste }: { readonly aparato: UnAparato; readonly esEste: boolean }) {
+/**
+ * **Entre caja y comandero se cambia aquí** (Anexo 11.3), sin volver a vincular: la caja
+ * de la barra que pasa a ser la tablet de la terraza. **El aparato para fichar** vive en
+ * la pantalla de fichar de Estook, con su llave, y no en Estook TPV: para que sea otra
+ * cosa se desvincula y se vincula otra vez; aquí solo se le cambia el nombre.
+ */
+const SE_CAMBIA_ENTRE = ['caja', 'comandero'] as const;
+
+function ElAparato({
+  aparato,
+  esEste,
+  datos,
+}: {
+  readonly aparato: UnAparato;
+  readonly esEste: boolean;
+  readonly datos: LosAparatosDeLaApi;
+}) {
   const { cliente, bloquear } = usarSesion();
   const cache = useQueryClient();
   const [nombre, setNombre] = useState(aparato.nombre);
@@ -268,16 +288,14 @@ function ElAparato({ aparato, esEste }: { readonly aparato: UnAparato; readonly 
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [guardado, setGuardado] = useState(false);
+  const seCambiaLoQueEs = aparato.funcion === 'caja' || aparato.funcion === 'comandero';
 
-  async function renombrar() {
+  async function guardar(que: QueSera) {
     setOcupado(true);
     setError(null);
     const respuesta = await cliente.ejecutar('cambiar_aparato', {
       terminal_id: aparato.id,
-      funcion: aparato.funcion,
-      nombre: nombre.trim(),
-      ...(aparato.dueno === null ? {} : { persona_id: aparato.dueno.id }),
-      ...(aparato.cajon === null ? {} : { cajon_id: aparato.cajon.id }),
+      ...que,
     });
     setOcupado(false);
     if (!respuesta.ok) {
@@ -286,6 +304,17 @@ function ElAparato({ aparato, esEste }: { readonly aparato: UnAparato; readonly 
     }
     setGuardado(true);
     await cache.invalidateQueries({ queryKey: ['los_aparatos'] });
+    // Si este aparato pasa a ser otra cosa, se bloquea y vuelve con lo que es ahora.
+    if (esEste && que.funcion !== aparato.funcion) bloquear();
+  }
+
+  function renombrar() {
+    void guardar({
+      funcion: aparato.funcion,
+      nombre: nombre.trim(),
+      ...(aparato.dueno === null ? {} : { persona_id: aparato.dueno.id }),
+      ...(aparato.cajon === null ? {} : { cajon_id: aparato.cajon.id }),
+    });
   }
 
   async function desvincular() {
@@ -328,28 +357,56 @@ function ElAparato({ aparato, esEste }: { readonly aparato: UnAparato; readonly 
         </span>
       </div>
       {error !== null && <ErrorEnCristiano error={error} />}
-      <label className="flex flex-col gap-e2">
-        <span className="text-secundario font-semibold text-texto-tenue">Cómo se llama</span>
-        <span className="flex flex-wrap gap-e3">
-          <input
-            value={nombre}
-            maxLength={60}
-            onChange={(e) => {
-              setNombre(e.target.value);
-              setGuardado(false);
-            }}
-            className="min-h-toque-cocina min-w-[16rem] flex-1 rounded-grande border-2 border-borde bg-superficie px-e4 text-seccion font-semibold"
-          />
-          <button
-            type="button"
-            disabled={ocupado || nombre.trim() === '' || nombre.trim() === aparato.nombre}
-            onClick={() => void renombrar()}
-            className="min-h-toque-cocina rounded-grande bg-charcoal px-e5 font-bold disabled:opacity-60"
-          >
-            {guardado ? 'Guardado' : 'Guardar'}
-          </button>
-        </span>
-      </label>
+      {guardado && seCambiaLoQueEs && (
+        <p role="status" className="text-cuerpo font-semibold text-bien">
+          Guardado
+        </p>
+      )}
+      {seCambiaLoQueEs ? (
+        <ElegirQueSera
+          // Con lo guardado, vuelve a empezar desde lo que es ahora.
+          key={`${aparato.funcion}·${aparato.nombre}·${aparato.dueno?.id ?? ''}·${aparato.cajon?.id ?? ''}`}
+          cajones={datos.cajones}
+          personas={datos.personas}
+          losQueHay={datos.aparatos.filter((a) => a.id !== aparato.id).map((a) => a.nombre)}
+          funciones={SE_CAMBIA_ENTRE}
+          yaEs={{
+            funcion: aparato.funcion,
+            nombre: aparato.nombre,
+            personaId: aparato.dueno?.id ?? null,
+            cajonId: aparato.cajon?.id ?? null,
+          }}
+          textoDelBoton="Guardar"
+          ocupado={ocupado}
+          alElegir={(que) => {
+            setGuardado(false);
+            void guardar(que);
+          }}
+        />
+      ) : (
+        <label className="flex flex-col gap-e2">
+          <span className="text-secundario font-semibold text-texto-tenue">Cómo se llama</span>
+          <span className="flex flex-wrap gap-e3">
+            <input
+              value={nombre}
+              maxLength={60}
+              onChange={(e) => {
+                setNombre(e.target.value);
+                setGuardado(false);
+              }}
+              className="min-h-toque-cocina min-w-[16rem] flex-1 rounded-grande border-2 border-borde bg-superficie px-e4 text-seccion font-semibold"
+            />
+            <button
+              type="button"
+              disabled={ocupado || nombre.trim() === '' || nombre.trim() === aparato.nombre}
+              onClick={renombrar}
+              className="min-h-toque-cocina rounded-grande bg-charcoal px-e5 font-bold disabled:opacity-60"
+            >
+              {guardado ? 'Guardado' : 'Guardar'}
+            </button>
+          </span>
+        </label>
+      )}
 
       <section className="flex flex-col gap-e3 rounded-mayor border-2 border-mal bg-mal-suave p-e5">
         <span className="text-seccion font-bold">¿Desvincular {aparato.nombre}?</span>

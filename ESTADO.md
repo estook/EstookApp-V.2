@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 25 de octubre de 2026 · **T1 · La puerta de Estook TPV en producción** (#133, [0108](docs/decisiones/0108-t1-la-puerta.md); 0083 migrada, API 109/261). **El PIN y la contraseña, fusionado** (#134, [0109](docs/decisiones/0109-el-pin-y-la-contrasena.md)), **pero la 0084 sin migrar y la API sin desplegar** (leído el 25-oct con `bd:comprobar` y `bd:comprobar-api`). **T2 · La sala, en su pull request** ([0110](docs/decisiones/0110-t2-la-sala.md), migración 0085): el plano dibujado en el TPV a ojo y los pases en pestañas
+Última actualización: 25 de octubre de 2026 · **T1 · La puerta de Estook TPV en producción** (#133, [0108](docs/decisiones/0108-t1-la-puerta.md); 0083 migrada, API 109/261). **El PIN y la contraseña, fusionado** (#134, [0109](docs/decisiones/0109-el-pin-y-la-contrasena.md)), **pero la 0084 sin migrar y la API sin desplegar** (leído el 25-oct con `bd:comprobar` y `bd:comprobar-api`). **T2 · La sala, en su pull request (#135)** ([0110](docs/decisiones/0110-t2-la-sala.md), migración 0085): el plano dibujado en el TPV a ojo y los pases en pestañas
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** El #134 está en `main`, pero **falta migrar la 0084 y desplegar la API** ([sus pasos](docs/pasos-del-pin-y-la-contrasena.md)): hasta entonces, «¿La has olvidado?» y «¿Has olvidado tu PIN?» no funcionan en producción. **«T2 · La sala»**, en su pull request, detrás ([sus pasos](docs/pasos-de-t2.md)). Lo siguiente, **T3 · Los productos**: sus maquetas (Botonera, Productos) están en este ordenador, en la carpeta de borrador de la otra cuenta (`…/d220b965…/scratchpad/tpv3/project`).
+- **Nada a medias.** El #134 está en `main`, pero **falta migrar la 0084 y desplegar la API** ([sus pasos](docs/pasos-del-pin-y-la-contrasena.md)): hasta entonces, «¿La has olvidado?» y «¿Has olvidado tu PIN?» no funcionan en producción. **«T2 · La sala» (#135)**, en su pull request, detrás ([sus pasos](docs/pasos-de-t2.md)). Lo siguiente, **T3 · Los productos**: sus maquetas (Botonera, Productos) están en este ordenador, en la carpeta de borrador de la otra cuenta (`…/d220b965…/scratchpad/tpv3/project`).
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).

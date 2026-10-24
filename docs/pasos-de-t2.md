@@ -7,7 +7,7 @@
 >
 > | Qué              | Cómo está                                                                              |
 > | ---------------- | -------------------------------------------------------------------------------------- |
-> | Pull requests    | **«T2 · La sala»**, abierta (rama `t2-la-sala`)                                        |
+> | Pull requests    | **«T2 · La sala» (#135)**, abierta (rama `t2-la-sala`)                                 |
 > | La base de datos | **83** en producción; faltan **la 0084** (del #134) y **la 0085** (de esta)            |
 > | La API           | La de T1 (109 y 261); con el #134, 109 y 265; con T2, **109 consultas y 271 comandos** |
 
@@ -31,7 +31,7 @@ al construirlo»).
 **Primero, lo que falta del #134**: `git checkout main`, `git pull`, `.\estook.cmd bd:migrar` (la 0084) y desplegar la API ([sus pasos](pasos-del-pin-y-la-contrasena.md), del 2 al 4). Si no lo has
 hecho cuando fusiones esta, no pasa nada: el `bd:migrar` de abajo aplica **las dos**, la 0084 y la 0085. Después, esta, **en este orden y seguido**:
 
-1. **En GitHub**: abre el pull request **«T2 · La sala»** y, con las **tres comprobaciones en
+1. **En GitHub**: abre el pull request **«T2 · La sala» (#135)** y, con las **tres comprobaciones en
    verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
 

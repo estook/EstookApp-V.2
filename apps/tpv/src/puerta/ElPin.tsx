@@ -6,6 +6,7 @@ import { crearClienteDelTpv } from '../datos/cliente.ts';
 import type { DentroDelTpv, ElAparatoPorDentro } from '../datos/tipos.ts';
 import { Puntos, Teclado } from './Teclado.tsx';
 import { cifraDeLaTecla } from './teclas.ts';
+import { OlvideMiPin } from './OlvideMiPin.tsx';
 
 /**
  * **Teclea tu PIN, y ya está** (maquetas 3 y 22; Anexo 11.4): sin buscar antes la cara.
@@ -14,6 +15,9 @@ import { cifraDeLaTecla } from './teclas.ts';
  *
  * Después del PIN, a quien no ha fichado se le ofrece la entrada en un toque (maqueta
  * 19). Si el local pide fichar para usar el TPV, «Entrar sin fichar» no sale.
+ *
+ * **¿Has olvidado tu PIN?** (0109) manda un enlace al correo para sacar uno nuevo, sin
+ * esperar al gerente.
  */
 export function ElPin({
   llave,
@@ -37,6 +41,7 @@ export function ElPin({
     readonly nombre: string;
     readonly dentro: DentroDelTpv | null;
   } | null>(null);
+  const [olvidado, setOlvidado] = useState(false);
   // El reloj de la pantalla **solo se pinta**: la hora de lo que se hace la pone el servidor.
   const [reloj, setReloj] = useState(() => Date.now());
 
@@ -108,7 +113,8 @@ export function ElPin({
   }, []);
 
   useEffect(() => {
-    if (sinFichar !== null) return undefined;
+    // Escribiendo el correo, las cifras van al campo y no al PIN.
+    if (sinFichar !== null || olvidado) return undefined;
     const alPulsar = (evento: KeyboardEvent) => {
       const tecla = cifraDeLaTecla(evento);
       if (tecla === 'borrar') borrar();
@@ -118,7 +124,19 @@ export function ElPin({
     return () => {
       window.removeEventListener('keydown', alPulsar);
     };
-  }, [teclear, borrar, sinFichar]);
+  }, [teclear, borrar, sinFichar, olvidado]);
+
+  if (olvidado) {
+    return (
+      <OlvideMiPin
+        llave={llave}
+        alVolver={() => {
+          setOlvidado(false);
+          setError(null);
+        }}
+      />
+    );
+  }
 
   if (sinFichar !== null) {
     return (
@@ -254,6 +272,16 @@ export function ElPin({
         {error !== null && <ErrorEnCristiano error={error} />}
         <div className="flex-1" />
         <Teclado alTeclear={teclear} alBorrar={borrar} ocupado={ocupado} />
+        <button
+          type="button"
+          onClick={() => {
+            setOlvidado(true);
+            setPin('');
+          }}
+          className="min-h-toque text-secundario font-semibold text-texto-tenue"
+        >
+          ¿Has olvidado tu PIN?
+        </button>
       </section>
     </main>
   );

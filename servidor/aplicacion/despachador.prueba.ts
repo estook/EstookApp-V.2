@@ -448,6 +448,13 @@ describe('las puertas se cierran solas', () => {
         'vincular_con_codigo',
         'latir_el_aparato',
         'entrar_con_pin',
+        // 0109 · recuperar el acceso, que se pide precisamente sin haber entrado: el
+        // enlace al correo (diez por hora desde una dirección, y no dice si un correo
+        // existe) y lo que se hace con él, que vale por su token, de un uso.
+        'pedir_enlace_de_contrasena',
+        'poner_contrasena_con_enlace',
+        'pedir_pin_por_correo',
+        'pin_con_enlace',
       ].sort(),
     );
   });
@@ -735,6 +742,8 @@ describe('los secretos no se guardan para repetirlos', () => {
         'entrar_con_pin',
         // C1 (0073) · el tema secreto por el que llega el toque al segundo del chat.
         'abrir_el_chat',
+        // 0109 · el PIN nuevo que da el enlace del correo, una sola vez.
+        'pin_con_enlace',
       ].sort(),
     );
   });

@@ -116,6 +116,8 @@ export function PantallaDelAparato() {
   const [reloj, setReloj] = useState(() => Date.now());
   const tiempo = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [saliendo, setSaliendo] = useState(false);
+  /** «¿Has olvidado tu PIN?» (0109): un enlace al correo, sin esperar al gerente. */
+  const [olvidado, setOlvidado] = useState(false);
 
   useEffect(() => {
     const cada = setInterval(() => {
@@ -452,6 +454,15 @@ export function PantallaDelAparato() {
                 ‹
               </Tecla>
             </div>
+            <Boton
+              tono="texto"
+              onClick={() => {
+                setPin('');
+                setOlvidado(true);
+              }}
+            >
+              ¿Has olvidado tu PIN?
+            </Boton>
           </>
         ) : (
           <div className="flex w-full flex-col items-center gap-e4">
@@ -545,6 +556,16 @@ export function PantallaDelAparato() {
           Volver a Estook
         </button>
       </footer>
+
+      {olvidado && (
+        <OlvideMiPin
+          cliente={cliente}
+          llave={llave.llave}
+          alCerrar={() => {
+            setOlvidado(false);
+          }}
+        />
+      )}
 
       {saliendo && (
         <SalirDelAparato
@@ -720,5 +741,102 @@ function BotonGrande({
     >
       {children}
     </button>
+  );
+}
+
+/**
+ * **¿Has olvidado tu PIN?** (0109), en el aparato para fichar. Le llega al correo un
+ * enlace, de un uso y que vale media hora, que da un PIN nuevo para este local; el de
+ * antes deja de valer. La pantalla dice lo mismo sea el correo de alguien de aquí o no.
+ * Quien no tiene correo, se lo pide a quien lleva el local.
+ */
+function OlvideMiPin({
+  cliente,
+  llave,
+  alCerrar,
+}: {
+  readonly cliente: ReturnType<typeof crearCliente>;
+  readonly llave: string;
+  readonly alCerrar: () => void;
+}) {
+  const [correo, setCorreo] = useState('');
+  const [mandando, setMandando] = useState(false);
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+  const [mandado, setMandado] = useState<{ local: string; minutos: number } | null>(null);
+
+  async function pedirlo() {
+    setMandando(true);
+    setError(null);
+    const respuesta = await cliente.ejecutar<{ local: string; minutos: number }>(
+      'pedir_pin_por_correo',
+      { llave, correo: correo.trim() },
+    );
+    setMandando(false);
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    setMandado(respuesta.datos);
+  }
+
+  return (
+    <Hoja
+      abierta
+      alCerrar={alCerrar}
+      titulo="¿Has olvidado tu PIN?"
+      pie={
+        <Botones>
+          <Boton tono="texto" onClick={alCerrar}>
+            {mandado === null ? 'Seguir fichando' : 'Cerrar'}
+          </Boton>
+          {mandado === null && (
+            <Boton
+              tono="principal"
+              disabled={correo.trim() === ''}
+              cargando={mandando}
+              textoCargando="Mandando"
+              onClick={() => {
+                void pedirlo();
+              }}
+            >
+              Mandarme el enlace
+            </Boton>
+          )}
+        </Botones>
+      }
+    >
+      {mandado === null ? (
+        <form
+          className="flex flex-col gap-e3 pt-e3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void pedirlo();
+          }}
+        >
+          <p className="text-cuerpo text-texto-suave">
+            Escribe tu correo y te mandamos un enlace para sacar uno nuevo. Ábrelo en tu móvil.
+          </p>
+          {error !== null && <ErrorEnCristiano error={error} />}
+          <Campo
+            etiqueta="Tu correo"
+            tipo="correo"
+            autoComplete="email"
+            value={correo}
+            onChange={(e) => {
+              setCorreo(e.target.value);
+            }}
+          />
+          <p className="text-secundario text-texto-suave">
+            ¿No tienes correo? Pídele un PIN nuevo a quien lleva el local.
+          </p>
+          <button type="submit" hidden />
+        </form>
+      ) : (
+        <p role="status" className="pt-e3 text-cuerpo">
+          Si ese correo es de alguien de {mandado.local}, le llega un enlace en un minuto. Vale{' '}
+          {mandado.minutos} minutos y sirve una vez.
+        </p>
+      )}
+    </Hoja>
   );
 }

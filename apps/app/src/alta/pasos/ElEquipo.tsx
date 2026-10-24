@@ -294,19 +294,19 @@ export function ElEquipo({ cliente, alGuardar, alFallar }: PropsDeUnPaso) {
   return (
     <div className="flex flex-col gap-e4">
       <p className="text-cuerpo text-texto-suave">
-        Cada persona entra con su PIN, y lo que hace queda con su nombre. Puedes hacerlo ahora o
-        cuando llegue su primer turno.
+        Cada persona entra en los aparatos del local con su PIN, y lo que hace queda con su nombre.
+        Puedes hacerlo ahora o cuando llegue su primer turno.
       </p>
 
       {/* El PIN de quien se acaba de invitar. Se enseña una vez y no vuelve. */}
       {reciente !== null && (
         <Aviso tono="bien" titulo={`${reciente.nombre} ya puede entrar`}>
           {reciente.pin === null ? (
-            'Su puesto es de toda la organización, así que entra con su correo y su contraseña.'
+            'Su puesto es de toda la organización: entra en Estook con su correo, poniéndose su contraseña en «¿La has olvidado o no tienes una?».'
           ) : (
             <>
-              Su PIN es <strong className="font-mono tracking-widest">{reciente.pin}</strong>.
-              Dáselo en mano: <strong>se enseña una sola vez</strong>.
+              Su PIN es <strong className="font-mono tracking-widest">{reciente.pin}</strong>. Es
+              para los aparatos del local. Dáselo en mano: <strong>se enseña una sola vez</strong>.
             </>
           )}
         </Aviso>

@@ -1,14 +1,16 @@
 import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
-import { consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
+const API = 'http://localhost:5177/api';
+const APP = 'http://localhost:5174/';
 
 /**
  * T1 · La puerta de Estook TPV (decisión 0107; Anexo 11.3, 11.4, 11.5 y 11.13), en la
  * pantalla y con una cuenta nueva, como el primer día de un local:
  *
  *   · **la caja**: «Vincula este aparato» → «Entrar con mi correo» → «¿Qué es este
- *     aparato?» Caja, con su cajón → la sesión no se queda: lo que queda es la llave
+ *     aparato?» Caja, con su cajón → **quien crea el restaurante no tenía PIN**, así que
+ *     sale con el suyo (0109) → la sesión no se queda: lo que queda es la llave
  *   · el PIN, «No has fichado» → el inicio, con lo que funciona
  *   · Ajustes del TPV › Aparatos › Añadir: un comandero para todos, y su código
  *   · **la tablet**, otro aparato: escribe el código y llega con su función y su nombre
@@ -18,6 +20,7 @@ import { consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
  *   · desde la caja, **desvincular** la tablet: en su siguiente toque, «ya no está
  *     vinculado»
  *   · y **Bloquear** devuelve la caja al PIN
+ *   · **¿Has olvidado tu PIN?** (0109): el enlace al correo da uno nuevo, y entra con él
  */
 const TPV = 'http://localhost:5178/';
 const CLAVE = 'una frase que recuerdo';
@@ -32,17 +35,8 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await cuentaNueva(page, request, correo, 'Bar Puerta');
   await pagarEsencial(page);
   await sinElAlta(page);
-  const token = (await page.evaluate(() => window.localStorage.getItem('estook.sesion'))) ?? '';
-  // El PIN de quien lleva el local: sale una vez, como en Mi acceso.
-  const yo = await consultarEnLaApi<{ personaId: string; local: { id: string } }>(
-    request,
-    token,
-    'quien_soy',
-  );
-  const { pin } = await ejecutarEnLaApi<{ pin: string }>(request, token, 'regenerar_pin', {
-    persona_id: yo.personaId,
-    local_id: yo.local.id,
-  });
+  // **Sin PIN**: quien crea el restaurante no tiene ninguno. Antes de la 0109 no había
+  // forma de entrar en su propio TPV; ahora se lo da el primer aparato.
 
   // ── La caja: el primer aparato, con el correo ──
   await abrirSinQueSeCaiga(page, TPV);
@@ -67,6 +61,18 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   );
   await expect(page.getByLabel('Cómo se llama')).toHaveValue('Caja 1');
   await page.getByRole('button', { name: 'Listo' }).click();
+
+  // Su PIN, una sola vez.
+  await expect(page.getByRole('heading', { name: 'Tu PIN de Bar Puerta' })).toBeVisible({
+    timeout: 15_000,
+  });
+  const pin =
+    (await page
+      .getByRole('status')
+      .getByText(/^\d{6}$/)
+      .textContent()) ?? '';
+  expect(pin).toMatch(/^\d{6}$/);
+  await page.getByRole('button', { name: 'Ya lo tengo apuntado' }).click();
 
   // La sesión de quien vinculó no se queda en el aparato: se queda su llave.
   await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
@@ -161,4 +167,34 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   // ── Y Bloquear devuelve la caja al PIN ──
   await page.getByRole('button', { name: /bloquear/i }).click();
   await expect(page.getByText('Teclea tu PIN')).toBeVisible();
+
+  // ── ¿Has olvidado tu PIN? Un enlace al correo, sin esperar a nadie (0109) ──
+  await page.getByRole('button', { name: '¿Has olvidado tu PIN?' }).click();
+  await page.getByLabel('Tu correo').fill(correo);
+  await page.getByRole('button', { name: 'Mandarme el enlace' }).click();
+  await expect(page.getByRole('status')).toContainText('Bar Puerta');
+  const mandado = (await (
+    await request.get(`${API}/pruebas/ultimo-correo?para=${encodeURIComponent(correo)}`)
+  ).json()) as { texto: string };
+  const enlace = /#\/correo\?pin=\S+/.exec(mandado.texto)?.[0] ?? '';
+  expect(enlace).not.toBe('');
+
+  // El enlace se abre en el móvil de quien lo pidió: en Estook, sin haber entrado.
+  const movil = await browser.newContext();
+  const enElMovil = await movil.newPage();
+  await abrirSinQueSeCaiga(enElMovil, `${APP}${enlace}`);
+  await enElMovil.getByRole('button', { name: 'Ver mi PIN nuevo' }).click();
+  await expect(
+    enElMovil.getByRole('heading', { name: 'Tu PIN nuevo de Bar Puerta' }),
+  ).toBeVisible();
+  const nuevo = (await enElMovil.getByText(/^\d{6}$/).textContent()) ?? '';
+  expect(nuevo).toMatch(/^\d{6}$/);
+  await movil.close();
+
+  // Y el nuevo dice quién es: como el local pide fichar (arriba), le ofrece la entrada.
+  await page.getByRole('button', { name: 'Volver al PIN' }).click();
+  await page.keyboard.type(nuevo);
+  await expect(page.getByRole('heading', { name: /No has fichado la entrada/ })).toBeVisible({
+    timeout: 15_000,
+  });
 });

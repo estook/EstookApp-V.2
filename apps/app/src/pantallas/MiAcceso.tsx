@@ -39,7 +39,8 @@ interface DatosDeMiAcceso {
   readonly pines: readonly {
     readonly localId: string;
     readonly local: string;
-    readonly creadoEn: string;
+    /** Nulo si todavía no tiene PIN en ese local (0109). */
+    readonly creadoEn: string | null;
     readonly bloqueadoHasta: string | null;
   }[];
   readonly dobleFactor: {
@@ -161,7 +162,7 @@ export function MiAcceso() {
               <p className="text-secundario text-texto-suave">
                 {datos.contrasena.puesta
                   ? `Cambiada el ${elDia(datos.contrasena.cambiadaEn ?? '')}.`
-                  : 'Todavía no tienes ninguna: entras con tu PIN. Puedes ponerte una cuando quieras.'}
+                  : 'Todavía no tienes ninguna. Ponte una para entrar en Estook con tu correo.'}
               </p>
             )}
             <div className="mt-e2">
@@ -178,8 +179,8 @@ export function MiAcceso() {
           {/* ── El PIN, por local ─────────────────────────────────────────── */}
           <Bloque titulo="Mi PIN">
             <p className="text-secundario text-texto-suave">
-              Es <strong>de cada local</strong> y no se repite dentro de él. Sirve para entrar
-              rápido y para fichar; lo que tiene consecuencia queda con tu nombre y hora igualmente.
+              Es <strong>para los aparatos de cada local</strong>: Estook TPV y fichar. En Estook se
+              entra con tu contraseña. No se puede volver a ver: si lo olvidas, saca uno nuevo.
             </p>
             <div className="mt-e2">
               <Lista
@@ -188,22 +189,25 @@ export function MiAcceso() {
                   clave: pin.localId,
                   titulo: pin.local,
                   detalle:
-                    pin.bloqueadoHasta !== null
-                      ? 'Bloqueado un rato por fallar cinco veces'
-                      : `Desde el ${elDia(pin.creadoEn)}`,
+                    pin.creadoEn === null
+                      ? 'Todavía no tienes PIN en este local'
+                      : pin.bloqueadoHasta !== null
+                        ? 'Bloqueado un rato por fallar cinco veces'
+                        : `Desde el ${elDia(pin.creadoEn)}`,
                   derecha: (
                     <Boton
+                      tono={pin.creadoEn === null ? 'principal' : 'secundario'}
                       onClick={() => {
                         void pinNuevoPara(pin.localId, pin.local);
                       }}
                     >
-                      Uno nuevo
+                      {pin.creadoEn === null ? 'Ponerme un PIN' : 'Uno nuevo'}
                     </Boton>
                   ),
                 }))}
                 cuandoNoHay={
                   <p className="text-secundario text-texto-suave">
-                    Todavía no tienes PIN en ningún local. Te lo da quien lleva el local, en mano.
+                    No trabajas en ningún local todavía: el PIN es de cada local.
                   </p>
                 }
               />
@@ -336,7 +340,7 @@ export function MiAcceso() {
         <CambiarMiClave
           yaTiene={datos.contrasena.puesta}
           // Sin contraseña todavía y con PIN: se pide el PIN (0083).
-          conPin={!datos.contrasena.puesta && datos.pines.length > 0}
+          conPin={!datos.contrasena.puesta && datos.pines.some((p) => p.creadoEn !== null)}
           alCerrar={() => {
             setCambiandoClave(false);
           }}

@@ -1,24 +1,28 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
-import { Aviso, Boton, Campo, ErrorEnCristiano, clases } from '@estook/ui';
+import { Aviso, Boton, Campo, ErrorEnCristiano } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { elAparato, hayApi } from '../datos/cliente.ts';
 import { olvidarLosAplazamientos } from '../pantallas/recordatorios.ts';
 import { BotonDeGoogle, MarcoDeLaPuerta, Separador, type ComoSeEntra } from './Formas.tsx';
+import { OlvideLaContrasena } from './OlvideLaContrasena.tsx';
 import { irAGoogle } from './google.ts';
 import { usarSesion } from './Sesion.tsx';
 
 /**
  * La pantalla de entrar (M4, con Google y crear cuenta desde la 0042).
  *
- * «Si das a iniciar sesión, puedes hacerlo con tu cuenta, con PIN o con Google,
- *  pero que se vean bien las opciones.» Así, de arriba abajo:
+ * «Si das a iniciar sesión, puedes hacerlo con tu cuenta [...] o con Google, pero que
+ *  se vean bien las opciones.» Así, de arriba abajo:
  *
  *   1. **Continuar con Google**, arriba y a lo ancho, que es lo más rápido.
- *   2. Un «o», y **correo con contraseña o PIN**, con una pestaña para elegir.
- *      El PIN no se esconde detrás de «más opciones»: para media plantilla es la
- *      forma normal de entrar.
+ *   2. Un «o», y **correo con contraseña**, con «¿La has olvidado o no tienes una?»
+ *      debajo, que manda un enlace al correo (0109).
  *   3. **¿No tienes cuenta? Créala**, abajo, que es a donde mira quien no la tiene.
  *   4. Y la demostración, al final, para quien solo quiere mirar.
+ *
+ * **El PIN ya no abre Estook** (0109, Richi, 24-oct, la A): es para los aparatos del
+ * local, Estook TPV y fichar. Hasta la 0109 había una pestaña «Con PIN» aquí, y el PIN
+ * servía para dos cosas, que es lo que lo hacía confundirse con la contraseña.
  *
  * ── Lo que no se hace aquí, a propósito ──────────────────────────────────────
  *
@@ -42,8 +46,7 @@ export function Entrar({
 
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
-  const [pin, setPin] = useState('');
-  const [conPin, setConPin] = useState(false);
+  const [olvidada, setOlvidada] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [yendoAGoogle, setYendoAGoogle] = useState(false);
@@ -61,7 +64,7 @@ export function Entrar({
 
     const respuesta = await cliente.ejecutar<{ token: string }>('entrar', {
       correo,
-      ...(conPin ? { pin } : { contrasena }),
+      contrasena,
       ...(aparato === null ? {} : { aparato }),
     });
 
@@ -69,8 +72,7 @@ export function Entrar({
       setError(respuesta.error);
       setEnviando(false);
       // Lo escrito **no se borra**, salvo el secreto.
-      if (conPin) setPin('');
-      else setContrasena('');
+      setContrasena('');
       return;
     }
 
@@ -91,11 +93,20 @@ export function Entrar({
     }
   }
 
+  if (olvidada) {
+    return (
+      <OlvideLaContrasena
+        correoDeAntes={correo}
+        alVolver={() => {
+          setOlvidada(false);
+          setError(null);
+        }}
+      />
+    );
+  }
+
   return (
-    <MarcoDeLaPuerta
-      titulo="Entra en Estook"
-      frase="Con Google, con tu contraseña o con el PIN de tu local."
-    >
+    <MarcoDeLaPuerta titulo="Entra en Estook" frase="Con Google o con tu correo y tu contraseña.">
       {!hayApi ? (
         <Aviso tono="atencion" titulo="Todavía no hay servidor al que preguntar">
           La aplicación está publicada, pero la API aún no está desplegada, así que no hay dónde
@@ -124,37 +135,6 @@ export function Entrar({
             </>
           )}
 
-          {/* Contraseña o PIN: dos pestañas, las dos a la vista. */}
-          <div
-            role="tablist"
-            aria-label="Cómo quieres entrar"
-            className="mb-e4 grid grid-cols-2 gap-e1 rounded-medio bg-borde/40 p-e1"
-          >
-            {[
-              { valor: false, texto: 'Con contraseña' },
-              { valor: true, texto: 'Con PIN' },
-            ].map((opcion) => (
-              <button
-                key={opcion.texto}
-                type="button"
-                role="tab"
-                aria-selected={conPin === opcion.valor}
-                onClick={() => {
-                  setConPin(opcion.valor);
-                  setError(null);
-                }}
-                className={clases(
-                  'min-h-toque rounded-medio text-cuerpo',
-                  conPin === opcion.valor
-                    ? 'bg-superficie font-medium text-texto shadow-s1'
-                    : 'text-texto-suave hover:text-texto',
-                )}
-              >
-                {opcion.texto}
-              </button>
-            ))}
-          </div>
-
           <form
             onSubmit={(evento) => {
               void alEnviar(evento);
@@ -173,31 +153,17 @@ export function Entrar({
               obligatorio
             />
 
-            {conPin ? (
-              <Campo
-                etiqueta="Tu PIN"
-                tipo="pin"
-                name="pin"
-                ayuda="Los seis números que te dieron al darte de alta."
-                value={pin}
-                onChange={(evento) => {
-                  setPin(evento.target.value.replace(/[^0-9]/g, '').slice(0, 6));
-                }}
-                obligatorio
-              />
-            ) : (
-              <Campo
-                etiqueta="Tu contraseña"
-                tipo="contrasena"
-                name="contrasena"
-                autoComplete="current-password"
-                value={contrasena}
-                onChange={(evento) => {
-                  setContrasena(evento.target.value);
-                }}
-                obligatorio
-              />
-            )}
+            <Campo
+              etiqueta="Tu contraseña"
+              tipo="contrasena"
+              name="contrasena"
+              autoComplete="current-password"
+              value={contrasena}
+              onChange={(evento) => {
+                setContrasena(evento.target.value);
+              }}
+              obligatorio
+            />
 
             {error && <ErrorEnCristiano error={error} />}
 
@@ -212,22 +178,33 @@ export function Entrar({
             </Boton>
           </form>
 
-          <p className="mt-e4 text-center text-secundario text-texto-suave">
-            ¿No te acuerdas? Quien lleva tu local puede darte una contraseña nueva o un PIN nuevo en
-            un momento, desde Equipo.
-          </p>
-
           {/*
-            Quien se dio de alta sin correo (0057) no entra aquí: ficha en la pantalla
-            del local. Se dice en la pestaña del PIN, que es donde lo buscará (30-sep,
-            Richi: «si no, no saben cómo entrar»).
+            Con el correo conectado, el enlace; sin él, quien lleva el local (Equipo).
+            Mientras llega `como_se_entra`, el botón ya está: no se mueve nada al llegar.
           */}
-          {conPin && (
-            <p className="mt-e2 text-center text-secundario text-texto-suave">
-              ¿Te dieron de alta sin correo? Tú no entras aquí: ficha en la pantalla de fichar de tu
-              local, solo con tu PIN.
+          {como?.conCorreo === false ? (
+            <p className="mt-e4 text-center text-secundario text-texto-suave">
+              ¿No te acuerdas? Quien lleva tu local puede darte una contraseña nueva en un momento,
+              desde Equipo.
             </p>
+          ) : (
+            <div className="mt-e3 flex justify-center">
+              <Boton
+                tono="texto"
+                onClick={() => {
+                  setOlvidada(true);
+                  setError(null);
+                }}
+              >
+                ¿La has olvidado o no tienes una?
+              </Boton>
+            </div>
           )}
+
+          <p className="mt-e2 text-center text-secundario text-texto-suave">
+            ¿Te dieron de alta sin correo? Tú no entras aquí: entras en los aparatos del local, solo
+            con tu PIN.
+          </p>
 
           <div className="mt-e5 flex flex-col items-center gap-e2 border-t border-borde pt-e5">
             <p className="text-cuerpo">¿No tienes cuenta?</p>

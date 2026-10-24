@@ -5,9 +5,10 @@
 > mismo día —un comandero dentro de Estook, no un TPV— y decidió **Estook TPV entero**
 > ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md)). **Qué hace cada pantalla** está en el
 > [Anexo, capítulo 11](maestros/Estook-Anexo-TPV-y-Facturacion.md); aquí, **cómo se construye, en qué
-> orden y cuándo se da cada entrega por buena**. **T1 · La puerta, construida** (24-oct,
-> [0108](decisiones/0108-t1-la-puerta.md), migración 0083), en su pull request. **Lo siguiente: T2 ·
-> La sala.**
+> orden y cuándo se da cada entrega por buena**. **T1 · La puerta, en producción** (24-oct, #133,
+> [0108](decisiones/0108-t1-la-puerta.md), migración 0083), y después **el PIN y la contraseña**
+> ([0109](decisiones/0109-el-pin-y-la-contrasena.md)), lo que vio Richi al probarla. **Lo siguiente:
+> T2 · La sala.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 

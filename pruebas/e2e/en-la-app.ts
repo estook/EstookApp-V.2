@@ -160,3 +160,37 @@ export async function vincularParaFichar(
   );
   return { llave: vinculado.llave, nombre: vinculado.aparato.nombre };
 }
+
+/**
+ * El token de **alguien recién invitado**, que solo tiene su PIN de los aparatos del
+ * local: como en la vida (0109), se pone su contraseña con el enlace que le llega al
+ * correo y entra con ella. Hasta la 0109 se entraba con el PIN.
+ *
+ * **Cada una desde su dirección** (`x-forwarded-for`), como hacen las de crear cuenta:
+ * pedir el enlace tiene un tope de diez por hora desde una dirección, y todas las
+ * pruebas salen del mismo ordenador.
+ */
+export async function tokenDeAlguienNuevo(
+  peticion: APIRequestContext,
+  correo: string,
+): Promise<string> {
+  const desde = `10.${String(Math.trunc(Math.random() * 250))}.${String(Math.trunc(Math.random() * 250))}.${String(Math.trunc(Math.random() * 250))}`;
+  const pedido = await peticion.post(`${API}/v1/comandos/pedir_enlace_de_contrasena`, {
+    headers: {
+      'x-idempotencia': `enlace-${correo}-${Date.now()}-${Math.random()}`,
+      'x-forwarded-for': desde,
+    },
+    data: { correo },
+  });
+  expect(pedido.status(), await pedido.text()).toBe(200);
+  const mandado = (await (
+    await peticion.get(`${API}/pruebas/ultimo-correo?para=${encodeURIComponent(correo)}`)
+  ).json()) as { texto: string };
+  const enlace = decodeURIComponent(/#\/correo\?contrasena=(\S+)/.exec(mandado.texto)?.[1] ?? '');
+  const puesta = await peticion.post(`${API}/v1/comandos/poner_contrasena_con_enlace`, {
+    headers: { 'x-idempotencia': `poner-${correo}-${Date.now()}-${Math.random()}` },
+    data: { enlace, contrasena: CLAVE },
+  });
+  expect(puesta.status(), await puesta.text()).toBe(200);
+  return tokenDe(peticion, correo);
+}

@@ -381,21 +381,30 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
 
           {recienInvitada.pin === null ? (
             <p className="text-secundario text-texto-suave">
-              Este rol es de toda la organización: entra con su correo y su contraseña.
+              Este rol es de toda la organización, así que no tiene PIN de un local todavía: se lo
+              pone en Mi acceso. Y para entrar en Estook desde su móvil, se pone su contraseña en la
+              puerta, en «¿La has olvidado o no tienes una?», y le llega un enlace al correo.
             </p>
           ) : (
             <>
               <p className="text-secundario text-texto-suave">
-                Dáselo en mano. <strong>Solo se enseña esta vez.</strong>
+                Es para los aparatos del local (Estook TPV y fichar). Dáselo en mano.{' '}
+                <strong>Solo se enseña esta vez.</strong>
               </p>
               <p className="my-e4 text-center font-mono text-[2.5rem] tracking-[0.2em] text-texto">
                 {recienInvitada.pin}
               </p>
               {recienInvitada.sinCorreo === true && (
                 <p className="mb-e4 text-secundario text-texto-suave">
-                  Como no tiene correo, <strong>no entra en la app</strong>: ficha en la pantalla de
-                  fichar del local, tecleando este PIN. Si un día da su correo, se le pone en su
-                  ficha y ya puede entrar desde su móvil.
+                  Como no tiene correo, <strong>no entra en la app</strong>: entra en los aparatos
+                  del local, tecleando este PIN. Si un día da su correo, se le pone en su ficha y ya
+                  puede entrar desde su móvil.
+                </p>
+              )}
+              {recienInvitada.sinCorreo !== true && (
+                <p className="mb-e4 text-secundario text-texto-suave">
+                  Para entrar en Estook desde su móvil, se pone su contraseña en la puerta, en «¿La
+                  has olvidado o no tienes una?», y le llega un enlace al correo.
                 </p>
               )}
             </>

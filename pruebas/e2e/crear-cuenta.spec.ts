@@ -140,19 +140,20 @@ test.describe('la portada', () => {
   });
 });
 
-// ── Entrar: las tres formas a la vista ───────────────────────────────────────
+// ── Entrar: las formas a la vista ────────────────────────────────────────────
 
-test('la puerta enseña Google, contraseña y PIN, y lleva a crear cuenta', async ({ page }) => {
+test('la puerta enseña Google y la contraseña, sin el PIN, y lleva a crear cuenta', async ({
+  page,
+}) => {
   await abrirLimpio(page, APP);
   await expect(page.getByRole('heading', { level: 1, name: 'Entra en Estook' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Continuar con Google' })).toBeVisible();
-  await expect(page.getByRole('tab', { name: 'Con contraseña' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  );
-
-  await page.getByRole('tab', { name: 'Con PIN' }).click();
-  await expect(page.getByLabel('Tu PIN')).toBeVisible();
+  await expect(page.getByLabel('Tu contraseña')).toBeVisible();
+  // El PIN es de los aparatos del local, no de Estook (0109).
+  await expect(page.getByLabel('Tu PIN')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: '¿La has olvidado o no tienes una?' }),
+  ).toBeVisible();
 
   await page.getByRole('button', { name: 'Crear cuenta' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Crea tu cuenta' })).toBeVisible();

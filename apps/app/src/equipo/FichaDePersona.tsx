@@ -598,8 +598,8 @@ function PonerSuCorreo({
           }}
         />
         <p className="text-secundario text-texto-suave">
-          Sigue siendo la misma persona, con sus fichajes. Desde ese momento puede entrar también
-          desde su móvil, con su correo y su PIN.
+          Sigue siendo la misma persona, con sus fichajes. Desde ese momento puede entrar también en
+          Estook desde su móvil: se pone su contraseña con un enlace a ese correo.
         </p>
       </div>
     </Hoja>

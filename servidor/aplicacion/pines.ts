@@ -74,3 +74,28 @@ export async function ponerPinNuevo(sql: Sql, personaId: string, localId: string
       'No se ha encontrado un PIN libre en este local después de diez intentos. Avísanos: es algo que no debería pasar.',
   });
 }
+
+/**
+ * Si esa persona trabaja hoy en ese local: una membresía viva de la organización, del
+ * área o del propio local. Un PIN de un local para quien no trabaja ahí no significa
+ * nada. Lo usan regenerar el PIN, Mi acceso y el PIN que llega por correo (0109).
+ */
+export async function trabajaEn(sql: Sql, personaId: string, localId: string): Promise<boolean> {
+  const filas = await sql<{ hay: boolean }[]>`
+    select true as hay
+      from estook.membresia m
+      join estook.local l on l.id = ${localId}::uuid
+     where m.persona_id = ${personaId}
+       and m.organizacion_id = l.organizacion_id
+       and m.desde <= current_date
+       and (m.hasta is null or m.hasta >= current_date)
+       and (m.revocada_en is null or m.revocada_en > now())
+       and (
+         m.alcance = 'organizacion'
+         or (m.alcance = 'area' and l.area_id = m.area_id)
+         or (m.alcance = 'local' and l.id = m.local_id)
+       )
+     limit 1
+  `;
+  return filas.length > 0;
+}

@@ -171,6 +171,91 @@ export function correoDeAvisoAlDeAhora(
   };
 }
 
+// ── El PIN y la contraseña (0109) ──────────────────────────────────────────
+
+/** El enlace de la app para ponerse la contraseña o sacar el PIN: el token, tras la almohadilla. */
+export function enlaceDeAcceso(que: 'contrasena' | 'pin', token: string): string {
+  return `https://estook.com/app/#/correo?${que}=${encodeURIComponent(token)}`;
+}
+
+function botonDelEnlace(enlace: string, texto: string): string {
+  return `<a href="${escapar(enlace)}" style="display:inline-block;background:#ff7a00;color:#1d2a2e;font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px">${escapar(texto)}</a>`;
+}
+
+/** «He olvidado mi contraseña», o ponerse la primera: el enlace, de un uso. */
+export function correoConElEnlaceDeLaContrasena(
+  para: string,
+  nombre: string,
+  enlace: string,
+  minutos: number,
+  yaTeniaUna: boolean,
+): CorreoParaMandar {
+  const saludo = nombre === '' ? 'Hola:' : `Hola, ${nombre}:`;
+  const frase = yaTeniaUna
+    ? 'Nos has pedido cambiar tu contraseña de Estook. Ponte una nueva desde aquí:'
+    : 'Nos has pedido ponerte una contraseña para entrar en Estook. Póntela desde aquí:';
+  const vale = `El enlace sirve una vez y vale durante ${String(minutos)} minutos. Al ponerla, se cierran las sesiones que tuvieras abiertas.`;
+  const siNo = 'Si no has sido tú, no hagas nada: tu contraseña no cambia.';
+  return {
+    para,
+    asunto: yaTeniaUna ? 'Tu contraseña nueva de Estook' : 'Ponte tu contraseña de Estook',
+    texto: [saludo, '', frase, '', enlace, '', vale, '', siNo].join('\n'),
+    html: envolver([
+      escapar(saludo),
+      escapar(frase),
+      botonDelEnlace(enlace, 'Poner mi contraseña'),
+      escapar(vale),
+      escapar(siNo),
+    ]),
+  };
+}
+
+/**
+ * A quien pide recuperar la contraseña con un correo **que no tiene cuenta**.
+ *
+ * La pantalla dice lo mismo que si la tuviera, para que nadie averigüe qué correos usan
+ * Estook; quien de verdad es el dueño del correo se entera aquí (como `correoDeYaTienesCuenta`).
+ */
+export function correoDeSinCuenta(para: string): CorreoParaMandar {
+  const frase =
+    'Alguien ha pedido recuperar la contraseña de Estook con este correo, pero no hay ninguna cuenta con él.';
+  const otra =
+    'Si trabajas en un local con Estook, a lo mejor te dieron de alta con otro correo: pregúntaselo a quien lo lleva. Y si quieres crear tu cuenta, es en estook.com/app.';
+  const siNo = 'Si no has sido tú, no hagas nada.';
+  return {
+    para,
+    asunto: 'No hay ninguna cuenta de Estook con este correo',
+    texto: ['Hola:', '', frase, otra, '', siNo].join('\n'),
+    html: envolver(['Hola:', escapar(frase), escapar(otra), escapar(siNo)]),
+  };
+}
+
+/** «He olvidado mi PIN», pedido en un aparato del local: el enlace da uno nuevo para ese local. */
+export function correoConElEnlaceDelPin(
+  para: string,
+  nombre: string,
+  local: string,
+  enlace: string,
+  minutos: number,
+): CorreoParaMandar {
+  const saludo = nombre === '' ? 'Hola:' : `Hola, ${nombre}:`;
+  const frase = `Nos has pedido un PIN nuevo para los aparatos de ${local} (Estook TPV y fichar). Ábrelo desde aquí:`;
+  const vale = `El enlace sirve una vez y vale durante ${String(minutos)} minutos. Al sacar el nuevo, el de antes deja de valer.`;
+  const siNo = 'Si no has sido tú, no hagas nada: tu PIN no cambia.';
+  return {
+    para,
+    asunto: `Tu PIN nuevo de ${local}`,
+    texto: [saludo, '', frase, '', enlace, '', vale, '', siNo].join('\n'),
+    html: envolver([
+      escapar(saludo),
+      escapar(frase),
+      botonDelEnlace(enlace, 'Ver mi PIN nuevo'),
+      escapar(vale),
+      escapar(siNo),
+    ]),
+  };
+}
+
 // ── R · El correo de un aviso (0052) ────────────────────────────────────────
 
 export interface AvisoParaElCorreo {

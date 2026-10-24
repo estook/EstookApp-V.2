@@ -173,6 +173,8 @@ export interface ElAparatoPorDentro {
 export interface AparatoVinculado {
   readonly llave: string;
   readonly aparato: ElAparatoPorDentro;
+  /** El PIN de quien vinculó el primer aparato, una vez, si no tenía o pidió uno (0109). */
+  readonly tuPinNuevo: string | null;
 }
 
 export type EstadoDelFichaje = 'fuera' | 'dentro' | 'en_pausa';

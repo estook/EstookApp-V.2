@@ -563,7 +563,12 @@ mide antes y después ([0061](../decisiones/0061-el-orden-y-la-infraestructura.m
   bloqueo a los cinco intentos contado en la base, segundo factor exigible, y retirar el
   acceso corta al instante.
 - **El PIN es único por local** (índice único con la sal del local) y **lo genera el
-  sistema**, así que elegirlo nunca revela el de otro.
+  sistema**, así que elegirlo nunca revela el de otro. **Es para los aparatos del local,
+  no para Estook** ([0109](../decisiones/0109-el-pin-y-la-contrasena.md)).
+- **Recuperar el acceso, con un enlace al correo** (0109): de un uso, una hora la
+  contraseña y media el PIN, guardado por su huella y tras la almohadilla; no dice si un
+  correo existe, y tiene tope por dirección y por persona. La contraseña nueva no se
+  salta el segundo factor.
 - **Lo que ve el navegador se recorta en el servidor**: un rol sin costes no recibe ni
   el campo.
 - **La política de seguridad de contenido** va hoy en una etiqueta `meta`, que no admite

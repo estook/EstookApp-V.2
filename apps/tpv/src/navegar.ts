@@ -1,7 +1,8 @@
 /**
- * Por dónde se va en la sala: el plano (`#/`) y una mesa (`#/mesa/<id>`). En el `#`,
- * como la app: el botón de atrás del móvil vuelve al plano, y una tablet que se recarga
- * se queda en la mesa.
+ * Por dónde se va en Estook TPV: las mesas (`#/`), una mesa (`#/mesa/<id>`), el inicio
+ * (`#/inicio`), fichar, los agotados y los Ajustes del TPV (`#/ajustes/...`). En el `#`,
+ * como la app: el botón de atrás del móvil vuelve atrás, y una tablet que se recarga se
+ * queda donde estaba (bloqueada, con su PIN delante).
  */
 
 export function escucharLaDireccion(avisar: () => void): () => void {
@@ -25,4 +26,8 @@ export function irALaMesa(cuentaId: string): void {
 
 export function irAlPlano(): void {
   irA('');
+}
+
+export function irAlInicio(): void {
+  irA('inicio');
 }

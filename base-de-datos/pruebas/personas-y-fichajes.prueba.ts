@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { tokenDelAparato } from '@estook/dominio';
 import { pdfDeMentira } from '../../servidor/infraestructura/pdf.ts';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
 import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
@@ -118,26 +119,38 @@ describe('la persona sin correo (0057)', () => {
 let llave: string;
 
 describe('el aparato del local para fichar (0068)', () => {
-  it('lo pone quien lleva el local, y la llave solo se ve una vez', async () => {
-    const puesto = losDatos<{ terminalId: string; llave: string }>(
-      await api.ejecutar(rosa, 'poner_aparato_para_fichar', { nombre: 'Tablet de la entrada' }),
+  it('lo vincula quien lleva el local, como «Fichar», y la llave solo se ve una vez', async () => {
+    // Desde T1 (0107) se vincula en Estook TPV, entrando con el correo en el aparato.
+    const puesto = losDatos<{ llave: string; aparato: { terminalId: string; funcion: string } }>(
+      await api.ejecutar(await api.entrar(ROSA), 'vincular_el_primer_aparato', {
+        local_id: centro,
+        funcion: 'fichar',
+        nombre: 'Tablet de la entrada',
+      }),
     );
     llave = puesto.llave;
     expect(llave.length).toBeGreaterThan(20);
+    expect(puesto.aparato.funcion).toBe('fichar');
 
     // De la llave solo se guarda su huella.
     const [fila] = await comoDuena<{ huella: string }>(
       'select huella from estook.terminal where id = $1',
-      [puesto.terminalId],
+      [puesto.aparato.terminalId],
     );
     expect(fila?.huella).toMatch(/^[0-9a-f]{64}$/);
     expect(fila?.huella).not.toBe(llave);
   });
 
-  it('un cocinero no lo puede poner', async () => {
+  it('un cocinero no lo puede vincular', async () => {
     const marcos = await api.entrar(MARCOS);
     expect(
-      elFallo(await api.ejecutar(marcos, 'poner_aparato_para_fichar', { nombre: 'La mía' })),
+      elFallo(
+        await api.ejecutar(marcos, 'vincular_el_primer_aparato', {
+          local_id: centro,
+          funcion: 'fichar',
+          nombre: 'La mía',
+        }),
+      ),
     ).toBe('sin_permiso');
   });
 
@@ -201,16 +214,28 @@ describe('el aparato del local para fichar (0068)', () => {
     ).toBe('aparato_retirado');
   });
 
-  it('al quitarlo, deja de valer al momento', async () => {
-    const lista = losDatos<{ terminalId: string }[]>(
-      await api.consultar(rosa, 'aparatos_para_fichar', {}),
-    );
-    expect(lista).toHaveLength(1);
-    losDatos(
-      await api.ejecutar(rosa, 'quitar_aparato_para_fichar', {
-        terminal_id: lista[0]?.terminalId,
+  it('al desvincularlo desde la caja, deja de valer al momento', async () => {
+    // Se desvincula en Estook TPV › Ajustes del TPV › Aparatos, con el PIN de quien puede.
+    const caja = losDatos<{ llave: string }>(
+      await api.ejecutar(await api.entrar(ROSA), 'vincular_el_primer_aparato', {
+        local_id: centro,
+        funcion: 'caja',
+        nombre: 'Caja 1',
+        cajon_nuevo: 'Cajón 1',
+      }),
+    ).llave;
+    const dentro = losDatos<{ turno: string }>(
+      await api.ejecutar(null, 'entrar_con_pin', {
+        llave: caja,
+        pin: base.pinDe(ROSA, 'bar-centro'),
       }),
     );
+    const enLaCaja = tokenDelAparato(dentro.turno, caja);
+    const lista = losDatos<{ aparatos: { id: string; funcion: string }[] }>(
+      await api.consultar(enLaCaja, 'los_aparatos', {}),
+    ).aparatos.filter((a) => a.funcion === 'fichar');
+    expect(lista).toHaveLength(1);
+    losDatos(await api.ejecutar(enLaCaja, 'desvincular_aparato', { terminal_id: lista[0]?.id }));
     expect(elFallo(await api.ejecutar(null, 'quien_ficha_aqui', { llave, pin: omar.pin }))).toBe(
       'aparato_retirado',
     );

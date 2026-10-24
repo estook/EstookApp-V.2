@@ -1,39 +1,84 @@
 import { crearCliente, type ClienteApi } from '@estook/cliente-api';
 
 /**
- * El cliente de la API de Estook TPV (M20A, 0056).
+ * El cliente de la API de Estook TPV (T1 · La puerta, 0107).
  *
- * **Entra con la sesión de Estook**, a propósito: la app y Estook TPV viven en el mismo
- * dominio (`estook.com/app/` y `estook.com/tpv/`), y el token está guardado con el mismo
- * nombre. Quien ya ha entrado en Estook en este aparato abre la sala sin volver a escribir
- * su contraseña, que es lo que pide el Anexo: «desde un móvil personal se entra con un
- * botón desde Estook». La tablet compartida del local, con su PIN, llega con los
- * terminales (Anexo 3.4).
+ * **Estook TPV solo funciona en un aparato vinculado** (Anexo 11.3): no entra con la
+ * sesión de Estook. Lo que se queda en el aparato es **su llave**, aquí; y lo que dura
+ * mientras alguien lo usa es **su turno**, que vive solo en la memoria (`LaPuerta`): al
+ * recargar, el aparato vuelve a su función, bloqueado (Anexo 3.4). Cada petición lleva
+ * los dos (`tokenDelAparato`).
  */
 export const DIRECCION_DE_LA_API = (import.meta.env['VITE_API_URL'] as string | undefined) ?? '';
 
 export const hayApi = DIRECCION_DE_LA_API !== '';
 
-/** El mismo que `apps/app/src/datos/cliente.ts`. */
-const DONDE_VIVE_EL_TOKEN = 'estook.sesion';
+/** La versión que se manda en el latido, para verla en Ajustes del TPV › Aparatos. */
+export const LA_VERSION = (
+  (import.meta.env['VITE_VERSION'] as string | undefined) ?? 'desarrollo'
+).slice(0, 40);
 
-export function leerToken(): string | null {
-  if (typeof window === 'undefined') return null;
+/**
+ * **Aparte de la sesión de Estook** (`estook.sesion`): un mismo navegador puede tener
+ * las dos sin mezclarlas (Anexo 11.3, punto 4).
+ */
+const DONDE_VIVE_LA_LLAVE = 'estook.tpv.llave';
+
+export function leerLaLlave(): string | null {
   try {
-    return window.localStorage.getItem(DONDE_VIVE_EL_TOKEN);
+    return window.localStorage.getItem(DONDE_VIVE_LA_LLAVE);
   } catch {
     return null;
   }
 }
 
-/** Dónde está Estook, para entrar o volver: al lado de esta puerta. */
-export const DIRECCION_DE_ESTOOK = `${import.meta.env.BASE_URL}../app/`;
+export function guardarLaLlave(llave: string | null): void {
+  try {
+    if (llave === null) window.localStorage.removeItem(DONDE_VIVE_LA_LLAVE);
+    else window.localStorage.setItem(DONDE_VIVE_LA_LLAVE, llave);
+  } catch {
+    // Sin dónde guardarla (navegación privada), el aparato vale hasta que se recargue.
+  }
+}
 
-export function crearClienteDelTpv(alCaducarLaSesion: () => void): ClienteApi {
+// ── El aparato para fichar ───────────────────────────────────────────────────
+
+/**
+ * La pantalla de fichar ya existe, con su modo sin conexión (0068, 0070), y vive en
+ * Estook: `estook.com/app/#/aparato-para-fichar`, con su llave en este nombre. Un
+ * aparato vinculado aquí como «Fichar» deja ahí su llave y se va a ella; y uno puesto
+ * antes de T1, que ya la tiene, también.
+ */
+const DONDE_VIVE_LA_DEL_QUIOSCO = 'estook.aparato-para-fichar';
+
+export function laDelQuiosco(): string | null {
+  try {
+    const guardada = window.localStorage.getItem(DONDE_VIVE_LA_DEL_QUIOSCO);
+    if (guardada === null) return null;
+    const leida = JSON.parse(guardada) as { llave?: unknown };
+    return typeof leida.llave === 'string' ? leida.llave : null;
+  } catch {
+    return null;
+  }
+}
+
+export function irAlQuiosco(llave: string, nombre: string): void {
+  try {
+    window.localStorage.setItem(DONDE_VIVE_LA_DEL_QUIOSCO, JSON.stringify({ llave, nombre }));
+  } catch {
+    // Sin dónde guardarla, la pantalla de fichar dirá que no está vinculado.
+  }
+  window.location.assign(`${import.meta.env.BASE_URL}../app/#/aparato-para-fichar`);
+}
+
+export function crearClienteDelTpv(opciones: {
+  readonly token: () => string | null;
+  readonly alCaducar?: () => void;
+}): ClienteApi {
   return crearCliente({
     base: DIRECCION_DE_LA_API,
-    token: leerToken,
+    token: opciones.token,
     juntar: true,
-    alCaducarLaSesion,
+    ...(opciones.alCaducar === undefined ? {} : { alCaducarLaSesion: opciones.alCaducar }),
   });
 }

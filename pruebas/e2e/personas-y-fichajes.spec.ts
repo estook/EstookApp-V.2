@@ -1,5 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
-import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
+import { abrirSinQueSeCaiga } from './abrir.ts';
+import { vincularParaFichar } from './en-la-app.ts';
 
 /**
  * H1 · Personas y fichajes (decisiones 0057, 0062 y 0068), desde la pantalla.
@@ -108,17 +109,16 @@ test('sin correo, y fichando con su PIN en el aparato del local', async ({ page 
   await expect(hojaDelPin).toContainText('no entra en la app');
   await hojaDelPin.getByRole('button', { name: 'Hecho' }).click();
 
-  // ── 2 · Poner este aparato para fichar, en Ajustes ─────────────────────────
-  // En su hoja desde las bases firmes (0084).
-  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/local#aparato-para-fichar`);
-  await page.getByRole('button', { name: 'Usar este aparato para fichar' }).click();
-  const poner = page.getByRole('dialog', { name: 'Usar este aparato para fichar' });
-  await poner.getByLabel('Cómo se llama').fill(`Tablet ${info.project.name}`);
-  await poner.getByRole('button', { name: 'Ponerlo' }).click();
-  await expect(page.getByText(`Este aparato es «Tablet ${info.project.name}»`)).toBeVisible();
-
-  // Abrirla cierra la sesión de Rosa en este aparato: se queda en el local.
-  await page.getByRole('button', { name: 'Abrir la pantalla de fichar' }).click();
+  // ── 2 · Vincular este aparato para fichar ──────────────────────────────────
+  // Desde T1 (0107) se vincula en Estook TPV, con la función «Fichar», y deja su llave
+  // para la pantalla de fichar, que sigue en Estook. En este aparato no queda la sesión
+  // de nadie.
+  const puesto = await vincularParaFichar(page.request, ROSA, `Tablet ${info.project.name}`);
+  await page.evaluate((llave) => {
+    window.localStorage.clear();
+    window.localStorage.setItem('estook.aparato-para-fichar', JSON.stringify(llave));
+  }, puesto);
+  await abrirSinQueSeCaiga(page, `${APP}#/aparato-para-fichar`);
   await expect(page.getByText('Teclea tu PIN para fichar')).toBeVisible();
   await expect(page.getByText('Bar Centro', { exact: true })).toBeVisible();
   const token = await page.evaluate(() => window.localStorage.getItem('estook.sesion'));
@@ -163,19 +163,8 @@ test('sin correo, y fichando con su PIN en el aparato del local', async ({ page 
     persona_id: suyo?.personaId,
     correo: `extra-${info.project.name}-${Date.now()}@correo-de-prueba.com`,
   });
-
-  // Y el aparato se quita: deja de valer al momento.
-  const aparatos = await consultar<{ terminalId: string; nombre: string }[]>(
-    page.request,
-    rosa,
-    'aparatos_para_fichar',
-  );
-  const este = aparatos.find((a) => a.nombre === `Tablet ${info.project.name}`);
-  await ejecutar(page.request, rosa, 'quitar_aparato_para_fichar', {
-    terminal_id: este?.terminalId,
-  });
-  await recargarSinQueSeCaiga(page);
-  await expect(page.getByText('Este aparato no está puesto para fichar')).toBeVisible();
+  // Desvincularlo, y que deje de valer al momento, se prueba en Estook TPV
+  // (`la-puerta.spec.ts`) y contra la base (`personas-y-fichajes.prueba.ts`).
 });
 
 test('mis fichajes: la pausa y la corrección, con lo de antes a la vista', async ({

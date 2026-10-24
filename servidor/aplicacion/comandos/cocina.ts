@@ -56,6 +56,7 @@ export const tachar = comando<{ linea_id: string }, { lineaId: string; paseFuera
   nombre: 'tachar',
   entrada: z.object({ linea_id: id }).strict(),
   exige: 'accion.cocinar',
+  enElTpv: 'tambien',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -91,6 +92,7 @@ export const destachar = comando<{ linea_id: string }, { lineaId: string }>({
   nombre: 'destachar',
   entrada: z.object({ linea_id: id }).strict(),
   exige: 'accion.cocinar',
+  enElTpv: 'tambien',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -122,6 +124,7 @@ export const todoFuera = comando<{ cuenta_id: string }, { tachados: number }>({
   nombre: 'todo_fuera',
   entrada: z.object({ cuenta_id: id }).strict(),
   exige: 'accion.cocinar',
+  enElTpv: 'tambien',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -154,6 +157,7 @@ export const recuperar = comando<{ cuenta_id: string }, { destachados: number }>
   nombre: 'recuperar',
   entrada: z.object({ cuenta_id: id }).strict(),
   exige: 'accion.cocinar',
+  enElTpv: 'tambien',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);

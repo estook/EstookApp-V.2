@@ -114,18 +114,13 @@ export const AJUSTES: readonly Ajuste[] = [
     nombre: 'Cuándo es llegar tarde',
     palabras: 'retraso tarde margen minutos fichaje',
   },
-  // H1 (0068): la pausa de descanso y el aparato del local para fichar.
+  // H1 (0068): la pausa de descanso. El aparato para fichar se vincula en Estook TPV
+  // desde T1 (0107), como los demás aparatos del local.
   {
     id: 'pausas',
     seccion: 'local',
     nombre: 'Las pausas de descanso',
     palabras: 'pausa descanso bocadillo convenio cuenta trabajo fichar horas',
-  },
-  {
-    id: 'aparato-para-fichar',
-    seccion: 'local',
-    nombre: 'El aparato para fichar',
-    palabras: 'aparato tablet quiosco terminal fichar pin sin correo entrada ordenador',
   },
   // M20A · 1 · 2 (0106): el plano que ve el camarero en Estook TPV.
   {

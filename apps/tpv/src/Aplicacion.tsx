@@ -1,33 +1,51 @@
-import { useMemo, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { usarTamanoDeLetra, usarTema } from '@estook/ui';
-import { LaPuerta } from './sesion/LaPuerta.tsx';
+import { puedeEditar } from '@estook/permisos';
+import { usarTamanoDeLetra } from '@estook/ui';
+import { LaPuerta } from './puerta/LaPuerta.tsx';
 import { ElPlano } from './plano/ElPlano.tsx';
 import { LaMesa } from './mesa/LaMesa.tsx';
+import { ElInicio } from './inicio/ElInicio.tsx';
+import { Fichar } from './inicio/Fichar.tsx';
+import { Agotados } from './inicio/Agotados.tsx';
+import { AjustesDelTpv } from './ajustes/AjustesDelTpv.tsx';
 import { escucharLaDireccion, laDireccion } from './navegar.ts';
 import { ContextoAlSegundo, usarEscucharAlSegundo } from './ganchos/usarLaSala.ts';
+import { usarSesion } from './sesion/Sesion.tsx';
 
 /**
- * Estook TPV, la sala (M20A · 1 · 2, decisión 0106): **el plano** y **una mesa**. Una
- * pantalla completa, sin la barra de Estook, para un aparato que hace una sola cosa
- * durante el servicio (Anexo, 3.1).
+ * Estook TPV (T1 · La puerta, decisión 0107): **una aplicación aparte**, en
+ * `estook.com/tpv/`, que solo funciona en un aparato vinculado al local y en la que cada
+ * uno entra con su PIN. Dentro: el inicio, las mesas y cada mesa, fichar, los agotados y
+ * los Ajustes del TPV. Una pantalla completa, sin la barra de Estook.
  */
 
-function LaSala() {
+function Dentro() {
   const direccion = useSyncExternalStore(escucharLaDireccion, laDireccion);
-  // Una sola escucha para toda la sala: entrar y salir de una mesa no vuelve a conectar.
+  const { yo } = usarSesion();
+  // Una sola escucha para todo el aparato: entrar y salir de una mesa no vuelve a conectar.
   const conectado = usarEscucharAlSegundo();
+  const tomaNota = puedeEditar(yo.permisos, 'accion.tomar_nota');
   const mesa = /^mesa\/([0-9a-f-]{36})$/.exec(direccion)?.[1];
-  return (
-    <ContextoAlSegundo.Provider value={conectado}>
-      {mesa === undefined ? <ElPlano /> : <LaMesa key={mesa} cuentaId={mesa} />}
-    </ContextoAlSegundo.Provider>
-  );
+
+  let pantalla;
+  if (direccion === 'inicio') pantalla = <ElInicio />;
+  else if (direccion === 'fichar') pantalla = <Fichar />;
+  else if (direccion === 'agotados') pantalla = <Agotados />;
+  else if (direccion === 'ajustes' || direccion.startsWith('ajustes/')) {
+    pantalla = <AjustesDelTpv direccion={direccion} />;
+  } else if (!tomaNota) pantalla = <ElInicio />;
+  else if (mesa !== undefined) pantalla = <LaMesa key={mesa} cuentaId={mesa} />;
+  else pantalla = <ElPlano />;
+
+  return <ContextoAlSegundo.Provider value={conectado}>{pantalla}</ContextoAlSegundo.Provider>;
 }
 
 export function Aplicacion() {
-  // El tema y la letra son del aparato, los mismos que en Estook.
-  usarTema();
+  // **Solo oscuro** (respuesta 8 de la 0107, Anexo 11.12): las fichas de Estook TPV.
+  useEffect(() => {
+    document.documentElement.dataset['tema'] = 'tpv';
+  }, []);
   usarTamanoDeLetra();
   const cache = useMemo(
     () =>
@@ -39,7 +57,7 @@ export function Aplicacion() {
   return (
     <QueryClientProvider client={cache}>
       <LaPuerta>
-        <LaSala />
+        <Dentro />
       </LaPuerta>
     </QueryClientProvider>
   );

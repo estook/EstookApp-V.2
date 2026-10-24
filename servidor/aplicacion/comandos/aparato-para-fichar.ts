@@ -21,9 +21,7 @@ import {
   esPinConForma,
   huellaDeToken,
   llavesDelAparato,
-  tokenNuevo,
 } from '../../dominio/secretos.ts';
-import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import {
   comando,
   consulta,
@@ -44,9 +42,10 @@ import { abrirElTurno, acabarLaPausa, cerrarElTurno, empezarLaPausa } from './fi
  *
  * ── Dos mitades ─────────────────────────────────────────────────────────────
  *
- *   PONERLO   Quien lleva el local, **desde el propio aparato** y con su sesión,
- *             lo convierte en aparato para fichar. Recibe una llave que se queda
- *             guardada en ese aparato; del lado de Estook solo queda su huella.
+ *   PONERLO   Desde T1 (0107), **se vincula en Estook TPV** como cualquier aparato,
+ *             con la función «Fichar»: el primero con el correo de quien lleva el
+ *             local, los demás con un código (`aparatos.ts`). Se queda con su llave;
+ *             del lado de Estook solo queda su huella. Hasta T1 se ponía en Ajustes.
  *   USARLO    Sin sesión de nadie: la llave dice de qué local es, y el PIN, quién
  *             teclea. Solo sirve para fichar: no abre la app ni enseña nada más.
  *
@@ -58,130 +57,12 @@ import { abrirElTurno, acabarLaPausa, cerrarElTurno, empezarLaPausa } from './fi
  * como al entrar: cinco, y quince minutos.
  */
 
-// ── Ponerlo y quitarlo, desde Ajustes ────────────────────────────────────────
-
-export const entradaPonerAparato = z.object({ nombre: z.string().trim().min(1).max(60) }).strict();
-
-export type EntradaPonerAparato = z.infer<typeof entradaPonerAparato>;
-
-export interface SalidaPonerAparato {
-  readonly terminalId: string;
-  readonly nombre: string;
-  /** **Una sola vez**, en claro: se guarda en el aparato y no se puede volver a pedir. */
-  readonly llave: string;
-}
-
-export const ponerAparatoParaFichar = comando<EntradaPonerAparato, SalidaPonerAparato>({
-  nombre: 'poner_aparato_para_fichar',
-  entrada: entradaPonerAparato,
-  exige: 'app.ajustes',
-  // Devuelve la llave: no se recuerda (`conSecreto`, en el contrato).
-  conSecreto: true,
-
-  async ejecutar(contexto, entrada) {
-    if (!contexto.personaId) throw new FalloDeAplicacion('sin_sesion');
-    const localId = elLocalDeLaSesion(contexto);
-    const llave = tokenNuevo();
-    const filas = await contexto.sql<{ id: string }[]>`
-      insert into estook.terminal (local_id, nombre, huella, creado_por)
-      values (${localId}, ${entrada.nombre}, ${await huellaDeToken(llave)}, ${contexto.personaId})
-      returning id::text as id
-    `;
-    const terminalId = filas[0]?.id;
-    if (terminalId === undefined) throw new FalloDeAplicacion('sin_permiso');
-
-    await contexto.sql`
-      select estook.anotar(
-        ${laOrganizacionDeLaSesion(contexto)}::uuid, 'crear', 'terminal', ${terminalId}, ${localId}::uuid,
-        null, ${JSON.stringify({ nombre: entrada.nombre, funcion: 'fichar' })}::text::jsonb, null
-      )
-    `;
-    return { terminalId, nombre: entrada.nombre, llave };
-  },
-});
-
-export const entradaQuitarAparato = z.object({ terminal_id: z.string().uuid() }).strict();
-export type EntradaQuitarAparato = z.infer<typeof entradaQuitarAparato>;
-
-/** Quitarlo **deja de valer al momento**, esté donde esté: la llave ya no abre nada. */
-export const quitarAparatoParaFichar = comando<EntradaQuitarAparato, { terminalId: string }>({
-  nombre: 'quitar_aparato_para_fichar',
-  entrada: entradaQuitarAparato,
-  exige: 'app.ajustes',
-
-  async ejecutar(contexto, entrada) {
-    if (!contexto.personaId) throw new FalloDeAplicacion('sin_sesion');
-    const localId = elLocalDeLaSesion(contexto);
-    const filas = await contexto.sql<{ id: string }[]>`
-      update estook.terminal
-         set retirado_en = ${contexto.ahora.toISOString()}, retirado_por = ${contexto.personaId}
-       where id = ${entrada.terminal_id} and local_id = ${localId} and retirado_en is null
-      returning id::text as id
-    `;
-    if (filas.length === 0) {
-      throw new FalloDeAplicacion('no_existe', {
-        porque: 'Ese aparato ya no estaba puesto para fichar.',
-      });
-    }
-    await contexto.sql`
-      select estook.anotar(
-        ${laOrganizacionDeLaSesion(contexto)}::uuid, 'retirar', 'terminal', ${entrada.terminal_id},
-        ${localId}::uuid, null, null, null
-      )
-    `;
-    return { terminalId: entrada.terminal_id };
-  },
-});
-
-export interface AparatoParaFichar {
-  readonly terminalId: string;
-  readonly nombre: string;
-  readonly puestoEn: string;
-  readonly puestoPor: string | null;
-  readonly ultimoUsoEn: string | null;
-}
-
-export const aparatosParaFichar = consulta<Record<string, never>, readonly AparatoParaFichar[]>({
-  nombre: 'aparatos_para_fichar',
-  entrada: z.object({}).strict(),
-  exige: 'app.ajustes',
-
-  async ejecutar(contexto) {
-    const localId = elLocalDeLaSesion(contexto);
-    const filas = await contexto.sql<
-      {
-        id: string;
-        nombre: string;
-        creado_en: string;
-        quien: string | null;
-        ultimo: string | null;
-      }[]
-    >`
-      select t.id::text as id, t.nombre,
-             to_char(t.creado_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as creado_en,
-             p.nombre as quien,
-             to_char(t.ultimo_uso_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as ultimo
-        from estook.terminal t
-        left join estook.persona p on p.id = t.creado_por
-       where t.local_id = ${localId} and t.retirado_en is null and t.funcion = 'fichar'
-       order by t.creado_en
-    `;
-    return filas.map((f) => ({
-      terminalId: f.id,
-      nombre: f.nombre,
-      puestoEn: f.creado_en,
-      puestoPor: f.quien,
-      ultimoUsoEn: f.ultimo,
-    }));
-  },
-});
-
 // ── Usarlo, sin sesión de nadie ──────────────────────────────────────────────
 
 /** La llave del aparato: 43 caracteres de azar, como un token de sesión. */
 const llave = z.string().trim().min(20).max(200);
 
-interface ElAparato {
+export interface ElAparato {
   readonly terminalId: string;
   readonly localId: string;
   readonly organizacionId: string;
@@ -225,7 +106,11 @@ async function elAparato(contexto: Contexto, laLlave: string): Promise<ElAparato
  * hace después pasa la seguridad de las filas como esa persona, igual que si
  * hubiera fichado desde su móvil. Nadie ficha por otro.
  */
-async function quienEsElPin(contexto: Contexto, aparato: ElAparato, pin: string): Promise<string> {
+export async function quienEsElPin(
+  contexto: Contexto,
+  aparato: Pick<ElAparato, 'terminalId' | 'localId' | 'salDelPin'>,
+  pin: string,
+): Promise<string> {
   if (!esPinConForma(pin)) {
     await contexto.sql`select estook.anotar_intento_en_terminal(${aparato.terminalId}::uuid, false)`;
     throw falloQueSeGuarda('pin_desconocido');
@@ -422,7 +307,7 @@ export const entradaQuienFichaAqui = z
   .object({ llave, pin: z.string().trim().min(1).max(12) })
   .strict();
 
-async function comoEsta(
+export async function comoEsta(
   contexto: Contexto,
   personaId: string,
   localId: string,
@@ -558,7 +443,7 @@ async function avisarDeLoQueNoSeApunto(
 }
 
 /** El fichaje de dentro, como desde el móvil: lo comparten el de ahora y el de sin conexión. */
-async function ficharEnElAparato(
+export async function ficharEnElAparato(
   contexto: Contexto,
   aparato: ElAparato,
   personaId: string,

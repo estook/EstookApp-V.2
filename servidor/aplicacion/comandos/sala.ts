@@ -6,6 +6,7 @@ import { tocarElServicio } from '../al-segundo.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
+import { aprobarConElPin, usarLaAprobacion } from '../aprobaciones.ts';
 import {
   apuntarEnLaMesa,
   comoPaseDeLaMesa,
@@ -93,6 +94,7 @@ export const abrirMesa = comando<EntradaAbrirMesa, { cuentaId: string; yaEstaba:
   nombre: 'abrir_mesa',
   entrada: entradaAbrirMesa,
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -176,6 +178,7 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
   nombre: 'pedir',
   entrada: entradaPedir,
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -354,6 +357,7 @@ export const cambiarPlatoDeLaMesa = comando<EntradaCambiarPlato, { lineaId: stri
   nombre: 'cambiar_plato_de_la_mesa',
   entrada: entradaCambiarPlato,
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -402,7 +406,15 @@ export const cambiarPlatoDeLaMesa = comando<EntradaCambiarPlato, { lineaId: stri
 });
 
 export const entradaQuitarPlato = z
-  .object({ linea_id: id, motivo: z.string().trim().min(3).max(300).optional() })
+  .object({
+    linea_id: id,
+    motivo: z.string().trim().min(3).max(300).optional(),
+    /**
+     * Ya en cocina, si quien lo quita no puede solo: el PIN del encargado que lo aprueba,
+     * tecleado en el mismo aparato (Anexo 3.4, 0107).
+     */
+    pin_del_encargado: z.string().trim().min(1).max(12).optional(),
+  })
   .strict();
 export type EntradaQuitarPlato = z.infer<typeof entradaQuitarPlato>;
 
@@ -410,6 +422,7 @@ export const quitarPlato = comando<EntradaQuitarPlato, { lineaId: string; borrad
   nombre: 'quitar_plato',
   entrada: entradaQuitarPlato,
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -435,25 +448,44 @@ export const quitarPlato = comando<EntradaQuitarPlato, { lineaId: string; borrad
           'Ya está en cocina: escribe por qué se quita («no lo pidieron», «se equivocó de mesa»).',
       });
     }
+    // Quien no puede quitarlo solo lo pide, y lo aprueba un encargado con su PIN en el
+    // mismo aparato (Roles 1.12, 0107). En la app no hay a quién pasárselo.
     const puede = await loQuePuede(contexto, localId, ['accion.quitar_de_cocina']);
+    let aprobacionId: string | null = null;
     if (!puede.editar('accion.quitar_de_cocina')) {
-      throw new FalloDeAplicacion('sin_permiso', {
-        porque: 'Lo que ya está en cocina lo quita un jefe de sala o quien lleva el local.',
+      if ((contexto.sesion?.aparato ?? null) === null) {
+        throw new FalloDeAplicacion('sin_permiso', {
+          porque: 'Lo que ya está en cocina lo quita un jefe de sala o quien lleva el local.',
+        });
+      }
+      if (entrada.pin_del_encargado === undefined) {
+        throw new FalloDeAplicacion('lo_aprueba_un_encargado', {
+          porque: 'Ya está en cocina: que un encargado teclee su PIN aquí para quitarlo.',
+        });
+      }
+      aprobacionId = await aprobarConElPin(contexto, {
+        operacion: 'quitar_de_cocina',
+        sobre: linea.id,
+        motivo: entrada.motivo,
+        pin: entrada.pin_del_encargado,
       });
     }
     await contexto.sql`
       update estook.linea_de_cuenta
          set quitada_en = ${contexto.ahora.toISOString()}::timestamptz,
              quitada_por = ${contexto.personaId}::uuid,
-             motivo_de_quitar = ${entrada.motivo}
+             motivo_de_quitar = ${entrada.motivo},
+             aprobacion_id = ${aprobacionId}::uuid
        where (id = ${linea.id}::uuid or parte_de = ${linea.id}::uuid) and quitada_en is null
     `;
+    if (aprobacionId !== null) await usarLaAprobacion(contexto, aprobacionId);
     // Si era lo último que faltaba de su pase, el pase ha salido.
     if (linea.pase !== null) await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase);
     await avisar(contexto, localId, 'quitar_plato', linea.cuenta_id, {
       plato: linea.nombre,
       motivo: entrada.motivo,
       salio: linea.salio_en !== null,
+      ...(aprobacionId === null ? {} : { aprobacion: aprobacionId }),
     });
     return { lineaId: linea.id, borrado: false };
   },
@@ -463,6 +495,7 @@ export const devolverACocina = comando<{ linea_id: string; motivo: string }, { l
   nombre: 'devolver_a_cocina',
   entrada: z.object({ linea_id: id, motivo: z.string().trim().min(1).max(200) }).strict(),
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -506,6 +539,7 @@ export const mandarACocina = comando<{ cuenta_id: string }, SalidaMandar>({
   nombre: 'mandar_a_cocina',
   entrada: z.object({ cuenta_id: id }).strict(),
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -570,6 +604,7 @@ export const marchar = comando<{ cuenta_id: string; pase: number }, { pase: numb
   nombre: 'marchar',
   entrada: z.object({ cuenta_id: id, pase: z.number().int().min(1).max(9) }).strict(),
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -613,6 +648,7 @@ export const cambiarLaMesa = comando<EntradaCambiarLaMesa, { cuentaId: string }>
   nombre: 'cambiar_la_mesa',
   entrada: entradaCambiarLaMesa,
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -652,6 +688,7 @@ export const cambiarDeMesa = comando<{ cuenta_id: string; mesa_id: string }, { c
   nombre: 'cambiar_de_mesa',
   entrada: z.object({ cuenta_id: id, mesa_id: id }).strict(),
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -691,6 +728,7 @@ export const juntarMesas = comando<{ cuenta_id: string; con: string }, { cuentaI
   nombre: 'juntar_mesas',
   entrada: z.object({ cuenta_id: id, con: id }).strict(),
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -743,6 +781,7 @@ export const pasarAOtroCamarero = comando<
   nombre: 'pasar_a_otro_camarero',
   entrada: z.object({ cuenta_ids: z.array(id).min(1).max(100), camarero_id: id }).strict(),
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -786,6 +825,7 @@ export const liberarMesa = comando<{ cuenta_id: string }, { cuentaId: string }>(
   nombre: 'liberar_mesa',
   entrada: z.object({ cuenta_id: id }).strict(),
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -805,6 +845,7 @@ export const anularMesa = comando<{ cuenta_id: string; motivo: string }, { cuent
   nombre: 'anular_mesa',
   entrada: z.object({ cuenta_id: id, motivo: z.string().trim().min(3).max(300) }).strict(),
   exige: 'accion.quitar_de_cocina',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);

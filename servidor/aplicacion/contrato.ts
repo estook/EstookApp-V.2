@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import type { CodigoDeError } from '@estook/dominio';
+import type { CodigoDeError, FuncionDelAparato } from '@estook/dominio';
 import type { Permiso } from '@estook/permisos';
 import type { AlmacenDeFicheros } from '../infraestructura/almacen.ts';
 import type { CorreoSaliente } from '../infraestructura/correo.ts';
@@ -258,6 +258,23 @@ export interface Puertas {
    * contraseña y montar el segundo factor. Son de la persona, no del sitio.
    */
   readonly tambienEnElAdmin?: true;
+  /**
+   * **Desde Estook TPV** (T1 · 0107). Un aparato vinculado, con quien tecleó su PIN,
+   * **no es una puerta a la gestión** (Anexo 3.4 y 11.3): solo pasa lo que lo declara.
+   *
+   *   · `'tambien'`  desde la app y desde un aparato (marcar un agotado)
+   *   · `'solo'`     solo desde un aparato vinculado: la sala, y lo del propio TPV. Así
+   *                  Estook TPV no se abre con la sesión de Estook en ningún aparato
+   *
+   * Lo que no dice nada **no pasa desde un aparato**, así que una operación nueva no
+   * abre la gestión por olvidarse de esto. Lo cumple el despachador, como el admin.
+   */
+  readonly enElTpv?: 'tambien' | 'solo';
+  /**
+   * **En qué aparatos**, si no vale en todos: lo que separa la caja del comandero es el
+   * cajón, y un comandero no lo abre aunque teclee el gerente (Anexo 11.3, punto 5).
+   */
+  readonly enLosAparatos?: readonly FuncionDelAparato[];
 }
 
 export interface Consulta<Entrada, Salida> extends Puertas {

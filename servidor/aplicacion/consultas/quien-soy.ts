@@ -450,7 +450,11 @@ async function leerLocal(
  * «La matriz de permisos vive **solo** en la base de datos» (decision de M1). Se
  * pregunta permiso a permiso contra el catalogo, en vez de repetir la matriz aqui.
  */
-async function leerPermisos(sql: Sql, persona: string, local: string): Promise<PermisosResueltos> {
+export async function leerPermisos(
+  sql: Sql,
+  persona: string,
+  local: string,
+): Promise<PermisosResueltos> {
   const filas = await sql<{ codigo: string; nivel: string }[]>`
     select p.codigo,
            estook.nivel_de_permiso(${persona}::uuid, ${local}::uuid, p.codigo)::text as nivel

@@ -253,11 +253,48 @@ export const ERRORES = {
     429,
   ),
 
+  // Desde T1 (0107) los aparatos se vinculan en Estook TPV, y desde allí se desvinculan.
   aparato_retirado: error(
     'aparato_retirado',
-    'Este aparato ya no está puesto para fichar.',
-    'Quien lleva el local puede volver a ponerlo desde Ajustes → Tu local.',
+    'Este aparato ya no está vinculado al local.',
+    'Quien lleva el local puede vincularlo otra vez desde Estook TPV: Ajustes del TPV › Aparatos › Añadir aparato.',
     401,
+  ),
+
+  // ── T1 · La puerta de Estook TPV (0107) ────────────────────────────────────
+  codigo_no_vale: error(
+    'codigo_no_vale',
+    'Ese código no vale: no existe, ya se ha usado o ha caducado.',
+    'Comprueba las seis cifras. Si han pasado más de diez minutos, saca otro en un aparato ya vinculado: Ajustes del TPV › Aparatos › Añadir aparato.',
+    400,
+  ),
+
+  demasiados_codigos: error(
+    'demasiados_codigos',
+    'Desde aquí se han probado muchos códigos seguidos.',
+    'Espera una hora, o vincula este aparato con el QR desde otra conexión.',
+    429,
+  ),
+
+  lo_aprueba_un_encargado: error(
+    'lo_aprueba_un_encargado',
+    'Esto lo aprueba un encargado.',
+    'Que un encargado teclee su PIN en este mismo aparato: sirve para esto y una sola vez.',
+    403,
+  ),
+
+  aparato_de_otra_persona: error(
+    'aparato_de_otra_persona',
+    'Este móvil es de otra persona: solo entra su PIN.',
+    'Usa tu móvil o el aparato del local.',
+    403,
+  ),
+
+  falta_fichar: error(
+    'falta_fichar',
+    'En este local, para usar el TPV hay que fichar la entrada.',
+    'Ficha la entrada y entra.',
+    403,
   ),
 
   // ── I · la app instalable (0070) ──────────────────────────────────────────

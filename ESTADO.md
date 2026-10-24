@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 23 de octubre de 2026 · **M20A · 1 en producción** (#130 y #131: la base y la API de la sala y la cocina, y unas primeras pantallas en `estook.com/tpv/`; 0082 migrada, API 107/253). **Richi las rechazó y decidió Estook TPV entero** ([0107](docs/decisiones/0107-estook-tpv-el-tpv-entero.md), Anexo 1.4, capítulo 11), en su pull request de documentos. **Lo siguiente: T1 · La puerta**
+Última actualización: 23 de octubre de 2026 · **M20A · 1 en producción** (#130 y #131: la base y la API de la sala y la cocina, y unas primeras pantallas en `estook.com/tpv/`; 0082 migrada, API 107/253). **Richi las rechazó y decidió Estook TPV entero** ([0107](docs/decisiones/0107-estook-tpv-el-tpv-entero.md), Anexo 1.4, capítulo 11), fusionado (#132). **T1 · La puerta, a medias en su rama** ([el relevo](docs/relevo-t1-la-puerta.md))
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** La 0107 y los documentos de Estook TPV entero están en la rama `estook-tpv-el-tpv-entero`, con su pull request (solo documentos). Lo siguiente, **T1 · La puerta** ([el plan](docs/m20a-la-sala-y-la-cocina.md)), sale de `main` cuando Richi lo fusione; **no se escribe código del TPV sin releer el Anexo, capítulo 11**.
+- **A medias: T1 · La puerta**, en la rama `t1-la-puerta` (subida, sin pull request). Construida y con sus pruebas en verde; faltan una pregunta a Richi (el PIN de 6 o de 4 cifras), los documentos y el pull request. **Antes de nada, se lee [`docs/relevo-t1-la-puerta.md`](docs/relevo-t1-la-puerta.md)**, que dice qué está hecho, qué falta y en qué fichero. Richi contestó el 23-oct: la tablet para fichar pasa al TPV y sale de Estook › Ajustes.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).

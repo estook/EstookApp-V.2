@@ -1069,3 +1069,23 @@ export type {
   PlatoDeLaMesa,
   SeccionDelMenuEnLaSala,
 } from './sala.ts';
+export {
+  BLOQUEO_DE_FABRICA,
+  CIFRAS_DEL_PIN,
+  CODIGO_PARA_VINCULAR,
+  FUNCIONES_DEL_APARATO,
+  FUNCIONES_QUE_SE_ELIGEN,
+  LIMITES_DEL_BLOQUEO,
+  NOMBRE_DE_LA_FUNCION,
+  dondeCae,
+  elCodigoDeLaDireccion,
+  esCodigoConForma,
+  esFuncionDelAparato,
+  esPinFacil,
+  inicialesDe,
+  leerElTokenDelAparato,
+  minutosDelBloqueo,
+  nombrePropuesto,
+  tokenDelAparato,
+} from './aparatos.ts';
+export type { AjustesDelBloqueo, FuncionDelAparato } from './aparatos.ts';

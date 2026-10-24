@@ -4,6 +4,7 @@ import { puedeEditar } from '@estook/permisos';
 import { Boton, CAJA, Envoltorio, ErrorEnCristiano, Hoja } from '@estook/ui';
 import { usarAcciones } from '../ganchos/usarLaSala.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { LoApruebaUnEncargado } from './LoApruebaUnEncargado.tsx';
 import { cambiarLinea, quitarLinea, type Borrador } from '../logica/comanda.ts';
 import { elPase, type GrupoDeLaCuenta, type LineaALaVista } from '../logica/laCuenta.ts';
 import { euros } from '../logica/texto.ts';
@@ -213,6 +214,7 @@ function ElPlato({
   const paraQuien = linea.destino === 'barra' ? 'Nota para la barra' : 'Nota para cocina';
   const [haciendo, setHaciendo] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
+  const [pidiendo, setPidiendo] = useState(false);
   const esMenu = enElBorrador?.menuId != null;
   const opcionesDePase = [...new Set([...pases, 1, 2, 3, linea.pase ?? 1])].sort((a, b) => a - b);
 
@@ -400,48 +402,49 @@ function ElPlato({
           </>
         )}
 
-        {modo === 'quitar' && enCocina && !esJefe && (
-          <p className="rounded-medio bg-fondo px-e3 py-e2">
-            Ya está mandado: lo quita un jefe de sala o quien lleva el local, con su motivo, desde
-            su Estook TPV. Díselo y la cocina lo verá ANULADO.
-          </p>
-        )}
         {modo === 'quitar' &&
           (enCocina ? (
-            esJefe && (
-              <>
-                <Envoltorio
-                  id="motivo-de-quitar"
-                  etiqueta="¿Por qué se quita?"
-                  ayuda={
-                    linea.destino === 'cocina'
+            <>
+              <Envoltorio
+                id="motivo-de-quitar"
+                etiqueta="¿Por qué se quita?"
+                ayuda={
+                  !esJefe
+                    ? 'Ya está mandado: lo aprueba un encargado con su PIN, aquí mismo.'
+                    : linea.destino === 'cocina'
                       ? 'Ya está en cocina: la cocina lo verá ANULADO.'
                       : 'Ya está mandado: queda apuntado con su motivo.'
-                  }
-                >
-                  <input
-                    id="motivo-de-quitar"
-                    className={CAJA}
-                    maxLength={300}
-                    placeholder="No lo pidieron, se equivocó de mesa…"
-                    value={motivo}
-                    onChange={(e) => {
-                      setMotivo(e.target.value);
-                    }}
-                  />
-                </Envoltorio>
-                <Boton
-                  tono="peligro"
-                  disabled={motivo.trim().length < 3}
-                  cargando={haciendo}
-                  onClick={() => {
-                    void hacer('quitar_plato', { linea_id: linea.id, motivo: motivo.trim() });
+                }
+              >
+                <input
+                  id="motivo-de-quitar"
+                  className={CAJA}
+                  maxLength={300}
+                  placeholder="No lo pidieron, se equivocó de mesa…"
+                  value={motivo}
+                  onChange={(e) => {
+                    setMotivo(e.target.value);
                   }}
-                >
-                  {linea.destino === 'cocina' ? 'Quitar de cocina' : 'Quitar'}
-                </Boton>
-              </>
-            )
+                />
+              </Envoltorio>
+              <Boton
+                tono="peligro"
+                disabled={motivo.trim().length < 3}
+                cargando={haciendo}
+                onClick={() => {
+                  // Quien no puede quitarlo solo lo pide, y lo aprueba un encargado (0107).
+                  if (esJefe)
+                    void hacer('quitar_plato', { linea_id: linea.id, motivo: motivo.trim() });
+                  else setPidiendo(true);
+                }}
+              >
+                {!esJefe
+                  ? 'Lo aprueba un encargado'
+                  : linea.destino === 'cocina'
+                    ? 'Quitar de cocina'
+                    : 'Quitar'}
+              </Boton>
+            </>
           ) : (
             <Boton
               tono="peligro"
@@ -453,6 +456,28 @@ function ElPlato({
               Quitar
             </Boton>
           ))}
+
+        {pidiendo && (
+          <LoApruebaUnEncargado
+            que={`Quitar ${String(linea.cantidad)} ${linea.nombre}`}
+            pide={yo.nombre}
+            motivo={motivo.trim()}
+            alCancelar={() => {
+              setPidiendo(false);
+            }}
+            alAprobar={async (pin) => {
+              const hecho = await ejecutar('quitar_plato', {
+                linea_id: linea.id,
+                motivo: motivo.trim(),
+                pin_del_encargado: pin,
+              });
+              if (!hecho.ok) return hecho.error;
+              setPidiendo(false);
+              alCerrar();
+              return null;
+            }}
+          />
+        )}
 
         {fallo !== null && <ErrorEnCristiano error={fallo} />}
       </div>

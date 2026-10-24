@@ -125,6 +125,7 @@ export const marcarAgotado = comando<
   nombre: 'marcar_agotado',
   entrada: entradaMarcarAgotado,
   exige: 'accion.marcar_agotado',
+  enElTpv: 'tambien',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaCarta(contexto);
@@ -171,6 +172,7 @@ export const quitarAgotado = comando<{ plato_id: string }, { platoId: string; es
   nombre: 'quitar_agotado',
   entrada: z.object({ plato_id: elPlato }).strict(),
   exige: 'accion.marcar_agotado',
+  enElTpv: 'tambien',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaCarta(contexto);

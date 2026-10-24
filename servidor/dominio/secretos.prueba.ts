@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CIFRAS_DEL_PIN, esPinFacil } from '@estook/dominio';
 import {
   DIGITOS_DEL_PIN,
   LARGO_MINIMO_DE_CLAVE,
@@ -109,6 +110,17 @@ describe('el PIN', () => {
       expect(pin).toHaveLength(DIGITOS_DEL_PIN);
       expect(esPinConForma(pin)).toBe(true);
     }
+  });
+
+  it('nunca es de los que se adivinan: todas iguales o una escalera (T1, Anexo 11.4)', () => {
+    // Con dos cifras, treinta de cada cien son «fáciles» (00, 12, 98…): sin el filtro,
+    // en mil tiradas saldrían unas trescientas.
+    for (let i = 0; i < 1000; i++) expect(esPinFacil(pinNuevo(2))).toBe(false);
+  });
+
+  it('la pantalla teclea las mismas cifras que pide el servidor', () => {
+    // Una pantalla que esperara otras no dejaría entrar a nadie.
+    expect(CIFRAS_DEL_PIN).toBe(DIGITOS_DEL_PIN);
   });
 
   it('no repite el mismo una y otra vez', () => {

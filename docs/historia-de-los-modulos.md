@@ -3238,6 +3238,32 @@ común viva en `packages/`.
 **Estook TPV entero** ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md), Anexo capítulo 11): el
 servidor de 1 · 1 y 1 · 2 se queda, y las pantallas se rehacen en T1 a T3.
 
+### T1 · La puerta de Estook TPV
+
+_24 de octubre de 2026._ Migración `0083`, decisión [0108](decisiones/0108-t1-la-puerta.md), plan
+[`m20a-la-sala-y-la-cocina.md`](m20a-la-sala-y-la-cocina.md). **Estook TPV deja de entrar con la
+sesión de Estook**: solo en un aparato vinculado, y cada uno con su PIN de 6 cifras.
+
+- **La base** (0083): `terminal` con sus cinco funciones, de quién es, su cajón y su latido; `cajon`,
+  `codigo_para_vincular`, `intento_de_vincular`, `turno_del_operador`, `ajustes_del_tpv` y
+  `aprobacion`; los permisos `accion.vincular_aparatos` y `accion.ajustes_del_tpv`; y
+  `lo_mandado_no_se_reescribe` con la aprobación de un encargado.
+- **La API**: `aparatos.ts` (vincular, el código, el latido, el PIN, el turno, bloquear, fichar,
+  los aparatos y sus ajustes) y `aprobaciones.ts`; `quien-llama.ts`, un solo lector del token
+  `tpv.<turno>.<llave>`; y las puertas `enElTpv` y `enLosAparatos` en el contrato. Fuera los tres
+  del aparato para fichar de Ajustes. **109 consultas y 261 comandos.**
+- **Estook TPV** (`apps/tpv`): la puerta (`puerta/`: vincular, qué es, el PIN, «ya no está
+  vinculado»), el bloqueo (`usarElBloqueo`), el inicio (`inicio/`), Ajustes del TPV (`ajustes/`:
+  Aparatos y PIN y bloqueo) y «lo aprueba un encargado» en la mesa; **solo oscuro** (el tema `tpv` de
+  `packages/ui`).
+- **En Estook**: fuera «Abrir la sala» y «El aparato para fichar» de Ajustes; la pantalla de fichar
+  del aparato, oscura.
+
+Las pruebas: `la-puerta.prueba.ts` (contra la base, de vincular a desvincular), `aparatos.prueba.ts`
+(el dominio), `despachador.prueba.ts` (las dos puertas, tasadas), `secretos.prueba.ts` (el PIN que
+no es fácil), `contraste.prueba.ts` (el tema oscuro) y `la-puerta.spec.ts` (la pantalla, en
+escritorio y en móvil).
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

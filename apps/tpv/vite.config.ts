@@ -1,5 +1,6 @@
+import { copyFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwind from '@tailwindcss/vite';
 import { laPoliticaDeSeguridad } from '../../herramientas/politica-de-seguridad.ts';
@@ -16,6 +17,23 @@ import { laPoliticaDeSeguridad } from '../../herramientas/politica-de-seguridad.
  */
 const RAIZ = fileURLToPath(new URL('../../', import.meta.url));
 
+/**
+ * **La dirección del QR para vincular** (T1, Anexo 11.3): `estook.com/tpv/vincular/#482913`.
+ * Pages sirve ficheros, así que esa carpeta tiene que existir: es la misma página. El
+ * código va detrás del `#`, que no llega a ningún servidor.
+ */
+function laDireccionDelQr(): Plugin {
+  return {
+    name: 'la-direccion-del-qr',
+    apply: 'build',
+    closeBundle() {
+      const dist = fileURLToPath(new URL('./dist/', import.meta.url));
+      mkdirSync(`${dist}vincular`, { recursive: true });
+      copyFileSync(`${dist}index.html`, `${dist}vincular/index.html`);
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const variables = loadEnv(mode, RAIZ, '');
   const raiz = variables['VITE_BASE'] ?? '/';
@@ -28,6 +46,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwind(),
+      laDireccionDelQr(),
       // La politica de seguridad de contenido. Se calcula al construir porque
       // depende de donde este la API, que se decide al construir. Vive entera en
       // herramientas/politica-de-seguridad.mjs, que es su unico dueno.

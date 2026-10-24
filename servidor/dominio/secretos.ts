@@ -28,7 +28,7 @@
  * no sirve para entrar. Quien se lleve la base de datos entera no se lleva una
  * sola sesion.
  */
-import { LARGO_MINIMO_DE_CLAVE } from '@estook/dominio';
+import { LARGO_MINIMO_DE_CLAVE, esPinFacil } from '@estook/dominio';
 
 const ALGORITMO = 'pbkdf2-sha256';
 
@@ -187,15 +187,19 @@ function sonIguales(uno: string, otro: string): boolean {
  */
 export function pinNuevo(digitos = DIGITOS_DEL_PIN): string {
   const TOPE = 250; // 25 tramos completos de 10 en 256.
-  let pin = '';
-  while (pin.length < digitos) {
-    for (const byte of bytesAlAzar(digitos * 2)) {
-      if (byte >= TOPE) continue;
-      pin += String(byte % 10);
-      if (pin.length === digitos) break;
+  for (;;) {
+    let pin = '';
+    while (pin.length < digitos) {
+      for (const byte of bytesAlAzar(digitos * 2)) {
+        if (byte >= TOPE) continue;
+        pin += String(byte % 10);
+        if (pin.length === digitos) break;
+      }
     }
+    // **Nunca uno de los que se adivinan** (T1, Anexo 11.4): todas iguales o una
+    // escalera. Son veinte de un millón: se tira otro y ya está.
+    if (!esPinFacil(pin)) return pin;
   }
-  return pin;
 }
 
 export function esPinConForma(valor: string): boolean {

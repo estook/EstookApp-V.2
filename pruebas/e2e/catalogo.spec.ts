@@ -150,7 +150,7 @@ test.describe('el catálogo', () => {
     await expect(page.getByText('null · no es lo mismo que cero')).toBeVisible();
   });
 
-  test('los cuarenta y cuatro errores del catálogo se pintan, y ninguno enseña su código', async ({
+  test('los cuarenta y nueve errores del catálogo se pintan, y ninguno enseña su código', async ({
     page,
   }) => {
     // «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría
@@ -196,6 +196,10 @@ test.describe('el catálogo', () => {
     // Y M16a (0105) añade dos: `jornada_cerrada` (un día cerrado no se cambia sin
     // reabrirlo) y `jornada_abierta` (no se reabre lo que no está cerrado). Cuarenta y
     // cuatro, y falló otra vez en GitHub, que es para lo que está.
+    //
+    // Y T1 · La puerta (0107) añade cinco, los de vincular y entrar en Estook TPV:
+    // `codigo_no_vale`, `demasiados_codigos`, `lo_aprueba_un_encargado`,
+    // `aparato_de_otra_persona` y `falta_fichar`. Cuarenta y nueve, y falló en GitHub.
     await abrir(page);
     await irA(page, 'Avisos y vacíos');
 
@@ -203,7 +207,7 @@ test.describe('el catálogo', () => {
       has: page.getByRole('heading', { name: 'ErrorEnCristiano' }),
     });
     const avisos = seccion.getByRole('alert');
-    await expect(avisos).toHaveCount(44);
+    await expect(avisos).toHaveCount(49);
 
     const texto = (await seccion.innerText()).toLowerCase();
     for (const codigo of [

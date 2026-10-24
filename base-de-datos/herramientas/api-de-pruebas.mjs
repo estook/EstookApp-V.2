@@ -53,7 +53,7 @@ import { movilDeMentira } from '../../servidor/infraestructura/movil.ts';
 import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
 import { modeloDeMentira } from '../../servidor/ia/modelo.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
-import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
+import { resolverLaSesion } from '../../servidor/infraestructura/quien-llama.ts';
 import { sembrarAcceso } from '../semillas/acceso.ts';
 
 const RAIZ = fileURLToPath(new URL('../', import.meta.url));
@@ -227,37 +227,18 @@ async function unaTransaccion(quien, hacer) {
       [quien.correlacionId],
     );
 
-    let sesion = null;
-    if (quien.tokenDeSesion !== null) {
-      const { rows } = await bd.query(
-        "select s.*, set_config('estook.persona_id', s.persona_id::text, true) as declarada from estook.sesion_activa($1) s",
-        [await huellaDeToken(quien.tokenDeSesion)],
-      );
-      const fila = rows[0];
-      if (fila) {
-        sesion = {
-          id: fila.sesion_id,
-          personaId: fila.persona_id,
-          organizacionId: fila.organizacion_id,
-          localId: fila.local_id,
-          dobleFactorSuperado: fila.doble_factor_superado,
-          debeCambiarClave: fila.debe_cambiar_clave,
-          // M5. **Olvidarlo aqui costo una prueba en rojo, y menos mal.** Sin
-          // este campo, la sesion de demostracion llegaba al despachador con
-          // `esDemostracion` sin definir, la cuarta puerta no saltaba, y una
-          // visita de solo lectura podia escribir. Contra la API de verdad
-          // funcionaba, porque `postgres.js` devuelve la columna sola.
-          //
-          // Es la misma leccion de E4 mirada del otro lado: aqui el camino que
-          // se comportaba distinto era el de **las pruebas**, no el de
-          // produccion. Cualquier copia a mano de una fila acaba discrepando.
-          esDemostracion: fila.es_demostracion,
-          // 0041. Igual que la de arriba: una copia a mano de la fila que se
-          // olvida un campo deja pasar una sesión de la app al admin.
-          paraAdmin: fila.para_admin,
-        };
-      }
-    }
+    // Quién llama, con el mismo lector que la API de verdad (`quien-llama.ts`). Hasta
+    // T1 esto era una copia a mano de la fila, y **una copia que se olvidó un campo
+    // dejó escribir a una visita de demostración** (M5) y casi deja pasar una sesión
+    // de la app al admin (0041). Con el token de Estook TPV eran seis copias: ahora,
+    // ninguna.
+    const sesion =
+      quien.tokenDeSesion === null
+        ? null
+        : await resolverLaSesion(
+            async (texto, valores) => (await bd.query(texto, [...valores])).rows,
+            quien.tokenDeSesion,
+          );
 
     if (sesion === null) await bd.query("select set_config('estook.persona_id', '', true)");
 

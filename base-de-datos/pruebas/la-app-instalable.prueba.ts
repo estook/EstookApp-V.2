@@ -322,9 +322,8 @@ describe('el aparato del local, sin wifi', () => {
   let omar = { personaId: '', pin: '' };
 
   it('se prepara una vez: la pública para el aparato, la privada solo en Estook', async () => {
-    llave = losDatos<{ llave: string }>(
-      await api.ejecutar(rosa, 'poner_aparato_para_fichar', { nombre: 'Tablet de la barra' }),
-    ).llave;
+    // Se vincula en Estook TPV, con la función «Fichar» (T1, 0107).
+    llave = await api.vincularParaFichar(ROSA, centro, 'Tablet de la barra');
     const nuevo = losDatos<{ personaId: string; pin: string }>(
       await api.ejecutar(rosa, 'invitar_persona', {
         nombre: 'Omar',

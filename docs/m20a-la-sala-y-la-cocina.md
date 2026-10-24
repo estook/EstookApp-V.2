@@ -1,11 +1,13 @@
 # M20A · Estook TPV entero: cómo se construye
 
-> **Estado (23-oct):** M20A · 1 · 1 (#130) y M20A · 1 · 2 (#131) **en producción**: la base y la API
+> **Estado (24-oct):** M20A · 1 · 1 (#130) y M20A · 1 · 2 (#131) **en producción**: la base y la API
 > de la sala y la cocina, y unas primeras pantallas en `estook.com/tpv/`. **Richi las rechazó** el
 > mismo día —un comandero dentro de Estook, no un TPV— y decidió **Estook TPV entero**
 > ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md)). **Qué hace cada pantalla** está en el
 > [Anexo, capítulo 11](maestros/Estook-Anexo-TPV-y-Facturacion.md); aquí, **cómo se construye, en qué
-> orden y cuándo se da cada entrega por buena**. **Lo siguiente: T1 · La puerta.**
+> orden y cuándo se da cada entrega por buena**. **T1 · La puerta, construida** (24-oct,
+> [0108](decisiones/0108-t1-la-puerta.md), migración 0083), en su pull request. **Lo siguiente: T2 ·
+> La sala.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -23,16 +25,16 @@
 
 ## Las entregas
 
-| Entrega                                            | Qué deja (y dónde está escrito)                                                                                                                                                                                                                                                                                                                                                                                                 | Lo que sale de Estook                      |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| **T1 · La puerta**                                 | **Vincular** (el primero con el correo, los demás con el código de 6 cifras o su QR, desvincular y el latido, 11.3) · **las cinco funciones** y el comandero personal · **solo el PIN** y el turno del operador · **el bloqueo** (11.4) · **la aprobación con el PIN de un encargado** (3.4) · **el inicio** con las baldosas que ya funcionan (11.5) · **el tema oscuro** (11.12) · Ajustes del TPV › Aparatos y PIN y bloqueo | «Abrir la sala» de Servicio › En marcha    |
-| **T2 · La sala**                                   | **El editor del plano en el TPV**, a ojo, con formas, giro, barra, paredes, salas y plantillas (11.9) · **el plano con sus dueños**, Todas · Mías y los estados (11.8), «Quedármela» · **pedir con los pases en pestañas** (11.10), con una página por sección de la carta hasta T3 · **el comandero en el móvil**                                                                                                              | «Tu sala» de Ajustes › Tu local            |
-| **T3 · Los productos**                             | **La botonera** con sus tres caminos, «¿Quién lo prepara?» y «¿En qué pase sale?» (11.11) · **las opciones y los extras** (10.3) · **«Monta tus bebidas»**, varias raciones, las copas que se hacen solas y los cafés hechos (0106, 21 a 23) · `es_bebida` pasa a la botonera y se quita                                                                                                                                        | El interruptor «Es de bebidas» de la Carta |
-| **T4 · La cocina y la barra**                      | **La pantalla de cocina** (3.2): En marcha · Delivery · Fuera, tachar, «Esperando la marcha», NUEVO, ANULADO, CAMBIO y VUELVE, con su sonido · **la pantalla de barra**, con lo que prepara la barra                                                                                                                                                                                                                            | —                                          |
-| **T5 · Estook Link** (M19a y M20A · 2)             | **Imprimir** la comanda y la cuenta, **el cajón**, y sala y cocina **sin internet** (capítulo 6, 3.6) · Ajustes del TPV › Impresoras y cajón                                                                                                                                                                                                                                                                                    | —                                          |
-| **T6 · La facturación** (M20B)                     | **VeriFactu con Verifacti**, entero (capítulo 4), con el asesor                                                                                                                                                                                                                                                                                                                                                                 | —                                          |
-| **T7 · Cobrar, la caja y las ventas** (M20C y M20) | **Cobrar** (10.5), **la caja** (11.6), **las ventas de hoy** (11.7), venta rápida y para llevar, y **el motor que resta del almacén** lo vendido (M20)                                                                                                                                                                                                                                                                          | —                                          |
-| **Después, local a local**                         | El datáfono conectado (10.7), los pedidos de reparto (10.8, M29) y Revo conectado (M18)                                                                                                                                                                                                                                                                                                                                         | —                                          |
+| Entrega                                            | Qué deja (y dónde está escrito)                                                                                                                                                                                                                                                                                                                                                                                                 | Lo que sale de Estook                                                          |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **T1 · La puerta**                                 | **Vincular** (el primero con el correo, los demás con el código de 6 cifras o su QR, desvincular y el latido, 11.3) · **las cinco funciones** y el comandero personal · **solo el PIN** y el turno del operador · **el bloqueo** (11.4) · **la aprobación con el PIN de un encargado** (3.4) · **el inicio** con las baldosas que ya funcionan (11.5) · **el tema oscuro** (11.12) · Ajustes del TPV › Aparatos y PIN y bloqueo | «Abrir la sala» de Servicio › En marcha, y «El aparato para fichar» de Ajustes |
+| **T2 · La sala**                                   | **El editor del plano en el TPV**, a ojo, con formas, giro, barra, paredes, salas y plantillas (11.9) · **el plano con sus dueños**, Todas · Mías y los estados (11.8), «Quedármela» · **pedir con los pases en pestañas** (11.10), con una página por sección de la carta hasta T3 · **el comandero en el móvil**                                                                                                              | «Tu sala» de Ajustes › Tu local                                                |
+| **T3 · Los productos**                             | **La botonera** con sus tres caminos, «¿Quién lo prepara?» y «¿En qué pase sale?» (11.11) · **las opciones y los extras** (10.3) · **«Monta tus bebidas»**, varias raciones, las copas que se hacen solas y los cafés hechos (0106, 21 a 23) · `es_bebida` pasa a la botonera y se quita                                                                                                                                        | El interruptor «Es de bebidas» de la Carta                                     |
+| **T4 · La cocina y la barra**                      | **La pantalla de cocina** (3.2): En marcha · Delivery · Fuera, tachar, «Esperando la marcha», NUEVO, ANULADO, CAMBIO y VUELVE, con su sonido · **la pantalla de barra**, con lo que prepara la barra                                                                                                                                                                                                                            | —                                                                              |
+| **T5 · Estook Link** (M19a y M20A · 2)             | **Imprimir** la comanda y la cuenta, **el cajón**, y sala y cocina **sin internet** (capítulo 6, 3.6) · Ajustes del TPV › Impresoras y cajón                                                                                                                                                                                                                                                                                    | —                                                                              |
+| **T6 · La facturación** (M20B)                     | **VeriFactu con Verifacti**, entero (capítulo 4), con el asesor                                                                                                                                                                                                                                                                                                                                                                 | —                                                                              |
+| **T7 · Cobrar, la caja y las ventas** (M20C y M20) | **Cobrar** (10.5), **la caja** (11.6), **las ventas de hoy** (11.7), venta rápida y para llevar, y **el motor que resta del almacén** lo vendido (M20)                                                                                                                                                                                                                                                                          | —                                                                              |
+| **Después, local a local**                         | El datáfono conectado (10.7), los pedidos de reparto (10.8, M29) y Revo conectado (M18)                                                                                                                                                                                                                                                                                                                                         | —                                                                              |
 
 **Por qué en este orden.** Sin la puerta no hay TPV: todo lo demás necesita saber qué aparato es y
 quién lo usa. La sala y los productos van antes que la cocina porque son lo que Richi ve primero y lo
@@ -48,9 +50,31 @@ capítulo 9): vender un programa de facturación que no cumple ya está prohibid
 - Pasan las pruebas de 11.15 de **vincular, el código, desvincular, el comandero que no abre el
   cajón, el comandero personal, el bloqueo y dónde cae cada uno**.
 - **Estook TPV no se abre con la sesión de Estook** en ningún aparato, y «Abrir la sala» ya no está.
-- **El PIN nuevo nunca es fácil** (cuatro iguales o una escalera).
+- **El PIN nuevo nunca es fácil** (todas las cifras iguales o una escalera). **Es de 6 cifras**, el
+  de siempre (Richi, 24-oct, [0108](decisiones/0108-t1-la-puerta.md)).
 - **Lo de la base**: `terminal.funcion` con las cinco, de quién es y su cajón; `codigo_para_vincular`;
   `turno_del_operador` (Anexo 7.1). Una migración, con su `.revertir.sql`.
+
+### T1 · La puerta, entregada (24-oct-2026)
+
+**Lo que hay** ([0108](decisiones/0108-t1-la-puerta.md), migración 0083): vincular la caja con el
+correo (y su sesión se cierra) y los demás con el código de 6 cifras o su QR; caja, comandero para
+todos, comandero personal y fichar (cocina y barra, con T4); el PIN y el turno del operador, «No has
+fichado» y «solo entra quien ha fichado»; el bloqueo y «Bloquear»; quitar lo ya mandado aprobado por
+un encargado con su PIN; el inicio con Mesas, Fichar, Agotados y Ajustes del TPV; solo oscuro; y
+Ajustes del TPV › Aparatos (añadir, qué es y cómo se llama, desvincular) y › PIN y bloqueo. La API,
+en **109 consultas y 261 comandos**.
+
+**Las pruebas**: `la-puerta.prueba.ts` (contra la base: las de 11.15 que son de T1, y cambiar lo que es
+un aparato), `la-sala-y-la-cocina.prueba.ts` (pasada a aparatos), `aparatos.prueba.ts`,
+`despachador.prueba.ts` (las dos puertas, tasadas), `secretos.prueba.ts` y `contraste.prueba.ts`; y
+las de pantalla `la-puerta.spec.ts`, `la-sala.spec.ts`, `la-jornada.spec.ts`,
+`personas-y-fichajes.spec.ts` y `la-app-instalable.spec.ts`.
+
+**Lo que decidí al construirlo**: los catorce de la [0108](decisiones/0108-t1-la-puerta.md), sección
+4 —como que el código no «muere a los 5 fallos» (lo frena el tope por dirección), que recargar
+bloquea, que la sala solo se abre desde un aparato vinculado, o que el aparato para fichar solo
+cambia de nombre—.
 
 ### T2 · La sala, terminado cuando
 

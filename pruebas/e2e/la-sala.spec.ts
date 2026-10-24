@@ -1,14 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
-import { APP, ejecutarEnLaApi } from './en-la-app.ts';
+import { APP, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
 
 /**
  * M20A · 1 · 2 · La sala (decisión 0106), en la pantalla y con una cuenta nueva, como la
  * usaría un local el primer día:
  *
  *   · en Estook, **Ajustes › Tu sala**: una zona y dos mesas, con «Añadir mesa»
- *   · en **Estook TPV**, con la misma sesión: el plano, abrir la mesa para dos, **primero
+ *   · en **Estook TPV**, en una caja vinculada y con el PIN (T1): el plano, abrir la mesa para dos, **primero
  *     las bebidas** (la pestaña con la que se abre), luego la carta, y «Mandar»
  *   · lo que dice al mandar (a cocina, a la barra, qué pase sale), y la mesa en el plano
  *
@@ -59,12 +59,35 @@ test('la sala: dibujar el plano en Estook, abrir la mesa en Estook TPV, pedir y 
     });
   }
 
-  // ── Estook TPV, con la misma sesión (en estook.com comparten sitio; aquí, a mano) ──
+  // ── Estook TPV, en un aparato vinculado y con el PIN (T1, 0107) ──
+  // El PIN de quien lleva el local (sale una vez) y la caja, vinculada con su correo. La
+  // pantalla de vincular se prueba en `la-puerta.spec.ts`; aquí, la sala.
+  const yo = await consultarEnLaApi<{ personaId: string; local: { id: string } }>(
+    request,
+    token,
+    'quien_soy',
+  );
+  const { pin } = await ejecutarEnLaApi<{ pin: string }>(request, token, 'regenerar_pin', {
+    persona_id: yo.personaId,
+    local_id: yo.local.id,
+  });
+  const { llave } = await ejecutarEnLaApi<{ llave: string }>(
+    request,
+    token,
+    'vincular_el_primer_aparato',
+    { local_id: yo.local.id, funcion: 'caja', nombre: 'Caja 1', cajon_nuevo: 'Cajón 1' },
+  );
   await abrirSinQueSeCaiga(page, TPV);
-  await page.evaluate((elToken) => {
-    window.localStorage.setItem('estook.sesion', elToken);
-  }, token);
+  await page.evaluate((laLlave) => {
+    window.localStorage.setItem('estook.tpv.llave', laLlave);
+  }, llave);
   await abrirSinQueSeCaiga(page, TPV);
+  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await page.keyboard.type(pin);
+  // Sin fichar entra igual: el local no pide fichar para usar el TPV.
+  await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
+  // El primero del día cae en el inicio; de ahí, a las mesas.
+  await page.getByRole('button', { name: /^Mesas/ }).click({ timeout: 15_000 });
   await page.getByRole('button', { name: /^Mesa 1: Libre/ }).click({ timeout: 15_000 });
   await page.getByRole('button', { name: '2', exact: true }).click();
   await page.getByRole('button', { name: 'Abrir', exact: true }).click();

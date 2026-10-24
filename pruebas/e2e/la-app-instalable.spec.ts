@@ -1,5 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
+import { vincularParaFichar } from './en-la-app.ts';
 
 /**
  * I · La app instalable (decisión 0070), desde la pantalla.
@@ -145,11 +146,11 @@ test('el aparato del local sin wifi: el PIN se guarda cifrado y se apunta al vol
 }, info) => {
   test.slow();
   const extra = await alguienNuevo(page.request, info.project.name, false);
-  const puesto = await ejecutar<{ llave: string; nombre: string }>(
+  // Vinculado en Estook TPV, con la función «Fichar» (T1, 0107).
+  const puesto = await vincularParaFichar(
     page.request,
-    extra.rosa,
-    'poner_aparato_para_fichar',
-    { nombre: `Tablet sin wifi ${info.project.name}` },
+    ROSA,
+    `Tablet sin wifi ${info.project.name}`,
   );
   await abrirSinQueSeCaiga(page, APP);
   await page.evaluate((llave) => {

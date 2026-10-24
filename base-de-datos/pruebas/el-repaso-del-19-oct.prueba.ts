@@ -226,9 +226,12 @@ describe('salir del aparato de fichar', () => {
   let llave: string;
 
   it('solo con la contraseña de quien lleva el local', async () => {
-    llave = losDatos<{ llave: string }>(
-      await api.ejecutar(rosa, 'poner_aparato_para_fichar', { nombre: 'Tablet del repaso' }),
-    ).llave;
+    // Se vincula en Estook TPV, con la función «Fichar» (T1, 0107).
+    llave = await api.vincularParaFichar(
+      ROSA,
+      await base.localPorCodigo('bar-centro'),
+      'Tablet del repaso',
+    );
     const delCocinero = await api.despachador.ejecutar(
       { tokenDeSesion: null, correlacionId: crypto.randomUUID() },
       'entrar',

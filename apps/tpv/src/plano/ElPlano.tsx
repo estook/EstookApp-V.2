@@ -1,8 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Aviso, Boton, Cargando, EstadoVacio, ErrorEnCristiano } from '@estook/ui';
-import { usarSesion } from '../sesion/Sesion.tsx';
-import { EnlaceAEstook } from '../sesion/LaPuerta.tsx';
-import { DIRECCION_DE_ESTOOK } from '../datos/cliente.ts';
+import { LaBarraDeArriba } from '../inicio/LaBarraDeArriba.tsx';
 import { FalloDeLaSala, usarAcciones, usarAlSegundo, usarElPlano } from '../ganchos/usarLaSala.ts';
 import type { CuentaEnElPlano, ElPlano as ElPlanoDeLaApi, MesaDelPlano } from '../datos/tipos.ts';
 import { elPase } from '../logica/laCuenta.ts';
@@ -23,7 +21,6 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 const BARRA = 'barra';
 
 export function ElPlano() {
-  const { yo } = usarSesion();
   const conectado = usarAlSegundo();
   const plano = usarElPlano(conectado);
   const ejecutar = usarAcciones();
@@ -79,11 +76,7 @@ export function ElPlano() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-fondo text-texto">
-      <header className="flex flex-wrap items-center gap-e3 border-b border-borde bg-superficie px-e4 py-e3 md:px-e5">
-        <div className="flex min-w-0 flex-col">
-          <h1 className="truncate text-seccion font-bold">{yo.local?.nombre ?? 'La sala'}</h1>
-          <span className="text-secundario text-texto-suave">Estook TPV · la sala</span>
-        </div>
+      <LaBarraDeArriba>
         <nav
           aria-label="Zonas"
           className="flex max-w-full gap-e1 overflow-x-auto rounded-redondo bg-fondo p-e1 md:ml-e4"
@@ -123,19 +116,7 @@ export function ElPlano() {
         >
           Mis mesas
         </button>
-        <div className="flex-1" />
-        {/* Quien está dentro, y por dónde se vuelve a Estook (cambiar de local, salir). */}
-        <a
-          href={DIRECCION_DE_ESTOOK}
-          aria-label={`${yo.nombre}: volver a Estook`}
-          className="flex min-h-toque items-center gap-e2 rounded-redondo bg-fondo py-e1 pl-e1 pr-e4 font-semibold"
-        >
-          <span className="flex size-8 items-center justify-center rounded-redondo bg-app-servicio text-etiqueta text-white">
-            {iniciales(yo.nombre)}
-          </span>
-          {yo.nombre}
-        </a>
-      </header>
+      </LaBarraDeArriba>
 
       {datos.tocaMarchar.map((t) => (
         <div
@@ -313,19 +294,10 @@ function SinPlano() {
     <div className="rounded-mayor bg-superficie">
       <EstadoVacio
         titulo="Tu sala aún no tiene mesas"
-        frase="Dibújalas una vez en Estook, en Ajustes › Sala, y saldrán aquí. Mientras, puedes pedir en «Barra y llevar»."
+        frase="Las dibuja quien lleva el local, en Estook › Ajustes › Tu sala, y saldrán aquí (pronto, en el propio TPV). Mientras, puedes pedir en «Barra y llevar»."
         dibujo="local"
-        accion={<EnlaceAEstook texto="Ir a Estook" />}
+        sinAccionPorque="Las mesas se dibujan en Estook."
       />
     </div>
   );
-}
-
-function iniciales(nombre: string): string {
-  const partes = nombre.trim().split(/\s+/);
-  if (partes.length === 1) return (partes[0] ?? '').slice(0, 2).toUpperCase();
-  return partes
-    .slice(0, 2)
-    .map((p) => p.charAt(0).toUpperCase())
-    .join('');
 }

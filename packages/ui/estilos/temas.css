@@ -146,6 +146,59 @@
   }
 
   /*
+   * **Estook TPV** (T1 · 0107, Anexo 11.12): solo oscuro, denso y de mucho contraste,
+   * como un TPV de verdad que se usa con prisa, con poca luz o con el sol de la terraza.
+   * Las mismas fichas, con los colores de las maquetas, así que las piezas de `@estook/ui`
+   * salen bien sin saber dónde están. La pone Estook TPV en su <html> (`data-tema='tpv'`)
+   * y el aparato para fichar en su marco (`.zona-tpv`). Lo mide `contraste.prueba.ts`.
+   */
+  :root[data-tema='tpv'],
+  .zona-tpv {
+    --color-fondo: #0f1719;
+    --color-superficie: #18252a;
+    --color-borde: #2c4047;
+    --color-borde-fuerte: #5b6e73;
+
+    --color-texto: #f1efea;
+    --color-texto-suave: #c4cfd1;
+    --color-texto-tenue: #9fb0b3;
+
+    /* Lo marcado y la pieza oscura con texto blanco: un escalón por encima de la tarjeta. */
+    --color-charcoal: #22343a;
+
+    --color-bien: #4ec98a;
+    --color-atencion: #f0ae4e;
+    --color-mal: #f0796c;
+    --color-info: #6fb7e8;
+
+    --color-bien-suave: #11281e;
+    --color-atencion-suave: #2a2212;
+    --color-mal-suave: #2b1a18;
+    --color-info-suave: #12232e;
+
+    --color-naranja-suave: #33220f;
+
+    --color-app-panel: #dfe6e8;
+    --color-app-almacen: #f0ae4e;
+    --color-app-escandallos: #4ec98a;
+    --color-app-carta: #e485ac;
+    --color-app-calendario: #6fb3e0;
+    --color-app-equipo: #a894e8;
+    --color-app-servicio: #4ec9cb;
+    --color-app-negocio: #f0796c;
+    --color-app-cuaderno: #c4b49a;
+
+    --sombra-tarjeta: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.35);
+    --relleno-tarjeta: none;
+
+    color-scheme: dark;
+  }
+
+  .zona-tpv {
+    color: var(--color-texto);
+  }
+
+  /*
    * «El del sistema» solo es oscuro **cuando el sistema lo es**. Sin esto, elegir
    * «el del sistema» dejaria la aplicacion siempre oscura, que es lo contrario de
    * lo que dice la opcion.

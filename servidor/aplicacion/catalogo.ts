@@ -88,14 +88,26 @@ import {
   quitarEsteMovil,
 } from './comandos/movil.ts';
 import {
-  aparatosParaFichar,
   elAparatoParaFichar,
   ficharAqui,
-  ponerAparatoParaFichar,
   prepararElAparatoSinConexion,
   quienFichaAqui,
-  quitarAparatoParaFichar,
 } from './comandos/aparato-para-fichar.ts';
+import {
+  bloquear,
+  cambiarAparato,
+  desvincularAparato,
+  dondePuedoVincular,
+  entrarConPin,
+  ficharEnElTpv,
+  guardarPinYBloqueo,
+  latirElAparato,
+  losAparatos,
+  sacarCodigoParaVincular,
+  vincularConCodigo,
+  vincularElPrimerAparato,
+  yoEnElTpv,
+} from './comandos/aparatos.ts';
 import { registroDeJornada } from './consultas/registro-de-jornada.ts';
 import { elHorario, elHorarioEnBorrador, elHorarioEnPdf } from './consultas/horario.ts';
 import {
@@ -539,8 +551,15 @@ export const catalogo = {
     // no es nadie, con su llave.
     [miInformeEnPdf.nombre]: miInformeEnPdf,
     [registroDeJornada.nombre]: registroDeJornada,
-    [aparatosParaFichar.nombre]: aparatosParaFichar,
     [elAparatoParaFichar.nombre]: elAparatoParaFichar,
+
+    // ── T1 · La puerta de Estook TPV (0107) ────────────────────────────────
+    //
+    // Dónde se puede vincular el primer aparato (con el correo), quién está en el
+    // aparato con su PIN, y los aparatos del local (Ajustes del TPV).
+    [dondePuedoVincular.nombre]: dondePuedoVincular,
+    [yoEnElTpv.nombre]: yoEnElTpv,
+    [losAparatos.nombre]: losAparatos,
     // ── H2 (0069): el horario publicado, el borrador de quien lo monta y en PDF.
     [elHorario.nombre]: elHorario,
     [elHorarioEnBorrador.nombre]: elHorarioEnBorrador,
@@ -844,16 +863,30 @@ export const catalogo = {
     // ── H1 · Personas y fichajes (0068) ────────────────────────────────────
     //
     // La pausa de descanso, el correo de quien no lo tenía, y el aparato del local:
-    // ponerlo y quitarlo desde Ajustes, y **usarlo sin sesión de nadie**, con su
-    // llave y el PIN de quien teclea. Solo ficha.
+    // **usarlo sin sesión de nadie**, con su llave y el PIN de quien teclea. Solo
+    // ficha. Desde T1 (0107) se vincula y se desvincula en Estook TPV, no en Ajustes.
     [empezarPausa.nombre]: empezarPausa,
     [acabarPausa.nombre]: acabarPausa,
     [guardarLasPausas.nombre]: guardarLasPausas,
     [ponerCorreo.nombre]: ponerCorreo,
-    [ponerAparatoParaFichar.nombre]: ponerAparatoParaFichar,
-    [quitarAparatoParaFichar.nombre]: quitarAparatoParaFichar,
     [quienFichaAqui.nombre]: quienFichaAqui,
     [ficharAqui.nombre]: ficharAqui,
+
+    // ── T1 · La puerta de Estook TPV (0107) ────────────────────────────────
+    //
+    // Vincular (el primero con el correo, los demás con el código de 6 cifras), el
+    // latido, entrar con el PIN, fichar y bloquear; y Ajustes del TPV › Aparatos y
+    // PIN y bloqueo.
+    [vincularElPrimerAparato.nombre]: vincularElPrimerAparato,
+    [sacarCodigoParaVincular.nombre]: sacarCodigoParaVincular,
+    [vincularConCodigo.nombre]: vincularConCodigo,
+    [latirElAparato.nombre]: latirElAparato,
+    [entrarConPin.nombre]: entrarConPin,
+    [bloquear.nombre]: bloquear,
+    [ficharEnElTpv.nombre]: ficharEnElTpv,
+    [cambiarAparato.nombre]: cambiarAparato,
+    [desvincularAparato.nombre]: desvincularAparato,
+    [guardarPinYBloqueo.nombre]: guardarPinYBloqueo,
 
     // ── H2 · El horario (0069) ─────────────────────────────────────────────
     //

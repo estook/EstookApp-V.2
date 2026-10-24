@@ -70,6 +70,20 @@ export async function tokenDe(peticion: APIRequestContext, correo: string): Prom
   return cuerpo.datos.token;
 }
 
+/** Una consulta a pelo. Devuelve los datos, o falla la prueba diciendo qué contestó. */
+export async function consultarEnLaApi<T>(
+  peticion: APIRequestContext,
+  token: string,
+  nombre: string,
+): Promise<T> {
+  const respuesta = await peticion.get(`${API}/v1/consultas/${nombre}`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  const cuerpo = (await respuesta.json()) as { datos?: T; error?: unknown };
+  expect(respuesta.status(), `${nombre}: ${JSON.stringify(cuerpo.error)}`).toBe(200);
+  return cuerpo.datos as T;
+}
+
 /** Un comando a pelo. Devuelve los datos, o falla la prueba diciendo qué contestó. */
 export async function ejecutarEnLaApi<T>(
   peticion: APIRequestContext,
@@ -120,4 +134,29 @@ export async function cerrarLaCajaDe(
     respuesta = await cerrar();
   }
   expect(respuesta.status(), `cerrar_la_caja: ${await respuesta.text()}`).toBe(200);
+}
+
+/**
+ * **Un aparato para fichar**, vinculado como desde T1 (0107): quien lleva el local entra con
+ * su correo y lo vincula en Estook TPV con la función «Fichar». Devuelve lo que la pantalla
+ * de fichar guarda en el aparato (`estook.aparato-para-fichar`). Va por la API porque en las
+ * pruebas Estook TPV y Estook no comparten dirección, y la llave vive en la de Estook.
+ */
+export async function vincularParaFichar(
+  peticion: APIRequestContext,
+  correo: string,
+  nombre: string,
+): Promise<{ llave: string; nombre: string }> {
+  const token = await tokenDe(peticion, correo);
+  const respuesta = await peticion.get(`${API}/v1/consultas/quien_soy`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  const quien = (await respuesta.json()) as { datos: { local: { id: string } } };
+  const vinculado = await ejecutarEnLaApi<{ llave: string; aparato: { nombre: string } }>(
+    peticion,
+    token,
+    'vincular_el_primer_aparato',
+    { local_id: quien.datos.local.id, funcion: 'fichar', nombre },
+  );
+  return { llave: vinculado.llave, nombre: vinculado.aparato.nombre };
 }

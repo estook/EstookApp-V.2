@@ -275,6 +275,27 @@ async function porQueNoPasaElAdmin(
   return null;
 }
 
+/**
+ * La puerta de Estook TPV (T1 · 0107), detrás de la del admin y por lo mismo: **dos
+ * mundos que no se tocan**. Desde un aparato vinculado solo pasa lo que declara
+ * `enElTpv`, y en los aparatos que diga `enLosAparatos`; lo que declara `'solo'` no
+ * pasa con la sesión de una persona. Así un aparato vinculado no es una puerta a la
+ * gestión, y Estook TPV no se abre con la sesión de Estook.
+ */
+export function porQueNoPasaElAparato(
+  puertas: Puertas,
+  sesion: SesionViva | null,
+): CodigoDeError | null {
+  if (sesion === null) return null;
+  const aparato = sesion.aparato ?? null;
+  if (aparato === null) return puertas.enElTpv === 'solo' ? 'sin_permiso' : null;
+  if (puertas.enElTpv === undefined) return 'sin_permiso';
+  if (puertas.enLosAparatos !== undefined && !puertas.enLosAparatos.includes(aparato.funcion)) {
+    return 'sin_permiso';
+  }
+  return null;
+}
+
 export function crearDespachador(puertos: Puertos): Despachador {
   const despachador: Despachador = {
     movilEncendido: puertos.movilEncendido === true,
@@ -343,6 +364,9 @@ export function crearDespachador(puertos: Puertos): Despachador {
           const delAdmin = await porQueNoPasaElAdmin(contexto, laConsulta);
           if (delAdmin) return { estado: 'fallo', codigo: delAdmin };
 
+          const delAparato = porQueNoPasaElAparato(laConsulta, contexto.sesion);
+          if (delAparato) return { estado: 'fallo', codigo: delAparato };
+
           // La quinta, la del pago (0048): sin pagar no se mira nada.
           const delPago = await porQueNoPasaElPago(contexto, laConsulta, 'consultar');
           if (delPago) return { estado: 'fallo', codigo: delPago };
@@ -409,6 +433,9 @@ export function crearDespachador(puertos: Puertos): Despachador {
 
           const delAdmin = await porQueNoPasaElAdmin(contexto, elComando);
           if (delAdmin) return { estado: 'fallo', codigo: delAdmin };
+
+          const delAparato = porQueNoPasaElAparato(elComando, contexto.sesion);
+          if (delAparato) return { estado: 'fallo', codigo: delAparato };
 
           // Y la del pago: en solo lectura, tampoco se escribe.
           const delPago = await porQueNoPasaElPago(contexto, elComando, 'ejecutar');

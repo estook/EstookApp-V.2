@@ -117,6 +117,23 @@ export function OpcionesDeLaMesa({
               setPaso('juntar');
             }}
           />
+          {/* **Cualquiera se queda o pasa cualquier mesa**, con rastro (0107, Anexo 11.8). */}
+          {cuenta.camareroId !== yo.personaId && (
+            <Opcion
+              titulo="Quedármela"
+              detalle={
+                cuenta.suCamareroSeHaIdo
+                  ? `${cuenta.camarero ?? 'Su camarero'} ha fichado la salida`
+                  : `ahora es de ${cuenta.camarero ?? 'nadie'}`
+              }
+              onClick={() => {
+                void hacer('pasar_a_otro_camarero', {
+                  cuenta_ids: [cuenta.cuentaId],
+                  camarero_id: yo.personaId,
+                });
+              }}
+            />
+          )}
           <Opcion
             titulo="Pasar a otro camarero"
             detalle="al cambiar de turno"

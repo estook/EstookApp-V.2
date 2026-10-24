@@ -11,19 +11,22 @@ import { PinYBloqueo } from './PinYBloqueo.tsx';
  * los precios y el equipo se cambian en Estook. En la caja y en la tablet de la sala,
  * con el PIN de quien puede; nunca en el móvil de nadie.
  *
- * En T1, **Aparatos** y **PIN y bloqueo**. La sala, los productos, las impresoras, la
- * caja, las formas de pago, los tickets y la cocina llegan con su entrega: no se enseñan
- * apagados.
+ * **La sala** (T2) abre el editor del plano; **Aparatos** y **PIN y bloqueo** (T1). Los
+ * productos, las impresoras, la caja, las formas de pago, los tickets y la cocina llegan con
+ * su entrega: no se enseñan apagados.
  */
 export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
   const { yo, aparato } = usarSesion();
   const vincula = puedeEditar(yo.permisos, 'accion.vincular_aparatos');
   const ajusta = puedeEditar(yo.permisos, 'accion.ajustes_del_tpv');
   const apartados = [
+    ...(ajusta ? [{ id: 'sala', nombre: 'La sala' }] : []),
     ...(vincula ? [{ id: 'aparatos', nombre: 'Aparatos' }] : []),
     ...(ajusta ? [{ id: 'pin', nombre: 'PIN y bloqueo' }] : []),
   ];
-  const elegido = direccion.split('/')[1] ?? apartados[0]?.id ?? '';
+  // La sala es una pantalla entera, el editor: el apartado lleva allí.
+  const sinLaSala = apartados.filter((a) => a.id !== 'sala');
+  const elegido = direccion.split('/')[1] ?? sinLaSala[0]?.id ?? '';
   const resto = direccion.split('/').slice(2).join('/');
 
   return (
@@ -54,7 +57,7 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
                 type="button"
                 aria-current={elegido === a.id ? 'page' : undefined}
                 onClick={() => {
-                  irA(`ajustes/${a.id}`);
+                  irA(a.id === 'sala' ? 'sala/editar' : `ajustes/${a.id}`);
                 }}
                 className={[
                   'min-h-toque shrink-0 rounded-grande px-e4 text-left font-semibold',

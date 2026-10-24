@@ -1,31 +1,70 @@
 import { useState, type ReactNode } from 'react';
+import { usarSesion } from '../sesion/Sesion.tsx';
+import { CosaEnElPlano } from './dibujo.tsx';
 import { Aviso, Boton, Cargando, EstadoVacio, ErrorEnCristiano } from '@estook/ui';
 import { LaBarraDeArriba } from '../inicio/LaBarraDeArriba.tsx';
 import { FalloDeLaSala, usarAcciones, usarAlSegundo, usarElPlano } from '../ganchos/usarLaSala.ts';
 import type { CuentaEnElPlano, ElPlano as ElPlanoDeLaApi, MesaDelPlano } from '../datos/tipos.ts';
 import { elPase } from '../logica/laCuenta.ts';
-import { irALaMesa } from '../navegar.ts';
+import { irA, irALaMesa } from '../navegar.ts';
 import { AbrirMesa } from './AbrirMesa.tsx';
 import { OpcionesDeLaMesa } from '../mesa/OpcionesDeLaMesa.tsx';
 import { MesaEnElPlano, TarjetaSinMesa } from './MesaEnElPlano.tsx';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 
 /**
- * El plano (0106, «Main»): las zonas, cada mesa con cómo va, y arriba lo que toca
- * marchar, con su botón. Tocar una mesa libre la abre; una ocupada, sus opciones.
+ * **Las mesas en servicio** (T2 · La sala, maqueta 8; Anexo 11.8): las salas en pestañas,
+ * **todas las mesas a la vista de todos**, cada una con cómo va y las iniciales de su
+ * camarero, y arriba lo que toca marchar con su botón. Tocar una mesa libre la abre; una
+ * ocupada, sus opciones.
  *
- * En la tablet, el plano como está dibujado en Ajustes › Sala; en el móvil, las mesas en
- * una lista, que en una pantalla de diez centímetros un plano no se toca bien.
+ * **Todas · Mías**, a un toque: el aparato recuerda el último, y el móvil de un camarero
+ * empieza en «Mías». En la tablet y en la caja, **el plano como se dibujó** en el TPV, con
+ * su barra y sus paredes; en el móvil, **una cuadrícula de tres en fila**, en el orden de
+ * sus nombres: un plano dibujado no cabe en una mano.
  */
 
 const BARRA = 'barra';
+/** Sin sala dibujada: quien puede dibujarla empieza ahí, con «Dibujar la sala». */
+const SIN_SALA = 'sin_sala';
+
+/** Lo que recuerda el aparato del filtro: en su navegador, aparte de todo lo demás. */
+const CLAVE_DEL_FILTRO = 'estook.tpv.mias';
+
+function leerElFiltro(esPersonal: boolean): boolean {
+  try {
+    const guardado = window.localStorage.getItem(CLAVE_DEL_FILTRO);
+    if (guardado === null) return esPersonal;
+    return guardado === 'si';
+  } catch {
+    return esPersonal;
+  }
+}
+
+function guardarElFiltro(soloMias: boolean): void {
+  try {
+    window.localStorage.setItem(CLAVE_DEL_FILTRO, soloMias ? 'si' : 'no');
+  } catch {
+    // En una ventana privada no se guarda: el filtro dura lo que la pantalla.
+  }
+}
+
+/** «1», «2», «10»: en el orden en que se cuentan, no en el de las letras. */
+function porSuNombre(a: { readonly nombre: string }, b: { readonly nombre: string }): number {
+  return a.nombre.localeCompare(b.nombre, 'es', { numeric: true });
+}
 
 export function ElPlano() {
   const conectado = usarAlSegundo();
   const plano = usarElPlano(conectado);
   const ejecutar = usarAcciones();
+  const { aparato } = usarSesion();
   const [zonaElegida, setZonaElegida] = useState<string | null>(null);
-  const [soloMias, setSoloMias] = useState(false);
+  const [soloMias, setSoloMiasEnMemoria] = useState(() => leerElFiltro(aparato.esPersonal));
+  const setSoloMias = (mias: boolean) => {
+    setSoloMiasEnMemoria(mias);
+    guardarElFiltro(mias);
+  };
   const [abriendo, setAbriendo] = useState<MesaDelPlano | 'barra' | null>(null);
   const [opciones, setOpciones] = useState<string | null>(null);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
@@ -52,11 +91,13 @@ export function ElPlano() {
   }
 
   const datos = plano.data;
-  const zonas = datos.zonas.filter((z) => z.mesas.length > 0);
+  const zonas = datos.zonas.filter((z) => z.mesas.length > 0 || z.cosas.length > 0);
   const zona =
     zonaElegida === BARRA
       ? BARRA
-      : (zonas.find((z) => z.id === zonaElegida)?.id ?? zonas[0]?.id ?? BARRA);
+      : (zonas.find((z) => z.id === zonaElegida)?.id ??
+        zonas[0]?.id ??
+        (datos.puedeDibujar ? SIN_SALA : BARRA));
   const deLaZona = zonas.find((z) => z.id === zona);
   const filtrar = (m: MesaDelPlano) => !soloMias || m.cuenta?.esMia === true;
   const abiertas = [
@@ -64,6 +105,7 @@ export function ElPlano() {
     ...datos.sinMesa,
   ];
   const cuantas = abiertas.length;
+  const mias = abiertas.filter((c) => c.esMia).length;
   const comensales = abiertas.reduce((n, c) => n + (c.personas ?? 0), 0);
   const laCuenta = (cuentaId: string): CuentaEnElPlano | undefined =>
     abiertas.find((c) => c.cuentaId === cuentaId);
@@ -81,6 +123,16 @@ export function ElPlano() {
           aria-label="Zonas"
           className="flex max-w-full gap-e1 overflow-x-auto rounded-redondo bg-fondo p-e1 md:ml-e4"
         >
+          {zonas.length === 0 && datos.puedeDibujar && (
+            <BotonDeZona
+              puesto={zona === SIN_SALA}
+              onClick={() => {
+                setZonaElegida(null);
+              }}
+            >
+              Sala
+            </BotonDeZona>
+          )}
           {zonas.map((z) => (
             <BotonDeZona
               key={z.id}
@@ -101,21 +153,54 @@ export function ElPlano() {
             Barra y llevar{datos.sinMesa.length > 0 ? ` · ${datos.sinMesa.length}` : ''}
           </BotonDeZona>
         </nav>
-        <button
-          type="button"
-          aria-pressed={soloMias}
-          onClick={() => {
-            setSoloMias(!soloMias);
-          }}
-          className={[
-            'flex min-h-toque items-center gap-e2 rounded-redondo border px-e4 font-medium',
-            soloMias
-              ? 'border-app-servicio bg-app-servicio text-white'
-              : 'border-borde bg-superficie text-texto',
-          ].join(' ')}
+        <div
+          role="radiogroup"
+          aria-label="Qué mesas"
+          className="flex gap-e1 rounded-redondo bg-fondo p-e1"
         >
-          Mis mesas
-        </button>
+          <BotonDeZona
+            puesto={!soloMias}
+            radio
+            onClick={() => {
+              setSoloMias(false);
+            }}
+          >
+            Todas
+          </BotonDeZona>
+          <BotonDeZona
+            puesto={soloMias}
+            radio
+            onClick={() => {
+              setSoloMias(true);
+            }}
+          >
+            {mias > 0 ? `Mías · ${String(mias)}` : 'Mías'}
+          </BotonDeZona>
+        </div>
+        {datos.puedeDibujar && (
+          <button
+            type="button"
+            onClick={() => {
+              irA('sala/editar');
+            }}
+            className="hidden min-h-toque items-center gap-e2 rounded-redondo border-2 border-borde px-e4 font-semibold md:flex"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" />
+            </svg>
+            Editar sala
+          </button>
+        )}
       </LaBarraDeArriba>
 
       {datos.tocaMarchar.map((t) => (
@@ -154,11 +239,14 @@ export function ElPlano() {
             }}
           />
         ) : deLaZona === undefined ? (
-          <SinPlano />
+          <SinPlano puedeDibujar={datos.puedeDibujar} />
         ) : (
           <>
-            {/* La tablet: el plano como se dibujó. */}
-            <div className="relative hidden aspect-[16/10] w-full rounded-mayor bg-superficie shadow-s2 md:block">
+            {/* La tablet y la caja: el plano como se dibujó, con su barra y sus paredes. */}
+            <div className="relative hidden aspect-[16/10] w-full overflow-hidden rounded-mayor bg-superficie shadow-s2 md:block">
+              {deLaZona.cosas.map((c) => (
+                <CosaEnElPlano key={c.id} cosa={c} />
+              ))}
               {deLaZona.mesas.filter(filtrar).map((m) => (
                 <MesaEnElPlano
                   key={m.id}
@@ -171,19 +259,22 @@ export function ElPlano() {
                 />
               ))}
             </div>
-            {/* El móvil: en lista. */}
-            <div className="grid grid-cols-2 gap-e3 sm:grid-cols-3 md:hidden">
-              {deLaZona.mesas.filter(filtrar).map((m) => (
-                <MesaEnElPlano
-                  key={m.id}
-                  mesa={m}
-                  enElPlano={false}
-                  alTocar={() => {
-                    if (m.cuenta === null) setAbriendo(m);
-                    else setOpciones(m.cuenta.cuentaId);
-                  }}
-                />
-              ))}
+            {/* El móvil: de tres en fila, en el orden de sus nombres. */}
+            <div className="grid grid-cols-3 gap-e2 md:hidden">
+              {[...deLaZona.mesas]
+                .sort(porSuNombre)
+                .filter(filtrar)
+                .map((m) => (
+                  <MesaEnElPlano
+                    key={m.id}
+                    mesa={m}
+                    enElPlano={false}
+                    alTocar={() => {
+                      if (m.cuenta === null) setAbriendo(m);
+                      else setOpciones(m.cuenta.cuentaId);
+                    }}
+                  />
+                ))}
             </div>
           </>
         )}
@@ -233,15 +324,17 @@ function BotonDeZona({
   puesto,
   onClick,
   children,
+  radio = false,
 }: {
   readonly puesto: boolean;
   readonly onClick: () => void;
   readonly children: ReactNode;
+  readonly radio?: boolean;
 }) {
   return (
     <button
       type="button"
-      aria-pressed={puesto}
+      {...(radio ? { role: 'radio', 'aria-checked': puesto } : { 'aria-pressed': puesto })}
       onClick={onClick}
       className={[
         'min-h-toque shrink-0 rounded-redondo px-e4 font-semibold',
@@ -289,15 +382,33 @@ function LaBarra({
   );
 }
 
-function SinPlano() {
+function SinPlano({ puedeDibujar }: { readonly puedeDibujar: boolean }) {
   return (
     <div className="rounded-mayor bg-superficie">
-      <EstadoVacio
-        titulo="Tu sala aún no tiene mesas"
-        frase="Las dibuja quien lleva el local, en Estook › Ajustes › Tu sala, y saldrán aquí (pronto, en el propio TPV). Mientras, puedes pedir en «Barra y llevar»."
-        dibujo="local"
-        sinAccionPorque="Las mesas se dibujan en Estook."
-      />
+      {puedeDibujar ? (
+        <EstadoVacio
+          titulo="Tu sala aún no tiene mesas"
+          frase="Dibújala aquí mismo, a ojo: empieza con una plantilla de tu tipo de local o con la sala vacía. Mientras, puedes pedir en «Barra y llevar»."
+          dibujo="local"
+          accion={
+            <Boton
+              tono="principal"
+              onClick={() => {
+                irA('sala/editar');
+              }}
+            >
+              Dibujar la sala
+            </Boton>
+          }
+        />
+      ) : (
+        <EstadoVacio
+          titulo="Tu sala aún no tiene mesas"
+          frase="La dibuja quien lleva el local, en la caja o en la tablet: Editar sala. Mientras, puedes pedir en «Barra y llevar»."
+          dibujo="local"
+          sinAccionPorque="La sala la dibuja quien lleva el local."
+        />
+      )}
     </div>
   );
 }

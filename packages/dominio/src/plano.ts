@@ -23,6 +23,15 @@ export const PROPORCION_DEL_PLANO = 16 / 10;
 /** Lo que mide el plano en sus unidades, en los dos ejes. */
 export const LADO_DEL_PLANO = 1000;
 
+/**
+ * A la unidad entera del plano más cercana. **Unidades del plano, no dinero**: la regla 9
+ * (los céntimos, nunca a mano) no va con esto, y por eso es el único redondeo de aquí.
+ */
+export function enUnidades(valor: number): number {
+  // eslint-disable-next-line no-restricted-syntax -- unidades del plano, no dinero
+  return Math.round(valor);
+}
+
 // ── Lo que hay en la paleta (Anexo 11.9) ─────────────────────────────────────
 
 /** Lo que se abre: es una mesa, y tiene cuenta. */
@@ -70,7 +79,7 @@ export interface Tamano {
 
 /** Lo que mide en la pantalla un lado de `lado` unidades de ancho, puesto de fondo. */
 function deFondo(lado: number): number {
-  return Math.round(lado * PROPORCION_DEL_PLANO);
+  return enUnidades(lado * PROPORCION_DEL_PLANO);
 }
 
 function entre(minimo: number, valor: number, maximo: number): number {
@@ -83,7 +92,7 @@ function entre(minimo: number, valor: number, maximo: number): number {
  * ovaladas y las de banco, a lo largo; el taburete es de uno.
  */
 export function tamanoDeLaMesa(forma: FormaDeMesa, plazas: number): Tamano {
-  const p = entre(1, Math.round(plazas), 50);
+  const p = entre(1, enUnidades(plazas), 50);
   switch (forma) {
     case 'cuadrada':
     case 'redonda': {
@@ -127,7 +136,7 @@ export const LO_MAS_PEQUENO = 14;
 export const PASO_DEL_IMAN = 10;
 
 export function alIman(valor: number, paso = PASO_DEL_IMAN): number {
-  return Math.round(valor / paso) * paso;
+  return enUnidades(valor / paso) * paso;
 }
 
 /** Los giros que se quedan solos, si se pasa cerca (Anexo 11.9: 0°, 45° y 90°, y sus vueltas). */
@@ -136,7 +145,7 @@ const CERCA_DEL_GIRO = 6;
 
 /** El giro entre 0 y 359, quedándose solo en los de arriba si está a menos de 6°. */
 export function elGiroConIman(grados: number): number {
-  const vuelta = ((Math.round(grados) % 360) + 360) % 360;
+  const vuelta = ((enUnidades(grados) % 360) + 360) % 360;
   for (const giro of GIROS_CON_IMAN) {
     if (Math.abs(vuelta - giro) <= CERCA_DEL_GIRO) return giro % 360;
   }
@@ -155,11 +164,11 @@ export interface Caja {
 
 /** Que lo puesto quepa entero en el plano: lo dejado en la esquina no se sale. */
 export function dentroDelPlano(caja: Caja): Caja {
-  const ancho = entre(LO_MAS_PEQUENO, Math.round(caja.ancho), LADO_DEL_PLANO);
-  const fondo = entre(LO_MAS_PEQUENO, Math.round(caja.fondo), LADO_DEL_PLANO);
+  const ancho = entre(LO_MAS_PEQUENO, enUnidades(caja.ancho), LADO_DEL_PLANO);
+  const fondo = entre(LO_MAS_PEQUENO, enUnidades(caja.fondo), LADO_DEL_PLANO);
   return {
-    x: entre(0, Math.round(caja.x), LADO_DEL_PLANO - ancho),
-    y: entre(0, Math.round(caja.y), LADO_DEL_PLANO - fondo),
+    x: entre(0, enUnidades(caja.x), LADO_DEL_PLANO - ancho),
+    y: entre(0, enUnidades(caja.y), LADO_DEL_PLANO - fondo),
     ancho,
     fondo,
   };

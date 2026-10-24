@@ -530,23 +530,22 @@ export const entradaCambiarCosa = z
   })
   .strict();
 
-export const cambiarCosaDeLaSala = comando<z.infer<typeof entradaCambiarCosa>, { cosaId: string }>(
-  {
-    nombre: 'cambiar_cosa_de_la_sala',
-    entrada: entradaCambiarCosa,
-    ...DEL_TPV,
+export const cambiarCosaDeLaSala = comando<z.infer<typeof entradaCambiarCosa>, { cosaId: string }>({
+  nombre: 'cambiar_cosa_de_la_sala',
+  entrada: entradaCambiarCosa,
+  ...DEL_TPV,
 
-    async ejecutar(contexto, entrada) {
-      const localId = elLocalDelDibujo(contexto);
-      const laCosa = await laCosaDelPlano(contexto, localId, entrada.cosa_id);
-      if (entrada.zona_id !== undefined) await laZona(contexto, localId, entrada.zona_id);
-      const caja = dentroDelPlano({
-        x: entrada.x ?? laCosa.x,
-        y: entrada.y ?? laCosa.y,
-        ancho: entrada.ancho ?? laCosa.ancho,
-        fondo: entrada.fondo ?? laCosa.fondo,
-      });
-      await contexto.sql`
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelDibujo(contexto);
+    const laCosa = await laCosaDelPlano(contexto, localId, entrada.cosa_id);
+    if (entrada.zona_id !== undefined) await laZona(contexto, localId, entrada.zona_id);
+    const caja = dentroDelPlano({
+      x: entrada.x ?? laCosa.x,
+      y: entrada.y ?? laCosa.y,
+      ancho: entrada.ancho ?? laCosa.ancho,
+      fondo: entrada.fondo ?? laCosa.fondo,
+    });
+    await contexto.sql`
         update estook.elemento_de_sala
            set zona_id = coalesce(${entrada.zona_id ?? null}::uuid, zona_id),
                x = ${caja.x}, y = ${caja.y}, ancho = ${caja.ancho}, fondo = ${caja.fondo},
@@ -554,12 +553,11 @@ export const cambiarCosaDeLaSala = comando<z.infer<typeof entradaCambiarCosa>, {
                texto = case when tipo = 'texto' then coalesce(${entrada.texto ?? null}, texto) else null end
          where id = ${laCosa.id}::uuid
       `;
-      await anotar(contexto, 'cambiar', 'elemento_de_sala', laCosa.id, localId, entrada);
-      await tocarElServicio(contexto, localId);
-      return { cosaId: laCosa.id };
-    },
+    await anotar(contexto, 'cambiar', 'elemento_de_sala', laCosa.id, localId, entrada);
+    await tocarElServicio(contexto, localId);
+    return { cosaId: laCosa.id };
   },
-);
+});
 
 export const quitarCosaDeLaSala = comando<{ cosa_id: string }, { cosaId: string }>({
   nombre: 'quitar_cosa_de_la_sala',
@@ -573,7 +571,9 @@ export const quitarCosaDeLaSala = comando<{ cosa_id: string }, { cosaId: string 
       update estook.elemento_de_sala set archivado_en = ${contexto.ahora.toISOString()}::timestamptz
        where id = ${laCosa.id}::uuid
     `;
-    await anotar(contexto, 'archivar', 'elemento_de_sala', laCosa.id, localId, { tipo: laCosa.tipo });
+    await anotar(contexto, 'archivar', 'elemento_de_sala', laCosa.id, localId, {
+      tipo: laCosa.tipo,
+    });
     await tocarElServicio(contexto, localId);
     return { cosaId: laCosa.id };
   },
@@ -678,7 +678,8 @@ export const empezarConUnaPlantilla = comando<
     `;
     const ocupadas = new Set(salas.map((s) => s.nombre.trim().toLowerCase()));
     let nombre = plantilla.sala;
-    for (let n = 2; ocupadas.has(nombre.toLowerCase()); n++) nombre = `${plantilla.sala} ${String(n)}`;
+    for (let n = 2; ocupadas.has(nombre.toLowerCase()); n++)
+      nombre = `${plantilla.sala} ${String(n)}`;
     const zonaId = await crearLaSala(contexto, localId, nombre);
 
     let mesas = 0;

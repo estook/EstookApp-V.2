@@ -10,7 +10,6 @@ import {
   IconoNegocio,
   IconoPausa,
   IconoReloj,
-  IconoServicio,
   IconoBuscar,
   IconoColor,
   IconoFlechaAbajo,
@@ -66,7 +65,6 @@ import { TusObjetivos } from './TusObjetivos.tsx';
 import { TuCartaYSuQr } from './TuCartaYSuQr.tsx';
 import { TuCartaSubida } from './TuCartaSubida.tsx';
 import { TusMenus } from './TusMenus.tsx';
-import { TuSala } from './TuSala.tsx';
 import { TuSuscripcion } from './TuSuscripcion.tsx';
 import { TusAvisos } from './TusAvisos.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
@@ -383,14 +381,6 @@ function LaSeccion({
             frase: 'Si se fichan y si cuentan como trabajo',
             icono: IconoPausa,
             contenido: <LasPausas />,
-          },
-          {
-            id: 'sala',
-            titulo: 'Tu sala',
-            frase: 'Las zonas y las mesas que ve el camarero en Estook TPV',
-            icono: IconoServicio,
-            amplia: true,
-            contenido: <TuSala />,
           },
         ]
       : []),

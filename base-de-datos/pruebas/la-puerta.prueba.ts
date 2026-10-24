@@ -298,11 +298,14 @@ describe('entrar con el PIN', () => {
     // Sin mesas dibujadas, todos al inicio.
     expect((await entrarEn(llaveDeLaTablet, ROSA)).dentro.caeEn).toBe('inicio');
 
-    const rosa = await api.entrar(ROSA);
+    // Rosa dibuja una mesa en la caja (desde T2, la sala se dibuja en el TPV).
+    const enLaCaja = await entrarEn(llaveDeLaCaja, ROSA);
     const zona = losDatos<{ zonaId: string }>(
-      await api.ejecutar(rosa, 'crear_zona_de_sala', { nombre: 'Salón' }),
+      await api.ejecutar(enLaCaja.token, 'crear_zona_de_sala', { nombre: 'Salón' }),
     ).zonaId;
-    losDatos(await api.ejecutar(rosa, 'crear_mesa', { zona_id: zona, nombre: '1', plazas: 4 }));
+    losDatos(
+      await api.ejecutar(enLaCaja.token, 'crear_mesa', { zona_id: zona, nombre: '1', plazas: 4 }),
+    );
     expect((await entrarEn(llaveDeLaTablet, SARA)).dentro.caeEn).toBe('mesas');
   });
 

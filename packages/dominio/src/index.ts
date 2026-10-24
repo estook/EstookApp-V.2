@@ -1111,6 +1111,7 @@ export {
   elGiroConIman,
   elNombreDeLaSiguiente,
   enTantoPorCiento,
+  enUnidades,
   esUnaMesa,
   lasGuias,
   loQuePoneLaPlantilla,

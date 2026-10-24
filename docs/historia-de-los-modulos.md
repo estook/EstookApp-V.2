@@ -3285,6 +3285,25 @@ Las pruebas: `el-pin-y-la-contrasena.prueba.ts` (contra la base, vistas fallar c
 quitados), `la-puerta.spec.ts` (el dueño sin PIN que sale con el suyo, y el PIN olvidado de punta
 a punta) y `acceso.spec.ts` (quien no tiene contraseña se la pone con el enlace).
 
+### T2 · La sala
+
+_24 de octubre de 2026._ Migración `0085`, decisión [0110](decisiones/0110-t2-la-sala.md), plan
+[`m20a-la-sala-y-la-cocina.md`](m20a-la-sala-y-la-cocina.md). **El plano se dibuja en Estook TPV, a
+ojo**, y «Tu sala» sale de Estook.
+
+- **La base** (0085): `mesa` con sus seis formas, su tamaño a ojo y su giro; `elemento_de_sala`;
+  las políticas del plano con `accion.ajustes_del_tpv`; y `han_fichado_la_salida`.
+- **El dominio** (`plano.ts`): el tamaño por las plazas, el imán, el giro, las guías, el número
+  siguiente y las plantillas, los mismos para el TPV y la API.
+- **La API**: las órdenes del plano, en el TPV; seis nuevas (`colocar_en_el_plano`,
+  `empezar_con_una_plantilla`, las de las cosas de la sala y `ordenar_las_salas`); `el_plano` con
+  lo dibujado y `puedeDibujar`; cualquiera se queda o pasa cualquier mesa.
+- **Estook TPV**: el editor (`sala/`), el plano con Todas · Mías y las iniciales (`plano/`), las
+  pestañas de los pases y la carta por páginas (`mesa/`), y «Quedármela».
+
+Las pruebas: `plano.prueba.ts`, `geometria.prueba.ts`, `losPases.prueba.ts`,
+`la-sala-dibujada.prueba.ts` (contra la base) y `la-sala.spec.ts` (con los toques contados).
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

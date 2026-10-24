@@ -958,6 +958,20 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'cambiar_aparato',
         'desvincular_aparato',
         'guardar_pin_y_bloqueo',
+        // La sala se dibuja en el TPV (0110), con los Ajustes del TPV.
+        'el_plano_del_local',
+        'crear_zona_de_sala',
+        'cambiar_zona_de_sala',
+        'archivar_zona_de_sala',
+        'ordenar_las_salas',
+        'crear_mesa',
+        'cambiar_mesa',
+        'archivar_mesa',
+        'crear_cosa_de_la_sala',
+        'cambiar_cosa_de_la_sala',
+        'quitar_cosa_de_la_sala',
+        'colocar_en_el_plano',
+        'empezar_con_una_plantilla',
       ].sort(),
     );
   });

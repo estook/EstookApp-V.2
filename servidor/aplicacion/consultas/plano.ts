@@ -1,9 +1,5 @@
 import { z } from 'zod';
-import {
-  tamanoDeLaMesa,
-  type CosaDeLaSala,
-  type FormaDeMesa,
-} from '@estook/dominio';
+import { tamanoDeLaMesa, type CosaDeLaSala, type FormaDeMesa } from '@estook/dominio';
 import { consulta, type Contexto } from '../contrato.ts';
 import { elLocalDelServicio } from '../sala.ts';
 

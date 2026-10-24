@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 24 de octubre, por la noche** ([0110](../decisiones/0110-t2-la-sala.md)), sin cambiar de versión: el **Anexo** pone en 7.2 lo que no se abre en su propia tabla (`elemento_de_sala`) y la forma de la mesa, y en 11.9 que las salas se ordenan con «Antes» y «Después».
+
 **El 24 de octubre, por la tarde** ([0109](../decisiones/0109-el-pin-y-la-contrasena.md)), sin cambiar de versión: el **Manifiesto** (31) dice que en Estook se entra con Google o con contraseña, que el PIN es para los aparatos del local y que lo olvidado se recupera con un enlace al correo; el **Plan** lo apunta en M4; la **Auditoría de flujos** gana el fallo «alguien olvida su contraseña o su PIN»; y la **Arquitectura** (16) cuenta los enlaces de recuperación.
 
 **El 24 de octubre** ([0108](../decisiones/0108-t1-la-puerta.md)), sin cambiar de versión: el **Anexo** dice que el PIN de Estook TPV es **de 6 cifras**, el de siempre (11.4, 11.14), con los fáciles de 6 (todas iguales y las escaleras), y quita «el código muere a los 5 fallos» (11.3 punto 2, 11.14 y 11.15), que no se puede hacer: lo frena el tope de 20 por hora por dirección; **Roles** (1.12) dice el código de los dos permisos nuevos y que el area manager también vincula aparatos; y la **Arquitectura** cuenta cómo entra un aparato en la API (4), lo que ya existe del terminal, el operador y la aprobación (5), y que el móvil del camarero es su comandero personal (6).

@@ -834,7 +834,8 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 ## 7.2 Sala
 
 - `zona_de_sala` — nombre, orden, canal por defecto (M10)
-- `mesa` — zona (la sala), **tipo** (cuadrada, redonda, rectangular, ovalada, alargada, taburete; y lo que no se abre: barra, pared, columna, puerta, planta, texto), nombre, plazas, y **su sitio, ancho, fondo y giro en las unidades del plano** (11.9), **nunca en centímetros**
+- `mesa` — zona (la sala), **forma** (cuadrada, redonda, rectangular, ovalada, alargada, taburete), nombre, plazas, y **su sitio, ancho, fondo y giro en las unidades del plano** (11.9), **nunca en centímetros**; sin ancho ni fondo, los de sus plazas (T2, [0110](../decisiones/0110-t2-la-sala.md))
+- `elemento_de_sala` — lo que no se abre: barra, pared, columna, puerta, planta y texto, con su sitio, su ancho, su fondo y su giro. **En su propia tabla** (0110): no tiene plazas ni cuenta, así que una cuenta nunca cae en una pared
 - `cuenta` — **tipo** (`mesa`, `barra`, `para_llevar`, `reparto`, `consumo_interno`), mesa si la tiene, **nombre o número de recogida** si es para llevar o de reparto, estado, camarero **actual**, comensales, canal, apertura, cierre, versión. **`reparto` solo lo crea el adaptador del canal** (M29) y lleva el identificador del pedido en la plataforma: es la comanda que va a cocina (10.8), no una tabla de pedidos aparte. **Su identificador nace en el aparato**, para que subirla dos veces no cree dos
 - `alergeno_de_la_cuenta` — cuenta, alérgeno, quién lo marcó y cuándo
 - `linea_de_cuenta` — plato, cantidad, **precio y tipo de impuesto congelados**, modificadores elegidos (cada uno con su precio y su escandallo), nota, **comensal** (número o nulo, solo al dividir), **tanda** (el pase: 1.º, 2.º), **salió en y quién la tachó** (0106), estado (`pedida`, `en_cocina`, `salio`, `servida`, `quitada`), y autor, motivo y aprobación si se quita. **Su identificador también nace en el aparato**, y a una cuenta **se le añaden líneas, nunca se sobreescriben**
@@ -1515,7 +1516,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 - **El tamaño se cambia estirando las esquinas**, y **se gira con el asa** de arriba, que se queda sola en 0°, 45° y 90° si se pasa cerca. Las paredes y la barra se estiran igual: son un rectángulo largo.
 - **Imán y guías**: lo que se mueve se pega a una rejilla que no se ve, y salen líneas de guía al alinearse con otra mesa. **Las mesas quedan rectas y en fila sin intentarlo.**
 - **Duplicar** (la mesa de al lado, igual, con el número siguiente), **elegir varias** y moverlas a la vez, **deshacer y rehacer**.
-- **Las salas, como pestañas**: «+ Sala», renombrar, ordenar arrastrando. Una sala con mesas abiertas no se borra.
+- **Las salas, como pestañas**: «+ Sala», renombrar, ordenar con «Antes» y «Después» (0110: arrastrar una pestaña pequeña con el dedo se confunde con desplazarlas). Una sala con mesas abiertas no se borra.
 - **Para empezar, una plantilla** del tipo de local («Bar con barra y 6 mesas», «Restaurante de 12 mesas», «Terraza de 8»), que se ajusta con el dedo; o la sala vacía.
 - **Se guarda solo**, al soltar, y los demás aparatos lo ven al momento. Se puede tocar en pleno servicio: **mover una mesa abierta no toca su cuenta**. Borrar una mesa abierta, no se puede.
 

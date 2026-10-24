@@ -9,6 +9,7 @@ import { ElInicio } from './inicio/ElInicio.tsx';
 import { Fichar } from './inicio/Fichar.tsx';
 import { Agotados } from './inicio/Agotados.tsx';
 import { AjustesDelTpv } from './ajustes/AjustesDelTpv.tsx';
+import { EditorDeLaSala } from './sala/EditorDeLaSala.tsx';
 import { escucharLaDireccion, laDireccion } from './navegar.ts';
 import { ContextoAlSegundo, usarEscucharAlSegundo } from './ganchos/usarLaSala.ts';
 import { usarSesion } from './sesion/Sesion.tsx';
@@ -26,6 +27,7 @@ function Dentro() {
   // Una sola escucha para todo el aparato: entrar y salir de una mesa no vuelve a conectar.
   const conectado = usarEscucharAlSegundo();
   const tomaNota = puedeEditar(yo.permisos, 'accion.tomar_nota');
+  const dibuja = puedeEditar(yo.permisos, 'accion.ajustes_del_tpv');
   const mesa = /^mesa\/([0-9a-f-]{36})$/.exec(direccion)?.[1];
 
   let pantalla;
@@ -34,6 +36,9 @@ function Dentro() {
   else if (direccion === 'agotados') pantalla = <Agotados />;
   else if (direccion === 'ajustes' || direccion.startsWith('ajustes/')) {
     pantalla = <AjustesDelTpv direccion={direccion} />;
+  } else if (direccion === 'sala/editar' && dibuja) {
+    // T2 · La sala (0110): el plano se dibuja aquí, a ojo, en la caja o en la tablet.
+    pantalla = <EditorDeLaSala />;
   } else if (!tomaNota) pantalla = <ElInicio />;
   else if (mesa !== undefined) pantalla = <LaMesa key={mesa} cuentaId={mesa} />;
   else pantalla = <ElPlano />;

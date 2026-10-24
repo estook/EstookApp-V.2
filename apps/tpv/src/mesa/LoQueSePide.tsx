@@ -1,22 +1,24 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { Cargando, EstadoVacio, filtrarPorParecido } from '@estook/ui';
 import type { LaCartaDeLaSala, LaMesa, PlatoDeLaSala, SeccionDeLaSala } from '../datos/tipos.ts';
 import { anadirPlato, type Borrador } from '../logica/comanda.ts';
-import { elPaseDeFabrica, losPasesQueSeEligen } from '../logica/laCuenta.ts';
+import { elPaseDeFabrica } from '../logica/laCuenta.ts';
+import { elNumeroDelPase, laPestanaDeLaSeccion, type PestanaDelPase } from '../logica/losPases.ts';
 import { euros } from '../logica/texto.ts';
-import { ElegirPase } from './LaCuenta.tsx';
 import { ElMenuDelDia } from './ElMenuDelDia.tsx';
 
 /**
- * Lo que se pide (0106): **Bebidas · Carta · Menú del día**, en el orden en que se come.
- * Primero se sientan y piden de beber; luego la comida, por secciones y con su foto; y el
- * menú, aparte, que se pide entero. El postre y el café, al final, en su sección.
+ * **Lo que se pide** (T2, maqueta 9; Anexo 11.10): la carta **por páginas, una por
+ * sección** (hasta que T3 traiga la botonera), y la página **Menú** los días que hay
+ * menú. Cada plato es un botón con su nombre entero, su precio y su foto; **agotado**, en
+ * gris y sin tocar.
  *
- * Lo de bebidas va a la barra y no tiene pase. Lo de comida va en el pase que diga «Va
- * en el»: de fábrica, el 1.º en una mesa sin nada y, si no, el último con algo.
+ * **Lo que se toca va al pase marcado** en las pestañas de encima de la cuenta; **al
+ * cambiar de página se marca solo el de esa página** (Entrantes, el 1.º; Principales, el
+ * 2.º; las bebidas, Bebidas). Lo de beber va siempre a la barra, sin pase.
  */
 
-type Pestana = 'bebidas' | 'carta' | 'menu';
+const MENU = 'menu';
 
 export function LoQueSePide({
   carta,
@@ -24,223 +26,210 @@ export function LoQueSePide({
   mesa,
   borrador,
   alCambiarElBorrador,
+  marcada,
+  alMarcar,
 }: {
   readonly carta: LaCartaDeLaSala | undefined;
   readonly cargando: boolean;
   readonly mesa: LaMesa;
   readonly borrador: Borrador;
   readonly alCambiarElBorrador: (b: Borrador) => void;
+  readonly marcada: PestanaDelPase;
+  readonly alMarcar: (p: PestanaDelPase) => void;
 }) {
-  // Una mesa sin nada empieza por las bebidas, como en la sala.
-  const [pestana, setPestana] = useState<Pestana>(
-    mesa.platos.length === 0 && borrador.length === 0 ? 'bebidas' : 'carta',
-  );
-  const [pase, setPase] = useState<number | null>(null);
-  const [buscando, setBuscando] = useState('');
-  const elPase = pase ?? elPaseDeFabrica(mesa, borrador);
-
-  const secciones = carta?.secciones ?? [];
-  const deBebidas = secciones.filter((s) => s.esBebida);
-  const deComida = secciones.filter((s) => !s.esBebida);
+  const secciones = useMemo(() => carta?.secciones ?? [], [carta]);
   const menus = carta?.menus ?? [];
+  const [pagina, setPagina] = useState<string | null>(null);
+  const [buscando, setBuscando] = useState('');
 
-  const lasDeAhora = pestana === 'bebidas' ? deBebidas : deComida;
-  const encontradas = useMemo<readonly SeccionDeLaSala[]>(() => {
+  const clave = (s: SeccionDeLaSala) => s.id ?? 'sin-seccion';
+  // Sin elegir todavía, la página del pase marcado: en una mesa recién abierta, las bebidas.
+  const deFabrica =
+    secciones.find((s) => laPestanaDeLaSeccion(s) === marcada) ??
+    secciones.find((s) => !s.esBebida) ??
+    secciones[0];
+  const laDeAhora =
+    pagina === MENU && menus.length > 0
+      ? MENU
+      : (secciones.find((s) => clave(s) === pagina) ?? deFabrica);
+
+  function abrir(cual: SeccionDeLaSala | typeof MENU) {
+    setBuscando('');
+    if (cual === MENU) {
+      setPagina(MENU);
+      return;
+    }
+    setPagina(clave(cual));
+    // **Se marca solo el pase de esa página**, en una mesa por pases.
+    const suya = laPestanaDeLaSeccion(cual);
+    if (suya !== null && mesa.porPases) alMarcar(suya);
+  }
+
+  const encontradas = useMemo<readonly (PlatoDeLaSala & { readonly esBebida: boolean })[]>(() => {
     const texto = buscando.trim();
-    if (texto === '') return lasDeAhora;
-    const todos = lasDeAhora.flatMap((s) => s.platos);
-    const parecidos = filtrarPorParecido(todos, texto, (p) => p.nombre);
-    return [
-      {
-        id: 'encontrados',
-        nombre: 'Lo que se parece',
-        esBebida: pestana === 'bebidas',
-        platos: parecidos,
-      },
-    ];
-  }, [buscando, lasDeAhora, pestana]);
+    if (texto === '') return [];
+    const todos = secciones.flatMap((s) => s.platos.map((p) => ({ ...p, esBebida: s.esBebida })));
+    return filtrarPorParecido(todos, texto, (p) => p.nombre);
+  }, [buscando, secciones]);
 
   function pedir(plato: PlatoDeLaSala, esBebida: boolean) {
+    const pase = esBebida
+      ? null
+      : mesa.porPases
+        ? (elNumeroDelPase(marcada) ?? elPaseDeFabrica(mesa, borrador))
+        : 1;
     alCambiarElBorrador(
-      anadirPlato(borrador, plato, {
-        destino: esBebida ? 'barra' : 'cocina',
-        pase: esBebida ? null : mesa.porPases ? elPase : 1,
-      }),
+      anadirPlato(borrador, plato, { destino: esBebida ? 'barra' : 'cocina', pase }),
     );
   }
 
+  const cuantos = (p: PlatoDeLaSala) =>
+    borrador
+      .filter((l) => l.platoId === p.id && l.parteDe === null)
+      .reduce((n, l) => n + l.cantidad, 0);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div
-        role="tablist"
-        aria-label="Qué se pide"
-        className="flex gap-e1 bg-superficie px-e3 pt-e3"
-      >
-        <BotonDePestana
-          puesta={pestana === 'bebidas'}
-          onClick={() => {
-            setPestana('bebidas');
-          }}
+      {/* Las páginas, y el buscador que tolera erratas. */}
+      <div className="flex flex-wrap items-center gap-e2 border-b border-borde bg-superficie px-e3 py-e2">
+        <nav
+          aria-label="Las páginas de la carta"
+          className="flex min-w-0 flex-1 gap-e1 overflow-x-auto"
         >
-          Bebidas
-        </BotonDePestana>
-        <BotonDePestana
-          puesta={pestana === 'carta'}
-          onClick={() => {
-            setPestana('carta');
+          {secciones.map((s) => (
+            <BotonDePagina
+              key={clave(s)}
+              puesta={
+                laDeAhora !== MENU && laDeAhora !== undefined && clave(laDeAhora) === clave(s)
+              }
+              onClick={() => {
+                abrir(s);
+              }}
+            >
+              {s.nombre}
+            </BotonDePagina>
+          ))}
+          {menus.length > 0 && (
+            <BotonDePagina
+              puesta={laDeAhora === MENU}
+              onClick={() => {
+                abrir(MENU);
+              }}
+            >
+              {menus.length === 1 ? 'Menú' : 'Menús'}
+            </BotonDePagina>
+          )}
+        </nav>
+        <input
+          type="search"
+          aria-label="Buscar un plato"
+          placeholder="Buscar"
+          value={buscando}
+          onChange={(e) => {
+            setBuscando(e.target.value);
           }}
-        >
-          Carta
-        </BotonDePestana>
-        {menus.length > 0 && (
-          <BotonDePestana
-            puesta={pestana === 'menu'}
-            onClick={() => {
-              setPestana('menu');
-            }}
-          >
-            {/* En el móvil, «Menú» a secas, como en el dibujo: la pestaña no cabe en tres líneas. */}
-            {menus.length === 1 ? (
-              <>
-                Menú<span className="hidden sm:inline">&nbsp;del día</span>
-              </>
-            ) : (
-              'Menús'
-            )}
-            {menus.length === 1 && menus[0] !== undefined && (
-              <span className="ml-e2 hidden rounded-redondo bg-fondo px-e2 text-etiqueta text-texto-suave sm:inline">
-                {euros(menus[0].precioCentimos)}
-              </span>
-            )}
-          </BotonDePestana>
-        )}
+          className="min-h-toque w-full rounded-redondo border border-borde bg-fondo px-e4 sm:w-[9rem]"
+        />
       </div>
 
       {cargando ? (
         <div className="p-e6">
           <Cargando que="la carta" />
         </div>
-      ) : pestana === 'menu' ? (
+      ) : buscando.trim() !== '' ? (
+        <div className="min-h-0 flex-1 overflow-y-auto p-e3">
+          {encontradas.length === 0 ? (
+            <p className="py-e5 text-center text-texto-suave">
+              Nada se parece a «{buscando.trim()}».
+            </p>
+          ) : (
+            <LosPlatos
+              platos={encontradas}
+              cuantos={cuantos}
+              alPedir={(p) => {
+                pedir(p, p.esBebida);
+              }}
+            />
+          )}
+        </div>
+      ) : laDeAhora === MENU ? (
         <ElMenuDelDia
           menus={menus}
           mesa={mesa}
           borrador={borrador}
           alCambiarElBorrador={alCambiarElBorrador}
         />
+      ) : laDeAhora === undefined ? (
+        <div className="p-e3">
+          <EstadoVacio
+            compacto
+            titulo="La carta está vacía"
+            frase="Pon tus platos con su precio en Estook › Carta y saldrán aquí, una página por sección."
+            dibujo="platos"
+            sinAccionPorque="La carta se cambia en Estook, no en la sala."
+          />
+        </div>
       ) : (
-        <>
-          <div className="flex flex-wrap items-center gap-e2 border-b border-borde bg-superficie px-e3 py-e2">
-            <nav aria-label="Secciones" className="flex min-w-0 flex-1 gap-e1 overflow-x-auto">
-              {lasDeAhora.map((s) => (
-                <a
-                  key={s.id ?? 'sin-seccion'}
-                  href={`#seccion-${s.id ?? 'sin'}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById(`seccion-${s.id ?? 'sin'}`)?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start',
-                    });
-                  }}
-                  className="flex min-h-toque shrink-0 items-center rounded-redondo bg-fondo px-e4 font-medium"
-                >
-                  {s.nombre}
-                </a>
-              ))}
-            </nav>
-            <input
-              type="search"
-              aria-label="Buscar un plato"
-              placeholder="Buscar"
-              value={buscando}
-              onChange={(e) => {
-                setBuscando(e.target.value);
-              }}
-              className="min-h-toque w-full rounded-redondo border border-borde bg-superficie px-e4 sm:w-[9rem]"
-            />
-          </div>
-          {pestana === 'carta' && mesa.porPases && (
-            <div className="border-b border-borde bg-superficie px-e3 py-e2">
-              <ElegirPase
-                etiqueta="Va en el"
-                opciones={losPasesQueSeEligen(mesa, borrador)}
-                elegido={elPase}
-                alElegir={setPase}
-              />
-            </div>
-          )}
-          <div className="min-h-0 flex-1 overflow-y-auto p-e3">
-            {lasDeAhora.length === 0 ? (
-              <EstadoVacio
-                compacto
-                titulo={pestana === 'bebidas' ? 'Sin bebidas en la carta' : 'La carta está vacía'}
-                frase={
-                  pestana === 'bebidas'
-                    ? 'Marca en Estook › Carta qué secciones son de bebidas (Bebidas, Vinos, Cafés…) y saldrán aquí, para la barra.'
-                    : 'Pon tus platos con su precio en Estook › Carta y saldrán aquí, por secciones.'
-                }
-                dibujo="platos"
-                sinAccionPorque="La carta se cambia en Estook, no en la sala."
-              />
-            ) : encontradas.every((s) => s.platos.length === 0) ? (
-              <p className="py-e5 text-center text-texto-suave">
-                Nada se parece a «{buscando.trim()}».
-              </p>
-            ) : (
-              encontradas.map((s) => (
-                <div key={s.id ?? 'sin'} className="mb-e5">
-                  <h2
-                    id={`seccion-${s.id ?? 'sin'}`}
-                    className="mb-e2 scroll-mt-e3 text-cuerpo font-bold text-texto-suave"
-                  >
-                    {s.nombre}
-                  </h2>
-                  <div className="grid grid-cols-1 gap-e2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {s.platos.map((p) => (
-                      <Plato
-                        key={p.id}
-                        plato={p}
-                        cuantos={borrador
-                          .filter((l) => l.platoId === p.id && l.parteDe === null)
-                          .reduce((n, l) => n + l.cantidad, 0)}
-                        alPedir={() => {
-                          pedir(p, s.esBebida);
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </>
+        <div className="min-h-0 flex-1 overflow-y-auto p-e3">
+          <LosPlatos
+            platos={laDeAhora.platos}
+            cuantos={cuantos}
+            alPedir={(p) => {
+              pedir(p, laDeAhora.esBebida);
+            }}
+          />
+        </div>
       )}
     </div>
   );
 }
 
-function BotonDePestana({
+function BotonDePagina({
   puesta,
   onClick,
   children,
 }: {
   readonly puesta: boolean;
   readonly onClick: () => void;
-  readonly children: ReactNode;
+  readonly children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
-      role="tab"
-      aria-selected={puesta}
+      aria-pressed={puesta}
       onClick={onClick}
       className={[
-        'flex min-h-toque-cocina flex-1 items-center justify-center rounded-t-grande px-e4 font-bold',
-        puesta ? 'bg-fondo text-texto' : 'text-texto-suave',
+        'min-h-toque shrink-0 rounded-redondo px-e4 font-semibold',
+        puesta ? 'bg-charcoal font-bold' : 'bg-fondo text-texto-suave',
       ].join(' ')}
     >
       {children}
     </button>
+  );
+}
+
+function LosPlatos<P extends PlatoDeLaSala>({
+  platos,
+  cuantos,
+  alPedir,
+}: {
+  readonly platos: readonly P[];
+  readonly cuantos: (p: P) => number;
+  readonly alPedir: (p: P) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-e2 lg:grid-cols-3 xl:grid-cols-4">
+      {platos.map((p) => (
+        <Plato
+          key={p.id}
+          plato={p}
+          cuantos={cuantos(p)}
+          alPedir={() => {
+            alPedir(p);
+          }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -260,27 +249,20 @@ function Plato({
       onClick={alPedir}
       aria-label={`${plato.nombre}, ${euros(plato.precioCentimos)} €${plato.agotado ? ', agotado' : ''}`}
       className={[
-        'relative flex min-h-[4rem] items-stretch sm:min-h-[5.5rem] gap-e2 overflow-hidden rounded-grande border bg-superficie text-left transition-transform active:scale-[0.98]',
+        'relative flex min-h-[4.5rem] items-stretch gap-e2 overflow-hidden rounded-grande border bg-superficie text-left transition-transform active:scale-[0.98] sm:min-h-[5.5rem]',
         cuantos > 0 ? 'border-naranja' : 'border-borde',
         plato.agotado ? 'opacity-50' : '',
       ].join(' ')}
     >
-      {plato.miniatura === null ? (
-        <span
-          aria-hidden="true"
-          className="flex w-[3.5rem] shrink-0 sm:w-[4.5rem] items-center justify-center bg-app-carta/10 text-seccion font-bold text-app-carta"
-        >
-          {plato.nombre.charAt(0).toUpperCase()}
-        </span>
-      ) : (
+      {plato.miniatura !== null && (
         <img
           src={plato.miniatura}
           alt=""
-          className="w-[3.5rem] shrink-0 sm:w-[4.5rem] object-cover"
+          className="w-[3.5rem] shrink-0 object-cover sm:w-[4.5rem]"
           loading="lazy"
         />
       )}
-      <span className="flex min-w-0 flex-1 flex-col justify-center gap-[2px] py-e2 pr-e2">
+      <span className="flex min-w-0 flex-1 flex-col justify-center gap-[2px] py-e2 pl-e3 pr-e2">
         <span className="line-clamp-2 font-semibold leading-tight [overflow-wrap:anywhere]">
           {plato.nombre}
         </span>

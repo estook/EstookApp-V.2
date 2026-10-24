@@ -121,6 +121,28 @@ arreglados después uno a uno); **falta volver a pasarla entera**.
 
 ## 3 · Lo que falta, exactamente
 
+0. **LO PRIMERO: GitHub está en rojo en la rama** (Integración continua #437, commit `557c838`,
+   24-oct). Son fallos de verdad, de pruebas que la otra cuenta no pasó en local. Arreglar y
+   ver cada uno fallar y pasar:
+   - **Lint**: `servidor/aplicacion/despachador.prueba.ts`, línea ~883,
+     `no-unnecessary-condition`: sobra el `SESION_NORMAL === null ? null : …` de `enUnAparato`
+     (SESION_NORMAL nunca es nulo). Quitar el condicional.
+   - **`pruebas/e2e/arranque.spec.ts`, `tpv` (líneas 48 y 71)**: esperaba «Entra en Estook
+     primero» (la puerta vieja); ahora sale «Vincula este aparato a tu local». Cambiar lo
+     que espera. Y **«no desborda a lo ancho en móvil pequeño»** falla en `movil-safari`:
+     la pantalla de vincular desborda a lo ancho en el móvil pequeño (mirar
+     `apps/tpv/src/puerta/Vincular.tsx`: las seis casillas del código `w-12` + `gap`, y los
+     `min-w`; que quepa en 320 px).
+   - **`pruebas/e2e/catalogo.spec.ts:153`, «los cuarenta y cuatro errores del catálogo»**:
+     T1 añadió 5 errores al catálogo (`codigo_no_vale`, `demasiados_codigos`,
+     `lo_aprueba_un_encargado`, `aparato_de_otra_persona`, `falta_fichar`). Actualizar el
+     número y el nombre de la prueba, y lo que cuente ese catálogo en la pantalla.
+   - **`pruebas/e2e/capturas.spec.ts:176`, «el sistema de diseño, en claro y en oscuro»**:
+     cambió algo que sale en esa captura (seguramente el catálogo de errores, por lo de
+     arriba). Las capturas se rehacen solo en Linux (en GitHub); ver el informe del fallo
+     antes de rehacerlas, y rehacerlas solo si el cambio es el esperado.
+   - Después, la batería entera en local (`pnpm verifica`) y GitHub en verde por dentro.
+
 1. **La pregunta pendiente** (sección 4), antes de cerrar.
 2. **Volver a pasar todo**: `pnpm verifica` entero y la batería de pantalla completa. Dos
    cambios del final no tienen prueba de pantalla propia: la caja nueva viene con «Cajón N ·

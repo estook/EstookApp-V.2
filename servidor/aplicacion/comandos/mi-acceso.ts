@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { comprobar, derivar, esPinConForma, porQueNoValeLaClave } from '../../dominio/secretos.ts';
-import { ponerPinNuevo } from '../pines.ts';
+import { ponerPinNuevo, trabajaEn } from '../pines.ts';
 import { comando, FalloDeAplicacion, falloQueSeGuarda, type Contexto } from '../contrato.ts';
 import { exigirQueMandeMas } from '../jerarquia.ts';
 
@@ -309,23 +309,9 @@ export const regenerarPin = comando<
 
     // Que esa persona tenga acceso a ese local: un PIN de un local para quien no
     // trabaja ahi no significa nada.
-    const trabaja = await sql<{ hay: boolean }[]>`
-      select true as hay
-        from estook.membresia m
-        join estook.local l on l.id = ${entrada.local_id}::uuid
-       where m.persona_id = ${entrada.persona_id}
-         and m.organizacion_id = l.organizacion_id
-         and m.desde <= current_date
-         and (m.hasta is null or m.hasta >= current_date)
-         and (m.revocada_en is null or m.revocada_en > now())
-         and (
-           m.alcance = 'organizacion'
-           or (m.alcance = 'area' and l.area_id = m.area_id)
-           or (m.alcance = 'local' and l.id = m.local_id)
-         )
-       limit 1
-    `;
-    if (!trabaja[0]) throw new FalloDeAplicacion('no_existe');
+    if (!(await trabajaEn(sql, entrada.persona_id, entrada.local_id))) {
+      throw new FalloDeAplicacion('no_existe');
+    }
 
     const pin = await ponerPinNuevo(sql, entrada.persona_id, entrada.local_id);
 

@@ -51,17 +51,8 @@ describe('el bloqueo a los cinco intentos', () => {
     expect(elFallo(buena)).toBe('demasiados_intentos');
   });
 
-  it('con el PIN: cinco mal en su local, y el bueno ya no entra', async () => {
-    const correo = 'sara@ejemplo.estook.com';
-    const bueno = base.pinDe(correo, 'bar-centro');
-    const malo = bueno === '000000' ? '111111' : '000000';
-    for (let i = 0; i < 5; i++) {
-      await api.ejecutar(null, 'entrar', { correo, pin: malo });
-    }
-    expect(elFallo(await api.ejecutar(null, 'entrar', { correo, pin: bueno }))).toBe(
-      'demasiados_intentos',
-    );
-  });
+  // Con el PIN ya no se entra en Estook (0109): sus fallos se cuentan en el aparato del
+  // local, y diez seguidos lo paran (`la-puerta.prueba.ts`).
 
   it('en la puerta del admin, igual', async () => {
     for (let i = 0; i < 5; i++) {

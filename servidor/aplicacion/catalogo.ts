@@ -42,6 +42,12 @@ import {
 import { entrar } from './comandos/entrar.ts';
 import { invitarPersona, ponerCorreo } from './comandos/invitar-persona.ts';
 import { cambiarMiClave, ponerClaveA, regenerarPin } from './comandos/mi-acceso.ts';
+import {
+  pedirEnlaceDeContrasena,
+  pedirPinPorCorreo,
+  pinConEnlace,
+  ponerContrasenaConEnlace,
+} from './comandos/recuperar-el-acceso.ts';
 import { reactivarPersona } from './comandos/reactivar-persona.ts';
 import { retirarAcceso } from './comandos/retirar-acceso.ts';
 import { salir } from './comandos/salir.ts';
@@ -601,6 +607,11 @@ export const catalogo = {
     // M4 · mi acceso.
     [cambiarMiClave.nombre]: cambiarMiClave,
     [regenerarPin.nombre]: regenerarPin,
+    // 0109 · lo olvidado, con un enlace al correo.
+    [pedirEnlaceDeContrasena.nombre]: pedirEnlaceDeContrasena,
+    [ponerContrasenaConEnlace.nombre]: ponerContrasenaConEnlace,
+    [pedirPinPorCorreo.nombre]: pedirPinPorCorreo,
+    [pinConEnlace.nombre]: pinConEnlace,
     [activarDobleFactor.nombre]: activarDobleFactor,
     [confirmarDobleFactor.nombre]: confirmarDobleFactor,
     [superarDobleFactor.nombre]: superarDobleFactor,

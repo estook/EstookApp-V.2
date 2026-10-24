@@ -26,10 +26,15 @@ export interface MiAcceso {
     readonly cambiadaEn: string | null;
     readonly laPusoOtraPersona: boolean;
   };
+  /**
+   * **Cada local donde trabaja**, tenga PIN o no (0109): quien crea el restaurante, o
+   * quien lleva toda la cadena, no tenía ninguno y aquí no salía nada que tocar.
+   */
   readonly pines: readonly {
     readonly localId: string;
     readonly local: string;
-    readonly creadoEn: string;
+    /** Nulo si todavía no tiene PIN en ese local. */
+    readonly creadoEn: string | null;
     readonly bloqueadoHasta: string | null;
   }[];
   readonly dobleFactor: {
@@ -83,20 +88,34 @@ async function leerContrasena(sql: Sql, personaId: string): Promise<MiAcceso['co
 }
 
 async function leerPines(sql: Sql, personaId: string): Promise<MiAcceso['pines']> {
+  // Los locales donde trabaja hoy (la misma regla que `trabajaEn`), con su PIN si lo tiene.
   const filas = await sql<
-    { local_id: string; local: string; creado_en: Date; bloqueado_hasta: Date | null }[]
+    { local_id: string; local: string; creado_en: Date | null; bloqueado_hasta: Date | null }[]
   >`
-    select n.local_id, l.nombre as local, n.creado_en, n.bloqueado_hasta
-      from estook.pin n
-      join estook.local l on l.id = n.local_id
-     where n.persona_id = ${personaId}
+    select l.id as local_id, l.nombre as local, n.creado_en, n.bloqueado_hasta
+      from estook.local l
+      left join estook.pin n on n.local_id = l.id and n.persona_id = ${personaId}
+     where l.activo
+       and exists (
+         select 1 from estook.membresia m
+          where m.persona_id = ${personaId}
+            and m.organizacion_id = l.organizacion_id
+            and m.desde <= current_date
+            and (m.hasta is null or m.hasta >= current_date)
+            and (m.revocada_en is null or m.revocada_en > now())
+            and (
+              m.alcance = 'organizacion'
+              or (m.alcance = 'area' and l.area_id = m.area_id)
+              or (m.alcance = 'local' and l.id = m.local_id)
+            )
+       )
      order by l.nombre
   `;
 
   return filas.map((f) => ({
     localId: f.local_id,
     local: f.local,
-    creadoEn: f.creado_en.toISOString(),
+    creadoEn: f.creado_en?.toISOString() ?? null,
     bloqueadoHasta: f.bloqueado_hasta?.toISOString() ?? null,
   }));
 }

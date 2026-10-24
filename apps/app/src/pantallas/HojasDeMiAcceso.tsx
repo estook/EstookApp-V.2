@@ -86,7 +86,7 @@ export function CambiarMiClave({
             tipo="contrasena"
             inputMode="numeric"
             autoComplete="one-time-code"
-            ayuda="El que te dieron al darte acceso, el de entrar. Así nadie puede ponerte una contraseña desde un móvil que te dejaste abierto."
+            ayuda="El de los aparatos del local. Así nadie puede ponerte una contraseña desde un móvil que te dejaste abierto."
             value={pin}
             onChange={(evento) => {
               setPin(evento.target.value);

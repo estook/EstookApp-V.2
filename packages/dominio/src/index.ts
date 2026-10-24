@@ -1089,3 +1089,7 @@ export {
   tokenDelAparato,
 } from './aparatos.ts';
 export type { AjustesDelBloqueo, FuncionDelAparato } from './aparatos.ts';
+
+// ── El PIN y la contraseña (0109) ────────────────────────────────────────────
+export { ENLACE_POR_CORREO } from './enlaces-por-correo.ts';
+export type { ParaQueEsElEnlace } from './enlaces-por-correo.ts';

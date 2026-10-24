@@ -297,6 +297,14 @@ export const ERRORES = {
     403,
   ),
 
+  // ── El PIN y la contraseña (0109) ──────────────────────────────────────────
+  demasiados_enlaces: error(
+    'demasiados_enlaces',
+    'Desde aquí se han pedido muchos enlaces seguidos.',
+    'Espera una hora y vuelve a pedirlo. Si corre prisa, quien lleva el local te da un PIN o una contraseña nueva en Equipo.',
+    429,
+  ),
+
   // ── I · la app instalable (0070) ──────────────────────────────────────────
   hecho_hace_demasiado: error(
     'hecho_hace_demasiado',

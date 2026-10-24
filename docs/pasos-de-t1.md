@@ -2,13 +2,17 @@
 
 > ## Cómo está
 >
-> Escrito el 24 de octubre de 2026, con T1 en su pull request, **sin fusionar**.
+> Leído el 24 de octubre de 2026, en producción y en solo lectura.
 >
-> | Qué              | Cómo está                                                                                     |
-> | ---------------- | --------------------------------------------------------------------------------------------- |
-> | Pull requests    | **#133 «T1 · La puerta de Estook TPV»**, abierta (rama `t1-la-puerta`)                        |
-> | La base de datos | **82 de 82** en producción; T1 trae **la 0083**                                               |
-> | La API           | En producción, la de M20A · 1 · 2 (107 consultas y 253 comandos); T1 la deja en **109 y 261** |
+> | Qué              | Cómo está                                           |
+> | ---------------- | --------------------------------------------------- |
+> | Pull requests    | **#133 fusionada** (T1 · La puerta de Estook TPV)   |
+> | La base de datos | **83 de 83** migraciones (la 0083, migrada)         |
+> | La API           | Desplegada con T1: **109 consultas y 261 comandos** |
+>
+> **T1 está en producción**, y Richi vinculó y entró en IKATZ el 24-oct. Lo que vio al probarla
+> (el PIN de quien crea el restaurante, y lo olvidado) está en
+> [`pasos-del-pin-y-la-contrasena.md`](pasos-del-pin-y-la-contrasena.md).
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de
 antes, en [`pasos-de-m20a.md`](pasos-de-m20a.md).

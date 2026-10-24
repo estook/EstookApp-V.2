@@ -531,7 +531,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M4 · Identidad y acceso
 
-**Entra.** Login único con correo y contraseña o PIN · selector de organización y luego de local, con cambio de contexto sin nueva sesión · resolución de destino tras entrar · invitación con PIN mostrado en pantalla · invitar a un correo existente añade membresía, **nunca duplica persona** · reactivar a quien se fue · PIN único por local · doble factor exigible desde la organización · segundo administrador o correo de recuperación obligatorio · sesiones y dispositivos.
+**Entra.** Login único con correo y contraseña (o Google; **desde la 0109, el PIN es solo para los aparatos del local**, y lo olvidado se recupera con un enlace al correo) · selector de organización y luego de local, con cambio de contexto sin nueva sesión · resolución de destino tras entrar · invitación con PIN mostrado en pantalla · invitar a un correo existente añade membresía, **nunca duplica persona** · reactivar a quien se fue · PIN único por local · doble factor exigible desde la organización · segundo administrador o correo de recuperación obligatorio · sesiones y dispositivos.
 
 **Regla crítica que se aprendió construyéndolo.** La sesión se ata al **aparato**, no al login: entrar dos veces desde el mismo móvil no son dos filas. Sin eso, «Mis dispositivos» enseña sesiones y no dispositivos, y deja de servir para lo único que existe —reconocer una sesión que no es tuya.
 

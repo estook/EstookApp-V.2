@@ -1,14 +1,18 @@
 import { z } from 'zod';
 import type { Destino as ADonde } from '@estook/dominio';
-import { comprobar, esPinConForma, huellaDeToken, tokenNuevo } from '../../dominio/secretos.ts';
+import { comprobar, huellaDeToken, tokenNuevo } from '../../dominio/secretos.ts';
 import { decidirDestino } from '../acceso.ts';
 import { comando, FalloDeAplicacion, falloQueSeGuarda, type Contexto } from '../contrato.ts';
 
 /**
  * Entrar (M4).
  *
- * «Formulario unico con correo y, debajo, contrasena **o** PIN» (Manifiesto 28).
- * Un solo comando para las dos vias, porque para quien entra es una sola cosa.
+ * Con el correo y la contraseña (o con Google, en `entrar_con_google`). **Desde la 0109
+ * el PIN ya no abre Estook** (Richi, 24-oct, la A): el PIN es para los aparatos del
+ * local —Estook TPV y fichar— y la contraseña para Estook, como en Square o Toast. Así
+ * no se confunden, y quien no la tiene o la olvidó se la pone con un enlace al correo
+ * (`pedir_enlace_de_contrasena`). Hasta la 0109 se entraba también con el PIN de un
+ * local, que llevaba a ese local.
  *
  * ── Lo que sale de aqui ──────────────────────────────────────────────────────
  *
@@ -31,12 +35,6 @@ import { comando, FalloDeAplicacion, falloQueSeGuarda, type Contexto } from '../
  * 3. **Cuenta los intentos en la base de datos, no en memoria.** «Bloqueo a los
  *    cinco intentos» (Manifiesto 28). En memoria no serviria de nada: las Edge
  *    Functions arrancan y mueren, y cada arranque empezaria a contar de cero.
- *
- * ── Y el que si se ve ────────────────────────────────────────────────────────
- *
- * Entrar con el PIN de un local **entra en ese local**. El PIN es por local
- * (migracion 0018), asi que teclear el del Bar Puerto ya dice donde estas: una
- * pregunta menos para quien llega con prisa a un turno.
  */
 
 /** Lo que dura una sesion sin volver a entrar. */
@@ -93,9 +91,7 @@ export const elAparato = z
 export const entradaEntrar = z
   .object({
     correo: z.string().trim().toLowerCase().email().max(320),
-    /** Una de las dos, no las dos. */
-    contrasena: z.string().min(1).max(512).optional(),
-    pin: z.string().trim().optional(),
+    contrasena: z.string().min(1).max(512),
     aparato: elAparato.optional(),
     /**
      * Para salir de la pantalla de fichar (19-oct): la llave del aparato del local. Solo
@@ -103,10 +99,7 @@ export const entradaEntrar = z
      */
     llave_del_aparato: z.string().trim().min(20).max(200).optional(),
   })
-  .strict()
-  .refine((e) => (e.contrasena === undefined) !== (e.pin === undefined), {
-    message: 'Hace falta la contrasena o el PIN, y solo una de las dos.',
-  });
+  .strict();
 
 export type EntradaEntrar = z.infer<typeof entradaEntrar>;
 
@@ -136,21 +129,13 @@ export const entrar = comando<EntradaEntrar, SalidaEntrar>({
   conSecreto: true,
 
   async ejecutar(contexto, entrada) {
-    const quienEs =
-      entrada.pin === undefined
-        ? await porContrasena(contexto, entrada.correo, entrada.contrasena ?? '')
-        : await porPin(contexto, entrada.correo, entrada.pin);
+    const quienEs = await porContrasena(contexto, entrada.correo, entrada.contrasena);
     const quien =
       entrada.llave_del_aparato === undefined
         ? quienEs
         : await quienSacaElAparato(contexto, quienEs, entrada.llave_del_aparato);
 
-    return abrirLaSesion(
-      contexto,
-      quien,
-      entrada.pin === undefined ? 'contrasena' : 'pin',
-      entrada.aparato,
-    );
+    return abrirLaSesion(contexto, quien, 'contrasena', entrada.aparato);
   },
 });
 
@@ -313,7 +298,10 @@ export async function abrirLaSesion(
 export interface QuienEntra {
   readonly personaId: string;
   readonly debeCambiarClave: boolean;
-  /** Si entro con PIN, el local de ese PIN. Ya dice donde esta. */
+  /**
+   * El local en el que entra, si ya se sabe: el del aparato de fichar del que sale el
+   * gerente. Se llama así desde que se entraba con el PIN de un local (hasta la 0109).
+   */
   readonly localDelPin: string | null;
 }
 
@@ -363,59 +351,6 @@ export async function porContrasena(
   if (!fila.persona_activa) throw falloQueSeGuarda('no_cuadra');
 
   return { personaId: fila.persona_id, debeCambiarClave: fila.debe_cambiarla, localDelPin: null };
-}
-
-async function porPin(contexto: Contexto, correo: string, pin: string): Promise<QuienEntra> {
-  if (!esPinConForma(pin)) throw new FalloDeAplicacion('no_cuadra');
-
-  const filas = await contexto.sql<
-    {
-      pin_id: string;
-      persona_id: string;
-      local_id: string;
-      sal_del_local: string;
-      huella: string;
-      bloqueado_hasta: Date | null;
-      persona_activa: boolean;
-    }[]
-  >`select * from estook.pines_para_entrar(${correo})`;
-
-  if (filas.length === 0) {
-    await comprobar(pin, CREDENCIAL_DE_MENTIRA);
-    throw new FalloDeAplicacion('no_cuadra');
-  }
-
-  // Se recorren **todos** los locales, sin parar al primero que acierte, por lo
-  // mismo de siempre: parar antes diria, por lo que tarda, en cual acerto.
-  let acertado: (typeof filas)[number] | null = null;
-  let bloqueadoEnAlguno = false;
-
-  for (const fila of filas) {
-    const acierta = await comprobar(pin, fila.huella);
-    const bloqueado = fila.bloqueado_hasta !== null && fila.bloqueado_hasta > contexto.ahora;
-
-    if (acierta && bloqueado) bloqueadoEnAlguno = true;
-    if (acierta && !bloqueado && acertado === null && fila.persona_activa) acertado = fila;
-    if (!acierta) {
-      await contexto.sql`select estook.anotar_intento_de_pin(${fila.pin_id}::uuid, false)`;
-    }
-  }
-
-  if (acertado === null) {
-    // Conservando los intentos apuntados en cada local, por lo mismo.
-    if (bloqueadoEnAlguno) throw falloQueSeGuarda('demasiados_intentos');
-    throw falloQueSeGuarda('no_cuadra');
-  }
-
-  await contexto.sql`select estook.anotar_intento_de_pin(${acertado.pin_id}::uuid, true)`;
-
-  // El PIN no obliga a cambiar contrasena: quien entra con PIN puede no tener
-  // ninguna todavia, que es el caso de la invitacion recien aceptada.
-  return {
-    personaId: acertado.persona_id,
-    debeCambiarClave: false,
-    localDelPin: acertado.local_id,
-  };
 }
 
 async function exigeDobleFactor(contexto: Contexto, organizaciones: string[]): Promise<boolean> {

@@ -23,6 +23,7 @@ import {
 } from '../contrato.ts';
 import { enNombreDelSistema } from '../pago.ts';
 import { leerPermisos } from '../consultas/quien-soy.ts';
+import { ponerPinNuevo } from '../pines.ts';
 import { cerrarLaSesion } from './salir.ts';
 import {
   comoEsta,
@@ -436,12 +437,26 @@ export const dondePuedoVincular = consulta<Record<string, never>, DondeSePuedeVi
   },
 });
 
-export const entradaVincularElPrimero = z.object({ local_id: id, ...queSera, version }).strict();
+export const entradaVincularElPrimero = z
+  .object({
+    local_id: id,
+    ...queSera,
+    version,
+    /** «No recuerdo mi PIN»: quien vincula, que ya ha entrado con su correo, saca uno nuevo. */
+    pin_nuevo: z.boolean().optional(),
+  })
+  .strict();
 
 export interface AparatoVinculado {
   /** **Una sola vez**: se guarda en el aparato y no se puede volver a pedir. */
   readonly llave: string;
   readonly aparato: ElAparatoPorDentro;
+  /**
+   * El PIN de quien vinculó el primer aparato, **una sola vez**, si no tenía en ese local
+   * o pidió uno nuevo (0109). Sin él, quien crea el restaurante no podía entrar en su
+   * propio TPV. Nulo en los demás casos.
+   */
+  readonly tuPinNuevo: string | null;
 }
 
 export const vincularElPrimerAparato = comando<
@@ -482,14 +497,51 @@ export const vincularElPrimerAparato = comando<
       como: 'con el correo',
     });
 
+    // **Su PIN, si no tiene en este local** (0109): quien crea el restaurante entraba con su
+    // correo y no tenía ninguno, así que no podía entrar en su propio TPV. Ya ha
+    // demostrado quién es con el correo (y su segundo factor), así que se le da aquí.
+    const tuPinNuevo = await suPinSiHaceFalta(
+      contexto,
+      fila.organizacion_id,
+      entrada.local_id,
+      entrada.pin_nuevo === true,
+    );
+
     // **La sesión personal no se queda en el aparato** (Anexo 11.3): lo que se queda es
     // su llave. Lo que viene después lo hace cada uno con su PIN.
     await cerrarLaSesion(contexto);
 
     const aparato = await elAparatoDeLaLlave(contexto, laLlave);
-    return { llave: laLlave, aparato: await elAparatoPorDentro(contexto, aparato, laLlave) };
+    return {
+      llave: laLlave,
+      aparato: await elAparatoPorDentro(contexto, aparato, laLlave),
+      tuPinNuevo,
+    };
   },
 });
+
+/** Un PIN para quien vincula, si no tiene en el local o lo pide. Nulo si no hace falta. */
+async function suPinSiHaceFalta(
+  contexto: Contexto,
+  organizacionId: string,
+  localId: string,
+  loPide: boolean,
+): Promise<string | null> {
+  const personaId = contexto.sesion?.personaId;
+  if (personaId === undefined) return null;
+  const tiene = await contexto.sql<{ hay: boolean }[]>`
+    select true as hay from estook.pin where persona_id = ${personaId}::uuid and local_id = ${localId}::uuid
+  `;
+  if (tiene.length > 0 && !loPide) return null;
+  const pin = await ponerPinNuevo(contexto.sql, personaId, localId);
+  await contexto.sql`
+    select estook.anotar(
+      ${organizacionId}::uuid, 'regenerar_pin', 'pin', ${personaId}, ${localId}::uuid,
+      null, null, 'Al vincular el primer aparato'
+    )
+  `;
+  return pin;
+}
 
 // ═══ Los demás, con el código ═════════════════════════════════════════════════
 
@@ -637,7 +689,11 @@ export const vincularConCodigo = comando<
     await contexto.sql`select set_config('estook.persona_id', '', true)`;
 
     const aparato = await elAparatoDeLaLlave(contexto, laLlave);
-    return { llave: laLlave, aparato: await elAparatoPorDentro(contexto, aparato, laLlave) };
+    return {
+      llave: laLlave,
+      aparato: await elAparatoPorDentro(contexto, aparato, laLlave),
+      tuPinNuevo: null,
+    };
   },
 });
 

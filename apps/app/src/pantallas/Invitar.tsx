@@ -154,8 +154,8 @@ export function Invitar({
         {error && <ErrorEnCristiano error={error} />}
 
         <p className="text-secundario text-texto-suave">
-          Al guardar sale su <strong>PIN, en pantalla y una sola vez</strong>, para dárselo en mano.
-          No hace falta que le llegue ningún correo.
+          Al guardar sale su <strong>PIN, en pantalla y una sola vez</strong>, para dárselo en mano:
+          es el de los aparatos del local. Para Estook, con su correo, se pone su contraseña él.
         </p>
 
         <Botones>

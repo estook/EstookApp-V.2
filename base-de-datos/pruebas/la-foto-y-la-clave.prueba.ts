@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { huellaDeToken, tokenNuevo } from '../../servidor/dominio/secretos.ts';
 import { almacenEnMemoria } from '../../servidor/infraestructura/almacen.ts';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
 import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
@@ -149,10 +150,15 @@ describe('la primera contraseña de quien entró con su PIN (0083)', () => {
         where persona_id = (select id from estook.persona where correo = $1)`,
       [correo],
     );
-    const entrada = losDatos<{ token: string }>(
-      await api.ejecutar(null, 'entrar', { correo, pin: base.pinDe(correo, 'bar-centro') }),
+    // **Una sesión abierta con el PIN antes de la 0109**: desde entonces el PIN ya no abre
+    // Estook, pero las que había siguen vivas hasta caducar, y con ellas esta regla.
+    conPin = tokenNuevo();
+    await base.bd.query(
+      `select estook.abrir_sesion(p.id, $2, 'pin', l.organizacion_id, l.id, true, 30)
+         from estook.persona p, estook.local l
+        where p.correo = $1 and l.codigo = 'bar-centro'`,
+      [correo, await huellaDeToken(conPin)],
     );
-    conPin = entrada.token;
   });
 
   it('sin el PIN no la deja poner', async () => {

@@ -208,7 +208,13 @@ type Paso =
   | { readonly que: 'entrar' }
   | { readonly que: 'doble_factor' }
   | { readonly que: 'elegir_local'; readonly donde: DondeSePuedeVincular['locales'] }
-  | { readonly que: 'que_sera'; readonly local: DondeSePuedeVincular['locales'][number] };
+  | { readonly que: 'que_sera'; readonly local: DondeSePuedeVincular['locales'][number] }
+  | {
+      readonly que: 'tu_pin';
+      readonly pin: string;
+      readonly local: string;
+      readonly vinculado: AparatoVinculado;
+    };
 
 function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado) => void }) {
   // **La sesión vive solo en la memoria y solo para esto**: no se guarda en el aparato,
@@ -222,6 +228,8 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  /** «No recuerdo mi PIN»: quien vincula saca uno nuevo para este local (0109). */
+  const [pinNuevo, setPinNuevo] = useState(false);
 
   async function dondeSePuede() {
     const respuesta = await cliente.consultar<DondeSePuedeVincular>('donde_puedo_vincular');
@@ -296,6 +304,7 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
       local_id: localId,
       ...que,
       version: LA_VERSION,
+      ...(pinNuevo ? { pin_nuevo: true } : {}),
     });
     setOcupado(false);
     if (!respuesta.ok) {
@@ -303,6 +312,17 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
       return;
     }
     token.current = null;
+    // **Su PIN, una vez** (0109): quien crea el restaurante no tenía ninguno, y sin él
+    // no podía entrar en su propio TPV.
+    if (respuesta.datos.tuPinNuevo !== null) {
+      setPaso({
+        que: 'tu_pin',
+        pin: respuesta.datos.tuPinNuevo,
+        local: respuesta.datos.aparato.local.nombre,
+        vinculado: respuesta.datos,
+      });
+      return;
+    }
     alVincular(respuesta.datos);
   }
 
@@ -436,10 +456,45 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
               void vincular(paso.local.id, que);
             }}
           />
+          <label className="flex min-h-toque items-center gap-e3 text-cuerpo">
+            <input
+              type="checkbox"
+              checked={pinNuevo}
+              onChange={(e) => {
+                setPinNuevo(e.target.checked);
+              }}
+              className="size-6 accent-naranja"
+            />
+            No recuerdo mi PIN de este local: dame uno nuevo
+          </label>
           <p className="text-secundario text-texto-tenue">
             Al tocar «Listo» tu sesión se cierra en este aparato: se queda con su propia llave y
-            cada uno entra con su PIN. Se cambia cuando quieras en Ajustes del TPV › Aparatos.
+            cada uno entra con su PIN. Si no tienes PIN en este local, te damos uno. Se cambia
+            cuando quieras en Ajustes del TPV › Aparatos.
           </p>
+        </div>
+      )}
+
+      {paso.que === 'tu_pin' && (
+        <div role="status" className="mx-auto flex w-full max-w-[28rem] flex-col gap-e4">
+          <h2 className="text-cifra-media font-bold">Tu PIN de {paso.local}</h2>
+          <p className="text-cuerpo text-texto-suave">
+            Es el que tecleas para entrar en este aparato y para fichar.{' '}
+            <b className="text-texto">Se enseña una sola vez</b>: apúntalo. Si lo olvidas, saca otro
+            en «¿Has olvidado tu PIN?».
+          </p>
+          <span className="text-center text-[2.75rem] font-bold tracking-[0.2em] tabular-nums">
+            {paso.pin}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              alVincular(paso.vinculado);
+            }}
+            className="min-h-toque-cocina rounded-grande bg-naranja text-seccion font-bold text-sobre-naranja"
+          >
+            Ya lo tengo apuntado
+          </button>
         </div>
       )}
     </div>

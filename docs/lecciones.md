@@ -876,3 +876,7 @@
      aparato, pero la pantalla solo mandaba el nombre, y ninguna prueba lo llamaba: el Anexo
      pedía «cambiar la función o el nombre» y solo se podía lo segundo. Se vio leyendo la
      pantalla contra el Anexo punto a punto, no en las pruebas (T1).
+221. **Una prueba que prepara a mano lo que en la vida no está, esconde el fallo.** La prueba
+     de pantalla de la puerta le sacaba un PIN al dueño antes de vincular la caja, así que
+     pasaba; en IKATZ, Richi no tenía PIN y no podía entrar en su propio TPV. Ahora la prueba
+     empieza como empieza un local de verdad, sin PIN, y sale con el suyo (0109).

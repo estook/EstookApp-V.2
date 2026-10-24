@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Boton, EstadoVacio, ErrorEnCristiano } from '@estook/ui';
 import { crearCliente, type ErrorDeLaApi } from '@estook/cliente-api';
 import { DIRECCION_DE_LA_API } from '../datos/cliente.ts';
-import type { EnlaceDelCorreo } from './enlaceDelCorreo.ts';
 
 /**
  * Los dos enlaces del cambio del correo de acceso (A2 · 0041): el que llega al
@@ -21,7 +20,11 @@ type Como =
   | { readonly paso: 'hecho'; readonly correo: string | null }
   | { readonly paso: 'fallo'; readonly error: ErrorDeLaApi };
 
-export function CambioDeCorreo({ enlace }: { readonly enlace: EnlaceDelCorreo }) {
+export function CambioDeCorreo({
+  enlace,
+}: {
+  readonly enlace: { readonly que: 'confirmar' | 'parar'; readonly token: string };
+}) {
   const [como, setComo] = useState<Como>({ paso: 'preguntar' });
   const [enviando, setEnviando] = useState(false);
 

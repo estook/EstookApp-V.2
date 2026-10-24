@@ -1446,7 +1446,7 @@ Además: una página por app, una de la carta digital, una de Fogón, una para g
 
 # 31 · Acceso y prueba
 
-**Un correo, una identidad.** Se entra con **Google**, con **contraseña** o con **PIN**, las tres a la vista. Dos formas de llegar por primera vez: **crear cuenta** desde `estook.com` —con Google, o con el correo y un código de seis cifras que demuestra que es tuyo— o **una invitación** de quien lleva el local. El mismo correo con Google y con contraseña es la misma persona (decisión 0042).
+**Un correo, una identidad.** En Estook se entra con **Google** o con **contraseña**; **el PIN es para los aparatos del local** —Estook TPV y fichar—, no para Estook ([0109](../decisiones/0109-el-pin-y-la-contrasena.md), como Square o Toast). **Lo olvidado se recupera sin esperar a nadie**: «¿La has olvidado o no tienes una?» manda un enlace al correo para poner la contraseña, y «¿Has olvidado tu PIN?», en el aparato del local, uno que da un PIN nuevo para ese local. Dos formas de llegar por primera vez: **crear cuenta** desde `estook.com` —con Google, o con el correo y un código de seis cifras que demuestra que es tuyo— o **una invitación** de quien lleva el local. El mismo correo con Google y con contraseña es la misma persona (decisión 0042).
 
 Después de entrar, en este orden: se comprueba el estado de la suscripción → si pertenece a varias organizaciones, se elige → si su alcance es organización o área, entra en la vista de cadena → si llega a varios locales, «¿dónde estás hoy?» → si no ha terminado el onboarding, sigue por donde iba.
 
@@ -1460,7 +1460,7 @@ Durante la prueba: 10 preguntas a Fogón y 3 documentos al día, 5 albaranes por
 
 Al acabar la prueba sin contratar: **solo lectura, con todo exportable**. A los 60 días, archivo. **Nada se borra mientras dure su plazo**, y pagar lo devuelve todo tal cual; cuánto se guarda cada cosa después, en [`conservacion-de-datos.md`](../legal/conservacion-de-datos.md).
 
-**Seguridad:** contraseñas con hash moderno, PIN único por local con bloqueo a los cinco intentos, doble factor exigible desde la organización, límites de peticiones, enlaces de fichero firmados y caducos, y auditoría de todo lo que toca dinero, permisos o registros legales. **Nunca vemos ni guardamos datos de tarjeta.**
+**Seguridad:** contraseñas con hash moderno, PIN único por local con bloqueo a los cinco intentos, enlaces de recuperación de un solo uso que no dicen si un correo existe, doble factor exigible desde la organización, límites de peticiones, enlaces de fichero firmados y caducos, y auditoría de todo lo que toca dinero, permisos o registros legales. **Nunca vemos ni guardamos datos de tarjeta.**
 
 ---
 

@@ -26,6 +26,7 @@ import { laDireccionDeAhora } from './pantallas/direccionesViejas.ts';
 import { SinEntrar } from './sesion/SinEntrar.tsx';
 import { SinServidor } from './sesion/SinServidor.tsx';
 import { CambioDeCorreo } from './sesion/CambioDeCorreo.tsx';
+import { EnlaceDeAcceso } from './sesion/EnlaceDeAcceso.tsx';
 import { elEnlaceDelCorreo } from './sesion/enlaceDelCorreo.ts';
 import { esLaPantallaDelAparato } from './aparato/llaveDelAparato.ts';
 import { PantallaDelAparato } from './aparato/PantallaDelAparato.tsx';
@@ -126,13 +127,22 @@ export function Aplicacion() {
   // visor al cerrar el teclado (repaso del 25-sep, `anclaAbajo.ts`).
   usarAnclaAbajo();
 
-  // Los enlaces del cambio de correo (A2) van antes que todo: se abren desde el
-  // correo, haya quien haya dentro, y no preguntan quién eres.
+  // Los enlaces del correo (el cambio de correo, A2; la contraseña y el PIN, 0109) van
+  // antes que todo: se abren desde el correo, haya quien haya dentro, y no preguntan
+  // quién eres.
   const [enlaceDelCorreo] = useState(() => elEnlaceDelCorreo(window.location.hash));
   // El aparato del local para fichar (0068), también antes que todo: **no es
   // nadie**, y no tiene que pasar por la puerta de quien entra.
   const [esElAparato] = useState(() => esLaPantallaDelAparato(window.location.hash));
-  if (enlaceDelCorreo !== null) return <CambioDeCorreo enlace={enlaceDelCorreo} />;
+  if (enlaceDelCorreo !== null) {
+    const { que, token } = enlaceDelCorreo;
+    // Los de recuperar el acceso (0109) y los del cambio de correo (A2).
+    return que === 'contrasena' || que === 'pin' ? (
+      <EnlaceDeAcceso enlace={{ que, token }} />
+    ) : (
+      <CambioDeCorreo enlace={{ que, token }} />
+    );
+  }
   if (esElAparato) return <PantallaDelAparato />;
 
   return (

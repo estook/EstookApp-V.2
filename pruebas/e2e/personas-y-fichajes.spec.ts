@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
-import { vincularParaFichar } from './en-la-app.ts';
+import { tokenDeAlguienNuevo, vincularParaFichar } from './en-la-app.ts';
 
 /**
  * H1 · Personas y fichajes (decisiones 0057, 0062 y 0068), desde la pantalla.
@@ -37,10 +37,10 @@ async function entrar(page: Page, correo: string) {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 }
 
-async function tokenDe(peticion: APIRequestContext, correo: string, pin?: string): Promise<string> {
+async function tokenDe(peticion: APIRequestContext, correo: string): Promise<string> {
   const respuesta = await peticion.post(`${API}/v1/comandos/entrar`, {
     headers: { 'x-idempotencia': `h1-${correo}-${Date.now()}-${Math.random()}` },
-    data: pin === undefined ? { correo, contrasena: CLAVE } : { correo, pin },
+    data: { correo, contrasena: CLAVE },
   });
   expect(respuesta.status(), await respuesta.text()).toBe(200);
   return ((await respuesta.json()) as { datos: { token: string } }).datos.token;
@@ -179,19 +179,14 @@ test('mis fichajes: la pausa y la corrección, con lo de antes a la vista', asyn
 
   // Alguien nuevo, con correo, solo de esta prueba: así no choca con los otros proyectos.
   const correo = `turno-${info.project.name}-${Date.now()}@correo-de-prueba.com`;
-  const alta = await ejecutar<{ personaId: string; pin: string }>(
-    page.request,
-    rosa,
-    'invitar_persona',
-    {
-      correo,
-      nombre: 'Lucía',
-      rol: 'camarero',
-      organizacion_id: quien.organizacion.id,
-      local_id: quien.local.id,
-    },
-  );
-  const lucia = await tokenDe(page.request, correo, alta.pin);
+  await ejecutar<{ personaId: string; pin: string }>(page.request, rosa, 'invitar_persona', {
+    correo,
+    nombre: 'Lucía',
+    rol: 'camarero',
+    organizacion_id: quien.organizacion.id,
+    local_id: quien.local.id,
+  });
+  const lucia = await tokenDeAlguienNuevo(page.request, correo);
 
   await ejecutar(page.request, lucia, 'fichar_entrada', { sin_donde: 'sin_senal' });
   await ejecutar(page.request, lucia, 'empezar_pausa', {});

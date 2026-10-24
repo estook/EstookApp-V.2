@@ -3264,6 +3264,27 @@ Las pruebas: `la-puerta.prueba.ts` (contra la base, de vincular a desvincular), 
 no es fácil), `contraste.prueba.ts` (el tema oscuro) y `la-puerta.spec.ts` (la pantalla, en
 escritorio y en móvil).
 
+### El PIN y la contraseña
+
+_24 de octubre de 2026._ Migración `0084`, decisión
+[0109](decisiones/0109-el-pin-y-la-contrasena.md). Lo que vio Richi probando T1: quien crea el
+restaurante no tenía PIN, y lo olvidado dependía del gerente. **El PIN pasa a ser solo de los
+aparatos del local** (la A de Richi), y Estook se abre con contraseña o con Google.
+
+- **La base** (0084): `enlace_por_correo`, los enlaces de recuperar el acceso por su huella, con
+  cada petición apuntada para el tope por dirección.
+- **La API** (`recuperar-el-acceso.ts`): `pedir_enlace_de_contrasena`,
+  `poner_contrasena_con_enlace`, `pedir_pin_por_correo` y `pin_con_enlace`; `entrar` ya no acepta
+  el PIN; `vincular_el_primer_aparato` da su PIN a quien no tenía (`tuPinNuevo`); `mi_acceso`
+  enseña cada local donde trabaja. `trabajaEn`, en `pines.ts`, para los tres que lo miran.
+- **Las pantallas**: en Estook, la puerta sin «Con PIN» y con «¿La has olvidado o no tienes una?»
+  (`OlvideLaContrasena`), los enlaces del correo (`EnlaceDeAcceso`) y Mi acceso con «Ponerme un
+  PIN»; en Estook TPV y en la pantalla de fichar, «¿Has olvidado tu PIN?».
+
+Las pruebas: `el-pin-y-la-contrasena.prueba.ts` (contra la base, vistas fallar con los topes
+quitados), `la-puerta.spec.ts` (el dueño sin PIN que sale con el suyo, y el PIN olvidado de punta
+a punta) y `acceso.spec.ts` (quien no tiene contraseña se la pone con el enlace).
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

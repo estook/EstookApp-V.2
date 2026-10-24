@@ -36,16 +36,11 @@ async function abrirLimpio(page: Page) {
   await abrirSinQueSeCaiga(page, APP);
 }
 
-async function entrar(page: Page, correo: string, secreto = CLAVE, conPin = false) {
+async function entrar(page: Page, correo: string, secreto = CLAVE) {
   await abrirLimpio(page);
 
   await page.getByLabel('Tu correo').fill(correo);
-  if (conPin) {
-    await page.getByRole('tab', { name: 'Con PIN' }).click();
-    await page.getByLabel('Tu PIN').fill(secreto);
-  } else {
-    await page.getByLabel('Tu contraseña').fill(secreto);
-  }
+  await page.getByLabel('Tu contraseña').fill(secreto);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
 
   // Se espera a que el servidor conteste. Sin esto, una prueba que navegue justo
@@ -97,14 +92,33 @@ test.describe('entrar', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Rosa');
   });
 
-  test('**y con el PIN del local tambien**, que es como entra media plantilla', async ({
+  test('**quien no tiene contraseña se la pone con un enlace al correo**, y entra con ella', async ({
     page,
   }) => {
-    // El PIN se genera al azar en cada arranque de la API de pruebas, asi que se
-    // pregunta cual es. Es lo mismo que hace quien lo tiene apuntado en el movil.
-    const pin = await pinDe(page, 'sara@ejemplo.estook.com');
-    await entrar(page, 'sara@ejemplo.estook.com', pin, true);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Sara');
+    // Desde la 0109 el PIN no abre Estook: quien entraba con él se pone su contraseña
+    // aquí. Alguien recién invitado, que solo tiene su PIN de los aparatos del local.
+    const correo = await alguienRecienInvitado(page.request, 'Nuria');
+    await abrirLimpio(page);
+    await page.getByRole('button', { name: '¿La has olvidado o no tienes una?' }).click();
+    await page.getByLabel('Tu correo').fill(correo);
+    await page.getByRole('button', { name: 'Mandarme el enlace' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Mira tu correo' })).toBeVisible();
+
+    // El enlace del correo, abierto en esta app: va tras la almohadilla.
+    const mandado = (await (
+      await page.request.get(`${API}/pruebas/ultimo-correo?para=${encodeURIComponent(correo)}`)
+    ).json()) as { texto: string };
+    const enlace = /#\/correo\?contrasena=\S+/.exec(mandado.texto)?.[0] ?? '';
+    expect(enlace).not.toBe('');
+    await abrirSinQueSeCaiga(page, `${APP}${enlace}`);
+    await expect(page.getByRole('heading', { name: 'Pon tu contraseña' })).toBeVisible();
+    await page.getByLabel('La nueva').fill('una frase que recuerdo bien');
+    await page.getByLabel('Repítela').fill('una frase que recuerdo bien');
+    await page.getByRole('button', { name: 'Poner mi contraseña' }).click();
+    await expect(page.getByRole('heading', { name: 'Contraseña puesta' })).toBeVisible();
+
+    await entrar(page, correo, 'una frase que recuerdo bien');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Nuria');
   });
 
   test('con la contrasena mal, se dice y **no se borra el correo**', async ({ page }) => {
@@ -337,47 +351,35 @@ async function unLocalDe(peticion: APIRequestContext, correo: string): Promise<s
 }
 
 /**
- * El PIN de alguien, generandolo con quien puede darlo.
- *
- * El PIN nace al azar y **no se puede consultar**: lo guardado es su huella. Asi
- * que para probar que se entra con PIN hay que hacer lo mismo que haria quien
- * lleva el local: generar uno nuevo y verlo en pantalla.
+ * Alguien recién invitado por Rosa en Bar Centro: tiene su PIN de los aparatos del local
+ * y **ninguna contraseña**. Un correo distinto en cada pasada: la base de pruebas es una
+ * y las pruebas corren en paralelo.
  */
-async function pinDe(page: Page, correo: string): Promise<string> {
-  const peticion = page.request;
+async function alguienRecienInvitado(peticion: APIRequestContext, nombre: string): Promise<string> {
   const token = await unToken(peticion, 'rosa@ejemplo.estook.com');
   const cabeceras = { authorization: `Bearer ${token}` };
-
   const yo = (await (
     await peticion.get(`${API}/v1/consultas/quien_soy`, { headers: cabeceras })
-  ).json()) as {
-    datos: { local: { id: string } };
-  };
-  const local = yo.datos.local.id;
-
-  const equipo = (await (
-    await peticion.get(`${API}/v1/consultas/quien_tiene_acceso?local_id=${local}`, {
-      headers: cabeceras,
-    })
-  ).json()) as { datos: { correo?: string; personaId: string }[] };
-
-  const persona = equipo.datos.find((acceso) => acceso.correo === correo);
-  if (!persona) throw new Error(`${correo} no tiene acceso a ese local`);
-
-  const nuevo = (await (
-    await peticion.post(`${API}/v1/comandos/regenerar_pin`, {
-      headers: { ...cabeceras, 'x-idempotencia': `pin-nuevo-${correo}-${Date.now()}` },
-      data: { persona_id: persona.personaId, local_id: local },
-    })
-  ).json()) as { datos: { pin: string } };
-
-  return nuevo.datos.pin;
+  ).json()) as { datos: { organizacion: { id: string }; local: { id: string } } };
+  const correo = `${nombre.toLowerCase()}-${String(Date.now())}-${String(Math.random()).slice(2, 8)}@ejemplo.estook.com`;
+  const respuesta = await peticion.post(`${API}/v1/comandos/invitar_persona`, {
+    headers: { ...cabeceras, 'x-idempotencia': `invitar-${correo}` },
+    data: {
+      correo,
+      nombre,
+      rol: 'camarero',
+      organizacion_id: yo.datos.organizacion.id,
+      local_id: yo.datos.local.id,
+    },
+  });
+  expect(respuesta.status(), await respuesta.text()).toBe(200);
+  return correo;
 }
 
 // ── El ciclo entero de una persona ───────────────────────────────────────────
 
 /**
- * Invitar, entrar con el PIN, retirar y reactivar.
+ * Invitar (con su PIN, que es de los aparatos del local), retirar y reactivar.
  *
  * **Esta es la prueba que faltaba.** Las de arriba comprueban entrar, el
  * contexto y los permisos, y todas pasaban mientras «invitar a alguien nuevo» no
@@ -426,13 +428,14 @@ test.describe('el ciclo de una persona', () => {
     // El PIN, en pantalla y de seis dígitos, para darlo en mano.
     expect(invitada.datos.pin).toMatch(/^[0-9]{6}$/);
 
-    // Y entra con él, que es de lo que se trata.
+    // Y **en Estook no entra con él** (0109): el PIN es de los aparatos del local. Para
+    // Estook se pone su contraseña con un enlace al correo (la prueba de arriba).
     const entrada = await request.post(`${API}/v1/comandos/entrar`, {
       headers: { 'x-idempotencia': `entrar-${correo}` },
       data: { correo, pin: invitada.datos.pin },
     });
 
-    expect(entrada.status(), await entrada.text()).toBe(200);
+    expect(entrada.status(), await entrada.text()).toBe(422);
   });
 
   test('invitar a un correo que ya existe **añade membresía y no duplica persona**', async ({

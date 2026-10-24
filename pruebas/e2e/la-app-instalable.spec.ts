@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
-import { vincularParaFichar } from './en-la-app.ts';
+import { tokenDeAlguienNuevo, vincularParaFichar } from './en-la-app.ts';
 
 /**
  * I · La app instalable (decisión 0070), desde la pantalla.
@@ -20,10 +20,10 @@ const API = 'http://localhost:5177/api';
 const CLAVE = 'estook en desarrollo';
 const ROSA = 'rosa@ejemplo.estook.com';
 
-async function tokenDe(peticion: APIRequestContext, correo: string, pin?: string): Promise<string> {
+async function tokenDe(peticion: APIRequestContext, correo: string): Promise<string> {
   const respuesta = await peticion.post(`${API}/v1/comandos/entrar`, {
     headers: { 'x-idempotencia': `i-${correo}-${Date.now()}-${Math.random()}` },
-    data: pin === undefined ? { correo, contrasena: CLAVE } : { correo, pin },
+    data: { correo, contrasena: CLAVE },
   });
   expect(respuesta.status(), await respuesta.text()).toBe(200);
   return ((await respuesta.json()) as { datos: { token: string } }).datos.token;
@@ -89,7 +89,7 @@ async function alguienNuevo(
   return {
     personaId: alta.personaId,
     pin: alta.pin,
-    token: conCorreo ? await tokenDe(peticion, correo, alta.pin) : null,
+    token: conCorreo ? await tokenDeAlguienNuevo(peticion, correo) : null,
     rosa,
   };
 }

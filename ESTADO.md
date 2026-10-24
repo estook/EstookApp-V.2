@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** «El PIN y la contraseña» está terminada en la rama `el-pin-y-la-contrasena`, con su pull request y sus documentos; le toca a Richi fusionar, migrar la 0084 y desplegar ([sus pasos](docs/pasos-del-pin-y-la-contrasena.md)). Lo siguiente, **T2 · La sala**: sus maquetas están en este ordenador, en la carpeta de borrador de la otra cuenta (`…/d220b965…/scratchpad/tpv3/project`).
+- **Nada a medias.** «El PIN y la contraseña» está terminada en la rama `el-pin-y-la-contrasena`, con su pull request (#134) y sus documentos; le toca a Richi fusionar, migrar la 0084 y desplegar ([sus pasos](docs/pasos-del-pin-y-la-contrasena.md)). Lo siguiente, **T2 · La sala**: sus maquetas están en este ordenador, en la carpeta de borrador de la otra cuenta (`…/d220b965…/scratchpad/tpv3/project`).
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).

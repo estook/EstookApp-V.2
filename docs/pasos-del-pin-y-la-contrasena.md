@@ -6,7 +6,7 @@
 >
 > | Qué              | Cómo está                                                                                 |
 > | ---------------- | ----------------------------------------------------------------------------------------- |
-> | Pull requests    | **«El PIN y la contraseña»**, abierta (rama `el-pin-y-la-contrasena`)                     |
+> | Pull requests    | **#134 «El PIN y la contraseña»**, abierta (rama `el-pin-y-la-contrasena`)                |
 > | La base de datos | **83 de 83** en producción (leído el 24-oct); esta entrega trae **la 0084**               |
 > | La API           | En producción con T1: 109 consultas y 261 comandos; esta entrega la deja en **109 y 265** |
 
@@ -31,7 +31,7 @@ sección 5, «Lo que decidí al construirlo».
 desplegar, la puerta nueva de Estook ya no tiene «Con PIN», pero la API todavía no sabe mandar el
 enlace, así que «¿La has olvidado?» no funciona hasta que despliegues.
 
-1. **En GitHub**: abre el pull request **«El PIN y la contraseña»** y, con las **tres
+1. **En GitHub**: abre el pull request **#134 «El PIN y la contraseña»** y, con las **tres
    comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
 

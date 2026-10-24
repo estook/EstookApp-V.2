@@ -25,6 +25,8 @@ test('el día: en marcha, cerrarlo en tres pasos, reabrirlo con motivo y volver 
   await expect(page.getByText(/^La jornada · /)).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText('Abierta', { exact: true })).toBeVisible();
   await expect(page.getByText(/Se abrió sola a las/)).toBeVisible();
+  // Estook TPV no se abre desde Estook (T1, 0107): «Abrir la sala» ya no está.
+  await expect(page.getByText('Abrir la sala')).toHaveCount(0);
   await page.getByRole('button', { name: 'Cerrar el día' }).click();
 
   // ── Cerrar en tres pasos ──

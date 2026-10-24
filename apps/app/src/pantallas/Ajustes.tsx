@@ -11,7 +11,6 @@ import {
   IconoPausa,
   IconoReloj,
   IconoServicio,
-  IconoTeclado,
   IconoBuscar,
   IconoColor,
   IconoFlechaAbajo,
@@ -59,7 +58,6 @@ import { MiAcceso } from './MiAcceso.tsx';
 import { TuLocalEnGoogle } from './TuLocalEnGoogle.tsx';
 import { CuandoEsLlegarTarde } from './CuandoEsLlegarTarde.tsx';
 import { LasPausas } from './LasPausas.tsx';
-import { ElAparatoParaFichar } from './ElAparatoParaFichar.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ComoEntranTusVentas } from '../servicio/ComoEntranTusVentas.tsx';
 import { preguntarDondeEstoy } from '../ganchos/usarFichar.ts';
@@ -385,13 +383,6 @@ function LaSeccion({
             frase: 'Si se fichan y si cuentan como trabajo',
             icono: IconoPausa,
             contenido: <LasPausas />,
-          },
-          {
-            id: 'aparato-para-fichar',
-            titulo: 'El aparato para fichar',
-            frase: 'Una tablet del local donde cada uno ficha con su PIN',
-            icono: IconoTeclado,
-            contenido: <ElAparatoParaFichar />,
           },
           {
             id: 'sala',

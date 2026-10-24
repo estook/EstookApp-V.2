@@ -72,6 +72,10 @@ export const PERMISOS_DE_ACCION = [
   'accion.tomar_nota',
   'accion.cocinar',
   'accion.quitar_de_cocina',
+  // T1 · La puerta de Estook TPV (Roles 1.12, 0107): vincular aparatos (sacar su código,
+  // cambiarlos, desvincularlos) y los Ajustes del TPV (el PIN y el bloqueo, de momento).
+  'accion.vincular_aparatos',
+  'accion.ajustes_del_tpv',
 ] as const;
 
 export const PERMISOS = [...PERMISOS_DE_APP, ...PERMISOS_DE_DATO, ...PERMISOS_DE_ACCION] as const;

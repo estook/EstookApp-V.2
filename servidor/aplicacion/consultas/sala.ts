@@ -177,6 +177,7 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
   nombre: 'el_plano',
   entrada: z.object({}).strict(),
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto) {
     const localId = elLocalDelServicio(contexto);
@@ -314,6 +315,7 @@ export const laMesa = consulta<{ cuenta_id: string }, SalidaLaMesa>({
   nombre: 'la_mesa',
   entrada: z.object({ cuenta_id: z.string().uuid() }).strict(),
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -491,6 +493,7 @@ export const laCocina = consulta<Record<string, never>, SalidaLaCocina>({
   nombre: 'la_cocina',
   entrada: z.object({}).strict(),
   exige: 'accion.cocinar',
+  enElTpv: 'tambien',
 
   async ejecutar(contexto) {
     const localId = elLocalDelServicio(contexto);
@@ -590,6 +593,7 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
   nombre: 'la_carta_de_la_sala',
   entrada: z.object({}).strict(),
   exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
 
   async ejecutar(contexto) {
     const localId = elLocalDelServicio(contexto);

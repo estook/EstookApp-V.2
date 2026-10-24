@@ -582,3 +582,49 @@ describe('la entrega V · «el del sistema» y lo elegido', () => {
     );
   });
 });
+
+/*
+ * ── Y la de Estook TPV, con los mismos mínimos (T1 · 0107, Anexo 11.12) ───────
+ *
+ * Solo oscuro, y con sol de terraza encima: si algo tiene que pasar B8 con holgura es
+ * esto. Se lee el bloque `data-tema='tpv'` de `temas.css`, igual que el oscuro.
+ */
+function delTpv(nombre: string): string {
+  const bloque = TEMAS.slice(TEMAS.indexOf("data-tema='tpv'"));
+  const encontrado = new RegExp(`--color-${nombre}:\\s*(#[0-9a-fA-F]{6})`).exec(bloque);
+  if (!encontrado?.[1]) throw new Error(`No esta declarado --color-${nombre} en Estook TPV`);
+  return encontrado[1];
+}
+
+describe('B8 en Estook TPV', () => {
+  it('los tres tonos de texto se leen sobre el fondo, la tarjeta y lo marcado', () => {
+    for (const tono of ['texto', 'texto-suave', 'texto-tenue']) {
+      for (const sobre of ['fondo', 'superficie', 'charcoal']) {
+        expect(
+          contraste(delTpv(tono), delTpv(sobre)),
+          `${tono} sobre ${sobre}`,
+        ).toBeGreaterThanOrEqual(TEXTO);
+      }
+    }
+  });
+
+  it('los cuatro estados se leen, y también sobre su propio fondo', () => {
+    for (const estado of ['bien', 'atencion', 'mal', 'info']) {
+      expect(contraste(delTpv(estado), delTpv('superficie')), estado).toBeGreaterThanOrEqual(TEXTO);
+      expect(
+        contraste(delTpv(estado), delTpv(`${estado}-suave`)),
+        `${estado} sobre su fondo`,
+      ).toBeGreaterThanOrEqual(TEXTO);
+    }
+  });
+
+  it('el naranja de la acción principal se ve sobre la tarjeta, con el texto oscuro encima', () => {
+    expect(contraste(color('naranja'), delTpv('superficie'))).toBeGreaterThanOrEqual(ICONO);
+    expect(contraste(color('sobre-naranja'), color('naranja'))).toBeGreaterThanOrEqual(TEXTO);
+  });
+
+  it('la pieza marcada se separa del fondo y lleva blanco legible', () => {
+    expect(contraste(BLANCO, delTpv('charcoal'))).toBeGreaterThanOrEqual(TEXTO);
+    expect(contraste(delTpv('charcoal'), delTpv('fondo'))).toBeGreaterThan(1.2);
+  });
+});

@@ -3,7 +3,8 @@
  *
  * Es lo que le dice a Estook de qué local es esta tablet sin que nadie haya entrado.
  * Del lado de Estook solo queda su huella; si se borra de aquí, el aparato deja de
- * saber de dónde es y hay que volver a ponerlo desde Ajustes.
+ * saber de dónde es y hay que volver a vincularlo desde Estook TPV (0107), que la deja
+ * aquí cuando el aparato es para fichar.
  *
  * En `localStorage`, como el token de la sesión, y dentro de un `try` porque en
  * navegación privada escribir puede fallar.

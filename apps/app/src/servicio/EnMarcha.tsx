@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { Permiso } from '@estook/permisos';
-import { puedeEditar, puedeVer } from '@estook/permisos';
+import { puedeVer } from '@estook/permisos';
 import { Aviso, Boton, Cargando, Etiqueta, Tarjeta, loQueSePuedePintar } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { AL_DIA, CADA_MINUTO } from '../datos/alDia.ts';
@@ -21,9 +21,6 @@ import { comoSeLeeElDia, comoSeLeeLaHoraDe, loQueDuraHoy, type LaJornada } from 
  * **Se pone al día sola cada minuto**, solo con la pantalla a la vista (`AL_DIA`): con el
  * móvil en el bolsillo no se pregunta nada. Las ventas en directo llegan con Estook TPV.
  */
-
-/** Estook TPV, al lado de la app en el mismo dominio: `estook.com/tpv/`. */
-const DIRECCION_DE_LA_SALA = `${import.meta.env.BASE_URL}../tpv/`;
 
 /** Lo que se mira en pleno servicio, en este orden. Cada uno con el permiso de su widget. */
 const LO_QUE_SE_MIRA = ['fichajes', 'agotados', 'menu-de-hoy', 'merma', 'pedidos'] as const;
@@ -73,24 +70,6 @@ export function EnMarcha() {
 
   return (
     <div className="flex max-w-[64rem] flex-col gap-e4">
-      {/* La sala es Estook TPV, su propia puerta (0056, 0106): quien toma nota entra con
-          su sesión de aquí, sin volver a escribir la contraseña. */}
-      {puedeEditar(permisos, 'accion.tomar_nota') && (
-        <a
-          href={DIRECCION_DE_LA_SALA}
-          className="flex min-h-toque-cocina items-center justify-between gap-e3 rounded-grande bg-charcoal px-e5 py-e3 text-white"
-        >
-          <span className="flex flex-col">
-            <span className="text-seccion font-bold">Abrir la sala</span>
-            <span className="text-secundario text-white/80">
-              Estook TPV: el plano, tomar nota y mandar a cocina
-            </span>
-          </span>
-          <span aria-hidden="true" className="text-seccion">
-            ›
-          </span>
-        </a>
-      )}
       {jornada.isPending ? (
         <Cargando que="la jornada" />
       ) : jornada.isError ? (

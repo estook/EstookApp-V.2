@@ -59,7 +59,8 @@ export async function tocarElCanal(contexto: Contexto, canalId: string): Promise
 /**
  * «Algo ha cambiado en la sala o en la cocina de este local» (M20A, 0106): a quien toma
  * nota y a quien cocina, también a quien lo hizo, para que la otra pantalla lo vea al
- * segundo. Sin la mesa dentro: la pantalla vuelve a preguntar con su sesión.
+ * segundo; y desde T1 (0107), **a cada aparato vinculado del local**, que escucha su
+ * propio tema y no el de quien lo usa. Sin la mesa dentro: la pantalla vuelve a preguntar.
  */
 export async function tocarElServicio(contexto: Contexto, localId: string): Promise<void> {
   if ((contexto.alSegundo ?? null) === null) return;
@@ -70,6 +71,12 @@ export async function tocarElServicio(contexto: Contexto, localId: string): Prom
       select t.tema
         from estook.quien_lleva_el_servicio(${localId}::uuid) as q(persona_id)
         join estook.tema_al_segundo t on t.persona_id = q.persona_id
+      union
+      -- Y los aparatos del local (0107): el toque es del aparato, no de quien lo usa.
+      select a.tema_al_segundo
+        from estook.terminal a
+       where a.local_id = ${localId}::uuid and a.retirado_en is null
+         and a.tema_al_segundo is not null
     `,
   );
   apuntar(

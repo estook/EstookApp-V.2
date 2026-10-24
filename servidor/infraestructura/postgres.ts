@@ -1,6 +1,6 @@
 import postgres from 'postgres';
 import { variable } from '@estook/utiles';
-import { huellaDeToken } from '../dominio/secretos.ts';
+import { resolverLaSesion, type SesionViva } from './quien-llama.ts';
 
 /**
  * La unica puerta a Postgres (M2, ampliada en M4).
@@ -44,22 +44,9 @@ import { huellaDeToken } from '../dominio/secretos.ts';
 
 export type Sql = postgres.TransactionSql;
 
-/** La sesion viva detras de una peticion. Nula en `entrar` y en lo publico. */
-export interface SesionViva {
-  readonly id: string;
-  readonly personaId: string;
-  readonly organizacionId: string | null;
-  readonly localId: string | null;
-  readonly dobleFactorSuperado: boolean;
-  readonly debeCambiarClave: boolean;
-  /** Una visita al restaurante de ejemplo (M5). Mira todo y no escribe nada. */
-  readonly esDemostracion: boolean;
-  /**
-   * Una sesión abierta desde el admin (0041). Solo vale para el admin, dura ocho
-   * horas como mucho, y el admin no acepta ninguna otra.
-   */
-  readonly paraAdmin: boolean;
-}
+// La sesión viva vive con quien la resuelve (`quien-llama.ts`): si viviera aquí, los dos
+// ficheros se importarían el uno al otro.
+export type { AparatoDeLaSesion, SesionViva } from './quien-llama.ts';
 
 export interface QuienPregunta {
   /**
@@ -150,52 +137,24 @@ export async function enTransaccion<T>(
              set_config('estook.correlacion_id', ${quien.correlacionId}, true)
     `;
 
-    // 2 · Quién es, y declarado. `sesion_activa` es `security definer` a
-    //     propósito: al resolver el token todavía no hay identidad puesta, que es
-    //     justo lo que se está averiguando (migración 0018). `set local`, para que
-    //     muera con la transacción.
+    // 2 · Quién es, y declarado. `sesion_activa` y `turno_activo` son `security
+    //     definer` a propósito: al resolver el token todavía no hay identidad puesta,
+    //     que es justo lo que se está averiguando (0018, 0107). `set local`, para que
+    //     muera con la transacción. Lo hace `quien-llama.ts`, el mismo para los tres
+    //     sitios que lo necesitan.
     const sesion =
       quien.tokenDeSesion === null
         ? null
-        : await resolver(sql, await huellaDeToken(quien.tokenDeSesion));
+        : await resolverLaSesion(
+            (texto, valores) => sql.unsafe(texto, valores as never[]),
+            quien.tokenDeSesion,
+          );
 
     // 3 · Sin sesión, se declara que no hay nadie.
     if (sesion === null) await sql`select set_config('estook.persona_id', '', true)`;
 
     return hacer(sql, sesion);
   }) as Promise<T>;
-}
-
-async function resolver(sql: Sql, huella: string): Promise<SesionViva | null> {
-  const filas = await sql<
-    {
-      sesion_id: string;
-      persona_id: string;
-      organizacion_id: string | null;
-      local_id: string | null;
-      doble_factor_superado: boolean;
-      debe_cambiar_clave: boolean;
-      es_demostracion: boolean;
-      para_admin: boolean;
-    }[]
-  >`
-    select s.*, set_config('estook.persona_id', s.persona_id::text, true) as declarada
-      from estook.sesion_activa(${huella}) s
-  `;
-
-  const fila = filas[0];
-  if (!fila) return null;
-
-  return {
-    id: fila.sesion_id,
-    personaId: fila.persona_id,
-    organizacionId: fila.organizacion_id,
-    localId: fila.local_id,
-    dobleFactorSuperado: fila.doble_factor_superado,
-    debeCambiarClave: fila.debe_cambiar_clave,
-    esDemostracion: fila.es_demostracion,
-    paraAdmin: fila.para_admin,
-  };
 }
 
 /** Para las pruebas y para los trabajos, que se cierran al terminar. */

@@ -1350,7 +1350,7 @@ En el aparato nuevo
 **Por qué así es lo más seguro** (respuesta 3):
 
 1. **El código no vale nada solo**: sirve **una vez**, para **ese local, esa función y ese nombre**, y **caduca a los 10 minutos**. Lo crea alguien con permiso y con su PIN, y queda a su nombre.
-2. **Seis cifras al azar** (las del generador seguro de `secretos.ts`, como el PIN), y **a los 5 intentos fallidos el código muere**. Además, **una misma dirección no prueba más de 20 códigos por hora**: con eso, probar códigos a ciegas no sale nunca.
+2. **Seis cifras al azar** (las del generador seguro de `secretos.ts`, como el PIN), y **una misma dirección no prueba más de 20 códigos por hora**: con un millón de códigos posibles, un uso y 10 minutos de vida, probar códigos a ciegas no sale nunca. **No hay «el código muere a los 5 fallos»** ([0108](../decisiones/0108-t1-la-puerta.md)): un código mal tecleado no dice a qué código iba, así que no hay ninguno que matar; lo que frena es el tope por dirección.
 3. **El QR lleva `https://estook.com/tpv/vincular#482913`**: el código va detrás del `#`, que el navegador no manda en ninguna petición ni queda en ningún registro de servidor; la aplicación lo lee y lo manda una vez, por POST.
 4. **Lo que se queda en el aparato es su llave**, que no se enseña nunca, no se puede volver a pedir y no se deriva de nada del aparato (Arquitectura, capítulo 6: nada de huellas del hardware). Se guarda en el almacén del navegador de Estook TPV, **aparte de la sesión de Estook** (`estook.sesion`): un mismo navegador puede tener las dos sin mezclarlas.
 5. **La llave sola no hace nada**: abre la pantalla del PIN (y la de cocina, que no tiene operador). **Cada petición lleva la llave del aparato y el turno del operador**, y la API mira las dos: que el aparato es de ese local y sigue vinculado, que su función deja hacer eso, y que la persona tiene el permiso en ese local (Roles 1.12). **Un comandero no abre un cajón aunque teclee el gerente.**
@@ -1362,14 +1362,14 @@ En el aparato nuevo
 
 ## 11.4 Entrar con el PIN, y el bloqueo
 
-**Se entra tecleando el PIN, y ya está** (decidido por la IA, 0107): sin buscar antes la cara. El PIN es único en el local (`pin_unico_en_su_local`, desde M1), así que dice quién es. Es lo que hacen Toast y Square con el código de cada empleado.
+**Se entra tecleando el PIN, y ya está** (decidido por la IA, 0107): sin buscar antes la cara. El PIN es único en el local (`pin_unico_en_su_local`, desde M1), así que dice quién es, y **es de 6 cifras**, el mismo de fichar desde M4 (Richi, 24-oct, [0108](../decisiones/0108-t1-la-puerta.md)): nadie aprende uno nuevo, y es cien veces más difícil de adivinar que uno de 4. Es lo que hacen Toast y Square con el código de cada empleado.
 
 ```
 ┌──────────────────────────────────────────────┐
 │ Caja 1 · Bar Centro              14:32  ● en línea │
 │                                              │
 │            Teclea tu PIN                     │
-│              ○ ○ ○ ○                         │
+│            ○ ○ ○ ○ ○ ○                       │
 │          [1] [2] [3]                         │
 │          [4] [5] [6]                         │
 │          [7] [8] [9]                         │
@@ -1379,7 +1379,7 @@ En el aparato nuevo
 └──────────────────────────────────────────────┘
 ```
 
-- **El PIN lo da Estook, al azar**, donde ya se da (Mi acceso y Equipo, M1): nadie lo elige, así que nadie pone 1234. **Desde T1 se descartan al generarlo los que se adivinan**: cuatro iguales (1111) y las escaleras (1234, 4321). Quien no tiene PIN en ese local ve «No tienes PIN en este local: pídeselo a quien lo lleva».
+- **El PIN lo da Estook, al azar**, donde ya se da (Mi acceso y Equipo, M1): nadie lo elige, así que nadie pone 1234. **Desde T1 se descartan al generarlo los que se adivinan**: todas las cifras iguales (111111) y las escaleras (123456, 654321). Los que ya existen no cambian. Quien no tiene PIN en ese local ve «No tienes PIN en este local: pídeselo a quien lo lleva».
 - **Los fallos** (lo que ya existe, 0018 y 0068): cinco seguidos de la misma persona la paran 15 minutos; diez seguidos en un aparato lo paran 5. La pantalla dice cuánto falta, sin decir nunca si el PIN era de alguien.
 - **El bloqueo** (respuesta 4):
 
@@ -1649,10 +1649,10 @@ En la caja (y en el comandero compartido), con el PIN de quien puede (Roles 1.12
 ## 11.14 La seguridad, en una lista
 
 1. **Estook TPV solo funciona en un aparato vinculado**; vincular es la única vez que se entra con correo.
-2. **El código de vincular**: un uso, su local, su función y su nombre; 10 minutos; muere a los 5 fallos; 20 intentos por hora por dirección; detrás del `#` en el QR.
+2. **El código de vincular**: un uso, su local, su función y su nombre; 10 minutos; 20 intentos por hora por dirección; detrás del `#` en el QR.
 3. **La llave del aparato** no sale nunca de él ni se enseña; Estook guarda su huella. Desvincular la mata en la petición siguiente.
 4. **Cada petición, aparato + operador**, mirados los dos en la API y en la base: el local del aparato, su función y el permiso de la persona.
-5. **El PIN**: al azar, único en el local, derivado con la sal del local; sin los fáciles; 5 fallos y 15 minutos por persona, 10 fallos y 5 minutos por aparato.
+5. **El PIN**: 6 cifras, al azar, único en el local, derivado con la sal del local; sin los fáciles; 5 fallos y 15 minutos por persona, 10 fallos y 5 minutos por aparato.
 6. **El bloqueo** de 11.4, y nadie hace nada a nombre de otro: lo que se hace queda a nombre del operador, con la hora y el aparato.
 7. **Ninguna puerta a la gestión** desde el TPV; **la cocina nunca recibe un importe**, tampoco en la respuesta (3.2).
 8. **Lo que pide un encargado**, con su PIN, una vez y dos minutos (3.4).
@@ -1661,7 +1661,7 @@ En la caja (y en el comandero compartido), con el PIN de quien puede (Roles 1.12
 ## 11.15 Lo que hay que probar, además de 3.7, 10.12 y el capítulo 8
 
 - **Vincular**: el primer aparato con el correo del gerente, y la sesión personal ya no está al acabar; el segundo con el código, que llega con su función y su nombre.
-- **El código** no sirve dos veces, ni pasados 10 minutos, ni en otro local, y muere al quinto fallo; y la dirección que prueba 21 códigos en una hora no prueba el 21.
+- **El código** no sirve dos veces, ni pasados 10 minutos, ni en otro local; y la dirección que prueba 21 códigos en una hora no prueba el 21.
 - **Desvincular** una tablet: su petición siguiente falla, enseña «Este aparato ya no está vinculado», y lo que tenía sin subir se ha subido o se ha avisado antes.
 - **Un comandero no abre el cajón** ni con el PIN del gerente; **una pantalla de cocina no recibe un importe**.
 - **El comandero personal de Sara** no deja entrar a Marcos.

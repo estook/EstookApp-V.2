@@ -139,3 +139,113 @@ export interface LaCartaDeLaSala {
   readonly secciones: readonly SeccionDeLaSala[];
   readonly menus: readonly MenuDeLaSala[];
 }
+
+// ── T1 · La puerta (0107): el aparato y quién lo usa (`comandos/aparatos.ts`) ──
+
+export type FuncionDelAparato = 'caja' | 'comandero' | 'cocina' | 'barra' | 'fichar';
+
+export interface AjustesDelBloqueo {
+  readonly minutos: number;
+  readonly alCobrar: boolean;
+  readonly personalMinutos: number;
+  readonly soloEntraQuienFicha: boolean;
+}
+
+/** Lo que dice el latido: el aparato, su local, el bloqueo y quién está fichado. */
+export interface ElAparatoPorDentro {
+  readonly terminalId: string;
+  readonly nombre: string;
+  readonly funcion: FuncionDelAparato;
+  readonly esPersonal: boolean;
+  readonly dueno: { readonly id: string; readonly nombre: string } | null;
+  readonly cajon: string | null;
+  readonly local: { readonly id: string; readonly nombre: string };
+  readonly bloqueo: AjustesDelBloqueo;
+  readonly fichados: readonly {
+    readonly nombre: string;
+    readonly iniciales: string;
+    readonly desde: string;
+  }[];
+  readonly temaAlSegundo: string | null;
+  readonly hayMesas: boolean;
+}
+
+export interface AparatoVinculado {
+  readonly llave: string;
+  readonly aparato: ElAparatoPorDentro;
+}
+
+export type EstadoDelFichaje = 'fuera' | 'dentro' | 'en_pausa';
+
+export interface DentroDelTpv {
+  readonly turno: string;
+  readonly persona: { readonly id: string; readonly nombre: string; readonly iniciales: string };
+  readonly fichaje: EstadoDelFichaje;
+  readonly caeEn: 'inicio' | 'mesas';
+}
+
+export interface ElFichaje {
+  readonly nombre: string;
+  readonly estado: EstadoDelFichaje;
+  readonly desde: string | null;
+  readonly minutosDeHoy: number;
+  readonly pausasEnUso: boolean;
+}
+
+export interface YoEnElTpv {
+  readonly persona: { readonly id: string; readonly nombre: string; readonly iniciales: string };
+  readonly local: { readonly id: string; readonly nombre: string };
+  readonly permisos: Readonly<Record<string, 'ver' | 'ver_y_editar'>>;
+  readonly aparato: {
+    readonly terminalId: string;
+    readonly nombre: string;
+    readonly funcion: FuncionDelAparato;
+    readonly esPersonal: boolean;
+  };
+  readonly fichaje: ElFichaje;
+  readonly misMesas: readonly { readonly cuentaId: string; readonly titulo: string }[];
+  readonly companeros: readonly { readonly id: string; readonly nombre: string }[];
+}
+
+export interface UnAparato {
+  readonly id: string;
+  readonly nombre: string;
+  readonly funcion: FuncionDelAparato;
+  readonly dueno: { readonly id: string; readonly nombre: string } | null;
+  readonly cajon: { readonly id: string; readonly nombre: string } | null;
+  readonly enLinea: boolean;
+  readonly vistoEn: string | null;
+  readonly version: string | null;
+  readonly vale: boolean;
+}
+
+export interface LosAparatos {
+  readonly este: string;
+  readonly aparatos: readonly UnAparato[];
+  readonly cajones: readonly { readonly id: string; readonly nombre: string }[];
+  readonly personas: readonly { readonly id: string; readonly nombre: string }[];
+}
+
+export interface DondeSePuedeVincular {
+  readonly locales: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly cajones: readonly { readonly id: string; readonly nombre: string }[];
+    readonly aparatos: readonly string[];
+    readonly personas: readonly { readonly id: string; readonly nombre: string }[];
+  }[];
+}
+
+export interface CodigoParaVincular {
+  readonly codigo: string;
+  readonly caducaEn: string;
+}
+
+/** Lo que se elige al vincular: qué es, cómo se llama, de quién y su cajón. */
+export interface QueSera {
+  readonly funcion: FuncionDelAparato;
+  readonly nombre: string;
+  readonly persona_id?: string;
+  readonly cajon_id?: string;
+  readonly cajon_nuevo?: string;
+}

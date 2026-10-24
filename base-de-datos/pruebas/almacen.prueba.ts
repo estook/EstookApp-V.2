@@ -701,6 +701,13 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // mesa se avisa al segundo a quien toma nota o cocina en ese local, y una camarera no
     // puede leer las membresías de la cocina. Como `quien_trabaja_ahora`: solo sus ids, que
     // no salen del servidor, de un local que quien pregunta ve. Son sesenta.
+    //
+    // **Y la 0083 (T1 · La puerta de Estook TPV) añade cuatro.** Quien teclea en un
+    // aparato del local **todavía no es nadie**, como al entrar: `aparato_por_llave` dice
+    // de qué local es una llave viva y su función; `codigo_vivo_por_huella`, qué código
+    // vivo tiene esa huella; `turno_activo`, quién opera ahora en ese aparato (la API lo
+    // mira en cada petición, como `sesion_activa`); y `fichados_en_el_aparato`, los
+    // nombres de pila de quien está fichado, para la pantalla del PIN. Son sesenta y cuatro.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -719,9 +726,11 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'anotar_intento_de_pin',
       'anotar_intento_de_registro',
       'anotar_intento_en_terminal',
+      'aparato_por_llave',
       'cambiar_la_suscripcion',
       'cerrar_demostracion',
       'cerrar_sesiones_de',
+      'codigo_vivo_por_huella',
       'como_esta_fogon',
       'como_esta_la_jornada',
       'como_le_suena',
@@ -733,6 +742,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'el_uso_de',
       'es_admin_o_el_sistema',
       'esta_en_linea',
+      'fichados_en_el_aparato',
       'horas_de_contrato',
       'la_carta_publica',
       'las_cuentas',
@@ -765,6 +775,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'suscripcion_al_crear_organizacion',
       'terminal_por_llave',
       'tiene_como_volver_a_entrar',
+      'turno_activo',
       'turnos_de',
       'un_cliente',
       'unir_identidad',

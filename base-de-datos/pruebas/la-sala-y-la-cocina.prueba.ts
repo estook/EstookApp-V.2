@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { tokenDelAparato } from '@estook/dominio';
 import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
 import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
@@ -41,6 +42,11 @@ let rosa: string;
 let sara: string;
 let marcos: string;
 let luis: string;
+// Desde T1 (0107) la sala solo se lleva desde un aparato vinculado, con el PIN de cada
+// uno: la caja (Rosa), la tablet de la sala (Sara) y la del pase (Marcos).
+let rosaTpv: string;
+let saraTpv: string;
+let marcosTpv: string;
 
 const plato: Record<string, string> = {};
 const mesa: Record<string, string> = {};
@@ -124,7 +130,7 @@ interface Cocina {
 }
 
 const elPlano = async (token: string) => losDatos<Plano>(await api.consultar(token, 'el_plano'));
-const laMesa = async (cuentaId: string, token = sara) =>
+const laMesa = async (cuentaId: string, token = saraTpv) =>
   losDatos<Mesa>(await api.consultar(token, 'la_mesa', { cuenta_id: cuentaId }));
 const laCocina = async (token = marcos) =>
   losDatos<Cocina>(await api.consultar(token, 'la_cocina'));
@@ -157,6 +163,37 @@ beforeAll(async () => {
   sara = await api.entrar(SARA);
   marcos = await api.entrar(MARCOS);
   luis = await api.entrar(LUIS);
+
+  // Los aparatos del local: la caja, vinculada con el correo de Rosa (en otra sesión,
+  // que se cierra al vincular), y dos tablets con su código. Cada uno entra con su PIN.
+  const enUnAparato = async (llave: string, correo: string) =>
+    tokenDelAparato(
+      losDatos<{ turno: string }>(
+        await api.ejecutar(null, 'entrar_con_pin', {
+          llave,
+          pin: base.pinDe(correo, 'bar-centro'),
+        }),
+      ).turno,
+      llave,
+    );
+  const laCaja = losDatos<{ llave: string }>(
+    await api.ejecutar(await api.entrar(ROSA), 'vincular_el_primer_aparato', {
+      local_id: await base.localPorCodigo('bar-centro'),
+      funcion: 'caja',
+      nombre: 'Caja 1',
+      cajon_nuevo: 'Cajón 1',
+    }),
+  ).llave;
+  rosaTpv = await enUnAparato(laCaja, ROSA);
+  const unaTablet = async (nombre: string) => {
+    const { codigo } = losDatos<{ codigo: string }>(
+      await api.ejecutar(rosaTpv, 'sacar_codigo_para_vincular', { funcion: 'comandero', nombre }),
+    );
+    return losDatos<{ llave: string }>(await api.ejecutar(null, 'vincular_con_codigo', { codigo }))
+      .llave;
+  };
+  saraTpv = await enUnAparato(await unaTablet('Tablet de la sala'), SARA);
+  marcosTpv = await enUnAparato(await unaTablet('Tablet del pase'), MARCOS);
 
   // La carta de Bar Centro.
   for (const [seccion, platos] of [
@@ -287,7 +324,7 @@ describe('el plano lo dibuja quien lleva el local', () => {
   });
 
   it('la sala lo ve con cada mesa libre; la cocina no lo ve', async () => {
-    const plano = await elPlano(sara);
+    const plano = await elPlano(saraTpv);
     expect(plano.zonas.map((z) => [z.nombre, z.mesas.map((m) => m.nombre)])).toEqual([
       ['Salón', ['5', '6', '7', '8']],
       ['Terraza', ['T1']],
@@ -295,7 +332,7 @@ describe('el plano lo dibuja quien lleva el local', () => {
     expect(plano.zonas.flatMap((z) => z.mesas).every((m) => m.estado === 'libre')).toBe(true);
     // A quién se le pueden pasar las mesas: quien toma nota, y no la cocina.
     expect(plano.camareros.map((c) => c.nombre)).toEqual(['Rosa', 'Sara']);
-    expect(elFallo(await api.consultar(marcos, 'el_plano'))).toBe('sin_permiso');
+    expect(elFallo(await api.consultar(marcosTpv, 'el_plano'))).toBe('sin_permiso');
   });
 
   it('Ajustes › Sala lo lee para dibujarlo; la camarera no', async () => {
@@ -313,7 +350,7 @@ describe('el plano lo dibuja quien lleva el local', () => {
 
   it('una mesa que sobra se archiva', async () => {
     losDatos(await api.ejecutar(rosa, 'archivar_mesa', { mesa_id: mesa['8'] }));
-    const plano = await elPlano(sara);
+    const plano = await elPlano(saraTpv);
     expect(plano.zonas[0]?.mesas.map((m) => m.nombre)).toEqual(['5', '6', '7']);
   });
 });
@@ -344,7 +381,7 @@ interface LaCartaDeLaSala {
 
 describe('lo que se pide: la carta de la sala y el menú de hoy', () => {
   it('la carta por secciones, con las de bebidas marcadas solas por su nombre', async () => {
-    const carta = losDatos<LaCartaDeLaSala>(await api.consultar(sara, 'la_carta_de_la_sala'));
+    const carta = losDatos<LaCartaDeLaSala>(await api.consultar(saraTpv, 'la_carta_de_la_sala'));
     expect(carta.hoy).toBe(HOY);
     expect(carta.secciones.map((s) => [s.nombre, s.esBebida])).toEqual([
       ['Entrantes', false],
@@ -360,11 +397,11 @@ describe('lo que se pide: la carta de la sala y el menú de hoy', () => {
       ['Pollo asado', 1200],
     ]);
     // Y la cocina no la lee: no ve un euro.
-    expect(elFallo(await api.consultar(marcos, 'la_carta_de_la_sala'))).toBe('sin_permiso');
+    expect(elFallo(await api.consultar(marcosTpv, 'la_carta_de_la_sala'))).toBe('sin_permiso');
   });
 
   it('el menú de hoy, con el pase de cada sección: primeros el 1.º, segundos el 2.º', async () => {
-    const carta = losDatos<LaCartaDeLaSala>(await api.consultar(sara, 'la_carta_de_la_sala'));
+    const carta = losDatos<LaCartaDeLaSala>(await api.consultar(saraTpv, 'la_carta_de_la_sala'));
     const menu = carta.menus[0];
     expect(menu).toMatchObject({ id: menuDelDia, nombre: 'Menú del día', precioCentimos: 1350 });
     expect(menu?.secciones.map((s) => [s.nombre, s.pase, s.esBebida])).toEqual([
@@ -399,10 +436,10 @@ describe('lo que se pide: la carta de la sala y el menú de hoy', () => {
   it('lo que no está hoy en el menú no entra en el menú, ni lo del menú se pide suelto', async () => {
     const cuenta = crypto.randomUUID();
     const menu = crypto.randomUUID();
-    losDatos(await api.ejecutar(sara, 'abrir_mesa', { cuenta_id: cuenta, tipo: 'barra' }));
+    losDatos(await api.ejecutar(saraTpv, 'abrir_mesa', { cuenta_id: cuenta, tipo: 'barra' }));
     expect(
       elFallo(
-        await api.ejecutar(sara, 'pedir', {
+        await api.ejecutar(saraTpv, 'pedir', {
           cuenta_id: cuenta,
           platos: [
             { id: menu, menu_id: menuDelDia },
@@ -413,7 +450,7 @@ describe('lo que se pide: la carta de la sala y el menú de hoy', () => {
     ).toBe('faltan_datos');
     expect(
       elFallo(
-        await api.ejecutar(sara, 'pedir', {
+        await api.ejecutar(saraTpv, 'pedir', {
           cuenta_id: cuenta,
           platos: [{ id: crypto.randomUUID(), plato_id: plato['Lentejas'], pase: 1 }],
         }),
@@ -422,20 +459,20 @@ describe('lo que se pide: la carta de la sala y el menú de hoy', () => {
     // La caña, sin decir a dónde va: a la barra, porque su sección es de bebidas.
     const cana = crypto.randomUUID();
     losDatos(
-      await api.ejecutar(sara, 'pedir', {
+      await api.ejecutar(saraTpv, 'pedir', {
         cuenta_id: cuenta,
         platos: [{ id: cana, plato_id: plato['Caña'] }],
       }),
     );
     const lamesa = losDatos<{ platos: { id: string; destino: string; pase: number | null }[] }>(
-      await api.consultar(sara, 'la_mesa', { cuenta_id: cuenta }),
+      await api.consultar(saraTpv, 'la_mesa', { cuenta_id: cuenta }),
     );
     expect(lamesa.platos.find((p) => p.id === cana)).toMatchObject({
       destino: 'barra',
       pase: null,
     });
     losDatos(
-      await api.ejecutar(rosa, 'anular_mesa', { cuenta_id: cuenta, motivo: 'era una prueba' }),
+      await api.ejecutar(rosaTpv, 'anular_mesa', { cuenta_id: cuenta, motivo: 'era una prueba' }),
     );
   });
 });
@@ -462,24 +499,32 @@ describe('la mesa 6, de principio a fin', () => {
 
   it('Sara la abre para cuatro; abrirla dos veces no abre dos', async () => {
     const abierta = losDatos<{ yaEstaba: boolean }>(
-      await api.ejecutar(sara, 'abrir_mesa', { cuenta_id: seis, mesa_id: mesa['6'], personas: 4 }),
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
+        cuenta_id: seis,
+        mesa_id: mesa['6'],
+        personas: 4,
+      }),
     );
     expect(abierta.yaEstaba).toBe(false);
     const otraVez = losDatos<{ yaEstaba: boolean }>(
-      await api.ejecutar(sara, 'abrir_mesa', { cuenta_id: seis, mesa_id: mesa['6'], personas: 4 }),
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
+        cuenta_id: seis,
+        mesa_id: mesa['6'],
+        personas: 4,
+      }),
     );
     expect(otraVez.yaEstaba).toBe(true);
     // Desde otro aparato, la misma mesa: ya está abierta.
     expect(
       elFallo(
-        await api.ejecutar(sara, 'abrir_mesa', {
+        await api.ejecutar(saraTpv, 'abrir_mesa', {
           cuenta_id: crypto.randomUUID(),
           mesa_id: mesa['6'],
         }),
       ),
     ).toBe('ya_hecho');
 
-    const seisEnElPlano = laMesaDelPlano(await elPlano(sara), '6');
+    const seisEnElPlano = laMesaDelPlano(await elPlano(saraTpv), '6');
     expect(seisEnElPlano.estado).toBe('sin_pedir');
     expect(seisEnElPlano.cuenta).toMatchObject({
       titulo: 'Mesa 6',
@@ -488,12 +533,12 @@ describe('la mesa 6, de principio a fin', () => {
       esMia: true,
       loSiguiente: { que: 'pedir' },
     });
-    expect(laMesaDelPlano(await elPlano(rosa), '6').cuenta?.esMia).toBe(false);
+    expect(laMesaDelPlano(await elPlano(rosaTpv), '6').cuenta?.esMia).toBe(false);
   });
 
   it('primero las bebidas: van a la barra, y la cocina no ve nada', async () => {
     losDatos(
-      await api.ejecutar(sara, 'pedir', {
+      await api.ejecutar(saraTpv, 'pedir', {
         cuenta_id: seis,
         platos: [
           { id: l.cana, plato_id: plato['Caña'], cantidad: 2, destino: 'barra' },
@@ -501,9 +546,9 @@ describe('la mesa 6, de principio a fin', () => {
         ],
       }),
     );
-    expect(laMesaDelPlano(await elPlano(sara), '6').estado).toBe('por_mandar');
+    expect(laMesaDelPlano(await elPlano(saraTpv), '6').estado).toBe('por_mandar');
     const mandado = losDatos<{ aCocina: number; aLaBarra: number; salen: number[] }>(
-      await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: seis }),
+      await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: seis }),
     );
     expect(mandado).toEqual({ aCocina: 0, aLaBarra: 2, salen: [], esperan: [] });
     expect(enCocina(await laCocina(), seis)).toBeNull();
@@ -529,12 +574,12 @@ describe('la mesa 6, de principio a fin', () => {
         { id: l.pollo, plato_id: plato['Pollo asado'], parte_de: l.menu2, pase: 2 },
       ],
     };
-    expect(losDatos(await api.ejecutar(sara, 'pedir', comanda))).toEqual({
+    expect(losDatos(await api.ejecutar(saraTpv, 'pedir', comanda))).toEqual({
       pedidos: 9,
       yaEstaban: 0,
     });
     // El mismo toque otra vez (la red se cortó): no pide dos veces.
-    expect(losDatos(await api.ejecutar(sara, 'pedir', comanda))).toEqual({
+    expect(losDatos(await api.ejecutar(saraTpv, 'pedir', comanda))).toEqual({
       pedidos: 0,
       yaEstaban: 9,
     });
@@ -552,20 +597,20 @@ describe('la mesa 6, de principio a fin', () => {
 
   it('al mandar sale el 1.º y el 2.º espera a que lo marche la sala', async () => {
     const mandado = losDatos<{ aCocina: number; salen: number[]; esperan: number[] }>(
-      await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: seis }),
+      await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: seis }),
     );
     expect(mandado).toMatchObject({ aCocina: 7, aLaBarra: 0, salen: [1], esperan: [2] });
     // Mandar otra vez no manda nada.
     expect(
       losDatos<{ aCocina: number }>(
-        await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: seis }),
+        await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: seis }),
       ).aCocina,
     ).toBe(0);
     const lamesa = await laMesa(seis);
     const estado = (id: string) => lamesa.platos.find((p) => p.id === id)?.estado;
     expect([estado(l.croquetas), estado(l.entrecot)]).toEqual(['en_marcha', 'en_espera']);
     expect(lamesa.loSiguiente).toEqual({ que: 'cobrar' });
-    expect(laMesaDelPlano(await elPlano(sara), '6').estado).toBe('comiendo');
+    expect(laMesaDelPlano(await elPlano(saraTpv), '6').estado).toBe('comiendo');
   });
 
   it('la cocina ve la mesa entera, con el 2.º en espera, y ni un euro', async () => {
@@ -590,10 +635,10 @@ describe('la mesa 6, de principio a fin', () => {
 
   it('cada uno a lo suyo: la sala no ve la cocina y la cocina no ve la cuenta ni marcha', async () => {
     expect(elFallo(await api.consultar(sara, 'la_cocina'))).toBe('sin_permiso');
-    expect(elFallo(await api.consultar(marcos, 'la_mesa', { cuenta_id: seis }))).toBe(
+    expect(elFallo(await api.consultar(marcosTpv, 'la_mesa', { cuenta_id: seis }))).toBe(
       'sin_permiso',
     );
-    expect(elFallo(await api.ejecutar(marcos, 'marchar', { cuenta_id: seis, pase: 2 }))).toBe(
+    expect(elFallo(await api.ejecutar(marcosTpv, 'marchar', { cuenta_id: seis, pase: 2 }))).toBe(
       'sin_permiso',
     );
     expect(elFallo(await api.ejecutar(sara, 'tachar', { linea_id: l.croquetas }))).toBe(
@@ -613,7 +658,7 @@ describe('la mesa 6, de principio a fin', () => {
           .paseFuera,
       ).toBe(false);
     }
-    expect((await elPlano(sara)).tocaMarchar).toEqual([]);
+    expect((await elPlano(saraTpv)).tocaMarchar).toEqual([]);
     expect(elFallo(await api.ejecutar(marcos, 'tachar', { linea_id: l.croquetas }))).toBe(
       'ya_hecho',
     );
@@ -625,7 +670,7 @@ describe('la mesa 6, de principio a fin', () => {
       ).paseFuera,
     ).toBe(true);
 
-    const plano = await elPlano(sara);
+    const plano = await elPlano(saraTpv);
     expect(plano.tocaMarchar).toEqual([{ cuentaId: seis, titulo: 'Mesa 6', pase: 2, salioEl: 1 }]);
     expect(laMesaDelPlano(plano, '6').estado).toBe('toca_marchar');
     expect((await laMesa(seis)).loSiguiente).toEqual({ que: 'marchar', pase: 2 });
@@ -689,44 +734,44 @@ describe('la mesa 6, de principio a fin', () => {
   it('pedir otro principal mientras el 2.º espera no lo marcha: lo marcha Sara', async () => {
     const otro = crypto.randomUUID();
     losDatos(
-      await api.ejecutar(sara, 'pedir', {
+      await api.ejecutar(saraTpv, 'pedir', {
         cuenta_id: seis,
         platos: [{ id: otro, plato_id: plato['Pollo asado'], pase: 2 }],
       }),
     );
     expect(
       losDatos<{ salen: number[]; esperan: number[] }>(
-        await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: seis }),
+        await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: seis }),
       ),
     ).toMatchObject({ aCocina: 1, salen: [], esperan: [2] });
     expect((await laMesa(seis)).loSiguiente).toEqual({ que: 'marchar', pase: 2 });
     // No era: se quita antes de que la cocina lo haga (lo quita un jefe, ya está mandado).
     losDatos(
-      await api.ejecutar(rosa, 'quitar_plato', { linea_id: otro, motivo: 'era para otra mesa' }),
+      await api.ejecutar(rosaTpv, 'quitar_plato', { linea_id: otro, motivo: 'era para otra mesa' }),
     );
   });
 
   it('Sara marcha el 2.º; marcharlo otra vez no hace nada', async () => {
     pasan(3);
-    expect(losDatos(await api.ejecutar(sara, 'marchar', { cuenta_id: seis, pase: 2 }))).toEqual({
+    expect(losDatos(await api.ejecutar(saraTpv, 'marchar', { cuenta_id: seis, pase: 2 }))).toEqual({
       pase: 2,
     });
-    expect(elFallo(await api.ejecutar(sara, 'marchar', { cuenta_id: seis, pase: 2 }))).toBe(
+    expect(elFallo(await api.ejecutar(saraTpv, 'marchar', { cuenta_id: seis, pase: 2 }))).toBe(
       'ya_hecho',
     );
-    expect(elFallo(await api.ejecutar(sara, 'marchar', { cuenta_id: seis, pase: 5 }))).toBe(
+    expect(elFallo(await api.ejecutar(saraTpv, 'marchar', { cuenta_id: seis, pase: 5 }))).toBe(
       'no_existe',
     );
     const [pestana, tarjeta] = enCocina(await laCocina(), seis) ?? [];
     expect(pestana).toBe('enMarcha');
     expect(tarjeta?.ultimaMarcha).not.toBeNull();
-    expect((await elPlano(sara)).tocaMarchar).toEqual([]);
+    expect((await elPlano(saraTpv)).tocaMarchar).toEqual([]);
   });
 
   it('lo pedido tarde llega NUEVO, y la nota cambiada, CAMBIO', async () => {
     pasan(2);
     losDatos(
-      await api.ejecutar(sara, 'pedir', {
+      await api.ejecutar(saraTpv, 'pedir', {
         cuenta_id: seis,
         platos: [{ id: l.croquetasTarde, plato_id: plato['Croquetas'], pase: 2 }],
       }),
@@ -734,12 +779,12 @@ describe('la mesa 6, de principio a fin', () => {
     // El 2.º ya está marchado: lo nuevo entra directo en marcha, sin esperar a nadie.
     expect(
       losDatos<{ salen: number[]; esperan: number[] }>(
-        await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: seis }),
+        await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: seis }),
       ),
     ).toMatchObject({ aCocina: 1, salen: [], esperan: [] });
 
     losDatos(
-      await api.ejecutar(sara, 'cambiar_plato_de_la_mesa', {
+      await api.ejecutar(saraTpv, 'cambiar_plato_de_la_mesa', {
         linea_id: l.entrecot,
         nota: 'al punto',
       }),
@@ -747,7 +792,10 @@ describe('la mesa 6, de principio a fin', () => {
     // Lo que está en cocina no cambia de cantidad: se quita con motivo y se pide otra vez.
     expect(
       elFallo(
-        await api.ejecutar(sara, 'cambiar_plato_de_la_mesa', { linea_id: l.entrecot, cantidad: 2 }),
+        await api.ejecutar(saraTpv, 'cambiar_plato_de_la_mesa', {
+          linea_id: l.entrecot,
+          cantidad: 2,
+        }),
       ),
     ).toBe('ya_hecho');
 
@@ -764,17 +812,19 @@ describe('la mesa 6, de principio a fin', () => {
   });
 
   it('lo que ya está en cocina lo quita un jefe, con motivo, y la cocina lo ve ANULADO', async () => {
+    // Sara lo pide, y lo aprueba un encargado con su PIN en el mismo aparato (T1, 0107:
+    // se prueba entero en `la-puerta.prueba.ts`). Sin el PIN, no se quita.
     expect(
       elFallo(
-        await api.ejecutar(sara, 'quitar_plato', { linea_id: l.pollo, motivo: 'se equivocó' }),
+        await api.ejecutar(saraTpv, 'quitar_plato', { linea_id: l.pollo, motivo: 'se equivocó' }),
       ),
-    ).toBe('sin_permiso');
-    expect(elFallo(await api.ejecutar(rosa, 'quitar_plato', { linea_id: l.pollo }))).toBe(
+    ).toBe('lo_aprueba_un_encargado');
+    expect(elFallo(await api.ejecutar(rosaTpv, 'quitar_plato', { linea_id: l.pollo }))).toBe(
       'faltan_datos',
     );
     expect(
       losDatos<{ borrado: boolean }>(
-        await api.ejecutar(rosa, 'quitar_plato', {
+        await api.ejecutar(rosaTpv, 'quitar_plato', {
           linea_id: l.pollo,
           motivo: 'quería el entrecot, no el pollo',
         }),
@@ -800,7 +850,7 @@ describe('la mesa 6, de principio a fin', () => {
     );
     expect(
       elFallo(
-        await api.ejecutar(sara, 'pedir', {
+        await api.ejecutar(saraTpv, 'pedir', {
           cuenta_id: seis,
           platos: [{ id: crypto.randomUUID(), plato_id: plato['Tarta de queso'], pase: 3 }],
         }),
@@ -812,14 +862,14 @@ describe('la mesa 6, de principio a fin', () => {
   it('lo que no se ha mandado se quita sin más, y no deja rastro en cocina', async () => {
     const otraAgua = crypto.randomUUID();
     losDatos(
-      await api.ejecutar(sara, 'pedir', {
+      await api.ejecutar(saraTpv, 'pedir', {
         cuenta_id: seis,
         platos: [{ id: otraAgua, plato_id: plato['Agua'], destino: 'barra' }],
       }),
     );
     expect(
       losDatos<{ borrado: boolean }>(
-        await api.ejecutar(sara, 'quitar_plato', { linea_id: otraAgua }),
+        await api.ejecutar(saraTpv, 'quitar_plato', { linea_id: otraAgua }),
       ).borrado,
     ).toBe(true);
     expect((await laMesa(seis)).platos.some((p) => p.id === otraAgua)).toBe(false);
@@ -864,11 +914,14 @@ describe('la mesa 6, de principio a fin', () => {
     pasan(4);
     expect(
       elFallo(
-        await api.ejecutar(sara, 'devolver_a_cocina', { linea_id: l.cana, motivo: 'caliente' }),
+        await api.ejecutar(saraTpv, 'devolver_a_cocina', { linea_id: l.cana, motivo: 'caliente' }),
       ),
     ).toBe('ya_hecho');
     losDatos(
-      await api.ejecutar(sara, 'devolver_a_cocina', { linea_id: l.entrecot, motivo: 'más hecho' }),
+      await api.ejecutar(saraTpv, 'devolver_a_cocina', {
+        linea_id: l.entrecot,
+        motivo: 'más hecho',
+      }),
     );
     const [pestana, tarjeta] = enCocina(await laCocina(), seis) ?? [];
     expect(pestana).toBe('enMarcha');
@@ -890,14 +943,14 @@ describe('la mesa 6, de principio a fin', () => {
   it('los postres del final salen solos: el 1.º y el 2.º ya salieron', async () => {
     pasan(15);
     losDatos(
-      await api.ejecutar(sara, 'pedir', {
+      await api.ejecutar(saraTpv, 'pedir', {
         cuenta_id: seis,
         platos: [{ id: l.tarta, plato_id: plato['Tarta de queso'], cantidad: 2, pase: 3 }],
       }),
     );
     expect(
       losDatos<{ salen: number[]; esperan: number[] }>(
-        await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: seis }),
+        await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: seis }),
       ),
     ).toMatchObject({ aCocina: 1, salen: [3], esperan: [] });
     const [pestana, tarjeta] = enCocina(await laCocina(), seis) ?? [];
@@ -910,7 +963,7 @@ describe('la mesa 6, de principio a fin', () => {
   it('Sara se va: pasa sus mesas a Rosa; las de otro no las pasa ella', async () => {
     expect(
       elFallo(
-        await api.ejecutar(sara, 'pasar_a_otro_camarero', {
+        await api.ejecutar(saraTpv, 'pasar_a_otro_camarero', {
           cuenta_ids: [seis],
           camarero_id: await base.personaPorCorreo(MARCOS),
         }),
@@ -918,25 +971,25 @@ describe('la mesa 6, de principio a fin', () => {
     ).toBe('no_existe');
     expect(
       losDatos(
-        await api.ejecutar(sara, 'pasar_a_otro_camarero', {
+        await api.ejecutar(saraTpv, 'pasar_a_otro_camarero', {
           cuenta_ids: [seis],
           camarero_id: await base.personaPorCorreo(ROSA),
         }),
       ),
     ).toEqual({ pasadas: 1 });
     expect((await laMesa(seis)).camarero).toBe('Rosa');
-    expect(laMesaDelPlano(await elPlano(rosa), '6').cuenta?.esMia).toBe(true);
+    expect(laMesaDelPlano(await elPlano(rosaTpv), '6').cuenta?.esMia).toBe(true);
     // Ya no es suya: no la pasa ella; un jefe sí.
     expect(
       elFallo(
-        await api.ejecutar(sara, 'pasar_a_otro_camarero', {
+        await api.ejecutar(saraTpv, 'pasar_a_otro_camarero', {
           cuenta_ids: [seis],
           camarero_id: await base.personaPorCorreo(SARA),
         }),
       ),
     ).toBe('sin_permiso');
     losDatos(
-      await api.ejecutar(rosa, 'pasar_a_otro_camarero', {
+      await api.ejecutar(rosaTpv, 'pasar_a_otro_camarero', {
         cuenta_ids: [seis],
         camarero_id: await base.personaPorCorreo(SARA),
       }),
@@ -945,18 +998,26 @@ describe('la mesa 6, de principio a fin', () => {
   });
 
   it('se cambian a la 7; a una mesa ocupada no se cambia', async () => {
-    losDatos(await api.ejecutar(sara, 'cambiar_de_mesa', { cuenta_id: seis, mesa_id: mesa['7'] }));
-    const plano = await elPlano(sara);
+    losDatos(
+      await api.ejecutar(saraTpv, 'cambiar_de_mesa', { cuenta_id: seis, mesa_id: mesa['7'] }),
+    );
+    const plano = await elPlano(saraTpv);
     expect(laMesaDelPlano(plano, '6').estado).toBe('libre');
     expect(laMesaDelPlano(plano, '7').cuenta?.cuentaId).toBe(seis);
     expect((await laMesa(seis)).titulo).toBe('Mesa 7');
 
     const cinco = crypto.randomUUID();
     losDatos(
-      await api.ejecutar(sara, 'abrir_mesa', { cuenta_id: cinco, mesa_id: mesa['5'], personas: 2 }),
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
+        cuenta_id: cinco,
+        mesa_id: mesa['5'],
+        personas: 2,
+      }),
     );
     expect(
-      elFallo(await api.ejecutar(sara, 'cambiar_de_mesa', { cuenta_id: seis, mesa_id: mesa['5'] })),
+      elFallo(
+        await api.ejecutar(saraTpv, 'cambiar_de_mesa', { cuenta_id: seis, mesa_id: mesa['5'] }),
+      ),
     ).toBe('ya_hecho');
     // Una mesa abierta no se archiva.
     expect(elFallo(await api.ejecutar(rosa, 'archivar_mesa', { mesa_id: mesa['5'] }))).toBe(
@@ -966,30 +1027,30 @@ describe('la mesa 6, de principio a fin', () => {
     // Los de la 5 se juntan con ellos: una cuenta, seis personas, la 5 libre.
     const canaDeLaCinco = crypto.randomUUID();
     losDatos(
-      await api.ejecutar(sara, 'pedir', {
+      await api.ejecutar(saraTpv, 'pedir', {
         cuenta_id: cinco,
         platos: [{ id: canaDeLaCinco, plato_id: plato['Caña'], destino: 'barra' }],
       }),
     );
-    losDatos(await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: cinco }));
-    expect(elFallo(await api.ejecutar(sara, 'juntar_mesas', { cuenta_id: seis, con: seis }))).toBe(
-      'faltan_datos',
-    );
-    losDatos(await api.ejecutar(sara, 'juntar_mesas', { cuenta_id: seis, con: cinco }));
+    losDatos(await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: cinco }));
+    expect(
+      elFallo(await api.ejecutar(saraTpv, 'juntar_mesas', { cuenta_id: seis, con: seis })),
+    ).toBe('faltan_datos');
+    losDatos(await api.ejecutar(saraTpv, 'juntar_mesas', { cuenta_id: seis, con: cinco }));
     const juntas = await laMesa(seis);
     expect(juntas.personas).toBe(6);
     expect(juntas.platos.some((p) => p.id === canaDeLaCinco)).toBe(true);
     expect((await laMesa(cinco)).abierta).toBe(false);
-    expect(laMesaDelPlano(await elPlano(sara), '5').estado).toBe('libre');
+    expect(laMesaDelPlano(await elPlano(saraTpv), '5').estado).toBe('libre');
   });
 
   it('se van: la mesa queda libre, y la cocina la sigue teniendo en «Fuera» hoy', async () => {
-    losDatos(await api.ejecutar(sara, 'liberar_mesa', { cuenta_id: seis }));
-    expect(laMesaDelPlano(await elPlano(sara), '7').estado).toBe('libre');
+    losDatos(await api.ejecutar(saraTpv, 'liberar_mesa', { cuenta_id: seis }));
+    expect(laMesaDelPlano(await elPlano(saraTpv), '7').estado).toBe('libre');
     expect(enCocina(await laCocina(), seis)?.[0]).toBe('fuera');
     expect(
       elFallo(
-        await api.ejecutar(sara, 'pedir', {
+        await api.ejecutar(saraTpv, 'pedir', {
           cuenta_id: seis,
           platos: [{ id: crypto.randomUUID(), plato_id: plato['Agua'], destino: 'barra' }],
         }),
@@ -1032,29 +1093,31 @@ describe('anular una mesa', () => {
 
   it('la anula un jefe con motivo, y la cocina la ve ANULADA en «Fuera»', async () => {
     losDatos(
-      await api.ejecutar(sara, 'abrir_mesa', {
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
         cuenta_id: terraza,
         mesa_id: mesa['T1'],
         personas: 2,
       }),
     );
     losDatos(
-      await api.ejecutar(sara, 'pedir', {
+      await api.ejecutar(saraTpv, 'pedir', {
         cuenta_id: terraza,
         platos: [{ id: crypto.randomUUID(), plato_id: plato['Croquetas'], pase: 1 }],
       }),
     );
-    losDatos(await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: terraza }));
+    losDatos(await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: terraza }));
     expect(enCocina(await laCocina(), terraza)?.[0]).toBe('enMarcha');
 
     expect(
-      elFallo(await api.ejecutar(sara, 'anular_mesa', { cuenta_id: terraza, motivo: 'se fueron' })),
+      elFallo(
+        await api.ejecutar(saraTpv, 'anular_mesa', { cuenta_id: terraza, motivo: 'se fueron' }),
+      ),
     ).toBe('sin_permiso');
     expect(
-      elFallo(await api.ejecutar(rosa, 'anular_mesa', { cuenta_id: terraza, motivo: '' })),
+      elFallo(await api.ejecutar(rosaTpv, 'anular_mesa', { cuenta_id: terraza, motivo: '' })),
     ).toBe('faltan_datos');
     losDatos(
-      await api.ejecutar(rosa, 'anular_mesa', {
+      await api.ejecutar(rosaTpv, 'anular_mesa', {
         cuenta_id: terraza,
         motivo: 'se han ido sin comer',
       }),
@@ -1062,7 +1125,7 @@ describe('anular una mesa', () => {
     const [pestana, tarjeta] = enCocina(await laCocina(), terraza) ?? [];
     expect(pestana).toBe('fuera');
     expect(tarjeta?.anulada).toBe('se han ido sin comer');
-    expect(laMesaDelPlano(await elPlano(sara), 'T1').estado).toBe('libre');
+    expect(laMesaDelPlano(await elPlano(saraTpv), 'T1').estado).toBe('libre');
   });
 });
 
@@ -1070,7 +1133,7 @@ describe('«todo junto», «marchar todo» y la barra', () => {
   it('con «todo junto» todo va en un pase y sale a la vez', async () => {
     const cinco = crypto.randomUUID();
     losDatos(
-      await api.ejecutar(sara, 'abrir_mesa', {
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
         cuenta_id: cinco,
         mesa_id: mesa['5'],
         personas: 2,
@@ -1078,7 +1141,7 @@ describe('«todo junto», «marchar todo» y la barra', () => {
       }),
     );
     losDatos(
-      await api.ejecutar(sara, 'pedir', {
+      await api.ejecutar(saraTpv, 'pedir', {
         cuenta_id: cinco,
         platos: [
           { id: crypto.randomUUID(), plato_id: plato['Ensalada'], pase: 1 },
@@ -1089,16 +1152,18 @@ describe('«todo junto», «marchar todo» y la barra', () => {
     expect((await laMesa(cinco)).platos.map((p) => p.pase)).toEqual([1, 1]);
     expect(
       losDatos<{ salen: number[] }>(
-        await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: cinco }),
+        await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: cinco }),
       ).salen,
     ).toEqual([1]);
   });
 
   it('una mesa por pases que dice «sacadlo todo»: lo que esperaba sale ya', async () => {
     const terraza = crypto.randomUUID();
-    losDatos(await api.ejecutar(sara, 'abrir_mesa', { cuenta_id: terraza, mesa_id: mesa['T1'] }));
     losDatos(
-      await api.ejecutar(sara, 'pedir', {
+      await api.ejecutar(saraTpv, 'abrir_mesa', { cuenta_id: terraza, mesa_id: mesa['T1'] }),
+    );
+    losDatos(
+      await api.ejecutar(saraTpv, 'pedir', {
         cuenta_id: terraza,
         platos: [
           { id: crypto.randomUUID(), plato_id: plato['Croquetas'], pase: 1 },
@@ -1108,11 +1173,11 @@ describe('«todo junto», «marchar todo» y la barra', () => {
     );
     expect(
       losDatos<{ esperan: number[] }>(
-        await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: terraza }),
+        await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: terraza }),
       ).esperan,
     ).toEqual([2]);
     losDatos(
-      await api.ejecutar(sara, 'cambiar_la_mesa', {
+      await api.ejecutar(saraTpv, 'cambiar_la_mesa', {
         cuenta_id: terraza,
         por_pases: false,
         nota_para_cocina: 'tienen prisa',
@@ -1124,7 +1189,7 @@ describe('«todo junto», «marchar todo» y la barra', () => {
     expect(tarjeta?.[0]).toBe('enMarcha');
     expect(tarjeta?.[1]).toMatchObject({ notaParaCocina: 'tienen prisa', porPases: false });
     // El plano también lo sabe: sus opciones no empiezan con la nota en blanco.
-    expect(laMesaDelPlano(await elPlano(sara), 'T1').cuenta).toMatchObject({
+    expect(laMesaDelPlano(await elPlano(saraTpv), 'T1').cuenta).toMatchObject({
       notaParaCocina: 'tienen prisa',
       porPases: false,
     });
@@ -1133,15 +1198,19 @@ describe('«todo junto», «marchar todo» y la barra', () => {
   it('la barra se abre sin mesa, con un nombre; una mesa sin elegir mesa no', async () => {
     const barra = crypto.randomUUID();
     losDatos(
-      await api.ejecutar(sara, 'abrir_mesa', { cuenta_id: barra, tipo: 'barra', nombre: 'Iker' }),
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
+        cuenta_id: barra,
+        tipo: 'barra',
+        nombre: 'Iker',
+      }),
     );
-    expect((await elPlano(sara)).sinMesa.map((c) => c.titulo)).toContain('Barra · Iker');
+    expect((await elPlano(saraTpv)).sinMesa.map((c) => c.titulo)).toContain('Barra · Iker');
     expect(
-      elFallo(await api.ejecutar(sara, 'abrir_mesa', { cuenta_id: crypto.randomUUID() })),
+      elFallo(await api.ejecutar(saraTpv, 'abrir_mesa', { cuenta_id: crypto.randomUUID() })),
     ).toBe('faltan_datos');
     expect(
       elFallo(
-        await api.ejecutar(sara, 'abrir_mesa', {
+        await api.ejecutar(saraTpv, 'abrir_mesa', {
           cuenta_id: crypto.randomUUID(),
           tipo: 'barra',
           mesa_id: mesa['6'],

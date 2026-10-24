@@ -866,3 +866,13 @@
      y también sacaba el 2.º que esperaba a que lo marchara el camarero en cuanto se le
      añadía un plato. Lo vi probándolo con las manos, no en las pruebas, que solo pedían
      platos nuevos (M20A · 1 · 2).
+219. **Un rojo de GitHub tapa los que vienen detrás.** T1 se subió con el lint en rojo, y
+     «Calidad» se paró ahí: nunca llegó a mirar las dependencias, que tenían un ciclo entre
+     `postgres.ts` y `quien-llama.ts`. Lo encontró la batería entera en el ordenador, al
+     arreglar lo demás. Las pruebas que cuentan cosas (los errores del catálogo, lo que dice
+     cada puerta al arrancar) fallan cuando se añade algo sin tocarlas: **se pasa todo en local
+     antes de subir**, no solo lo de la entrega (T1).
+220. **Que la API lo haga no es que esté hecho.** `cambiar_aparato` cambiaba la función de un
+     aparato, pero la pantalla solo mandaba el nombre, y ninguna prueba lo llamaba: el Anexo
+     pedía «cambiar la función o el nombre» y solo se podía lo segundo. Se vio leyendo la
+     pantalla contra el Anexo punto a punto, no en las pruebas (T1).

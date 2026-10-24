@@ -34,33 +34,27 @@ function esDelServicio(canal: string): boolean {
  * y entrar y salir de una mesa no vuelve a conectar.
  */
 export function usarEscucharAlSegundo(): boolean {
-  const { cliente } = usarSesion();
+  const { aparato } = usarSesion();
   const cache = useQueryClient();
   const [conectado, setConectado] = useState(false);
+  // El tema es **del aparato** (0107): cambiar de camarero no vuelve a conectar.
+  const tema = aparato.temaAlSegundo;
 
   useEffect(() => {
-    if (!haySegundo(DONDE)) return undefined;
-    let escucha: { parar(): void } | null = null;
-    const estado = { parado: false };
-    void (async () => {
-      // El tema es el del chat: uno por persona, secreto, y ya existe (0073).
-      const respuesta = await cliente.ejecutar<{ tema: string }>('abrir_el_chat', {});
-      if (!respuesta.ok || estado.parado) return;
-      escucha = escucharAlSegundo(
-        DONDE,
-        respuesta.datos.tema,
-        (canal) => {
-          if (!esDelServicio(canal)) return;
-          void cache.invalidateQueries({ queryKey: ['sala'] });
-        },
-        setConectado,
-      );
-    })();
+    if (!haySegundo(DONDE) || tema === null) return undefined;
+    const escucha = escucharAlSegundo(
+      DONDE,
+      tema,
+      (canal) => {
+        if (!esDelServicio(canal)) return;
+        void cache.invalidateQueries({ queryKey: ['sala'] });
+      },
+      setConectado,
+    );
     return () => {
-      estado.parado = true;
-      escucha?.parar();
+      escucha.parar();
     };
-  }, [cliente, cache]);
+  }, [tema, cache]);
 
   return conectado;
 }

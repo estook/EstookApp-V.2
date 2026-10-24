@@ -20,6 +20,7 @@ import {
 import { elPase, losGruposDeLaCuenta } from '../logica/laCuenta.ts';
 import { cuantoLlevan, eurosConSimbolo, personas } from '../logica/texto.ts';
 import { irAlPlano } from '../navegar.ts';
+import { usarSesion } from '../sesion/Sesion.tsx';
 import { LaCuenta } from './LaCuenta.tsx';
 import { LoQueSePide } from './LoQueSePide.tsx';
 import { OpcionesDeLaMesa } from './OpcionesDeLaMesa.tsx';
@@ -399,7 +400,21 @@ function Cabecera({
       >
         Opciones
       </Boton>
+      <BotonDeBloquear />
     </div>
+  );
+}
+
+/**
+ * **Bloquear, siempre arriba** (Anexo 11.4): lo que se estaba pidiendo se queda en la
+ * mesa, sin mandar, y el siguiente que la abre lo ve.
+ */
+function BotonDeBloquear() {
+  const { bloquear } = usarSesion();
+  return (
+    <Boton tono="secundario" onClick={bloquear}>
+      Bloquear
+    </Boton>
   );
 }
 

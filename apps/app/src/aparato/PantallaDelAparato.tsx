@@ -87,6 +87,9 @@ function enHoras(minutos: number): string {
   return h === 0 ? `${String(m)} min` : `${String(h)} h ${String(m)} min`;
 }
 
+/** Estook TPV, al lado: desde T1 (0107) es donde se vincula el aparato para fichar. */
+const DIRECCION_DE_ESTOOK_TPV = `${import.meta.env.BASE_URL}../tpv/`;
+
 export function PantallaDelAparato() {
   // Sin token: aquí no ha entrado nadie. La llave va en cada petición.
   const cliente = useMemo(
@@ -276,16 +279,16 @@ export function PantallaDelAparato() {
     return (
       <Marco>
         <div className="flex flex-col items-center gap-e4 text-center">
-          <p className="text-titulo font-semibold">Este aparato no está puesto para fichar</p>
+          <p className="text-titulo font-semibold">Este aparato no está vinculado para fichar</p>
           <p className="max-w-md text-cuerpo text-texto-suave">
-            Quien lleva el local lo pone desde Estook, en este mismo aparato: Ajustes → Tu local →
-            «El aparato para fichar».
+            Quien lleva el local lo vincula desde Estook TPV, en este mismo aparato, con la función
+            «Fichar».
           </p>
           <a
-            href="#/"
+            href={DIRECCION_DE_ESTOOK_TPV}
             className="inline-flex min-h-toque items-center rounded-medio border border-borde-fuerte bg-superficie px-e4 text-cuerpo font-medium"
           >
-            Ir a Estook
+            Ir a Estook TPV
           </a>
         </div>
       </Marco>
@@ -560,8 +563,8 @@ export function PantallaDelAparato() {
  * **Volver a Estook desde la pantalla de fichar** (19-oct). La tablet se queda en el
  * local y la toca todo el mundo, así que sale solo quien lo lleva, con su correo y su
  * contraseña. Lo comprueba el servidor (`entrar` con la llave del aparato): esconder
- * el botón no protegería nada. Al salir, el aparato sigue puesto: desde Ajustes se
- * vuelve a abrir su pantalla.
+ * el botón no protegería nada. Al salir, el aparato sigue vinculado: abriendo Estook TPV
+ * en él se vuelve a su pantalla (0107).
  */
 function SalirDelAparato({
   cliente,
@@ -659,7 +662,8 @@ function SalirDelAparato({
 
 function Marco({ children }: { readonly children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-between gap-e5 bg-fondo px-e4 py-e5 sm:px-e6">
+    // Oscuro, como Estook TPV (0107, maqueta 21): el aparato para fichar es uno de sus aparatos.
+    <div className="zona-tpv flex min-h-dvh flex-col items-center justify-between gap-e5 bg-fondo px-e4 py-e5 sm:px-e6">
       {children}
     </div>
   );

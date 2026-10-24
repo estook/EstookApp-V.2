@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { A_LA_VEZ_EN_UN_LOTE, crearDespachador, type Puertos } from './despachador.ts';
+import {
+  A_LA_VEZ_EN_UN_LOTE,
+  crearDespachador,
+  porQueNoPasaElAparato,
+  type Puertos,
+} from './despachador.ts';
 import { catalogo } from './catalogo.ts';
 import { comando, consulta, FalloDeAplicacion, type Contexto } from './contrato.ts';
 
@@ -437,6 +442,12 @@ describe('las puertas se cierran solas', () => {
         // A4 (0077) · la portada cuenta que se ha abierto el enlace de un vendedor. Solo
         // suma uno a ese código ese día: ni quién, ni desde dónde, ni devuelve nada más.
         'contar_la_visita',
+        // T1 (0107) · Estook TPV en un aparato sin nadie dentro: vincularlo con su código
+        // (de un uso, diez minutos y veinte por hora desde una dirección), su latido con
+        // su llave, y teclear el PIN, que abre el turno de quien lo teclea. Nada más.
+        'vincular_con_codigo',
+        'latir_el_aparato',
+        'entrar_con_pin',
       ].sort(),
     );
   });
@@ -687,7 +698,7 @@ describe('los secretos no se guardan para repetirlos', () => {
    *
    * Se vio repasando, no probando. Estas dos pruebas son para que no vuelva.
    */
-  it('los doce comandos que devuelven un secreto están marcados', () => {
+  it('los comandos que devuelven un secreto están marcados', () => {
     const conSecreto = Object.values(catalogo.comandos)
       .filter((comando) => comando.conSecreto === true)
       .map((comando) => comando.nombre)
@@ -715,8 +726,13 @@ describe('los secretos no se guardan para repetirlos', () => {
         // 0042 · el token de quien acaba de crear su cuenta o entra con Google.
         'confirmar_registro',
         'entrar_con_google',
-        // H1 (0068) · la llave del aparato del local para fichar, una sola vez.
-        'poner_aparato_para_fichar',
+        // T1 (0107) · la llave de un aparato vinculado, una sola vez (con el correo o con
+        // el código); el código de seis cifras para vincularlo; y el turno de quien teclea
+        // su PIN. Hasta T1, la llave del aparato para fichar salía de Ajustes.
+        'vincular_el_primer_aparato',
+        'vincular_con_codigo',
+        'sacar_codigo_para_vincular',
+        'entrar_con_pin',
         // C1 (0073) · el tema secreto por el que llega el toque al segundo del chat.
         'abrir_el_chat',
       ].sort(),
@@ -744,8 +760,15 @@ describe('los secretos no se guardan para repetirlos', () => {
     //
     // C1 (0073) · «leído» y «entregado» del chat: apuntan hasta dónde, con el mayor de
     // los dos, así que llegar dos veces es lo mismo. Y llegan a cada rato.
+    //
+    // T1 (0107) · el latido de cada aparato, cada minuto; bloquear, que solo acaba el
+    // turno; y fichar desde el TPV, que protege el estado de la persona como en el
+    // aparato para fichar.
     expect(sinRecordar).toEqual([
+      'bloquear',
       'fichar_aqui',
+      'fichar_en_el_tpv',
+      'latir_el_aparato',
       'leer_el_canal',
       'preparar_el_aparato_sin_conexion',
       'probar_mi_movil',
@@ -849,5 +872,84 @@ describe('quien no puede, se le dice bien', () => {
     const salida = await despachador.ejecutar(quien, 'choca_con_la_politica', {}, 'clave-politica');
 
     expect(salida.estado === 'fallo' && salida.codigo).toBe('sin_permiso');
+  });
+});
+
+describe('la puerta de Estook TPV (T1, 0107)', () => {
+  const enUnAparato = (
+    funcion: 'caja' | 'comandero' | 'cocina' | 'barra' | 'fichar',
+    esPersonal = false,
+  ): Contexto['sesion'] => ({
+    ...SESION_NORMAL,
+    aparato: { terminalId: 'un-aparato', funcion, esPersonal },
+  });
+
+  it('un aparato vinculado no es una puerta a la gestión: lo que no lo declara no pasa', () => {
+    expect(porQueNoPasaElAparato({}, enUnAparato('caja'))).toBe('sin_permiso');
+    expect(porQueNoPasaElAparato({ enElTpv: 'tambien' }, enUnAparato('caja'))).toBeNull();
+    expect(porQueNoPasaElAparato({ enElTpv: 'solo' }, enUnAparato('comandero', true))).toBeNull();
+  });
+
+  it('y Estook TPV no se abre con la sesión de Estook', () => {
+    expect(porQueNoPasaElAparato({ enElTpv: 'solo' }, SESION_NORMAL)).toBe('sin_permiso');
+    expect(porQueNoPasaElAparato({ enElTpv: 'tambien' }, SESION_NORMAL)).toBeNull();
+    expect(porQueNoPasaElAparato({}, SESION_NORMAL)).toBeNull();
+  });
+
+  it('un comandero no abre el cajón aunque teclee el gerente: manda la función del aparato', () => {
+    // La persona puede tenerlo todo: lo que se mira aquí es qué es el aparato.
+    const delCajon = { enElTpv: 'solo', enLosAparatos: ['caja'] } as const;
+    expect(porQueNoPasaElAparato(delCajon, enUnAparato('caja'))).toBeNull();
+    expect(porQueNoPasaElAparato(delCajon, enUnAparato('comandero'))).toBe('sin_permiso');
+    expect(porQueNoPasaElAparato(delCajon, enUnAparato('cocina'))).toBe('sin_permiso');
+  });
+
+  it('lo que vale desde un aparato está tasado, y lo que solo vale desde uno, también', () => {
+    const operaciones = [...Object.values(catalogo.consultas), ...Object.values(catalogo.comandos)];
+    const tambien = operaciones.filter((o) => o.enElTpv === 'tambien').map((o) => o.nombre);
+    expect(tambien.sort()).toEqual(
+      [
+        // La cocina (T4 tendrá su pantalla) y los agotados, desde la app y desde el TPV.
+        'la_cocina',
+        'tachar',
+        'destachar',
+        'todo_fuera',
+        'recuperar',
+        'marcar_agotado',
+        'quitar_agotado',
+        'los_agotados',
+      ].sort(),
+    );
+    const solo = operaciones.filter((o) => o.enElTpv === 'solo').map((o) => o.nombre);
+    expect(solo.sort()).toEqual(
+      [
+        // La sala (0106): solo desde un aparato vinculado, con el PIN de cada uno.
+        'el_plano',
+        'la_mesa',
+        'la_carta_de_la_sala',
+        'abrir_mesa',
+        'pedir',
+        'cambiar_plato_de_la_mesa',
+        'quitar_plato',
+        'devolver_a_cocina',
+        'mandar_a_cocina',
+        'marchar',
+        'cambiar_la_mesa',
+        'cambiar_de_mesa',
+        'juntar_mesas',
+        'pasar_a_otro_camarero',
+        'liberar_mesa',
+        'anular_mesa',
+        // Lo del propio TPV (0107).
+        'yo_en_el_tpv',
+        'los_aparatos',
+        'bloquear',
+        'fichar_en_el_tpv',
+        'sacar_codigo_para_vincular',
+        'cambiar_aparato',
+        'desvincular_aparato',
+        'guardar_pin_y_bloqueo',
+      ].sort(),
+    );
   });
 });

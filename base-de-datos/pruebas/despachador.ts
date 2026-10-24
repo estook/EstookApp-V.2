@@ -4,7 +4,7 @@ import {
   type Despachador,
   type Resultado,
 } from '../../servidor/aplicacion/index.ts';
-import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
+import { resolverLaSesion } from '../../servidor/infraestructura/quien-llama.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import type { SesionViva, Sql } from '../../servidor/infraestructura/postgres.ts';
 import type { LugaresDeGoogle } from '../../servidor/infraestructura/google.ts';
@@ -61,6 +61,12 @@ export interface ApiDePrueba {
   ): Promise<Resultado>;
   /** El despachador entero, para lo que no trae persona: el aviso de Stripe y el reloj (0048). */
   readonly despachador: Despachador;
+  /**
+   * **Un aparato para fichar**, vinculado como desde T1 (0107): quien lleva el local
+   * entra con su correo en el aparato y lo vincula con la función «Fichar». Devuelve su
+   * llave. Se hace en una sesión aparte, que se cierra al vincular.
+   */
+  vincularParaFichar(correo: string, localId: string, nombre: string): Promise<string>;
 }
 
 const CLAVE_DE_EJEMPLO = 'estook en desarrollo';
@@ -118,34 +124,15 @@ export function montarLaApi(
         try {
           await bd.exec('set local role estook_api');
 
-          let sesion: SesionViva | null = null;
-          if (quien.tokenDeSesion !== null) {
-            const { rows } = await bd.query<{
-              sesion_id: string;
-              persona_id: string;
-              organizacion_id: string | null;
-              local_id: string | null;
-              doble_factor_superado: boolean;
-              debe_cambiar_clave: boolean;
-              es_demostracion: boolean;
-              para_admin: boolean;
-            }>('select * from estook.sesion_activa($1)', [
-              await huellaDeToken(quien.tokenDeSesion),
-            ]);
-            const fila = rows[0];
-            if (fila) {
-              sesion = {
-                id: fila.sesion_id,
-                personaId: fila.persona_id,
-                organizacionId: fila.organizacion_id,
-                localId: fila.local_id,
-                dobleFactorSuperado: fila.doble_factor_superado,
-                debeCambiarClave: fila.debe_cambiar_clave,
-                esDemostracion: fila.es_demostracion,
-                paraAdmin: fila.para_admin,
-              };
-            }
-          }
+          // Quién llama, igual que la API de verdad: con `quien-llama.ts`.
+          const sesion: SesionViva | null =
+            quien.tokenDeSesion === null
+              ? null
+              : await resolverLaSesion(
+                  async (texto, valores) =>
+                    (await bd.query<Record<string, unknown>>(texto, [...valores])).rows,
+                  quien.tokenDeSesion,
+                );
 
           await bd.query("select set_config('estook.persona_id', $1, true)", [
             sesion?.personaId ?? '',
@@ -212,6 +199,19 @@ export function montarLaApi(
   });
 
   return {
+    async vincularParaFichar(correo, localId, nombre) {
+      const resultado = await despachador.ejecutar(
+        quien(await this.entrar(correo)),
+        'vincular_el_primer_aparato',
+        { local_id: localId, funcion: 'fichar', nombre },
+        crypto.randomUUID(),
+      );
+      if (resultado.estado !== 'ok') {
+        throw new Error(`No se ha podido vincular el aparato: ${JSON.stringify(resultado)}`);
+      }
+      return (resultado.datos as { llave: string }).llave;
+    },
+
     async entrar(correo) {
       const entrada = await despachador.ejecutar(
         quien(null),

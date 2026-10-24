@@ -45,6 +45,7 @@ export const losAgotados = consulta<Record<string, never>, LosAgotados>({
   nombre: 'los_agotados',
   entrada: z.object({}).strict(),
   exige: 'accion.marcar_agotado',
+  enElTpv: 'tambien',
 
   async ejecutar(contexto) {
     const localId = elLocalDeLaCarta(contexto);

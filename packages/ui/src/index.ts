@@ -87,14 +87,6 @@ export type {
 
 export { Hoja, PanelLateral } from './componentes/Hoja.tsx';
 
-export {
-  PROPORCION_DEL_PLANO,
-  dentroDelPlano,
-  elSitioDeLaMesa,
-  unSitioLibre,
-} from './sala/plano.ts';
-export type { FormaDeMesa, SitioEnElPlano } from './sala/plano.ts';
-
 export { Logo, IconoDeFogon, IMAGENES_DE_MARCA } from './componentes/Marca.tsx';
 export type { LogoProps, IconoDeFogonProps } from './componentes/Marca.tsx';
 

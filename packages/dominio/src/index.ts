@@ -1093,3 +1093,38 @@ export type { AjustesDelBloqueo, FuncionDelAparato } from './aparatos.ts';
 // ── El PIN y la contraseña (0109) ────────────────────────────────────────────
 export { ENLACE_POR_CORREO } from './enlaces-por-correo.ts';
 export type { ParaQueEsElEnlace } from './enlaces-por-correo.ts';
+
+// ── T2 · el plano dibujado en el TPV ─────────────────────────────────────────
+export {
+  COSAS_DE_LA_SALA,
+  FORMAS_DE_MESA,
+  LADO_DEL_PLANO,
+  LO_MAS_PEQUENO,
+  NOMBRE_DE_LA_COSA,
+  NOMBRE_DE_LA_FORMA,
+  PASO_DEL_IMAN,
+  PLANTILLAS_DE_SALA,
+  PLAZAS_DE_UN_TOQUE,
+  PROPORCION_DEL_PLANO,
+  alIman,
+  dentroDelPlano,
+  elGiroConIman,
+  elNombreDeLaSiguiente,
+  enTantoPorCiento,
+  enUnidades,
+  esUnaMesa,
+  lasGuias,
+  loQuePoneLaPlantilla,
+  tamanoDeLaCosa,
+  tamanoDeLaMesa,
+  unSitioLibre,
+} from './plano.ts';
+export type {
+  Caja,
+  CosaDeLaPlantilla,
+  CosaDeLaSala,
+  FormaDeMesa,
+  Guia,
+  PlantillaDeSala,
+  Tamano,
+} from './plano.ts';

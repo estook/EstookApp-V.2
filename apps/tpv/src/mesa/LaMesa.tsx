@@ -23,11 +23,13 @@ import { irAlPlano } from '../navegar.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { LaCuenta } from './LaCuenta.tsx';
 import { LoQueSePide } from './LoQueSePide.tsx';
+import { LosPasesEnPestanas } from './LosPasesEnPestanas.tsx';
+import { laPestanaDeFabrica, type PestanaDelPase } from '../logica/losPases.ts';
 import { OpcionesDeLaMesa } from './OpcionesDeLaMesa.tsx';
 
 /**
- * Una mesa (0106, «Comanda»): a la izquierda, la cuenta en el orden en que se come; a
- * la derecha, lo que se pide. **El botón grande dice siempre lo siguiente**: mandar lo
+ * Una mesa (0106, «Comanda»; T2, maqueta 9): a la izquierda, **las pestañas de los pases**
+ * y la cuenta en el orden en que se come; a la derecha, lo que se pide, por páginas. **El botón grande dice siempre lo siguiente**: mandar lo
  * nuevo, marchar el pase que toca o, si todo va, nada que hacer. En el móvil, lo que se
  * pide ocupa la pantalla y la cuenta se abre desde abajo («Movil»).
  *
@@ -47,6 +49,8 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   const [opciones, setOpciones] = useState(false);
   const [cuentaEnElMovil, setCuentaEnElMovil] = useState(false);
   const [salir, setSalir] = useState(false);
+  /** El pase marcado: lo que se toca va aquí (Anexo 11.10). Sin tocar, el que toca. */
+  const [marcada, setMarcada] = useState<PestanaDelPase | null>(null);
 
   const setBorrador = (nuevo: Borrador) => {
     setBorradorEnMemoria(nuevo);
@@ -118,6 +122,10 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   const porMandar = borrador.length + guardadas;
   const grupos = losGruposDeLaCuenta(datos, borrador);
   const total = datos.totalCentimos + loQueVale(borrador);
+  const pestana = marcada ?? laPestanaDeFabrica(datos);
+  const lasPestanas = datos.porPases ? (
+    <LosPasesEnPestanas mesa={datos} marcada={pestana} alMarcar={setMarcada} />
+  ) : null;
   const siguiente = datos.loSiguiente;
   const enElPlano: CuentaEnElPlano | undefined = [
     ...(plano.data?.zonas.flatMap((z) =>
@@ -239,6 +247,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
           }}
           opcionesListas={enElPlano !== undefined}
         />
+        {lasPestanas}
         <div className="flex-1 overflow-y-auto px-e4">{laCuenta}</div>
         <div className="flex flex-col gap-e3 border-t border-borde p-e4">
           <Avisos hecho={hecho} fallo={fallo} />
@@ -266,6 +275,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
             }}
             opcionesListas={enElPlano !== undefined}
           />
+          {lasPestanas}
         </div>
         <LoQueSePide
           carta={carta.data}
@@ -273,6 +283,8 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
           mesa={datos}
           borrador={borrador}
           alCambiarElBorrador={setBorrador}
+          marcada={pestana}
+          alMarcar={setMarcada}
         />
         <div className="flex flex-col gap-e2 border-t border-borde bg-superficie p-e3 md:hidden">
           <Avisos hecho={hecho} fallo={fallo} />

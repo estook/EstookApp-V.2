@@ -708,6 +708,10 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // vivo tiene esa huella; `turno_activo`, quién opera ahora en ese aparato (la API lo
     // mira en cada petición, como `sesion_activa`); y `fichados_en_el_aparato`, los
     // nombres de pila de quien está fichado, para la pantalla del PIN. Son sesenta y cuatro.
+    //
+    // **Y la 0085 (T2 · La sala) añade una: `han_fichado_la_salida`.** El plano dice «Ana
+    // ha fichado la salida» en sus mesas, y una camarera no puede leer los fichajes de los
+    // demás. Solo los ids, de un local que quien pregunta ve. Son sesenta y cinco.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -743,6 +747,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'es_admin_o_el_sistema',
       'esta_en_linea',
       'fichados_en_el_aparato',
+      'han_fichado_la_salida',
       'horas_de_contrato',
       'la_carta_publica',
       'las_cuentas',

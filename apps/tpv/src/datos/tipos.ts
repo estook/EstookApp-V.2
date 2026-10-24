@@ -3,6 +3,8 @@
  * Si allí cambia algo, aquí también: la prueba de pantalla lo dice antes que nadie.
  */
 
+import type { CosaDeLaSala, FormaDeMesa } from '@estook/dominio';
+
 export type LoSiguiente =
   | { readonly que: 'pedir' }
   | { readonly que: 'mandar' }
@@ -25,15 +27,38 @@ export interface CuentaEnElPlano {
   readonly porPases: boolean;
   readonly notaParaCocina: string | null;
   readonly loSiguiente: LoSiguiente;
+  /** Su camarero ha fichado la salida: «Ana ha fichado la salida» (Anexo 11.8). */
+  readonly suCamareroSeHaIdo: boolean;
 }
 
-export interface MesaDelPlano {
+/** Una mesa como se dibujó en el TPV (T2): su forma, su sitio, su tamaño y su giro. */
+export interface MesaDibujada {
   readonly id: string;
   readonly nombre: string;
   readonly plazas: number;
-  readonly forma: 'cuadrada' | 'redonda' | 'alargada';
+  readonly forma: FormaDeMesa;
   readonly x: number;
   readonly y: number;
+  readonly ancho: number;
+  readonly fondo: number;
+  /** Estirada a mano: «Volver al tamaño de sus plazas» lo quita. */
+  readonly estirada: boolean;
+  readonly giro: number;
+}
+
+/** Lo que hay en la sala y no se abre: la barra, una pared, una planta… */
+export interface CosaDibujada {
+  readonly id: string;
+  readonly tipo: CosaDeLaSala;
+  readonly texto: string | null;
+  readonly x: number;
+  readonly y: number;
+  readonly ancho: number;
+  readonly fondo: number;
+  readonly giro: number;
+}
+
+export interface MesaDelPlano extends MesaDibujada {
   readonly estado: EstadoDeLaMesa;
   readonly cuenta: CuentaEnElPlano | null;
 }
@@ -42,8 +67,12 @@ export interface ElPlano {
   readonly zonas: readonly {
     readonly id: string;
     readonly nombre: string;
+    readonly orden: number;
     readonly mesas: readonly MesaDelPlano[];
+    readonly cosas: readonly CosaDibujada[];
   }[];
+  /** El lápiz de arriba del plano: quien puede dibujar la sala, y no en el móvil de nadie. */
+  readonly puedeDibujar: boolean;
   readonly sinMesa: readonly CuentaEnElPlano[];
   readonly tocaMarchar: readonly {
     readonly cuentaId: string;
@@ -250,4 +279,16 @@ export interface QueSera {
   readonly persona_id?: string;
   readonly cajon_id?: string;
   readonly cajon_nuevo?: string;
+}
+
+/** El plano para dibujarlo (`el_plano_del_local`, T2): sin las cuentas. */
+export interface ElPlanoParaDibujar {
+  readonly salas: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly orden: number;
+    readonly mesas: readonly (MesaDibujada & { readonly abierta: boolean })[];
+    readonly cosas: readonly CosaDibujada[];
+    readonly conAlgoAbierto: boolean;
+  }[];
 }

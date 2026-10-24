@@ -7,8 +7,9 @@
 > [Anexo, capítulo 11](maestros/Estook-Anexo-TPV-y-Facturacion.md); aquí, **cómo se construye, en qué
 > orden y cuándo se da cada entrega por buena**. **T1 · La puerta, en producción** (24-oct, #133,
 > [0108](decisiones/0108-t1-la-puerta.md), migración 0083), y después **el PIN y la contraseña**
-> ([0109](decisiones/0109-el-pin-y-la-contrasena.md)), lo que vio Richi al probarla. **Lo siguiente:
-> T2 · La sala.**
+> ([0109](decisiones/0109-el-pin-y-la-contrasena.md)), lo que vio Richi al probarla. **T2 · La sala,
+> construida** ([0110](decisiones/0110-t2-la-sala.md), migración 0085), en su pull request. **Lo
+> siguiente: T3 · Los productos.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -86,6 +87,22 @@ cambia de nombre—.
 - **Una comanda de cuatro platos en diez toques o menos**, desde el plano (10.3), medida.
 - **«Tu sala» ya no está en Estook**, y lo que se dibujó allí está en el editor del TPV, igual.
 - **Lo de la base**: `mesa` con su tipo y su giro (Anexo 7.2), y lo que ya había, migrado tal cual.
+
+### T2 · La sala, entregada (24-oct-2026)
+
+**Lo que hay** ([0110](decisiones/0110-t2-la-sala.md), migración 0085): **el editor de la sala en
+Estook TPV**, a ojo, con las seis mesas y lo que no se abre, el número siguiente y el tamaño por las
+plazas, estirar, girar, imán y guías, duplicar, elegir varias, deshacer y rehacer, salas en
+pestañas y tres plantillas; **el plano del servicio** con Todas · Mías, las iniciales de cada
+camarero, su estado con color, icono y texto, y «ha fichado la salida»; **«Quedármela»**; y **pedir
+con los pases en pestañas**, con una página por sección. «Tu sala» ya no está en Estook.
+
+**Las pruebas**: `plano.prueba.ts` (el dominio), `geometria.prueba.ts` (mover, estirar y girar),
+`losPases.prueba.ts`, `la-sala-dibujada.prueba.ts` (contra la base: las de 11.15 de las mesas y el
+plano) y `la-sala.spec.ts` (dibujar en el TPV, pedir con las pestañas y **cuatro platos en diez
+toques, contados**).
+
+**Lo que decidí al construirlo**: los quince de la [0110](decisiones/0110-t2-la-sala.md), sección 2.
 
 ### T3 · Los productos, terminado cuando
 

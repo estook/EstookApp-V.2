@@ -83,9 +83,9 @@ function delBorrador(l: LineaNueva): LineaALaVista {
   };
 }
 
-/** «1.º», «2.º»… como se dice en sala. */
+/** «1.º», «2.º»… como se dice en sala; el 4.º, desde T2, es **el postre** (Anexo 11.10). */
 export function elPase(numero: number): string {
-  return `${numero}.º`;
+  return numero >= 4 ? 'postre' : `${numero}.º`;
 }
 
 const COMO_VA: Record<ComoVaElPase, string> = {

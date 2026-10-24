@@ -122,13 +122,7 @@ export const AJUSTES: readonly Ajuste[] = [
     nombre: 'Las pausas de descanso',
     palabras: 'pausa descanso bocadillo convenio cuenta trabajo fichar horas',
   },
-  // M20A · 1 · 2 (0106): el plano que ve el camarero en Estook TPV.
-  {
-    id: 'sala',
-    seccion: 'local',
-    nombre: 'Tu sala: las zonas y las mesas',
-    palabras: 'sala mesas mesa plano zonas zona terraza salón barra tpv comandero camarero',
-  },
+  // «Tu sala» salió de aquí en T2 (0110): el plano se dibuja en Estook TPV, a ojo.
   {
     id: 'objetivos',
     seccion: 'local',

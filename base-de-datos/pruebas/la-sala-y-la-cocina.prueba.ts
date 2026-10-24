@@ -287,21 +287,21 @@ afterAll(async () => {
 
 // ═══ El plano ═════════════════════════════════════════════════════════════════
 
-describe('el plano lo dibuja quien lleva el local', () => {
+describe('el plano lo dibuja quien lleva el local, en Estook TPV (T2)', () => {
   it('la camarera no lo dibuja', async () => {
-    expect(elFallo(await api.ejecutar(sara, 'crear_zona_de_sala', { nombre: 'Salón' }))).toBe(
+    expect(elFallo(await api.ejecutar(saraTpv, 'crear_zona_de_sala', { nombre: 'Salón' }))).toBe(
       'sin_permiso',
     );
   });
 
   it('Rosa dibuja el salón y la terraza, con sus mesas; un nombre repetido no entra', async () => {
     const salon = losDatos<{ zonaId: string }>(
-      await api.ejecutar(rosa, 'crear_zona_de_sala', { nombre: 'Salón' }),
+      await api.ejecutar(rosaTpv, 'crear_zona_de_sala', { nombre: 'Salón' }),
     ).zonaId;
     const terraza = losDatos<{ zonaId: string }>(
-      await api.ejecutar(rosa, 'crear_zona_de_sala', { nombre: 'Terraza' }),
+      await api.ejecutar(rosaTpv, 'crear_zona_de_sala', { nombre: 'Terraza' }),
     ).zonaId;
-    expect(elFallo(await api.ejecutar(rosa, 'crear_zona_de_sala', { nombre: 'salon' }))).toBe(
+    expect(elFallo(await api.ejecutar(rosaTpv, 'crear_zona_de_sala', { nombre: 'salon' }))).toBe(
       'faltan_datos',
     );
     for (const [zona, nombre, x] of [
@@ -312,14 +312,18 @@ describe('el plano lo dibuja quien lleva el local', () => {
       [terraza, 'T1', 100],
     ] as const) {
       mesa[nombre] = losDatos<{ mesaId: string }>(
-        await api.ejecutar(rosa, 'crear_mesa', { zona_id: zona, nombre, x, y: 200 }),
+        await api.ejecutar(rosaTpv, 'crear_mesa', { zona_id: zona, nombre, x, y: 200 }),
       ).mesaId;
     }
-    expect(elFallo(await api.ejecutar(rosa, 'crear_mesa', { zona_id: salon, nombre: '6' }))).toBe(
-      'faltan_datos',
-    );
+    expect(
+      elFallo(await api.ejecutar(rosaTpv, 'crear_mesa', { zona_id: salon, nombre: '6' })),
+    ).toBe('faltan_datos');
     losDatos(
-      await api.ejecutar(rosa, 'cambiar_mesa', { mesa_id: mesa['5'], plazas: 2, forma: 'redonda' }),
+      await api.ejecutar(rosaTpv, 'cambiar_mesa', {
+        mesa_id: mesa['5'],
+        plazas: 2,
+        forma: 'redonda',
+      }),
     );
   });
 
@@ -335,21 +339,24 @@ describe('el plano lo dibuja quien lleva el local', () => {
     expect(elFallo(await api.consultar(marcosTpv, 'el_plano'))).toBe('sin_permiso');
   });
 
-  it('Ajustes › Sala lo lee para dibujarlo; la camarera no', async () => {
+  it('el editor de la sala lo lee para dibujarlo; la camarera no, ni desde Estook', async () => {
     const plano = losDatos<{
-      puedeEditar: boolean;
-      zonas: { nombre: string; mesas: { nombre: string; plazas: number; forma: string }[] }[];
-    }>(await api.consultar(rosa, 'el_plano_del_local'));
-    expect(plano.puedeEditar).toBe(true);
-    expect(plano.zonas[0]?.mesas.find((m) => m.nombre === '5')).toMatchObject({
+      salas: { nombre: string; mesas: { nombre: string; plazas: number; forma: string }[] }[];
+    }>(await api.consultar(rosaTpv, 'el_plano_del_local'));
+    expect(plano.salas[0]?.mesas.find((m) => m.nombre === '5')).toMatchObject({
       plazas: 2,
       forma: 'redonda',
     });
-    expect(elFallo(await api.consultar(sara, 'el_plano_del_local'))).toBe('sin_permiso');
+    expect(elFallo(await api.consultar(saraTpv, 'el_plano_del_local'))).toBe('sin_permiso');
+    // Desde T2 la sala ya no se dibuja en Estook › Tu sala: con la sesión de Estook, nada.
+    expect(elFallo(await api.consultar(rosa, 'el_plano_del_local'))).toBe('sin_permiso');
+    expect(elFallo(await api.ejecutar(rosa, 'crear_zona_de_sala', { nombre: 'Patio' }))).toBe(
+      'sin_permiso',
+    );
   });
 
   it('una mesa que sobra se archiva', async () => {
-    losDatos(await api.ejecutar(rosa, 'archivar_mesa', { mesa_id: mesa['8'] }));
+    losDatos(await api.ejecutar(rosaTpv, 'archivar_mesa', { mesa_id: mesa['8'] }));
     const plano = await elPlano(saraTpv);
     expect(plano.zonas[0]?.mesas.map((m) => m.nombre)).toEqual(['5', '6', '7']);
   });
@@ -960,7 +967,7 @@ describe('la mesa 6, de principio a fin', () => {
     expect(enCocina(await laCocina(), seis)?.[0]).toBe('fuera');
   });
 
-  it('Sara se va: pasa sus mesas a Rosa; las de otro no las pasa ella', async () => {
+  it('Sara se va: pasa sus mesas a Rosa; y cualquiera se queda cualquier mesa (0110)', async () => {
     expect(
       elFallo(
         await api.ejecutar(saraTpv, 'pasar_a_otro_camarero', {
@@ -979,21 +986,16 @@ describe('la mesa 6, de principio a fin', () => {
     ).toEqual({ pasadas: 1 });
     expect((await laMesa(seis)).camarero).toBe('Rosa');
     expect(laMesaDelPlano(await elPlano(rosaTpv), '6').cuenta?.esMia).toBe(true);
-    // Ya no es suya: no la pasa ella; un jefe sí.
+    // Ya no es suya, y aun así Sara se la queda otra vez («Quedármela», 0110): en la sala
+    // cualquiera se queda o pasa cualquier mesa, y queda su rastro.
     expect(
-      elFallo(
+      losDatos(
         await api.ejecutar(saraTpv, 'pasar_a_otro_camarero', {
           cuenta_ids: [seis],
           camarero_id: await base.personaPorCorreo(SARA),
         }),
       ),
-    ).toBe('sin_permiso');
-    losDatos(
-      await api.ejecutar(rosaTpv, 'pasar_a_otro_camarero', {
-        cuenta_ids: [seis],
-        camarero_id: await base.personaPorCorreo(SARA),
-      }),
-    );
+    ).toEqual({ pasadas: 1 });
     expect((await laMesa(seis)).camarero).toBe('Sara');
   });
 
@@ -1020,7 +1022,7 @@ describe('la mesa 6, de principio a fin', () => {
       ),
     ).toBe('ya_hecho');
     // Una mesa abierta no se archiva.
-    expect(elFallo(await api.ejecutar(rosa, 'archivar_mesa', { mesa_id: mesa['5'] }))).toBe(
+    expect(elFallo(await api.ejecutar(rosaTpv, 'archivar_mesa', { mesa_id: mesa['5'] }))).toBe(
       'ya_hecho',
     );
 

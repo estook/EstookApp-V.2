@@ -151,7 +151,7 @@ async function elAparatoDeLaSesion(contexto: Contexto): Promise<AparatoDelTpv> {
 }
 
 /** Los Ajustes del TPV son de la caja y del comandero de todos, no del móvil de nadie. */
-function noEnUnMovilPersonal(contexto: Contexto): void {
+export function noEnUnMovilPersonal(contexto: Contexto): void {
   if (contexto.sesion?.aparato?.esPersonal === true) {
     throw new FalloDeAplicacion('sin_permiso', {
       porque:

@@ -212,10 +212,16 @@ import { destachar, recuperar, tachar, todoFuera } from './comandos/cocina.ts';
 import {
   archivarMesa,
   archivarZonaDeSala,
+  cambiarCosaDeLaSala,
   cambiarMesa,
   cambiarZonaDeSala,
+  colocarEnElPlano,
+  crearCosaDeLaSala,
   crearMesa,
   crearZonaDeSala,
+  empezarConUnaPlantilla,
+  ordenarLasSalas,
+  quitarCosaDeLaSala,
 } from './comandos/plano.ts';
 import { leerLaCarta, leerPaginaConFogon } from './comandos/leer-la-carta.ts';
 import { elMenuEnPdf, misMenus } from './consultas/menus.ts';
@@ -720,13 +726,19 @@ export const catalogo = {
 
     // ── M20A · 1 · la sala y la cocina (0106) ─────────────────────────────
     //
-    // El plano lo dibuja quien toca los ajustes del local.
+    // El plano se dibuja en Estook TPV, a ojo, con los Ajustes del TPV (T2, 0110).
     [crearZonaDeSala.nombre]: crearZonaDeSala,
     [cambiarZonaDeSala.nombre]: cambiarZonaDeSala,
+    [ordenarLasSalas.nombre]: ordenarLasSalas,
     [archivarZonaDeSala.nombre]: archivarZonaDeSala,
     [crearMesa.nombre]: crearMesa,
     [cambiarMesa.nombre]: cambiarMesa,
     [archivarMesa.nombre]: archivarMesa,
+    [crearCosaDeLaSala.nombre]: crearCosaDeLaSala,
+    [cambiarCosaDeLaSala.nombre]: cambiarCosaDeLaSala,
+    [quitarCosaDeLaSala.nombre]: quitarCosaDeLaSala,
+    [colocarEnElPlano.nombre]: colocarEnElPlano,
+    [empezarConUnaPlantilla.nombre]: empezarConUnaPlantilla,
     //
     // La sala abre, pide, manda y **marcha**; la cocina tacha lo que sale y nunca marcha.
     [abrirMesa.nombre]: abrirMesa,

@@ -880,3 +880,8 @@
      de pantalla de la puerta le sacaba un PIN al dueño antes de vincular la caja, así que
      pasaba; en IKATZ, Richi no tenía PIN y no podía entrar en su propio TPV. Ahora la prueba
      empieza como empieza un local de verdad, sin PIN, y sale con el suyo (0109).
+222. **Un tope por dirección se come las pruebas, que salen todas del mismo ordenador.** El de
+     los enlaces al correo es de diez por hora desde una dirección, y las pruebas de pantalla
+     que daban de alta a alguien pedían todas su enlace desde el mismo sitio: a la undécima,
+     «Desde aquí se han pedido muchos enlaces». Cada una pide ahora desde su dirección, como
+     ya hacían las de crear cuenta (0109).

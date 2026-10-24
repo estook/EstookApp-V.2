@@ -6,7 +6,7 @@
 >
 > | Qué              | Cómo está                                                                                     |
 > | ---------------- | --------------------------------------------------------------------------------------------- |
-> | Pull requests    | **«T1 · La puerta de Estook TPV»**, abierta (rama `t1-la-puerta`)                             |
+> | Pull requests    | **#133 «T1 · La puerta de Estook TPV»**, abierta (rama `t1-la-puerta`)                        |
 > | La base de datos | **82 de 82** en producción; T1 trae **la 0083**                                               |
 > | La API           | En producción, la de M20A · 1 · 2 (107 consultas y 253 comandos); T1 la deja en **109 y 261** |
 
@@ -22,7 +22,7 @@ Lo hecho y por qué, en la [0108](decisiones/0108-t1-la-puerta.md) (mira sobre t
 seguido**: entre fusionar y desplegar, `estook.com/tpv/` ya es el nuevo y la API todavía no sabe
 vincular aparatos, así que dirá que no llega a Estook hasta que despliegues.
 
-1. **En GitHub**: abre el pull request **«T1 · La puerta de Estook TPV»** y, con las **tres
+1. **En GitHub**: abre el pull request **#133 «T1 · La puerta de Estook TPV»** y, con las **tres
    comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
 

@@ -796,16 +796,11 @@ export const pasarAOtroCamarero = comando<
         porque: 'Esa persona no toma nota en este local.',
       });
     }
-    const puede = await loQuePuede(contexto, localId, ['accion.quitar_de_cocina']);
     let pasadas = 0;
     for (const cuentaId of entrada.cuenta_ids) {
       const cuenta = await laCuentaAbierta(contexto, localId, cuentaId);
-      // El camarero pasa las suyas; un jefe, cualquiera (Roles 1.12).
-      if (cuenta.camarero_id !== contexto.personaId && !puede.editar('accion.quitar_de_cocina')) {
-        throw new FalloDeAplicacion('sin_permiso', {
-          porque: 'Cada camarero pasa sus mesas; las de otro las pasa un jefe de sala.',
-        });
-      }
+      // **Cualquier camarero se queda o pasa cualquier mesa**, con su rastro (0107, punto
+      // 12: el control de toda la sala; Roles 1.12). Hasta T2, el camarero solo las suyas.
       if (cuenta.camarero_id === entrada.camarero_id) continue;
       await contexto.sql`
         update estook.cuenta set camarero_id = ${entrada.camarero_id}::uuid where id = ${cuenta.id}::uuid

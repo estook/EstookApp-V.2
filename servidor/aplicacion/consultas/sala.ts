@@ -11,6 +11,7 @@ import {
   type LaMesaEnCocina,
   type LoSiguiente,
 } from '@estook/dominio';
+import { lasSalasDibujadas, type MesaDibujada, type SalaDibujada } from './plano.ts';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { lasSeccionesDeLosMenus, losMenusDelLocal, losPlatosDelDia } from '../menus.ts';
 import { losPlatos as losPlatosDeLaCarta } from './mi-carta.ts';
@@ -101,23 +102,23 @@ export interface CuentaEnElPlano {
   readonly porPases: boolean;
   readonly notaParaCocina: string | null;
   readonly loSiguiente: LoSiguiente;
+  /** Su camarero ha fichado la salida: «Ana ha fichado la salida» (Anexo 11.8). */
+  readonly suCamareroSeHaIdo: boolean;
 }
 
 export interface SalidaElPlano {
-  readonly zonas: readonly {
-    readonly id: string;
-    readonly nombre: string;
-    readonly mesas: readonly {
-      readonly id: string;
-      readonly nombre: string;
-      readonly plazas: number;
-      readonly forma: string;
-      readonly x: number;
-      readonly y: number;
+  /**
+   * Las salas como se dibujaron en el TPV (T2, `lasSalasDibujadas`): cada mesa con su
+   * forma, su tamaño y su giro, y lo que hay en la sala y no se abre.
+   */
+  readonly zonas: readonly (Omit<SalaDibujada, 'mesas'> & {
+    readonly mesas: readonly (MesaDibujada & {
       readonly estado: EstadoDeLaMesa;
       readonly cuenta: CuentaEnElPlano | null;
-    }[];
-  }[];
+    })[];
+  })[];
+  /** Si quien está en este aparato puede dibujar la sala: el lápiz de arriba (Anexo 11.9). */
+  readonly puedeDibujar: boolean;
   /** La barra y lo de llevar: abierto y sin mesa. */
   readonly sinMesa: readonly CuentaEnElPlano[];
   /** «Mesa 6 · ha salido todo el 1.º»: lo que toca marchar ahora. */
@@ -137,6 +138,7 @@ function enElPlano(
   cuenta: FilaDeCuenta,
   platos: readonly FilaDeLinea[],
   pases: readonly FilaDePase[],
+  seHanIdo: ReadonlySet<string> = new Set(),
 ): CuentaEnElPlano {
   return {
     cuentaId: cuenta.id,
@@ -152,6 +154,7 @@ function enElPlano(
     porPases: cuenta.por_pases,
     notaParaCocina: cuenta.nota_para_cocina,
     loSiguiente: loSiguienteDeLaMesa(platos.map(comoPlatoDeLaMesa), pases.map(comoPaseDeLaMesa)),
+    suCamareroSeHaIdo: cuenta.camarero_id !== null && seHanIdo.has(cuenta.camarero_id),
   };
 }
 
@@ -181,26 +184,9 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
 
   async ejecutar(contexto) {
     const localId = elLocalDelServicio(contexto);
-    const zonas = await contexto.sql<{ id: string; nombre: string }[]>`
-      select id::text as id, nombre from estook.zona_de_sala
-       where local_id = ${localId}::uuid and archivada_en is null
-       order by orden, nombre
-    `;
-    const mesas = await contexto.sql<
-      {
-        id: string;
-        zona_id: string;
-        nombre: string;
-        plazas: number;
-        forma: string;
-        x: number;
-        y: number;
-      }[]
-    >`
-      select id::text as id, zona_id::text as zona_id, nombre, plazas, forma, x, y
-        from estook.mesa
-       where local_id = ${localId}::uuid and archivada_en is null
-       order by nombre
+    const salas = await lasSalasDibujadas(contexto, localId);
+    const dibuja = await contexto.sql<{ puede: boolean }[]>`
+      select estook.puede_editar('accion.ajustes_del_tpv', ${localId}::uuid) as puede
     `;
     const ids = await lasAbiertas(contexto, localId);
     const cuentas = await lasCuentas(contexto, localId, ids);
@@ -213,34 +199,28 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
     `;
     const platos = porCuenta(await losPlatos(contexto, ids));
     const pases = porCuenta(await losPases(contexto, ids));
+    const idos = await contexto.sql<{ persona_id: string }[]>`
+      select estook.han_fichado_la_salida(${localId}::uuid)::text as persona_id
+    `;
+    const seHanIdo = new Set(idos.map((f) => f.persona_id));
     const enPlano = cuentas.map((c) => ({
       fila: c,
-      cuenta: enElPlano(contexto, c, platos.get(c.id) ?? [], pases.get(c.id) ?? []),
+      cuenta: enElPlano(contexto, c, platos.get(c.id) ?? [], pases.get(c.id) ?? [], seHanIdo),
     }));
     const porMesa = new Map(
       enPlano.filter((c) => c.fila.mesa_id !== null).map((c) => [c.fila.mesa_id, c.cuenta]),
     );
 
     return {
-      zonas: zonas.map((z) => ({
-        id: z.id,
-        nombre: z.nombre,
-        mesas: mesas
-          .filter((m) => m.zona_id === z.id)
-          .map((m) => {
-            const cuenta = porMesa.get(m.id) ?? null;
-            return {
-              id: m.id,
-              nombre: m.nombre,
-              plazas: m.plazas,
-              forma: m.forma,
-              x: m.x,
-              y: m.y,
-              estado: elEstado(cuenta),
-              cuenta,
-            };
-          }),
+      zonas: salas.map((sala) => ({
+        ...sala,
+        mesas: sala.mesas.map((m) => {
+          const cuenta = porMesa.get(m.id) ?? null;
+          return { ...m, estado: elEstado(cuenta), cuenta };
+        }),
       })),
+      // En la caja o en la tablet de todos, con el permiso; en el móvil de nadie.
+      puedeDibujar: dibuja[0]?.puede === true && contexto.sesion?.aparato?.esPersonal !== true,
       sinMesa: enPlano.filter((c) => c.fila.mesa_id === null).map((c) => c.cuenta),
       tocaMarchar: enPlano.flatMap((c) =>
         c.cuenta.loSiguiente.que === 'marchar'

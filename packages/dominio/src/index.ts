@@ -1166,3 +1166,22 @@ export {
   loQueFaltaPorElegir,
 } from './opciones.ts';
 export type { GrupoParaElegir } from './opciones.ts';
+
+// ── T3 · 2 · 2 · «Monta tus bebidas» ────────────────────────────────────────
+export {
+  CAFES_DE_SERIE,
+  DOSIS_DE_FABRICA,
+  TOPES_DE_LA_DOSIS,
+  elNombreDeLaRacion,
+  elProductoDelCafe,
+  laPaginaDeLaBebida,
+  lasRacionesQueSeProponen,
+  queEsLaBebida,
+  sirveParaLasCopas,
+} from './bebidas.ts';
+export type {
+  CafeDeSerie,
+  ProductoQueSeMira,
+  QueEsLaBebida,
+  RacionQueSePropone,
+} from './bebidas.ts';

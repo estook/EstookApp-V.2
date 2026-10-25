@@ -994,6 +994,12 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'poner_grupos_al_plato',
         'cambiar_precio_desde_el_tpv',
         'vender_a_peso',
+        // Y «Monta tus bebidas» (0114).
+        'las_bebidas_para_montar',
+        'montar_bebidas',
+        'montar_copas',
+        'montar_cafes',
+        'cambiar_las_dosis',
       ].sort(),
     );
   });

@@ -413,3 +413,43 @@ export interface ElPlanoParaDibujar {
     readonly conAlgoAbierto: boolean;
   }[];
 }
+
+// ── T3 · 2 · 2 · «Monta tus bebidas» (0114): `las_bebidas_para_montar` ──
+
+export interface RacionParaMontar {
+  readonly nombre: string;
+  readonly racion: string;
+  readonly cantidad: number;
+  readonly unidad: UnidadDeUso;
+  readonly puesta: boolean;
+  readonly costeCentimos: number | null;
+  readonly yaEsta: boolean;
+}
+
+export interface LasBebidasParaMontar {
+  readonly dosis: { readonly copaMl: number; readonly copaDeVinoMl: number };
+  readonly bebidas: readonly {
+    readonly productoId: string;
+    readonly nombre: string;
+    readonly pagina: string;
+    readonly raciones: readonly RacionParaMontar[];
+  }[];
+  readonly botellas: readonly {
+    readonly productoId: string;
+    readonly nombre: string;
+    readonly costeDeLaDosisCentimos: number | null;
+    readonly yaEsCopa: boolean;
+  }[];
+  readonly otrasBotellas: readonly { readonly productoId: string; readonly nombre: string }[];
+  readonly conQue: readonly { readonly productoId: string; readonly nombre: string }[];
+  readonly cafes: readonly {
+    readonly clave: string;
+    readonly nombre: string;
+    readonly puesto: boolean;
+    readonly costeCentimos: number | null;
+    readonly aproximado: boolean;
+    readonly falta: readonly string[];
+    readonly yaEsta: boolean;
+  }[];
+  readonly puedeMontarlas: boolean;
+}

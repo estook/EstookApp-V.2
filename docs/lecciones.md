@@ -890,3 +890,9 @@
      cocina —que cambia la carta pero no los Ajustes del TPV— no habría podido ni crear un
      plato: la base le negaba el botón, y con él el plato entero. Lo cazó la prueba que lo
      crea como él, no la que lo crea como la gerente, que puede con todo (T3 · 1).
+224. **Cambiar con `update` tampoco falla cuando la seguridad por filas no deja: no cambia
+     nada.** Como borrar (la 147). En T3 · 1, el camino de la botonera y «lo nuevo entra solo»
+     se guardaban en el local, que solo escribe quien tiene los Ajustes de Estook: a otro con
+     los del TPV, «Guardado» y nada guardado. Se vio al poner las dosis de la casa, probando
+     como quien solo tiene los del TPV. Ahora va por una función que mira ese permiso
+     (`monta-tus-bebidas.prueba.ts`, 0114).

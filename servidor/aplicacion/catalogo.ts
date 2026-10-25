@@ -245,6 +245,7 @@ import {
   quitarGrupoDeOpciones,
   venderAPeso,
 } from './comandos/opciones.ts';
+import { cambiarLasDosis, montarBebidas, montarCafes, montarCopas } from './comandos/bebidas.ts';
 import { leerLaCarta, leerPaginaConFogon } from './comandos/leer-la-carta.ts';
 import { elMenuEnPdf, misMenus } from './consultas/menus.ts';
 import { miZona } from './consultas/mi-zona.ts';
@@ -396,6 +397,7 @@ import { elPlano, laCartaDeLaSala, laCocina, laMesa } from './consultas/sala.ts'
 import { elPlanoDelLocal } from './consultas/plano.ts';
 import { laBotonera } from './consultas/botonera.ts';
 import { losGruposDeOpciones } from './consultas/opciones.ts';
+import { lasBebidasParaMontar } from './consultas/bebidas.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
 import { quienSoy } from './consultas/quien-soy.ts';
@@ -536,6 +538,8 @@ export const catalogo = {
     [laBotonera.nombre]: laBotonera,
     // T3 · 2 · las opciones y los extras de cada plato, para montarlas (0113).
     [losGruposDeOpciones.nombre]: losGruposDeOpciones,
+    // T3 · 2 · 2 · «Monta tus bebidas» (0114).
+    [lasBebidasParaMontar.nombre]: lasBebidasParaMontar,
     // M7 · compras: lo que se pide, lo que llega, lo que se cobra y a quién.
     [misPedidos.nombre]: misPedidos,
     [unPedido.nombre]: unPedido,
@@ -789,6 +793,11 @@ export const catalogo = {
     [ponerGruposAlPlato.nombre]: ponerGruposAlPlato,
     [cambiarPrecioDesdeElTpv.nombre]: cambiarPrecioDesdeElTpv,
     [venderAPeso.nombre]: venderAPeso,
+    // «Monta tus bebidas»: las del almacén, las copas, los cafés y las dosis (T3 · 2 · 2, 0114).
+    [montarBebidas.nombre]: montarBebidas,
+    [montarCopas.nombre]: montarCopas,
+    [montarCafes.nombre]: montarCafes,
+    [cambiarLasDosis.nombre]: cambiarLasDosis,
     //
     // La sala abre, pide, manda y **marcha**; la cocina tacha lo que sale y nunca marcha.
     [abrirMesa.nombre]: abrirMesa,

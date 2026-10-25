@@ -11,8 +11,9 @@
 > en producción** ([0110](decisiones/0110-t2-la-sala.md), #135). **T3 · Los productos va en dos**: **T3 ·
 > 1 · La botonera, en producción** ([0111](decisiones/0111-t3-1-la-botonera.md), #136), con el pan y el
 > café ([0112](decisiones/0112-el-pan-y-el-cafe.md), #137); y **T3 · 2**, también en dos: **T3 · 2 · 1 ·
-> Las opciones, construida** ([0113](decisiones/0113-t3-2-1-las-opciones.md), migración 0088), en su
-> pull request; **lo siguiente, T3 · 2 · 2 · Monta tus bebidas.**
+> Las opciones** ([0113](decisiones/0113-t3-2-1-las-opciones.md), migración 0088, #138) y **T3 · 2 · 2 ·
+> Monta tus bebidas** ([0114](decisiones/0114-t3-2-2-monta-tus-bebidas.md), migración 0089), construidas,
+> cada una en su pull request; **lo siguiente, T4 · Cocina y barra.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -185,6 +186,25 @@ sección 3.
 - Pasan las pruebas de 10.12 de **las raciones, las copas y los cafés**, con lo que deja cada copa.
 - **Lo de la base**: lo que ya hay (el plato, su escandallo «tal cual» o con receta, y los grupos de
   T3 · 2 · 1), sin tablas nuevas si no hacen falta.
+
+### T3 · 2 · 2 · Monta tus bebidas, entregada (25-oct-2026)
+
+**Lo que hay** ([0114](decisiones/0114-t3-2-2-monta-tus-bebidas.md), migración 0089): en Ajustes del TPV
+› Productos, **«Monta tus bebidas»**, con tres pestañas. **Bebidas**: lo del almacén con sus raciones
+propuestas, lo que cuesta cada una y su precio. **Copas**: las botellas con la dosis de la casa, lo que
+deja cada copa y su «¿Con qué?». **Cafés**: los de serie, con su coste de verdad o el aproximado. Cada
+una es un plato con su botón y su escandallo; la copa se pide en dos toques.
+
+**Lo de la base**: sin tablas nuevas; en el local, **las dosis de la casa**, y la función que guarda lo
+del TPV que vive en el local (arregla un fallo de T3 · 1: punto 11 de la 0114).
+
+**Las pruebas**: `bebidas.prueba.ts` (el dominio: qué es cada bebida y cómo se vende),
+`monta-tus-bebidas.prueba.ts` (contra la base: las raciones con su escandallo, las copas con su «¿Con
+qué?», los cafés con y sin receta, las dosis y quién las monta) y `monta-tus-bebidas.spec.ts` (montar la
+caña, la Coca-Cola y una copa, y pedirlas).
+
+**Lo que decidí al construirlo**: los doce de la [0114](decisiones/0114-t3-2-2-monta-tus-bebidas.md),
+sección 3.
 
 ### T4 a T7
 

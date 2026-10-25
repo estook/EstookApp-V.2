@@ -151,6 +151,8 @@ export interface PaginaDeLaSala {
   readonly color: ColorDeLaBotonera | null;
   /** Qué pestaña se marca sola al abrirla (Anexo 11.10). */
   readonly pase: PaseDeLaBotonera;
+  /** «Pan y agua» o «Cafés» (0112): no es la que se abre sola al sentarse. */
+  readonly deSiempre?: 'pan' | 'cafes' | null;
   readonly platos: readonly PlatoDeLaSala[];
 }
 
@@ -214,6 +216,8 @@ export interface PaginaDeLaBotonera {
   readonly quienLoPrepara: QuienLoPrepara;
   readonly pase: PaseDeLaBotonera;
   readonly deLaSeccion: string | null;
+  /** «Pan y agua» o «Cafés» (0112). */
+  readonly deSiempre: 'pan' | 'cafes' | null;
   readonly botones: readonly BotonDeLaBotonera[];
 }
 

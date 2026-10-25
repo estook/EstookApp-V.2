@@ -694,6 +694,13 @@ function HojaDePagina({
               Viene de «{pagina.deLaSeccion}» de tu carta.
             </p>
           )}
+          {pagina.deSiempre !== null && (
+            <p className="text-secundario text-texto-suave">
+              {pagina.deSiempre === 'pan'
+                ? 'Aquí entran solos el pan y el agua de tu carta, estén en la sección que estén: los sirve el camarero.'
+                : 'Aquí entran solos los cafés y las infusiones de tu carta, estén en la sección que estén: los hace la barra.'}
+            </p>
+          )}
           <Campo
             etiqueta="Nombre de la página"
             value={nombre}
@@ -960,7 +967,10 @@ function HojaNuevoProducto({
 }) {
   const [nombre, setNombre] = useState('');
   const [precio, setPrecio] = useState<Centimos | null>(null);
-  const [paginaId, setPaginaId] = useState(paginas[0]?.id ?? '');
+  // Se propone la primera de las de la carta: un producto nuevo no suele ser pan ni café.
+  const [paginaId, setPaginaId] = useState(
+    (paginas.find((g) => g.deSiempre === null) ?? paginas[0])?.id ?? '',
+  );
   const [nuevaPagina, setNuevaPagina] = useState('');
   const pagina = paginas.find((g) => g.id === paginaId);
   const [quien, setQuien] = useState<QuienLoPrepara | null>(null);

@@ -99,7 +99,7 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
   // ── Una página por sección, con sus dos preguntas contestadas por su nombre ──
   const entrantes = page.getByRole('region', { name: 'Página Entrantes' });
   const refrescos = page.getByRole('region', { name: 'Página Refrescos' });
-  await expect(entrantes.getByText('2 botones')).toBeVisible({ timeout: 15_000 });
+  await expect(entrantes.getByText('1 botón')).toBeVisible({ timeout: 15_000 });
   await expect(
     refrescos.getByRole('radiogroup', { name: '¿Quién lo prepara?' }).getByRole('radio', {
       name: 'Barra',
@@ -111,17 +111,14 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
     }),
   ).toHaveAttribute('aria-checked', 'true');
 
-  // ── El pan, de «Nadie», sin tocar su página ──
-  await entrantes.getByRole('button', { name: 'Pan', exact: true }).click();
-  const hojaDelPan = page.getByRole('dialog', { name: 'Pan' });
-  await hojaDelPan
-    .getByRole('radiogroup', { name: '¿Quién lo prepara?' })
-    .getByRole('radio', { name: 'Nadie' })
-    .click();
-  await hojaDelPan.getByRole('button', { name: 'Listo' }).click();
-  await expect(entrantes.getByRole('button', { name: 'Pan · Nadie' })).toBeVisible({
-    timeout: 15_000,
-  });
+  // ── El pan no va en Entrantes: va en «Pan y agua», de «Nadie», sin tocar nada (0112) ──
+  const panYAgua = page.getByRole('region', { name: 'Página Pan y agua' });
+  await expect(panYAgua.getByRole('button', { name: 'Pan', exact: true })).toBeVisible();
+  await expect(
+    panYAgua.getByRole('radiogroup', { name: '¿Quién lo prepara?' }).getByRole('radio', {
+      name: 'Nadie',
+    }),
+  ).toHaveAttribute('aria-checked', 'true');
 
   // ── Un producto nuevo, que nace también en la carta ──
   await page.getByRole('button', { name: 'Nuevo producto' }).click();
@@ -139,11 +136,13 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
   await page.getByRole('button', { name: /^Mesa 1: Libre/ }).click({ timeout: 15_000 });
   await page.getByRole('button', { name: '2', exact: true }).click();
   await page.getByRole('button', { name: 'Abrir', exact: true }).click();
+  // El pan se pregunta al sentarse: un toque, uno por comensal.
+  await page.getByRole('button', { name: 'Pan para 2 · 3,00' }).click({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: /^Pan para 2/ })).toHaveCount(0);
   // Una mesa recién abierta empieza en Bebidas: la página de Refrescos.
   await page.getByRole('button', { name: /^Coca-Cola, 2,50 €/ }).click({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Entrantes', exact: true }).click();
   await expect(page.getByRole('radio', { name: '1.º', checked: true })).toBeVisible();
-  await page.getByRole('button', { name: /^Pan, 1,50 €/ }).click();
   await page.getByRole('button', { name: /^Tortilla, 8,00 €/ }).click();
   await page.getByRole('button', { name: 'Mandar' }).click();
   await expect(page.getByRole('status')).toHaveText(

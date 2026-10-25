@@ -64,9 +64,12 @@ const DEL_1 = /(entrante|para picar|picoteo|tapa|racion|ensalada|primero|sopa|cr
 const DEL_2 =
   /(principal|segundo|carne|pescado|arroz|arroces|pizza|hamburguesa|parrilla|brasa|pasta|plato fuerte)/;
 const DEL_POSTRE = /(postre|dulce|tarta|helado)/;
+/** Una sección de pan (o de pan y agua): lo sirve el camarero, sin pasar por nadie. */
+const DE_PAN = /(^|[^a-z])(pan|panes)([^a-z]|$)/;
 
 /**
- * **Lo que se propone por el nombre de la sección** (la tabla de 11.11): las bebidas, los
+ * **Lo que se propone por el nombre de la sección** (la tabla de 11.11): el pan, Nadie y
+ * Bebidas (lo sirve el camarero al sentarse); las bebidas, los
  * vinos, los cafés y las copas, Barra y Bebidas; los entrantes y los primeros, Cocina y 1.º;
  * los principales y los segundos, Cocina y 2.º; los postres, Cocina y Postre; y cualquier
  * otra, Cocina y 1.º.
@@ -77,6 +80,7 @@ export function loQueProponeElNombre(nombre: string): {
 } {
   const limpio = sinAcentos(nombre);
   if (DEL_POSTRE.test(limpio)) return { quienLoPrepara: 'cocina', pase: 'postre' };
+  if (DE_PAN.test(limpio)) return { quienLoPrepara: 'nadie', pase: 'bebidas' };
   if (DE_LA_BARRA.test(limpio)) return { quienLoPrepara: 'barra', pase: 'bebidas' };
   if (DEL_2.test(limpio)) return { quienLoPrepara: 'cocina', pase: '2' };
   if (DEL_1.test(limpio)) return { quienLoPrepara: 'cocina', pase: '1' };
@@ -104,3 +108,57 @@ export function elDestinoDeLaLinea(quien: QuienLoPrepara): 'cocina' | 'barra' | 
 
 /** Cuántos salen en «Lo más pedido», y cuántas semanas mira (Anexo 11.10). */
 export const LO_MAS_PEDIDO = { cuantos: 12, semanas: 4, horasAlrededor: 1 } as const;
+
+// ── El pan, el agua y los cafés, en su página de siempre (0112) ───────────────
+
+/**
+ * **Las páginas de siempre** (0112): en cualquier TPV de hostelería el pan y el agua van
+ * juntos y los sirve el camarero, y los cafés y las infusiones tienen su página, que hace la
+ * barra. Aunque la carta los tenga en Entrantes o en Postres, en el TPV van aquí: es donde el
+ * camarero los busca.
+ */
+export const LAS_PAGINAS_DE_SIEMPRE = {
+  pan: { nombre: 'Pan y agua', quienLoPrepara: 'nadie', pase: 'bebidas' },
+  cafes: { nombre: 'Cafés', quienLoPrepara: 'barra', pase: 'bebidas' },
+} as const satisfies Record<
+  string,
+  {
+    readonly nombre: string;
+    readonly quienLoPrepara: QuienLoPrepara;
+    readonly pase: PaseDeLaBotonera;
+  }
+>;
+export type PaginaDeSiempre = keyof typeof LAS_PAGINAS_DE_SIEMPRE;
+
+// Solo el pan que se sirve con la comida: «Pan con tomate» o «Pan de ajo» se cocinan.
+const ES_PAN =
+  /^(pan|panes|pan (blanco|integral|sin gluten|de pueblo|casero|rustico|payes|de centeno|de cristal|de molde|de masa madre|artesano)|cesta de pan|servicio de pan|picos|reganas|colines)$/;
+const ES_AGUA =
+  /^(agua|aguas|agua mineral|agua (con|sin) gas|agua (grande|pequena|de litro|de medio litro)|botella de agua|solan de cabras|font vella|bezoya|lanjaron|vichy catalan)( \d.*)?$/;
+const ES_CAFE =
+  /^(cafe|cafes|cortado|carajillo|capuchino|cappuccino|descafeinado|expreso|espresso|americano|leche manchada|infusion|infusiones|te|poleo|poleo menta|rooibos|chocolate caliente|cola cao|colacao)( |$)/;
+const DE_CAFES = /(cafe|infusion)/;
+
+/** Si un plato es el pan o el agua de la mesa, por su nombre. */
+export function esPanOAgua(nombre: string): boolean {
+  const limpio = sinAcentos(nombre).trim().replace(/\s+/g, ' ');
+  return ES_PAN.test(limpio) || ES_AGUA.test(limpio);
+}
+
+/** Si un plato es el pan de la mesa (para «Pan para 4»), por su nombre. */
+export function esElPan(nombre: string): boolean {
+  return ES_PAN.test(sinAcentos(nombre).trim().replace(/\s+/g, ' '));
+}
+
+/**
+ * **A qué página de siempre va un plato** al traerlo de la carta (0112): el pan y el agua, a
+ * «Pan y agua»; los cafés y las infusiones, a «Cafés». **Solo si su sección no es ya la
+ * suya**: el café de «Cafés e infusiones» se queda en su página.
+ */
+export function laPaginaDeSiempre(plato: string, seccion: string | null): PaginaDeSiempre | null {
+  const deLaSeccion = sinAcentos(seccion ?? '');
+  const limpio = sinAcentos(plato).trim().replace(/\s+/g, ' ');
+  if (esPanOAgua(plato)) return DE_PAN.test(deLaSeccion) ? null : 'pan';
+  if (ES_CAFE.test(limpio)) return DE_CAFES.test(deLaSeccion) ? null : 'cafes';
+  return null;
+}

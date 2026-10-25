@@ -1137,14 +1137,19 @@ export {
   NOMBRE_DE_QUIEN_LO_PREPARA,
   NOMBRE_DEL_PASE,
   PASES_DE_LA_BOTONERA,
+  LAS_PAGINAS_DE_SIEMPRE,
   QUIEN_LO_PREPARA,
   elDestinoDeLaLinea,
+  esElPan,
+  esPanOAgua,
+  laPaginaDeSiempre,
   loQueProponeElNombre,
   loQueValeEnElBoton,
 } from './botonera.ts';
 export type {
   CaminoDeLaBotonera,
   ColorDeLaBotonera,
+  PaginaDeSiempre,
   PaseDeLaBotonera,
   QuienLoPrepara,
 } from './botonera.ts';

@@ -140,6 +140,12 @@ lo ponga un jefe de cocina, y la migración de lo que estaba «de bebidas») y `
 **Lo que decidí al construirlo**: los quince de la [0111](decisiones/0111-t3-1-la-botonera.md),
 sección 2.
 
+### El pan, el agua y los cafés (25-oct-2026)
+
+Lo vio Richi al probar T3 · 1, y va antes de T3 · 2 ([0112](decisiones/0112-el-pan-y-el-cafe.md),
+migración 0087): **«Pan y agua»** la primera página y **«Cafés»** la última, y **«Pan para 4»** en la
+mesa. Las pruebas, en `la-botonera.prueba.ts` y `la-botonera.spec.ts`.
+
 ### T3 · 2 · Lo de cada producto, terminado cuando
 
 - **En IKATZ**: Richi monta sus bebidas con «Monta tus bebidas» y vende un Havana 7 con Coca-Cola; pone

@@ -2,14 +2,9 @@
 
 > ## Cómo está
 >
-> Escrito el 25 de octubre de 2026, en su pull request, **sin fusionar**. «El PIN y la contraseña»
-> (#134) ya está en `main`, **pero sin migrar su 0084 y sin desplegar la API** (leído el 25-oct).
->
-> | Qué              | Cómo está                                                                              |
-> | ---------------- | -------------------------------------------------------------------------------------- |
-> | Pull requests    | **«T2 · La sala» (#135)**, abierta (rama `t2-la-sala`)                                 |
-> | La base de datos | **83** en producción; faltan **la 0084** (del #134) y **la 0085** (de esta)            |
-> | La API           | La de T1 (109 y 261); con el #134, 109 y 265; con T2, **109 consultas y 271 comandos** |
+> **En producción desde el 25 de octubre de 2026** (#135, fusionada; migradas hasta la 0086 y la API
+> con **110 consultas y 283 comandos**, comprobado con `bd:comprobar` y `bd:comprobar-api`). Lo que
+> queda aquí es **probarlo en IKATZ**.
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de
 antes, en [`pasos-del-pin-y-la-contrasena.md`](pasos-del-pin-y-la-contrasena.md).

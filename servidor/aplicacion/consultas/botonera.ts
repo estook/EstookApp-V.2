@@ -42,6 +42,8 @@ export interface PaginaDeLaBotonera {
   readonly quienLoPrepara: QuienLoPrepara;
   readonly pase: PaseDeLaBotonera;
   readonly deLaSeccion: string | null;
+  /** «Pan y agua» o «Cafés» (0112). */
+  readonly deSiempre: 'pan' | 'cafes' | null;
   readonly botones: readonly BotonDeLaBotonera[];
 }
 
@@ -115,6 +117,7 @@ export const laBotonera = consulta<Record<string, never>, SalidaLaBotonera>({
         quienLoPrepara: g.quienLoPrepara,
         pase: g.pase,
         deLaSeccion: g.seccionId === null ? null : (nombreDeLaSeccion.get(g.seccionId) ?? null),
+        deSiempre: g.deSiempre,
         botones: botonera.botones
           .filter((b) => b.paginaId === g.id)
           .flatMap((b) => {

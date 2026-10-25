@@ -7,7 +7,7 @@
 >
 > | Qué              | Cómo está                                                                           |
 > | ---------------- | ----------------------------------------------------------------------------------- |
-> | Pull requests    | **«T3 · 1 · La botonera»**, abierta (rama `t3-la-botonera`)                         |
+> | Pull requests    | **«T3 · 1 · La botonera» (#136)**, abierta (rama `t3-la-botonera`)                  |
 > | La base de datos | **83** en producción; faltan la 0084 (#134), la 0085 (T2) y **la 0086** (de esta)   |
 > | La API           | La de T1 (109 y 261); con T2, 109 y 271; con esta, **110 consultas y 283 comandos** |
 
@@ -33,7 +33,7 @@ decidí al construirlo»). T3 va en dos: **esta es la 1**; la 2 trae las opcione
 **Primero T2** (sus pasos, en [`pasos-de-t2.md`](pasos-de-t2.md)). Después, esta, **en este orden y
 seguido**:
 
-1. **En GitHub**: abre el pull request **«T3 · 1 · La botonera»** y, con las **tres comprobaciones
+1. **En GitHub**: abre el pull request **«T3 · 1 · La botonera» (#136)** y, con las **tres comprobaciones
    en verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
 

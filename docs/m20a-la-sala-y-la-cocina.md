@@ -10,7 +10,7 @@
 > ([0109](decisiones/0109-el-pin-y-la-contrasena.md)), lo que vio Richi al probarla. **T2 · La sala,
 > construida** ([0110](decisiones/0110-t2-la-sala.md), migración 0085), en su pull request (#135).
 > **T3 · Los productos va en dos**: **T3 · 1 · La botonera, construida**
-> ([0111](decisiones/0111-t3-1-la-botonera.md), migración 0086), en su pull request; **lo siguiente,
+> ([0111](decisiones/0111-t3-1-la-botonera.md), migración 0086), en su pull request (#136); **lo siguiente,
 > T3 · 2 · Lo de cada producto.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado

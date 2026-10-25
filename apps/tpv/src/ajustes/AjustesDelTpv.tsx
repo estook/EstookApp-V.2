@@ -75,7 +75,7 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
           </nav>
           <main className="flex-1 p-e4 md:p-e6">
             {elegido === 'productos' && ajusta ? (
-              <Productos />
+              <Productos resto={resto} />
             ) : elegido === 'pin' && ajusta ? (
               <PinYBloqueo />
             ) : vincula ? (

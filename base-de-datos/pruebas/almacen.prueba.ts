@@ -717,6 +717,12 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // nuevo de la carta entra solo en su página del TPV, y lo pone quien toca la carta: un
     // jefe de cocina, que no tiene los Ajustes del TPV. Es un disparador: no se llama a mano.
     // Son sesenta y seis.
+    //
+    // **Y la 0089 (T3 · 2 · 2 · Monta tus bebidas) añade una: `cambiar_lo_del_tpv_del_local`.**
+    // Lo del TPV que vive en el local (el camino de la botonera, lo que entra solo y las
+    // dosis de la casa) lo cambia quien tiene los Ajustes del TPV, y el local solo lo puede
+    // escribir quien tiene los Ajustes de Estook: sin ella, el cambio no se guardaba y nadie
+    // se enteraba. Mira el permiso dentro. Son sesenta y siete.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -737,6 +743,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'anotar_intento_en_terminal',
       'aparato_por_llave',
       'cambiar_la_suscripcion',
+      'cambiar_lo_del_tpv_del_local',
       'cerrar_demostracion',
       'cerrar_sesiones_de',
       'codigo_vivo_por_huella',

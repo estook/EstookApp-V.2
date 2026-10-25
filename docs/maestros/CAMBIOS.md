@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 25 de octubre, más tarde** ([0114](../decisiones/0114-t3-2-2-monta-tus-bebidas.md)), sin cambiar de versión: el **Anexo** pone en 7.2 las dosis de la casa del local (la copa, 50 ml; la copa de vino, 150 ml) y quién cambia lo del TPV que vive en el local.
+
 **El 25 de octubre, por la noche** ([0113](../decisiones/0113-t3-2-1-las-opciones.md)), sin cambiar de versión: el **Anexo** pone en 7.2 los grupos de opciones, lo que gasta cada opción, lo que se vende a peso y lo elegido en cada línea.
 
 **El 25 de octubre, por la tarde** ([0112](../decisiones/0112-el-pan-y-el-cafe.md)), sin cambiar de versión: el **Anexo** pone en 10.3 «Pan para 4», que nunca se pone solo, y en 11.11 que el pan, el agua y los cafés van en su página de siempre («Pan y agua» y «Cafés») y que una sección de pan es de «Nadie».

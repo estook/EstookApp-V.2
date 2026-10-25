@@ -40,6 +40,8 @@ import { euros } from '../logica/texto.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { COMO_SE_VE_EL_COLOR } from './colores.ts';
 import { HojaDeGrupo } from './HojaDeGrupo.tsx';
+import { MontaTusBebidas } from './MontaTusBebidas.tsx';
+import { irA } from '../navegar.ts';
 import { moverUnPuesto, usarArrastrar } from '../ganchos/usarArrastrar.ts';
 
 /**
@@ -71,7 +73,7 @@ const NOMBRE_DEL_CAMINO: Readonly<Record<CaminoDeLaBotonera, string>> = {
 
 type Orden = <T>(nombre: string, entrada: unknown) => Promise<Resultado<T>>;
 
-export function Productos() {
+export function Productos({ resto = '' }: { readonly resto?: string }) {
   const { cliente } = usarSesion();
   const cache = useQueryClient();
   const ejecutar = usarAcciones();
@@ -112,8 +114,15 @@ export function Productos() {
       {fallo !== null && <ErrorEnCristiano error={fallo} />}
       {datos.camino === null ? (
         <TresCaminos datos={datos} orden={orden} />
+      ) : resto === 'bebidas' ? (
+        <MontaTusBebidas />
       ) : (
-        <LaBotoneraMontada datos={datos} camino={datos.camino} orden={orden} />
+        <LaBotoneraMontada
+          datos={datos}
+          camino={datos.camino}
+          orden={orden}
+          conElNuevoAbierto={resto === 'nuevo'}
+        />
       )}
     </div>
   );
@@ -249,10 +258,13 @@ function LaBotoneraMontada({
   datos,
   camino,
   orden,
+  conElNuevoAbierto,
 }: {
   readonly datos: LaBotonera;
   readonly camino: CaminoDeLaBotonera;
   readonly orden: Orden;
+  /** Desde «Monta tus bebidas», «+ Una que no está en el almacén» abre «Nuevo producto». */
+  readonly conElNuevoAbierto: boolean;
 }) {
   const [hoja, setHoja] = useState<
     | { readonly que: 'pagina'; readonly pagina: PaginaDeLaBotonera }
@@ -265,9 +277,10 @@ function LaBotoneraMontada({
     | { readonly que: 'nueva_pagina' }
     | { readonly que: 'nuevo_producto' }
     | null
-  >(null);
+  >(conElNuevoAbierto && datos.puedeCrearProductos ? { que: 'nuevo_producto' } : null);
   const cerrar = () => {
     setHoja(null);
+    if (conElNuevoAbierto) irA('ajustes/productos');
   };
   const paginas = datos.paginas;
   // Lo de la hoja abierta, siempre como está ahora: tras ordenar o cambiar, no la copia vieja.
@@ -305,6 +318,14 @@ function LaBotoneraMontada({
             }}
           >
             + Página
+          </Boton>
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              irA('ajustes/productos/bebidas');
+            }}
+          >
+            Monta tus bebidas
           </Boton>
           {datos.puedeCrearProductos && (
             <Boton

@@ -3,6 +3,7 @@ import {
   CAMINOS_DE_LA_BOTONERA,
   COLORES_DE_LA_BOTONERA,
   PASES_DE_LA_BOTONERA,
+  LAS_PAGINAS_DE_SIEMPRE,
   QUIEN_LO_PREPARA,
   laPaginaDeSiempre,
   loQueProponeElNombre,
@@ -148,6 +149,43 @@ async function laPaginaDeSiempreDelLocal(
   return paginaId;
 }
 
+/**
+ * **La página que se llama así**, creada si no está, con lo que propone su nombre. «Pan y agua»
+ * y «Cafés» son las de siempre (0112). La usa «Monta tus bebidas» (T3 · 2 · 2).
+ */
+export async function laPaginaPorSuNombre(
+  contexto: Contexto,
+  localId: string,
+  nombre: string,
+): Promise<string> {
+  if (nombre === LAS_PAGINAS_DE_SIEMPRE.pan.nombre) {
+    return laPaginaDeSiempreDelLocal(contexto, localId, 'pan');
+  }
+  if (nombre === LAS_PAGINAS_DE_SIEMPRE.cafes.nombre) {
+    return laPaginaDeSiempreDelLocal(contexto, localId, 'cafes');
+  }
+  const ya = await contexto.sql<{ id: string }[]>`
+    select id::text as id from estook.pagina_del_tpv
+     where local_id = ${localId}::uuid
+       and estook.sin_acentos(nombre) = estook.sin_acentos(${nombre})
+     order by orden limit 1
+  `;
+  if (ya[0] !== undefined) return ya[0].id;
+  const propone = loQueProponeElNombre(nombre);
+  const filas = await contexto.sql<{ id: string }[]>`
+    insert into estook.pagina_del_tpv (local_id, nombre, orden, quien_lo_prepara, pase)
+    values (
+      ${localId}::uuid, ${nombre.slice(0, 30)},
+      coalesce((select max(orden) + 1 from estook.pagina_del_tpv where local_id = ${localId}::uuid), 0),
+      ${propone.quienLoPrepara}, ${propone.pase}
+    )
+    returning id::text as id
+  `;
+  const paginaId = filas[0]?.id;
+  if (paginaId === undefined) throw new FalloDeAplicacion('sin_permiso');
+  return paginaId;
+}
+
 /** Pone los platos en una página, detrás de los que ya tiene; los que ya estaban, no. */
 async function ponerEnLaPagina(
   contexto: Contexto,
@@ -236,9 +274,9 @@ export const montarLaBotonera = comando<
     // Con toda la carta, lo nuevo entra solo; eligiendo o de cero, se pregunta.
     const entraSolo = entrada.camino === 'toda_la_carta';
     await contexto.sql`
-      update estook.local
-         set botonera_camino = ${entrada.camino}, botonera_entra_solo = ${entraSolo}
-       where id = ${localId}::uuid
+      select estook.cambiar_lo_del_tpv_del_local(
+        ${localId}::uuid, p_camino => ${entrada.camino}, p_entra_solo => ${entraSolo}
+      )
     `;
     const traido =
       entrada.camino === 'toda_la_carta'
@@ -281,10 +319,9 @@ export const loNuevoEntraSolo = comando<{ si: boolean }, { entraSolo: boolean }>
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaBotonera(contexto);
     await contexto.sql`
-      update estook.local
-         set botonera_entra_solo = ${entrada.si},
-             botonera_camino = coalesce(botonera_camino, 'elegir')
-       where id = ${localId}::uuid
+      select estook.cambiar_lo_del_tpv_del_local(
+        ${localId}::uuid, p_camino_si_no_hay => 'elegir', p_entra_solo => ${entrada.si}
+      )
     `;
     await anotar(contexto, 'lo_nuevo_entra_solo', 'local', localId, localId, {
       entraSolo: entrada.si,
@@ -330,8 +367,7 @@ export const crearPaginaDelTpv = comando<
     if (paginaId === undefined) throw new FalloDeAplicacion('sin_permiso');
     // Una página hecha a mano pide que la botonera esté montada: si no, «de cero».
     await contexto.sql`
-      update estook.local set botonera_camino = coalesce(botonera_camino, 'de_cero')
-       where id = ${localId}::uuid
+      select estook.cambiar_lo_del_tpv_del_local(${localId}::uuid, p_camino_si_no_hay => 'de_cero')
     `;
     await anotar(contexto, 'crear', 'pagina_del_tpv', paginaId, localId, {
       nombre: entrada.nombre,
@@ -526,6 +562,104 @@ export const quitarBotonDelTpv = comando<{ boton_id: string }, { quitado: boolea
 
 // ═══ «Empezar de cero»: un producto nuevo ═════════════════════════════════════
 
+/**
+ * **Un producto nuevo, en una página**: nace en la carta de Estook, en la sección que se llama
+ * como la página (que se crea si no está), sin escandallo, y con su botón. Lo usan «Nuevo
+ * producto» y «Monta tus bebidas» (T3 · 2 · 2).
+ */
+export async function crearElProductoEnLaPagina(
+  contexto: Contexto,
+  localId: string,
+  producto: {
+    readonly nombre: string;
+    readonly precioCentimos: number;
+    readonly paginaId: string;
+    readonly quienLoPrepara: (typeof QUIEN_LO_PREPARA)[number] | null;
+  },
+): Promise<{ platoId: string; botonId: string }> {
+  const pagina = await laPagina(contexto, localId, producto.paginaId);
+  const ya = await contexto.sql<{ id: string }[]>`
+    select id from estook.plato
+     where local_id = ${localId}::uuid
+       and estook.sin_acentos(nombre) = estook.sin_acentos(${producto.nombre})
+  `;
+  if (ya[0] !== undefined) {
+    throw new FalloDeAplicacion('faltan_datos', {
+      campos: ['nombre'],
+      porque: 'Ya hay un plato que se llama así en tu carta: ponlo con «+ De la carta».',
+    });
+  }
+
+  // **En la sección del mismo nombre que la página**, que se crea si no está (11.11).
+  let seccionId = pagina.seccion_id;
+  if (seccionId === null) {
+    const seccion = await contexto.sql<{ id: string }[]>`
+      select id::text as id from estook.seccion_de_carta
+       where local_id = ${localId}::uuid
+         and estook.sin_acentos(nombre) = estook.sin_acentos(${pagina.nombre})
+    `;
+    seccionId =
+      seccion[0]?.id ??
+      (
+        await contexto.sql<{ id: string }[]>`
+          insert into estook.seccion_de_carta (local_id, nombre, orden)
+          values (
+            ${localId}::uuid, ${pagina.nombre},
+            coalesce((select max(orden) + 1 from estook.seccion_de_carta
+                       where local_id = ${localId}::uuid), 0)
+          )
+          returning id::text as id
+        `
+      )[0]?.id ??
+      null;
+    if (seccionId === null) throw new FalloDeAplicacion('sin_permiso');
+    // La página queda unida a su sección, si ninguna otra lo está ya.
+    await contexto.sql`
+      update estook.pagina_del_tpv set seccion_id = ${seccionId}::uuid
+       where id = ${pagina.id}::uuid
+         and not exists (
+           select 1 from estook.pagina_del_tpv o
+            where o.local_id = ${localId}::uuid and o.seccion_id = ${seccionId}::uuid
+         )
+    `;
+  }
+
+  // **Sin escandallo** (0095): se completa en Estook cuando se quiera; el almacén lo
+  // sabe y lo dice.
+  const filas = await contexto.sql<{ id: string }[]>`
+    insert into estook.plato (local_id, seccion_id, nombre, precio_centimos, orden, creado_por)
+    values (
+      ${localId}::uuid, ${seccionId}::uuid, ${producto.nombre}, ${producto.precioCentimos},
+      coalesce((select max(orden) + 1 from estook.plato
+                 where local_id = ${localId}::uuid and seccion_id = ${seccionId}::uuid), 0),
+      ${contexto.personaId}::uuid
+    )
+    returning id::text as id
+  `;
+  const platoId = filas[0]?.id;
+  if (platoId === undefined) throw new FalloDeAplicacion('sin_permiso');
+  await ponerEnLaPagina(contexto, localId, pagina.id, [platoId]);
+  const boton = await contexto.sql<{ id: string }[]>`
+    update estook.boton_del_tpv
+       set quien_lo_prepara = case
+             when ${producto.quienLoPrepara}::text is null
+               or ${producto.quienLoPrepara}::text = ${pagina.quien_lo_prepara} then null
+             else ${producto.quienLoPrepara}::text end
+     where pagina_id = ${pagina.id}::uuid and plato_id = ${platoId}::uuid
+    returning id::text as id
+  `;
+  const botonId = boton[0]?.id;
+  if (botonId === undefined) throw new FalloDeAplicacion('sin_permiso');
+  await contexto.sql`
+    select estook.cambiar_lo_del_tpv_del_local(${localId}::uuid, p_camino_si_no_hay => 'de_cero')
+  `;
+  await anotar(contexto, 'crear_desde_el_tpv', 'plato', platoId, localId, {
+    nombre: producto.nombre,
+    precio: producto.precioCentimos,
+  });
+  return { platoId, botonId };
+}
+
 const entradaNuevoProductoDelTpv = z
   .object({
     nombre: z.string().trim().min(1).max(120),
@@ -552,87 +686,11 @@ export const nuevoProductoDelTpv = comando<
           'Un producto nuevo se pone también en la carta de Estook: lo crea quien puede cambiar la carta.',
       });
     }
-    const pagina = await laPagina(contexto, localId, entrada.pagina_id);
-    const ya = await contexto.sql<{ id: string }[]>`
-      select id from estook.plato
-       where local_id = ${localId}::uuid
-         and estook.sin_acentos(nombre) = estook.sin_acentos(${entrada.nombre})
-    `;
-    if (ya[0] !== undefined) {
-      throw new FalloDeAplicacion('faltan_datos', {
-        campos: ['nombre'],
-        porque: 'Ya hay un plato que se llama así en tu carta: ponlo con «+ De la carta».',
-      });
-    }
-
-    // **En la sección del mismo nombre que la página**, que se crea si no está (11.11).
-    let seccionId = pagina.seccion_id;
-    if (seccionId === null) {
-      const seccion = await contexto.sql<{ id: string }[]>`
-        select id::text as id from estook.seccion_de_carta
-         where local_id = ${localId}::uuid
-           and estook.sin_acentos(nombre) = estook.sin_acentos(${pagina.nombre})
-      `;
-      seccionId =
-        seccion[0]?.id ??
-        (
-          await contexto.sql<{ id: string }[]>`
-            insert into estook.seccion_de_carta (local_id, nombre, orden)
-            values (
-              ${localId}::uuid, ${pagina.nombre},
-              coalesce((select max(orden) + 1 from estook.seccion_de_carta
-                         where local_id = ${localId}::uuid), 0)
-            )
-            returning id::text as id
-          `
-        )[0]?.id ??
-        null;
-      if (seccionId === null) throw new FalloDeAplicacion('sin_permiso');
-      // La página queda unida a su sección, si ninguna otra lo está ya.
-      await contexto.sql`
-        update estook.pagina_del_tpv set seccion_id = ${seccionId}::uuid
-         where id = ${pagina.id}::uuid
-           and not exists (
-             select 1 from estook.pagina_del_tpv o
-              where o.local_id = ${localId}::uuid and o.seccion_id = ${seccionId}::uuid
-           )
-      `;
-    }
-
-    // **Sin escandallo** (0095): se completa en Estook cuando se quiera; el almacén lo
-    // sabe y lo dice.
-    const filas = await contexto.sql<{ id: string }[]>`
-      insert into estook.plato (local_id, seccion_id, nombre, precio_centimos, orden, creado_por)
-      values (
-        ${localId}::uuid, ${seccionId}::uuid, ${entrada.nombre}, ${entrada.precio_centimos},
-        coalesce((select max(orden) + 1 from estook.plato
-                   where local_id = ${localId}::uuid and seccion_id = ${seccionId}::uuid), 0),
-        ${contexto.personaId}::uuid
-      )
-      returning id::text as id
-    `;
-    const platoId = filas[0]?.id;
-    if (platoId === undefined) throw new FalloDeAplicacion('sin_permiso');
-    await ponerEnLaPagina(contexto, localId, pagina.id, [platoId]);
-    const boton = await contexto.sql<{ id: string }[]>`
-      update estook.boton_del_tpv
-         set quien_lo_prepara = case
-               when ${entrada.quien_lo_prepara ?? null}::text is null
-                 or ${entrada.quien_lo_prepara ?? null}::text = ${pagina.quien_lo_prepara} then null
-               else ${entrada.quien_lo_prepara ?? null}::text end
-       where pagina_id = ${pagina.id}::uuid and plato_id = ${platoId}::uuid
-      returning id::text as id
-    `;
-    const botonId = boton[0]?.id;
-    if (botonId === undefined) throw new FalloDeAplicacion('sin_permiso');
-    await contexto.sql`
-      update estook.local set botonera_camino = coalesce(botonera_camino, 'de_cero')
-       where id = ${localId}::uuid
-    `;
-    await anotar(contexto, 'crear_desde_el_tpv', 'plato', platoId, localId, {
+    return crearElProductoEnLaPagina(contexto, localId, {
       nombre: entrada.nombre,
-      precio: entrada.precio_centimos,
+      precioCentimos: entrada.precio_centimos,
+      paginaId: entrada.pagina_id,
+      quienLoPrepara: entrada.quien_lo_prepara ?? null,
     });
-    return { platoId, botonId };
   },
 });

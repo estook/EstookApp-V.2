@@ -3353,6 +3353,24 @@ desde el TPV**, que es el de la carta.
 
 Las pruebas: `opciones.prueba.ts`, `las-opciones.prueba.ts` y `las-opciones.spec.ts`.
 
+### T3 · 2 · 2 · Monta tus bebidas
+
+_25 de octubre de 2026._ Migración `0089`, decisión [0114](decisiones/0114-t3-2-2-monta-tus-bebidas.md),
+con las maquetas 1 a 3 de T3 · 2. **«Monta tus bebidas»**, en Ajustes del TPV › Productos: las bebidas
+del almacén con sus raciones propuestas y lo que cuesta cada una, **las copas** con la dosis de la casa,
+lo que deja cada una y su «¿Con qué?», y **los cafés de serie**, con su coste de verdad o el aproximado.
+Cada una, un plato con su botón y su escandallo.
+
+- **La base** (0089): las dosis de la casa en `local` y `cambiar_lo_del_tpv_del_local`, que arregla que
+  lo del TPV del local no se guardara para quien no tiene los Ajustes de Estook.
+- **El dominio** (`bebidas.ts`): qué es cada bebida, sus raciones, su nombre y su página, los refrescos
+  del «¿Con qué?» y los cafés de serie.
+- **La API**: `las_bebidas_para_montar` y cuatro órdenes (`montar_bebidas`, `montar_copas`,
+  `montar_cafes` y `cambiar_las_dosis`).
+- **Estook TPV**: `productos/MontaTusBebidas`, con sus tres pestañas.
+
+Las pruebas: `bebidas.prueba.ts`, `monta-tus-bebidas.prueba.ts` y `monta-tus-bebidas.spec.ts`.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

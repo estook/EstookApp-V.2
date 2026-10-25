@@ -3325,6 +3325,17 @@ lo de cada producto (opciones, extras, «Monta tus bebidas», a peso).
 Las pruebas: `botonera.prueba.ts`, `la-botonera.prueba.ts` (contra la base, con la migración de lo
 «de bebidas» y lo nuevo que pone un jefe de cocina) y `la-botonera.spec.ts`.
 
+### El pan, el agua y los cafés
+
+_25 de octubre de 2026._ Migración `0087`, decisión [0112](decisiones/0112-el-pan-y-el-cafe.md). Lo
+vio Richi al probar la botonera: el pan y el café no van en Entrantes. **«Pan y agua»**, la primera
+página, de «Nadie», y **«Cafés»**, la última, de la barra, reconocidos por su nombre; lo de antes se
+colocó solo al migrar. Y en la mesa, **«Pan para 4»** de un toque, que nunca se pone solo (en España
+el pan no se cobra si no se pide).
+
+Las pruebas: las del dominio y las de `la-botonera.prueba.ts` (la base y el dominio dicen lo mismo,
+y la 0087 coloca lo de antes) y `la-botonera.spec.ts` («Pan para 2»).
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

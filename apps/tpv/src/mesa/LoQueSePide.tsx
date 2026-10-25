@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { elDestinoDeLaLinea } from '@estook/dominio';
+import { elDestinoDeLaLinea, esElPan } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import { Boton, Cargando, EstadoVacio, filtrarPorParecido } from '@estook/ui';
 import type { LaCartaDeLaSala, LaMesa, PaginaDeLaSala, PlatoDeLaSala } from '../datos/tipos.ts';
@@ -52,9 +52,10 @@ export function LoQueSePide({
 
   // Sin elegir todavía, la página del pase marcado (en una mesa recién abierta, la de las
   // bebidas); si no hay, «Lo más pedido»; si no, la primera.
+  // «Pan y agua» no: el pan tiene su botón arriba («Pan para 4»).
   const deFabrica =
-    paginas.find((g) => laPestanaDeLaPagina(g.pase) === marcada)?.id ??
-    (masPedido.length > 0 ? LO_MAS_PEDIDO : paginas[0]?.id);
+    paginas.find((g) => (g.deSiempre ?? null) === null && laPestanaDeLaPagina(g.pase) === marcada)
+      ?.id ?? (masPedido.length > 0 ? LO_MAS_PEDIDO : paginas[0]?.id);
   const elegida = pagina ?? deFabrica;
   const laDeAhora: PaginaDeLaSala | typeof MENU | typeof LO_MAS_PEDIDO | undefined =
     elegida === MENU && menus.length > 0
@@ -102,6 +103,24 @@ export function LoQueSePide({
     borrador
       .filter((l) => l.platoId === p.id && l.parteDe === null)
       .reduce((n, l) => n + l.cantidad, 0);
+
+  // **«Pan para 4»** (0112): el pan se pregunta al sentarse y no se cobra si no se pide; con
+  // un toque, uno por comensal. Sale mientras la mesa no tiene pan.
+  const elPan = paginas.flatMap((g) => g.platos).find((p) => esElPan(p.nombre) && !p.agotado);
+  const yaTienePan =
+    elPan !== undefined &&
+    (borrador.some((l) => l.platoId === elPan.id) ||
+      mesa.platos.some((l) => l.platoId === elPan.id && l.estado !== 'quitado'));
+  const comensales = mesa.personas ?? 0;
+  function ponerElPan() {
+    if (elPan === undefined) return;
+    let nuevo = borrador;
+    const destino = elDestinoDeLaLinea(elPan.quienLoPrepara);
+    for (let i = 0; i < comensales; i += 1) {
+      nuevo = anadirPlato(nuevo, elPan, { destino, pase: destino === 'cocina' ? 1 : null });
+    }
+    alCambiarElBorrador(nuevo);
+  }
 
   const sinNada = paginas.length === 0;
   const montaLaBotonera = puedeEditar(yo.permisos, 'accion.ajustes_del_tpv');
@@ -160,6 +179,19 @@ export function LoQueSePide({
           className="min-h-toque w-full rounded-redondo border border-borde bg-fondo px-e4 sm:w-[9rem]"
         />
       </div>
+
+      {elPan !== undefined && !yaTienePan && comensales > 0 && buscando.trim() === '' && (
+        <div className="flex items-center gap-e3 border-b border-borde bg-superficie px-e3 py-e2">
+          <span className="text-secundario text-texto-suave">¿Pan para la mesa?</span>
+          <button
+            type="button"
+            onClick={ponerElPan}
+            className="min-h-toque rounded-redondo border-2 border-borde px-e4 font-semibold"
+          >
+            {elPan.nombre} para {String(comensales)} · {euros(elPan.precioCentimos * comensales)}
+          </button>
+        </div>
+      )}
 
       {cargando ? (
         <div className="p-e6">

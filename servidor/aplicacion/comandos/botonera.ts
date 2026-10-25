@@ -4,7 +4,9 @@ import {
   COLORES_DE_LA_BOTONERA,
   PASES_DE_LA_BOTONERA,
   QUIEN_LO_PREPARA,
+  laPaginaDeSiempre,
   loQueProponeElNombre,
+  type PaginaDeSiempre,
 } from '@estook/dominio';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -132,6 +134,20 @@ async function laPaginaDeLaSeccion(
   return paginaId;
 }
 
+/** «Pan y agua» o «Cafés» del local, creada si no está (la misma función que usa la base). */
+async function laPaginaDeSiempreDelLocal(
+  contexto: Contexto,
+  localId: string,
+  tipo: PaginaDeSiempre,
+): Promise<string> {
+  const filas = await contexto.sql<{ id: string }[]>`
+    select estook.la_pagina_de_siempre_del_local(${localId}::uuid, ${tipo})::text as id
+  `;
+  const paginaId = filas[0]?.id;
+  if (paginaId === undefined) throw new FalloDeAplicacion('sin_permiso');
+  return paginaId;
+}
+
 /** Pone los platos en una página, detrás de los que ya tiene; los que ya estaban, no. */
 async function ponerEnLaPagina(
   contexto: Contexto,
@@ -166,8 +182,10 @@ async function traerDeLaCarta(
   localId: string,
   soloEstos: readonly string[] | null,
 ): Promise<{ paginas: number; botones: number }> {
-  const faltan = await contexto.sql<{ plato_id: string; seccion_id: string; seccion: string }[]>`
-    select p.id::text as plato_id, s.id::text as seccion_id, s.nombre as seccion
+  const faltan = await contexto.sql<
+    { plato_id: string; plato: string; seccion_id: string; seccion: string }[]
+  >`
+    select p.id::text as plato_id, p.nombre as plato, s.id::text as seccion_id, s.nombre as seccion
       from estook.plato p
       join estook.seccion_de_carta s on s.id = p.seccion_id
      where p.local_id = ${localId}::uuid and p.activo and p.en_la_carta
@@ -181,10 +199,12 @@ async function traerDeLaCarta(
   `;
   let botones = 0;
   for (const f of faltan) {
-    const paginaId = await laPaginaDeLaSeccion(contexto, localId, {
-      id: f.seccion_id,
-      nombre: f.seccion,
-    });
+    // El pan, el agua y los cafés, a su página de siempre (0112); lo demás, a la de su sección.
+    const deSiempre = laPaginaDeSiempre(f.plato, f.seccion);
+    const paginaId =
+      deSiempre === null
+        ? await laPaginaDeLaSeccion(contexto, localId, { id: f.seccion_id, nombre: f.seccion })
+        : await laPaginaDeSiempreDelLocal(contexto, localId, deSiempre);
     botones += await ponerEnLaPagina(contexto, localId, paginaId, [f.plato_id]);
   }
   const despues = await contexto.sql<{ n: number }[]>`

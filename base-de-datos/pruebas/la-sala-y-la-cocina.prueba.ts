@@ -398,7 +398,9 @@ describe('lo que se pide: la carta de la sala y el menú de hoy', () => {
     const carta = losDatos<LaCartaDeLaSala>(await api.consultar(saraTpv, 'la_carta_de_la_sala'));
     expect(carta.hoy).toBe(HOY);
     expect(carta.montada).toBe(false);
+    // El agua de Bebidas, en «Pan y agua», la primera, que la sirve el camarero (0112).
     expect(carta.paginas.map((s) => [s.nombre, s.pase, s.platos[0]?.quienLoPrepara])).toEqual([
+      ['Pan y agua', 'bebidas', 'nadie'],
       ['Entrantes', '1', 'cocina'],
       ['Principales', '2', 'cocina'],
       ['Postres', 'postre', 'cocina'],
@@ -407,7 +409,7 @@ describe('lo que se pide: la carta de la sala y el menú de hoy', () => {
     // Las lentejas nacieron en el menú: no se piden sueltas.
     const nombres = carta.paginas.flatMap((s) => s.platos.map((p) => p.nombre));
     expect(nombres).not.toContain('Lentejas');
-    expect(carta.paginas[1]?.platos.map((p) => [p.nombre, p.precioCentimos])).toEqual([
+    expect(carta.paginas[2]?.platos.map((p) => [p.nombre, p.precioCentimos])).toEqual([
       ['Entrecot', 2200],
       ['Pollo asado', 1200],
     ]);

@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 25 de octubre, por la tarde** ([0112](../decisiones/0112-el-pan-y-el-cafe.md)), sin cambiar de versión: el **Anexo** pone en 10.3 «Pan para 4», que nunca se pone solo, y en 11.11 que el pan, el agua y los cafés van en su página de siempre («Pan y agua» y «Cafés») y que una sección de pan es de «Nadie».
+
 **El 25 de octubre** ([0111](../decisiones/0111-t3-1-la-botonera.md)), sin cambiar de versión: el **Anexo** pone en 7.2 lo que guardan la botonera y el local (la sección de la que vino cada página, el botón fijado en «Lo más pedido», cómo se montó y si lo nuevo entra solo), y en 11.11 que **el TPV vende la carta entera mientras no se monta la botonera** y que **un producto nuevo lleva el IVA de la actividad** hasta que el plato guarde el suyo con el cobro.
 
 **El 24 de octubre, por la noche** ([0110](../decisiones/0110-t2-la-sala.md)), sin cambiar de versión: el **Anexo** pone en 7.2 lo que no se abre en su propia tabla (`elemento_de_sala`) y la forma de la mesa, y en 11.9 que las salas se ordenan con «Antes» y «Después».

@@ -8,7 +8,9 @@ import {
   laMesaEnCocina,
   loSiguienteDeLaMesa,
   losPasesDelMenu,
+  LAS_PAGINAS_DE_SIEMPRE,
   LO_MAS_PEDIDO,
+  laPaginaDeSiempre,
   loQueProponeElNombre,
   loQueValeEnElBoton,
   type ColorDeLaBotonera,
@@ -544,6 +546,8 @@ export interface PaginaDeLaSala {
   readonly color: ColorDeLaBotonera | null;
   /** Qué pestaña se marca sola al abrirla (Anexo 11.10). */
   readonly pase: PaseDeLaBotonera;
+  /** «Pan y agua» o «Cafés» (0112): no es la que se abre sola al sentarse. */
+  readonly deSiempre: 'pan' | 'cafes' | null;
   readonly platos: readonly PlatoDeLaSala[];
 }
 
@@ -645,6 +649,7 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
           nombre: g.nombre,
           color: g.color,
           pase: g.pase,
+          deSiempre: g.deSiempre,
           platos: botonera.botones
             .filter((b) => b.paginaId === g.id)
             .flatMap((b) => {
@@ -661,33 +666,56 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
         .filter((g) => g.platos.length > 0);
     } else {
       // Sin montar, la carta como hasta T3: una página por sección, con lo que propone su
-      // nombre; lo que no tiene sección, en «Sin sección».
+      // nombre; el pan y el agua, en «Pan y agua», y los cafés, en «Cafés», como en
+      // cualquier TPV (0112); lo que no tiene sección, en «Sin sección».
       const deLaSeccion = (nombre: string) => ({ ...loQueProponeElNombre(nombre), color: null });
-      paginas = secciones
-        .map((s) => {
+      const nombreDeLaSeccion = new Map(secciones.map((x) => [x.id, x.nombre]));
+      const deSiempre = (p: (typeof deLaCarta)[number]) =>
+        laPaginaDeSiempre(
+          p.nombre,
+          p.seccionId === null ? null : (nombreDeLaSeccion.get(p.seccionId) ?? null),
+        );
+      const lasDeSiempre = (tipo: 'pan' | 'cafes'): PaginaDeLaSala => {
+        const g = LAS_PAGINAS_DE_SIEMPRE[tipo];
+        const vale = { quienLoPrepara: g.quienLoPrepara, pase: g.pase, color: null };
+        return {
+          id: `de-siempre-${tipo}`,
+          nombre: g.nombre,
+          color: null,
+          pase: g.pase,
+          deSiempre: tipo,
+          platos: deLaCarta.filter((p) => deSiempre(p) === tipo).map((p) => comoDeLaSala(p, vale)),
+        };
+      };
+      const queda = deLaCarta.filter((p) => deSiempre(p) === null);
+      paginas = [
+        lasDeSiempre('pan'),
+        ...secciones.map((s) => {
           const vale = deLaSeccion(s.nombre);
           return {
             id: s.id,
             nombre: s.nombre,
             color: null,
             pase: vale.pase,
-            platos: deLaCarta.filter((p) => p.seccionId === s.id).map((p) => comoDeLaSala(p, vale)),
+            deSiempre: null,
+            platos: queda.filter((p) => p.seccionId === s.id).map((p) => comoDeLaSala(p, vale)),
           };
-        })
-        .filter((s) => s.platos.length > 0);
+        }),
+      ];
       const vale = deLaSeccion('');
-      const sueltos = deLaCarta
-        .filter((p) => p.seccionId === null)
-        .map((p) => comoDeLaSala(p, vale));
+      const sueltos = queda.filter((p) => p.seccionId === null).map((p) => comoDeLaSala(p, vale));
       if (sueltos.length > 0) {
         paginas.push({
           id: 'sin-seccion',
           nombre: 'Sin sección',
           color: null,
           pase: '1',
+          deSiempre: null,
           platos: sueltos,
         });
       }
+      paginas.push(lasDeSiempre('cafes'));
+      paginas = paginas.filter((g) => g.platos.length > 0);
     }
 
     // «Lo más pedido»: lo fijado primero, y después lo más vendido a esta hora; solo lo que

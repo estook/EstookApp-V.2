@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { loQueProponeElNombre, tokenDelAparato } from '@estook/dominio';
+import { laPaginaDeSiempre, loQueProponeElNombre, tokenDelAparato } from '@estook/dominio';
 import { levantarBase, migraciones, reversiones, type BaseDePrueba } from './entorno.ts';
 import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
 
@@ -143,12 +143,13 @@ afterAll(async () => {
 });
 
 describe('sin montar', () => {
-  it('el TPV vende la carta por secciones, con lo que propone su nombre', async () => {
+  it('el TPV vende la carta por secciones, con lo que propone su nombre, y el pan en «Pan y agua»', async () => {
     const enLaCaja = await enElAparato(llaveDeLaCaja, ROSA);
     expect((await laBotonera(enLaCaja)).camino).toBeNull();
     const carta = await laCarta(enLaCaja);
     expect(carta.montada).toBe(false);
     expect(carta.paginas.map((g) => [g.nombre, g.pase])).toEqual([
+      ['Pan y agua', 'bebidas'],
       ['Entrantes', '1'],
       ['Principales', '2'],
       ['Refrescos', 'bebidas'],
@@ -165,13 +166,15 @@ describe('«Traer toda la carta»', () => {
     const enLaCaja = await enElAparato(llaveDeLaCaja, ROSA);
     expect(
       losDatos(await api.ejecutar(enLaCaja, 'montar_la_botonera', { camino: 'toda_la_carta' })),
-    ).toEqual({ paginas: 3, botones: 4 });
+    ).toEqual({ paginas: 4, botones: 4 });
     const botonera = await laBotonera(enLaCaja);
     expect(botonera).toMatchObject({ camino: 'toda_la_carta', entraSolo: true });
+    // El pan no va en Entrantes: va en «Pan y agua», la primera, y lo sirve el camarero (0112).
     expect(
       botonera.paginas.map((g) => [g.nombre, g.quienLoPrepara, g.pase, g.botones.length]),
     ).toEqual([
-      ['Entrantes', 'cocina', '1', 2],
+      ['Pan y agua', 'nadie', 'bebidas', 1],
+      ['Entrantes', 'cocina', '1', 1],
       ['Principales', 'cocina', '2', 1],
       ['Refrescos', 'barra', 'bebidas', 1],
     ]);
@@ -184,17 +187,24 @@ describe('«Traer toda la carta»', () => {
 
   it('lo nuevo de la carta entra solo en su página, y una sección nueva trae su página', async () => {
     await crearPlatos('Entrantes', [['Gilda', 300]]);
-    await crearPlatos('Postres', [['Tarta de queso', 550]]);
+    await crearPlatos('Postres', [
+      ['Tarta de queso', 550],
+      ['Café solo', 130],
+    ]);
     const enLaCaja = await enElAparato(llaveDeLaCaja, ROSA);
     const botonera = await laBotonera(enLaCaja);
     expect(
       botonera.paginas.find((g) => g.nombre === 'Entrantes')?.botones.map((b) => b.nombre),
-    ).toEqual(['Croquetas', 'Pan', 'Gilda']);
+    ).toEqual(['Croquetas', 'Gilda']);
     expect(botonera.paginas.find((g) => g.nombre === 'Postres')).toMatchObject({
       quienLoPrepara: 'cocina',
       pase: 'postre',
       deLaSeccion: 'Postres',
     });
+    // El café de Postres entra solo en «Cafés», la última, que hace la barra (0112).
+    const ultima = botonera.paginas.at(-1);
+    expect(ultima).toMatchObject({ nombre: 'Cafés', quienLoPrepara: 'barra' });
+    expect(ultima?.botones.map((b) => b.nombre)).toEqual(['Café solo']);
     expect(botonera.nuevosEnLaCarta).toEqual([]);
   });
 
@@ -229,22 +239,26 @@ describe('«Traer toda la carta»', () => {
 });
 
 describe('quién lo prepara manda a dónde va', () => {
-  it('la barra, la cocina o nadie: el pan, en Entrantes, de «Nadie»', async () => {
+  it('la barra, la cocina o nadie: el pan, sin tocarlo, de «Nadie»; la gilda, de la barra', async () => {
     const enLaCaja = await enElAparato(llaveDeLaCaja, ROSA);
+    expect(
+      (await laCarta(enLaCaja)).paginas[0]?.platos.find((p) => p.nombre === 'Pan'),
+    ).toMatchObject({ quienLoPrepara: 'nadie', pase: 'bebidas' });
+    // Un botón puede tener lo suyo: la gilda la saca la barra, aunque esté en Entrantes.
     const entrantes = (await laBotonera(enLaCaja)).paginas.find((g) => g.nombre === 'Entrantes');
-    const pan = entrantes?.botones.find((b) => b.nombre === 'Pan');
+    const gilda = entrantes?.botones.find((b) => b.nombre === 'Gilda');
     losDatos(
       await api.ejecutar(enLaCaja, 'cambiar_boton_del_tpv', {
-        boton_id: pan?.botonId,
-        quien_lo_prepara: 'nadie',
+        boton_id: gilda?.botonId,
+        quien_lo_prepara: 'barra',
       }),
     );
     expect(
-      (await laCarta(enLaCaja)).paginas[0]?.platos.find((p) => p.nombre === 'Pan'),
-    ).toMatchObject({ quienLoPrepara: 'nadie', pase: '1' });
-    expect((await pedirYVer(enLaCaja, ['Pan', 'Croquetas', 'Coca-Cola'])).destinos).toEqual([
+      (await pedirYVer(enLaCaja, ['Pan', 'Croquetas', 'Coca-Cola', 'Gilda'])).destinos,
+    ).toEqual([
       ['Coca-Cola', 'barra'],
       ['Croquetas', 'cocina'],
+      ['Gilda', 'barra'],
       ['Pan', 'ninguno'],
     ]);
     // Mandado, el pan no sale en ninguna pantalla, y con la barra sin pantalla la mesa no se
@@ -480,6 +494,9 @@ describe('lo que se propone por el nombre', () => {
       'Del chef',
       'Postres y cafés',
       'Vino dulce',
+      'Pan y agua',
+      'Panes',
+      'Empanadas',
     ];
     for (const nombre of nombres) {
       const { rows } = await base.bd.query<{ quien_lo_prepara: string; pase: string }>(
@@ -497,12 +514,18 @@ describe('lo que se propone por el nombre', () => {
 
 describe('lo que ya había, al migrar', () => {
   it('lo marcado «de bebidas» pasa a Barra y Bebidas sin tocar nada, y «Es de bebidas» se va', async () => {
-    // Se deshace la 0086, se marca de bebidas una sección cuyo nombre no lo dice, y se vuelve a
-    // aplicar: es lo que pasa en un local de verdad al migrar.
-    const deshacer = (await reversiones()).find((m) => m.nombre.startsWith('0086'));
-    const hacer = (await migraciones()).find((m) => m.nombre.startsWith('0086'));
-    if (deshacer === undefined || hacer === undefined) throw new Error('Sin la 0086');
-    await base.bd.exec(deshacer.sql);
+    // Se deshacen la 0087 y la 0086, se marca de bebidas una sección cuyo nombre no lo dice, y
+    // se vuelven a aplicar: es lo que pasa en un local de verdad al migrar.
+    const laMigracion = async (numero: string) => {
+      const deshacer = (await reversiones()).find((m) => m.nombre.startsWith(numero));
+      const hacer = (await migraciones()).find((m) => m.nombre.startsWith(numero));
+      if (deshacer === undefined || hacer === undefined) throw new Error(`Sin la ${numero}`);
+      return { deshacer: deshacer.sql, hacer: hacer.sql };
+    };
+    const la86 = await laMigracion('0086');
+    const la87 = await laMigracion('0087');
+    await base.bd.exec(la87.deshacer);
+    await base.bd.exec(la86.deshacer);
     const { rows } = await base.bd.query<{ id: string }>(
       `insert into estook.seccion_de_carta (local_id, nombre, orden, es_bebida)
        values ($1, 'Lo de la casa', 99, true) returning id`,
@@ -512,7 +535,22 @@ describe('lo que ya había, al migrar', () => {
       `insert into estook.plato (local_id, seccion_id, nombre, precio_centimos) values ($1, $2, 'Vermú de grifo', 300)`,
       [barCentro, rows[0]?.id],
     );
-    await base.bd.exec(hacer.sql);
+    await base.bd.exec(la86.hacer);
+    // Con la 0086 sola, el pan se queda en Entrantes, de donde vino.
+    const donde = async () =>
+      (
+        await base.bd.query<{ pagina: string }>(
+          `select g.nombre as pagina from estook.boton_del_tpv b
+             join estook.pagina_del_tpv g on g.id = b.pagina_id
+             join estook.plato p on p.id = b.plato_id
+            where b.local_id = $1 and p.nombre = 'Pan'`,
+          [barCentro],
+        )
+      ).rows.map((f) => f.pagina);
+    expect(await donde()).toEqual(['Entrantes']);
+    // Y la 0087 lo coloca solo en «Pan y agua» (0112).
+    await base.bd.exec(la87.hacer);
+    expect(await donde()).toEqual(['Pan y agua']);
     const paginas = await base.bd.query<{ nombre: string; quien_lo_prepara: string; pase: string }>(
       `select nombre, quien_lo_prepara, pase from estook.pagina_del_tpv
         where local_id = $1 and nombre in ('Lo de la casa', 'Entrantes') order by nombre`,
@@ -532,5 +570,39 @@ describe('lo que ya había, al migrar', () => {
         where table_schema = 'estook' and table_name = 'seccion_de_carta' and column_name = 'es_bebida'`,
     );
     expect(columna.rows).toEqual([]);
+  });
+});
+
+describe('a qué página de siempre va un plato', () => {
+  it('la base y el dominio dicen lo mismo', async () => {
+    const casos: readonly (readonly [string, string | null])[] = [
+      ['Pan', 'Entrantes'],
+      ['Pan de pueblo', 'Entrantes'],
+      ['Regañás', 'Para picar'],
+      ['Agua mineral', 'Bebidas'],
+      ['Agua con gas', 'Refrescos'],
+      ['Café con leche', 'Postres'],
+      ['Cortado', 'Bebidas'],
+      ['Infusión de manzanilla', 'Postres y cafés'],
+      ['Té verde', 'Bebidas'],
+      ['Pan con tomate', 'Entrantes'],
+      ['Pan de ajo', 'Entrantes'],
+      ['Agua de Valencia', 'Copas'],
+      ['Ternera guisada', 'Principales'],
+      ['Tarta de café', 'Postres'],
+      ['Pan', 'Pan y agua'],
+      ['Cortado', 'Cafés e infusiones'],
+      ['Agua  mineral', null],
+      ['Solán de Cabras', 'Bebidas'],
+    ];
+    for (const [plato, seccion] of casos) {
+      const { rows } = await base.bd.query<{ de_siempre: string | null }>(
+        'select estook.la_pagina_de_siempre($1, $2) as de_siempre',
+        [plato, seccion],
+      );
+      expect(rows[0]?.de_siempre ?? null, `${plato} · ${seccion ?? '—'}`).toBe(
+        laPaginaDeSiempre(plato, seccion),
+      );
+    }
   });
 });

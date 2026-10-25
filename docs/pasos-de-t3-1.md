@@ -2,14 +2,9 @@
 
 > ## Cómo está
 >
-> Escrito el 25 de octubre de 2026, en su pull request, **sin fusionar**. Va **detrás de «T2 · La
-> sala» (#135)**: se fusiona después.
->
-> | Qué              | Cómo está                                                                           |
-> | ---------------- | ----------------------------------------------------------------------------------- |
-> | Pull requests    | **«T3 · 1 · La botonera» (#136)**, abierta (rama `t3-la-botonera`)                  |
-> | La base de datos | **83** en producción; faltan la 0084 (#134), la 0085 (T2) y **la 0086** (de esta)   |
-> | La API           | La de T1 (109 y 261); con T2, 109 y 271; con esta, **110 consultas y 283 comandos** |
+> **En producción desde el 25 de octubre de 2026** (#136, fusionada; migradas hasta la 0086 y la API
+> con **110 consultas y 283 comandos**, comprobado con `bd:comprobar` y `bd:comprobar-api`). Lo que
+> queda aquí es **probarlo en IKATZ**.
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de
 antes, en [`pasos-de-t2.md`](pasos-de-t2.md).
@@ -73,8 +68,9 @@ En **la caja** (un ordenador o una tablet):
    - **Qué debe salir:** las de bebidas (Bebidas, Vinos, Cafés…) con **Barra** y **Bebidas**
      marcados; los entrantes con **Cocina** y **1.º**; los principales, **2.º**; los postres,
      **Postre**.
-2. **El pan, de «Nadie».** Toca el botón del pan (o del agua) → en «¿Quién lo prepara?», **Nadie** →
-   **Listo**. El botón dice «Pan · Nadie».
+2. **Un botón con lo suyo.** Toca un botón de Entrantes que saque la barra (una gilda, una tapa
+   fría) → en «¿Quién lo prepara?», **Barra** → **Listo**. El botón dice «Gilda · Barra». (El pan y
+   los cafés ya van solos en su página: [`pasos-del-pan-y-el-cafe.md`](pasos-del-pan-y-el-cafe.md).)
 3. **Un producto nuevo.** **Nuevo producto** → nombre «Tortilla del día», precio 8 → Página
    «Entrantes» → **Crear el producto**.
    - **Qué debe salir:** el botón en Entrantes, y en **Estook › Carta**, la tortilla en Entrantes,

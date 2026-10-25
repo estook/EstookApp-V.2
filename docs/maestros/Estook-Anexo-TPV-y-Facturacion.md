@@ -1051,6 +1051,7 @@ descontado, los tiempos de cocina, Negocio y el «Tu dia» de mañana
 - **El menú del día, en el orden de la comida** (0106): «¿Cuántos menús?» y **se cuentan los platos** (1 lentejas, 1 ensalada); **primeros y segundos juntos**, con el 2.º en espera; **postre o café al final**. Las bebidas que la mesa ya pidió **entran solas en el menú** si son de las suyas, una por menú. Una mesa puede tener **menú y carta a la vez**: es una sola cuenta. Cada elección va a cocina como su plato (M10).
 - **Agotado** sale en gris y no se puede tocar; con pocas raciones, **«Quedan 3»**, calculado con el escandallo, el stock y lo que ya está en cocina (3.1).
 - **«Otra ronda»**: repite lo último que pidió la mesa en dos toques. En un bar es lo que más se hace.
+- **«¿Pan para la mesa? · Pan para 4»**: un toque pone un pan por comensal ([0112](../decisiones/0112-el-pan-y-el-cafe.md)). **Nunca se pone solo**: en España el pan no se cobra si no se pide, así que se pregunta.
 - **Grupos de opciones que se reutilizan** —el refresco de las copas, la guarnición si el local la quiere preguntar; **nunca el punto** (0106)—, con mínimo, máximo, precio por canal y **su propio escandallo**: «extra de queso» gasta queso. Sin eso, el almacén miente. **Se configuran en Estook TPV**, plato a plato, sobre la carta que el TPV lee de Estook ([0092](../decisiones/0092-las-respuestas-de-m9-3.md)): cada extra sale **de los ingredientes del escandallo del plato** («doble de queso») **o de cualquier producto del almacén**, con su precio; una sustitución cambia un ingrediente por otro («pan sin gluten»); y **el extra libre**, fuera de la receta, lleva nombre y precio y **no descuenta género**, porque no se sabe qué es. El precio del plato y lo que cuesta siguen viniendo de Estook: el TPV no inventa un dato.
 - **Artículo libre**, con precio y permiso («varios, 3 €»), y siempre con su descripción, que el ticket la necesita.
 - **Productos a peso** —pescado, jamón—: se escribe el peso o lo da la balanza, y el precio sale solo.
@@ -1577,10 +1578,11 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 - **«¿Quién lo prepara?» · Cocina · Barra · Nadie (se sirve tal cual).** Decide **a qué pantalla o impresora va** al mandar: lo de la cocina, al ticket de cocina (3.2); lo de la barra, a la pantalla o la impresora de la barra; lo de «Nadie» (una botella de agua, el pan, un artículo libre), a ninguna. **Si la barra no tiene pantalla ni impresora**, lo suyo no va a ninguna parte y lo prepara el camarero, que es lo normal en un bar. Es lo que Lightspeed llama «centro de producción».
 - **«¿En qué pase sale?» · Bebidas (al momento) · 1.º · 2.º · 3.º · Postre.** Decide **qué pestaña se marca sola** al abrir la página (11.10).
 
-**Se contestan por página**, y lo hereda cada producto de la página; **un producto puede cambiarlas** (el pan, en Entrantes, es de «Nadie»). **Vienen propuestas por el nombre** de la sección, y se cambian con un toque:
+**Se contestan por página**, y lo hereda cada producto de la página; **un producto puede cambiarlas** (la gilda, en Entrantes, la saca la barra). **Vienen propuestas por el nombre** de la sección, y se cambian con un toque:
 
 | Si la sección se llama…                                                                        | Quién lo prepara | Pase    |
 | ---------------------------------------------------------------------------------------------- | ---------------- | ------- |
+| Pan, Pan y agua                                                                                | Nadie            | Bebidas |
 | Bebidas, Refrescos, Cervezas, Vinos, Cavas, Cafés, Infusiones, Copas, Cócteles, Licores, Aguas | Barra            | Bebidas |
 | Entrantes, Para picar, Tapas, Raciones, Ensaladas, Primeros, Sopas, Para compartir             | Cocina           | 1.º     |
 | Principales, Segundos, Carnes, Pescados, Arroces, Pizzas, Hamburguesas                         | Cocina           | 2.º     |
@@ -1588,6 +1590,8 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 | Cualquier otra                                                                                 | Cocina           | 1.º     |
 
 **Lo que ya estaba marcado «de bebidas»** (`es_bebida`, la 0082) pasa a «Barra» y «Bebidas» al migrar, sin que nadie toque nada, y la columna se quita (T3).
+
+**El pan, el agua y los cafés, en su página de siempre** ([0112](../decisiones/0112-el-pan-y-el-cafe.md)): **«Pan y agua»**, la primera, de «Nadie» (los sirve el camarero), y **«Cafés»**, la última, de la barra. Aunque la carta los tenga en Entrantes o en Postres, en el TPV van ahí, que es donde se buscan; se reconocen por su nombre («Pan», «Picos», «Agua con gas», «Cortado», «Té»…), y lo que se cocina no («Pan con tomate», «Tarta de café»). Si ya están en su sección («Cafés e infusiones»), se quedan en la suya.
 
 ### Al empezar: tres caminos
 

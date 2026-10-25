@@ -27,6 +27,8 @@ export interface PaginaGuardada {
   readonly quienLoPrepara: QuienLoPrepara;
   readonly pase: PaseDeLaBotonera;
   readonly seccionId: string | null;
+  /** «Pan y agua» o «Cafés» (0112); nulo, una página cualquiera. */
+  readonly deSiempre: 'pan' | 'cafes' | null;
 }
 
 export interface BotonGuardado {
@@ -66,10 +68,11 @@ export async function laBotoneraGuardada(
         quien_lo_prepara: QuienLoPrepara;
         pase: PaseDeLaBotonera;
         seccion_id: string | null;
+        de_siempre: 'pan' | 'cafes' | null;
       }[]
     >`
       select id::text as id, nombre, orden, color, quien_lo_prepara, pase,
-             seccion_id::text as seccion_id
+             seccion_id::text as seccion_id, de_siempre
         from estook.pagina_del_tpv
        where local_id = ${localId}::uuid
        order by orden, nombre
@@ -104,6 +107,7 @@ export async function laBotoneraGuardada(
       quienLoPrepara: p.quien_lo_prepara,
       pase: p.pase,
       seccionId: p.seccion_id,
+      deSiempre: p.de_siempre,
     })),
     botones: botones.map((b) => ({
       id: b.id,

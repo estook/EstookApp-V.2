@@ -885,3 +885,8 @@
      que daban de alta a alguien pedían todas su enlace desde el mismo sitio: a la undécima,
      «Desde aquí se han pedido muchos enlaces». Cada una pide ahora desde su dirección, como
      ya hacían las de crear cuenta (0109).
+223. **Un disparador que escribe donde quien lo dispara no puede, le rompe lo suyo.** Lo nuevo
+     de la carta entra solo en la botonera con un disparador. Sin su privilegio, el jefe de
+     cocina —que cambia la carta pero no los Ajustes del TPV— no habría podido ni crear un
+     plato: la base le negaba el botón, y con él el plato entero. Lo cazó la prueba que lo
+     crea como él, no la que lo crea como la gerente, que puede con todo (T3 · 1).

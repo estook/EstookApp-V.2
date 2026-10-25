@@ -5,15 +5,16 @@ import { irA } from '../navegar.ts';
 import { LaBarraDeArriba } from '../inicio/LaBarraDeArriba.tsx';
 import { LosAparatos } from './LosAparatos.tsx';
 import { PinYBloqueo } from './PinYBloqueo.tsx';
+import { Productos } from '../productos/Productos.tsx';
 
 /**
  * **Ajustes del TPV** (maquetas 11, 16 y 17; Anexo 11.13): solo lo de vender. La carta,
  * los precios y el equipo se cambian en Estook. En la caja y en la tablet de la sala,
  * con el PIN de quien puede; nunca en el móvil de nadie.
  *
- * **La sala** (T2) abre el editor del plano; **Aparatos** y **PIN y bloqueo** (T1). Los
- * productos, las impresoras, la caja, las formas de pago, los tickets y la cocina llegan con
- * su entrega: no se enseñan apagados.
+ * **La sala** (T2) abre el editor del plano; **Productos** (T3), la botonera; **Aparatos** y
+ * **PIN y bloqueo** (T1). Las impresoras, la caja, las formas de pago, los tickets y la
+ * cocina llegan con su entrega: no se enseñan apagados.
  */
 export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
   const { yo, aparato } = usarSesion();
@@ -21,6 +22,7 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
   const ajusta = puedeEditar(yo.permisos, 'accion.ajustes_del_tpv');
   const apartados = [
     ...(ajusta ? [{ id: 'sala', nombre: 'La sala' }] : []),
+    ...(ajusta ? [{ id: 'productos', nombre: 'Productos' }] : []),
     ...(vincula ? [{ id: 'aparatos', nombre: 'Aparatos' }] : []),
     ...(ajusta ? [{ id: 'pin', nombre: 'PIN y bloqueo' }] : []),
   ];
@@ -72,7 +74,9 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
             </p>
           </nav>
           <main className="flex-1 p-e4 md:p-e6">
-            {elegido === 'pin' && ajusta ? (
+            {elegido === 'productos' && ajusta ? (
+              <Productos />
+            ) : elegido === 'pin' && ajusta ? (
               <PinYBloqueo />
             ) : vincula ? (
               <LosAparatos resto={resto} />

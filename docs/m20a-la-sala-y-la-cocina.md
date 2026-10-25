@@ -8,8 +8,10 @@
 > orden y cuándo se da cada entrega por buena**. **T1 · La puerta, en producción** (24-oct, #133,
 > [0108](decisiones/0108-t1-la-puerta.md), migración 0083), y después **el PIN y la contraseña**
 > ([0109](decisiones/0109-el-pin-y-la-contrasena.md)), lo que vio Richi al probarla. **T2 · La sala,
-> construida** ([0110](decisiones/0110-t2-la-sala.md), migración 0085), en su pull request. **Lo
-> siguiente: T3 · Los productos.**
+> construida** ([0110](decisiones/0110-t2-la-sala.md), migración 0085), en su pull request (#135).
+> **T3 · Los productos va en dos**: **T3 · 1 · La botonera, construida**
+> ([0111](decisiones/0111-t3-1-la-botonera.md), migración 0086), en su pull request (#136); **lo siguiente,
+> T3 · 2 · Lo de cada producto.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -104,17 +106,49 @@ toques, contados**).
 
 **Lo que decidí al construirlo**: los quince de la [0110](decisiones/0110-t2-la-sala.md), sección 2.
 
-### T3 · Los productos, terminado cuando
+### T3 · Los productos, en dos (25-oct)
 
-- **En IKATZ**: Richi monta su botonera con «Traer toda la carta» y, en otro local de prueba, con
-  «Elegir»; crea un producto desde cero y lo ve en la carta de Estook, «sin escandallo»; monta sus
-  bebidas con «Monta tus bebidas» y vende un Havana 7 con Coca-Cola.
-- Pasan las pruebas de 11.15 de **productos y de «¿Quién lo prepara?»**, y las de 10.12 de las opciones
-  obligatorias, los grupos con su escandallo y el producto a peso.
+T3 se quedaba grande (la regla 2 de arriba), y se parte en dos ([0111](decisiones/0111-t3-1-la-botonera.md),
+punto 1): **T3 · 1, la botonera**, que decide qué se vende en el TPV y a dónde va; y **T3 · 2, lo de
+cada producto**, que se monta encima.
+
+### T3 · 1 · La botonera, terminado cuando
+
+- **En IKATZ**: Richi abre Ajustes del TPV › Productos y ve su carta ya puesta («Traer toda la
+  carta», lo que hizo la migración); cambia «¿Quién lo prepara?» de una página y de un botón (el pan,
+  de «Nadie»), crea un producto desde cero y lo ve en la carta de Estook, «sin escandallo»; y pide con
+  «Lo más pedido».
+- Pasan las pruebas de 11.15 de **productos y de «¿Quién lo prepara?»**.
 - **Lo que estaba «de bebidas» va a la barra sin que nadie toque nada**, y «Es de bebidas» ya no está
   en Estook.
 - **Lo de la base**: `pagina_del_tpv`, `boton_del_tpv` y lo de `local` (Anexo 7.2); `es_bebida` pasa a
   ellas y se quita.
+
+### T3 · 1 · La botonera, entregada (25-oct-2026)
+
+**Lo que hay** ([0111](decisiones/0111-t3-1-la-botonera.md), migración 0086): **Ajustes del TPV ›
+Productos** con los tres caminos, las páginas con sus dos preguntas propuestas por el nombre, su
+color y su orden, los botones con lo suyo, «Nuevos en la carta», «Lo nuevo entra solo» y «Nuevo
+producto»; y **al pedir**, la botonera por páginas con «Lo más pedido» la primera, cada botón a quien
+lo prepara. «Es de bebidas» ya no está en Estook.
+
+**Las pruebas**: `botonera.prueba.ts` (el dominio), `losPases.prueba.ts`, `la-botonera.prueba.ts`
+(contra la base: las de 11.15 de productos y de «¿Quién lo prepara?», lo nuevo que entra solo aunque
+lo ponga un jefe de cocina, y la migración de lo que estaba «de bebidas») y `la-botonera.spec.ts`
+(montarla en el TPV y pedir con ella).
+
+**Lo que decidí al construirlo**: los quince de la [0111](decisiones/0111-t3-1-la-botonera.md),
+sección 2.
+
+### T3 · 2 · Lo de cada producto, terminado cuando
+
+- **En IKATZ**: Richi monta sus bebidas con «Monta tus bebidas» y vende un Havana 7 con Coca-Cola; pone
+  un extra de queso a una hamburguesa y lo ve descontar queso; vende jamón a peso; cambia un precio
+  desde el TPV y lo ve en la carta de Estook.
+- Pasan las pruebas de 10.12 de **las opciones obligatorias, los grupos con su escandallo y el producto
+  a peso**.
+- **Lo de la base**: los grupos de opciones con su mínimo, su máximo, su precio por canal y su
+  escandallo (Anexo 7.2 y 10.3).
 
 ### T4 a T7
 

@@ -3,7 +3,14 @@
  * Si allí cambia algo, aquí también: la prueba de pantalla lo dice antes que nadie.
  */
 
-import type { CosaDeLaSala, FormaDeMesa } from '@estook/dominio';
+import type {
+  CaminoDeLaBotonera,
+  ColorDeLaBotonera,
+  CosaDeLaSala,
+  FormaDeMesa,
+  PaseDeLaBotonera,
+  QuienLoPrepara,
+} from '@estook/dominio';
 
 export type LoSiguiente =
   | { readonly que: 'pedir' }
@@ -131,12 +138,19 @@ export interface PlatoDeLaSala {
   readonly miniatura: string | null;
   readonly agotado: boolean;
   readonly alergenos: readonly string[];
+  /** Lo que vale en su botón: lo suyo, o lo de su página (T3, Anexo 11.11). */
+  readonly quienLoPrepara: QuienLoPrepara;
+  readonly pase: PaseDeLaBotonera;
+  readonly color: ColorDeLaBotonera | null;
 }
 
-export interface SeccionDeLaSala {
-  readonly id: string | null;
+/** Una página de la botonera; sin montar, una sección de la carta (T3). */
+export interface PaginaDeLaSala {
+  readonly id: string;
   readonly nombre: string;
-  readonly esBebida: boolean;
+  readonly color: ColorDeLaBotonera | null;
+  /** Qué pestaña se marca sola al abrirla (Anexo 11.10). */
+  readonly pase: PaseDeLaBotonera;
   readonly platos: readonly PlatoDeLaSala[];
 }
 
@@ -165,8 +179,55 @@ export interface MenuDeLaSala {
 
 export interface LaCartaDeLaSala {
   readonly hoy: string;
-  readonly secciones: readonly SeccionDeLaSala[];
+  /** Si la botonera está montada; sin montar, una página por sección de la carta. */
+  readonly montada: boolean;
+  readonly paginas: readonly PaginaDeLaSala[];
+  /** Lo fijado y lo más vendido a esta hora en cuatro semanas (Anexo 11.10). */
+  readonly loMasPedido: readonly PlatoDeLaSala[];
   readonly menus: readonly MenuDeLaSala[];
+}
+
+// ── T3 · La botonera (0111): Ajustes del TPV › Productos (`consultas/botonera.ts`) ──
+
+export interface PlatoParaLaBotonera {
+  readonly id: string;
+  readonly nombre: string;
+  readonly precioCentimos: number | null;
+  readonly miniatura: string | null;
+  readonly agotado: boolean;
+}
+
+export interface BotonDeLaBotonera extends PlatoParaLaBotonera {
+  readonly botonId: string;
+  readonly platoId: string;
+  readonly color: ColorDeLaBotonera | null;
+  /** Nulos: los de su página. */
+  readonly quienLoPrepara: QuienLoPrepara | null;
+  readonly pase: PaseDeLaBotonera | null;
+  readonly fijado: boolean;
+}
+
+export interface PaginaDeLaBotonera {
+  readonly id: string;
+  readonly nombre: string;
+  readonly color: ColorDeLaBotonera | null;
+  readonly quienLoPrepara: QuienLoPrepara;
+  readonly pase: PaseDeLaBotonera;
+  readonly deLaSeccion: string | null;
+  readonly botones: readonly BotonDeLaBotonera[];
+}
+
+export interface LaBotonera {
+  readonly camino: CaminoDeLaBotonera | null;
+  readonly entraSolo: boolean;
+  readonly paginas: readonly PaginaDeLaBotonera[];
+  readonly nuevosEnLaCarta: readonly (PlatoParaLaBotonera & { readonly seccion: string | null })[];
+  readonly carta: readonly {
+    readonly id: string | null;
+    readonly nombre: string;
+    readonly platos: readonly PlatoParaLaBotonera[];
+  }[];
+  readonly puedeCrearProductos: boolean;
 }
 
 // ── T1 · La puerta (0107): el aparato y quién lo usa (`comandos/aparatos.ts`) ──

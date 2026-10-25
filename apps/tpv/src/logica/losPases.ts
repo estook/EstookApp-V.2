@@ -1,3 +1,4 @@
+import type { PaseDeLaBotonera } from '@estook/dominio';
 import type { LaMesa } from '../datos/tipos.ts';
 
 /**
@@ -35,27 +36,14 @@ export function elNombreDeLaPestana(pestana: PestanaDelPase): string {
   return `${String(pestana)}.º`;
 }
 
-const SON_DEL_1 =
-  /entrant|primer|compartir|tapa|racion|ración|ensalad|aperitiv|para picar|picoteo|sopa|crema/i;
-const SON_DEL_2 =
-  /principal|segund|carne|pescado|arroz|plato fuerte|parrilla|brasa|hamburgues|pasta|pizza/i;
-const SON_DEL_POSTRE = /postre|dulce|tarta|helado|caf[eé]|sobremesa/i;
-
 /**
- * **La pestaña que se marca sola al abrir una página de la carta** (Anexo 11.10). Hasta
- * T3, en que cada página dice «¿En qué pase sale?», se propone por el nombre de su sección
- * (Entrantes → 1.º, Principales → 2.º, Postres → Postre; las de bebidas, Bebidas). Si el
- * nombre no dice nada, no se cambia: manda lo que marcó el camarero.
+ * **La pestaña que se marca sola al abrir una página de la botonera** (Anexo 11.10): la de
+ * su «¿En qué pase sale?» (T3, 11.11). Entrantes, el 1.º; Principales, el 2.º; Bebidas,
+ * Bebidas.
  */
-export function laPestanaDeLaSeccion(seccion: {
-  readonly nombre: string;
-  readonly esBebida: boolean;
-}): PestanaDelPase | null {
-  if (seccion.esBebida) return 'bebidas';
-  if (SON_DEL_POSTRE.test(seccion.nombre)) return 'postre';
-  if (SON_DEL_1.test(seccion.nombre)) return 1;
-  if (SON_DEL_2.test(seccion.nombre)) return 2;
-  return null;
+export function laPestanaDeLaPagina(pase: PaseDeLaBotonera): PestanaDelPase {
+  if (pase === 'bebidas' || pase === 'postre') return pase;
+  return Number(pase) as 1 | 2 | 3;
 }
 
 export type ComoVaLaPestana = 'salio' | 'en_marcha' | 'en_espera' | null;

@@ -95,6 +95,11 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
 
   // ── Ajustes del TPV › Aparatos › Añadir: la tablet de la sala ──
   await page.getByRole('button', { name: /^Ajustes del TPV/ }).click();
+  // Ajustes abre en Productos (T3 · 1), el primero después de La sala.
+  await page
+    .getByRole('navigation', { name: 'Ajustes del TPV' })
+    .getByRole('button', { name: 'Aparatos' })
+    .click();
   await expect(page.getByRole('button', { name: /Caja 1 · este aparato/ })).toBeVisible();
   await page.getByRole('button', { name: 'Añadir aparato' }).click();
   await page.getByRole('radio', { name: /^Comandero/ }).click();

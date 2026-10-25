@@ -712,6 +712,11 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // **Y la 0085 (T2 · La sala) añade una: `han_fichado_la_salida`.** El plano dice «Ana
     // ha fichado la salida» en sus mesas, y una camarera no puede leer los fichajes de los
     // demás. Solo los ids, de un local que quien pregunta ve. Son sesenta y cinco.
+    //
+    // **Y la 0086 (T3 · 1 · La botonera) añade una: `el_plato_entra_en_la_botonera`.** Lo
+    // nuevo de la carta entra solo en su página del TPV, y lo pone quien toca la carta: un
+    // jefe de cocina, que no tiene los Ajustes del TPV. Es un disparador: no se llama a mano.
+    // Son sesenta y seis.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -743,6 +748,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'cuentas_con_fogon',
       'dar_de_alta_persona',
       'direccion_libre_para_la_carta',
+      'el_plato_entra_en_la_botonera',
       'el_uso_de',
       'es_admin_o_el_sistema',
       'esta_en_linea',

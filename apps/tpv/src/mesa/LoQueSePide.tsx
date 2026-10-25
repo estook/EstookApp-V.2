@@ -1,24 +1,30 @@
 import { useMemo, useState } from 'react';
-import { Cargando, EstadoVacio, filtrarPorParecido } from '@estook/ui';
-import type { LaCartaDeLaSala, LaMesa, PlatoDeLaSala, SeccionDeLaSala } from '../datos/tipos.ts';
+import { elDestinoDeLaLinea } from '@estook/dominio';
+import { puedeEditar } from '@estook/permisos';
+import { Boton, Cargando, EstadoVacio, filtrarPorParecido } from '@estook/ui';
+import type { LaCartaDeLaSala, LaMesa, PaginaDeLaSala, PlatoDeLaSala } from '../datos/tipos.ts';
 import { anadirPlato, type Borrador } from '../logica/comanda.ts';
 import { elPaseDeFabrica } from '../logica/laCuenta.ts';
-import { elNumeroDelPase, laPestanaDeLaSeccion, type PestanaDelPase } from '../logica/losPases.ts';
+import { elNumeroDelPase, laPestanaDeLaPagina, type PestanaDelPase } from '../logica/losPases.ts';
 import { euros } from '../logica/texto.ts';
+import { irA } from '../navegar.ts';
+import { COMO_SE_VE_EL_COLOR } from '../productos/colores.ts';
+import { usarSesion } from '../sesion/Sesion.tsx';
 import { ElMenuDelDia } from './ElMenuDelDia.tsx';
 
 /**
- * **Lo que se pide** (T2, maqueta 9; Anexo 11.10): la carta **por páginas, una por
- * sección** (hasta que T3 traiga la botonera), y la página **Menú** los días que hay
- * menú. Cada plato es un botón con su nombre entero, su precio y su foto; **agotado**, en
- * gris y sin tocar.
+ * **Lo que se pide** (T3, maqueta 9; Anexo 11.10 y 11.11): **la botonera por páginas**, con
+ * **«Lo más pedido» la primera** (lo fijado y lo más vendido a esta hora), el buscador que
+ * tolera erratas y la página **Menú** los días que hay menú. Cada producto es un botón con
+ * su nombre entero, su precio, su color y su foto; **agotado**, en gris y sin tocar.
  *
- * **Lo que se toca va al pase marcado** en las pestañas de encima de la cuenta; **al
- * cambiar de página se marca solo el de esa página** (Entrantes, el 1.º; Principales, el
- * 2.º; las bebidas, Bebidas). Lo de beber va siempre a la barra, sin pase.
+ * **Lo que se toca va al pase marcado** en las pestañas de encima de la cuenta, y **al
+ * cambiar de página se marca solo el de esa página** («¿En qué pase sale?»). Cada botón va
+ * a quien lo prepara: la cocina, la barra o nadie.
  */
 
 const MENU = 'menu';
+const LO_MAS_PEDIDO = 'mas-pedido';
 
 export function LoQueSePide({
   carta,
@@ -37,50 +43,59 @@ export function LoQueSePide({
   readonly marcada: PestanaDelPase;
   readonly alMarcar: (p: PestanaDelPase) => void;
 }) {
-  const secciones = useMemo(() => carta?.secciones ?? [], [carta]);
+  const { yo } = usarSesion();
+  const paginas = useMemo(() => carta?.paginas ?? [], [carta]);
+  const masPedido = carta?.loMasPedido ?? [];
   const menus = carta?.menus ?? [];
   const [pagina, setPagina] = useState<string | null>(null);
   const [buscando, setBuscando] = useState('');
 
-  const clave = (s: SeccionDeLaSala) => s.id ?? 'sin-seccion';
-  // Sin elegir todavía, la página del pase marcado: en una mesa recién abierta, las bebidas.
+  // Sin elegir todavía, la página del pase marcado (en una mesa recién abierta, la de las
+  // bebidas); si no hay, «Lo más pedido»; si no, la primera.
   const deFabrica =
-    secciones.find((s) => laPestanaDeLaSeccion(s) === marcada) ??
-    secciones.find((s) => !s.esBebida) ??
-    secciones[0];
-  const laDeAhora =
-    pagina === MENU && menus.length > 0
+    paginas.find((g) => laPestanaDeLaPagina(g.pase) === marcada)?.id ??
+    (masPedido.length > 0 ? LO_MAS_PEDIDO : paginas[0]?.id);
+  const elegida = pagina ?? deFabrica;
+  const laDeAhora: PaginaDeLaSala | typeof MENU | typeof LO_MAS_PEDIDO | undefined =
+    elegida === MENU && menus.length > 0
       ? MENU
-      : (secciones.find((s) => clave(s) === pagina) ?? deFabrica);
+      : elegida === LO_MAS_PEDIDO && masPedido.length > 0
+        ? LO_MAS_PEDIDO
+        : (paginas.find((g) => g.id === elegida) ?? paginas[0]);
 
-  function abrir(cual: SeccionDeLaSala | typeof MENU) {
+  function abrir(cual: PaginaDeLaSala | typeof MENU | typeof LO_MAS_PEDIDO) {
     setBuscando('');
-    if (cual === MENU) {
-      setPagina(MENU);
+    if (cual === MENU || cual === LO_MAS_PEDIDO) {
+      setPagina(cual);
       return;
     }
-    setPagina(clave(cual));
+    setPagina(cual.id);
     // **Se marca solo el pase de esa página**, en una mesa por pases.
-    const suya = laPestanaDeLaSeccion(cual);
-    if (suya !== null && mesa.porPases) alMarcar(suya);
+    if (mesa.porPases) alMarcar(laPestanaDeLaPagina(cual.pase));
   }
 
-  const encontradas = useMemo<readonly (PlatoDeLaSala & { readonly esBebida: boolean })[]>(() => {
+  const encontradas = useMemo<readonly PlatoDeLaSala[]>(() => {
     const texto = buscando.trim();
     if (texto === '') return [];
-    const todos = secciones.flatMap((s) => s.platos.map((p) => ({ ...p, esBebida: s.esBebida })));
+    const vistos = new Set<string>();
+    const todos = paginas
+      .flatMap((g) => g.platos)
+      .filter((p) => (vistos.has(p.id) ? false : (vistos.add(p.id), true)));
     return filtrarPorParecido(todos, texto, (p) => p.nombre);
-  }, [buscando, secciones]);
+  }, [buscando, paginas]);
 
-  function pedir(plato: PlatoDeLaSala, esBebida: boolean) {
-    const pase = esBebida
-      ? null
-      : mesa.porPases
-        ? (elNumeroDelPase(marcada) ?? elPaseDeFabrica(mesa, borrador))
-        : 1;
-    alCambiarElBorrador(
-      anadirPlato(borrador, plato, { destino: esBebida ? 'barra' : 'cocina', pase }),
-    );
+  function pedir(plato: PlatoDeLaSala) {
+    const destino = elDestinoDeLaLinea(plato.quienLoPrepara);
+    // Lo de la cocina, al pase marcado; con «Bebidas» marcada, al suyo (el de su página).
+    const pase =
+      destino !== 'cocina'
+        ? null
+        : !mesa.porPases
+          ? 1
+          : (elNumeroDelPase(marcada) ??
+            elNumeroDelPase(laPestanaDeLaPagina(plato.pase)) ??
+            elPaseDeFabrica(mesa, borrador));
+    alCambiarElBorrador(anadirPlato(borrador, plato, { destino, pase }));
   }
 
   const cuantos = (p: PlatoDeLaSala) =>
@@ -88,30 +103,44 @@ export function LoQueSePide({
       .filter((l) => l.platoId === p.id && l.parteDe === null)
       .reduce((n, l) => n + l.cantidad, 0);
 
+  const sinNada = paginas.length === 0;
+  const montaLaBotonera = puedeEditar(yo.permisos, 'accion.ajustes_del_tpv');
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Las páginas, y el buscador que tolera erratas. */}
       <div className="flex flex-wrap items-center gap-e2 border-b border-borde bg-superficie px-e3 py-e2">
         <nav
-          aria-label="Las páginas de la carta"
+          aria-label="Las páginas de la botonera"
           className="flex min-w-0 flex-1 gap-e1 overflow-x-auto"
         >
-          {secciones.map((s) => (
+          {masPedido.length > 0 && (
             <BotonDePagina
-              key={clave(s)}
-              puesta={
-                laDeAhora !== MENU && laDeAhora !== undefined && clave(laDeAhora) === clave(s)
-              }
+              puesta={laDeAhora === LO_MAS_PEDIDO}
+              color={null}
               onClick={() => {
-                abrir(s);
+                abrir(LO_MAS_PEDIDO);
               }}
             >
-              {s.nombre}
+              Lo más pedido
+            </BotonDePagina>
+          )}
+          {paginas.map((g) => (
+            <BotonDePagina
+              key={g.id}
+              puesta={typeof laDeAhora === 'object' && laDeAhora.id === g.id}
+              color={g.color}
+              onClick={() => {
+                abrir(g);
+              }}
+            >
+              {g.nombre}
             </BotonDePagina>
           ))}
           {menus.length > 0 && (
             <BotonDePagina
               puesta={laDeAhora === MENU}
+              color={null}
               onClick={() => {
                 abrir(MENU);
               }}
@@ -122,7 +151,7 @@ export function LoQueSePide({
         </nav>
         <input
           type="search"
-          aria-label="Buscar un plato"
+          aria-label="Buscar un producto"
           placeholder="Buscar"
           value={buscando}
           onChange={(e) => {
@@ -134,7 +163,7 @@ export function LoQueSePide({
 
       {cargando ? (
         <div className="p-e6">
-          <Cargando que="la carta" />
+          <Cargando que="los productos" />
         </div>
       ) : buscando.trim() !== '' ? (
         <div className="min-h-0 flex-1 overflow-y-auto p-e3">
@@ -143,13 +172,7 @@ export function LoQueSePide({
               Nada se parece a «{buscando.trim()}».
             </p>
           ) : (
-            <LosPlatos
-              platos={encontradas}
-              cuantos={cuantos}
-              alPedir={(p) => {
-                pedir(p, p.esBebida);
-              }}
-            />
+            <LosProductos platos={encontradas} cuantos={cuantos} alPedir={pedir} />
           )}
         </div>
       ) : laDeAhora === MENU ? (
@@ -159,25 +182,46 @@ export function LoQueSePide({
           borrador={borrador}
           alCambiarElBorrador={alCambiarElBorrador}
         />
-      ) : laDeAhora === undefined ? (
+      ) : laDeAhora === LO_MAS_PEDIDO ? (
+        <div className="min-h-0 flex-1 overflow-y-auto p-e3">
+          <LosProductos platos={masPedido} cuantos={cuantos} alPedir={pedir} />
+        </div>
+      ) : sinNada || laDeAhora === undefined ? (
         <div className="p-e3">
-          <EstadoVacio
-            compacto
-            titulo="La carta está vacía"
-            frase="Pon tus platos con su precio en Estook › Carta y saldrán aquí, una página por sección."
-            dibujo="platos"
-            sinAccionPorque="La carta se cambia en Estook, no en la sala."
-          />
+          {carta?.montada === true ? (
+            <EstadoVacio
+              compacto
+              titulo="Aún no hay botones"
+              frase="Pon lo que se vende aquí en Ajustes del TPV › Productos: toda la carta, lo que elijas o productos nuevos."
+              dibujo="platos"
+              {...(montaLaBotonera
+                ? {
+                    accion: (
+                      <Boton
+                        tono="principal"
+                        onClick={() => {
+                          irA('ajustes/productos');
+                        }}
+                      >
+                        Montar los botones
+                      </Boton>
+                    ),
+                  }
+                : { sinAccionPorque: 'Los botones los monta quien lleva el local.' })}
+            />
+          ) : (
+            <EstadoVacio
+              compacto
+              titulo="La carta está vacía"
+              frase="Pon tus platos con su precio en Estook › Carta y saldrán aquí, una página por sección."
+              dibujo="platos"
+              sinAccionPorque="La carta se cambia en Estook, no en la sala."
+            />
+          )}
         </div>
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto p-e3">
-          <LosPlatos
-            platos={laDeAhora.platos}
-            cuantos={cuantos}
-            alPedir={(p) => {
-              pedir(p, laDeAhora.esBebida);
-            }}
-          />
+          <LosProductos platos={laDeAhora.platos} cuantos={cuantos} alPedir={pedir} />
         </div>
       )}
     </div>
@@ -186,10 +230,12 @@ export function LoQueSePide({
 
 function BotonDePagina({
   puesta,
+  color,
   onClick,
   children,
 }: {
   readonly puesta: boolean;
+  readonly color: PaginaDeLaSala['color'];
   readonly onClick: () => void;
   readonly children: React.ReactNode;
 }) {
@@ -199,28 +245,34 @@ function BotonDePagina({
       aria-pressed={puesta}
       onClick={onClick}
       className={[
-        'min-h-toque shrink-0 rounded-redondo px-e4 font-semibold',
+        'flex min-h-toque shrink-0 items-center gap-e2 rounded-redondo px-e4 font-semibold',
         puesta ? 'bg-charcoal font-bold' : 'bg-fondo text-texto-suave',
       ].join(' ')}
     >
+      {color !== null && (
+        <span
+          aria-hidden="true"
+          className={`size-[0.6rem] shrink-0 rounded-redondo ${COMO_SE_VE_EL_COLOR[color].punto}`}
+        />
+      )}
       {children}
     </button>
   );
 }
 
-function LosPlatos<P extends PlatoDeLaSala>({
+function LosProductos({
   platos,
   cuantos,
   alPedir,
 }: {
-  readonly platos: readonly P[];
-  readonly cuantos: (p: P) => number;
-  readonly alPedir: (p: P) => void;
+  readonly platos: readonly PlatoDeLaSala[];
+  readonly cuantos: (p: PlatoDeLaSala) => number;
+  readonly alPedir: (p: PlatoDeLaSala) => void;
 }) {
   return (
     <div className="grid grid-cols-2 gap-e2 lg:grid-cols-3 xl:grid-cols-4">
       {platos.map((p) => (
-        <Plato
+        <Producto
           key={p.id}
           plato={p}
           cuantos={cuantos(p)}
@@ -233,7 +285,7 @@ function LosPlatos<P extends PlatoDeLaSala>({
   );
 }
 
-function Plato({
+function Producto({
   plato,
   cuantos,
   alPedir,
@@ -251,6 +303,7 @@ function Plato({
       className={[
         'relative flex min-h-[4.5rem] items-stretch gap-e2 overflow-hidden rounded-grande border bg-superficie text-left transition-transform active:scale-[0.98] sm:min-h-[5.5rem]',
         cuantos > 0 ? 'border-naranja' : 'border-borde',
+        plato.color === null ? '' : `border-l-[6px] ${COMO_SE_VE_EL_COLOR[plato.color].franja}`,
         plato.agotado ? 'opacity-50' : '',
       ].join(' ')}
     >

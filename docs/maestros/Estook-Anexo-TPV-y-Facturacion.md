@@ -840,9 +840,9 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 - `alergeno_de_la_cuenta` — cuenta, alérgeno, quién lo marcó y cuándo
 - `linea_de_cuenta` — plato, cantidad, **precio y tipo de impuesto congelados**, modificadores elegidos (cada uno con su precio y su escandallo), nota, **comensal** (número o nulo, solo al dividir), **tanda** (el pase: 1.º, 2.º), **salió en y quién la tachó** (0106), estado (`pedida`, `en_cocina`, `salio`, `servida`, `quitada`), y autor, motivo y aprobación si se quita. **Su identificador también nace en el aparato**, y a una cuenta **se le añaden líneas, nunca se sobreescriben**
 - `traspaso_de_cuenta` — cuenta, de quién, a quién, cuándo, quién lo hizo
-- `pagina_del_tpv` — la página de la botonera (11.11): local, nombre, orden, color, **quién lo prepara** (`cocina`, `barra`, `nadie`) y **en qué pase sale** (`bebidas`, `1`, `2`, `3`, `postre`)
-- `boton_del_tpv` — página, **el plato de la carta al que apunta** (no una copia), orden, color, y quién lo prepara o el pase **solo si cambian** los de su página
-- En `local`: cómo se montó la botonera y **si lo nuevo de la carta entra solo** (11.11). `es_bebida` de la 0082 **se quita** al pasar a quién lo prepara y al pase
+- `pagina_del_tpv` — la página de la botonera (11.11): local, nombre, orden, color, **quién lo prepara** (`cocina`, `barra`, `nadie`), **en qué pase sale** (`bebidas`, `1`, `2`, `3`, `postre`) y **la sección de la carta de la que vino**, si vino de una (lo nuevo de esa sección entra aquí)
+- `boton_del_tpv` — página, **el plato de la carta al que apunta** (no una copia), orden, color, quién lo prepara o el pase **solo si cambian** los de su página, y si está **fijado en «Lo más pedido»**
+- En `local`: cómo se montó la botonera (`botonera_camino`: toda la carta, elegir, de cero; nulo, sin montar) y **si lo nuevo de la carta entra solo** (`botonera_entra_solo`), que lo hace un disparador de la base. `es_bebida` de la 0082 **se quitó** al pasar a quién lo prepara y al pase (T3 · 1, migración 0086, [0111](../decisiones/0111-t3-1-la-botonera.md))
 
 **Si un día vuelve `partida`**, se copia en la línea y no se lee del plato: si mañana el plato cambia de partida, la comanda de ayer tiene que seguir contando lo que pasó de verdad. Es la misma regla que congela el precio y el coste.
 
@@ -1591,7 +1591,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 ### Al empezar: tres caminos
 
-La primera vez que se abre Ajustes del TPV › **Productos** (o en la puesta en marcha, 10.11):
+**Mientras no se elige, el TPV vende la carta entera**, una página por sección, con lo que propone su nombre: el primer día no hay que montar nada. La primera vez que se abre Ajustes del TPV › **Productos** (o en la puesta en marcha, 10.11):
 
 ```
 ¿Cómo quieres montar los botones del TPV?
@@ -1602,7 +1602,7 @@ La primera vez que se abre Ajustes del TPV › **Productos** (o en la puesta en 
 
 1. **Traer toda la carta** (recomendado si la carta ya está en Estook): cada sección, una página con su nombre, en el orden de la carta, con las dos preguntas propuestas. **Lo que se añade a la carta después entra solo** en su página.
 2. **Elegir lo que se vende aquí**: la carta entera, sección a sección, con una casilla por plato y **«Todos»** en cada sección. Lo marcado se coloca en su página. **Lo nuevo de la carta no entra solo**: sale en Productos como **«Nuevos en la carta · 3»**, con «Añadir» de un toque (es el «eligiéndolos, no que se añadan directamente» de Richi).
-3. **Empezar de cero**: páginas vacías, y **«Nuevo producto»**: nombre, precio, página y quién lo prepara; **el IVA se propone** (10 % en hostelería, el de la carta para su canal) y se cambia. **Se crea a la vez en la carta de Estook**, en la sección del mismo nombre que la página (se crea si no existe), **marcado «sin escandallo»** para completarlo allí cuando se quiera (0095). Sin eso, el almacén no podría descontarlo.
+3. **Empezar de cero**: páginas vacías, y **«Nuevo producto»**: nombre, precio, página y quién lo prepara; **el IVA, el de la actividad** (el 10 % de la hostelería), como todo lo de la carta: el plato guardará el suyo con el cobro (T7 · M20C, [0111](../decisiones/0111-t3-1-la-botonera.md), punto 11). **Se crea a la vez en la carta de Estook**, en la sección del mismo nombre que la página (se crea si no existe), **marcado «sin escandallo»** para completarlo allí cuando se quiera (0095). Sin eso, el almacén no podría descontarlo.
 
 **Se puede cambiar de camino cuando se quiera**: «Traer lo que falta de la carta» o «Que lo nuevo entre solo: sí/no» están en Productos.
 

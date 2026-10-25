@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Maquetas de T3 · 2</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --fondo: #0f1719;
+        --barra: #111c1f;
+        --tarjeta: #18252a;
+        --marcado: #22343a;
+        --borde: #2c4047;
+        --texto: #f1efea;
+        --suave: #9fb0b3;
+        --naranja: #ff7a00;
+        --verde: #4ec98a;
+        --ambar: #f0ae4e;
+        --azul: #6fb7e8;
+        --rojo: #f0796c;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      a {
+        color: #ff9a3d;
+      }
+      body {
+        margin: 0;
+        background: #0b1113;
+        color: var(--texto);
+        font-family: Montserrat, system-ui, sans-serif;
+        padding: 24px 16px 60px;
+      }
+      h1 {
+        font-size: 26px;
+        margin: 0 0 6px;
+      }
+      .intro {
+        color: var(--suave);
+        max-width: 900px;
+        line-height: 1.5;
+        margin: 0 0 28px;
+      }
+      .maqueta {
+        max-width: 1180px;
+        margin: 0 auto 40px;
+      }
+      .rotulo {
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--naranja);
+        margin: 0 0 4px;
+      }
+      .titulo {
+        font-size: 20px;
+        font-weight: 800;
+        margin: 0 0 6px;
+      }
+      .porque {
+        color: var(--suave);
+        margin: 0 0 12px;
+        line-height: 1.5;
+        max-width: 900px;
+      }
+      .pantalla {
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: 18px;
+        overflow: hidden;
+      }
+      .cab {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 22px;
+        background: var(--barra);
+        border-bottom: 1px solid var(--marcado);
+        flex-wrap: wrap;
+      }
+      .cab b {
+        font-size: 18px;
+      }
+      .chip {
+        background: var(--marcado);
+        border-radius: 999px;
+        padding: 3px 12px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .cuerpo {
+        padding: 20px 22px;
+        display: grid;
+        gap: 14px;
+      }
+      .dos {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 18px;
+      }
+      @media (max-width: 860px) {
+        .dos {
+          grid-template-columns: 1fr;
+        }
+      }
+      .tarj {
+        background: var(--tarjeta);
+        border-radius: 16px;
+        padding: 16px;
+      }
+      .fila {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--marcado);
+      }
+      .fila:last-child {
+        border-bottom: 0;
+      }
+      .nombre {
+        font-weight: 700;
+        flex: 1 1 180px;
+        min-width: 0;
+      }
+      .peq {
+        color: var(--suave);
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .op {
+        border: 2px solid var(--borde);
+        border-radius: 12px;
+        padding: 8px 14px;
+        font-weight: 700;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      .op.si {
+        background: var(--texto);
+        color: var(--fondo);
+        border-color: var(--texto);
+      }
+      .precio {
+        color: var(--texto);
+        font-family: inherit;
+        font-size: 15px;
+        border: 1px solid var(--borde);
+        background: var(--fondo);
+        border-radius: 10px;
+        padding: 8px 12px;
+        width: 92px;
+        text-align: right;
+        font-weight: 700;
+      }
+      .boton {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 14px;
+        padding: 12px 20px;
+        font-weight: 700;
+        border: 2px solid var(--borde);
+      }
+      .boton.principal {
+        background: var(--naranja);
+        color: #1b1208;
+        border-color: var(--naranja);
+      }
+      .preg {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--suave);
+        margin: 6px 0 6px;
+      }
+      .grupo {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .aviso {
+        border: 2px solid var(--ambar);
+        background: #2a2212;
+        border-radius: 14px;
+        padding: 12px 14px;
+      }
+      .bien {
+        color: var(--verde);
+        font-weight: 700;
+      }
+      .rojo {
+        color: var(--rojo);
+        font-weight: 700;
+      }
+      .hoja {
+        background: var(--tarjeta);
+        border-radius: 20px 20px 0 0;
+        border: 1px solid var(--borde);
+        padding: 18px;
+        max-width: 520px;
+        margin: 0 auto;
+      }
+      .boton-tpv {
+        background: var(--tarjeta);
+        border: 1px solid var(--borde);
+        border-radius: 14px;
+        padding: 12px;
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+      }
+      .rejilla {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 8px;
+      }
+      .cuenta {
+        background: var(--barra);
+        border-radius: 16px;
+        padding: 14px;
+      }
+      .linea {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 6px 0;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+      }
+      .preguntas {
+        max-width: 900px;
+        margin: 0 auto;
+        background: #141e21;
+        border: 2px solid var(--naranja);
+        border-radius: 18px;
+        padding: 20px 22px;
+        line-height: 1.55;
+      }
+      .preguntas h2 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+      .preguntas li {
+        margin: 0 0 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="maqueta">
+      <h1>T3 · 2 · Lo de cada producto — maquetas para que las mires</h1>
+      <p class="intro">
+        Antes de construir, como dice el plan: son las pantallas que faltan. Todo se monta en
+        <b>Ajustes del TPV › Productos</b>, en la caja o en la tablet, y lo que guarda es lo de
+        siempre: el plato en tu carta de Estook y su escandallo, así que
+        <b>el almacén descuenta solo</b>. Ni una pantalla nueva en Estook. Abajo del todo, lo que
+        necesito que me digas.
+      </p>
+    </div>
+
+    <!-- 1 · Monta tus bebidas -->
+    <div class="maqueta">
+      <p class="rotulo">1 · Monta tus bebidas</p>
+      <p class="titulo">Las bebidas del almacén, con su precio, de una vez</p>
+      <p class="porque">
+        Coge lo que hay en el almacén como bebida, propone en qué página va y cómo se vende, y tú
+        solo pones el precio. Lo que ya está en la carta sale marcado y no se repite.
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <b>Monta tus bebidas</b><span class="chip">32 bebidas en tu almacén</span
+          ><span class="peq">· 9 ya están en el TPV</span
+          ><span style="margin-left: auto" class="op si">Solo lo que falta</span
+          ><input
+            class="precio"
+            style="width: 200px; text-align: left"
+            value="Buscar: «mahou», «rioja»…"
+          />
+        </div>
+        <div class="cuerpo">
+          <div class="tarj">
+            <div
+              class="preg"
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+              "
+            >
+              <span>Refrescos · van a «Refrescos»</span
+              ><span class="op">Mismo precio a todas: 2,50</span>
+            </div>
+            <div class="fila">
+              <span class="nombre">Coca-Cola lata 33 cl <span class="peq">· entera</span></span
+              ><span class="op si">Se vende</span><input class="precio" value="2,50" />
+            </div>
+            <div class="fila">
+              <span class="nombre">Coca-Cola Zero lata 33 cl <span class="peq">· entera</span></span
+              ><span class="op si">Se vende</span><input class="precio" value="2,50" />
+            </div>
+            <div class="fila">
+              <span class="nombre"
+                >Tónica Schweppes 20 cl
+                <span class="peq">· entera · también para las copas</span></span
+              ><span class="op si">Se vende</span><input class="precio" value="2,20" />
+            </div>
+          </div>
+          <div class="tarj">
+            <div class="preg">Cervezas · van a «Cervezas»</div>
+            <div class="fila">
+              <span class="nombre">Barril Mahou 30 l <span class="peq">· a raciones</span></span>
+              <span class="op si">Caña 200 ml</span><input class="precio" value="1,80" />
+              <span class="op si">Doble 330 ml</span><input class="precio" value="2,60" />
+              <span class="op">+ Jarra 500 ml</span>
+            </div>
+            <div class="fila">
+              <span class="nombre">Mahou tercio <span class="peq">· entera</span></span
+              ><span class="op si">Se vende</span><input class="precio" value="2,80" />
+            </div>
+          </div>
+          <div class="tarj">
+            <div class="preg">Vinos · van a «Vinos»</div>
+            <div class="fila">
+              <span class="nombre">Rioja crianza 75 cl <span class="peq">· a raciones</span></span>
+              <span class="op si">Copa 150 ml</span><input class="precio" value="3,50" />
+              <span class="op si">Botella</span><input class="precio" value="18,00" />
+            </div>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 12px;
+              flex-wrap: wrap;
+            "
+          >
+            <span class="peq"
+              >La copa de vino, de 150 ml; la caña, de 200 ml. Se cambia una vez para todo el
+              local.</span
+            >
+            <span style="display: flex; gap: 8px; flex-wrap: wrap"
+              ><span class="boton">+ Una que no está en el almacén</span
+              ><span class="boton principal">Poner 7 en el TPV</span></span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 · Las copas -->
+    <div class="maqueta">
+      <p class="rotulo">2 · Las copas, que se hacen solas</p>
+      <p class="titulo">Un botón por marca, y «¿Con qué?»</p>
+      <p class="porque">
+        Como cualquier TPV (Revo lo llama «Combinados»): añades las botellas del almacén, cada copa
+        lleva 50 ml de su botella (la dosis de la casa) y el refresco que pidan. Al cobrar un Havana
+        7 con Coca-Cola, el almacén baja 50 ml de ron y una Coca-Cola, y ves lo que te deja cada
+        copa.
+      </p>
+      <div class="pantalla">
+        <div class="cab"><b>Copas</b><span class="chip">Dosis de la casa · 50 ml</span></div>
+        <div class="cuerpo dos">
+          <div class="tarj">
+            <div class="preg">Las botellas</div>
+            <div class="fila">
+              <span class="nombre"
+                >Ron · Havana 7 <span class="peq">· 50 ml · cuesta 0,96 €</span></span
+              ><input class="precio" value="8,00" /><span class="bien">te deja 5,95 €</span>
+            </div>
+            <div class="fila">
+              <span class="nombre"
+                >Ron · Brugal <span class="peq">· 50 ml · cuesta 0,62 €</span></span
+              ><input class="precio" value="7,00" />
+            </div>
+            <div class="fila">
+              <span class="nombre"
+                >Ginebra · Beefeater <span class="peq">· 50 ml · cuesta 0,78 €</span></span
+              ><input class="precio" value="7,50" />
+            </div>
+            <div class="fila">
+              <span class="nombre"
+                >Whisky · J&amp;B <span class="peq">· 50 ml · cuesta 0,71 €</span></span
+              ><input class="precio" value="7,00" />
+            </div>
+            <div class="fila">
+              <span class="nombre"
+                >Licor de hierbas
+                <span class="peq">· chupito, 30 ml (no la de la casa) · cuesta 0,22 €</span></span
+              ><input class="precio" value="2,50" />
+            </div>
+            <div class="fila"><span class="boton">+ Añadir botellas del almacén</span></div>
+          </div>
+          <div class="tarj">
+            <div class="preg">«¿Con qué?» · para todas las copas</div>
+            <div class="fila">
+              <span class="nombre">Coca-Cola</span><span class="peq">+0,00</span>
+            </div>
+            <div class="fila"><span class="nombre">Tónica</span><span class="peq">+0,00</span></div>
+            <div class="fila"><span class="nombre">Limón</span><span class="peq">+0,00</span></div>
+            <div class="fila">
+              <span class="nombre">Red Bull</span><span class="peq">+1,50</span>
+            </div>
+            <div class="fila">
+              <span class="nombre">Solo, con hielo</span><span class="peq">+0,00</span>
+            </div>
+            <p class="peq">
+              Salen los refrescos de tu almacén. El precio de la copa ya lleva el refresco; un Red
+              Bull, si quieres, suma.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 · Los cafés -->
+    <div class="maqueta">
+      <p class="rotulo">3 · Los cafés, que vienen hechos</p>
+      <p class="titulo">Enciendes los que sirves y pones el precio</p>
+      <p class="porque">
+        Con sus cantidades de siempre (7,5 g de café, la leche de cada uno), unidos solos al café y
+        la leche de tu almacén. Si aún no los tienes en el almacén, sale un coste aproximado,
+        marcado.
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <b>Cafés</b><span class="chip">Van a la página «Cafés», de la barra</span>
+        </div>
+        <div class="cuerpo">
+          <div class="tarj">
+            <div class="fila">
+              <span class="op si">Sí</span
+              ><span class="nombre"
+                >Café solo <span class="peq">· 7,5 g de café · ≈0,17 €</span></span
+              ><input class="precio" value="1,30" />
+            </div>
+            <div class="fila">
+              <span class="op si">Sí</span
+              ><span class="nombre"
+                >Cortado <span class="peq">· café y 30 ml de leche · ≈0,20 €</span></span
+              ><input class="precio" value="1,40" />
+            </div>
+            <div class="fila">
+              <span class="op si">Sí</span
+              ><span class="nombre"
+                >Café con leche <span class="peq">· taza, 120 ml · ≈0,29 €</span></span
+              ><input class="precio" value="1,60" />
+            </div>
+            <div class="fila">
+              <span class="op">No</span
+              ><span class="nombre"
+                >Café con leche en vaso <span class="peq">· 180 ml · ≈0,35 €</span></span
+              ><input class="precio" value="" />
+            </div>
+            <div class="fila">
+              <span class="boton">+ Otro café, con su receta</span
+              ><span class="peq">el de avena, el carajillo de la casa…</span>
+            </div>
+            <div class="fila">
+              <span class="op si">Sí</span
+              ><span class="nombre">Descafeinado · Americano · Bombón · Infusión · Cola Cao</span
+              ><span class="peq">cada uno con su precio</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 · Opciones y extras -->
+    <div class="maqueta">
+      <p class="rotulo">4 · Las opciones y los extras de un plato</p>
+      <p class="titulo">Grupos que se reutilizan, y que gastan su género</p>
+      <p class="porque">
+        Desde la hoja de un botón: «Opciones». Un grupo se usa en muchos platos (la guarnición, los
+        extras de la hamburguesa). Cada opción sale de un ingrediente de su escandallo («doble de
+        queso») o de cualquier cosa del almacén, con su precio; una <b>sustitución</b> cambia uno
+        por otro («pan sin gluten»); y el <b>extra libre</b> lleva nombre y precio y no descuenta
+        nada. <b>Nunca el punto de la carne</b>: eso va en la nota.
+      </p>
+      <div class="pantalla">
+        <div class="cab"><b>Hamburguesa de la casa</b><span class="peq">· Opciones</span></div>
+        <div class="cuerpo dos">
+          <div class="tarj">
+            <div class="preg">Extras · opcional, hasta 3</div>
+            <div class="fila">
+              <span class="nombre"
+                >Doble de queso
+                <span class="peq">· +30 g de queso cheddar del escandallo</span></span
+              ><input class="precio" value="1,00" />
+            </div>
+            <div class="fila">
+              <span class="nombre">Bacon <span class="peq">· +40 g de bacon del almacén</span></span
+              ><input class="precio" value="1,50" />
+            </div>
+            <div class="fila">
+              <span class="nombre"
+                >Sin cebolla <span class="peq">· quita la cebolla del escandallo</span></span
+              ><span class="peq">gratis</span>
+            </div>
+            <div class="fila">
+              <span class="nombre"
+                >Pan sin gluten <span class="peq">· sustituye el pan de hamburguesa</span></span
+              ><input class="precio" value="0,50" />
+            </div>
+            <div class="preg" style="margin-top: 14px">Guarnición · obligatoria, una</div>
+            <div class="grupo">
+              <span class="op si">Patatas</span><span class="op">Ensalada</span
+              ><span class="op">Pimientos</span>
+            </div>
+          </div>
+          <div class="tarj">
+            <div class="preg">Los grupos de tu local</div>
+            <div class="fila">
+              <span class="nombre">Guarnición <span class="peq">· en 6 platos</span></span>
+            </div>
+            <div class="fila">
+              <span class="nombre">Extras de hamburguesa <span class="peq">· en 3</span></span>
+            </div>
+            <div class="fila">
+              <span class="nombre">¿Con qué? <span class="peq">· en las copas</span></span>
+            </div>
+            <div class="fila"><span class="boton">+ Grupo nuevo</span></div>
+            <div class="aviso peq">
+              Cambiar «Guarnición» la cambia en los 6 platos que la usan. Para uno solo: «Copiar y
+              cambiar».
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 · Al pedir -->
+    <div class="maqueta">
+      <p class="rotulo">5 · Al pedir, en la mesa</p>
+      <p class="titulo">Una pregunta y un toque cada una, y no se manda sin contestarla</p>
+      <p class="porque">
+        Tocas «Havana 7» y sale «¿Con qué?»: un toque en «Coca-Cola» y está pedida. Tocas la
+        hamburguesa: la guarnición (obligatoria) y los extras. Lo que se vende a peso pide el peso,
+        y el precio sale solo.
+      </p>
+      <div class="pantalla">
+        <div class="cuerpo dos">
+          <div class="hoja">
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <b style="font-size: 18px">Havana 7</b><span class="peq">8,00</span>
+            </div>
+            <div class="preg" style="margin-top: 12px">¿Con qué? · obligatorio</div>
+            <div class="grupo">
+              <span class="op">Coca-Cola</span><span class="op">Tónica</span
+              ><span class="op">Limón</span><span class="op">Red Bull +1,50</span
+              ><span class="op">Solo, con hielo</span>
+            </div>
+            <p class="peq" style="margin-top: 12px">
+              Un toque en el refresco y se apunta: dos toques en total. Con más de una pregunta,
+              «Añadir» se enciende cuando están contestadas las obligatorias; y si se intenta mandar
+              sin contestar, dice cuál falta:
+              <span class="rojo">«Falta la guarnición de la hamburguesa»</span>.
+            </p>
+          </div>
+          <div class="cuenta">
+            <div class="preg">La cuenta · Bebidas</div>
+            <div class="linea">
+              <span>1 Havana 7 <span class="peq">· con Coca-Cola</span></span
+              ><span class="num">8,00</span>
+            </div>
+            <div class="preg">1.º</div>
+            <div class="linea">
+              <span>1 Hamburguesa <span class="peq">· patatas · doble de queso</span></span
+              ><span class="num">13,50</span>
+            </div>
+            <div class="linea">
+              <span>1 Jamón ibérico <span class="peq">· 120 g</span></span
+              ><span class="num">14,40</span>
+            </div>
+          </div>
+        </div>
+        <div class="cuerpo" style="padding-top: 0">
+          <div class="hoja">
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <b style="font-size: 18px">Jamón ibérico</b><span class="peq">120,00 € / kg</span>
+            </div>
+            <div class="preg" style="margin-top: 12px">¿Cuánto pesa?</div>
+            <div style="font-size: 34px; font-weight: 800" class="num">
+              120 g <span class="peq" style="font-size: 18px">= 14,40 €</span>
+            </div>
+            <p class="peq">Lo escribes o lo da la balanza, cuando haya una conectada.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 · El precio desde el TPV -->
+    <div class="maqueta">
+      <p class="rotulo">6 · Cambiar un precio desde el TPV</p>
+      <p class="titulo">Es el precio de tu carta, no uno aparte</p>
+      <p class="porque">
+        En la hoja de cada botón, quien puede cambiar la carta toca el precio y lo cambia: cambia en
+        Estook, con su historial. No hay un precio del TPV.
+      </p>
+      <div class="pantalla">
+        <div class="cuerpo">
+          <div class="hoja">
+            <b style="font-size: 18px">Croquetas</b>
+            <div class="preg" style="margin-top: 12px">Precio en sala, con IVA</div>
+            <div style="display: flex; gap: 10px; align-items: center">
+              <input class="precio" value="9,50" /><span class="peq"
+                >antes 9,00 · cambia también en tu carta de Estook</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="preguntas" style="border-color: var(--verde); margin-bottom: 24px">
+      <h2>La auditoría: ¿tiene sentido, se hace así, es fácil y aguanta un local grande?</h2>
+      <ul>
+        <li>
+          <b>Se hace así.</b> Los grupos de opciones que se reutilizan, con obligatorio, mínimo y
+          máximo, son los «conjuntos de modificadores» de
+          <a href="https://squareup.com/help/us/en/article/5119">Square</a>, y las sustituciones con
+          precio, también. Las copas por marca con «¿Con qué?» son los «combinados» de los TPV de
+          aquí. La caña, la doble y la jarra del mismo barril, cada una con su botón y su precio, es
+          como se vende en cualquier barra. Lo que <b>no</b> suelen tener los demás, y Estook sí, es
+          que cada opción gaste su género del almacén.
+        </li>
+        <li>
+          <b>Lo que he cambiado al auditarlas</b> (ya está en las maquetas):
+          <ol>
+            <li>
+              <b>Monta tus bebidas</b>, para un local con 300 botellas: buscador, «Solo lo que
+              falta», «Mismo precio a todas» en cada grupo, y «+ Una que no está en el almacén» (sin
+              almacén montado no te quedas parado: nace sin escandallo, como «Nuevo producto»).
+            </li>
+            <li>
+              <b>Las copas</b>: una botella puede tener su propia dosis (el chupito, 30 ml) sin
+              cambiar la de la casa.
+            </li>
+            <li>
+              <b>Los cafés</b>: «+ Otro café, con su receta», para el de avena o el carajillo de la
+              casa.
+            </li>
+            <li>
+              <b>Las opciones</b>: cada grupo dice cuántas («opcional, hasta 3», «obligatoria,
+              una»), y al cambiar un grupo que usan varios platos avisa («la cambia en los 6
+              platos») con «Copiar y cambiar» para uno solo.
+            </li>
+            <li><b>Al pedir</b>: si falta una obligatoria, dice cuál y no deja mandar.</li>
+          </ol>
+        </li>
+        <li>
+          <b>Lo que no cambio</b>: la copa con el refresco dentro y la dosis de la casa (tus
+          respuestas 2 y 3), y que <b>el punto de la carne no es una opción</b> (va en la nota,
+          decidido en la 0106).
+        </li>
+      </ul>
+    </div>
+
+    <div class="preguntas">
+      <h2>Lo que me dijiste (25-oct)</h2>
+      <ol>
+        <li>
+          <b>¿Te valen estas pantallas?</b> <span class="bien">Sí</span>, «auditalas y mira si
+          tienen sentido… pero sí me gusta». Auditadas arriba.
+        </li>
+        <li>
+          <b>La dosis de la casa: 50 ml por copa, y la copa de vino de 150 ml.</b> Es lo que ya se
+          decidió en la 0106 (lo normal va de 40 a 60 ml de destilado y de 100 a 150 de vino). ¿Lo
+          dejo así? <span class="bien">Sí.</span>
+        </li>
+        <li>
+          <b>El precio de la copa, ¿con el refresco dentro?</b> En casi todos los bares la copa
+          cuesta lo mismo con Coca-Cola que con tónica, y solo algo especial (un Red Bull) suma. Así
+          lo he dibujado. ¿Te parece bien? <span class="bien">Sí.</span>
+        </li>
+      </ol>
+      <p class="peq">
+        El resto (cómo se guarda, qué descuenta el almacén, qué sale en el ticket) lo hago como está
+        decidido y te lo cuento al terminar.
+      </p>
+    </div>
+  </body>
+</html>

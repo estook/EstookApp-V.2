@@ -237,6 +237,14 @@ import {
   quitarPaginaDelTpv,
   traerDeLaCartaAlTpv,
 } from './comandos/botonera.ts';
+import {
+  cambiarPrecioDesdeElTpv,
+  copiarGrupoDeOpciones,
+  guardarGrupoDeOpciones,
+  ponerGruposAlPlato,
+  quitarGrupoDeOpciones,
+  venderAPeso,
+} from './comandos/opciones.ts';
 import { leerLaCarta, leerPaginaConFogon } from './comandos/leer-la-carta.ts';
 import { elMenuEnPdf, misMenus } from './consultas/menus.ts';
 import { miZona } from './consultas/mi-zona.ts';
@@ -387,6 +395,7 @@ import { laJornada } from './consultas/jornada.ts';
 import { elPlano, laCartaDeLaSala, laCocina, laMesa } from './consultas/sala.ts';
 import { elPlanoDelLocal } from './consultas/plano.ts';
 import { laBotonera } from './consultas/botonera.ts';
+import { losGruposDeOpciones } from './consultas/opciones.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
 import { quienSoy } from './consultas/quien-soy.ts';
@@ -525,6 +534,8 @@ export const catalogo = {
     [elPlanoDelLocal.nombre]: elPlanoDelLocal,
     // T3 · la botonera de Estook TPV, para montarla en Ajustes del TPV › Productos (0111).
     [laBotonera.nombre]: laBotonera,
+    // T3 · 2 · las opciones y los extras de cada plato, para montarlas (0113).
+    [losGruposDeOpciones.nombre]: losGruposDeOpciones,
     // M7 · compras: lo que se pide, lo que llega, lo que se cobra y a quién.
     [misPedidos.nombre]: misPedidos,
     [unPedido.nombre]: unPedido,
@@ -771,6 +782,13 @@ export const catalogo = {
     [ordenarLosBotones.nombre]: ordenarLosBotones,
     [quitarBotonDelTpv.nombre]: quitarBotonDelTpv,
     [nuevoProductoDelTpv.nombre]: nuevoProductoDelTpv,
+    // Las opciones y los extras de cada plato, el precio y lo que se vende a peso (T3 · 2, 0113).
+    [guardarGrupoDeOpciones.nombre]: guardarGrupoDeOpciones,
+    [copiarGrupoDeOpciones.nombre]: copiarGrupoDeOpciones,
+    [quitarGrupoDeOpciones.nombre]: quitarGrupoDeOpciones,
+    [ponerGruposAlPlato.nombre]: ponerGruposAlPlato,
+    [cambiarPrecioDesdeElTpv.nombre]: cambiarPrecioDesdeElTpv,
+    [venderAPeso.nombre]: venderAPeso,
     //
     // La sala abre, pide, manda y **marcha**; la cocina tacha lo que sale y nunca marcha.
     [abrirMesa.nombre]: abrirMesa,

@@ -1153,3 +1153,16 @@ export type {
   PaseDeLaBotonera,
   QuienLoPrepara,
 } from './botonera.ts';
+
+// ── T3 · 2 · las opciones y los extras, y lo que se vende a peso ─────────────
+export {
+  PESO_DE_UNA_RACION,
+  TOPES_DEL_GRUPO,
+  comoSeLeeElPeso,
+  conUnToqueBasta,
+  cuantasSeEligen,
+  elPrecioAPeso,
+  elPrecioConLasOpciones,
+  loQueFaltaPorElegir,
+} from './opciones.ts';
+export type { GrupoParaElegir } from './opciones.ts';

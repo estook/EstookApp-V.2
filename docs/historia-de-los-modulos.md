@@ -3336,6 +3336,23 @@ el pan no se cobra si no se pide).
 Las pruebas: las del dominio y las de `la-botonera.prueba.ts` (la base y el dominio dicen lo mismo,
 y la 0087 coloca lo de antes) y `la-botonera.spec.ts` («Pan para 2»).
 
+### T3 · 2 · 1 · Las opciones
+
+_25 de octubre de 2026._ Migración `0088`, decisión [0113](decisiones/0113-t3-2-1-las-opciones.md),
+con las maquetas de T3 · 2 aprobadas por Richi y auditadas. **Los grupos de opciones** que se
+reutilizan, con cuántas se eligen y lo que gasta cada opción; **lo que se vende a peso**; y **el precio
+desde el TPV**, que es el de la carta.
+
+- **La base** (0088): `grupo_de_opciones`, `opcion_de_grupo`, `grupo_del_plato`, `plato.a_peso`, y lo
+  elegido congelado en `linea_de_cuenta`.
+- **El dominio** (`opciones.ts`): qué falta o sobra al elegir, el precio con las opciones, el de un toque
+  y el precio a peso.
+- **La API**: `los_grupos_de_opciones` y seis órdenes; `pedir` lo vuelve a mirar.
+- **Estook TPV**: la hoja del grupo (`productos/HojaDeGrupo`), la del botón con sus opciones, el precio y
+  «a peso», y la de lo que se elige al pedir (`mesa/LoQueSeElige`).
+
+Las pruebas: `opciones.prueba.ts`, `las-opciones.prueba.ts` y `las-opciones.spec.ts`.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

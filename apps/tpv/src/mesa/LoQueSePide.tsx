@@ -3,7 +3,7 @@ import { elDestinoDeLaLinea, esElPan } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import { Boton, Cargando, EstadoVacio, filtrarPorParecido } from '@estook/ui';
 import type { LaCartaDeLaSala, LaMesa, PaginaDeLaSala, PlatoDeLaSala } from '../datos/tipos.ts';
-import { anadirPlato, type Borrador } from '../logica/comanda.ts';
+import { anadirConLoElegido, anadirPlato, type Borrador } from '../logica/comanda.ts';
 import { elPaseDeFabrica } from '../logica/laCuenta.ts';
 import { elNumeroDelPase, laPestanaDeLaPagina, type PestanaDelPase } from '../logica/losPases.ts';
 import { euros } from '../logica/texto.ts';
@@ -11,6 +11,7 @@ import { irA } from '../navegar.ts';
 import { COMO_SE_VE_EL_COLOR } from '../productos/colores.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ElMenuDelDia } from './ElMenuDelDia.tsx';
+import { LoQueSeElige } from './LoQueSeElige.tsx';
 
 /**
  * **Lo que se pide** (T3, maqueta 9; Anexo 11.10 y 11.11): **la botonera por páginas**, con
@@ -49,6 +50,7 @@ export function LoQueSePide({
   const menus = carta?.menus ?? [];
   const [pagina, setPagina] = useState<string | null>(null);
   const [buscando, setBuscando] = useState('');
+  const [eligiendo, setEligiendo] = useState<PlatoDeLaSala | null>(null);
 
   // Sin elegir todavía, la página del pase marcado (en una mesa recién abierta, la de las
   // bebidas); si no hay, «Lo más pedido»; si no, la primera.
@@ -85,7 +87,7 @@ export function LoQueSePide({
     return filtrarPorParecido(todos, texto, (p) => p.nombre);
   }, [buscando, paginas]);
 
-  function pedir(plato: PlatoDeLaSala) {
+  function comoVa(plato: PlatoDeLaSala) {
     const destino = elDestinoDeLaLinea(plato.quienLoPrepara);
     // Lo de la cocina, al pase marcado; con «Bebidas» marcada, al suyo (el de su página).
     const pase =
@@ -96,7 +98,16 @@ export function LoQueSePide({
           : (elNumeroDelPase(marcada) ??
             elNumeroDelPase(laPestanaDeLaPagina(plato.pase)) ??
             elPaseDeFabrica(mesa, borrador));
-    alCambiarElBorrador(anadirPlato(borrador, plato, { destino, pase }));
+    return { destino, pase };
+  }
+
+  function pedir(plato: PlatoDeLaSala) {
+    // Lo que pregunta algo (sus opciones, o cuánto pesa) abre su hoja; lo demás, un toque.
+    if ((plato.grupos ?? []).length > 0 || plato.aPeso === true) {
+      setEligiendo(plato);
+      return;
+    }
+    alCambiarElBorrador(anadirPlato(borrador, plato, comoVa(plato)));
   }
 
   const cuantos = (p: PlatoDeLaSala) =>
@@ -256,6 +267,20 @@ export function LoQueSePide({
           <LosProductos platos={laDeAhora.platos} cuantos={cuantos} alPedir={pedir} />
         </div>
       )}
+      {eligiendo !== null && (
+        <LoQueSeElige
+          plato={eligiendo}
+          alCerrar={() => {
+            setEligiendo(null);
+          }}
+          alElegir={(elegido) => {
+            alCambiarElBorrador(
+              anadirConLoElegido(borrador, eligiendo, comoVa(eligiendo), elegido),
+            );
+            setEligiendo(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -352,7 +377,9 @@ function Producto({
           {plato.nombre}
         </span>
         <span className="text-secundario text-texto-suave">
-          {plato.agotado ? 'Agotado' : euros(plato.precioCentimos)}
+          {plato.agotado
+            ? 'Agotado'
+            : `${euros(plato.precioCentimos)}${plato.aPeso === true ? ' el kilo' : ''}`}
         </span>
         {plato.alergenos.length > 0 && !plato.agotado && (
           <span className="truncate text-etiqueta text-texto-tenue">

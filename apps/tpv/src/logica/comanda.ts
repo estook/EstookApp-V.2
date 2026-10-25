@@ -24,6 +24,10 @@ export interface LineaNueva {
   readonly destino: Destino;
   readonly pase: number | null;
   readonly nota: string | null;
+  /** Lo elegido (T3 · 2): la API lo vuelve a mirar y pone su precio. */
+  readonly opciones?: readonly { readonly id: string; readonly nombre: string }[];
+  /** Lo que pesa, si se vende a peso. */
+  readonly pesoGramos?: number | null;
 }
 
 export type Borrador = readonly LineaNueva[];
@@ -56,7 +60,9 @@ export function anadirPlato(
       l.parteDe === null &&
       l.menuId === null &&
       l.pase === pase &&
-      l.nota === null,
+      l.nota === null &&
+      (l.opciones ?? []).length === 0 &&
+      (l.pesoGramos ?? null) === null,
   );
   if (igual !== undefined) {
     return borrador.map((l) => (l === igual ? { ...l, cantidad: l.cantidad + 1 } : l));
@@ -199,7 +205,45 @@ export function comoPedido(borrador: Borrador): readonly Record<string, unknown>
     ...(l.cantidad === 1 ? {} : { cantidad: l.cantidad }),
     ...(l.pase === null ? {} : { pase: l.pase }),
     ...(l.nota === null ? {} : { nota: l.nota }),
+    ...(l.opciones === undefined || l.opciones.length === 0
+      ? {}
+      : { opciones: l.opciones.map((o) => o.id) }),
+    ...(l.pesoGramos === undefined || l.pesoGramos === null ? {} : { peso_gramos: l.pesoGramos }),
   }));
+}
+
+/**
+ * **Un plato con lo elegido** (T3 · 2): sus opciones, o lo que pesa. Va en su línea, sin
+ * sumarse a otra: dos hamburguesas con distinta guarnición son dos líneas. El precio de la
+ * unidad ya lleva lo elegido (la API lo vuelve a calcular).
+ */
+export function anadirConLoElegido(
+  borrador: Borrador,
+  plato: PlatoQueSePide,
+  como: { readonly destino: Destino; readonly pase: number | null },
+  elegido: {
+    readonly opciones: readonly { readonly id: string; readonly nombre: string }[];
+    readonly pesoGramos: number | null;
+    readonly precioCentimos: number;
+  },
+): Borrador {
+  return [
+    ...borrador,
+    {
+      id: nuevoId(),
+      platoId: plato.id,
+      menuId: null,
+      parteDe: null,
+      nombre: plato.nombre,
+      cantidad: 1,
+      precioCentimos: elegido.precioCentimos,
+      destino: como.destino,
+      pase: como.destino === 'cocina' ? como.pase : null,
+      nota: null,
+      opciones: elegido.opciones,
+      pesoGramos: elegido.pesoGramos,
+    },
+  ];
 }
 
 // ═══ Guardado en el aparato ════════════════════════════════════════════════════

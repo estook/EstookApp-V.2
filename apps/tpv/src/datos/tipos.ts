@@ -10,6 +10,7 @@ import type {
   FormaDeMesa,
   PaseDeLaBotonera,
   QuienLoPrepara,
+  UnidadDeUso,
 } from '@estook/dominio';
 
 export type LoSiguiente =
@@ -108,6 +109,9 @@ export interface PlatoDeLaCuenta {
   readonly salioEn: string | null;
   readonly motivoDeQuitar: string | null;
   readonly vuelve: string | null;
+  /** Lo elegido (T3 · 2): «Patatas», «Doble de queso». Una API de antes no lo dice. */
+  readonly opciones?: readonly string[];
+  readonly pesoGramos?: number | null;
 }
 
 export interface LaMesa {
@@ -142,6 +146,22 @@ export interface PlatoDeLaSala {
   readonly quienLoPrepara: QuienLoPrepara;
   readonly pase: PaseDeLaBotonera;
   readonly color: ColorDeLaBotonera | null;
+  /** Lo que se pregunta al pedirlo (T3 · 2). Una API de antes no lo dice. */
+  readonly grupos?: readonly GrupoParaPedir[];
+  /** Se vende a peso: su precio es el del kilo. */
+  readonly aPeso?: boolean;
+}
+
+export interface GrupoParaPedir {
+  readonly id: string;
+  readonly nombre: string;
+  readonly minimo: number;
+  readonly maximo: number;
+  readonly opciones: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly precioCentimos: number;
+  }[];
 }
 
 /** Una página de la botonera; sin montar, una sección de la carta (T3). */
@@ -207,6 +227,42 @@ export interface BotonDeLaBotonera extends PlatoParaLaBotonera {
   readonly quienLoPrepara: QuienLoPrepara | null;
   readonly pase: PaseDeLaBotonera | null;
   readonly fijado: boolean;
+  /** Los grupos de opciones de su plato (T3 · 2). Una API de antes no lo dice. */
+  readonly grupoIds?: readonly string[];
+  readonly aPeso?: boolean;
+}
+
+// ── T3 · 2 · Las opciones (0113): `los_grupos_de_opciones` ──
+
+export interface GrupoParaMontar {
+  readonly id: string;
+  readonly nombre: string;
+  readonly minimo: number;
+  readonly maximo: number;
+  readonly opciones: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly precioCentimos: number;
+    readonly anade: {
+      readonly productoId: string;
+      readonly nombre: string;
+      readonly cantidad: number;
+      readonly unidad: UnidadDeUso;
+    } | null;
+    readonly quita: { readonly productoId: string; readonly nombre: string } | null;
+  }[];
+  readonly platos: readonly { readonly id: string; readonly nombre: string }[];
+}
+
+export interface ProductoParaLasOpciones {
+  readonly id: string;
+  readonly nombre: string;
+  readonly unidades: readonly UnidadDeUso[];
+}
+
+export interface LosGruposDeOpciones {
+  readonly grupos: readonly GrupoParaMontar[];
+  readonly productos: readonly ProductoParaLasOpciones[];
 }
 
 export interface PaginaDeLaBotonera {

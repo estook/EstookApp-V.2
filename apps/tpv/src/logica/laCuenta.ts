@@ -1,3 +1,4 @@
+import { comoSeLeeElPeso } from '@estook/dominio';
 import type { LaMesa, PlatoDeLaCuenta } from '../datos/tipos.ts';
 import type { Borrador, LineaNueva } from './comanda.ts';
 
@@ -20,6 +21,8 @@ export interface LineaALaVista {
   /** Lo de la línea entera: cantidad por precio. Nulo en los platos de un menú sin suplemento. */
   readonly importeCentimos: number | null;
   readonly nota: string | null;
+  /** Lo elegido y lo que pesó, para leerlo debajo: «Patatas · doble de queso», «120 g». */
+  readonly detalle: string | null;
   readonly delMenu: boolean;
   /** La línea del menú, la que se cobra: no se cocina, así que no lleva nota. */
   readonly esMenu: boolean;
@@ -43,6 +46,12 @@ export interface GrupoDeLaCuenta {
   readonly lineas: readonly LineaALaVista[];
 }
 
+/** «Patatas · doble de queso», «120 g»: lo elegido y lo que pesó, o nada. */
+export function elDetalle(opciones: readonly string[], pesoGramos: number | null): string | null {
+  const partes = [...(pesoGramos === null ? [] : [comoSeLeeElPeso(pesoGramos)]), ...opciones];
+  return partes.length === 0 ? null : partes.join(' · ');
+}
+
 function deLaApi(p: PlatoDeLaCuenta): LineaALaVista {
   return {
     id: p.id,
@@ -51,6 +60,7 @@ function deLaApi(p: PlatoDeLaCuenta): LineaALaVista {
     importeCentimos:
       p.parteDe !== null && p.precioCentimos === 0 ? null : p.precioCentimos * p.cantidad,
     nota: p.nota,
+    detalle: elDetalle(p.opciones ?? [], p.pesoGramos ?? null),
     delMenu: p.parteDe !== null,
     esMenu: p.menuId !== null && p.parteDe === null,
     destino: p.destino,
@@ -71,6 +81,10 @@ function delBorrador(l: LineaNueva): LineaALaVista {
     importeCentimos:
       l.parteDe !== null && l.precioCentimos === 0 ? null : l.precioCentimos * l.cantidad,
     nota: l.nota,
+    detalle: elDetalle(
+      (l.opciones ?? []).map((o) => o.nombre),
+      l.pesoGramos ?? null,
+    ),
     delMenu: l.parteDe !== null,
     esMenu: l.menuId !== null && l.parteDe === null,
     destino: l.destino,

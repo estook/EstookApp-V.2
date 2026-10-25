@@ -8,10 +8,11 @@
 > orden y cuándo se da cada entrega por buena**. **T1 · La puerta, en producción** (24-oct, #133,
 > [0108](decisiones/0108-t1-la-puerta.md), migración 0083), y después **el PIN y la contraseña**
 > ([0109](decisiones/0109-el-pin-y-la-contrasena.md)), lo que vio Richi al probarla. **T2 · La sala,
-> construida** ([0110](decisiones/0110-t2-la-sala.md), migración 0085), en su pull request (#135).
-> **T3 · Los productos va en dos**: **T3 · 1 · La botonera, construida**
-> ([0111](decisiones/0111-t3-1-la-botonera.md), migración 0086), en su pull request (#136); **lo siguiente,
-> T3 · 2 · Lo de cada producto.**
+> en producción** ([0110](decisiones/0110-t2-la-sala.md), #135). **T3 · Los productos va en dos**: **T3 ·
+> 1 · La botonera, en producción** ([0111](decisiones/0111-t3-1-la-botonera.md), #136), con el pan y el
+> café ([0112](decisiones/0112-el-pan-y-el-cafe.md), #137); y **T3 · 2**, también en dos: **T3 · 2 · 1 ·
+> Las opciones, construida** ([0113](decisiones/0113-t3-2-1-las-opciones.md), migración 0088), en su
+> pull request; **lo siguiente, T3 · 2 · 2 · Monta tus bebidas.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -146,15 +147,44 @@ Lo vio Richi al probar T3 · 1, y va antes de T3 · 2 ([0112](decisiones/0112-el
 migración 0087): **«Pan y agua»** la primera página y **«Cafés»** la última, y **«Pan para 4»** en la
 mesa. Las pruebas, en `la-botonera.prueba.ts` y `la-botonera.spec.ts`.
 
-### T3 · 2 · Lo de cada producto, terminado cuando
+### T3 · 2 · Lo de cada producto, en dos (25-oct)
 
-- **En IKATZ**: Richi monta sus bebidas con «Monta tus bebidas» y vende un Havana 7 con Coca-Cola; pone
-  un extra de queso a una hamburguesa y lo ve descontar queso; vende jamón a peso; cambia un precio
-  desde el TPV y lo ve en la carta de Estook.
-- Pasan las pruebas de 10.12 de **las opciones obligatorias, los grupos con su escandallo y el producto
+Sus maquetas las aprobó Richi el 25-oct, con la auditoría que les añadió cinco cosas
+([0113](decisiones/0113-t3-2-1-las-opciones.md), sección 1). Se parte en dos (punto 1 de la 0113):
+**las opciones** van primero, porque las copas de «Monta tus bebidas» las usan.
+
+### T3 · 2 · 1 · Las opciones, terminado cuando
+
+- **En IKATZ**: Richi pone la guarnición a una hamburguesa (obligatoria, una) y unos extras con lo que
+  gastan; la pide y no le deja sin la guarnición; vende jamón a peso; cambia un precio desde el TPV y lo
+  ve en la carta de Estook.
+- Pasan las pruebas de 10.12 de **las opciones obligatorias, los grupos con lo que gastan y el producto
   a peso**.
-- **Lo de la base**: los grupos de opciones con su mínimo, su máximo, su precio por canal y su
-  escandallo (Anexo 7.2 y 10.3).
+- **Lo de la base**: los grupos de opciones con su mínimo, su máximo, su precio y lo que gasta cada
+  opción (Anexo 7.2 y 10.3), y lo elegido congelado en cada línea.
+
+### T3 · 2 · 1 · Las opciones, entregada (25-oct-2026)
+
+**Lo que hay** ([0113](decisiones/0113-t3-2-1-las-opciones.md), migración 0088): en la hoja de cada
+botón, **«Opciones al pedirlo»** con sus grupos («+ Grupo nuevo», «Cambiar», «Copiar y cambiar»), **el
+precio** (el de la carta) y **«Se vende a peso»**; al pedir, **la hoja de lo que se elige**, de un toque
+si es una sola pregunta obligatoria; y en la cuenta y la cocina, lo elegido y lo que pesó.
+
+**Las pruebas**: `opciones.prueba.ts` (el dominio), `las-opciones.prueba.ts` (contra la base: lo
+obligatorio, el precio, lo congelado con lo que gasta, la cocina, a peso, el precio y quién lo monta) y
+`las-opciones.spec.ts` (montar la guarnición y el jamón a peso, y pedirlos).
+
+**Lo que decidí al construirlo**: los catorce de la [0113](decisiones/0113-t3-2-1-las-opciones.md),
+sección 3.
+
+### T3 · 2 · 2 · Monta tus bebidas, terminado cuando
+
+- **En IKATZ**: Richi monta sus bebidas con «Monta tus bebidas» (buscador, «Solo lo que falta», «Mismo
+  precio a todas»); la caña, la doble y la jarra del mismo barril; sus copas con «¿Con qué?» y vende un
+  Havana 7 con Coca-Cola; y enciende sus cafés con su precio.
+- Pasan las pruebas de 10.12 de **las raciones, las copas y los cafés**, con lo que deja cada copa.
+- **Lo de la base**: lo que ya hay (el plato, su escandallo «tal cual» o con receta, y los grupos de
+  T3 · 2 · 1), sin tablas nuevas si no hacen falta.
 
 ### T4 a T7
 

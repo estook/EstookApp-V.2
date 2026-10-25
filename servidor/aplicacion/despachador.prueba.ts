@@ -986,6 +986,14 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'ordenar_los_botones',
         'quitar_boton_del_tpv',
         'nuevo_producto_del_tpv',
+        // Las opciones, el precio y lo que se vende a peso, también (0113).
+        'los_grupos_de_opciones',
+        'guardar_grupo_de_opciones',
+        'copiar_grupo_de_opciones',
+        'quitar_grupo_de_opciones',
+        'poner_grupos_al_plato',
+        'cambiar_precio_desde_el_tpv',
+        'vender_a_peso',
       ].sort(),
     );
   });

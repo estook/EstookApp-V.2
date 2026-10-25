@@ -9,6 +9,7 @@ import { laBotoneraGuardada } from '../botonera.ts';
 import { consulta } from '../contrato.ts';
 import { elLocalDelServicio } from '../sala.ts';
 import { losPlatos, puedeEditarLaCarta } from './mi-carta.ts';
+import { losGruposDeLosPlatos } from '../opciones.ts';
 
 /**
  * **La botonera, para montarla** (T3, decisión 0111; Anexo 11.11): Ajustes del TPV ›
@@ -33,6 +34,10 @@ export interface BotonDeLaBotonera extends PlatoParaLaBotonera {
   readonly quienLoPrepara: QuienLoPrepara | null;
   readonly pase: PaseDeLaBotonera | null;
   readonly fijado: boolean;
+  /** Los grupos de opciones de su plato, en orden (T3 · 2). */
+  readonly grupoIds: readonly string[];
+  /** Su plato se vende a peso. */
+  readonly aPeso: boolean;
 }
 
 export interface PaginaDeLaBotonera {
@@ -72,7 +77,7 @@ export const laBotonera = consulta<Record<string, never>, SalidaLaBotonera>({
 
   async ejecutar(contexto) {
     const localId = elLocalDelServicio(contexto);
-    const [botonera, platos, secciones, puedeCrear] = await Promise.all([
+    const [botonera, platos, secciones, puedeCrear, grupos, aPeso] = await Promise.all([
       laBotoneraGuardada(contexto, localId),
       losPlatos(contexto, localId),
       contexto.sql<{ id: string; nombre: string }[]>`
@@ -81,7 +86,12 @@ export const laBotonera = consulta<Record<string, never>, SalidaLaBotonera>({
          order by orden, nombre
       `,
       puedeEditarLaCarta(contexto, localId),
+      losGruposDeLosPlatos(contexto, localId),
+      contexto.sql<{ id: string }[]>`
+        select id::text as id from estook.plato where local_id = ${localId}::uuid and a_peso
+      `,
     ]);
+    const aPesoIds = new Set(aPeso.map((f) => f.id));
     const deLaCarta = platos.filter((p) => p.activo && p.enLaCarta);
     const comoParaLaBotonera = (p: (typeof platos)[number]): PlatoParaLaBotonera => ({
       id: p.id,
@@ -132,6 +142,8 @@ export const laBotonera = consulta<Record<string, never>, SalidaLaBotonera>({
                 quienLoPrepara: b.quienLoPrepara,
                 pase: b.pase,
                 fijado: b.fijado,
+                grupoIds: (grupos.get(plato.id) ?? []).map((g) => g.id),
+                aPeso: aPesoIds.has(plato.id),
               },
             ];
           }),

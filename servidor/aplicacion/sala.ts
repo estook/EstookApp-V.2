@@ -65,6 +65,9 @@ export interface FilaDeLinea {
   readonly motivo_de_quitar: string | null;
   readonly vuelve_en: string | null;
   readonly motivo_de_vuelve: string | null;
+  /** Lo elegido, congelado al pedir (T3 · 2): solo hace falta su nombre para enseñarlo. */
+  readonly opciones: readonly { readonly nombre: string }[];
+  readonly peso_gramos: number | null;
 }
 
 export interface FilaDePase {
@@ -130,7 +133,7 @@ export async function losPlatos(
            to_char(l.quitada_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as quitada_en,
            l.motivo_de_quitar,
            to_char(l.vuelve_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as vuelve_en,
-           l.motivo_de_vuelve
+           l.motivo_de_vuelve, l.opciones, l.peso_gramos
       from estook.linea_de_cuenta l
      where l.cuenta_id = any (${comoLista(cuentaIds)}::text::uuid[])
      order by l.pedida_en, l.id

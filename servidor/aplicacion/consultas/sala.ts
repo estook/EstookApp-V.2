@@ -20,6 +20,7 @@ import {
   type QuienLoPrepara,
 } from '@estook/dominio';
 import { laBotoneraGuardada, loMasPedido } from '../botonera.ts';
+import { losGruposDeLosPlatos } from '../opciones.ts';
 import { lasSalasDibujadas, type MesaDibujada, type SalaDibujada } from './plano.ts';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { lasSeccionesDeLosMenus, losMenusDelLocal, losPlatosDelDia } from '../menus.ts';
@@ -268,6 +269,10 @@ export interface PlatoDeLaCuenta {
   readonly salioEn: string | null;
   readonly motivoDeQuitar: string | null;
   readonly vuelve: string | null;
+  /** Lo elegido (T3 · 2): «Patatas», «Doble de queso». */
+  readonly opciones: readonly string[];
+  /** Lo que pesó, si se vende a peso. */
+  readonly pesoGramos: number | null;
 }
 
 export interface SalidaLaMesa {
@@ -342,6 +347,8 @@ export const laMesa = consulta<{ cuenta_id: string }, SalidaLaMesa>({
         salioEn: l.salio_en,
         motivoDeQuitar: l.motivo_de_quitar,
         vuelve: l.motivo_de_vuelve,
+        opciones: l.opciones.map((o) => o.nombre),
+        pesoGramos: l.peso_gramos,
       })),
       pases: pases.map((p) => ({
         numero: p.numero,
@@ -370,6 +377,9 @@ export interface PlatoEnCocina {
   readonly anulado: boolean;
   /** Se devolvió y se rehace: «VUELVE», con su motivo. */
   readonly vuelve: string | null;
+  /** Lo elegido (T3 · 2): la guarnición, los extras. */
+  readonly opciones: readonly string[];
+  readonly pesoGramos: number | null;
 }
 
 export interface TarjetaDeCocina {
@@ -472,6 +482,8 @@ function laTarjeta(
             cambio: l.nota_cambiada_en !== null,
             anulado: l.quitada_en !== null,
             vuelve: l.motivo_de_vuelve,
+            opciones: l.opciones.map((o) => o.nombre),
+            pesoGramos: l.peso_gramos,
           })),
       };
     }),
@@ -537,6 +549,22 @@ export interface PlatoDeLaSala {
   readonly quienLoPrepara: QuienLoPrepara;
   readonly pase: PaseDeLaBotonera;
   readonly color: ColorDeLaBotonera | null;
+  /** Lo que se pregunta al pedirlo (T3 · 2): la guarnición, los extras, el «¿Con qué?». */
+  readonly grupos: readonly GrupoParaPedir[];
+  /** Se vende a peso: su precio es el del kilo, y al pedirlo se dice cuánto pesa. */
+  readonly aPeso: boolean;
+}
+
+export interface GrupoParaPedir {
+  readonly id: string;
+  readonly nombre: string;
+  readonly minimo: number;
+  readonly maximo: number;
+  readonly opciones: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly precioCentimos: number;
+  }[];
 }
 
 /** Una página de la botonera; sin montar, una sección de la carta (T3). */
@@ -601,20 +629,27 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
     const localId = elLocalDelServicio(contexto);
     // La jornada, no el calendario: la cena que acaba a la una es del menú del día de antes.
     const hoy = fechaOperativa(await laJornadaDeHoy(contexto, localId));
-    const [secciones, platos, sirve, menus, botonera, masPedido] = await Promise.all([
-      contexto.sql<{ id: string; nombre: string }[]>`
+    const [secciones, platos, sirve, menus, botonera, masPedido, grupos, aPeso] = await Promise.all(
+      [
+        contexto.sql<{ id: string; nombre: string }[]>`
         select id::text as id, nombre from estook.seccion_de_carta
          where local_id = ${localId}::uuid
          order by orden, nombre
       `,
-      losPlatosDeLaCarta(contexto, localId),
-      contexto.sql<{ sirve: boolean | null }[]>`
+        losPlatosDeLaCarta(contexto, localId),
+        contexto.sql<{ sirve: boolean | null }[]>`
         select sirve_menus as sirve from estook.local where id = ${localId}::uuid
       `,
-      losMenusDelLocal(contexto, localId),
-      laBotoneraGuardada(contexto, localId),
-      loMasPedido(contexto, localId),
-    ]);
+        losMenusDelLocal(contexto, localId),
+        laBotoneraGuardada(contexto, localId),
+        loMasPedido(contexto, localId),
+        losGruposDeLosPlatos(contexto, localId),
+        contexto.sql<{ id: string }[]>`
+        select id::text as id from estook.plato where local_id = ${localId}::uuid and a_peso
+      `,
+      ],
+    );
+    const aPesoIds = new Set(aPeso.map((f) => f.id));
 
     // Lo que se pide de la carta: activo, en la carta y con precio. Lo agotado sale
     // apagado, para que el camarero lo vea y no lo ofrezca (M10 · 1).
@@ -635,6 +670,19 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
       agotado: p.agotado !== null,
       alergenos: [...new Set([...p.alergenos, ...p.alergenosDeLaReceta])],
       ...vale,
+      // Lo que gasta cada opción no sale de aquí: la sala solo ve su nombre y su precio.
+      grupos: (grupos.get(p.id) ?? []).map((g) => ({
+        id: g.id,
+        nombre: g.nombre,
+        minimo: g.minimo,
+        maximo: g.maximo,
+        opciones: g.opciones.map((o) => ({
+          id: o.id,
+          nombre: o.nombre,
+          precioCentimos: o.precioCentimos,
+        })),
+      })),
+      aPeso: aPesoIds.has(p.id),
     });
 
     const montada = botonera.camino !== null;

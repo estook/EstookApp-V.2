@@ -108,6 +108,9 @@ export function LaCuenta({
                     <span className="text-secundario text-texto-suave"> · {elPase(l.pase)}</span>
                   )}
                 </span>
+                {l.detalle !== null && (
+                  <span className="text-secundario text-texto-suave">{l.detalle}</span>
+                )}
                 {l.nota !== null && (
                   <span className="text-secundario text-atencion no-underline">{l.nota}</span>
                 )}

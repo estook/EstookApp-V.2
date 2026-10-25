@@ -1,5 +1,16 @@
 import { z } from 'zod';
-import { elDestinoDeLaLinea, fechaOperativa, losPasesQueSalenAlMandar } from '@estook/dominio';
+import {
+  PESO_DE_UNA_RACION,
+  TOPES_DEL_GRUPO,
+  centimos,
+  elDestinoDeLaLinea,
+  elPrecioAPeso,
+  elPrecioConLasOpciones,
+  fechaOperativa,
+  loQueFaltaPorElegir,
+  losPasesQueSalenAlMandar,
+} from '@estook/dominio';
+import { losGruposDeLosPlatos } from '../opciones.ts';
 import { losAgotadosDelLocal } from '../agotados.ts';
 import { laBotoneraEstaMontada, loQueValeParaElPlato } from '../botonera.ts';
 import { lasSeccionesDeLosMenus, losPlatosDelDia } from '../menus.ts';
@@ -167,6 +178,15 @@ const unPlato = z
     destino: z.enum(['cocina', 'barra']).optional(),
     pase: z.number().int().min(1).max(9).optional(),
     nota: z.string().trim().max(200).optional(),
+    /** Las opciones elegidas (T3 · 2): la guarnición, los extras, el «¿Con qué?». */
+    opciones: z.array(id).max(TOPES_DEL_GRUPO.maximo).optional(),
+    /** Lo que pesa, si se vende a peso. */
+    peso_gramos: z
+      .number()
+      .int()
+      .min(PESO_DE_UNA_RACION.minimo)
+      .max(PESO_DE_UNA_RACION.maximo)
+      .optional(),
   })
   .strict();
 
@@ -216,6 +236,14 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
     const lineasDeMenu = new Set(nuevos.filter((p) => p.menu_id !== undefined).map((p) => p.id));
     // Lo agotado no se pide (M10 · 1): la pantalla lo enseña apagado, y esto lo vuelve a mirar.
     const agotados = await losAgotadosDelLocal(contexto, localId);
+    // Los grupos de opciones de lo que se pide, de una vez (T3 · 2).
+    const gruposDeLosPlatos = await losGruposDeLosPlatos(
+      contexto,
+      localId,
+      nuevos.flatMap((p) =>
+        p.plato_id === undefined || p.parte_de !== undefined ? [] : [p.plato_id],
+      ),
+    );
 
     for (const p of nuevos) {
       if ((p.plato_id === undefined) === (p.menu_id === undefined)) {
@@ -227,6 +255,15 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
       let precio: number;
       let destino: 'cocina' | 'barra' | 'ninguno' = p.destino ?? 'cocina';
       let menuId: string | null = null;
+      let opciones: readonly {
+        opcionId: string;
+        grupo: string;
+        nombre: string;
+        precioCentimos: number;
+        anade: unknown;
+        quita: string | null;
+      }[] = [];
+      let pesoGramos: number | null = null;
 
       if (p.menu_id !== undefined) {
         const filas = await contexto.sql<{ nombre: string; precio_centimos: number | null }[]>`
@@ -253,9 +290,10 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
             precio_centimos: number | null;
             activo: boolean;
             en_la_carta: boolean;
+            a_peso: boolean;
           }[]
         >`
-          select p.nombre, p.precio_centimos, p.activo, p.en_la_carta
+          select p.nombre, p.precio_centimos, p.activo, p.en_la_carta, p.a_peso
             from estook.plato p
            where p.id = ${p.plato_id ?? null}::uuid and p.local_id = ${localId}::uuid
         `;
@@ -321,6 +359,54 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
             });
           }
           precio = plato.precio_centimos;
+          // **Lo que se vende a peso** cobra lo que pesa (Anexo 10.3): el precio es el del kilo.
+          if (plato.a_peso) {
+            if (p.peso_gramos === undefined) {
+              throw new FalloDeAplicacion('faltan_datos', {
+                campos: ['peso_gramos'],
+                porque: `«${plato.nombre}» se vende a peso: di cuánto pesa.`,
+              });
+            }
+            precio = elPrecioAPeso(centimos(precio), p.peso_gramos);
+            pesoGramos = p.peso_gramos;
+          }
+          // **Las opciones**: lo obligatorio contestado, nada de más, y cada una con su precio
+          // y lo que gasta, congelado (T3 · 2).
+          const grupos = gruposDeLosPlatos.get(p.plato_id ?? '') ?? [];
+          const elegidas = p.opciones ?? [];
+          const noCuadra = loQueFaltaPorElegir(grupos, elegidas);
+          if (noCuadra !== null) {
+            throw new FalloDeAplicacion('faltan_datos', {
+              campos: ['opciones'],
+              porque:
+                noCuadra.porque === 'falta'
+                  ? `Falta «${noCuadra.grupo}» en «${plato.nombre}».`
+                  : noCuadra.porque === 'sobra'
+                    ? `En «${plato.nombre}» sobran opciones de «${noCuadra.grupo}».`
+                    : `Esa opción no es de «${plato.nombre}».`,
+            });
+          }
+          const porId = new Map(
+            grupos.flatMap((g) =>
+              g.opciones.map((o) => [o.id, { ...o, grupo: g.nombre }] as const),
+            ),
+          );
+          opciones = elegidas.flatMap((opcionId) => {
+            const o = porId.get(opcionId);
+            return o === undefined
+              ? []
+              : [
+                  {
+                    opcionId,
+                    grupo: o.grupo,
+                    nombre: o.nombre,
+                    precioCentimos: o.precioCentimos,
+                    anade: o.anade,
+                    quita: o.quita,
+                  },
+                ];
+          });
+          precio = elPrecioConLasOpciones(centimos(precio), opciones);
         }
       }
 
@@ -329,12 +415,13 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
       await contexto.sql`
         insert into estook.linea_de_cuenta
           (id, cuenta_id, local_id, plato_id, menu_id, parte_de, nombre, cantidad, precio_centimos,
-           destino, pase, nota, pedida_en, pedida_por)
+           destino, pase, nota, pedida_en, pedida_por, opciones, peso_gramos)
         values (
           ${p.id}::uuid, ${cuenta.id}::uuid, ${localId}::uuid, ${p.plato_id ?? null}::uuid,
           ${menuId}::uuid, ${p.parte_de ?? null}::uuid, ${nombre}, ${p.cantidad ?? 1}, ${precio},
           ${destino}, ${pase}, ${p.nota === undefined || p.nota === '' ? null : p.nota},
-          ${contexto.ahora.toISOString()}::timestamptz, ${contexto.personaId}::uuid
+          ${contexto.ahora.toISOString()}::timestamptz, ${contexto.personaId}::uuid,
+          ${JSON.stringify(opciones)}::text::jsonb, ${pesoGramos}
         )
         on conflict (id) do nothing
       `;

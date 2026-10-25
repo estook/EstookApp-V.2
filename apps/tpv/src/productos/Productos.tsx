@@ -7,6 +7,8 @@ import {
   NOMBRE_DEL_PASE,
   PASES_DE_LA_BOTONERA,
   QUIEN_LO_PREPARA,
+  centimos,
+  cuantasSeEligen,
   loQueProponeElNombre,
   type CaminoDeLaBotonera,
   type Centimos,
@@ -27,7 +29,9 @@ import {
 } from '@estook/ui';
 import type {
   BotonDeLaBotonera,
+  GrupoParaMontar,
   LaBotonera,
+  LosGruposDeOpciones,
   PaginaDeLaBotonera,
   PlatoParaLaBotonera,
 } from '../datos/tipos.ts';
@@ -35,6 +39,7 @@ import { FalloDeLaSala, usarAcciones, type Resultado } from '../ganchos/usarLaSa
 import { euros } from '../logica/texto.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { COMO_SE_VE_EL_COLOR } from './colores.ts';
+import { HojaDeGrupo } from './HojaDeGrupo.tsx';
 import { moverUnPuesto, usarArrastrar } from '../ganchos/usarArrastrar.ts';
 
 /**
@@ -56,6 +61,7 @@ import { moverUnPuesto, usarArrastrar } from '../ganchos/usarArrastrar.ts';
  */
 
 const CLAVE = ['botonera'];
+const CLAVE_DE_LOS_GRUPOS = ['grupos_de_opciones'];
 
 const NOMBRE_DEL_CAMINO: Readonly<Record<CaminoDeLaBotonera, string>> = {
   toda_la_carta: 'Toda la carta',
@@ -375,6 +381,7 @@ function LaBotoneraMontada({
           pagina={hojaViva.pagina}
           boton={hojaViva.boton}
           paginas={paginas}
+          puedeTocarLaCarta={datos.puedeCrearProductos}
           orden={orden}
           alCerrar={cerrar}
         />
@@ -747,15 +754,39 @@ function HojaDeBoton({
   pagina,
   boton,
   paginas,
+  puedeTocarLaCarta,
   orden,
   alCerrar,
 }: {
   readonly pagina: PaginaDeLaBotonera;
   readonly boton: BotonDeLaBotonera;
   readonly paginas: readonly PaginaDeLaBotonera[];
+  /** El precio y «a peso» son de la carta: solo quien puede cambiarla (T3 · 2). */
+  readonly puedeTocarLaCarta: boolean;
   readonly orden: Orden;
   readonly alCerrar: () => void;
 }) {
+  const { cliente } = usarSesion();
+  const grupos = useQuery({
+    queryKey: CLAVE_DE_LOS_GRUPOS,
+    queryFn: async () => {
+      const respuesta = await cliente.consultar<LosGruposDeOpciones>('los_grupos_de_opciones');
+      if (!respuesta.ok) throw new FalloDeLaSala(respuesta.error);
+      return respuesta.datos;
+    },
+  });
+  const cache = useQueryClient();
+  const conLosGrupos: Orden = async <T,>(nombre: string, entrada: unknown) => {
+    const hecho = await orden<T>(nombre, entrada);
+    await cache.invalidateQueries({ queryKey: CLAVE_DE_LOS_GRUPOS });
+    return hecho;
+  };
+  const [grupoAbierto, setGrupoAbierto] = useState<GrupoParaMontar | 'nuevo' | null>(null);
+  const [precio, setPrecio] = useState<Centimos | null>(
+    boton.precioCentimos === null ? null : centimos(boton.precioCentimos),
+  );
+  const [aPeso, setAPeso] = useState(boton.aPeso === true);
+  const suyos = boton.grupoIds ?? [];
   // Lo de la hoja se ve al momento; se guarda cada toque.
   const [quien, setQuien] = useState<QuienLoPrepara | null>(boton.quienLoPrepara);
   const [pase, setPase] = useState<PaseDeLaBotonera | null>(boton.pase);
@@ -790,10 +821,97 @@ function HojaDeBoton({
       }
     >
       <div className="flex flex-col gap-e4 pt-e3">
-        <p className="text-secundario text-texto-suave">
-          {boton.precioCentimos === null ? 'Sin precio' : `${euros(boton.precioCentimos)} €`}, el de
-          tu carta. El precio y la foto se cambian en Estook › Carta.
-        </p>
+        {puedeTocarLaCarta ? (
+          <div className="flex flex-col gap-e2">
+            <div className="flex flex-wrap items-end gap-e2">
+              <div className="w-[10rem]">
+                <CampoMoneda
+                  etiqueta={aPeso ? 'Precio del kilo, con IVA' : 'Precio en sala, con IVA'}
+                  valor={precio}
+                  alCambiar={setPrecio}
+                />
+              </div>
+              <Boton
+                tono="secundario"
+                disabled={precio === null || precio === boton.precioCentimos}
+                onClick={() => {
+                  void orden('cambiar_precio_desde_el_tpv', {
+                    plato_id: boton.platoId,
+                    precio_centimos: precio,
+                  });
+                }}
+              >
+                Guardar el precio
+              </Boton>
+            </div>
+            <p className="text-secundario text-texto-suave">
+              Es el de tu carta: cambia también en Estook, con su historial.
+            </p>
+            <Interruptor
+              etiqueta="Se vende a peso"
+              ayuda="El jamón, el pescado del día: el precio es el del kilo, y al pedirlo se dice cuánto pesa."
+              puesto={aPeso}
+              alCambiar={(si) => {
+                setAPeso(si);
+                void orden('vender_a_peso', { plato_id: boton.platoId, si });
+              }}
+            />
+          </div>
+        ) : (
+          <p className="text-secundario text-texto-suave">
+            {boton.precioCentimos === null ? 'Sin precio' : `${euros(boton.precioCentimos)} €`}, el
+            de tu carta. El precio lo cambia quien puede cambiar la carta.
+          </p>
+        )}
+
+        <div className="flex flex-col gap-e2">
+          <span className="text-etiqueta font-bold uppercase tracking-wide text-texto-tenue">
+            Opciones al pedirlo
+          </span>
+          {grupos.data === undefined ? (
+            <Cargando que="los grupos" />
+          ) : (
+            <>
+              {grupos.data.grupos.map((g) => {
+                const puesto = suyos.includes(g.id);
+                return (
+                  <div key={g.id} className="flex items-center gap-e3">
+                    <div className="min-w-0 flex-1">
+                      <Interruptor
+                        etiqueta={g.nombre}
+                        ayuda={`${cuantasSeEligen(g)} · ${g.opciones.map((o) => o.nombre).join(', ')}`}
+                        puesto={puesto}
+                        alCambiar={(si) => {
+                          void conLosGrupos('poner_grupos_al_plato', {
+                            plato_id: boton.platoId,
+                            grupo_ids: si ? [...suyos, g.id] : suyos.filter((x) => x !== g.id),
+                          });
+                        }}
+                      />
+                    </div>
+                    <Boton
+                      tono="texto"
+                      tamano="s"
+                      onClick={() => {
+                        setGrupoAbierto(g);
+                      }}
+                    >
+                      Cambiar
+                    </Boton>
+                  </div>
+                );
+              })}
+              <Boton
+                tono="secundario"
+                onClick={() => {
+                  setGrupoAbierto('nuevo');
+                }}
+              >
+                + Grupo nuevo
+              </Boton>
+            </>
+          )}
+        </div>
         <Pregunta titulo="¿Quién lo prepara?">
           <Opcion
             puesto={quien === null}
@@ -901,6 +1019,18 @@ function HojaDeBoton({
           </div>
         )}
       </div>
+      {grupoAbierto !== null && grupos.data !== undefined && (
+        <HojaDeGrupo
+          grupo={grupoAbierto === 'nuevo' ? null : grupoAbierto}
+          platoId={boton.platoId}
+          nombreDelPlato={boton.nombre}
+          productos={grupos.data.productos}
+          orden={conLosGrupos}
+          alCerrar={() => {
+            setGrupoAbierto(null);
+          }}
+        />
+      )}
     </Hoja>
   );
 }

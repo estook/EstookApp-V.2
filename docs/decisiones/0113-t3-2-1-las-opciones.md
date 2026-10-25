@@ -1,7 +1,7 @@
 # 0113 · T3 · 2 · 1 · Las opciones y los extras, lo que se vende a peso y el precio desde el TPV
 
 **Fecha:** 25 de octubre de 2026
-**Estado:** construida, en su pull request (`t3-2-las-opciones`), con la migración 0088.
+**Estado:** construida, en su pull request (#138, `t3-2-las-opciones`), con la migración 0088.
 **Sigue:** la [0111](0111-t3-1-la-botonera.md) y el Anexo 10.3, 10.12 y 11.11. Las maquetas de T3 ·
 2 ([`docs/maquetas/t3-2-lo-de-cada-producto.html`](../maquetas/t3-2-lo-de-cada-producto.html)), **aprobadas por Richi el 25-oct** («sí… auditalas y mira si tienen sentido… pero sí me gusta»), con
 la auditoría que les añadió cinco cosas.

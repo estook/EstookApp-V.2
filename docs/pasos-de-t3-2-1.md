@@ -4,11 +4,11 @@
 >
 > Escrito el 25 de octubre de 2026, en su pull request, **sin fusionar**.
 >
-> | Qué              | Cómo está                                                           |
-> | ---------------- | ------------------------------------------------------------------- |
-> | Pull requests    | **«T3 · 2 · 1 · Las opciones»**, abierta (rama `t3-2-las-opciones`) |
-> | La base de datos | **87 de 87** en producción; esta trae **la 0088**                   |
-> | La API           | 110 consultas y 283 comandos; con esta, **111 y 289**               |
+> | Qué              | Cómo está                                                                  |
+> | ---------------- | -------------------------------------------------------------------------- |
+> | Pull requests    | **«T3 · 2 · 1 · Las opciones» (#138)**, abierta (rama `t3-2-las-opciones`) |
+> | La base de datos | **87 de 87** en producción; esta trae **la 0088**                          |
+> | La API           | 110 consultas y 283 comandos; con esta, **111 y 289**                      |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -29,7 +29,7 @@ tus bebidas», con las copas y los cafés.
 
 **En este orden: primero migrar, después desplegar.** La API nueva necesita la 0088.
 
-1. **En GitHub**: abre el pull request **«T3 · 2 · 1 · Las opciones»** y, con las **tres comprobaciones
+1. **En GitHub**: abre el pull request **«T3 · 2 · 1 · Las opciones» (#138)** y, con las **tres comprobaciones
    en verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
 

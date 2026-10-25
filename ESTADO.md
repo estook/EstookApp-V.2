@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 25 de octubre de 2026 · **En producción T2 · La sala, T3 · 1 · La botonera y el pan y el café** (#135 a #137; migradas hasta la 0087, la API desplegada a las 13:09 y comprobada: 110 consultas y 283 comandos). **T3 · 2 · 1 · Las opciones, en su pull request** ([0113](docs/decisiones/0113-t3-2-1-las-opciones.md), migración 0088): los grupos de opciones con lo que gastan, lo que se vende a peso y el precio desde el TPV
+Última actualización: 25 de octubre de 2026 · **En producción T2 · La sala, T3 · 1 · La botonera y el pan y el café** (#135 a #137; migradas hasta la 0087, la API desplegada a las 13:09 y comprobada: 110 consultas y 283 comandos). **T3 · 2 · 1 · Las opciones, en su pull request (#138)** ([0113](docs/decisiones/0113-t3-2-1-las-opciones.md), migración 0088): los grupos de opciones con lo que gastan, lo que se vende a peso y el precio desde el TPV
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres

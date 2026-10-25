@@ -226,10 +226,12 @@ sección 3.
 
 **2.ª versión** ([`docs/maquetas/t4-la-cocina-y-la-barra.html`](maquetas/t4-la-cocina-y-la-barra.html)),
 con lo que dijo Richi de la 1.ª: **la cocina no confirma nada** (tachar y destachar de un toque, sin PIN
-ni margen; la mesa sale sola al tachar el último), **«Llamar al camarero»**, lo que ya salió **a la
-vista en verde** y plegado abajo a los 40 minutos, sin pestañas, **sin fichas técnicas en el servicio**,
-la alergia de la mesa solo para verla, y el sonido siempre. Esperan su visto bueno y dos preguntas: la
-caja para Windows con Estook Link dentro, y qué es «sin acceso a precios» en el comandero.
+ni margen; la mesa sale sola al tachar el último), **«Llamar al camarero»**, lo que ya salió **en su
+pestaña, «Acabados»** (lo de los últimos 40 minutos a la vista, lo de antes plegado; Richi, 26-oct: «si
+se vende mucho se peta»), **sin fichas técnicas en el servicio**, la alergia de la mesa solo para verla,
+y el sonido siempre. **Richi las dio por buenas el 26-oct** con ese cambio. Siguen abiertas dos
+preguntas que no frenan T4: la caja para Windows con Estook Link dentro (T5), y qué es «sin acceso a
+precios» en el comandero.
 
 ### T4 a T7
 

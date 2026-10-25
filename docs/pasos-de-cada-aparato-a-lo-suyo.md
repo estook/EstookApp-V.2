@@ -4,11 +4,11 @@
 >
 > Escrito el 25 de octubre de 2026, en su pull request, **sin fusionar**.
 >
-> | Qué              | Cómo está                                                                     |
-> | ---------------- | ----------------------------------------------------------------------------- |
-> | Pull requests    | **«Cada aparato a lo suyo» (#140)**, abierta (rama `cada-aparato-a-lo-suyo`)  |
-> | La base de datos | **89 de 89** en producción; esta **no trae migración**                        |
-> | La API           | 112 consultas y 293 comandos; con esta, **112 y 295**                         |
+> | Qué              | Cómo está                                                                    |
+> | ---------------- | ---------------------------------------------------------------------------- |
+> | Pull requests    | **«Cada aparato a lo suyo» (#140)**, abierta (rama `cada-aparato-a-lo-suyo`) |
+> | La base de datos | **89 de 89** en producción; esta **no trae migración**                       |
+> | La API           | 112 consultas y 293 comandos; con esta, **112 y 295**                        |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 

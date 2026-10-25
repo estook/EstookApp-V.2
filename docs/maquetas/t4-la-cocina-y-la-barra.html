@@ -607,11 +607,11 @@
     <!-- 1 · La cocina -->
     <div class="maqueta">
       <p class="rotulo">1 · Cocina</p>
-      <p class="titulo">Una sola pantalla: lo que hay que sacar, y lo que acaba de salir</p>
+      <p class="titulo">En marcha: solo lo que hay que sacar</p>
       <p class="porque">
-        Sin pestañas. Lo que va tarde, arriba. <b>Lo que ya salió se queda a la vista</b>, en verde
-        apagado, para que el cocinero lo vea aunque no sepa qué mesa es. Pasados 40 minutos baja
-        abajo, plegado, con la mesa y una flecha para volver a verlo. El tiempo cambia de color:
+        Dos pestañas: <b>En marcha</b>, lo que hay que sacar, y <b>Acabados</b>, lo que ya salió
+        (maqueta 1b). <b>Lo acabado no se mezcla con lo nuevo</b>: con mucho trabajo, la pantalla no
+        se llena. Lo que va tarde, arriba. El tiempo cambia de color:
         <span class="bien">verde</span>,
         <span style="color: var(--ambar); font-weight: 700">ámbar</span> a los 10 minutos y
         <span class="rojo">rojo</span> a los 20 (se cambian en la caja, en Ajustes del TPV, con el
@@ -619,9 +619,10 @@
       </p>
       <div class="pantalla">
         <div class="cab">
-          <b>Cocina · IKATZ</b>
+          <span class="pest si">En marcha · 5</span><span class="pest">Acabados · 23</span>
           <div class="derecha">
-            <span class="chip">🔔 Suena</span><span class="chip">21:34</span>
+            <span class="chip">Cocina · IKATZ</span><span class="chip">🔔 Suena</span
+            ><span class="chip">21:34</span>
           </div>
         </div>
         <div class="cuerpo">
@@ -736,6 +737,32 @@
                 <div class="plato"><span class="n">1</span><span>Lubina</span></div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1b · Acabados -->
+    <div class="maqueta">
+      <p class="rotulo">1b · Cocina · Acabados</p>
+      <p class="titulo">
+        Lo que ya salió, en su pestaña: lo de ahora a la vista, lo de antes plegado
+      </p>
+      <p class="porque">
+        Al tachar el último plato, la mesa pasa sola aquí. <b>Lo de los últimos 40 minutos</b>,
+        entero y en verde, para que el cocinero lo encuentre aunque no sepa qué mesa es;
+        <b>lo de antes</b>, plegado, con la mesa y una flecha para volver a verlo. Tocar un plato lo
+        destacha, y la mesa vuelve a «En marcha».
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <span class="pest">En marcha · 5</span><span class="pest si">Acabados · 23</span>
+          <div class="derecha">
+            <span class="chip">Cocina · IKATZ</span><span class="chip">21:34</span>
+          </div>
+        </div>
+        <div class="cuerpo">
+          <div class="tablero">
             <div class="tk salido">
               <div class="franja salio">✓ SALIÓ A LAS 21:30 · 12 MIN</div>
               <div class="arriba">
@@ -747,13 +774,36 @@
                 </div>
               </div>
             </div>
+            <div class="tk salido">
+              <div class="franja salio">✓ SALIÓ A LAS 21:12 · 18 MIN</div>
+              <div class="arriba">
+                <span class="mesa">Terraza 1</span><span class="quien">2 personas · Ana</span>
+              </div>
+              <div class="pase">
+                <div class="plato hecho">
+                  <span class="n">1</span><span>Entrecot <span class="hora">✓ 21:12</span></span>
+                </div>
+                <div class="plato hecho">
+                  <span class="n">1</span><span>Lubina <span class="hora">✓ 21:11</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="tk salido">
+              <div class="franja salio" style="background: #3e1d19; color: var(--rojo)">
+                ANULADA A LAS 21:05
+              </div>
+              <div class="arriba">
+                <span class="mesa">Barra · Laura</span
+                ><span class="quien">«se fueron sin pedir»</span>
+              </div>
+            </div>
           </div>
           <div class="esperando" style="padding: 0">
             <div class="plegada">
               <span>▸</span><span>Mesa 7</span><span class="peq">salió a las 20:41</span>
             </div>
             <div class="plegada">
-              <span>▸</span><span>Barra · Laura</span><span class="peq">salió a las 20:32</span>
+              <span>▸</span><span>Mesa 4</span><span class="peq">salió a las 20:32</span>
             </div>
             <div class="plegada">
               <span>▸</span><span>Mesa 1</span><span class="peq">salió a las 20:15</span>
@@ -768,10 +818,11 @@
       <p class="rotulo">2 · Tachar</p>
       <p class="titulo">Un toque tacha, otro toque destacha. Sin PIN, sin preguntas, siempre</p>
       <p class="porque">
-        Es para que la cocina se organice. Al tachar el último plato de la mesa, la tarjeta se queda
-        en verde, «salió», y la sala lo ve en su cuenta (✓ con la hora). Si fue sin querer, otro
-        toque y vuelve. Con un teclado de cocina, la tecla de la tarjeta tacha el siguiente plato.
-        Una mesa anulada en la sala sale tachada en rojo, «ANULADA», y se va sola.
+        Es para que la cocina se organice. Al tachar el último plato de la mesa, la tarjeta pasa
+        sola a «Acabados», y la sala lo ve en su cuenta (✓ con la hora). Si fue sin querer, en
+        «Acabados» otro toque y vuelve a «En marcha». Con un teclado de cocina, la tecla de la
+        tarjeta tacha el siguiente plato. Una mesa anulada en la sala sale en rojo, «ANULADA», y se
+        va sola a «Acabados».
       </p>
     </div>
 

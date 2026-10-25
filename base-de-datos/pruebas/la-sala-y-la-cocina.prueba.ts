@@ -366,11 +366,18 @@ describe('el plano lo dibuja quien lleva el local, en Estook TPV (T2)', () => {
 
 interface LaCartaDeLaSala {
   hoy: string;
-  secciones: {
-    id: string | null;
+  montada: boolean;
+  paginas: {
+    id: string;
     nombre: string;
-    esBebida: boolean;
-    platos: { id: string; nombre: string; precioCentimos: number; agotado: boolean }[];
+    pase: string;
+    platos: {
+      id: string;
+      nombre: string;
+      precioCentimos: number;
+      agotado: boolean;
+      quienLoPrepara: string;
+    }[];
   }[];
   menus: {
     id: string;
@@ -387,19 +394,20 @@ interface LaCartaDeLaSala {
 }
 
 describe('lo que se pide: la carta de la sala y el menú de hoy', () => {
-  it('la carta por secciones, con las de bebidas marcadas solas por su nombre', async () => {
+  it('sin la botonera montada, la carta por secciones, con quién lo prepara y su pase por su nombre (T3)', async () => {
     const carta = losDatos<LaCartaDeLaSala>(await api.consultar(saraTpv, 'la_carta_de_la_sala'));
     expect(carta.hoy).toBe(HOY);
-    expect(carta.secciones.map((s) => [s.nombre, s.esBebida])).toEqual([
-      ['Entrantes', false],
-      ['Principales', false],
-      ['Postres', false],
-      ['Bebidas', true],
+    expect(carta.montada).toBe(false);
+    expect(carta.paginas.map((s) => [s.nombre, s.pase, s.platos[0]?.quienLoPrepara])).toEqual([
+      ['Entrantes', '1', 'cocina'],
+      ['Principales', '2', 'cocina'],
+      ['Postres', 'postre', 'cocina'],
+      ['Bebidas', 'bebidas', 'barra'],
     ]);
     // Las lentejas nacieron en el menú: no se piden sueltas.
-    const nombres = carta.secciones.flatMap((s) => s.platos.map((p) => p.nombre));
+    const nombres = carta.paginas.flatMap((s) => s.platos.map((p) => p.nombre));
     expect(nombres).not.toContain('Lentejas');
-    expect(carta.secciones[1]?.platos.map((p) => [p.nombre, p.precioCentimos])).toEqual([
+    expect(carta.paginas[1]?.platos.map((p) => [p.nombre, p.precioCentimos])).toEqual([
       ['Entrecot', 2200],
       ['Pollo asado', 1200],
     ]);
@@ -422,22 +430,26 @@ describe('lo que se pide: la carta de la sala y el menú de hoy', () => {
     ]);
   });
 
-  it('una sección nueva «Vinos» nace de bebidas, y se cambia con un toque', async () => {
+  it('«Es de bebidas» ya no está: una sección «Vinos» sale en Bebidas y la prepara la barra (T3)', async () => {
     const vinos = losDatos<{ seccionId: string }>(
       await api.ejecutar(rosa, 'crear_seccion', { nombre: 'Vinos' }),
     ).seccionId;
-    const leer = async () =>
-      losDatos<{ secciones: { id: string; esBebida: boolean }[] }>(
-        await api.consultar(rosa, 'mi_carta'),
-      ).secciones.find((s) => s.id === vinos)?.esBebida;
-    expect(await leer()).toBe(true);
-    losDatos(await api.ejecutar(rosa, 'cambiar_seccion', { seccion_id: vinos, es_bebida: false }));
-    expect(await leer()).toBe(false);
-    losDatos(await api.ejecutar(rosa, 'cambiar_seccion', { seccion_id: vinos, es_bebida: true }));
-    expect(await leer()).toBe(true);
+    losDatos(
+      await api.ejecutar(rosa, 'crear_platos', {
+        seccion_id: vinos,
+        platos: [{ nombre: 'Rioja crianza', precio_centimos: 350 }],
+      }),
+    );
+    const carta = losDatos<LaCartaDeLaSala>(await api.consultar(saraTpv, 'la_carta_de_la_sala'));
+    const pagina = carta.paginas.find((g) => g.nombre === 'Vinos');
+    expect(pagina?.pase).toBe('bebidas');
+    expect(pagina?.platos.map((p) => [p.nombre, p.quienLoPrepara])).toEqual([
+      ['Rioja crianza', 'barra'],
+    ]);
+    // Y en la Carta de Estook ya no se cambia: lo dicen las dos preguntas del TPV.
     expect(
-      elFallo(await api.ejecutar(sara, 'cambiar_seccion', { seccion_id: vinos, es_bebida: false })),
-    ).toBe('sin_permiso');
+      elFallo(await api.ejecutar(rosa, 'cambiar_seccion', { seccion_id: vinos, es_bebida: false })),
+    ).not.toMatch(/^no ha fallado/);
   });
 
   it('lo que no está hoy en el menú no entra en el menú, ni lo del menú se pide suelto', async () => {
@@ -557,7 +569,7 @@ describe('la mesa 6, de principio a fin', () => {
     const mandado = losDatos<{ aCocina: number; aLaBarra: number; salen: number[] }>(
       await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: seis }),
     );
-    expect(mandado).toEqual({ aCocina: 0, aLaBarra: 2, salen: [], esperan: [] });
+    expect(mandado).toEqual({ aCocina: 0, aLaBarra: 2, talCual: 0, salen: [], esperan: [] });
     expect(enCocina(await laCocina(), seis)).toBeNull();
     expect((await laMesa(seis)).platos.map((p) => p.estado)).toEqual([
       'en_la_barra',

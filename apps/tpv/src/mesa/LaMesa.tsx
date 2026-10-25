@@ -149,6 +149,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
     const mandado = await ejecutar<{
       aCocina: number;
       aLaBarra: number;
+      talCual?: number;
       salen: number[];
       esperan: number[];
     }>('mandar_a_cocina', { cuenta_id: cuentaId });
@@ -448,19 +449,23 @@ function Avisos({
   return null;
 }
 
-/** «A cocina 4 y a la barra 2 · sale el 1.º, el 2.º espera». */
+/** «A cocina 4, a la barra 2 y 1 tal cual · sale el 1.º, el 2.º espera». */
 function loQueSeMando(m: {
   readonly aCocina: number;
   readonly aLaBarra: number;
+  /** Lo de «Nadie»; una API de antes de T3 no lo dice. */
+  readonly talCual?: number;
   readonly salen: readonly number[];
   readonly esperan: readonly number[];
 }): string {
   const adonde = [
     m.aCocina > 0 ? `a cocina ${m.aCocina}` : null,
     m.aLaBarra > 0 ? `a la barra ${m.aLaBarra}` : null,
+    (m.talCual ?? 0) > 0 ? `${String(m.talCual)} tal cual` : null,
   ]
     .filter((x) => x !== null)
-    .join(' y ');
+    .join(', ')
+    .replace(/, ([^,]*)$/, ' y $1');
   const pases = [
     m.salen.length > 0 ? `sale el ${m.salen.map(elPase).join(' y el ')}` : null,
     m.esperan.length > 0

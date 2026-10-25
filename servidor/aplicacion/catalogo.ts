@@ -223,6 +223,20 @@ import {
   ordenarLasSalas,
   quitarCosaDeLaSala,
 } from './comandos/plano.ts';
+import {
+  cambiarBotonDelTpv,
+  cambiarPaginaDelTpv,
+  crearPaginaDelTpv,
+  loNuevoEntraSolo,
+  montarLaBotonera,
+  nuevoProductoDelTpv,
+  ordenarLasPaginasDelTpv,
+  ordenarLosBotones,
+  ponerBotones,
+  quitarBotonDelTpv,
+  quitarPaginaDelTpv,
+  traerDeLaCartaAlTpv,
+} from './comandos/botonera.ts';
 import { leerLaCarta, leerPaginaConFogon } from './comandos/leer-la-carta.ts';
 import { elMenuEnPdf, misMenus } from './consultas/menus.ts';
 import { miZona } from './consultas/mi-zona.ts';
@@ -372,6 +386,7 @@ import { misCierres, unCierre } from './consultas/cierre.ts';
 import { laJornada } from './consultas/jornada.ts';
 import { elPlano, laCartaDeLaSala, laCocina, laMesa } from './consultas/sala.ts';
 import { elPlanoDelLocal } from './consultas/plano.ts';
+import { laBotonera } from './consultas/botonera.ts';
 import { misLocales } from './consultas/mis-locales.ts';
 import { misPermisos } from './consultas/mis-permisos.ts';
 import { quienSoy } from './consultas/quien-soy.ts';
@@ -508,6 +523,8 @@ export const catalogo = {
     [laCocina.nombre]: laCocina,
     [laCartaDeLaSala.nombre]: laCartaDeLaSala,
     [elPlanoDelLocal.nombre]: elPlanoDelLocal,
+    // T3 · la botonera de Estook TPV, para montarla en Ajustes del TPV › Productos (0111).
+    [laBotonera.nombre]: laBotonera,
     // M7 · compras: lo que se pide, lo que llega, lo que se cobra y a quién.
     [misPedidos.nombre]: misPedidos,
     [unPedido.nombre]: unPedido,
@@ -739,6 +756,21 @@ export const catalogo = {
     [quitarCosaDeLaSala.nombre]: quitarCosaDeLaSala,
     [colocarEnElPlano.nombre]: colocarEnElPlano,
     [empezarConUnaPlantilla.nombre]: empezarConUnaPlantilla,
+    //
+    // La botonera se monta en Estook TPV: qué se vende, en qué página, quién lo prepara y
+    // en qué pase sale (T3, 0111).
+    [montarLaBotonera.nombre]: montarLaBotonera,
+    [traerDeLaCartaAlTpv.nombre]: traerDeLaCartaAlTpv,
+    [loNuevoEntraSolo.nombre]: loNuevoEntraSolo,
+    [crearPaginaDelTpv.nombre]: crearPaginaDelTpv,
+    [cambiarPaginaDelTpv.nombre]: cambiarPaginaDelTpv,
+    [ordenarLasPaginasDelTpv.nombre]: ordenarLasPaginasDelTpv,
+    [quitarPaginaDelTpv.nombre]: quitarPaginaDelTpv,
+    [ponerBotones.nombre]: ponerBotones,
+    [cambiarBotonDelTpv.nombre]: cambiarBotonDelTpv,
+    [ordenarLosBotones.nombre]: ordenarLosBotones,
+    [quitarBotonDelTpv.nombre]: quitarBotonDelTpv,
+    [nuevoProductoDelTpv.nombre]: nuevoProductoDelTpv,
     //
     // La sala abre, pide, manda y **marcha**; la cocina tacha lo que sale y nunca marcha.
     [abrirMesa.nombre]: abrirMesa,

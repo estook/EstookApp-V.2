@@ -8,9 +8,16 @@ import {
   laMesaEnCocina,
   loSiguienteDeLaMesa,
   losPasesDelMenu,
+  LO_MAS_PEDIDO,
+  loQueProponeElNombre,
+  loQueValeEnElBoton,
+  type ColorDeLaBotonera,
   type LaMesaEnCocina,
   type LoSiguiente,
+  type PaseDeLaBotonera,
+  type QuienLoPrepara,
 } from '@estook/dominio';
+import { laBotoneraGuardada, loMasPedido } from '../botonera.ts';
 import { lasSalasDibujadas, type MesaDibujada, type SalaDibujada } from './plano.ts';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { lasSeccionesDeLosMenus, losMenusDelLocal, losPlatosDelDia } from '../menus.ts';
@@ -524,12 +531,19 @@ export interface PlatoDeLaSala {
   readonly agotado: boolean;
   /** Los puestos a mano y los que trae su receta, juntos: la sala no distingue. */
   readonly alergenos: readonly string[];
+  /** Lo que vale en su botón: lo suyo, o lo de su página (T3, Anexo 11.11). */
+  readonly quienLoPrepara: QuienLoPrepara;
+  readonly pase: PaseDeLaBotonera;
+  readonly color: ColorDeLaBotonera | null;
 }
 
-export interface SeccionDeLaSala {
-  readonly id: string | null;
+/** Una página de la botonera; sin montar, una sección de la carta (T3). */
+export interface PaginaDeLaSala {
+  readonly id: string;
   readonly nombre: string;
-  readonly esBebida: boolean;
+  readonly color: ColorDeLaBotonera | null;
+  /** Qué pestaña se marca sola al abrirla (Anexo 11.10). */
+  readonly pase: PaseDeLaBotonera;
   readonly platos: readonly PlatoDeLaSala[];
 }
 
@@ -557,8 +571,12 @@ export interface MenuDeLaSala {
 
 export interface SalidaLaCartaDeLaSala {
   readonly hoy: string;
-  /** Las de comida y las de bebida, en el orden de la Carta; sin platos, no salen. */
-  readonly secciones: readonly SeccionDeLaSala[];
+  /** Si la botonera está montada; sin montar, una página por sección de la carta. */
+  readonly montada: boolean;
+  /** Las páginas de la botonera, en su orden; sin platos, no salen. */
+  readonly paginas: readonly PaginaDeLaSala[];
+  /** Lo fijado y lo más vendido a esta hora en cuatro semanas (Anexo 11.10). */
+  readonly loMasPedido: readonly PlatoDeLaSala[];
   /** Los menús que se sirven hoy, con precio y lo que vale hoy (M10 · 2). */
   readonly menus: readonly MenuDeLaSala[];
 }
@@ -579,9 +597,9 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
     const localId = elLocalDelServicio(contexto);
     // La jornada, no el calendario: la cena que acaba a la una es del menú del día de antes.
     const hoy = fechaOperativa(await laJornadaDeHoy(contexto, localId));
-    const [secciones, platos, sirve, menus] = await Promise.all([
-      contexto.sql<{ id: string; nombre: string; es_bebida: boolean }[]>`
-        select id::text as id, nombre, es_bebida from estook.seccion_de_carta
+    const [secciones, platos, sirve, menus, botonera, masPedido] = await Promise.all([
+      contexto.sql<{ id: string; nombre: string }[]>`
+        select id::text as id, nombre from estook.seccion_de_carta
          where local_id = ${localId}::uuid
          order by orden, nombre
       `,
@@ -590,32 +608,98 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
         select sirve_menus as sirve from estook.local where id = ${localId}::uuid
       `,
       losMenusDelLocal(contexto, localId),
+      laBotoneraGuardada(contexto, localId),
+      loMasPedido(contexto, localId),
     ]);
 
     // Lo que se pide de la carta: activo, en la carta y con precio. Lo agotado sale
     // apagado, para que el camarero lo vea y no lo ofrezca (M10 · 1).
     const deLaCarta = platos.filter((p) => p.activo && p.enLaCarta && p.precioCentimos !== null);
     const agotados = new Set(platos.filter((p) => p.agotado !== null).map((p) => p.id));
-    const comoDeLaSala = (p: (typeof platos)[number]): PlatoDeLaSala => ({
+    const comoDeLaSala = (
+      p: (typeof platos)[number],
+      vale: {
+        readonly quienLoPrepara: QuienLoPrepara;
+        readonly pase: PaseDeLaBotonera;
+        readonly color: ColorDeLaBotonera | null;
+      },
+    ): PlatoDeLaSala => ({
       id: p.id,
       nombre: p.nombre,
       precioCentimos: p.precioCentimos ?? 0,
       miniatura: p.miniatura,
       agotado: p.agotado !== null,
       alergenos: [...new Set([...p.alergenos, ...p.alergenosDeLaReceta])],
+      ...vale,
     });
-    const conPlatos: SeccionDeLaSala[] = secciones
-      .map((s) => ({
-        id: s.id,
-        nombre: s.nombre,
-        esBebida: s.es_bebida,
-        platos: deLaCarta.filter((p) => p.seccionId === s.id).map(comoDeLaSala),
-      }))
-      .filter((s) => s.platos.length > 0);
-    const sueltos = deLaCarta.filter((p) => p.seccionId === null).map(comoDeLaSala);
-    if (sueltos.length > 0) {
-      conPlatos.push({ id: null, nombre: 'Sin sección', esBebida: false, platos: sueltos });
+
+    const montada = botonera.camino !== null;
+    let paginas: PaginaDeLaSala[];
+    if (montada) {
+      // **La botonera manda**: sus páginas, en su orden, y en cada una sus botones, que
+      // apuntan a su plato de la carta (precio, foto y agotado son los de la carta).
+      const porId = new Map(deLaCarta.map((p) => [p.id, p]));
+      paginas = botonera.paginas
+        .map((g) => ({
+          id: g.id,
+          nombre: g.nombre,
+          color: g.color,
+          pase: g.pase,
+          platos: botonera.botones
+            .filter((b) => b.paginaId === g.id)
+            .flatMap((b) => {
+              const plato = porId.get(b.platoId);
+              if (plato === undefined) return [];
+              return [
+                comoDeLaSala(plato, {
+                  ...loQueValeEnElBoton(g, b),
+                  color: b.color ?? g.color,
+                }),
+              ];
+            }),
+        }))
+        .filter((g) => g.platos.length > 0);
+    } else {
+      // Sin montar, la carta como hasta T3: una página por sección, con lo que propone su
+      // nombre; lo que no tiene sección, en «Sin sección».
+      const deLaSeccion = (nombre: string) => ({ ...loQueProponeElNombre(nombre), color: null });
+      paginas = secciones
+        .map((s) => {
+          const vale = deLaSeccion(s.nombre);
+          return {
+            id: s.id,
+            nombre: s.nombre,
+            color: null,
+            pase: vale.pase,
+            platos: deLaCarta.filter((p) => p.seccionId === s.id).map((p) => comoDeLaSala(p, vale)),
+          };
+        })
+        .filter((s) => s.platos.length > 0);
+      const vale = deLaSeccion('');
+      const sueltos = deLaCarta
+        .filter((p) => p.seccionId === null)
+        .map((p) => comoDeLaSala(p, vale));
+      if (sueltos.length > 0) {
+        paginas.push({
+          id: 'sin-seccion',
+          nombre: 'Sin sección',
+          color: null,
+          pase: '1',
+          platos: sueltos,
+        });
+      }
     }
+
+    // «Lo más pedido»: lo fijado primero, y después lo más vendido a esta hora; solo lo que
+    // está en la botonera (o en la carta, sin montar).
+    const enPaginas = new Map(paginas.flatMap((g) => g.platos.map((p) => [p.id, p] as const)));
+    const fijados = botonera.botones.filter((b) => b.fijado).map((b) => b.platoId);
+    const loMasPedidoAhora = [...new Set([...fijados, ...masPedido])]
+      .flatMap((id) => {
+        const plato = enPaginas.get(id);
+        return plato === undefined ? [] : [plato];
+      })
+      .slice(0, Math.max(LO_MAS_PEDIDO.cuantos, fijados.length));
 
     // Los menús de hoy: el del día si hoy se sirve, y los otros siempre; con precio.
     const hoyEs = elDiaDeLaSemana(hoy);
@@ -660,6 +744,6 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
         })),
       });
     }
-    return { hoy, secciones: conPlatos, menus: delMenu };
+    return { hoy, montada, paginas, loMasPedido: loMasPedidoAhora, menus: delMenu };
   },
 });

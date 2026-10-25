@@ -4,7 +4,7 @@ import {
   comoVaElPase,
   elNumeroDelPase,
   laPestanaDeFabrica,
-  laPestanaDeLaSeccion,
+  laPestanaDeLaPagina,
 } from './losPases.ts';
 
 /** Las pestañas de los pases encima de la cuenta (T2, Anexo 11.10 y 11.15). */
@@ -44,13 +44,12 @@ function unaMesa(platos: Partial<PlatoDeLaCuenta>[], pases: LaMesa['pases'] = []
 }
 
 describe('los pases en pestañas', () => {
-  it('al abrir Principales se marca el 2.º; Entrantes, el 1.º; las bebidas, Bebidas', () => {
-    expect(laPestanaDeLaSeccion({ nombre: 'Principales', esBebida: false })).toBe(2);
-    expect(laPestanaDeLaSeccion({ nombre: 'Entrantes', esBebida: false })).toBe(1);
-    expect(laPestanaDeLaSeccion({ nombre: 'Postres', esBebida: false })).toBe('postre');
-    expect(laPestanaDeLaSeccion({ nombre: 'Vinos', esBebida: true })).toBe('bebidas');
-    // Lo que el nombre no dice, no se cambia: manda lo que marcó el camarero.
-    expect(laPestanaDeLaSeccion({ nombre: 'Sugerencias', esBebida: false })).toBeNull();
+  it('al abrir una página se marca la pestaña de su «¿En qué pase sale?» (T3)', () => {
+    expect(laPestanaDeLaPagina('2')).toBe(2);
+    expect(laPestanaDeLaPagina('1')).toBe(1);
+    expect(laPestanaDeLaPagina('3')).toBe(3);
+    expect(laPestanaDeLaPagina('postre')).toBe('postre');
+    expect(laPestanaDeLaPagina('bebidas')).toBe('bebidas');
   });
 
   it('Bebidas no es un pase, y el postre va detrás del 3.º', () => {

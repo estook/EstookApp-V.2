@@ -46,9 +46,10 @@ function nuevoId(): string {
 export function anadirPlato(
   borrador: Borrador,
   plato: PlatoQueSePide,
-  como: { readonly destino: 'cocina' | 'barra'; readonly pase: number | null },
+  como: { readonly destino: 'cocina' | 'barra' | 'ninguno'; readonly pase: number | null },
 ): Borrador {
-  const pase = como.destino === 'barra' ? null : como.pase;
+  // Solo lo de la cocina va por pases; la barra y «Nadie» salen al mandar.
+  const pase = como.destino === 'cocina' ? como.pase : null;
   const igual = borrador.find(
     (l) =>
       l.platoId === plato.id &&

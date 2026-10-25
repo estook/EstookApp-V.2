@@ -972,6 +972,20 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'quitar_cosa_de_la_sala',
         'colocar_en_el_plano',
         'empezar_con_una_plantilla',
+        // La botonera se monta en el TPV (0111), con los Ajustes del TPV.
+        'la_botonera',
+        'montar_la_botonera',
+        'traer_de_la_carta',
+        'lo_nuevo_entra_solo',
+        'crear_pagina_del_tpv',
+        'cambiar_pagina_del_tpv',
+        'ordenar_las_paginas_del_tpv',
+        'quitar_pagina_del_tpv',
+        'poner_botones',
+        'cambiar_boton_del_tpv',
+        'ordenar_los_botones',
+        'quitar_boton_del_tpv',
+        'nuevo_producto_del_tpv',
       ].sort(),
     );
   });

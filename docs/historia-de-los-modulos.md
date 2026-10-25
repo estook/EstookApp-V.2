@@ -3304,6 +3304,27 @@ ojo**, y «Tu sala» sale de Estook.
 Las pruebas: `plano.prueba.ts`, `geometria.prueba.ts`, `losPases.prueba.ts`,
 `la-sala-dibujada.prueba.ts` (contra la base) y `la-sala.spec.ts` (con los toques contados).
 
+### T3 · 1 · La botonera
+
+_25 de octubre de 2026._ Migración `0086`, decisión [0111](decisiones/0111-t3-1-la-botonera.md),
+plan [`m20a-la-sala-y-la-cocina.md`](m20a-la-sala-y-la-cocina.md). **Qué se vende en Estook TPV, quién
+lo prepara y en qué pase sale**, y «Es de bebidas» sale de la Carta. T3 se partió en dos: la 2 trae
+lo de cada producto (opciones, extras, «Monta tus bebidas», a peso).
+
+- **La base** (0086): `pagina_del_tpv`, `boton_del_tpv`, cómo se montó en `local`,
+  `lo_que_propone_el_nombre` y el disparador que mete lo nuevo de la carta en su página; cada local
+  con carta, ya con «Traer toda la carta», y lo «de bebidas» en la barra; `es_bebida`, fuera.
+- **El dominio** (`botonera.ts`): las dos preguntas, sus nombres, los colores y la tabla de lo que
+  se propone por el nombre, la misma que la de la base.
+- **La API**: `la_botonera` y doce órdenes, solo en el TPV; `la_carta_de_la_sala` con las páginas y
+  «Lo más pedido»; `pedir` manda cada cosa a quien la prepara, y `mandar_a_cocina` cuenta lo que va
+  tal cual.
+- **Estook TPV**: Ajustes del TPV › Productos (`productos/`), con los tres caminos, las páginas y
+  sus botones, y la botonera al pedir (`mesa/LoQueSePide`).
+
+Las pruebas: `botonera.prueba.ts`, `la-botonera.prueba.ts` (contra la base, con la migración de lo
+«de bebidas» y lo nuevo que pone un jefe de cocina) y `la-botonera.spec.ts`.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

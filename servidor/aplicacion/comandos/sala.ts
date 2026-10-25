@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { fechaOperativa, losPasesQueSalenAlMandar } from '@estook/dominio';
+import { elDestinoDeLaLinea, fechaOperativa, losPasesQueSalenAlMandar } from '@estook/dominio';
 import { losAgotadosDelLocal } from '../agotados.ts';
+import { laBotoneraEstaMontada, loQueValeParaElPlato } from '../botonera.ts';
 import { lasSeccionesDeLosMenus, losPlatosDelDia } from '../menus.ts';
 import { tocarElServicio } from '../al-segundo.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -252,13 +253,10 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
             precio_centimos: number | null;
             activo: boolean;
             en_la_carta: boolean;
-            es_bebida: boolean;
           }[]
         >`
-          select p.nombre, p.precio_centimos, p.activo, p.en_la_carta,
-                 coalesce(s.es_bebida, false) as es_bebida
+          select p.nombre, p.precio_centimos, p.activo, p.en_la_carta
             from estook.plato p
-            left join estook.seccion_de_carta s on s.id = p.seccion_id
            where p.id = ${p.plato_id ?? null}::uuid and p.local_id = ${localId}::uuid
         `;
         const plato = filas[0];
@@ -308,8 +306,15 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
               porque: `«${plato.nombre}» solo está en el menú: pídelo dentro del menú.`,
             });
           }
-          // La sección dice a dónde va: lo de bebidas, a la barra (0106).
-          if (p.destino === undefined && plato.es_bebida) destino = 'barra';
+          // **La botonera dice quién lo prepara** (T3, Anexo 11.11): la barra, la cocina o
+          // nadie. Con la botonera montada, lo que no tiene botón no se vende en el TPV.
+          const vale = await loQueValeParaElPlato(contexto, localId, p.plato_id ?? '');
+          if (!vale.enLaBotonera && (await laBotoneraEstaMontada(contexto, localId))) {
+            throw new FalloDeAplicacion('no_existe', {
+              porque: `«${plato.nombre}» no está en los botones del TPV: añádelo en Ajustes del TPV › Productos.`,
+            });
+          }
+          if (p.destino === undefined) destino = elDestinoDeLaLinea(vale.quienLoPrepara);
           if (plato.precio_centimos === null) {
             throw new FalloDeAplicacion('faltan_datos', {
               porque: `«${plato.nombre}» no tiene precio en la carta: pónselo en Carta.`,
@@ -529,6 +534,8 @@ export const devolverACocina = comando<{ linea_id: string; motivo: string }, { l
 export interface SalidaMandar {
   readonly aCocina: number;
   readonly aLaBarra: number;
+  /** Lo de «Nadie» (el pan, el agua): se sirve tal cual, sin pantalla (T3, 0111). */
+  readonly talCual: number;
   /** Los pases que han salido en marcha con esto. */
   readonly salen: readonly number[];
   /** Los que se quedan esperando a que la sala los marche. */
@@ -546,7 +553,7 @@ export const mandarACocina = comando<{ cuenta_id: string }, SalidaMandar>({
     const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
     const antes = await losPlatos(contexto, [cuenta.id]);
     const nuevos = antes.filter((l) => l.mandada_en === null && l.quitada_en === null);
-    if (nuevos.length === 0) return { aCocina: 0, aLaBarra: 0, salen: [], esperan: [] };
+    if (nuevos.length === 0) return { aCocina: 0, aLaBarra: 0, talCual: 0, salen: [], esperan: [] };
 
     // Los pases que ya esperaban la marcha antes de esto: siguen esperando al camarero.
     const yaEsperaban = (await losPases(contexto, [cuenta.id]))
@@ -592,6 +599,8 @@ export const mandarACocina = comando<{ cuenta_id: string }, SalidaMandar>({
     const salida = {
       aCocina: nuevos.filter((l) => l.destino === 'cocina').length,
       aLaBarra: nuevos.filter((l) => l.destino === 'barra').length,
+      // La línea de un menú tampoco va a ninguna parte, pero no se sirve: se sirven sus platos.
+      talCual: nuevos.filter((l) => l.destino === 'ninguno' && l.menu_id === null).length,
       salen,
       esperan,
     };

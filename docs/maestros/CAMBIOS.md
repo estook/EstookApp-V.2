@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 25 de octubre** ([0111](../decisiones/0111-t3-1-la-botonera.md)), sin cambiar de versión: el **Anexo** pone en 7.2 lo que guardan la botonera y el local (la sección de la que vino cada página, el botón fijado en «Lo más pedido», cómo se montó y si lo nuevo entra solo), y en 11.11 que **el TPV vende la carta entera mientras no se monta la botonera** y que **un producto nuevo lleva el IVA de la actividad** hasta que el plato guarde el suyo con el cobro.
+
 **El 24 de octubre, por la noche** ([0110](../decisiones/0110-t2-la-sala.md)), sin cambiar de versión: el **Anexo** pone en 7.2 lo que no se abre en su propia tabla (`elemento_de_sala`) y la forma de la mesa, y en 11.9 que las salas se ordenan con «Antes» y «Después».
 
 **El 24 de octubre, por la tarde** ([0109](../decisiones/0109-el-pin-y-la-contrasena.md)), sin cambiar de versión: el **Manifiesto** (31) dice que en Estook se entra con Google o con contraseña, que el PIN es para los aparatos del local y que lo olvidado se recupera con un enlace al correo; el **Plan** lo apunta en M4; la **Auditoría de flujos** gana el fallo «alguien olvida su contraseña o su PIN»; y la **Arquitectura** (16) cuenta los enlaces de recuperación.

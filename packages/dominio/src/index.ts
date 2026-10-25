@@ -1128,3 +1128,23 @@ export type {
   PlantillaDeSala,
   Tamano,
 } from './plano.ts';
+
+// ── T3 · la botonera de Estook TPV ───────────────────────────────────────────
+export {
+  CAMINOS_DE_LA_BOTONERA,
+  COLORES_DE_LA_BOTONERA,
+  LO_MAS_PEDIDO,
+  NOMBRE_DE_QUIEN_LO_PREPARA,
+  NOMBRE_DEL_PASE,
+  PASES_DE_LA_BOTONERA,
+  QUIEN_LO_PREPARA,
+  elDestinoDeLaLinea,
+  loQueProponeElNombre,
+  loQueValeEnElBoton,
+} from './botonera.ts';
+export type {
+  CaminoDeLaBotonera,
+  ColorDeLaBotonera,
+  PaseDeLaBotonera,
+  QuienLoPrepara,
+} from './botonera.ts';

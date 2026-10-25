@@ -4,11 +4,11 @@
 >
 > Escrito el 25 de octubre de 2026, en su pull request, **sin fusionar**.
 >
-> | Qué              | Cómo está                                                            |
-> | ---------------- | -------------------------------------------------------------------- |
-> | Pull requests    | **«El pan, el agua y los cafés»**, abierta (rama `el-pan-y-el-cafe`) |
-> | La base de datos | **86 de 86** en producción; esta trae **la 0087**                    |
-> | La API           | **110 consultas y 283 comandos**, las mismas: no le añade ninguna    |
+> | Qué              | Cómo está                                                                   |
+> | ---------------- | --------------------------------------------------------------------------- |
+> | Pull requests    | **«El pan, el agua y los cafés» (#137)**, abierta (rama `el-pan-y-el-cafe`) |
+> | La base de datos | **86 de 86** en producción; esta trae **la 0087**                           |
+> | La API           | **110 consultas y 283 comandos**, las mismas: no le añade ninguna           |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -26,7 +26,7 @@ Lo que se miró y lo que se decidió, en la [0112](decisiones/0112-el-pan-y-el-c
 
 ## Lo que te toca · fusionar, migrar y desplegar
 
-1. **En GitHub**: abre el pull request **«El pan, el agua y los cafés»** y, con las **tres
+1. **En GitHub**: abre el pull request **«El pan, el agua y los cafés» (#137)** y, con las **tres
    comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
 

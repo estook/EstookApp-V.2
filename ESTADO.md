@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 25 de octubre de 2026 · **En producción T2 · La sala (#135) y T3 · 1 · La botonera (#136)**, con el PIN y la contraseña (#134): migradas hasta la 0086 y la API con 110 consultas y 283 comandos, comprobado el 25-oct ([0110](docs/decisiones/0110-t2-la-sala.md), [0111](docs/decisiones/0111-t3-1-la-botonera.md)). **El pan, el agua y los cafés, en su pull request** ([0112](docs/decisiones/0112-el-pan-y-el-cafe.md), migración 0087)
+Última actualización: 25 de octubre de 2026 · **En producción T2 · La sala (#135) y T3 · 1 · La botonera (#136)**, con el PIN y la contraseña (#134): migradas hasta la 0086 y la API con 110 consultas y 283 comandos, comprobado el 25-oct ([0110](docs/decisiones/0110-t2-la-sala.md), [0111](docs/decisiones/0111-t3-1-la-botonera.md)). **El pan, el agua y los cafés, en su pull request (#137)** ([0112](docs/decisiones/0112-el-pan-y-el-cafe.md), migración 0087)
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres

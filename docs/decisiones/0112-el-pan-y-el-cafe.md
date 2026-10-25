@@ -1,7 +1,7 @@
 # 0112 · El pan, el agua y los cafés, donde los busca el camarero
 
 **Fecha:** 25 de octubre de 2026
-**Estado:** construida, en su pull request (`el-pan-y-el-cafe`), con la migración 0087.
+**Estado:** construida, en su pull request (#137, `el-pan-y-el-cafe`), con la migración 0087.
 **Sigue:** la [0111](0111-t3-1-la-botonera.md) (T3 · 1 · La botonera) y el Anexo 11.10 y 11.11.
 **Lo pidió Richi** al probar la botonera, el 25-oct: «mira cómo tienen el pan y el café otras
 empresas, ya que no creo que vayan en entrantes… los detalles marcan la diferencia, ayuda al

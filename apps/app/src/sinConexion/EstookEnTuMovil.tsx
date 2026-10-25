@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Boton } from '@estook/ui';
+import { Boton, esUnMovil, instalar, usarComoSeInstala } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarFichar } from '../ganchos/usarFichar.ts';
 import { CLAVE_DE_MI_MOVIL, usarMiMovil } from '../ganchos/usarMiMovil.ts';
-import { usarComoSeInstala } from '../ganchos/usarComoSeInstala.ts';
 import { comoEstaEsteMovil, recibirEnEsteMovil, type ComoEstaElMovil } from './avisosAlMovil.ts';
-import { esUnMovil, instalar } from './instalar.ts';
 
 /**
  * **Estook en tu móvil**, una tarjeta pequeña en el Panel (I · decisión 0070).
@@ -19,8 +17,10 @@ import { esUnMovil, instalar } from './instalar.ts';
  *       (la mejora 14: «al fichar por primera vez, nunca al entrar»), o enseguida a
  *       quien no ficha, como un area manager.
  *
- * Solo en el móvil: en el ordenador no se instala nada y los avisos se miran en la
- * campana. Siempre se pueden encender después en Ajustes → Avisos.
+ * **Instalar, también en el ordenador** (0115, Richi: «acceder por internet suena feo»):
+ * donde el navegador deja (Chrome y Edge), con su botón. Los avisos, solo en el móvil: en
+ * el ordenador se miran en la campana. Siempre se pueden encender después en Ajustes →
+ * Avisos.
  */
 
 const CERRADA_INSTALAR = 'estook.instalar.cerrada';
@@ -107,20 +107,25 @@ export function EstookEnTuMovil() {
     void comoEstaEsteMovil(encendido).then(setComoEsta);
   }, [miMovil.data, encendido]);
 
-  if (!esUnMovil() || yo?.esDemostracion === true) return null;
+  if (yo?.esDemostracion === true) return null;
+  const enElMovil = esUnMovil();
 
-  // 1 · A la pantalla de inicio.
+  // 1 · A la pantalla de inicio, o al ordenador.
   if ((comoSeInstala === 'boton' || comoSeInstala === 'iphone') && !cerradaInstalar) {
     return (
       <Recuadro
-        titulo="Pon Estook en tu pantalla de inicio"
+        titulo={
+          enElMovil ? 'Pon Estook en tu pantalla de inicio' : 'Instala Estook en este ordenador'
+        }
         alCerrar={() => {
           cerrar(CERRADA_INSTALAR);
           setCerradaInstalar(true);
         }}
       >
         <p className="text-secundario text-texto-suave">
-          Se abre como una app, fichas sin señal y te avisa en el móvil.
+          {enElMovil
+            ? 'Se abre como una app, fichas sin señal y te avisa en el móvil.'
+            : 'Con su icono y su ventana, sin la barra del navegador.'}
         </p>
         {comoSeInstala === 'boton' ? (
           <div>
@@ -150,6 +155,7 @@ export function EstookEnTuMovil() {
   }
 
   // 2 · Los avisos, cuando tienen sentido: después de fichar, o a quien no ficha.
+  if (!enElMovil) return null;
   const haFichado =
     fichar.mio !== undefined && (fichar.mio.abierto !== null || fichar.mio.minutosDeHoy > 0);
   const noFicha = fichar.mio !== undefined && !fichar.mio.puedoFichar;

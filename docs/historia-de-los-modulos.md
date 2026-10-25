@@ -3371,6 +3371,21 @@ Cada una, un plato con su botón y su escandallo.
 
 Las pruebas: `bebidas.prueba.ts`, `monta-tus-bebidas.prueba.ts` y `monta-tus-bebidas.spec.ts`.
 
+### Cada aparato a lo suyo
+
+_25 de octubre de 2026._ Sin migración, decisión [0115](decisiones/0115-cada-aparato-a-lo-suyo.md). Lo
+vio Richi al mirar las maquetas de T4. **Se ficha en la caja**, con el botón naranja y sin entrar; **el
+comandero, solo la sala**, y sin fichar no entra; **los Ajustes del TPV, solo en la caja**; el aparato
+para fichar ya no se vincula; y **Estook TPV se instala**, con su manifiesto y su trabajador de servicio.
+
+- **La API**: `quien_ficha_en_la_caja` y `fichar_en_la_caja`; `entrar_con_pin` no deja entrar sin fichar
+  en un comandero; los ajustes, `enLosAparatos: ['caja']`.
+- **Estook TPV**: `puerta/FicharEnLaCaja`, `puerta/InstalaEstookTpv`, la barra de arriba con «Fichar» y
+  cada pantalla según el aparato (`Aplicacion.tsx`).
+- **Lo común**: lo de instalar, en `@estook/ui`; el trabajador de servicio, con una caché por app.
+
+Las pruebas: `la-puerta.prueba.ts`, `cada-aparato-a-lo-suyo.spec.ts` y `personas-y-fichajes.spec.ts`.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

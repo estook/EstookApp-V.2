@@ -448,6 +448,10 @@ describe('las puertas se cierran solas', () => {
         'vincular_con_codigo',
         'latir_el_aparato',
         'entrar_con_pin',
+        // 0115 · fichar en la caja con el botón naranja, sin entrar: como en el aparato
+        // para fichar, por su llave (y solo la de una caja) y el PIN de quien teclea.
+        'quien_ficha_en_la_caja',
+        'fichar_en_la_caja',
         // 0109 · recuperar el acceso, que se pide precisamente sin haber entrado: el
         // enlace al correo (diez por hora desde una dirección, y no dice si un correo
         // existe) y lo que se hace con él, que vale por su token, de un uso.
@@ -772,16 +776,18 @@ describe('los secretos no se guardan para repetirlos', () => {
     //
     // T1 (0107) · el latido de cada aparato, cada minuto; bloquear, que solo acaba el
     // turno; y fichar desde el TPV, que protege el estado de la persona como en el
-    // aparato para fichar.
+    // aparato para fichar. Y en la caja (0115), lo mismo: guardarlo guardaría el PIN.
     expect(sinRecordar).toEqual([
       'bloquear',
       'fichar_aqui',
       'fichar_en_el_tpv',
+      'fichar_en_la_caja',
       'latir_el_aparato',
       'leer_el_canal',
       'preparar_el_aparato_sin_conexion',
       'probar_mi_movil',
       'quien_ficha_aqui',
+      'quien_ficha_en_la_caja',
       'sigo_aqui',
       'ya_me_ha_llegado',
     ]);

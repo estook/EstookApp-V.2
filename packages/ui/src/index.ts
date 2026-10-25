@@ -263,3 +263,16 @@ export {
 
 export { usarAtajos } from './ganchos/usarAtajos.ts';
 export type { Atajos } from './ganchos/usarAtajos.ts';
+
+// ── Instalar la app en el aparato (0070; Estook TPV, 0115) ───────────────────
+export {
+  alCambiarComoSeInstala,
+  comoSeInstalaAhora,
+  escucharSiSePuedeInstalar,
+  esUnIphone,
+  esUnMovil,
+  estaInstalada,
+  instalar,
+} from './ganchos/instalar.ts';
+export type { ComoSeInstala } from './ganchos/instalar.ts';
+export { usarComoSeInstala } from './ganchos/usarComoSeInstala.ts';

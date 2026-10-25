@@ -1,13 +1,14 @@
 /**
- * Instalar Estook en la pantalla de inicio (I · decisión 0070).
+ * Instalar Estook, o Estook TPV, en la pantalla de inicio (I · decisión 0070; 0115).
  *
  * **En Android** (y en Chrome y Edge del ordenador) el navegador avisa de que se puede
  * instalar (`beforeinstallprompt`), y se le pide en el momento: es el botón
- * «Instalar» de la tarjeta del Panel. **En el iPhone, Apple no deja**: se hace desde
+ * «Instalar» de la tarjeta del Panel, o de la hoja que sale al abrir Estook TPV. **En el iPhone, Apple no deja**: se hace desde
  * Compartir → «Añadir a pantalla de inicio», y la tarjeta lo enseña con un dibujo.
  *
  * El aviso del navegador llega una vez y al cargar, así que se escucha desde que
- * arranca la app (`principal.tsx`) y se guarda hasta que se use.
+ * arranca cada app (su `principal.tsx`) y se guarda hasta que se use. Vive aquí, en
+ * `@estook/ui`, porque las dos apps se instalan igual.
  */
 
 interface PeticionDeInstalar extends Event {

@@ -79,7 +79,7 @@ export interface ElPlano {
     readonly mesas: readonly MesaDelPlano[];
     readonly cosas: readonly CosaDibujada[];
   }[];
-  /** El lápiz de arriba del plano: quien puede dibujar la sala, y no en el móvil de nadie. */
+  /** El lápiz de arriba del plano: quien puede dibujar la sala, y solo en la caja (0115). */
   readonly puedeDibujar: boolean;
   readonly sinMesa: readonly CuentaEnElPlano[];
   readonly tocaMarchar: readonly {

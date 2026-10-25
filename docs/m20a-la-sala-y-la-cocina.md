@@ -11,9 +11,11 @@
 > en producción** ([0110](decisiones/0110-t2-la-sala.md), #135). **T3 · Los productos va en dos**: **T3 ·
 > 1 · La botonera, en producción** ([0111](decisiones/0111-t3-1-la-botonera.md), #136), con el pan y el
 > café ([0112](decisiones/0112-el-pan-y-el-cafe.md), #137); y **T3 · 2**, también en dos: **T3 · 2 · 1 ·
-> Las opciones** ([0113](decisiones/0113-t3-2-1-las-opciones.md), migración 0088, #138) y **T3 · 2 · 2 ·
-> Monta tus bebidas** ([0114](decisiones/0114-t3-2-2-monta-tus-bebidas.md), migración 0089), construidas,
-> cada una en su pull request; **lo siguiente, T4 · Cocina y barra.**
+> Las opciones** ([0113](decisiones/0113-t3-2-1-las-opciones.md), #138) y **T3 · 2 · 2 · Monta tus
+> bebidas** ([0114](decisiones/0114-t3-2-2-monta-tus-bebidas.md), #139), **en producción**. Antes de T4,
+> **cada aparato a lo suyo** ([0115](decisiones/0115-cada-aparato-a-lo-suyo.md)), en su pull request:
+> fichar en la caja, el comandero solo la sala y Estook TPV instalable. **T4 · Cocina y barra**, con sus
+> maquetas de la 2.ª versión esperando a Richi.
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -205,6 +207,29 @@ caña, la Coca-Cola y una copa, y pedirlas).
 
 **Lo que decidí al construirlo**: los doce de la [0114](decisiones/0114-t3-2-2-monta-tus-bebidas.md),
 sección 3.
+
+### Cada aparato a lo suyo, entregada (25-oct-2026)
+
+Lo vio Richi en las maquetas de T4, y va antes ([0115](decisiones/0115-cada-aparato-a-lo-suyo.md), sin
+migración): **el comandero, solo la sala**, y sin fichar no entra; **se ficha en la caja**, con el botón
+naranja, sin entrar; **los Ajustes del TPV, solo en la caja**; el aparato para fichar ya no se vincula; y
+**Estook TPV instalable**, como Estook, que ahora también se ofrece a instalar en el ordenador.
+
+**Las pruebas**: `la-puerta.prueba.ts` (sin fichar en el comandero, fichar en la caja, dónde se cae y los
+ajustes solo en la caja), `cada-aparato-a-lo-suyo.spec.ts` (el recorrido entero en la pantalla) y
+`personas-y-fichajes.spec.ts` (quien no tiene correo ficha con su PIN en la caja).
+
+**Lo que decidí al construirlo**: los once de la [0115](decisiones/0115-cada-aparato-a-lo-suyo.md),
+sección 3.
+
+### T4 · La cocina y la barra, las maquetas (25-oct)
+
+**2.ª versión** ([`docs/maquetas/t4-la-cocina-y-la-barra.html`](maquetas/t4-la-cocina-y-la-barra.html)),
+con lo que dijo Richi de la 1.ª: **la cocina no confirma nada** (tachar y destachar de un toque, sin PIN
+ni margen; la mesa sale sola al tachar el último), **«Llamar al camarero»**, lo que ya salió **a la
+vista en verde** y plegado abajo a los 40 minutos, sin pestañas, **sin fichas técnicas en el servicio**,
+la alergia de la mesa solo para verla, y el sonido siempre. Esperan su visto bueno y dos preguntas: la
+caja para Windows con Estook Link dentro, y qué es «sin acceso a precios» en el comandero.
 
 ### T4 a T7
 

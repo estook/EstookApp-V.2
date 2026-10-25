@@ -47,7 +47,7 @@ function elEnlacePara(para: string, que: 'contrasena' | 'pin'): string {
 const cuantosA = (para: string) => correo.mandados.filter((c) => c.para === para).length;
 
 let barCentro: string;
-let llaveDeLaTablet: string;
+let llaveDeLaCaja: string;
 
 beforeAll(async () => {
   base = await levantarBase();
@@ -231,18 +231,20 @@ describe('He olvidado mi PIN, en el aparato del local', () => {
     );
 
     const vinculado = losDatos<{ llave: string; tuPinNuevo: string | null }>(
+      // La caja, que es el primero que se vincula; en un comandero no se entra sin fichar (0115).
       await api.ejecutar(rosa, 'vincular_el_primer_aparato', {
         local_id: barCentro,
-        funcion: 'comandero',
-        nombre: 'Tablet terraza',
+        funcion: 'caja',
+        nombre: 'Caja 1',
+        cajon_nuevo: 'Cajón 1',
       }),
     );
-    llaveDeLaTablet = vinculado.llave;
+    llaveDeLaCaja = vinculado.llave;
     expect(vinculado.tuPinNuevo).toMatch(/^\d{6}$/);
     expect(
       losDatos<{ persona: { nombre: string } }>(
         await api.ejecutar(null, 'entrar_con_pin', {
-          llave: llaveDeLaTablet,
+          llave: llaveDeLaCaja,
           pin: vinculado.tuPinNuevo,
         }),
       ).persona.nombre,
@@ -254,7 +256,7 @@ describe('He olvidado mi PIN, en el aparato del local', () => {
     expect(
       losDatos(
         await api.ejecutarDesde(otraDireccion(), null, 'pedir_pin_por_correo', {
-          llave: llaveDeLaTablet,
+          llave: llaveDeLaCaja,
           correo: SARA,
         }),
       ),
@@ -270,15 +272,15 @@ describe('He olvidado mi PIN, en el aparato del local', () => {
 
     expect(
       elFallo(
-        await api.ejecutar(null, 'entrar_con_pin', { llave: llaveDeLaTablet, pin: pinDeAntes }),
+        await api.ejecutar(null, 'entrar_con_pin', { llave: llaveDeLaCaja, pin: pinDeAntes }),
       ),
     ).not.toBeNull();
     const dentro = losDatos<{ turno: string; persona: { nombre: string } }>(
-      await api.ejecutar(null, 'entrar_con_pin', { llave: llaveDeLaTablet, pin: nuevo.pin }),
+      await api.ejecutar(null, 'entrar_con_pin', { llave: llaveDeLaCaja, pin: nuevo.pin }),
     );
     expect(dentro.persona.nombre).toBe('Sara');
     expect(
-      (await api.consultar(tokenDelAparato(dentro.turno, llaveDeLaTablet), 'yo_en_el_tpv')).estado,
+      (await api.consultar(tokenDelAparato(dentro.turno, llaveDeLaCaja), 'yo_en_el_tpv')).estado,
     ).toBe('ok');
   });
 
@@ -287,7 +289,7 @@ describe('He olvidado mi PIN, en el aparato del local', () => {
     expect(
       losDatos(
         await api.ejecutarDesde(otraDireccion(), null, 'pedir_pin_por_correo', {
-          llave: llaveDeLaTablet,
+          llave: llaveDeLaCaja,
           correo: LUIS,
         }),
       ),
@@ -298,7 +300,7 @@ describe('He olvidado mi PIN, en el aparato del local', () => {
   it('el enlace del PIN caduca a la media hora', async () => {
     losDatos(
       await api.ejecutarDesde(otraDireccion(), null, 'pedir_pin_por_correo', {
-        llave: llaveDeLaTablet,
+        llave: llaveDeLaCaja,
         correo: SARA,
       }),
     );

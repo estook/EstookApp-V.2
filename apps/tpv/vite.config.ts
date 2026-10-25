@@ -1,9 +1,13 @@
-import { copyFileSync, mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwind from '@tailwindcss/vite';
 import { laPoliticaDeSeguridad } from '../../herramientas/politica-de-seguridad.ts';
+import {
+  DE_PUBLIC_DEL_TPV,
+  elTrabajadorDeServicio,
+} from '../../herramientas/trabajador-de-servicio.ts';
 
 /**
  * Estook TPV (M20A, 0056): la sala y la cocina, en su propia puerta del mismo código.
@@ -21,6 +25,9 @@ const RAIZ = fileURLToPath(new URL('../../', import.meta.url));
  * **La dirección del QR para vincular** (T1, Anexo 11.3): `estook.com/tpv/vincular/#482913`.
  * Pages sirve ficheros, así que esa carpeta tiene que existir: es la misma página. El
  * código va detrás del `#`, que no llega a ningún servidor.
+ *
+ * Lo de `public/` (el manifiesto y los iconos) se pide con direcciones relativas: en la copia,
+ * un nivel más arriba. Sin eso, desde el QR no se podía instalar (0115).
  */
 function laDireccionDelQr(): Plugin {
   return {
@@ -29,7 +36,8 @@ function laDireccionDelQr(): Plugin {
     closeBundle() {
       const dist = fileURLToPath(new URL('./dist/', import.meta.url));
       mkdirSync(`${dist}vincular`, { recursive: true });
-      copyFileSync(`${dist}index.html`, `${dist}vincular/index.html`);
+      const pagina = readFileSync(`${dist}index.html`, 'utf8').replaceAll('="./', '="../');
+      writeFileSync(`${dist}vincular/index.html`, pagina);
     },
   };
 }
@@ -56,6 +64,8 @@ export default defineConfig(({ mode }) => {
         direccionDeSupabase: variables['VITE_SUPABASE_URL'] ?? '',
         enDesarrollo: mode !== 'production',
       }),
+      // Instalable (0115): abre sin señal, con su caché, que no es la de Estook.
+      elTrabajadorDeServicio({ cache: 'estook-tpv', dePublic: DE_PUBLIC_DEL_TPV }),
     ],
     build: {
       outDir: 'dist',

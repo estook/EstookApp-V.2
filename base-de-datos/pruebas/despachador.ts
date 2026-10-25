@@ -62,9 +62,9 @@ export interface ApiDePrueba {
   /** El despachador entero, para lo que no trae persona: el aviso de Stripe y el reloj (0048). */
   readonly despachador: Despachador;
   /**
-   * **Un aparato para fichar**, vinculado como desde T1 (0107): quien lleva el local
-   * entra con su correo en el aparato y lo vincula con la función «Fichar». Devuelve su
-   * llave. Se hace en una sesión aparte, que se cierra al vincular.
+   * **Un aparato para fichar de los de antes** (0068): desde la 0115 ya no se vincula
+   * ninguno nuevo, pero los que hay siguen. Se vincula con el correo en una sesión aparte,
+   * que se cierra al vincular, y se deja como quedó en la base. Devuelve su llave.
    */
   vincularParaFichar(correo: string, localId: string, nombre: string): Promise<string>;
 }
@@ -200,16 +200,26 @@ export function montarLaApi(
 
   return {
     async vincularParaFichar(correo, localId, nombre) {
+      // **Desde la 0115 ya no se vincula ninguno nuevo**: se ficha en la caja. Los de antes
+      // siguen funcionando, y esto monta uno como quedó en la base: vinculado (aquí, como
+      // comandero, que es lo que se puede) y con su función, «fichar».
       const resultado = await despachador.ejecutar(
         quien(await this.entrar(correo)),
         'vincular_el_primer_aparato',
-        { local_id: localId, funcion: 'fichar', nombre },
+        { local_id: localId, funcion: 'comandero', nombre },
         crypto.randomUUID(),
       );
       if (resultado.estado !== 'ok') {
         throw new Error(`No se ha podido vincular el aparato: ${JSON.stringify(resultado)}`);
       }
-      return (resultado.datos as { llave: string }).llave;
+      const { llave, aparato } = resultado.datos as {
+        llave: string;
+        aparato: { terminalId: string };
+      };
+      await bd.query(`update estook.terminal set funcion = 'fichar' where id = $1`, [
+        aparato.terminalId,
+      ]);
+      return llave;
     },
 
     async entrar(correo) {
@@ -250,4 +260,24 @@ export function losDatos<T>(resultado: Resultado): T {
 /** El código de un resultado que tenía que fallar. */
 export function elFallo(resultado: Resultado): string {
   return resultado.estado === 'fallo' ? resultado.codigo : `no ha fallado (${resultado.estado})`;
+}
+
+/**
+ * **Entrar con el PIN en un aparato del local, como en la vida** (0115): en un comandero no
+ * se entra sin haber fichado, así que, si hace falta, antes se ficha la entrada en la caja.
+ * Devuelve lo que devuelve `entrar_con_pin`. Las pruebas que miran justo eso, el «Sin
+ * fichar», llaman a `entrar_con_pin` a pelo.
+ */
+export async function entrarFichando(
+  api: ApiDePrueba,
+  llave: string,
+  pin: string,
+  llaveDeLaCaja: string,
+): Promise<Resultado> {
+  const primero = await api.ejecutar(null, 'entrar_con_pin', { llave, pin });
+  if (primero.estado !== 'fallo' || primero.codigo !== 'falta_fichar') return primero;
+  losDatos(
+    await api.ejecutar(null, 'fichar_en_la_caja', { llave: llaveDeLaCaja, pin, que: 'entrada' }),
+  );
+  return api.ejecutar(null, 'entrar_con_pin', { llave, pin });
 }

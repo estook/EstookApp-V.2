@@ -106,6 +106,8 @@ import {
   dondePuedoVincular,
   entrarConPin,
   ficharEnElTpv,
+  ficharEnLaCaja,
+  quienFichaEnLaCaja,
   guardarPinYBloqueo,
   latirElAparato,
   losAparatos,
@@ -966,6 +968,9 @@ export const catalogo = {
     [entrarConPin.nombre]: entrarConPin,
     [bloquear.nombre]: bloquear,
     [ficharEnElTpv.nombre]: ficharEnElTpv,
+    // 0115: fichar en la caja, con el botón naranja, sin entrar.
+    [quienFichaEnLaCaja.nombre]: quienFichaEnLaCaja,
+    [ficharEnLaCaja.nombre]: ficharEnLaCaja,
     [cambiarAparato.nombre]: cambiarAparato,
     [desvincularAparato.nombre]: desvincularAparato,
     [guardarPinYBloqueo.nombre]: guardarPinYBloqueo,

@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { tokenDelAparato } from '@estook/dominio';
 import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
-import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
+import { elFallo, entrarFichando, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
 
 /**
  * M20A · 1 · 1 · La sala y la cocina (decisión 0106, migración 0081), contra una base de
@@ -165,17 +165,8 @@ beforeAll(async () => {
   luis = await api.entrar(LUIS);
 
   // Los aparatos del local: la caja, vinculada con el correo de Rosa (en otra sesión,
-  // que se cierra al vincular), y dos tablets con su código. Cada uno entra con su PIN.
-  const enUnAparato = async (llave: string, correo: string) =>
-    tokenDelAparato(
-      losDatos<{ turno: string }>(
-        await api.ejecutar(null, 'entrar_con_pin', {
-          llave,
-          pin: base.pinDe(correo, 'bar-centro'),
-        }),
-      ).turno,
-      llave,
-    );
+  // que se cierra al vincular), y dos tablets con su código. Cada uno entra con su PIN; en
+  // una tablet, fichando antes en la caja (0115).
   const laCaja = losDatos<{ llave: string }>(
     await api.ejecutar(await api.entrar(ROSA), 'vincular_el_primer_aparato', {
       local_id: await base.localPorCodigo('bar-centro'),
@@ -184,6 +175,13 @@ beforeAll(async () => {
       cajon_nuevo: 'Cajón 1',
     }),
   ).llave;
+  const enUnAparato = async (llave: string, correo: string) =>
+    tokenDelAparato(
+      losDatos<{ turno: string }>(
+        await entrarFichando(api, llave, base.pinDe(correo, 'bar-centro'), laCaja),
+      ).turno,
+      llave,
+    );
   rosaTpv = await enUnAparato(laCaja, ROSA);
   const unaTablet = async (nombre: string) => {
     const { codigo } = losDatos<{ codigo: string }>(

@@ -285,7 +285,7 @@ El modelo entero —persona, terminal, operador, aprobación— está en la [Arq
 
 **El operador es quien lo usa ahora.** Entra tecleando **solo su PIN** —el terminal ya sabe de qué local es— y todo lo que hace queda **a su nombre, con la hora y el aparato**: abrir una mesa, mandar, cobrar, invitar, quitar un plato. No es una firma electrónica: es identificarse en un aparato del local. **Una persona sin correo** entra igual, con su PIN (0057).
 
-**Se bloquea solo** (11.4): la caja y el comandero compartido **al acabar cada cobro y a los 2 minutos** sin tocar; el comandero personal, a los 10; las pantallas de cocina y de barra, nunca. Bloqueado enseña el teclado del PIN, y el siguiente entra en un segundo. **Fichar y entrar son el mismo PIN**: a quien no ha fichado se le ofrece en un toque, y el local puede pedir que **solo quien está fichado use el TPV** (apagado de fábrica).
+**Se bloquea solo** (11.4): la caja y el comandero compartido **al acabar cada cobro y a los 2 minutos** sin tocar; el comandero personal, a los 10; las pantallas de cocina y de barra, nunca. Bloqueado enseña el teclado del PIN, y el siguiente entra en un segundo. **Se ficha en la caja** ([0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)), con el botón naranja «Fichar» y el mismo PIN, sin entrar en ella, o en Estook con el móvil. **En un comandero no se entra sin haber fichado**, ni se ficha ahí; en la caja, a quien no ha fichado se le ofrece la entrada en un toque, y el local puede pedir que **solo quien está fichado la use** (apagado de fábrica).
 
 **Lo que pide un encargado se aprueba ahí mismo.** Quitar un plato ya en cocina, un descuento por encima del límite, abrir el cajón sin venta: sale «lo aprueba un encargado» y el encargado teclea su PIN en el mismo terminal. **Una aprobación sirve para una cosa, una vez**, y caduca en dos minutos; queda quién lo pidió, quién lo aprobó, qué y por qué.
 
@@ -1304,15 +1304,15 @@ _Añadido en la versión 1.4 (23 de octubre de 2026, [decisión 0107](../decisio
 
 **La función de cada aparato se elige al vincularlo y no se adivina nunca**: es lo que hacen Square (cada código de aparato va con su modo) y Toast (al montarlo se le dice su modo, su impresora y su cajón). Un aparato no puede saber solo si es la caja o el móvil de un camarero, y si se equivoca, el servicio se rompe.
 
-### Las cinco funciones
+### Las funciones
 
-| Función                | Qué hace                                                                                       | Quién lo usa                                                        | Se bloquea                                                     | Lo que se le pone                                           |
-| ---------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------- |
-| **Caja**               | Todo: mesas, venta rápida, cobrar, **la caja de su cajón**, ventas de hoy y Ajustes del TPV    | Cualquiera, con su PIN                                              | Al acabar cada cobro y a los 2 min sin tocar                   | **Su cajón** (uno) y su impresora de tickets                |
-| **Comandero**          | Mesas, pedir, mandar y marchar, la cuenta, y cobrar si el local lo deja (con datáfono o bolsa) | **Compartido**: cualquiera con su PIN · **Personal**: solo su dueño | Compartido: tras cobrar y a los 2 min · Personal: a los 10 min | Opcional, una impresora para la cuenta; nunca un cajón      |
-| **Pantalla de cocina** | La cocina (3.2): el ticket entero de cada mesa, tachar, «Fuera»                                | La cocina, **sin PIN**                                              | Nunca: no tiene operador                                       | Nada; si quiere papel, la impresora es de la cocina (11.11) |
-| **Pantalla de barra**  | Lo mismo que la de cocina, con lo que prepara la barra (11.11)                                 | La barra, sin PIN                                                   | Nunca                                                          | Nada                                                        |
-| **Fichar**             | El quiosco de fichajes que ya existe (0068)                                                    | Cada uno, con su PIN                                                | Después de cada fichaje                                        | Nada                                                        |
+| Función                | Qué hace                                                                                                                                                                                 | Quién lo usa                                                        | Se bloquea                                                     | Lo que se le pone                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------- |
+| **Caja**               | Todo: mesas, venta rápida, cobrar, **la caja de su cajón**, ventas de hoy, **fichar** (el botón naranja) y **Ajustes del TPV, solo aquí** (0115)                                         | Cualquiera, con su PIN                                              | Al acabar cada cobro y a los 2 min sin tocar                   | **Su cajón** (uno) y su impresora de tickets                |
+| **Comandero**          | **Solo la sala** (0115): mesas, pedir, mandar y marchar, la cuenta, y cobrar si el local lo deja (con datáfono o bolsa). Ni inicio, ni fichar, ni ajustes; sin haber fichado no se entra | **Compartido**: cualquiera con su PIN · **Personal**: solo su dueño | Compartido: tras cobrar y a los 2 min · Personal: a los 10 min | Opcional, una impresora para la cuenta; nunca un cajón      |
+| **Pantalla de cocina** | La cocina (3.2): el ticket entero de cada mesa, tachar, «Fuera»                                                                                                                          | La cocina, **sin PIN**                                              | Nunca: no tiene operador                                       | Nada; si quiere papel, la impresora es de la cocina (11.11) |
+| **Pantalla de barra**  | Lo mismo que la de cocina, con lo que prepara la barra (11.11)                                                                                                                           | La barra, sin PIN                                                   | Nunca                                                          | Nada                                                        |
+| **Fichar**             | **Ya no se vincula** (0115): se ficha en la caja. Los que había siguen, con el quiosco de 0068, hasta quitarlos                                                                          | Cada uno, con su PIN                                                | Después de cada fichaje                                        | Nada                                                        |
 
 - **Lo que separa la caja del comandero es el cajón**: un aparato de caja tiene siempre el suyo, y el efectivo que cobra va a la caja de ese cajón. **Dos aparatos de caja pueden compartir un cajón** (la barra con dos pantallas), y entonces comparten su caja abierta. Un comandero no tiene cajón: si cobra en efectivo, va a la bolsa de quien cobra (5.5), y si el local no usa bolsa, el comandero cobra solo con tarjeta.
 - **El comandero personal** es el móvil de alguien: se vincula a nombre de esa persona y **solo entra su PIN** («Este móvil es de Sara»). Si esa persona deja el local, el aparato se desvincula solo.
@@ -1392,17 +1392,17 @@ En el aparato nuevo
 | Caja y comandero compartido   | **Al acabar cada cobro** y a los **2 minutos** sin tocar | De 1 a 10 minutos; lo del cobro, sí o no |
 | Comandero personal            | A los **10 minutos** sin tocar                           | De 5 a 30 minutos                        |
 | Pantalla de cocina y de barra | Nunca                                                    | —                                        |
-| Fichar                        | Después de cada fichaje                                  | —                                        |
+| Fichar (los de antes, 0115)   | Después de cada fichaje                                  | —                                        |
 
 - **«Bloquear»** está siempre arriba a la derecha: un toque y el siguiente entra con su PIN.
 - **No se bloquea en mitad de algo**: con el teclado del cobro abierto o escribiendo una nota, el tiempo cuenta desde el último toque, y lo que se estaba pidiendo **se queda en la mesa sin mandar** (1 · 2, decisión 4), con aviso al siguiente que la abra.
-- **Fichar y entrar son el mismo PIN** (3.4): a quien no ha fichado le sale, después del PIN, «No has fichado. ¿Entrada ahora?» con un toque. Si el local pide que **solo quien ha fichado use el TPV** (apagado de fábrica), sin fichar no entra. **Fichar la salida** está en el inicio, y si tiene mesas abiertas pregunta a quién se las pasa.
+- **Se ficha en la caja** (3.4, [0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)): «Fichar», en naranja arriba, **también en la pantalla del PIN**: cada uno teclea su PIN y ficha la entrada, la pausa o la salida sin entrar en la caja; o en Estook con el móvil. **En un comandero, sin fichar no se entra**: «Sin fichar · ficha la entrada en la caja o en Estook». En la caja, a quien no ha fichado le sale, después del PIN, «No has fichado» con «Fichar la entrada y entrar»; si el local pide que **solo quien ha fichado la use** (apagado de fábrica), sin fichar no entra. **Fichar la salida con mesas abiertas** pregunta a quién se las pasa; con el botón naranja, sin entrar, dice que se entre a pasarlas.
 - **Lo que pide un encargado** se aprueba en el mismo aparato con su PIN (3.4): una cosa, una vez, dos minutos.
 - **Sin conexión**, los PIN los comprueba Link; sin Link, el aparato los cifra con su llave pública y la API los mira al volver (0070). Sin nube y sin Link solo entra quien ya entró ese día en ese aparato (3.4).
 
 ## 11.5 El inicio
 
-**Lo primero que ve el primero que entra cada día.** Lo que no puede hacer en ese aparato, o no tiene permiso para hacer, **no sale**, ni apagado.
+**Lo primero que ve el primero que entra cada día en la caja.** **El inicio es de la caja** ([0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)): un comandero entra directo a la sala. Lo que no tiene permiso para hacer **no sale**, ni apagado.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -1419,19 +1419,19 @@ En el aparato nuevo
 
 | Baldosa                | Qué abre                                                | En qué aparatos               | Quién la ve (Roles 1.12)                      |
 | ---------------------- | ------------------------------------------------------- | ----------------------------- | --------------------------------------------- |
-| **Mesas**              | El plano (11.8)                                         | Caja y comandero              | Quien toma nota                               |
+| **Mesas**              | El plano (11.8)                                         | Caja (el comandero entra ahí) | Quien toma nota                               |
 | **Venta rápida**       | Pedir y cobrar sin abrir mesa (3.1)                     | Caja                          | Quien cobra                                   |
 | **Llevar y reparto**   | Para llevar con nombre, y los pedidos de reparto (10.8) | Caja y comandero              | Quien toma nota                               |
 | **Caja**               | Abrir, entradas y salidas, X, cerrar (11.6)             | Caja                          | Jefe de sala y gerente; el camarero, su bolsa |
 | **Ventas de hoy**      | Los tickets del día (11.7)                              | Caja y comandero              | Todos; el camarero, **los suyos**             |
-| **Fichar**             | Entrada, pausa, vuelta y salida del que está            | Todos con operador            | Todos                                         |
-| **Agotados**           | Marcar y desmarcar (3.1)                                | Caja y comandero              | Quien puede agotar                            |
+| **Fichar**             | Arriba, en naranja: entrada, pausa, vuelta y salida     | Caja (0115)                   | Todos                                         |
+| **Agotados**           | Marcar y desmarcar (3.1)                                | Caja (0115)                   | Quien puede agotar                            |
 | **Pantalla de cocina** | La cocina en grande, para mirar (sin tachar)            | Caja                          | Jefe de sala y gerente                        |
-| **Ajustes del TPV**    | 11.13                                                   | Caja (y comandero compartido) | Gerente; el jefe de cocina, lo de cocina      |
+| **Ajustes del TPV**    | 11.13                                                   | Caja (0115)                   | Gerente; el jefe de cocina, lo de cocina      |
 
 - **«Ahora»**, a la derecha (abajo en el móvil): la caja (abierta con su fondo, o «Sin abrir»), las mesas abiertas y las que **toca marchar**, los pedidos de reparto por aceptar y **lo que falla** (impresora sin papel, «sin internet», cosas sin subir), cada uno con su botón de qué hacer. Si no hay nada que decir, no dice nada.
 - **Arriba, siempre**: el local, el aparato, quién está y **Bloquear**; el estado de la conexión, solo si no va bien (10.9).
-- **Dónde cae cada uno** (decidido por la IA, 0107): **el primero del día, en el inicio**; **tras un bloqueo, el siguiente cae en Mesas** (o en Venta rápida si el local no tiene mesas), que es a lo que viene. El inicio está a un toque en la esquina de arriba a la izquierda.
+- **Dónde cae cada uno** (decidido por la IA, 0107): **en un comandero, siempre en la sala** (0115); en la caja, **el primero del día, en el inicio**, y **tras un bloqueo, el siguiente cae en Mesas** (o en Venta rápida si el local no tiene mesas), que es a lo que viene. El inicio está a un toque en la esquina de arriba a la izquierda.
 - **Con la caja sin abrir** en un aparato de caja, la baldosa Caja sale la primera y en naranja: **«Abrir caja»**. No impide nada más (11.6).
 
 ## 11.6 La caja
@@ -1639,7 +1639,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 ## 11.13 Ajustes del TPV
 
-En la caja (y en el comandero compartido), con el PIN de quien puede (Roles 1.12). **Solo lo de vender**: la carta, los precios del día a día y el equipo se cambian en Estook.
+**Solo en la caja** ([0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)), con el PIN de quien puede (Roles 1.12). **Solo lo de vender**: la carta, los precios del día a día y el equipo se cambian en Estook.
 
 | Apartado               | Qué tiene                                                                                  | Quién                    |
 | ---------------------- | ------------------------------------------------------------------------------------------ | ------------------------ |

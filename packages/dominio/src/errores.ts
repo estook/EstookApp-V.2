@@ -292,8 +292,8 @@ export const ERRORES = {
 
   falta_fichar: error(
     'falta_fichar',
-    'En este local, para usar el TPV hay que fichar la entrada.',
-    'Ficha la entrada y entra.',
+    'Para usar el TPV hay que fichar la entrada.',
+    'Ficha la entrada en la caja, o en Estook con el móvil, y entra.',
     403,
   ),
 

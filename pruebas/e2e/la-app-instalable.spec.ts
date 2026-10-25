@@ -1,17 +1,18 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
-import { tokenDeAlguienNuevo, vincularParaFichar } from './en-la-app.ts';
+import { tokenDeAlguienNuevo } from './en-la-app.ts';
 
 /**
  * I · La app instalable (decisión 0070), desde la pantalla.
  *
  *   1 · **Fichar sin señal**: se guarda en el móvil, se dice, y sale solo al volver,
  *       marcado «sin conexión».
- *   2 · **El aparato del local sin wifi**: el PIN se guarda cifrado y se apunta al
- *       volver la conexión.
- *   3 · **Sin señal, lo último que se vio**: con el trabajador de servicio, la app abre
+ *   2 · **Sin señal, lo último que se vio**: con el trabajador de servicio, la app abre
  *       sin red y enseña lo guardado, con el aviso arriba.
- *   4 · **Ajustes → Avisos**: este móvil, la columna «Móvil» y cuándo suena.
+ *   3 · **Ajustes → Avisos**: este móvil, la columna «Móvil» y cuándo suena.
+ *
+ * El aparato del local para fichar sin wifi se fue con el aparato (0115): ahora se ficha en
+ * la caja de Estook TPV, o en el móvil, que sí ficha sin señal (el 1).
  *
  * Cada proyecto usa su propia gente: corren a la vez contra la misma API.
  */
@@ -138,72 +139,6 @@ test('fichar sin señal: se guarda, se dice, y sale solo al volver', async ({
   expect(suyos.fichajes).toHaveLength(1);
   expect(suyos.fichajes[0]?.sinConexion?.entrada).toBe(true);
   await ejecutar(page.request, lucia.token ?? '', 'fichar_salida', { sin_donde: 'sin_senal' });
-});
-
-test('el aparato del local sin wifi: el PIN se guarda cifrado y se apunta al volver', async ({
-  page,
-  context,
-}, info) => {
-  test.slow();
-  const extra = await alguienNuevo(page.request, info.project.name, false);
-  // Vinculado en Estook TPV, con la función «Fichar» (T1, 0107).
-  const puesto = await vincularParaFichar(
-    page.request,
-    ROSA,
-    `Tablet sin wifi ${info.project.name}`,
-  );
-  await abrirSinQueSeCaiga(page, APP);
-  await page.evaluate((llave) => {
-    window.localStorage.clear();
-    window.localStorage.setItem('estook.aparato-para-fichar', JSON.stringify(llave));
-  }, puesto);
-  await abrirSinQueSeCaiga(page, `${APP}#/aparato-para-fichar`);
-  await expect(page.getByText('Teclea tu PIN para fichar')).toBeVisible();
-  // Al encenderse con wifi se prepara: ya tiene su llave pública guardada.
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () =>
-          JSON.parse(window.localStorage.getItem('estook.aparato-para-fichar.datos') ?? '{}') as {
-            clavePublica?: unknown;
-          },
-      ),
-    )
-    .toMatchObject({ clavePublica: expect.any(String) });
-
-  await context.setOffline(true);
-  for (const cifra of extra.pin) {
-    await page.getByRole('button', { name: cifra, exact: true }).click();
-  }
-  await expect(page.getByText('Sin conexión', { exact: true }).first()).toBeVisible();
-  await page.getByRole('button', { name: 'Fichar la entrada' }).click();
-  await expect(
-    page.getByText('Entrada guardada. Se apunta sola al volver la conexión.'),
-  ).toBeVisible();
-  await expect(page.getByText(/1 fichaje por mandar/)).toBeVisible();
-  // En el aparato no queda ningún PIN legible.
-  const guardado = await page.evaluate(
-    () =>
-      new Promise<string>((resolver) => {
-        const peticion = indexedDB.open('estook');
-        peticion.onsuccess = () => {
-          const todo = peticion.result.transaction('pendientes').objectStore('pendientes').getAll();
-          todo.onsuccess = () => {
-            resolver(JSON.stringify(todo.result));
-          };
-        };
-      }),
-  );
-  expect(guardado).toContain('pin_cifrado');
-  expect(guardado).not.toContain(extra.pin);
-
-  await context.setOffline(false);
-  await expect(page.getByText(/por mandar/)).toHaveCount(0, { timeout: 45_000 });
-  const suyos = await consultar<{
-    fichajes: { sinUbicacion: string | null; sinConexion?: { entrada: boolean } }[];
-  }>(page.request, extra.rosa, 'fichajes_de_una_persona', { persona_id: extra.personaId });
-  expect(suyos.fichajes[0]?.sinUbicacion).toBe('aparato_del_local');
-  expect(suyos.fichajes[0]?.sinConexion?.entrada).toBe(true);
 });
 
 test.describe('con el trabajador de servicio', () => {

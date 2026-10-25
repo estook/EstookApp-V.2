@@ -29,9 +29,7 @@ export interface LoQueYaEs {
 const QUE_HACE: Record<(typeof FUNCIONES_QUE_SE_ELIGEN)[number], string> = {
   caja: 'El mostrador. Mesas, barra, para llevar y cobrar. Tiene el cajón del dinero.',
   comandero:
-    'La tablet de la sala (para todos) o el móvil de un camarero (solo suyo). Mesas y pedir; nunca abre un cajón.',
-  fichar:
-    'El aparato de la entrada: cada uno teclea su PIN y ficha la entrada, la pausa o la salida.',
+    'La tablet de la sala (para todos) o el móvil de un camarero (solo suyo). Solo la sala: mesas, pedir y cobrar.',
 };
 
 export function ElegirQueSera({

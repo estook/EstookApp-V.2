@@ -45,9 +45,8 @@ export function guardarLaLlave(llave: string | null): void {
 
 /**
  * La pantalla de fichar ya existe, con su modo sin conexión (0068, 0070), y vive en
- * Estook: `estook.com/app/#/aparato-para-fichar`, con su llave en este nombre. Un
- * aparato vinculado aquí como «Fichar» deja ahí su llave y se va a ella; y uno puesto
- * antes de T1, que ya la tiene, también.
+ * Estook: `estook.com/app/#/aparato-para-fichar`, con su llave en este nombre. Los que se
+ * vincularon así siguen allí; **ya no se vinculan nuevos** (0115): se ficha en la caja.
  */
 const DONDE_VIVE_LA_DEL_QUIOSCO = 'estook.aparato-para-fichar';
 
@@ -60,15 +59,6 @@ export function laDelQuiosco(): string | null {
   } catch {
     return null;
   }
-}
-
-export function irAlQuiosco(llave: string, nombre: string): void {
-  try {
-    window.localStorage.setItem(DONDE_VIVE_LA_DEL_QUIOSCO, JSON.stringify({ llave, nombre }));
-  } catch {
-    // Sin dónde guardarla, la pantalla de fichar dirá que no está vinculado.
-  }
-  window.location.assign(`${import.meta.env.BASE_URL}../app/#/aparato-para-fichar`);
 }
 
 export function crearClienteDelTpv(opciones: {

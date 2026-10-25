@@ -6,7 +6,6 @@ import {
   crearClienteDelTpv,
   guardarLaLlave,
   hayApi,
-  irAlQuiosco,
   LA_VERSION,
   leerLaLlave,
 } from '../datos/cliente.ts';
@@ -29,7 +28,7 @@ import { YaNoEstaVinculado } from './YaNoEstaVinculado.tsx';
  *
  *   sin llave       → Vincular este aparato (el código, o el correo en el primero)
  *   con llave       → su latido cada minuto; si ya no vale, «ya no está vinculado»
- *     · fichar      → la pantalla de fichar de siempre (0068), con su llave
+ *     · fichar      → ya no se usa (0115): se ficha en la caja; lo dice, y cómo cambiarlo
  *     · caja o comandero, sin nadie dentro → el PIN
  *     · con alguien dentro → lo de dentro, con su turno, hasta que se bloquea
  *
@@ -42,10 +41,6 @@ export function LaPuerta({ children }: { readonly children: ReactNode }) {
   const [desvinculado, setDesvinculado] = useState<{ readonly local: string | null } | null>(null);
 
   const alVincular = useCallback((vinculado: AparatoVinculado) => {
-    if (vinculado.aparato.funcion === 'fichar') {
-      irAlQuiosco(vinculado.llave, vinculado.aparato.nombre);
-      return;
-    }
     guardarLaLlave(vinculado.llave);
     setLlave(vinculado.llave);
   }, []);
@@ -134,10 +129,6 @@ function ConLlave({
     if (retirado) alDesvincular(local.current);
   }, [retirado, alDesvincular]);
 
-  useEffect(() => {
-    if (aparato?.funcion === 'fichar') irAlQuiosco(llave, aparato.nombre);
-  }, [aparato, llave]);
-
   const alSalir = useCallback(() => {
     setDentro(null);
     void latido.refetch();
@@ -174,9 +165,16 @@ function ConLlave({
   }
 
   if (aparato.funcion === 'fichar') {
+    // **El aparato para fichar ya no se usa** (0115): se ficha en la caja o en Estook.
     return (
       <Pantalla>
-        <Cargando que="la pantalla de fichar" />
+        <EstadoVacio
+          esLaPagina
+          titulo="Ahora se ficha en la caja"
+          frase="Con el botón naranja «Fichar» de la caja, o en Estook con el móvil. Para usar este aparato como comandero, quítalo en la caja (Ajustes del TPV › Aparatos) y vincúlalo otra vez."
+          dibujo="local"
+          sinAccionPorque="Este aparato ya no sirve para fichar."
+        />
       </Pantalla>
     );
   }

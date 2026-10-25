@@ -6,31 +6,24 @@ import { irA, irALaMesa } from '../navegar.ts';
 import { LaBarraDeArriba } from './LaBarraDeArriba.tsx';
 
 /**
- * **El inicio** (maquetas 4 y 23; Anexo 11.5): lo primero que ve el primero que entra
- * cada día. **Solo sale lo que funciona y lo que se puede hacer en este aparato**: en T1,
- * las mesas, fichar, los agotados y los Ajustes del TPV. La caja, las ventas y la venta
+ * **El inicio de la caja** (maquetas 4 y 23; Anexo 11.5): lo primero que ve el primero que
+ * entra cada día. **Solo sale lo que funciona**: las mesas, los agotados y los Ajustes del
+ * TPV; fichar, arriba en naranja (0115). Un comandero no tiene inicio: va a la sala. La caja, las ventas y la venta
  * rápida llegan con su entrega, no se enseñan apagadas.
  *
  * A la derecha (abajo en el móvil), **«Ahora»**: lo que toca marchar, con su botón. Si no
  * hay nada que decir, no dice nada.
  */
 export function ElInicio() {
-  const { yo, aparato, datos } = usarSesion();
+  const { yo } = usarSesion();
   const tomaNota = puedeEditar(yo.permisos, 'accion.tomar_nota');
   const agota = puedeEditar(yo.permisos, 'accion.marcar_agotado');
+  // El inicio es de la caja (0115): sus ajustes, también. Fichar está arriba, en naranja.
   const ajustes =
-    !aparato.esPersonal &&
-    (puedeEditar(yo.permisos, 'accion.vincular_aparatos') ||
-      puedeEditar(yo.permisos, 'accion.ajustes_del_tpv'));
+    puedeEditar(yo.permisos, 'accion.vincular_aparatos') ||
+    puedeEditar(yo.permisos, 'accion.ajustes_del_tpv');
 
   const baldosas = [
-    {
-      titulo: 'Fichar',
-      frase: comoEstaElFichaje(datos.fichaje.estado, datos.fichaje.desde),
-      alTocar: () => {
-        irA('fichar');
-      },
-    },
     ...(agota
       ? [
           {
@@ -75,16 +68,6 @@ export function ElInicio() {
       </main>
     </div>
   );
-}
-
-function comoEstaElFichaje(estado: string, desde: string | null): string {
-  const hora =
-    desde === null
-      ? ''
-      : ` desde las ${new Date(desde).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
-  if (estado === 'dentro') return `Dentro${hora}`;
-  if (estado === 'en_pausa') return `En la pausa${hora}`;
-  return 'Sin fichar: ficha la entrada';
 }
 
 /**

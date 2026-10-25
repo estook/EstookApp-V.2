@@ -7,14 +7,18 @@ import type { DentroDelTpv, ElAparatoPorDentro } from '../datos/tipos.ts';
 import { Puntos, Teclado } from './Teclado.tsx';
 import { cifraDeLaTecla } from './teclas.ts';
 import { OlvideMiPin } from './OlvideMiPin.tsx';
+import { FicharEnLaCaja } from './FicharEnLaCaja.tsx';
 
 /**
  * **Teclea tu PIN, y ya está** (maquetas 3 y 22; Anexo 11.4): sin buscar antes la cara.
  * El PIN es único en el local, así que dice quién es. En el móvil de un camarero, «Hola,
  * Sara»: solo entra el suyo.
  *
- * Después del PIN, a quien no ha fichado se le ofrece la entrada en un toque (maqueta
- * 19). Si el local pide fichar para usar el TPV, «Entrar sin fichar» no sale.
+ * Después del PIN, en la caja, a quien no ha fichado se le ofrece la entrada en un toque
+ * (maqueta 19). Si el local pide fichar para usar el TPV, «Entrar sin fichar» no sale.
+ * **En un comandero no se entra sin fichar** (0115): se ficha antes, en la caja o en Estook.
+ *
+ * **En la caja, «Fichar» en naranja arriba** (0115): cada uno ficha con su PIN sin entrar.
  *
  * **¿Has olvidado tu PIN?** (0109) manda un enlace al correo para sacar uno nuevo, sin
  * esperar al gerente.
@@ -40,8 +44,13 @@ export function ElPin({
     readonly pin: string;
     readonly nombre: string;
     readonly dentro: DentroDelTpv | null;
+    /** En un comandero no se ficha: se dice dónde, y nada más. */
+    readonly enLaCaja: boolean;
   } | null>(null);
   const [olvidado, setOlvidado] = useState(false);
+  const [fichando, setFichando] = useState(false);
+  const [hecho, setHecho] = useState<string | null>(null);
+  const enLaCaja = aparato.funcion === 'caja';
   // El reloj de la pantalla **solo se pinta**: la hora de lo que se hace la pone el servidor.
   const [reloj, setReloj] = useState(() => Date.now());
 
@@ -71,6 +80,7 @@ export function ElPin({
             pin: elPin,
             nombre: respuesta.datos.persona.nombre,
             dentro: respuesta.datos,
+            enLaCaja: true,
           });
           return;
         }
@@ -87,6 +97,7 @@ export function ElPin({
           pin: elPin,
           nombre: typeof nombre === 'string' ? nombre : '',
           dentro: null,
+          enLaCaja: respuesta.error.detalle?.['enLaCaja'] !== false,
         });
         return;
       }
@@ -113,8 +124,8 @@ export function ElPin({
   }, []);
 
   useEffect(() => {
-    // Escribiendo el correo, las cifras van al campo y no al PIN.
-    if (sinFichar !== null || olvidado) return undefined;
+    // Escribiendo el correo, las cifras van al campo y no al PIN; fichando, al de fichar.
+    if (sinFichar !== null || olvidado || fichando) return undefined;
     const alPulsar = (evento: KeyboardEvent) => {
       const tecla = cifraDeLaTecla(evento);
       if (tecla === 'borrar') borrar();
@@ -124,7 +135,30 @@ export function ElPin({
     return () => {
       window.removeEventListener('keydown', alPulsar);
     };
-  }, [teclear, borrar, sinFichar, olvidado]);
+  }, [teclear, borrar, sinFichar, olvidado, fichando]);
+
+  // «✓ Ana · entrada a las 12:02» se queda unos segundos y se va.
+  useEffect(() => {
+    if (hecho === null) return undefined;
+    const fuera = window.setTimeout(() => {
+      setHecho(null);
+    }, 5_000);
+    return () => {
+      window.clearTimeout(fuera);
+    };
+  }, [hecho]);
+
+  if (fichando) {
+    return (
+      <FicharEnLaCaja
+        llave={llave}
+        alAcabar={(loHecho) => {
+          setFichando(false);
+          setHecho(loHecho);
+        }}
+      />
+    );
+  }
 
   if (olvidado) {
     return (
@@ -135,6 +169,31 @@ export function ElPin({
           setError(null);
         }}
       />
+    );
+  }
+
+  if (sinFichar !== null && !sinFichar.enLaCaja) {
+    // **En un comandero no se entra sin fichar, ni se ficha** (0115).
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5 text-texto">
+        <section className="flex w-full max-w-[32rem] flex-col gap-e4 rounded-mayor border-2 border-mal bg-superficie p-e6">
+          <h1 className="text-cifra-media font-bold text-mal">Sin fichar</h1>
+          <p className="text-seccion">
+            {sinFichar.nombre === '' ? 'Ficha' : `${sinFichar.nombre}, ficha`} la entrada en la caja
+            o en Estook con el móvil, y entra.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setSinFichar(null);
+              setError(null);
+            }}
+            className="min-h-toque rounded-grande border-2 border-borde text-cuerpo font-bold"
+          >
+            Volver
+          </button>
+        </section>
+      </main>
     );
   }
 
@@ -255,6 +314,29 @@ export function ElPin({
         </p>
       </section>
       <section className="flex flex-col items-center gap-e5 border-borde bg-superficie/40 p-e5 md:w-[28rem] md:border-l md:p-e7">
+        {enLaCaja && (
+          <div className="flex w-full flex-col items-end gap-e2">
+            <button
+              type="button"
+              onClick={() => {
+                setFichando(true);
+                setHecho(null);
+                setPin('');
+              }}
+              className="min-h-toque rounded-redondo bg-naranja px-e5 font-bold text-sobre-naranja"
+            >
+              Fichar
+            </button>
+            {hecho !== null && (
+              <span
+                role="status"
+                className="self-stretch rounded-grande bg-bien-suave p-e3 text-center font-bold text-bien"
+              >
+                {hecho}
+              </span>
+            )}
+          </div>
+        )}
         {aparato.dueno !== null ? (
           <div className="flex flex-col items-center gap-e2 text-center">
             <span className="flex size-16 items-center justify-center rounded-redondo bg-charcoal text-pantalla font-bold">

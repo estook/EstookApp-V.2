@@ -11,7 +11,7 @@ const APP = 'http://localhost:5174/';
  *   · **la caja**: «Vincula este aparato» → «Entrar con mi correo» → «¿Qué es este
  *     aparato?» Caja, con su cajón → **quien crea el restaurante no tenía PIN**, así que
  *     sale con el suyo (0109) → la sesión no se queda: lo que queda es la llave
- *   · el PIN, «No has fichado» → el inicio, con lo que funciona
+ *   · el PIN, «No has fichado» → el inicio, con lo que funciona, y «Fichar» arriba (0115)
  *   · Ajustes del TPV › Aparatos › Añadir: un comandero para todos, y su código
  *   · **la tablet**, otro aparato: escribe el código y llega con su función y su nombre
  *   · PIN y bloqueo: «Solo entra quien ha fichado», guardado
@@ -87,9 +87,11 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await page.keyboard.type(pin);
   await expect(page.getByRole('heading', { name: /No has fichado la entrada/ })).toBeVisible();
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
-  for (const baldosa of ['Mesas', 'Fichar', 'Agotados', 'Ajustes del TPV']) {
+  for (const baldosa of ['Mesas', 'Agotados', 'Ajustes del TPV']) {
     await expect(page.getByRole('button', { name: new RegExp(`^${baldosa}`) })).toBeVisible();
   }
+  // Fichar, arriba y en naranja (0115): en la caja ficha todo el equipo.
+  await expect(page.getByRole('button', { name: 'Fichar', exact: true })).toBeVisible();
   // Lo que todavía no funciona no sale, ni apagado.
   await expect(page.getByRole('button', { name: /^Venta rápida/ })).toHaveCount(0);
 

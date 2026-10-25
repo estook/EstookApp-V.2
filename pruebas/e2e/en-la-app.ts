@@ -137,28 +137,27 @@ export async function cerrarLaCajaDe(
 }
 
 /**
- * **Un aparato para fichar**, vinculado como desde T1 (0107): quien lleva el local entra con
- * su correo y lo vincula en Estook TPV con la función «Fichar». Devuelve lo que la pantalla
- * de fichar guarda en el aparato (`estook.aparato-para-fichar`). Va por la API porque en las
- * pruebas Estook TPV y Estook no comparten dirección, y la llave vive en la de Estook.
+ * **Una caja de Estook TPV**, vinculada como en la vida (T1, 0107): quien lleva el local entra
+ * con su correo y la vincula, con su cajón. Desde la 0115 **se ficha en ella**, con el botón
+ * naranja. Devuelve su llave, que Estook TPV guarda en `estook.tpv.llave`.
  */
-export async function vincularParaFichar(
+export async function vincularUnaCaja(
   peticion: APIRequestContext,
   correo: string,
   nombre: string,
-): Promise<{ llave: string; nombre: string }> {
+): Promise<string> {
   const token = await tokenDe(peticion, correo);
   const respuesta = await peticion.get(`${API}/v1/consultas/quien_soy`, {
     headers: { authorization: `Bearer ${token}` },
   });
   const quien = (await respuesta.json()) as { datos: { local: { id: string } } };
-  const vinculado = await ejecutarEnLaApi<{ llave: string; aparato: { nombre: string } }>(
+  const vinculado = await ejecutarEnLaApi<{ llave: string }>(
     peticion,
     token,
     'vincular_el_primer_aparato',
-    { local_id: quien.datos.local.id, funcion: 'fichar', nombre },
+    { local_id: quien.datos.local.id, funcion: 'caja', nombre, cajon_nuevo: nombre },
   );
-  return { llave: vinculado.llave, nombre: vinculado.aparato.nombre };
+  return vinculado.llave;
 }
 
 /**

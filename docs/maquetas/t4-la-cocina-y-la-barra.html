@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Maquetas de T4</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --fondo: #0f1719;
+        --barra: #111c1f;
+        --tarjeta: #18252a;
+        --marcado: #22343a;
+        --borde: #2c4047;
+        --texto: #f1efea;
+        --suave: #9fb0b3;
+        --naranja: #ff7a00;
+        --verde: #4ec98a;
+        --ambar: #f0ae4e;
+        --azul: #6fb7e8;
+        --rojo: #f0796c;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      a {
+        color: #ff9a3d;
+      }
+      body {
+        margin: 0;
+        background: #0b1113;
+        color: var(--texto);
+        font-family: Montserrat, system-ui, sans-serif;
+        padding: 24px 16px 60px;
+      }
+      h1 {
+        font-size: 26px;
+        margin: 0 0 6px;
+      }
+      .intro {
+        color: var(--suave);
+        max-width: 900px;
+        line-height: 1.5;
+        margin: 0 0 28px;
+      }
+      .maqueta {
+        max-width: 1180px;
+        margin: 0 auto 40px;
+      }
+      .rotulo {
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--naranja);
+        margin: 0 0 4px;
+      }
+      .titulo {
+        font-size: 20px;
+        font-weight: 800;
+        margin: 0 0 6px;
+      }
+      .porque {
+        color: var(--suave);
+        margin: 0 0 12px;
+        line-height: 1.5;
+        max-width: 900px;
+      }
+      .pantalla {
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: 18px;
+        overflow: hidden;
+      }
+      .cab {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        background: var(--barra);
+        border-bottom: 1px solid var(--marcado);
+        flex-wrap: wrap;
+      }
+      .cab b {
+        font-size: 18px;
+      }
+      .pest {
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-weight: 800;
+        border: 2px solid var(--borde);
+        white-space: nowrap;
+      }
+      .pest.si {
+        background: var(--texto);
+        color: var(--fondo);
+        border-color: var(--texto);
+      }
+      .derecha {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .chip {
+        background: var(--marcado);
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .cuerpo {
+        padding: 16px 18px;
+        display: grid;
+        gap: 14px;
+      }
+      .tablero {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 12px;
+        align-items: start;
+      }
+      .tk {
+        background: var(--tarjeta);
+        border-radius: 16px;
+        border: 3px solid transparent;
+        overflow: hidden;
+      }
+      .tk .arriba {
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .tk .mesa {
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .tk .quien {
+        color: var(--suave);
+        font-size: 13px;
+        flex: 1 1 100%;
+      }
+      .tecla {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        background: var(--marcado);
+        display: inline-grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 14px;
+      }
+      .min {
+        margin-left: auto;
+        font-weight: 800;
+        font-size: 20px;
+        font-variant-numeric: tabular-nums;
+        padding: 2px 10px;
+        border-radius: 10px;
+      }
+      .en-hora {
+        background: #1f3b2e;
+        color: var(--verde);
+      }
+      .justo {
+        background: #3a2e14;
+        color: var(--ambar);
+      }
+      .tarde {
+        background: #3e1d19;
+        color: var(--rojo);
+      }
+      .franja {
+        padding: 6px 12px;
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+      .franja.alergia {
+        background: var(--rojo);
+        color: #2a0d09;
+      }
+      .franja.prisa {
+        background: var(--ambar);
+        color: #2a1d06;
+      }
+      .franja.marcha {
+        background: var(--verde);
+        color: #0b2416;
+        font-size: 16px;
+      }
+      .pase {
+        padding: 4px 12px 10px;
+        border-top: 1px solid var(--marcado);
+      }
+      .pase .nombre-pase {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--suave);
+        padding: 8px 0 4px;
+      }
+      .pase.espera {
+        opacity: 0.5;
+      }
+      .plato {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        padding: 7px 0;
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .plato .n {
+        min-width: 22px;
+        font-variant-numeric: tabular-nums;
+      }
+      .plato .detalle {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--suave);
+      }
+      .plato .nota {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ambar);
+      }
+      .plato.hecho {
+        color: var(--suave);
+        text-decoration: line-through;
+      }
+      .plato.hecho .hora {
+        text-decoration: none;
+        display: inline-block;
+        color: var(--verde);
+        font-size: 13px;
+      }
+      .plato.anulado {
+        color: var(--rojo);
+        text-decoration: line-through;
+      }
+      .marca {
+        font-size: 11px;
+        font-weight: 800;
+        border-radius: 6px;
+        padding: 2px 6px;
+        text-decoration: none;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .marca.nuevo {
+        background: var(--azul);
+        color: #0a1d2a;
+      }
+      .marca.anulado {
+        background: var(--rojo);
+        color: #2a0d09;
+      }
+      .marca.cambio {
+        background: var(--ambar);
+        color: #2a1d06;
+      }
+      .marca.vuelve {
+        background: #b78cff;
+        color: #1d0e33;
+      }
+      .marca.lleva {
+        background: transparent;
+        border: 2px solid var(--rojo);
+        color: var(--rojo);
+      }
+      .pie {
+        padding: 10px 12px;
+        border-top: 1px solid var(--marcado);
+      }
+      .boton {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        padding: 12px 20px;
+        font-weight: 800;
+        border: 2px solid var(--borde);
+        white-space: nowrap;
+      }
+      .boton.ancho {
+        width: 100%;
+      }
+      .boton.principal {
+        background: var(--naranja);
+        color: #1b1208;
+        border-color: var(--naranja);
+      }
+      .boton.peligro {
+        border-color: var(--rojo);
+        color: var(--rojo);
+      }
+      .esperando {
+        background: var(--barra);
+        border-radius: 14px;
+        padding: 10px 14px;
+      }
+      .esperando .fila-esp {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .esp {
+        background: var(--tarjeta);
+        border-radius: 12px;
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      .peq {
+        color: var(--suave);
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .bien {
+        color: var(--verde);
+        font-weight: 700;
+      }
+      .rojo {
+        color: var(--rojo);
+        font-weight: 700;
+      }
+      .hoja {
+        background: var(--tarjeta);
+        border-radius: 20px;
+        border: 1px solid var(--borde);
+        padding: 18px;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .preg {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--suave);
+        margin: 12px 0 6px;
+      }
+      .grupo {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .op {
+        border: 2px solid var(--borde);
+        border-radius: 12px;
+        padding: 8px 14px;
+        font-weight: 700;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      .op.si {
+        background: var(--texto);
+        color: var(--fondo);
+        border-color: var(--texto);
+      }
+      .op.alergia-si {
+        background: var(--rojo);
+        color: #2a0d09;
+        border-color: var(--rojo);
+      }
+      .fila {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--marcado);
+      }
+      .fila:last-child {
+        border-bottom: 0;
+      }
+      .fila .nombre {
+        font-weight: 700;
+        flex: 1 1 180px;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+        font-weight: 800;
+      }
+      .aviso {
+        position: relative;
+        margin: 0 auto;
+        max-width: 560px;
+        background: #3e1d19;
+        border: 2px solid var(--rojo);
+        border-radius: 16px;
+        padding: 14px 16px;
+      }
+      .aviso b {
+        font-size: 17px;
+      }
+      .tostada {
+        background: var(--texto);
+        color: var(--fondo);
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-weight: 700;
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .tostada u {
+        margin-left: auto;
+      }
+      .dos {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px;
+      }
+      @media (max-width: 860px) {
+        .dos {
+          grid-template-columns: 1fr;
+        }
+      }
+      .interruptor {
+        width: 46px;
+        height: 26px;
+        border-radius: 999px;
+        background: var(--naranja);
+        position: relative;
+        flex: none;
+      }
+      .interruptor::after {
+        content: '';
+        position: absolute;
+        right: 3px;
+        top: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #1b1208;
+      }
+      .campo {
+        border: 1px solid var(--borde);
+        background: var(--fondo);
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-weight: 700;
+        min-width: 90px;
+        display: inline-block;
+      }
+      .grande {
+        font-size: 34px;
+        font-weight: 800;
+      }
+      .preguntas {
+        max-width: 900px;
+        margin: 0 auto 24px;
+        background: #141e21;
+        border: 2px solid var(--naranja);
+        border-radius: 18px;
+        padding: 20px 22px;
+        line-height: 1.55;
+      }
+      .preguntas h2 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+      .preguntas li {
+        margin: 0 0 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="maqueta">
+      <h1>T4 · La cocina y la barra — maquetas para que las mires</h1>
+      <p class="intro">
+        Es lo que ya diste por bueno el 22-oct («todo correcto, lo dejamos así»), dibujado entero y
+        con lo que faltaba: los tiempos, el sonido, el aviso de alergia, la barra y los ajustes. La
+        pantalla de cocina va en una tablet grande o en una tele, apaisada, y
+        <b>no pide PIN para tachar</b>. <b>Ni un solo precio</b>: la cocina no ve importes, tampoco
+        por dentro. Abajo del todo, lo que necesito que me digas.
+      </p>
+    </div>
+
+    <!-- 1 · En marcha -->
+    <div class="maqueta">
+      <p class="rotulo">1 · Cocina · En marcha</p>
+      <p class="titulo">El ticket entero de cada mesa, lo que va tarde arriba</p>
+      <p class="porque">
+        Cada tarjeta es una mesa: el 1.º en marcha y el 2.º en espera, apagado, para ir preparando.
+        El número del tiempo cambia de color: <span class="bien">verde</span> en hora,
+        <span style="color: var(--ambar); font-weight: 700">ámbar</span> justo,
+        <span class="rojo">rojo</span> tarde (los minutos los pones tú, maqueta 7). El número
+        pequeño de cada tarjeta es su tecla, para un teclado de cocina.
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <span class="pest si">En marcha · 4</span>
+          <span class="pest">Fuera · 12</span>
+          <div class="derecha">
+            <span class="chip">Lo que llevamos hoy</span>
+            <span class="chip">🔔 Sonido</span>
+            <span class="chip">IKATZ · Cocina · 21:34</span>
+          </div>
+        </div>
+        <div class="cuerpo">
+          <div class="tablero">
+            <!-- Terraza 3: tarde, con prisa -->
+            <div class="tk" style="border-color: var(--rojo)">
+              <div class="franja prisa">⚡ TIENEN PRISA</div>
+              <div class="arriba">
+                <span class="tecla">1</span><span class="mesa">Terraza 3</span
+                ><span class="min tarde">23′</span>
+                <span class="quien">2 personas · Ana</span>
+              </div>
+              <div class="pase">
+                <div class="nombre-pase">Todo junto</div>
+                <div class="plato"><span class="n">1</span><span>Entrecot</span></div>
+                <div class="plato">
+                  <span class="n">1</span
+                  ><span
+                    >Hamburguesa<span class="detalle">Patatas · doble de queso</span
+                    ><span class="nota">al punto</span></span
+                  >
+                </div>
+              </div>
+              <div class="pie"><span class="boton ancho">Todo fuera</span></div>
+            </div>
+            <!-- Mesa 6: alergia, 1.º en marcha, 2.º en espera -->
+            <div class="tk" style="border-color: var(--rojo)">
+              <div class="franja alergia">⚠ ALERGIA · GLUTEN</div>
+              <div class="arriba">
+                <span class="tecla">2</span><span class="mesa">Mesa 6</span
+                ><span class="min justo">14′</span>
+                <span class="quien">6 personas · Lucía · 2 menús</span>
+              </div>
+              <div class="pase">
+                <div class="nombre-pase">1.º · en marcha</div>
+                <div class="plato hecho">
+                  <span class="n">2</span
+                  ><span>Ensalada de la casa <span class="hora">✓ 21:31</span></span>
+                </div>
+                <div class="plato">
+                  <span class="n">3</span
+                  ><span>Croquetas <span class="marca lleva">LLEVA GLUTEN</span></span>
+                </div>
+                <div class="plato">
+                  <span class="n">1</span><span>Gazpacho<span class="detalle">menú</span></span>
+                </div>
+              </div>
+              <div class="pase espera">
+                <div class="nombre-pase">2.º · en espera</div>
+                <div class="plato"><span class="n">2</span><span>Lubina</span></div>
+                <div class="plato">
+                  <span class="n">2</span><span>Carrilleras<span class="detalle">menú</span></span>
+                </div>
+              </div>
+              <div class="pie"><span class="boton ancho">Todo fuera</span></div>
+            </div>
+            <!-- Mesa 2: marcha el 2.º -->
+            <div class="tk" style="border-color: var(--verde)">
+              <div class="franja marcha">¡MARCHA EL 2.º!</div>
+              <div class="arriba">
+                <span class="tecla">3</span><span class="mesa">Mesa 2</span
+                ><span class="min en-hora">2′</span>
+                <span class="quien">4 personas · Lucía · marchado a las 21:32</span>
+              </div>
+              <div class="pase">
+                <div class="nombre-pase">2.º · en marcha</div>
+                <div class="plato"><span class="n">2</span><span>Chuletón para dos</span></div>
+                <div class="plato">
+                  <span class="n">1</span><span>Bacalao <span class="nota">sin ajo</span></span>
+                </div>
+              </div>
+              <div class="pie"><span class="boton ancho">Todo fuera</span></div>
+            </div>
+            <!-- Mesa 9: cambios -->
+            <div class="tk">
+              <div class="arriba">
+                <span class="tecla">4</span><span class="mesa">Mesa 9</span
+                ><span class="min en-hora">6′</span>
+                <span class="quien">3 personas · Mikel</span>
+              </div>
+              <div class="pase">
+                <div class="nombre-pase">1.º · en marcha</div>
+                <div class="plato">
+                  <span class="n">1</span
+                  ><span
+                    >Pulpo <span class="marca vuelve">VUELVE</span
+                    ><span class="detalle">«estaba frío» · rehacer</span></span
+                  >
+                </div>
+                <div class="plato anulado">
+                  <span class="n">1</span
+                  ><span>Mejillones <span class="marca anulado">ANULADO 21:33</span></span>
+                </div>
+                <div class="plato">
+                  <span class="n">1</span
+                  ><span>Pimientos de Padrón <span class="marca nuevo">NUEVO 21:33</span></span>
+                </div>
+                <div class="plato">
+                  <span class="n">2</span
+                  ><span
+                    >Rabas <span class="marca cambio">CAMBIO</span
+                    ><span class="nota">una sin limón</span></span
+                  >
+                </div>
+              </div>
+              <div class="pie"><span class="boton ancho">Todo fuera</span></div>
+            </div>
+          </div>
+          <div class="esperando">
+            <div class="peq" style="margin-bottom: 8px">
+              <b style="color: var(--texto)">Esperando a que la sala marche</b> · ya salió todo el
+              1.º; su 2.º, a la vista
+            </div>
+            <div class="fila-esp">
+              <span class="esp"><b>Mesa 4</b> · 2.º: 2 entrecots, 1 lubina</span>
+              <span class="esp"><b>Mesa 11</b> · 2.º: 4 carrilleras (menú)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 · Tachar -->
+    <div class="maqueta">
+      <p class="rotulo">2 · Tachar al sacar</p>
+      <p class="titulo">Un toque en el plato; el último se lleva la mesa a «Fuera»</p>
+      <p class="porque">
+        Tocar un plato lo tacha con su hora, y la sala ve ✓ en la cuenta. Otro toque lo destacha. Al
+        tachar el último de la mesa, la tarjeta se va sola a «Fuera» y abajo sale esto, cinco
+        segundos. Con un teclado de cocina, la tecla de la tarjeta tacha el siguiente plato.
+      </p>
+      <div class="pantalla">
+        <div class="cuerpo">
+          <div class="tostada">Mesa 9 · fuera, 21:41 · tardó 14 min <u>Deshacer</u></div>
+          <p class="peq" style="text-align: center; margin: 0">
+            Un plato tachado sin querer se destacha con otro toque durante 3 minutos. Pasado ese
+            tiempo, lo destacha un jefe de cocina con su PIN (la hoja de abajo).
+          </p>
+          <div class="hoja">
+            <b>Destachar «Lubina» · Mesa 6</b>
+            <p class="peq">Se tachó a las 21:20. Pasados 3 minutos, lo hace un jefe de cocina.</p>
+            <div class="grupo" style="justify-content: center; font-size: 26px; gap: 12px">
+              <span>● ● ● ○ ○ ○</span>
+            </div>
+            <p class="peq" style="text-align: center">El PIN del jefe de cocina</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 · La alergia -->
+    <div class="maqueta">
+      <p class="rotulo">3 · La alergia de la mesa</p>
+      <p class="titulo">Se marca en la sala, avisa al pedir y no se tacha sin confirmarlo</p>
+      <p class="porque">
+        En el TPV, al tocar la mesa › <b>Alergias</b>: los 14 alérgenos, de un toque. Al pedir un
+        plato que lo lleva (lo sabe su escandallo), la sala lo ve antes de mandarlo. En cocina, la
+        tarjeta sale con la franja roja, el plato marcado, y al tacharlo pregunta. Ningún TPV sin
+        escandallos puede hacer esto.
+      </p>
+      <div class="dos">
+        <div class="pantalla">
+          <div class="cab"><b>Mesa 6 · Alergias</b></div>
+          <div class="cuerpo">
+            <div class="grupo">
+              <span class="op alergia-si">Gluten</span><span class="op">Crustáceos</span
+              ><span class="op">Huevos</span><span class="op">Pescado</span
+              ><span class="op">Cacahuetes</span><span class="op">Soja</span
+              ><span class="op">Lácteos</span><span class="op">Frutos de cáscara</span
+              ><span class="op">Apio</span><span class="op">Mostaza</span
+              ><span class="op">Sésamo</span><span class="op">Sulfitos</span
+              ><span class="op">Altramuces</span><span class="op">Moluscos</span>
+            </div>
+            <div class="aviso">
+              <b>Las croquetas llevan gluten</b>
+              <p style="margin: 6px 0 12px">Y la mesa 6 tiene alergia al gluten.</p>
+              <div class="grupo">
+                <span class="boton">No pedirlas</span
+                ><span class="boton principal">Pedirlas, que la cocina lo sepa</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pantalla">
+          <div class="cab"><b>En cocina, al tachar las croquetas</b></div>
+          <div class="cuerpo">
+            <div class="aviso">
+              <b>⚠ Mesa 6 · alergia al gluten</b>
+              <p style="margin: 6px 0 12px">
+                Las croquetas llevan gluten. ¿Las has hecho para esa alergia?
+              </p>
+              <div class="grupo">
+                <span class="boton">Todavía no</span
+                ><span class="boton principal">Sí, sacarlas</span>
+              </div>
+            </div>
+            <p class="peq">
+              Solo pregunta en los platos que llevan el alérgeno; los demás de la mesa se tachan
+              como siempre.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 · Fuera -->
+    <div class="maqueta">
+      <p class="rotulo">4 · Cocina · Fuera</p>
+      <p class="titulo">Lo que ya salió hoy, con lo que tardó, y «Recuperar»</p>
+      <p class="porque">
+        Por si una mesa se fue sin querer, o para mirar cómo va el servicio. Una mesa anulada en
+        sala también sale aquí, con su motivo, para que la cocina sepa que deja de hacerla.
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <span class="pest">En marcha · 3</span><span class="pest si">Fuera · 13</span>
+        </div>
+        <div class="cuerpo">
+          <div class="fila">
+            <span class="nombre">Mesa 9</span><span class="peq">salió 21:41 · tardó 14 min</span
+            ><span class="boton">Recuperar</span>
+          </div>
+          <div class="fila">
+            <span class="nombre">Mesa 4 · 2.º</span
+            ><span class="peq">salió 21:30 · tardó 11 min</span><span class="boton">Recuperar</span>
+          </div>
+          <div class="fila">
+            <span class="nombre rojo">Barra · Laura · anulada</span
+            ><span class="peq">21:12 · «se fueron sin pedir»</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 · Lo que llevamos hoy y la ficha -->
+    <div class="maqueta">
+      <p class="rotulo">5 · Lo que llevamos hoy, y la ficha</p>
+      <p class="titulo">Cuántos van de cada plato, y la ficha de cualquier plato, sin un euro</p>
+      <p class="porque">
+        «Lo que llevamos hoy», arriba a la derecha: lo que está en marcha y lo que ya salió, por
+        plato, para producir y para ver qué se acaba. Tocando un plato en una tarjeta y dejándolo
+        pulsado se abre <b>su ficha técnica</b> de Escandallos: foto, gramajes y pasos, a pantalla
+        completa. Un cocinero nuevo no tiene que preguntar en pleno servicio.
+      </p>
+      <div class="dos">
+        <div class="pantalla">
+          <div class="cab"><b>Lo que llevamos hoy</b></div>
+          <div class="cuerpo">
+            <div class="fila">
+              <span class="nombre">Croquetas</span><span class="peq">3 en marcha</span
+              ><span class="num">14 salidas</span>
+            </div>
+            <div class="fila">
+              <span class="nombre">Entrecot</span><span class="peq">1 en marcha</span
+              ><span class="num">9 salidos</span>
+            </div>
+            <div class="fila">
+              <span class="nombre">Carrilleras</span><span class="peq">6 esperando</span
+              ><span class="num">7 salidas</span>
+            </div>
+            <div class="fila">
+              <span class="nombre">Lubina</span><span class="peq">4 esperando</span
+              ><span class="num">5 salidas</span>
+            </div>
+          </div>
+        </div>
+        <div class="pantalla">
+          <div class="cab"><b>Carrilleras al vino tinto</b><span class="derecha">✕</span></div>
+          <div class="cuerpo">
+            <div
+              style="
+                height: 120px;
+                border-radius: 14px;
+                background: linear-gradient(135deg, #3b2a22, #1d1512);
+                display: grid;
+                place-items: center;
+                color: var(--suave);
+              "
+            >
+              la foto del plato
+            </div>
+            <div class="fila"><span class="nombre">Carrillera</span><span>180 g</span></div>
+            <div class="fila"><span class="nombre">Puré de patata</span><span>120 g</span></div>
+            <div class="fila"><span class="nombre">Salsa de vino</span><span>60 ml</span></div>
+            <p class="peq">
+              <b style="color: var(--texto)">1.</b> Calentar en su salsa, tapada, 6 min ·
+              <b style="color: var(--texto)">2.</b> Puré en la base, con la manga…
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 · La barra -->
+    <div class="maqueta">
+      <p class="rotulo">6 · Barra</p>
+      <p class="titulo">Lo mismo, con lo que prepara la barra: bebidas, cafés y copas</p>
+      <p class="porque">
+        Para la barra que tenga su pantalla. Va todo en marcha al momento (las bebidas no esperan
+        pases), y también lo que se pide en barra sin mesa. Se tacha al servir; al tachar lo último,
+        fuera. Lo de «¿Quién lo prepara? Nadie» (el pan, el agua) no sale en ninguna pantalla.
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <span class="pest si">En marcha · 3</span><span class="pest">Fuera · 41</span>
+          <div class="derecha"><span class="chip">IKATZ · Barra · 21:34</span></div>
+        </div>
+        <div class="cuerpo">
+          <div class="tablero">
+            <div class="tk">
+              <div class="arriba">
+                <span class="tecla">1</span><span class="mesa">Mesa 6</span
+                ><span class="min en-hora">1′</span><span class="quien">Lucía</span>
+              </div>
+              <div class="pase">
+                <div class="plato"><span class="n">4</span><span>Caña</span></div>
+                <div class="plato"><span class="n">1</span><span>Rioja crianza · copa</span></div>
+                <div class="plato">
+                  <span class="n">1</span><span>Coca-Cola <span class="nota">sin hielo</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="tk">
+              <div class="arriba">
+                <span class="tecla">2</span><span class="mesa">Mesa 2</span
+                ><span class="min en-hora">3′</span><span class="quien">Lucía</span>
+              </div>
+              <div class="pase">
+                <div class="plato">
+                  <span class="n">2</span
+                  ><span>Ron Havana 7<span class="detalle">Coca-Cola</span></span>
+                </div>
+                <div class="plato hecho">
+                  <span class="n">2</span
+                  ><span>Café con leche <span class="hora">✓ 21:33</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="tk">
+              <div class="arriba">
+                <span class="tecla">3</span><span class="mesa">Barra · Jon</span
+                ><span class="min justo">6′</span><span class="quien">Mikel</span>
+              </div>
+              <div class="pase">
+                <div class="plato"><span class="n">2</span><span>Cortado</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 · Ajustes -->
+    <div class="maqueta">
+      <p class="rotulo">7 · Ajustes del TPV › Cocina y barra</p>
+      <p class="titulo">Los minutos y el sonido, una vez para todo el local</p>
+      <p class="porque">
+        En la caja, quien tiene los ajustes del TPV. El tiempo cuenta desde que se manda el pase (o
+        desde que se marcha el 2.º). Un plato que tarda más que los demás lo dice en la hoja de su
+        botón, en Productos, para no ponerse en rojo sin motivo.
+      </p>
+      <div class="dos">
+        <div class="pantalla">
+          <div class="cab"><b>Cocina y barra</b></div>
+          <div class="cuerpo">
+            <div class="fila">
+              <span class="nombre">Se pone en ámbar a los</span><span class="campo">10 min</span>
+            </div>
+            <div class="fila">
+              <span class="nombre">Y en rojo, tarde, a los</span><span class="campo">20 min</span>
+            </div>
+            <div class="fila">
+              <span class="nombre"
+                >Suena al entrar una mesa<span class="peq" style="display: block"
+                  >y distinto si trae alergia o prisa, y al marchar el 2.º</span
+                ></span
+              ><span class="interruptor"></span><span class="boton">Probar</span>
+            </div>
+          </div>
+        </div>
+        <div class="pantalla">
+          <div class="cab"><b>Productos › Chuletón para dos</b></div>
+          <div class="cuerpo">
+            <div class="preg">Tiempo en cocina</div>
+            <div class="grupo">
+              <span class="op">El de siempre</span><span class="op si">Tarda más: 30 min</span>
+            </div>
+            <p class="peq">Ámbar a los 20, rojo a los 30. Los demás platos siguen igual.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8 · La sala -->
+    <div class="maqueta">
+      <p class="rotulo">8 · En la sala</p>
+      <p class="titulo">«Tienen prisa» y las alergias, en las opciones de la mesa</p>
+      <p class="porque">
+        Al tocar una mesa, junto a lo que ya hay (marchar, nota, personas…):
+        <b>Alergias</b> (maqueta 3) y <b>Tienen prisa</b>, que sube la tarjeta en cocina con su
+        franja y su sonido. En la cuenta, el ✓ de cada plato que sale lleva ya <b>su hora</b> («✓
+        21:31»). «Ha salido todo el 1.º» y «Marchar el 2.º» ya están.
+      </p>
+      <div class="pantalla">
+        <div class="cuerpo">
+          <div class="hoja">
+            <b style="font-size: 18px">Mesa 6 · 6 personas · Lucía</b>
+            <div class="grupo" style="margin-top: 12px; flex-direction: column">
+              <span class="boton principal ancho">Marchar el 2.º</span>
+              <span class="boton ancho">Abrir la mesa</span>
+              <span class="boton ancho" style="border-color: var(--rojo)">⚠ Alergias · Gluten</span>
+              <span class="boton ancho">⚡ Tienen prisa</span>
+              <span class="boton ancho">Nota para cocina</span>
+              <span class="peq" style="text-align: center">… y lo demás de siempre</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9 · Empezar -->
+    <div class="maqueta">
+      <p class="rotulo">9 · Al encender la pantalla de cocina</p>
+      <p class="titulo">Un toque para que pueda sonar</p>
+      <p class="porque">
+        Los navegadores no dejan sonar una página hasta que alguien la toca. Así que la primera vez
+        que se enciende, un botón grande, y ya se queda funcionando todo el día. Salir de la
+        pantalla de cocina pide el PIN de un jefe.
+      </p>
+      <div class="pantalla">
+        <div class="cuerpo" style="text-align: center; padding: 50px 20px">
+          <div class="grande">Cocina · IKATZ</div>
+          <p class="peq">Lista para el servicio</p>
+          <span class="boton principal" style="font-size: 22px; padding: 18px 34px"
+            >Empezar, con sonido</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="preguntas" style="border-color: var(--verde)">
+      <h2>Cómo lo voy a construir</h2>
+      <ul>
+        <li>
+          <b>En dos entregas</b>, como T3 · 2, para que pruebes antes la cocina:
+          <b>T4 · 1 · La cocina</b> (maquetas 1, 2, 3, 4, 7, 8 y 9: la pantalla, tachar, los
+          tiempos, el sonido, la alergia de la mesa y «tienen prisa») y
+          <b>T4 · 2 · La barra y la ficha</b>
+          (maquetas 5 y 6).
+        </li>
+        <li>
+          <b>La alergia de la mesa no estaba hecha</b>, aunque el Anexo la da por escrita: entra en
+          T4 · 1 porque es lo primero que necesita la cocina.
+        </li>
+        <li>
+          <b>La pestaña Delivery</b> sale cuando el local tenga pedidos de reparto en el TPV (con el
+          cobro y lo de llevar, T7); hasta entonces no se enseña vacía.
+        </li>
+        <li>
+          <b>El papel</b> (la comanda impresa) llega con Estook Link, T5. Hasta entonces, la cocina
+          es la pantalla.
+        </li>
+        <li>
+          Lo hacen así <b>Square</b> y <b>Toast</b>: los colores por tiempo los pone el local, el
+          sonido se enciende o se apaga, cada tarjeta tiene su tecla para el teclado de cocina, y lo
+          sacado por error se recupera.
+        </li>
+      </ul>
+    </div>
+
+    <div class="preguntas">
+      <h2>Lo que necesito que me digas</h2>
+      <ol>
+        <li>
+          <b>¿Te valen estas pantallas?</b> Si algo no se hace así en una cocina de verdad, dímelo
+          ahora, antes de programarlo.
+        </li>
+        <li>
+          <b>Los minutos de fábrica: ámbar a los 10 y rojo a los 20.</b> Cuentan desde que el pase
+          llega a cocina, no desde que se sienta la mesa. Cada local los cambia en sus ajustes. En
+          tu cocina, ¿a los cuántos minutos un pase empieza a ir justo y a los cuántos ya va tarde?
+          Yo dejaría 10 y 20.
+        </li>
+        <li>
+          <b>Tachar sin querer: 3 minutos para destacharlo solo, y después el PIN de un jefe.</b> El
+          Anexo dice «unos minutos». ¿Te parecen bien 3?
+        </li>
+      </ol>
+    </div>
+  </body>
+</html>

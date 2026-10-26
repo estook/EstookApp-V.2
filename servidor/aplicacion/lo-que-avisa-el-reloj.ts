@@ -22,6 +22,7 @@ import { almacenHoy, productosActivos } from './consultas/almacen.ts';
 import { loQueTocaContar } from './inventario.ts';
 import { elInforme } from './consultas/informes.ts';
 import type { Contexto } from './contrato.ts';
+import { enUnPuntoDeGuardado } from './punto-de-guardado.ts';
 import { DIAS_ENTRE_LECTURAS, ponerAlDiaLaNota } from './nota-de-google.ts';
 import { comoLista } from './listas.ts';
 import { elLibroDelLocal, loDeLaCuenta } from './escandallos.ts';
@@ -76,20 +77,18 @@ interface LocalDelReloj {
 /**
  * Hace algo en su propio punto de guardado: si falla, lo deshace —también quién
  * era cada uno (`comoSiFuera`)— y contesta nulo en vez de romper el reloj.
+ *
+ * **Lo de dentro usa el contexto que recibe**, no el de fuera: es el que lleva el
+ * punto de guardado (`enUnPuntoDeGuardado`, lección 225).
  */
 export async function aparte<T>(
   contexto: Contexto,
   que: string,
-  hacer: () => Promise<T>,
+  hacer: (aparte: Contexto) => Promise<T>,
 ): Promise<T | null> {
-  await contexto.sql`savepoint lo_que_avisa_el_reloj`;
   try {
-    const hecho = await hacer();
-    await contexto.sql`release savepoint lo_que_avisa_el_reloj`;
-    return hecho;
+    return await enUnPuntoDeGuardado(contexto, hacer);
   } catch (fallo) {
-    await contexto.sql`rollback to savepoint lo_que_avisa_el_reloj`;
-    await contexto.sql`release savepoint lo_que_avisa_el_reloj`;
     await apuntarUnFallo(fallo, {
       mensaje: `el reloj no ha podido ${que}`,
       correlacionId: contexto.correlacionId,
@@ -495,13 +494,13 @@ export async function loQueAvisaElReloj(
       googleLeidoEn: fila.google_leido_en,
     };
 
-    const pasos: readonly [string, () => Promise<number>][] = [
-      ['avisar de los pedidos de mañana', () => losPedidosDeManana(contexto, local)],
-      ['hacer los informes', () => losInformes(contexto, local)],
-      ['avisar de lo que está bajo mínimo', () => loQueEstaBajoMinimo(contexto, local)],
-      ['avisar de lo que toca contar', () => loQueTocaContarElLunes(contexto, local)],
-      ['rehacer los mínimos', () => rehacerLosMinimos(contexto, local)],
-      ['avisar de los platos que cruzan la raya', () => losPlatosQueCruzan(contexto, local)],
+    const pasos: readonly [string, (aparte: Contexto) => Promise<number>][] = [
+      ['avisar de los pedidos de mañana', (c) => losPedidosDeManana(c, local)],
+      ['hacer los informes', (c) => losInformes(c, local)],
+      ['avisar de lo que está bajo mínimo', (c) => loQueEstaBajoMinimo(c, local)],
+      ['avisar de lo que toca contar', (c) => loQueTocaContarElLunes(c, local)],
+      ['rehacer los mínimos', (c) => rehacerLosMinimos(c, local)],
+      ['avisar de los platos que cruzan la raya', (c) => losPlatosQueCruzan(c, local)],
     ];
     for (const [que, hacer] of pasos) {
       const hecho = await aparte(contexto, `${que} de ${local.nombre}`, hacer);
@@ -515,8 +514,8 @@ export async function loQueAvisaElReloj(
       local.googleId !== null &&
       (local.googleLeidoEn === null || Date.parse(local.googleLeidoEn) <= hace);
     if (toca) {
-      const hecho = await aparte(contexto, `poner al día la nota de ${local.nombre}`, () =>
-        ponerAlDiaLaNota(contexto, local.organizacionId, local.id),
+      const hecho = await aparte(contexto, `poner al día la nota de ${local.nombre}`, (c) =>
+        ponerAlDiaLaNota(c, local.organizacionId, local.id),
       );
       if (hecho === null) fallos += 1;
       else if (hecho) notas += 1;

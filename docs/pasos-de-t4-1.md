@@ -2,13 +2,13 @@
 
 > ## Cómo está
 >
-> Escrito el 26 de octubre de 2026, en su pull request, **sin fusionar**.
+> **En producción** desde el 26 de octubre de 2026: Richi fusionó las dos, migró y desplegó.
 >
-> | Qué              | Cómo está                                                                            |
-> | ---------------- | ------------------------------------------------------------------------------------ |
-> | Pull requests    | **«Cada aparato a lo suyo» (#140)** y **«T4 · 1 · La cocina» (#141)**, que va encima |
-> | La base de datos | **89 de 89** en producción; la #141 trae **la 0090**                                 |
-> | La API           | 112 consultas y 293 comandos; con las dos, **113 y 302**                             |
+> | Qué              | Cómo está                                                                         |
+> | ---------------- | --------------------------------------------------------------------------------- |
+> | Pull requests    | **«Cada aparato a lo suyo» (#140)** y **«T4 · 1 · La cocina» (#141)**, fusionadas |
+> | La base de datos | **90 de 90** en producción, con **la 0090**                                       |
+> | La API           | **113 consultas y 302 comandos**, comprobado el 26-oct                            |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 

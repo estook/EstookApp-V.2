@@ -1144,14 +1144,15 @@ export async function hacerLoProgramado(contexto: Contexto): Promise<number> {
     const margen = p.tipo === 'turno.entras' ? 10 * MINUTO : 2 * HORA;
     const tarde = contexto.ahora.getTime() - programado.cuando.getTime() > margen;
     if (!tarde) {
+      // Cada uno con el contexto de su punto de guardado (lección 225).
       const hacer =
         p.tipo === 'turno.entras'
-          ? () => entrasEnUnRato(contexto, programado)
+          ? (c: Contexto) => entrasEnUnRato(c, programado)
           : p.tipo === 'lote.caduca'
-            ? () => loQueCaduca(contexto, programado)
+            ? (c: Contexto) => loQueCaduca(c, programado)
             : p.tipo === 'chat.confirmar'
-              ? () => recordarQueConfirme(contexto, programado)
-              : () => elPedidoQueNoLlega(contexto, programado);
+              ? (c: Contexto) => recordarQueConfirme(c, programado)
+              : (c: Contexto) => elPedidoQueNoLlega(c, programado);
       const hecho = await aparte(contexto, `avisar al móvil (${p.tipo})`, hacer);
       if (hecho !== null) hechos += hecho;
     }

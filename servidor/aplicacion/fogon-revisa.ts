@@ -10,6 +10,7 @@ import { avisar, losQueLoQuieren, quienesPuedenRecibir } from './avisos.ts';
 import { FalloDeAplicacion, type Contexto } from './contrato.ts';
 import { elFogonDeLaSesion, leerElJson, pedirAFogon, type FogonDeLaSesion } from './fogon.ts';
 import { aparte, comoSiFuera } from './lo-que-avisa-el-reloj.ts';
+import { enUnPuntoDeGuardado } from './punto-de-guardado.ts';
 import { apuntarUnFallo } from '../infraestructura/fallos.ts';
 import { comoLista } from './listas.ts';
 
@@ -276,13 +277,9 @@ export async function revisarLosDatos(
 
   let deLaIa: Hallazgo[] = [];
   let soloReglas = false;
-  await contexto.sql`savepoint la_revision_de_fogon`;
   try {
-    deLaIa = await loQueVeLaIa(contexto, fogon, deNoche);
-    await contexto.sql`release savepoint la_revision_de_fogon`;
+    deLaIa = await enUnPuntoDeGuardado(contexto, (c) => loQueVeLaIa(c, fogon, deNoche));
   } catch (fallo) {
-    await contexto.sql`rollback to savepoint la_revision_de_fogon`;
-    await contexto.sql`release savepoint la_revision_de_fogon`;
     // Sin créditos o sin respuesta, lo de las reglas vale igual: no se pierde.
     if (!(fallo instanceof FalloDeAplicacion)) throw fallo;
     soloReglas = true;
@@ -378,10 +375,8 @@ export async function revisarDeNoche(
       join estook.cuentas_con_fogon() f on f.organizacion_id = l.organizacion_id
      where l.activo and not l.es_ejemplo
        and l.organizacion_id = any (${comoLista(organizaciones)}::text::uuid[])
-       and not exists (
-         select 1 from estook.revision_de_fogon r
-          where r.local_id = l.id and r.semana = ${semana}::date and r.de_noche
-       )
+       -- Lo ya revisado, por la base: el sistema no lee las revisiones (0091).
+       and l.id not in (select r.local_id from estook.locales_revisados_de_noche(${semana}::date) r)
      order by l.organizacion_id, l.nombre
      limit ${LOCALES_POR_LATIDO}
   `;
@@ -395,9 +390,9 @@ export async function revisarDeNoche(
     );
     const primero = quienes[0];
     if (primero === undefined) continue;
-    const hecha = await aparte(contexto, `revisar los datos de ${local.nombre}`, () =>
+    const hecha = await aparte(contexto, `revisar los datos de ${local.nombre}`, (c) =>
       comoSiFuera(
-        contexto,
+        c,
         { personaId: primero.personaId, organizacionId: local.organizacion_id, localId: local.id },
         (suyo) => revisarLosDatos(suyo, true),
       ),

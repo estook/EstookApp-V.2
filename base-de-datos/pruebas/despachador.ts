@@ -16,6 +16,11 @@ import type { MotorDePdf } from '../../servidor/infraestructura/pdf.ts';
 import type { MovilSaliente } from '../../servidor/infraestructura/movil.ts';
 import type { AlSegundo } from '../../servidor/infraestructura/al-segundo.ts';
 import type { ModeloDeFogon } from '../../servidor/ia/modelo.ts';
+import {
+  comoPostgres,
+  elSqlDePglite,
+  type ElSqlDePglite,
+} from '../herramientas/el-sql-de-pglite.mjs';
 
 /**
  * El despachador de verdad, contra la base efímera de las pruebas (M7).
@@ -71,19 +76,6 @@ export interface ApiDePrueba {
 
 const CLAVE_DE_EJEMPLO = 'estook en desarrollo';
 
-/** De una plantilla etiquetada a texto con parámetros numerados, como la API de pruebas. */
-function adaptador(bd: PGlite): Sql {
-  const sql = async (trozos: TemplateStringsArray, ...valores: unknown[]) => {
-    if (!Array.isArray(trozos)) {
-      throw new Error('Las pruebas solo entienden `sql` como plantilla etiquetada.');
-    }
-    const texto = trozos.reduce((junto, trozo, i) => `${junto}$${i}${trozo}`);
-    const { rows } = await bd.query(texto, valores);
-    return rows;
-  };
-  return sql as unknown as Sql;
-}
-
 export function montarLaApi(
   bd: PGlite,
   opciones: {
@@ -121,6 +113,7 @@ export function montarLaApi(
     enTransaccion: (quien, hacer) =>
       deUnaEnUna(async () => {
         await bd.exec('begin');
+        let transaccion: ElSqlDePglite | undefined;
         try {
           await bd.exec('set local role estook_api');
 
@@ -141,8 +134,10 @@ export function montarLaApi(
             quien.correlacionId,
           ]);
 
+          // El `sql` de la transacción, que se porta como `postgres.js` (lección 225).
+          transaccion = elSqlDePglite(bd);
           const salida = await hacer({
-            sql: adaptador(bd),
+            sql: transaccion.sql as Sql,
             personaId: sesion?.personaId ?? null,
             sesion,
             almacen: opciones.almacen ?? null,
@@ -159,11 +154,16 @@ export function montarLaApi(
             ahora: opciones.ahora?.() ?? new Date(Date.now()),
           });
 
+          // Como `postgres.js`: una consulta que falló fuera de un punto de guardado
+          // tira la transacción entera, aunque el código la recogiera.
+          const sinRecoger = transaccion.sinRecoger();
+          if (sinRecoger !== null) throw sinRecoger.fallo;
+
           await bd.exec('commit');
           return salida;
         } catch (fallo) {
           await bd.exec('rollback');
-          throw fallo;
+          throw comoPostgres(fallo, transaccion?.sinRecoger() ?? null);
         }
       }),
 

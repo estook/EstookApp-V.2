@@ -23,9 +23,9 @@
  * ── El adaptador, que es lo unico raro de aqui ───────────────────────────────
  *
  * `servidor/infraestructura/postgres.ts` habla con `postgres.js`, que usa
- * plantillas etiquetadas: `` sql`select ... ${valor}` ``. PGlite habla con texto y
- * parametros numerados. El adaptador de abajo traduce lo uno en lo otro, y es
- * pequeno a proposito: si creciera, dejaria de estar probando lo mismo.
+ * plantillas etiquetadas; PGlite habla con texto y parametros numerados. Lo traduce
+ * `el-sql-de-pglite.mjs`, el mismo de la bateria, que ademas **se porta como
+ * `postgres.js` cuando una consulta falla** (leccion 225).
  *
  * ── Y por que vive aqui, al lado de `comprobar-api.mjs` ──────────────────────
  *
@@ -37,6 +37,7 @@
 import { createServer } from 'node:http';
 import { writeFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
+import { comoPostgres, elSqlDePglite } from './el-sql-de-pglite.mjs';
 import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -96,29 +97,6 @@ const acceso = await sembrarAcceso(
   // PGlite otra vez: la base entera muere al parar el servidor.
   { donde: 'efimera' },
 );
-
-/**
- * De una plantilla etiquetada a texto con parametros numerados.
- *
- * `` sql`select * from x where id = ${a} and b = ${c}` `` se convierte en
- * `select * from x where id = $1 and b = $2` con `[a, c]`.
- *
- * `postgres.js` tiene mas cosas —fragmentos anidados, `sql(objeto)` para
- * insertar— y aqui **no se soportan a proposito**: no las usa ningun comando de
- * M4, y soportarlas seria reimplementar la libreria en vez de probar la API. Si
- * algun dia hicieran falta, esto fallaria a las claras y no en silencio.
- */
-function adaptador(pglite) {
-  const sql = async (trozos, ...valores) => {
-    if (!Array.isArray(trozos)) {
-      throw new Error('La API de pruebas solo entiende `sql` como plantilla etiquetada.');
-    }
-    const texto = trozos.reduce((junto, trozo, i) => junto + `$${i}` + trozo);
-    const { rows } = await pglite.query(texto, valores);
-    return rows;
-  };
-  return sql;
-}
 
 /**
  * Las peticiones, de una en una.
@@ -220,6 +198,7 @@ const pagos = pagosDeMentira(`http://localhost:${PUERTO}/api`);
  */
 async function unaTransaccion(quien, hacer) {
   await bd.exec('begin');
+  let transaccion;
   try {
     // El disfraz y el hilo, juntos; y quién es, declarado al averiguarlo (0090).
     await bd.query(
@@ -242,8 +221,10 @@ async function unaTransaccion(quien, hacer) {
 
     if (sesion === null) await bd.query("select set_config('estook.persona_id', '', true)");
 
+    // El `sql` de la transacción, que se porta como `postgres.js` (lección 225).
+    transaccion = elSqlDePglite(bd);
     const salida = await hacer({
-      sql: adaptador(bd),
+      sql: transaccion.sql,
       personaId: sesion?.personaId ?? null,
       sesion,
       // El almacen de M5, en memoria: la API de pruebas no tiene credenciales de
@@ -262,11 +243,16 @@ async function unaTransaccion(quien, hacer) {
       ahora: new Date(Date.now()),
     });
 
+    // Como `postgres.js`: una consulta que falló fuera de un punto de guardado tira la
+    // transacción entera, aunque el código la recogiera.
+    const sinRecoger = transaccion.sinRecoger();
+    if (sinRecoger !== null) throw sinRecoger.fallo;
+
     await bd.exec('commit');
     return salida;
   } catch (fallo) {
     await bd.exec('rollback');
-    throw fallo;
+    throw comoPostgres(fallo, transaccion?.sinRecoger() ?? null);
   }
 }
 

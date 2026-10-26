@@ -20,6 +20,7 @@ import {
 } from '../horario.ts';
 import { lasPersonasDelCuadrante, type PersonaParaElCuadrante } from '../fogon-cuadrante.ts';
 import { ponerTramo } from './horario.ts';
+import { enUnPuntoDeGuardado } from '../punto-de-guardado.ts';
 import { revisarLosDatos, type RevisionDeFogon } from '../fogon-revisa.ts';
 
 /**
@@ -483,21 +484,20 @@ export const ponerElCuadranteDeFogon = comando<
         continue;
       }
       // Cada tramo con su punto de vuelta, como el reloj: uno que no cabe no tumba los demás.
-      await contexto.sql`savepoint un_tramo_de_fogon`;
       try {
-        await ponerTramo.ejecutar(contexto, {
-          lunes: entrada.lunes,
-          persona_id: t.persona_id,
-          dia: t.dia,
-          tipo: 'trabajo',
-          entra: t.entra,
-          sale: t.sale,
-          descanso_minutos: t.descanso_minutos,
-        });
-        await contexto.sql`release savepoint un_tramo_de_fogon`;
+        await enUnPuntoDeGuardado(contexto, (c) =>
+          ponerTramo.ejecutar(c, {
+            lunes: entrada.lunes,
+            persona_id: t.persona_id,
+            dia: t.dia,
+            tipo: 'trabajo',
+            entra: t.entra,
+            sale: t.sale,
+            descanso_minutos: t.descanso_minutos,
+          }),
+        );
         puestos += 1;
       } catch (fallo) {
-        await contexto.sql`rollback to savepoint un_tramo_de_fogon`;
         if (!(fallo instanceof FalloDeAplicacion)) throw fallo;
         noCaben += 1;
       }

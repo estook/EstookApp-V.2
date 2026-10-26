@@ -905,3 +905,8 @@
      lo veían porque su `sql` no se portaba como el de verdad: ahora sí
      (`el-sql-de-pglite.mjs`), y **una prueba que imita a la base tiene que fallar donde falla
      la de verdad** (`el-reloj-del-lunes.prueba.ts`, 0091).
+226. **Una vuelta en rojo no siempre es una prueba que falla.** El 26-oct, en la #142, un
+     trozo de las pruebas de pantalla se cortó porque los servidores de Ubuntu tardaron más de
+     quince minutos en dar los navegadores; ninguna prueba falló. Se lee el registro antes de
+     tocar el código, y lo que depende de fuera se reintenta una vez, con su tope por intento
+     (`integracion.yml`, «Instalar navegadores»).

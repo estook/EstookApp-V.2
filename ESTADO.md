@@ -20,7 +20,7 @@
 > | Lo legal, y lo ya investigado       | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md)                                                                      |
 > | Lo que cuesta cada local            | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                                                                                              |
 > | Lo que hizo cada entrega            | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                                                                                              |
-> | Lo aprendido fallando (225)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                                                                          |
+> | Lo aprendido fallando (226)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                                                                          |
 > | Los pasos de Richi                  | [el reloj del lunes](docs/pasos-del-reloj-del-lunes.md), y para probar, [T4 · 1](docs/pasos-de-t4-1.md) y [cada aparato](docs/pasos-de-cada-aparato-a-lo-suyo.md) |
 > | Dónde vive cada clave               | [`config/claves.md`](config/claves.md) (los nombres, nunca los valores)                                                                                           |
 

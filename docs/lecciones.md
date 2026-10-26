@@ -923,3 +923,8 @@
      `disabled`, y después con `aria-disabled`: un toque no lo pide, pero mantenerlo lo hace
      volver. Desactivado, ni el lector de pantalla ni Playwright lo dejaban tocar, y la prueba
      se quedó esperando. Va sin desactivar, y su nombre dice «agotado» (0118).
+230. **«Hace un día» no son 24 horas.** La prueba de las bajas de Ventas restaba 24 y 48 horas y
+     miraba el día en Madrid. El lunes 26-oct a las 23:05, con el domingo de 25 horas por el
+     cambio de hora, las dos cuentas daban el mismo domingo, y la vuelta de `main` tras la #145
+     salió en rojo (su rama, horas antes, pasó). Los días se restan en el calendario, nunca en
+     milisegundos (`las-ventas.prueba.ts`).

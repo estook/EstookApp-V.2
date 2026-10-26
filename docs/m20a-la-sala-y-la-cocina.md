@@ -19,8 +19,7 @@
 > #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
 > ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092, #144), **en producción**.
 > **La entrada nueva** ([0118](decisiones/0118-la-entrada-del-tpv.md), sin migración), con sus
-> maquetas dadas por buenas el 26-oct, construida, en su pull request. **Lo siguiente, T5 · Estook
-> Link.**
+> maquetas dadas por buenas el 26-oct, fusionada (#145). **Lo siguiente, T5 · Estook Link.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 

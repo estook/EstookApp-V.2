@@ -934,3 +934,8 @@
      vuelta salió en rojo otra vez sin fallar ninguna prueba. Ahora `apt` corta a los 20 s, se
      corta también lo de debajo y se espera al candado, hasta tres veces. Y se escribió «corta
      también a `apt`» sin comprobarlo: lo que se afirma de una herramienta, se prueba.
+232. **Lento no es atascado.** El arreglo de la 231 cortaba cada intento a los cinco minutos, y el
+     servidor de Ubuntu estaba dando los paquetes a 50 KB por segundo, pero dándolos: tres trozos
+     de Pantallas, cortados a medias tres veces. Se leyó el registro (las horas de cada paquete)
+     antes de tocar nada más. Ahora lo bajado se guarda en la caché y lo lento se espera; solo se
+     corta una conexión muerta ([la auditoría del 27-oct](la-auditoria-de-github-del-27-oct.md)).

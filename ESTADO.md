@@ -20,7 +20,7 @@
 > | Lo legal, y lo ya investigado       | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md)                                      |
 > | Lo que cuesta cada local            | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                                                              |
 > | Lo que hizo cada entrega            | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                                                              |
-> | Lo aprendido fallando (230)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                                          |
+> | Lo aprendido fallando (231)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                                          |
 > | Los pasos de Richi                  | [la entrada](docs/pasos-de-la-entrada-del-tpv.md); para probar, [T4 · 2](docs/pasos-de-t4-2.md) y [T4 · 1](docs/pasos-de-t4-1.md) |
 > | Dónde vive cada clave               | [`config/claves.md`](config/claves.md) (los nombres, nunca los valores)                                                           |
 
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** **La entrada nueva** está fusionada (#145) y publicada; falta desplegar la API ([sus pasos](docs/pasos-de-la-entrada-del-tpv.md)), que solo cambia dónde se cae (la pantalla nueva ya va sola a la sala). **«El cambio de hora»** arregla la prueba de Ventas que puso en rojo la vuelta de `main` tras la #145 (lección 230), en su pull request. La rama vieja `la-entrada-del-tpv` (solo la maqueta) sobra. **Contestado el 26-oct:** la caja para Windows **con Estook Link dentro** (cambia T5), y el comandero **ve los precios pero no los cambia**. Lo siguiente, **T5 · Estook Link** ([el plan](docs/m20a-la-sala-y-la-cocina.md)).
+- **Nada a medias.** **La entrada nueva** está fusionada (#145) y publicada; falta desplegar la API ([sus pasos](docs/pasos-de-la-entrada-del-tpv.md)), que solo cambia dónde se cae (la pantalla nueva ya va sola a la sala). **«El cambio de hora»** (#146) arregla la prueba de Ventas que puso en rojo la vuelta de `main` tras la #145 (lección 230) y la instalación de los navegadores en GitHub, que se atascaba sin fallar ninguna prueba (lección 231). La rama vieja `la-entrada-del-tpv` (solo la maqueta) sobra. Lo siguiente, **T5 · Estook Link** ([el plan](docs/m20a-la-sala-y-la-cocina.md)).
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).

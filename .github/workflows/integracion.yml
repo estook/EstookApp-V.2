@@ -146,9 +146,9 @@ jobs:
     # octubre de 2026—, las 32 capturas saldrian en rojo sin que la aplicacion haya
     # cambiado en nada. Se sube a mano, y con las capturas rehechas en el mismo cambio.
     runs-on: ubuntu-24.04
-    # 30: un trozo bueno va en unos 12 minutos, y un tropiezo de GitHub al bajar los
-    # navegadores (19 minutos una vez, 1-oct) cabe sin dejarlo cortado a medias.
-    timeout-minutes: 30
+    # 40: un trozo bueno va en unos 12 minutos, y los tres intentos de bajar los
+    # navegadores (20 minutos como mucho) caben sin dejar las pruebas cortadas a medias.
+    timeout-minutes: 40
     strategy:
       # Que acaben los cuatro aunque uno falle: así se ve todo lo rojo de una vez.
       fail-fast: false
@@ -187,19 +187,33 @@ jobs:
         run: pnpm publicacion
 
       # Con su propio tope: si GitHub se atasca bajándolos, falla aquí y lo dice,
-      # en vez de comerse el tiempo de las pruebas (lección 139). Y **un segundo
-      # intento** (lección 226): el 26-oct, los servidores de Ubuntu tardaron más de
-      # quince minutos en un trozo y la vuelta salió en rojo sin fallar ninguna prueba.
-      # Cada intento, diez minutos como mucho; `timeout` corta también a `apt`, y antes
-      # de repetir se deja `dpkg` como estaba.
+      # en vez de comerse el tiempo de las pruebas (lección 139). Los servidores de
+      # Ubuntu, a veces, se quedan dando los paquetes a cuentagotas (el 26-oct, dos
+      # veces): la vuelta salía en rojo sin fallar ninguna prueba (lecciones 226 y 231).
+      #
+      #   · `apt` no se queda colgado de un servidor lento: corta a los 20 s y repite.
+      #   · Hasta tres intentos, de cinco minutos cada uno (bien, tarda uno o dos).
+      #   · **`timeout` corta a pnpm, pero no al `apt-get` de debajo**, que seguía vivo
+      #     con el candado de `dpkg` cogido, y el segundo intento fallaba al momento
+      #     (#146). Antes de repetir se corta también, se espera a que suelte el
+      #     candado y se deja `dpkg` como estaba.
       - name: Instalar navegadores
-        timeout-minutes: 25
+        timeout-minutes: 20
         run: |
-          for intento in 1 2; do
-            if timeout 600 pnpm exec playwright install --with-deps chromium webkit; then
+          printf '%s\n' 'Acquire::http::Timeout "20";' 'Acquire::https::Timeout "20";' \
+            'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/99-sin-atascos > /dev/null
+          for intento in 1 2 3; do
+            if timeout --kill-after=10 300 pnpm exec playwright install --with-deps chromium webkit; then
               exit 0
             fi
-            echo "::warning::Instalar los navegadores se ha atascado (intento $intento de 2)."
+            echo "::warning::Instalar los navegadores se ha atascado (intento $intento de 3)."
+            sudo pkill -9 -x apt-get || true
+            sudo pkill -9 -x apt || true
+            sudo pkill -9 -x dpkg || true
+            for _ in $(seq 1 30); do
+              sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock > /dev/null 2>&1 || break
+              sleep 2
+            done
             sudo dpkg --configure -a || true
           done
           exit 1

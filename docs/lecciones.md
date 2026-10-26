@@ -928,3 +928,9 @@
      cambio de hora, las dos cuentas daban el mismo domingo, y la vuelta de `main` tras la #145
      salió en rojo (su rama, horas antes, pasó). Los días se restan en el calendario, nunca en
      milisegundos (`las-ventas.prueba.ts`).
+231. **Un reintento que no se ha visto fallar no es un reintento.** El de la 226 cortaba a
+     `pnpm` con `timeout`, pero el `apt-get` de debajo seguía vivo con el candado de `dpkg`
+     cogido, y el segundo intento fallaba al instante («Could not get lock»): en la #146 la
+     vuelta salió en rojo otra vez sin fallar ninguna prueba. Ahora `apt` corta a los 20 s, se
+     corta también lo de debajo y se espera al candado, hasta tres veces. Y se escribió «corta
+     también a `apt`» sin comprobarlo: lo que se afirma de una herramienta, se prueba.

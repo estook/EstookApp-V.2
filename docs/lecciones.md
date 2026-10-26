@@ -896,3 +896,17 @@
      los del TPV, «Guardado» y nada guardado. Se vio al poner las dosis de la casa, probando
      como quien solo tiene los del TPV. Ahora va por una función que mira ese permiso
      (`monta-tus-bebidas.prueba.ts`, 0114).
+225. **Recoger un fallo de la base no lo aparta: con `postgres.js`, tira la transacción
+     entera.** La librería apunta cualquier consulta que falla, aunque el código la recoja, y
+     al acabar deshace todo con ese fallo; un `savepoint` escrito a mano no lo evita, solo
+     `sql.savepoint`. La madrugada del lunes 26-oct, la revisión de noche de Fogón, que no
+     veía lo ya revisado (el reloj no lee las revisiones), chocaba cada hora con lo guardado,
+     y ese choque «apartado» dio un 500 en cada latido desde la 01:07, hasta la última hora en que revisa (las 06:07). Las pruebas no
+     lo veían porque su `sql` no se portaba como el de verdad: ahora sí
+     (`el-sql-de-pglite.mjs`), y **una prueba que imita a la base tiene que fallar donde falla
+     la de verdad** (`el-reloj-del-lunes.prueba.ts`, 0091).
+226. **Una vuelta en rojo no siempre es una prueba que falla.** El 26-oct, en la #142, un
+     trozo de las pruebas de pantalla se cortó porque los servidores de Ubuntu tardaron más de
+     quince minutos en dar los navegadores; ninguna prueba falló. Se lee el registro antes de
+     tocar el código, y lo que depende de fuera se reintenta una vez, con su tope por intento
+     (`integracion.yml`, «Instalar navegadores»).

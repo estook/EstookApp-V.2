@@ -730,7 +730,11 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // aparato, que la pantalla no puede leer; `la_cocina_del_local`, cuándo empieza su día y
     // los minutos del semáforo; `los_nombres_de_la_sala`, el nombre de pila de quien lleva cada
     // mesa, para «Llamar a Lucía»; y `la_pantalla_apunta_en`, que lo que hace quede en el
-    // rastro de su local. Son setenta y una.
+    // rastro de su local.
+    //
+    // **Y la 0091 (el reloj del lunes) añade una.** `locales_revisados_de_noche` le dice al
+    // reloj qué locales ya tienen su revisión de noche esa semana, sin abrirle la tabla: no
+    // la veía y repetía cada hora los mismos (lección 225). Son setenta y dos.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -777,6 +781,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'las_cuentas',
       'lo_gastado_en_fogon',
       'lo_que_hacen_los_clientes',
+      'locales_revisados_de_noche',
       'locales_visibles',
       'los_clientes',
       'los_nombres_de_la_sala',

@@ -187,10 +187,22 @@ jobs:
         run: pnpm publicacion
 
       # Con su propio tope: si GitHub se atasca bajándolos, falla aquí y lo dice,
-      # en vez de comerse el tiempo de las pruebas (lección 139).
+      # en vez de comerse el tiempo de las pruebas (lección 139). Y **un segundo
+      # intento** (lección 226): el 26-oct, los servidores de Ubuntu tardaron más de
+      # quince minutos en un trozo y la vuelta salió en rojo sin fallar ninguna prueba.
+      # Cada intento, diez minutos como mucho; `timeout` corta también a `apt`, y antes
+      # de repetir se deja `dpkg` como estaba.
       - name: Instalar navegadores
-        timeout-minutes: 15
-        run: pnpm exec playwright install --with-deps chromium webkit
+        timeout-minutes: 25
+        run: |
+          for intento in 1 2; do
+            if timeout 600 pnpm exec playwright install --with-deps chromium webkit; then
+              exit 0
+            fi
+            echo "::warning::Instalar los navegadores se ha atascado (intento $intento de 2)."
+            sudo dpkg --configure -a || true
+          done
+          exit 1
 
       # Playwright levanta la API de pruebas (Postgres efimero, migraciones y
       # semillas) antes de las cinco aplicaciones. Esta escrito en

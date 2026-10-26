@@ -19,6 +19,7 @@ import { FalloDeLaSala } from '../ganchos/usarLaSala.ts';
 import { irA } from '../navegar.ts';
 import { ContextoDeSesion, type SesionDeLaSala } from '../sesion/Sesion.tsx';
 import { ElPin } from './ElPin.tsx';
+import { LaPantallaDeCocina } from '../cocina/LaPantallaDeCocina.tsx';
 import { usarElBloqueo } from '../ganchos/usarElBloqueo.ts';
 import { Vincular } from './Vincular.tsx';
 import { YaNoEstaVinculado } from './YaNoEstaVinculado.tsx';
@@ -29,6 +30,7 @@ import { YaNoEstaVinculado } from './YaNoEstaVinculado.tsx';
  *   sin llave       → Vincular este aparato (el código, o el correo en el primero)
  *   con llave       → su latido cada minuto; si ya no vale, «ya no está vinculado»
  *     · fichar      → ya no se usa (0115): se ficha en la caja; lo dice, y cómo cambiarlo
+ *     · cocina      → la pantalla de cocina, sin PIN (0116)
  *     · caja o comandero, sin nadie dentro → el PIN
  *     · con alguien dentro → lo de dentro, con su turno, hasta que se bloquea
  *
@@ -178,7 +180,9 @@ function ConLlave({
       </Pantalla>
     );
   }
-  if (aparato.funcion === 'cocina' || aparato.funcion === 'barra') {
+  // **La pantalla de cocina, sin PIN y siempre encendida** (T4 · 1, 0116): vale por su llave.
+  if (aparato.funcion === 'cocina') return <LaPantallaDeCocina llave={llave} aparato={aparato} />;
+  if (aparato.funcion === 'barra') {
     return (
       <Pantalla>
         <EstadoVacio

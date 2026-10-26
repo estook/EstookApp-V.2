@@ -3386,6 +3386,22 @@ para fichar ya no se vincula; y **Estook TPV se instala**, con su manifiesto y s
 
 Las pruebas: `la-puerta.prueba.ts`, `cada-aparato-a-lo-suyo.spec.ts` y `personas-y-fichajes.spec.ts`.
 
+### T4 · 1 · La cocina
+
+_26 de octubre de 2026._ Migración `0090`, decisión [0116](decisiones/0116-t4-1-la-cocina.md), con las
+maquetas de T4 en su 2.ª versión. **La pantalla de cocina**, sin PIN y siempre encendida, con **En
+marcha** y **Acabados**; tachar sin confirmar nada, el color del tiempo, el sonido y **«Llamar al
+camarero»**. En la sala, «La cocina te llama» y «Tienen prisa».
+
+- **La base** (0090): la pantalla del local, con el permiso de cocinar y ningún otro; la prisa y la llamada
+  en la cuenta; los minutos y el sonido en el local.
+- **La API**: cuatro órdenes de la pantalla, con su llave; `cambiar_la_prisa` y `ya_voy`; y los ajustes de
+  la cocina, en la caja.
+- **Estook TPV**: `cocina/` (la pantalla, su lógica y sus sonidos), `plano/LaCocinaLlama` y
+  `ajustes/CocinaYBarra`.
+
+Las pruebas: `laCocina.prueba.ts`, `la-pantalla-de-cocina.prueba.ts` y `la-cocina.spec.ts`.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

@@ -34,6 +34,9 @@ export interface CuentaEnElPlano {
   readonly totalCentimos: number;
   readonly porPases: boolean;
   readonly notaParaCocina: string | null;
+  /** «Tienen prisa», y si la cocina llama al camarero (0116). */
+  readonly conPrisa: boolean;
+  readonly cocinaLlamaEn: string | null;
   readonly loSiguiente: LoSiguiente;
   /** Su camarero ha fichado la salida: «Ana ha fichado la salida» (Anexo 11.8). */
   readonly suCamareroSeHaIdo: boolean;
@@ -123,6 +126,8 @@ export interface LaMesa {
   readonly camarero: string | null;
   readonly porPases: boolean;
   readonly notaParaCocina: string | null;
+  readonly conPrisa: boolean;
+  readonly cocinaLlamaEn: string | null;
   readonly abierta: boolean;
   readonly minutos: number;
   readonly totalCentimos: number;
@@ -452,4 +457,58 @@ export interface LasBebidasParaMontar {
     readonly yaEsta: boolean;
   }[];
   readonly puedeMontarlas: boolean;
+}
+
+// ── La pantalla de cocina (T4 · 1, 0116) ─────────────────────────────────────
+
+export interface PlatoEnCocina {
+  readonly id: string;
+  readonly nombre: string;
+  readonly cantidad: number;
+  readonly nota: string | null;
+  readonly delMenu: boolean;
+  readonly salioEn: string | null;
+  readonly nuevo: boolean;
+  readonly cambio: boolean;
+  readonly anulado: boolean;
+  readonly vuelve: string | null;
+  readonly opciones: readonly string[];
+  readonly pesoGramos: number | null;
+}
+
+export interface TarjetaDeCocina {
+  readonly cuentaId: string;
+  readonly titulo: string;
+  readonly tipo: string;
+  readonly personas: number | null;
+  readonly camarero: string | null;
+  readonly camareroId: string | null;
+  readonly notaParaCocina: string | null;
+  readonly porPases: boolean;
+  readonly conPrisa: boolean;
+  readonly cocinaLlamaEn: string | null;
+  readonly estado: 'en_marcha' | 'esperando' | 'fuera';
+  readonly anulada: string | null;
+  readonly llegoEn: string;
+  readonly minutos: number;
+  readonly ultimaMarcha: string | null;
+  readonly fueraEn: string | null;
+  readonly pases: readonly {
+    readonly numero: number;
+    readonly marchadoEn: string | null;
+    readonly fueraEn: string | null;
+    readonly platos: readonly PlatoEnCocina[];
+  }[];
+}
+
+export interface LaPantallaDeCocina {
+  readonly aparato: { readonly nombre: string; readonly local: string };
+  readonly ajustes: {
+    readonly avisoMin: number;
+    readonly tardeMin: number;
+    readonly suena: boolean;
+  };
+  readonly enMarcha: readonly TarjetaDeCocina[];
+  readonly esperando: readonly TarjetaDeCocina[];
+  readonly fuera: readonly TarjetaDeCocina[];
 }

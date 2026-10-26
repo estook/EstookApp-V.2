@@ -452,6 +452,13 @@ describe('las puertas se cierran solas', () => {
         // para fichar, por su llave (y solo la de una caja) y el PIN de quien teclea.
         'quien_ficha_en_la_caja',
         'fichar_en_la_caja',
+        // 0116 · la pantalla de cocina, que no tiene operador: vale por su llave, y solo la de
+        // una pantalla de cocina. Ve las mesas sin un euro, tacha, destacha y llama al
+        // camarero; la base la reconoce con el permiso de cocinar y ningún otro.
+        'la_pantalla_de_cocina',
+        'tachar_en_la_pantalla',
+        'destachar_en_la_pantalla',
+        'llamar_al_camarero',
         // 0109 · recuperar el acceso, que se pide precisamente sin haber entrado: el
         // enlace al correo (diez por hora desde una dirección, y no dice si un correo
         // existe) y lo que se hace con él, que vale por su token, de un uso.
@@ -777,19 +784,27 @@ describe('los secretos no se guardan para repetirlos', () => {
     // T1 (0107) · el latido de cada aparato, cada minuto; bloquear, que solo acaba el
     // turno; y fichar desde el TPV, que protege el estado de la persona como en el
     // aparato para fichar. Y en la caja (0115), lo mismo: guardarlo guardaría el PIN.
+    //
+    // T4 · 1 (0116) · la pantalla de cocina: leer, tachar, destachar y llamar, que el estado
+    // de cada plato protege; y «Ya voy», que dicho dos veces es lo mismo.
     expect(sinRecordar).toEqual([
       'bloquear',
+      'destachar_en_la_pantalla',
       'fichar_aqui',
       'fichar_en_el_tpv',
       'fichar_en_la_caja',
+      'la_pantalla_de_cocina',
       'latir_el_aparato',
       'leer_el_canal',
+      'llamar_al_camarero',
       'preparar_el_aparato_sin_conexion',
       'probar_mi_movil',
       'quien_ficha_aqui',
       'quien_ficha_en_la_caja',
       'sigo_aqui',
+      'tachar_en_la_pantalla',
       'ya_me_ha_llegado',
+      'ya_voy',
     ]);
   });
 
@@ -1006,6 +1021,11 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'montar_copas',
         'montar_cafes',
         'cambiar_las_dosis',
+        // Y lo que la sala le dice a la cocina, y los minutos y el sonido de la cocina (0116).
+        'cambiar_la_prisa',
+        'ya_voy',
+        'la_cocina_y_la_barra',
+        'guardar_la_cocina_y_la_barra',
       ].sort(),
     );
   });

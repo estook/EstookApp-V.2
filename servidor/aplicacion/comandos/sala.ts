@@ -952,3 +952,50 @@ export const anularMesa = comando<{ cuenta_id: string; motivo: string }, { cuent
     return { cuentaId: cuenta.id };
   },
 });
+
+// ═══ Lo que la sala le dice a la cocina, y al revés (0116) ═══════════════════════
+
+/** **«Tienen prisa»**: la tarjeta sube arriba en cocina, con su franja y su sonido. */
+export const cambiarLaPrisa = comando<
+  { cuenta_id: string; con_prisa: boolean },
+  { conPrisa: boolean }
+>({
+  nombre: 'cambiar_la_prisa',
+  entrada: z.object({ cuenta_id: id, con_prisa: z.boolean() }).strict(),
+  exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelServicio(contexto);
+    const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
+    if (cuenta.con_prisa === entrada.con_prisa) return { conPrisa: cuenta.con_prisa };
+    await contexto.sql`
+      update estook.cuenta set con_prisa = ${entrada.con_prisa} where id = ${cuenta.id}::uuid
+    `;
+    await avisar(contexto, localId, 'cambiar_la_prisa', cuenta.id, {
+      con_prisa: entrada.con_prisa,
+    });
+    return { conPrisa: entrada.con_prisa };
+  },
+});
+
+/** **«Ya voy»**: el camarero ha visto que la cocina le llama, y se quita el aviso. */
+export const yaVoy = comando<{ cuenta_id: string }, { cuentaId: string }>({
+  nombre: 'ya_voy',
+  entrada: z.object({ cuenta_id: id }).strict(),
+  exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
+  // Decirlo dos veces es lo mismo.
+  sinRecordar: true,
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelServicio(contexto);
+    const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
+    if (cuenta.cocina_llama_en === null) return { cuentaId: cuenta.id };
+    await contexto.sql`
+      update estook.cuenta set cocina_llama_en = null where id = ${cuenta.id}::uuid
+    `;
+    await avisar(contexto, localId, 'ya_voy', cuenta.id, {});
+    return { cuentaId: cuenta.id };
+  },
+});

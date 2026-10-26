@@ -18,6 +18,8 @@ function unaMesa(platos: Partial<PlatoDeLaCuenta>[], pases: LaMesa['pases'] = []
     camarero: 'Sara',
     porPases: true,
     notaParaCocina: null,
+    conPrisa: false,
+    cocinaLlamaEn: null,
     abierta: true,
     minutos: 10,
     totalCentimos: 0,

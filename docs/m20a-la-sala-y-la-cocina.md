@@ -15,7 +15,9 @@
 > bebidas** ([0114](decisiones/0114-t3-2-2-monta-tus-bebidas.md), #139), **en producción**. Antes de T4,
 > **cada aparato a lo suyo** ([0115](decisiones/0115-cada-aparato-a-lo-suyo.md)), en su pull request:
 > fichar en la caja, el comandero solo la sala y Estook TPV instalable. **T4 · Cocina y barra**, con sus
-> maquetas de la 2.ª versión esperando a Richi.
+> maquetas dadas por buenas el 26-oct: **T4 · 1 · La cocina** ([0116](decisiones/0116-t4-1-la-cocina.md),
+> migración 0090), construida, en su pull request; **lo siguiente, T4 · 2 · La barra y la alergia de la
+> mesa.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -232,6 +234,44 @@ se vende mucho se peta»), **sin fichas técnicas en el servicio**, la alergia d
 y el sonido siempre. **Richi las dio por buenas el 26-oct** con ese cambio. Siguen abiertas dos
 preguntas que no frenan T4: la caja para Windows con Estook Link dentro (T5), y qué es «sin acceso a
 precios» en el comandero.
+
+### T4 · La cocina y la barra, en dos (26-oct)
+
+Se parte en dos (regla 2): **T4 · 1 · La cocina**, la pantalla de cocina y lo que la sala le dice; **T4 ·
+2 · La barra y la alergia de la mesa**, la pantalla de barra (la misma, con lo que prepara la barra), la
+alergia de la mesa en la sala y en la cocina, y la hora en el ✓ de la cuenta.
+
+### T4 · 1 · La cocina, terminado cuando
+
+- **En IKATZ**: Richi vincula una tablet como **pantalla de cocina**, sin PIN, y se queda encendida. Pide
+  una mesa por pases en un comandero: en cocina sale **el ticket entero** al momento, **suena**, con el
+  1.º en marcha y el 2.º en espera. Tacha los platos de un toque (otro toque destacha); al tachar el
+  último, la mesa pasa sola a **Acabados**, y la sala ve que toca marchar. Marcha el 2.º: en cocina sube
+  con **«¡MARCHA EL 2.º!»** y suena distinto. Toca **«Llamar a Lucía»** y en el comandero de Lucía sale
+  «La cocina te llama»; marca **«Tienen prisa»** en una mesa y en cocina sube con su franja.
+- **Los colores del tiempo**: verde, ámbar a los 10 minutos y rojo a los 20, que se cambian en la caja
+  (Ajustes del TPV › Cocina y barra), con el sonido.
+- **Acabados**: lo de los últimos 40 minutos a la vista y lo de antes plegado, con la mesa y una flecha.
+- **La cocina no confirma nada** y **no ve ni un importe**, tampoco llamando a la API a pelo.
+- Pasan las pruebas de 3.7 de la cocina: el ticket entero, la cocina no marcha, marchar llega al
+  segundo, y la pantalla no tiene operador ni se bloquea.
+- **Lo de la base**: la pantalla del local, reconocida por su llave, con el permiso de cocinar y nada
+  más; «tienen prisa» y «la cocina te llama» en la cuenta; y los minutos y el sonido en el local.
+
+### T4 · 1 · La cocina, entregada (26-oct-2026)
+
+**Lo que hay** ([0116](decisiones/0116-t4-1-la-cocina.md), migración 0090): **la pantalla de cocina**,
+vinculada una vez y sin PIN, con **En marcha** y **Acabados**; el ticket entero de cada mesa, tachar y
+destachar de un toque, el color del tiempo, el sonido, el teclado de cocina y **«Llamar a …»**. En la sala,
+**«La cocina te llama»** con «Ya voy», y **«Tienen prisa»**. En la caja, **Ajustes del TPV › Cocina y
+barra**.
+
+**Las pruebas**: `laCocina.prueba.ts` (el color, lo acabado, qué suena y el teclado),
+`la-pantalla-de-cocina.prueba.ts` (contra la base: sin PIN y con su llave, sin un euro, tachar y
+destachar, que no marcha ni quita, lo que lee, la prisa, la llamada y los ajustes) y `la-cocina.spec.ts`
+(el recorrido entero en la pantalla, con la sala en otra ventana).
+
+**Lo que decidí al construirlo**: los diez de la [0116](decisiones/0116-t4-1-la-cocina.md), sección 3.
 
 ### T4 a T7
 

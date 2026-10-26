@@ -52,6 +52,47 @@ async function elPlatoEnCocina(
   return linea;
 }
 
+/**
+ * **Tachar un plato de un local**: lo de `tachar`, y también de la pantalla de cocina, que no
+ * tiene sesión (0116) y dice ella su organización. Quien lo tachó, si es una persona.
+ */
+export async function tacharEnElLocal(
+  contexto: Contexto,
+  localId: string,
+  lineaId: string,
+  organizacionId?: string,
+): Promise<{ lineaId: string; paseFuera: boolean }> {
+  const linea = await elPlatoEnCocina(contexto, localId, lineaId);
+  if (linea.salio_en !== null) {
+    throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese plato ya está tachado.' });
+  }
+  const pase = (await losPases(contexto, [linea.cuenta_id])).find((p) => p.numero === linea.pase);
+  if (pase?.marchado_en === null || pase === undefined) {
+    throw new FalloDeAplicacion('ya_hecho', {
+      porque: 'Ese pase aún no está marchado: lo marcha la sala cuando la mesa va acabando.',
+    });
+  }
+  await contexto.sql`
+      update estook.linea_de_cuenta
+         set salio_en = ${contexto.ahora.toISOString()}::timestamptz, salio_por = ${contexto.personaId}::uuid
+       where id = ${linea.id}::uuid
+    `;
+  await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase as number);
+  const paseFuera = (await losPases(contexto, [linea.cuenta_id])).some(
+    (p) => p.numero === linea.pase && p.fuera_en !== null,
+  );
+  await apuntarEnLaMesa(
+    contexto,
+    'tachar',
+    linea.cuenta_id,
+    localId,
+    { plato: linea.nombre, ...(paseFuera ? { pase_fuera: linea.pase } : {}) },
+    organizacionId,
+  );
+  await tocarElServicio(contexto, localId);
+  return { lineaId: linea.id, paseFuera };
+}
+
 export const tachar = comando<{ linea_id: string }, { lineaId: string; paseFuera: boolean }>({
   nombre: 'tachar',
   entrada: z.object({ linea_id: id }).strict(),
@@ -59,34 +100,36 @@ export const tachar = comando<{ linea_id: string }, { lineaId: string; paseFuera
   enElTpv: 'tambien',
 
   async ejecutar(contexto, entrada) {
-    const localId = elLocalDelServicio(contexto);
-    const linea = await elPlatoEnCocina(contexto, localId, entrada.linea_id);
-    if (linea.salio_en !== null) {
-      throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese plato ya está tachado.' });
-    }
-    const pase = (await losPases(contexto, [linea.cuenta_id])).find((p) => p.numero === linea.pase);
-    if (pase?.marchado_en === null || pase === undefined) {
-      throw new FalloDeAplicacion('ya_hecho', {
-        porque: 'Ese pase aún no está marchado: lo marcha la sala cuando la mesa va acabando.',
-      });
-    }
-    await contexto.sql`
-      update estook.linea_de_cuenta
-         set salio_en = ${contexto.ahora.toISOString()}::timestamptz, salio_por = ${contexto.personaId}::uuid
-       where id = ${linea.id}::uuid
-    `;
-    await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase as number);
-    const paseFuera = (await losPases(contexto, [linea.cuenta_id])).some(
-      (p) => p.numero === linea.pase && p.fuera_en !== null,
-    );
-    await apuntarEnLaMesa(contexto, 'tachar', linea.cuenta_id, localId, {
-      plato: linea.nombre,
-      ...(paseFuera ? { pase_fuera: linea.pase } : {}),
-    });
-    await tocarElServicio(contexto, localId);
-    return { lineaId: linea.id, paseFuera };
+    return tacharEnElLocal(contexto, elLocalDelServicio(contexto), entrada.linea_id);
   },
 });
+
+/** **Destachar**: otro toque y vuelve, sin PIN ni margen (Richi, 25-oct). También la pantalla. */
+export async function destacharEnElLocal(
+  contexto: Contexto,
+  localId: string,
+  lineaId: string,
+  organizacionId?: string,
+): Promise<{ lineaId: string }> {
+  const linea = await elPlatoEnCocina(contexto, localId, lineaId);
+  if (linea.salio_en === null) {
+    throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese plato no está tachado.' });
+  }
+  await contexto.sql`
+      update estook.linea_de_cuenta set salio_en = null, salio_por = null where id = ${linea.id}::uuid
+    `;
+  await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase as number);
+  await apuntarEnLaMesa(
+    contexto,
+    'destachar',
+    linea.cuenta_id,
+    localId,
+    { plato: linea.nombre },
+    organizacionId,
+  );
+  await tocarElServicio(contexto, localId);
+  return { lineaId: linea.id };
+}
 
 export const destachar = comando<{ linea_id: string }, { lineaId: string }>({
   nombre: 'destachar',
@@ -95,18 +138,7 @@ export const destachar = comando<{ linea_id: string }, { lineaId: string }>({
   enElTpv: 'tambien',
 
   async ejecutar(contexto, entrada) {
-    const localId = elLocalDelServicio(contexto);
-    const linea = await elPlatoEnCocina(contexto, localId, entrada.linea_id);
-    if (linea.salio_en === null) {
-      throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese plato no está tachado.' });
-    }
-    await contexto.sql`
-      update estook.linea_de_cuenta set salio_en = null, salio_por = null where id = ${linea.id}::uuid
-    `;
-    await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase as number);
-    await apuntarEnLaMesa(contexto, 'destachar', linea.cuenta_id, localId, { plato: linea.nombre });
-    await tocarElServicio(contexto, localId);
-    return { lineaId: linea.id };
+    return destacharEnElLocal(contexto, elLocalDelServicio(contexto), entrada.linea_id);
   },
 });
 

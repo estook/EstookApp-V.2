@@ -188,7 +188,7 @@ Los tres acaban en una venta con su ticket. Lo que cambia es cuánto vive la cue
 **Aviso de alergia de la mesa.** Se marca al abrirla o después, eligiendo de los catorce alérgenos oficiales que Estook ya tiene (M9). A partir de ahí:
 
 - Al pedir un plato que lo lleva, **la sala avisa antes de mandarlo**.
-- La comanda **sale marcada en cocina**, en su color y con su icono, y no se puede marcar lista sin confirmarlo.
+- La comanda **sale marcada en cocina**, en rojo y con el plato que lo lleva señalado. **La cocina no confirma nada**: lo ve, que es lo que importa (Richi, 25-oct). Llega con T4 · 2.
 
 Esto Estook lo puede hacer sin pedir un dato más, porque los alérgenos ya están en la ficha. **Ningún TPV que no tenga escandallos puede hacerlo.**
 
@@ -219,39 +219,37 @@ Se marca desde la comanda y desaparece de la carta y de la carta digital (M10 y 
 
 ## 3.2 Cocina
 
-**La función de cocina de Estook TPV**, para un aparato fijo en cocina, a pantalla completa. Letra grande, contraste alto, botones grandes: se usa de lejos y con las manos ocupadas. Admite **teclados de cocina** (los «bump bar»), que escriben como un teclado. No es el **modo cocina** de Estook, que sirve para leer fichas en la gestión: son dos cosas y se llaman distinto.
+**La función de cocina de Estook TPV**, para un aparato fijo en cocina, a pantalla completa. **Se vincula una vez y se queda siempre encendida, sin PIN** ni nadie dentro, y la pantalla no se apaga sola ([0116](../decisiones/0116-t4-1-la-cocina.md)). Letra grande, contraste alto, botones grandes: se usa de lejos y con las manos ocupadas. **La cocina no confirma nada**: tacha lo que sale y, si hace falta, llama al camarero (Richi, 25-oct). Admite **teclados de cocina** (los «bump bar»), que escriben como un teclado. No es el **modo cocina** de Estook, que sirve para leer fichas en la gestión: son dos cosas y se llaman distinto.
 
 ### El ticket entero de la mesa
 
 **A cocina llega la mesa entera, con todos sus platos** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). **No se separa por partidas** (caliente, frío, plancha): Richi lo descartó porque es un lío, más difícil y más toques. **Cada tarjeta es el pase de su mesa**: arriba la mesa, sus comensales, el camarero, cuánto lleva y la alergia; dentro, el 1.º en marcha y el 2.º en espera, cada plato con su nota y con «menú» si es del menú.
 
-- **Se toca un plato al sacarlo y queda tachado con su hora.** Otro toque lo destacha. La sala ve ✓ y la hora en la cuenta.
+- **Se toca un plato al sacarlo y queda tachado con su hora.** Otro toque lo destacha, **sin PIN ni margen**: es para que la cocina se organice. La sala ve ✓ y la hora en la cuenta.
 - **Cuando sale todo el 1.º**, la mesa **baja a «Esperando a que la sala marche»**, pequeña, con su 2.º a la vista para ir preparando. **Al marcharlo la sala**, sube arriba con **«¡MARCHA EL 2.º!»** y suena distinto.
-- **Al tachar el último plato, la mesa se va sola a «Fuera»**, con 5 segundos para deshacer; también **«Todo fuera»** de un toque. En «Fuera» se ve cuándo salió cada mesa y lo que tardó, con **«Recuperar»**.
-- **Pestañas: En marcha · Delivery · Fuera.** El pedido de reparto lleva la moto, la plataforma, el nombre, **la hora a la que pasa el repartidor** y lo que va a la bolsa, y se cierra con «Listo para el repartidor».
+- **Al tachar el último plato, la mesa pasa sola a «Acabados»**, su pestaña: **lo acabado no se mezcla con lo nuevo** (Richi, 26-oct: «si se vende mucho se peta»). Allí, **lo de los últimos 40 minutos se ve entero**, para encontrarlo aunque no se sepa qué mesa es, y **lo de antes, plegado**, con la mesa, la hora y una flecha. Tocar un plato lo destacha y la mesa vuelve a «En marcha».
+- **«Llamar al camarero»** en cada tarjeta: al camarero de la mesa le sale «La cocina te llama» (y le vibra el móvil) hasta que dice «Ya voy».
+- **Pestañas: En marcha · Acabados**, y **Delivery** cuando el local tenga pedidos de reparto en el TPV. El pedido de reparto lleva la moto, la plataforma, el nombre, **la hora a la que pasa el repartidor** y lo que va a la bolsa, y se cierra con «Listo para el repartidor».
 - **Lo que cambia sale en la misma tarjeta**: «NUEVO» con su hora, «ANULADO» en rojo y con sonido, «CAMBIO» de nota, y «VUELVE» arriba del todo cuando un plato devuelto se rehace.
 - **Pantalla, papel o las dos**, a elección del local. En papel sale el ticket entero con sus pases, y un papelito por cada marcha, plato nuevo o anulado.
 - **Lo que no prepara la cocina no va a cocina**: va a la barra, o a ninguna parte, según **«¿Quién lo prepara?»** de su página (11.11).
 
 ### Los tiempos
 
-- Temporizador por pedido y por plato, desde que se mandó o se marchó.
-- **Tres tramos, con su color y su icono:** en hora, aviso, tarde. Los minutos de cada tramo **los pone el local** en Ajustes, con una propuesta por defecto; y se pueden afinar por plato, porque un solomillo no tarda lo que un gazpacho.
+- Temporizador por pase, desde que se mandó o se marchó.
+- **Tres tramos, con su color:** verde, **ámbar a los 10 minutos** y **rojo a los 20**, de fábrica. Los minutos **los pone el local** en Ajustes del TPV › Cocina y barra. Afinarlos por plato queda para cuando un local lo pida.
 - Lo tarde **sube arriba**, con lo que lleva esperando.
 
 ### Trabajar
 
-- **Tachar un plato al sacarlo**, o la mesa entera con «Todo fuera».
-- **Deshacer, dentro de un margen corto.** Se marca sin querer y ahora mismo no hay vuelta atrás; en cocina eso es un plato que nadie hace. Se puede recuperar lo marcado durante unos minutos, queda con autor, y pasado ese margen lo desmarca un jefe.
-- **Aviso sonoro** al entrar un pedido, y distinto cuando entra uno marcado por alergia o uno con prioridad.
-- **Prioridad** que la sala puede pedir desde una mesa, con su nota («tienen prisa») arriba de la tarjeta.
-- **Lo que llevamos hoy**, por plato: «14 solomillos». Sirve para producción y para saber qué se está acabando.
+- **Tachar un plato al sacarlo**, de un toque, y destacharlo con otro, siempre. Con un **teclado de cocina**, la tecla de la tarjeta tacha su siguiente plato.
+- **Aviso sonoro** al entrar una mesa, otro al marchar el 2.º, y otro más fuerte con algo anulado o «tienen prisa». **Suena siempre**: instalada en Chrome o Edge (Android o el ordenador), sin tocar nada; si el navegador no deja, la pantalla lo dice en grande y el primer toque lo arregla. Se apaga en Ajustes del TPV › Cocina y barra.
+- **«Tienen prisa»**, que la sala marca en la mesa: la tarjeta sube arriba, con su franja y su sonido.
+- **Lo que llevamos hoy** por plato («14 solomillos») queda para cuando un local lo pida: en el servicio, lo menos posible en la pantalla.
 
-### La ficha, que es lo que nadie más tiene
+### La ficha técnica, fuera del servicio
 
-Desde cualquier plato de la pantalla se abre **su ficha técnica** (la de Escandallos, M9), a pantalla completa en la de cocina —el modo cocina de Escandallos se quitó porque esto es su sitio ([0090](../decisiones/0090-el-repaso-del-16-oct.md))—: foto, gramajes, pasos con sus fotos y el truco del jefe, en el idioma del cocinero y **sin un solo importe**.
-
-Un cocinero nuevo deja de necesitar que alguien le explique cada plato en pleno servicio, que es el problema que originó Estook.
+**La ficha técnica no está en la pantalla de cocina** (Richi, 25-oct): en el servicio está el jefe o los cocineros que saben, y quien tenga una duda la mira en Estook, en Escandallos, fuera del servicio.
 
 ### Lo que la cocina nunca ve
 
@@ -291,7 +289,7 @@ El modelo entero —persona, terminal, operador, aprobación— está en la [Arq
 
 **Quién se queda con la venta:** el camarero de la cuenta, que es el que la abrió o el que la recibió en un traspaso (3.1). No el aparato, y no quien pasaba por ahí.
 
-**La pantalla de cocina no tiene operador.** Marcar un plato listo **no pide PIN** —en cocina eso no se puede hacer— y queda a nombre del terminal; lo que sí pide PIN es **salir de la función** y cualquier cosa de un jefe, como desmarcar pasado el margen.
+**La pantalla de cocina no tiene operador** ([0116](../decisiones/0116-t4-1-la-cocina.md)). **Nada pide PIN** —en cocina eso no se puede hacer—: tachar, destachar y llamar quedan a nombre del aparato. No tiene sesión: **vale por su llave**, y la base la reconoce como la pantalla de su local, **con el permiso de cocinar y ningún otro** (ve las mesas sin un euro; no marcha, no quita, no lee nada más). Para que deje de serlo, se desvincula desde la caja.
 
 **Un terminal no es una puerta a la gestión.** No se sale a Estook sin que alguien con permiso entre con su PIN. Una tablet de sala tirada en la barra no es una puerta al almacén ni a los sueldos.
 
@@ -326,7 +324,7 @@ La versión 1.1 prometía que la cocina seguía imprimiendo sin internet con una
 - **A cocina llega el ticket entero**; al tachar todo el 1.º, la sala recibe el aviso y su botón pasa a «Marchar el 2.º»; al tachar el último, la mesa se va a «Fuera» y se recupera desde allí.
 - **La cocina no puede marchar**: solo la sala.
 - Marchar desde sala llega a cocina **en menos de 2 segundos**.
-- Un plato marcado por error se recupera dentro del margen, y fuera del margen lo desmarca un jefe.
+- Un plato tachado por error se destacha con otro toque, sin PIN ni margen, y la mesa vuelve de «Acabados» (0116).
 - Se vende en barra sin abrir mesa, y se cobra en el mismo gesto.
 - Se traspasa una mesa abierta a otro camarero y las ventas quedan a nombre del nuevo desde ese momento.
 - Un plato con un alérgeno marcado en la mesa **avisa en sala antes de mandarlo** y sale marcado en cocina.
@@ -1651,7 +1649,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 | **PIN y bloqueo**      | Los minutos de cada aparato, bloquear al cobrar, solo quien ha fichado (11.4)              | Gerente                  |
 | **Formas de pago**     | Efectivo, tarjeta y las del banco del local; el datáfono conectado cuando llegue (10.7)    | Gerente                  |
 | **Tickets**            | Lo que va arriba y abajo del ticket y si se imprime solo (6.5)                             | Gerente                  |
-| **Cocina y barra**     | Los minutos del semáforo, el sonido, pantalla o papel (3.2)                                | Gerente y jefe de cocina |
+| **Cocina y barra**     | Los minutos del semáforo y el sonido (0116); pantalla o papel, con Estook Link (3.2)       | Gerente y jefe de cocina |
 
 ## 11.14 La seguridad, en una lista
 

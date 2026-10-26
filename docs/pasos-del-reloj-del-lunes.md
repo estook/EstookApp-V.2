@@ -2,12 +2,14 @@
 
 > ## Cómo está
 >
-> Escrito el 26 de octubre de 2026, en su pull request, **sin fusionar**.
+> **En producción desde el 26 de octubre de 2026**: fusionada (#142), la 0091 migrada y la API
+> desplegada. **Estos pasos ya están hechos**; se quedan escritos por si hay que repetirlos.
 >
-> | Qué              | Cómo está                                                      |
-> | ---------------- | -------------------------------------------------------------- |
-> | La base de datos | **90 de 90** en producción; esta trae **la 0091**              |
-> | La API           | 113 consultas y 302 comandos, desplegada el 26-oct; no cambian |
+> | Qué              | Cómo está                                                            |
+> | ---------------- | -------------------------------------------------------------------- |
+> | La base de datos | **91 de 91** en producción, con la 0091 (comprobado el 26-oct)       |
+> | La API           | 113 consultas y 302 comandos, desplegada el 26-oct con la #142       |
+> | El reloj         | En verde: late cada hora a y 7 y responde 200 (comprobado el 26-oct) |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -26,7 +28,7 @@ y los correos que se reintentan; y la revisión de Fogón de esta semana se qued
 primeros locales. Lo del día (los correos de las cuentas y Stripe) sale a las 8, cuando ya no se
 revisa.
 
-## Lo que te toca · fusionar, migrar y desplegar
+## Lo que hiciste · fusionar, migrar y desplegar
 
 **En este orden: fusionar, después migrar, y al final desplegar.** La API nueva necesita la 0091.
 

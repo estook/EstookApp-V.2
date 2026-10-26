@@ -61,8 +61,19 @@ export function loQueSuena(
     ) {
       return 'aviso';
     }
-    if (antesEra === undefined) suena = suena ?? 'nueva';
-    else if (t.ultimaMarcha !== null && t.ultimaMarcha !== antesEra.ultimaMarcha) suena = 'marcha';
+    // Una mesa nueva, una que vuelve de Acabados (los postres, otra ronda en la barra) o lo
+    // pedido de más en una que está en marcha: suena como lo nuevo (0117).
+    const platos = (x: TarjetaDeCocina) => x.pases.flatMap((p) => p.platos).length;
+    if (antesEra === undefined || antesEra.estado === 'fuera' || platos(t) > platos(antesEra)) {
+      suena = suena ?? 'nueva';
+    }
+    if (
+      antesEra !== undefined &&
+      t.ultimaMarcha !== null &&
+      t.ultimaMarcha !== antesEra.ultimaMarcha
+    ) {
+      suena = 'marcha';
+    }
   }
   return suena;
 }

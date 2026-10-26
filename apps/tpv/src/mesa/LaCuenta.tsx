@@ -7,7 +7,8 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { LoApruebaUnEncargado } from './LoApruebaUnEncargado.tsx';
 import { cambiarLinea, quitarLinea, type Borrador } from '../logica/comanda.ts';
 import { elPase, type GrupoDeLaCuenta, type LineaALaVista } from '../logica/laCuenta.ts';
-import { euros } from '../logica/texto.ts';
+import { euros, laHora } from '../logica/texto.ts';
+import { losNombres } from './usarElAvisoDeAlergia.tsx';
 
 /**
  * La cuenta de la mesa, por grupos (`laCuenta.ts`): bebidas, menús, el 1.º y el 2.º con
@@ -114,6 +115,11 @@ export function LaCuenta({
                 {l.nota !== null && (
                   <span className="text-secundario text-atencion no-underline">{l.nota}</span>
                 )}
+                {l.lleva.length > 0 && l.quitada === null && (
+                  <span className="text-secundario font-bold text-mal no-underline">
+                    ⚠ Lleva {losNombres(l.lleva).toLowerCase()}
+                  </span>
+                )}
                 {l.vuelve !== null && l.quitada === null && (
                   <span className="text-secundario font-semibold text-mal">Vuelve: {l.vuelve}</span>
                 )}
@@ -124,7 +130,11 @@ export function LaCuenta({
                 )}
               </span>
               <span className="shrink-0 tabular-nums">
-                {l.salio && l.quitada === null && <span className="mr-e2 text-bien">✓</span>}
+                {l.salio && l.quitada === null && (
+                  <span className="mr-e2 text-secundario font-bold text-bien">
+                    ✓{l.salioEn === null ? '' : ` ${laHora(l.salioEn)}`}
+                  </span>
+                )}
                 {l.importeCentimos === null ? '' : euros(l.importeCentimos)}
               </span>
             </button>

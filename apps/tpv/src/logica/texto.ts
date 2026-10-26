@@ -22,3 +22,8 @@ export function personas(cuantas: number | null): string | null {
   if (cuantas === null) return null;
   return cuantas === 1 ? '1 persona' : `${cuantas} personas`;
 }
+
+/** «21:33»: la hora del local en el aparato, para el ✓ de lo que salió (0117). */
+export function laHora(cuando: string): string {
+  return new Date(cuando).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}

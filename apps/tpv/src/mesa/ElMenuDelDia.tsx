@@ -19,11 +19,14 @@ export function ElMenuDelDia({
   mesa,
   borrador,
   alCambiarElBorrador,
+  avisar,
 }: {
   readonly menus: readonly MenuDeLaSala[];
   readonly mesa: LaMesa;
   readonly borrador: Borrador;
   readonly alCambiarElBorrador: (b: Borrador) => void;
+  /** El aviso de la alergia de la mesa (0117), antes de elegir lo que la lleva. */
+  readonly avisar: (nombre: string, loQueLleva: readonly string[], pedir: () => void) => void;
 }) {
   const [menuId, setMenuId] = useState(menus[0]?.id ?? '');
   const menu = menus.find((m) => m.id === menuId) ?? menus[0];
@@ -163,12 +166,14 @@ export function ElMenuDelDia({
                 alTocar={() => {
                   const primero = sinPostre[0];
                   if (primero === undefined) return;
-                  alCambiarElBorrador(
-                    anadirAlMenu(borrador, primero, p, {
-                      pase: delPostre.pase,
-                      esBebida: delPostre.esBebida,
-                    }),
-                  );
+                  avisar(p.nombre, p.alergenos ?? [], () => {
+                    alCambiarElBorrador(
+                      anadirAlMenu(borrador, primero, p, {
+                        pase: delPostre.pase,
+                        esBebida: delPostre.esBebida,
+                      }),
+                    );
+                  });
                 }}
               />
             ))}
@@ -214,7 +219,12 @@ export function ElMenuDelDia({
                   cuantos={elegidos[s.id]?.[p.platoId] ?? 0}
                   apagado={p.agotado}
                   alTocar={() => {
-                    cambiar(s, p.platoId, 1);
+                    // Se avisa al elegir el primero: con cuatro menús no se avisa cuatro veces.
+                    if ((elegidos[s.id]?.[p.platoId] ?? 0) > 0) cambiar(s, p.platoId, 1);
+                    else
+                      avisar(p.nombre, p.alergenos ?? [], () => {
+                        cambiar(s, p.platoId, 1);
+                      });
                   }}
                   alQuitar={() => {
                     cambiar(s, p.platoId, -1);

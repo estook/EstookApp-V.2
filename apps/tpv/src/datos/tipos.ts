@@ -37,6 +37,8 @@ export interface CuentaEnElPlano {
   /** «Tienen prisa», y si la cocina llama al camarero (0116). */
   readonly conPrisa: boolean;
   readonly cocinaLlamaEn: string | null;
+  /** La alergia de la mesa (0117). Una API de antes no la dice. */
+  readonly alergias?: readonly string[];
   readonly loSiguiente: LoSiguiente;
   /** Su camarero ha fichado la salida: «Ana ha fichado la salida» (Anexo 11.8). */
   readonly suCamareroSeHaIdo: boolean;
@@ -115,6 +117,8 @@ export interface PlatoDeLaCuenta {
   /** Lo elegido (T3 · 2): «Patatas», «Doble de queso». Una API de antes no lo dice. */
   readonly opciones?: readonly string[];
   readonly pesoGramos?: number | null;
+  /** Lo que lleva, congelado al pedir (0117). Una API de antes no lo dice. */
+  readonly alergenos?: readonly string[];
 }
 
 export interface LaMesa {
@@ -128,6 +132,8 @@ export interface LaMesa {
   readonly notaParaCocina: string | null;
   readonly conPrisa: boolean;
   readonly cocinaLlamaEn: string | null;
+  /** La alergia de la mesa (0117). Una API de antes no la dice. */
+  readonly alergias?: readonly string[];
   readonly abierta: boolean;
   readonly minutos: number;
   readonly totalCentimos: number;
@@ -166,6 +172,8 @@ export interface GrupoParaPedir {
     readonly id: string;
     readonly nombre: string;
     readonly precioCentimos: number;
+    /** Los alérgenos de lo que añade (0117). Una API de antes no lo dice. */
+    readonly alergenos?: readonly string[];
   }[];
 }
 
@@ -192,6 +200,8 @@ export interface SeccionDelMenuDeLaSala {
     readonly nombre: string;
     readonly suplementoCentimos: number;
     readonly agotado: boolean;
+    /** Lo que lleva (0117). Una API de antes no lo dice. */
+    readonly alergenos?: readonly string[];
   }[];
 }
 
@@ -474,6 +484,8 @@ export interface PlatoEnCocina {
   readonly vuelve: string | null;
   readonly opciones: readonly string[];
   readonly pesoGramos: number | null;
+  /** Lo que lleva de la alergia de la mesa: «LLEVA GLUTEN» (0117). */
+  readonly lleva?: readonly string[];
 }
 
 export interface TarjetaDeCocina {
@@ -487,6 +499,8 @@ export interface TarjetaDeCocina {
   readonly porPases: boolean;
   readonly conPrisa: boolean;
   readonly cocinaLlamaEn: string | null;
+  /** La alergia de la mesa (0117): la franja roja. */
+  readonly alergias?: readonly string[];
   readonly estado: 'en_marcha' | 'esperando' | 'fuera';
   readonly anulada: string | null;
   readonly llegoEn: string;
@@ -503,6 +517,8 @@ export interface TarjetaDeCocina {
 
 export interface LaPantallaDeCocina {
   readonly aparato: { readonly nombre: string; readonly local: string };
+  /** Qué prepara: la cocina o la barra (0117). Una API de antes no lo dice: la cocina. */
+  readonly prepara?: 'cocina' | 'barra';
   readonly ajustes: {
     readonly avisoMin: number;
     readonly tardeMin: number;

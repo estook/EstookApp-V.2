@@ -20,6 +20,7 @@
  */
 
 import { sinAcentos } from './parecido.ts';
+import { ALERGENOS } from './referencia.ts';
 
 export type DestinoDeLaLinea = 'cocina' | 'barra' | 'ninguno';
 
@@ -211,4 +212,82 @@ export function losPasesDelMenu(
     else if (s.esPostre) pases.set(s.id, elDelPostre);
   }
   return pases;
+}
+
+// ── T4 · 2 · La barra y la alergia de la mesa (0117) ─────────────────────────
+
+/** Lo que hace falta de una línea de la barra para saber qué ronda sale en su pantalla. */
+export interface LineaDeLaBarra {
+  readonly id: string;
+  /** Cuándo llegó a la barra (al mandar). */
+  readonly mandadaEn: string;
+  readonly salioEn: string | null;
+  readonly quitadaEn: string | null;
+}
+
+export interface RondaDeLaBarra {
+  /** Las líneas de esta ronda, en el orden en que llegaron. */
+  readonly ids: readonly string[];
+  /** Cuándo llegó lo primero de la ronda: de ahí cuentan los minutos y lo «NUEVO». */
+  readonly llegoEn: string;
+  /** Lo que falta por servir. Sin nada, la ronda está acabada. */
+  readonly pendientes: number;
+  /** Cuándo se sirvió lo último, si está acabada. */
+  readonly fueraEn: string | null;
+}
+
+/**
+ * **La ronda de la barra de una mesa** (T4 · 2, 0117). La barra no tiene pases: cada bebida
+ * sale en cuanto llega. Pero una mesa pide bebida tres o cuatro veces en la comida, y la
+ * tarjeta no puede crecer con todo lo de la noche: **una ronda nueva empieza cuando llega
+ * algo y lo de antes ya estaba servido**. Lo que llega mientras la barra aún sirve la ronda,
+ * entra en ella («NUEVO»). Nulo si la mesa no tiene nada mandado a la barra.
+ */
+export function laRondaDeLaBarra(lineas: readonly LineaDeLaBarra[]): RondaDeLaBarra | null {
+  const enOrden = [...lineas].sort(
+    (a, b) => a.mandadaEn.localeCompare(b.mandadaEn) || a.id.localeCompare(b.id),
+  );
+  if (enOrden.length === 0) return null;
+  let empieza = 0;
+  let todoHecho = true;
+  let hechoA = '';
+  enOrden.forEach((l, i) => {
+    if (i > 0 && todoHecho && hechoA <= l.mandadaEn) empieza = i;
+    const hecho = l.salioEn ?? l.quitadaEn;
+    if (hecho === null) todoHecho = false;
+    else if (hecho > hechoA) hechoA = hecho;
+  });
+  const ronda = enOrden.slice(empieza);
+  const pendientes = ronda.filter((l) => l.salioEn === null && l.quitadaEn === null).length;
+  const hechos = ronda.flatMap((l) => {
+    const hecho = l.salioEn ?? l.quitadaEn;
+    return hecho === null ? [] : [hecho];
+  });
+  return {
+    ids: ronda.map((l) => l.id),
+    llegoEn: ronda[0]?.mandadaEn ?? enOrden[0]?.mandadaEn ?? '',
+    pendientes,
+    fueraEn: pendientes > 0 ? null : (hechos.sort().at(-1) ?? null),
+  };
+}
+
+/**
+ * **Lo que lleva un plato de lo que la mesa no puede tomar** (Anexo 3.2): lo de los dos, en
+ * el orden del reglamento. Vacío: nada que avisar.
+ */
+export function lasAlergiasQueLleva(
+  loQueLleva: readonly string[],
+  alergiasDeLaMesa: readonly string[],
+): string[] {
+  const deLaMesa = new Set(alergiasDeLaMesa);
+  return enSuOrden(loQueLleva.filter((a) => deLaMesa.has(a)));
+}
+
+/** Los alérgenos sin repetir y en el orden del reglamento (gluten, crustáceos, huevo…). */
+export function enSuOrden(alergenos: readonly string[]): string[] {
+  const orden = (a: string) => {
+    const i = (ALERGENOS as readonly string[]).indexOf(a);
+    return i === -1 ? ALERGENOS.length : i;
+  };
+  return [...new Set(alergenos)].sort((a, b) => orden(a) - orden(b) || a.localeCompare(b));
 }

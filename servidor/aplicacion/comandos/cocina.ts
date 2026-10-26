@@ -22,15 +22,21 @@ import {
  * **La cocina nunca marcha**: no ve cuándo una mesa va acabando el primero. Cuando
  * tacha el último plato de un pase, el pase queda fuera y la sala recibe al segundo que
  * ya puede marchar el siguiente. Tachar no pide PIN (Anexo 3.4).
+ *
+ * **Lo de la barra se tacha igual** (T4 · 2, 0117): sin pases, sale en cuanto llega.
  */
+
+/** Dónde se prepara lo que se tacha: la pantalla de cocina solo lo suyo, y la de barra igual. */
+export type DondeSeTacha = 'cocina' | 'barra';
 
 const id = z.string().uuid();
 
-/** Un plato que está en cocina, de este local. */
+/** Un plato que está en cocina (o en la barra), de este local. */
 async function elPlatoEnCocina(
   contexto: Contexto,
   localId: string,
   lineaId: string,
+  donde: readonly DondeSeTacha[],
 ): Promise<FilaDeLinea> {
   const filas = await contexto.sql<{ cuenta_id: string }[]>`
     select cuenta_id::text as cuenta_id from estook.linea_de_cuenta
@@ -41,9 +47,17 @@ async function elPlatoEnCocina(
     cuentaId === undefined
       ? undefined
       : (await losPlatos(contexto, [cuentaId])).find((l) => l.id === lineaId);
-  if (linea === undefined || linea.destino !== 'cocina' || linea.mandada_en === null) {
+  if (
+    linea === undefined ||
+    linea.destino === 'ninguno' ||
+    !donde.includes(linea.destino) ||
+    linea.mandada_en === null
+  ) {
     throw new FalloDeAplicacion('no_existe', {
-      porque: 'Ese plato no está en la cocina de este local.',
+      porque:
+        donde.length === 1 && donde[0] === 'barra'
+          ? 'Eso no está en la barra de este local.'
+          : 'Ese plato no está en la cocina de este local.',
     });
   }
   if (linea.quitada_en !== null) {
@@ -53,21 +67,27 @@ async function elPlatoEnCocina(
 }
 
 /**
- * **Tachar un plato de un local**: lo de `tachar`, y también de la pantalla de cocina, que no
- * tiene sesión (0116) y dice ella su organización. Quien lo tachó, si es una persona.
+ * **Tachar un plato de un local**: lo de `tachar`, y también de las pantallas de cocina y de
+ * barra, que no tienen sesión (0116) y dicen ellas su organización y lo que preparan. Quien lo
+ * tachó, si es una persona.
  */
 export async function tacharEnElLocal(
   contexto: Contexto,
   localId: string,
   lineaId: string,
   organizacionId?: string,
+  donde: readonly DondeSeTacha[] = ['cocina', 'barra'],
 ): Promise<{ lineaId: string; paseFuera: boolean }> {
-  const linea = await elPlatoEnCocina(contexto, localId, lineaId);
+  const linea = await elPlatoEnCocina(contexto, localId, lineaId, donde);
   if (linea.salio_en !== null) {
     throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese plato ya está tachado.' });
   }
-  const pase = (await losPases(contexto, [linea.cuenta_id])).find((p) => p.numero === linea.pase);
-  if (pase?.marchado_en === null || pase === undefined) {
+  // La barra no tiene pases: lo que llega, sale (0117).
+  const conPase = linea.destino === 'cocina';
+  const pase = conPase
+    ? (await losPases(contexto, [linea.cuenta_id])).find((p) => p.numero === linea.pase)
+    : undefined;
+  if (conPase && (pase?.marchado_en === null || pase === undefined)) {
     throw new FalloDeAplicacion('ya_hecho', {
       porque: 'Ese pase aún no está marchado: lo marcha la sala cuando la mesa va acabando.',
     });
@@ -77,10 +97,13 @@ export async function tacharEnElLocal(
          set salio_en = ${contexto.ahora.toISOString()}::timestamptz, salio_por = ${contexto.personaId}::uuid
        where id = ${linea.id}::uuid
     `;
-  await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase as number);
-  const paseFuera = (await losPases(contexto, [linea.cuenta_id])).some(
-    (p) => p.numero === linea.pase && p.fuera_en !== null,
-  );
+  let paseFuera = false;
+  if (conPase) {
+    await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase as number);
+    paseFuera = (await losPases(contexto, [linea.cuenta_id])).some(
+      (p) => p.numero === linea.pase && p.fuera_en !== null,
+    );
+  }
   await apuntarEnLaMesa(
     contexto,
     'tachar',
@@ -104,21 +127,22 @@ export const tachar = comando<{ linea_id: string }, { lineaId: string; paseFuera
   },
 });
 
-/** **Destachar**: otro toque y vuelve, sin PIN ni margen (Richi, 25-oct). También la pantalla. */
+/** **Destachar**: otro toque y vuelve, sin PIN ni margen (Richi, 25-oct). También las pantallas. */
 export async function destacharEnElLocal(
   contexto: Contexto,
   localId: string,
   lineaId: string,
   organizacionId?: string,
+  donde: readonly DondeSeTacha[] = ['cocina', 'barra'],
 ): Promise<{ lineaId: string }> {
-  const linea = await elPlatoEnCocina(contexto, localId, lineaId);
+  const linea = await elPlatoEnCocina(contexto, localId, lineaId, donde);
   if (linea.salio_en === null) {
     throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese plato no está tachado.' });
   }
   await contexto.sql`
       update estook.linea_de_cuenta set salio_en = null, salio_por = null where id = ${linea.id}::uuid
     `;
-  await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase as number);
+  if (linea.pase !== null) await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase);
   await apuntarEnLaMesa(
     contexto,
     'destachar',

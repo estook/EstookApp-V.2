@@ -9,8 +9,7 @@ import type { QueSera } from '../datos/tipos.ts';
 
 /**
  * **Qué es este aparato** (maquetas 2 y 16; Anexo 11.3): la función se elige, **no se
- * adivina nunca**. Caja, comandero o fichar (cocina y barra llegan con su pantalla, en
- * T4). Si es una caja, su cajón; si es un comandero, para todos o el móvil de alguien.
+ * adivina nunca**. Caja, comandero, pantalla de cocina o de barra (T4). Si es una caja, su cajón; si es un comandero, para todos o el móvil de alguien.
  * El nombre se propone solo.
  *
  * La usan el primer aparato (con el correo) y «Añadir aparato» en Ajustes del TPV, que
@@ -32,6 +31,8 @@ const QUE_HACE: Record<(typeof FUNCIONES_QUE_SE_ELIGEN)[number], string> = {
     'La tablet de la sala (para todos) o el móvil de un camarero (solo suyo). Solo la sala: mesas, pedir y cobrar.',
   cocina:
     'Una tablet grande o una tele en la cocina. Sin PIN, siempre encendida: los tickets, tachar lo que sale y llamar al camarero.',
+  barra:
+    'Lo mismo, en la barra: bebidas, cafés y copas, todo en marcha al llegar. Sin PIN, siempre encendida.',
 };
 
 export function ElegirQueSera({

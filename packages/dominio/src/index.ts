@@ -299,6 +299,7 @@ export {
   esUnidadDeUso,
   ALERGENOS,
   NOMBRE_DEL_ALERGENO,
+  NOMBRE_CORTO_DEL_ALERGENO,
   esAlergeno,
   comoSaleElCoste,
 } from './referencia.ts';
@@ -1055,7 +1056,10 @@ export type { CartaLeida, LoQueCambia, PlatoDeLaCarta, PlatoLeido } from './cart
 export {
   elPaseHaSalido,
   elPaseQueTocaMarchar,
+  enSuOrden,
   esDeBebidas,
+  lasAlergiasQueLleva,
+  laRondaDeLaBarra,
   losPasesDelMenu,
   laMesaEnCocina,
   loSiguienteDeLaMesa,
@@ -1064,9 +1068,11 @@ export {
 export type {
   DestinoDeLaLinea,
   LaMesaEnCocina,
+  LineaDeLaBarra,
   LoSiguiente,
   PaseDeLaMesa,
   PlatoDeLaMesa,
+  RondaDeLaBarra,
   SeccionDelMenuEnLaSala,
 } from './sala.ts';
 export {

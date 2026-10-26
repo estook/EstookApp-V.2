@@ -1,4 +1,4 @@
-import { comoSeLeeElPeso } from '@estook/dominio';
+import { comoSeLeeElPeso, lasAlergiasQueLleva } from '@estook/dominio';
 import type { LaMesa, PlatoDeLaCuenta } from '../datos/tipos.ts';
 import type { Borrador, LineaNueva } from './comanda.ts';
 
@@ -28,6 +28,10 @@ export interface LineaALaVista {
   readonly esMenu: boolean;
   readonly destino: 'cocina' | 'barra' | 'ninguno';
   readonly salio: boolean;
+  /** A qué hora salió: «✓ 21:33» (0117). */
+  readonly salioEn: string | null;
+  /** Lo que lleva de la alergia de la mesa (0117): «⚠ gluten». */
+  readonly lleva: readonly string[];
   readonly quitada: string | null;
   readonly vuelve: string | null;
   readonly pase: number | null;
@@ -52,7 +56,7 @@ export function elDetalle(opciones: readonly string[], pesoGramos: number | null
   return partes.length === 0 ? null : partes.join(' · ');
 }
 
-function deLaApi(p: PlatoDeLaCuenta): LineaALaVista {
+function deLaApi(p: PlatoDeLaCuenta, alergias: readonly string[]): LineaALaVista {
   return {
     id: p.id,
     nombre: p.nombre,
@@ -65,6 +69,8 @@ function deLaApi(p: PlatoDeLaCuenta): LineaALaVista {
     esMenu: p.menuId !== null && p.parteDe === null,
     destino: p.destino,
     salio: p.estado === 'salio',
+    salioEn: p.estado === 'salio' ? p.salioEn : null,
+    lleva: lasAlergiasQueLleva(p.alergenos ?? [], alergias),
     quitada: p.estado === 'quitado' ? (p.motivoDeQuitar ?? '') : null,
     vuelve: p.vuelve,
     pase: p.pase,
@@ -89,6 +95,9 @@ function delBorrador(l: LineaNueva): LineaALaVista {
     esMenu: l.menuId !== null && l.parteDe === null,
     destino: l.destino,
     salio: false,
+    salioEn: null,
+    // Lo nuevo se avisó al tocarlo: la línea del borrador no lleva lo que lleva el plato.
+    lleva: [],
     quitada: null,
     vuelve: null,
     pase: l.pase,
@@ -115,15 +124,27 @@ export function losGruposDeLaCuenta(
   const platos = mesa?.platos ?? [];
   const yaMandados = platos.filter((p) => p.estado !== 'sin_mandar');
   const grupos: GrupoDeLaCuenta[] = [];
+  const alergias = mesa?.alergias ?? [];
+  const deLaApiConAlergias = (p: PlatoDeLaCuenta) => deLaApi(p, alergias);
 
   const bebidas = yaMandados.filter((p) => p.destino === 'barra' && p.parteDe === null);
   if (bebidas.length > 0) {
-    grupos.push({ clave: 'bebidas', titulo: 'Bebidas', como: null, lineas: bebidas.map(deLaApi) });
+    grupos.push({
+      clave: 'bebidas',
+      titulo: 'Bebidas',
+      como: null,
+      lineas: bebidas.map(deLaApiConAlergias),
+    });
   }
 
   const menus = yaMandados.filter((p) => p.menuId !== null && p.parteDe === null);
   if (menus.length > 0) {
-    grupos.push({ clave: 'menus', titulo: 'Menús', como: null, lineas: menus.map(deLaApi) });
+    grupos.push({
+      clave: 'menus',
+      titulo: 'Menús',
+      como: null,
+      lineas: menus.map(deLaApiConAlergias),
+    });
   }
 
   const numeros = [
@@ -143,7 +164,9 @@ export function losGruposDeLaCuenta(
       clave: `pase-${numero}`,
       titulo: `${elPase(numero)} · ${COMO_VA[como]}`,
       como,
-      lineas: yaMandados.filter((p) => p.destino === 'cocina' && p.pase === numero).map(deLaApi),
+      lineas: yaMandados
+        .filter((p) => p.destino === 'cocina' && p.pase === numero)
+        .map(deLaApiConAlergias),
     });
   }
 
@@ -151,7 +174,7 @@ export function losGruposDeLaCuenta(
   const bebidasDelMenu = yaMandados.filter((p) => p.destino === 'barra' && p.parteDe !== null);
   if (bebidasDelMenu.length > 0) {
     const primero = grupos.find((g) => g.clave === 'bebidas');
-    const lineas = [...(primero?.lineas ?? []), ...bebidasDelMenu.map(deLaApi)];
+    const lineas = [...(primero?.lineas ?? []), ...bebidasDelMenu.map(deLaApiConAlergias)];
     if (primero === undefined) {
       grupos.unshift({ clave: 'bebidas', titulo: 'Bebidas', como: null, lineas });
     } else {
@@ -160,7 +183,7 @@ export function losGruposDeLaCuenta(
   }
 
   const nuevas = [
-    ...platos.filter((p) => p.estado === 'sin_mandar').map(deLaApi),
+    ...platos.filter((p) => p.estado === 'sin_mandar').map(deLaApiConAlergias),
     ...borrador.map(delBorrador),
   ];
   if (nuevas.length > 0) {

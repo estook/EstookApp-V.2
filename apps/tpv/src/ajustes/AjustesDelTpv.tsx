@@ -9,8 +9,8 @@ import { Productos } from '../productos/Productos.tsx';
 
 /**
  * **Ajustes del TPV** (maquetas 11, 16 y 17; Anexo 11.13): solo lo de vender. La carta,
- * los precios y el equipo se cambian en Estook. En la caja y en la tablet de la sala,
- * con el PIN de quien puede; nunca en el móvil de nadie.
+ * los precios y el equipo se cambian en Estook. **Solo en la caja** (0115), con el PIN de
+ * quien puede: un comandero solo pide y cobra.
  *
  * **La sala** (T2) abre el editor del plano; **Productos** (T3), la botonera; **Aparatos** y
  * **PIN y bloqueo** (T1). Las impresoras, la caja, las formas de pago, los tickets y la
@@ -34,13 +34,13 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
   return (
     <div className="flex min-h-dvh flex-col bg-fondo text-texto">
       <LaBarraDeArriba titulo="Ajustes del TPV" />
-      {aparato.esPersonal || apartados.length === 0 ? (
+      {aparato.funcion !== 'caja' || apartados.length === 0 ? (
         <main className="p-e5">
           <EstadoVacio
             titulo="Aquí no se tocan los ajustes"
             frase={
-              aparato.esPersonal
-                ? 'Los ajustes del TPV se tocan en la caja o en la tablet de la sala, no en el móvil de nadie.'
+              aparato.funcion !== 'caja'
+                ? 'Los ajustes del TPV se tocan en la caja.'
                 : 'Los ajustes del TPV los toca quien lleva el local.'
             }
             dibujo="candado"

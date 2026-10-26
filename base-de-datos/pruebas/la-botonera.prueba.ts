@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { laPaginaDeSiempre, loQueProponeElNombre, tokenDelAparato } from '@estook/dominio';
 import { levantarBase, migraciones, reversiones, type BaseDePrueba } from './entorno.ts';
-import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
+import { elFallo, entrarFichando, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
 
 /**
  * **T3 · La botonera de Estook TPV** (decisión 0111, migración 0086), contra una base de
@@ -31,9 +31,10 @@ let rosa: string; // Rosa, en Estook
 const seccion: Record<string, string> = {};
 const plato: Record<string, string> = {};
 
+/** Entrar con el PIN; en un comandero, fichando antes en la caja (0115). */
 async function enElAparato(llave: string, correo: string): Promise<string> {
   const dentro = losDatos<{ turno: string }>(
-    await api.ejecutar(null, 'entrar_con_pin', { llave, pin: base.pinDe(correo, 'bar-centro') }),
+    await entrarFichando(api, llave, base.pinDe(correo, 'bar-centro'), llaveDeLaCaja),
   );
   return tokenDelAparato(dentro.turno, llave);
 }

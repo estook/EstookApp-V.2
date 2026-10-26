@@ -150,12 +150,16 @@ async function elAparatoDeLaSesion(contexto: Contexto): Promise<AparatoDelTpv> {
   return comoAparato(fila);
 }
 
-/** Los Ajustes del TPV son de la caja y del comandero de todos, no del móvil de nadie. */
-export function noEnUnMovilPersonal(contexto: Contexto): void {
-  if (contexto.sesion?.aparato?.esPersonal === true) {
+/**
+ * **Los Ajustes del TPV son de la caja** (0115; Richi, 25-oct: los comanderos «solo pedir»).
+ * Antes también de la tablet de la sala; ahora un comandero, de todos o de alguien, solo
+ * pide y cobra.
+ */
+export function soloEnLaCaja(contexto: Contexto): void {
+  const aparato = contexto.sesion?.aparato ?? null;
+  if (aparato !== null && aparato.funcion !== 'caja') {
     throw new FalloDeAplicacion('sin_permiso', {
-      porque:
-        'Los ajustes del TPV se tocan en la caja o en la tablet de la sala, no en el móvil de nadie.',
+      porque: 'Los ajustes del TPV se tocan en la caja.',
     });
   }
 }
@@ -561,11 +565,11 @@ export const sacarCodigoParaVincular = comando<
   entrada: entradaSacarCodigo,
   exige: 'accion.vincular_aparatos',
   enElTpv: 'solo',
-  enLosAparatos: ['caja', 'comandero'],
+  enLosAparatos: ['caja'],
   conSecreto: true,
 
   async ejecutar(contexto, entrada) {
-    noEnUnMovilPersonal(contexto);
+    soloEnLaCaja(contexto);
     const aparato = await elAparatoDeLaSesion(contexto);
     const preparado = await prepararLoQueSera(contexto, aparato.localId, entrada);
     const caducaEn = new Date(contexto.ahora.getTime() + CODIGO_PARA_VINCULAR.minutos * 60_000);
@@ -770,13 +774,16 @@ export const entrarConPin = comando<z.infer<typeof entradaEntrarConPin>, DentroD
     }
 
     const bloqueo = await losAjustesDelBloqueo(contexto, aparato.localId);
+    const enLaCaja = aparato.funcion === 'caja';
     let estado = await comoEsta(contexto, personaId, aparato.localId);
-    if (estado.estado === 'fuera' && entrada.fichar_la_entrada === true) {
+    // **Se ficha en la caja, no en el comandero** (0115): allí, «Fichar la entrada y
+    // entrar»; en un comandero no se entra sin haber fichado antes, en la caja o en Estook.
+    if (estado.estado === 'fuera' && entrada.fichar_la_entrada === true && enLaCaja) {
       await ficharEnElAparato(contexto, aparato, personaId, 'entrada');
       estado = await comoEsta(contexto, personaId, aparato.localId);
     }
-    if (estado.estado === 'fuera' && bloqueo.soloEntraQuienFicha) {
-      throw new FalloDeAplicacion('falta_fichar', { nombre: estado.nombre });
+    if (estado.estado === 'fuera' && (!enLaCaja || bloqueo.soloEntraQuienFicha)) {
+      throw new FalloDeAplicacion('falta_fichar', { nombre: estado.nombre, enLaCaja });
     }
 
     // ¿Es el primero del día en este aparato? Cae en el inicio; si no, en las mesas. El
@@ -831,7 +838,7 @@ export const entrarConPin = comando<z.infer<typeof entradaEntrarConPin>, DentroD
       turno,
       persona: { id: personaId, nombre, iniciales: inicialesDe(nombre) },
       fichaje: estado.estado,
-      caeEn: dondeCae(primeroDelDia, reloj.hay_mesas),
+      caeEn: dondeCae(aparato.funcion, primeroDelDia, reloj.hay_mesas),
     };
   },
 });
@@ -986,6 +993,75 @@ export const ficharEnElTpv = comando<
   },
 });
 
+// ═══ Fichar en la caja, sin entrar ═════════════════════════════════════════════
+
+/**
+ * **El botón naranja «Fichar» de la caja** (0115; Richi, 25-oct: «la caja la abre siempre
+ * un gerente y ahí fichas y sales»): cada uno teclea su PIN y ficha, **sin entrar en la
+ * caja**, como en el aparato de fichar de antes (0068). Primero quién es y cómo está, para
+ * enseñarle solo lo que toca; después, lo que elige. Son comandos porque apuntan los fallos
+ * del PIN, y no se recuerdan: guardarían un PIN acertado.
+ */
+async function laCajaQueFicha(contexto: Contexto, laLlave: string): Promise<AparatoDelTpv> {
+  const aparato = await elAparatoDeLaLlave(contexto, laLlave);
+  if (aparato.funcion !== 'caja') {
+    throw new FalloDeAplicacion('sin_permiso', {
+      porque: 'Se ficha en la caja, o en Estook con el móvil.',
+    });
+  }
+  return aparato;
+}
+
+export const quienFichaEnLaCaja = comando<{ llave: string; pin: string }, QuienFichaAqui>({
+  nombre: 'quien_ficha_en_la_caja',
+  entrada: z.object({ llave, pin: z.string().trim().min(1).max(12) }).strict(),
+  sinSesion: true,
+  sinRecordar: true,
+
+  async ejecutar(contexto, entrada) {
+    const aparato = await laCajaQueFicha(contexto, entrada.llave);
+    const personaId = await quienEsElPin(contexto, aparato, entrada.pin);
+    return comoEsta(contexto, personaId, aparato.localId);
+  },
+});
+
+export const entradaFicharEnLaCaja = z
+  .object({
+    llave,
+    pin: z.string().trim().min(1).max(12),
+    que: z.enum(['entrada', 'pausa', 'vuelta', 'salida']),
+  })
+  .strict();
+
+export const ficharEnLaCaja = comando<z.infer<typeof entradaFicharEnLaCaja>, QuienFichaAqui>({
+  nombre: 'fichar_en_la_caja',
+  entrada: entradaFicharEnLaCaja,
+  sinSesion: true,
+  // Repetirlo dice «ya estás fichado» o «no estás fichado»: el estado protege.
+  sinRecordar: true,
+
+  async ejecutar(contexto, entrada) {
+    const aparato = await laCajaQueFicha(contexto, entrada.llave);
+    const personaId = await quienEsElPin(contexto, aparato, entrada.pin);
+    // Quien se va con mesas abiertas las pasa antes, dentro, a quien se quede.
+    if (entrada.que === 'salida') {
+      const abiertas = await contexto.sql<{ cuantas: number }[]>`
+        select count(*)::int as cuantas from estook.cuenta
+         where local_id = ${aparato.localId}::uuid and camarero_id = ${personaId}::uuid
+           and liberada_en is null and anulada_en is null
+      `;
+      const cuantas = abiertas[0]?.cuantas ?? 0;
+      if (cuantas > 0) {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: `Tienes ${cuantas === 1 ? 'una mesa abierta' : `${String(cuantas)} mesas abiertas`}: entra con tu PIN, pásalas a quien se queda y ficha la salida.`,
+        });
+      }
+    }
+    await ficharEnElAparato(contexto, aparato, personaId, entrada.que);
+    return comoEsta(contexto, personaId, aparato.localId);
+  },
+});
+
 // ═══ Ajustes del TPV › Aparatos ═══════════════════════════════════════════════
 
 export interface UnAparato {
@@ -1014,6 +1090,8 @@ export const losAparatos = consulta<Record<string, never>, LosAparatos>({
   entrada: z.object({}).strict(),
   exige: 'accion.vincular_aparatos',
   enElTpv: 'solo',
+  // Los Ajustes del TPV, en la caja (0115).
+  enLosAparatos: ['caja'],
 
   async ejecutar(contexto) {
     const aparato = await elAparatoDeLaSesion(contexto);
@@ -1086,10 +1164,10 @@ export const cambiarAparato = comando<
   entrada: entradaCambiarAparato,
   exige: 'accion.vincular_aparatos',
   enElTpv: 'solo',
-  enLosAparatos: ['caja', 'comandero'],
+  enLosAparatos: ['caja'],
 
   async ejecutar(contexto, entrada) {
-    noEnUnMovilPersonal(contexto);
+    soloEnLaCaja(contexto);
     const aparato = await elAparatoDeLaSesion(contexto);
     const preparado = await prepararLoQueSera(contexto, aparato.localId, entrada);
     const filas = await contexto.sql<{ id: string }[]>`
@@ -1136,10 +1214,10 @@ export const desvincularAparato = comando<
   entrada: z.object({ terminal_id: id }).strict(),
   exige: 'accion.vincular_aparatos',
   enElTpv: 'solo',
-  enLosAparatos: ['caja', 'comandero'],
+  enLosAparatos: ['caja'],
 
   async ejecutar(contexto, entrada) {
-    noEnUnMovilPersonal(contexto);
+    soloEnLaCaja(contexto);
     const aparato = await elAparatoDeLaSesion(contexto);
     const filas = await contexto.sql<{ id: string }[]>`
       update estook.terminal
@@ -1197,10 +1275,10 @@ export const guardarPinYBloqueo = comando<z.infer<typeof entradaPinYBloqueo>, Aj
   entrada: entradaPinYBloqueo,
   exige: 'accion.ajustes_del_tpv',
   enElTpv: 'solo',
-  enLosAparatos: ['caja', 'comandero'],
+  enLosAparatos: ['caja'],
 
   async ejecutar(contexto, entrada) {
-    noEnUnMovilPersonal(contexto);
+    soloEnLaCaja(contexto);
     const aparato = await elAparatoDeLaSesion(contexto);
     await contexto.sql`
       insert into estook.ajustes_del_tpv

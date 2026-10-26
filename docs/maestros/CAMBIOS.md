@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 25 de octubre, por la noche, después de T3** ([0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)), sin cambiar de versión: el **Anexo** pone en 3.4, 11.3, 11.4, 11.5 y 11.13 que se ficha en la caja (el botón naranja), que en un comandero no se entra sin fichar y solo tiene la sala, que el aparato para fichar ya no se vincula, y que los Ajustes del TPV son solo de la caja.
+
 **El 25 de octubre, más tarde** ([0114](../decisiones/0114-t3-2-2-monta-tus-bebidas.md)), sin cambiar de versión: el **Anexo** pone en 7.2 las dosis de la casa del local (la copa, 50 ml; la copa de vino, 150 ml) y quién cambia lo del TPV que vive en el local.
 
 **El 25 de octubre, por la noche** ([0113](../decisiones/0113-t3-2-1-las-opciones.md)), sin cambiar de versión: el **Anexo** pone en 7.2 los grupos de opciones, lo que gasta cada opción, lo que se vende a peso y lo elegido en cada línea.

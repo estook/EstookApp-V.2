@@ -59,9 +59,12 @@ describe('los aparatos de Estook TPV', () => {
   });
 
   it('el primero del día cae en el inicio; el siguiente, en las mesas si las hay', () => {
-    expect(dondeCae(true, true)).toBe('inicio');
-    expect(dondeCae(false, true)).toBe('mesas');
-    expect(dondeCae(false, false)).toBe('inicio');
+    expect(dondeCae('caja', true, true)).toBe('inicio');
+    expect(dondeCae('caja', false, true)).toBe('mesas');
+    expect(dondeCae('caja', false, false)).toBe('inicio');
+    // El comandero, siempre a la sala (0115): el inicio es de la caja.
+    expect(dondeCae('comandero', true, true)).toBe('mesas');
+    expect(dondeCae('comandero', true, false)).toBe('mesas');
   });
 
   it('el código del QR va detrás del #, y solo en la dirección de vincular', () => {

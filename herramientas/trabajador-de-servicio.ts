@@ -83,8 +83,33 @@ function cuantoPesa(trozo: TrozoDelPaquete): number {
   return typeof fuente === 'string' ? Buffer.byteLength(fuente) : fuente.byteLength;
 }
 
+/**
+ * Lo de `public/` de Estook TPV (0115): sus iconos y su manifiesto. No tiene el tema al
+ * arrancar (siempre es oscuro) ni el Fogón.
+ */
+export const DE_PUBLIC_DEL_TPV = [
+  'manifest.webmanifest',
+  'marca/estook-logo-oscuro.png',
+  'marca/favicon.svg',
+  'marca/apple-touch-icon.png',
+  'marca/pwa-192.png',
+  'marca/pwa-512.png',
+  'marca/insignia-96.png',
+];
+
+/**
+ * **Cada app, su caja de lo guardado** (0115): Estook y Estook TPV viven en el mismo
+ * dominio, y las cachés son del dominio. Al activarse, un trabajador borra las viejas de
+ * Estook, **nunca la de la otra app**.
+ */
+const LAS_DE_LAS_APPS = ['estook-app', 'estook-tpv'] as const;
+type CacheDeLaApp = (typeof LAS_DE_LAS_APPS)[number];
+
 /** Los ficheros que se guardan al instalar, de una versión. Exportado para la prueba. */
-export function loQueSeGuarda(paquete: Record<string, TrozoDelPaquete>): string[] {
+export function loQueSeGuarda(
+  paquete: Record<string, TrozoDelPaquete>,
+  dePublic: readonly string[] = DE_PUBLIC,
+): string[] {
   const delPaquete = Object.values(paquete)
     .filter((trozo) => !trozo.fileName.endsWith('.map'))
     .filter((trozo) => /\.(js|mjs|css|html)$/.test(trozo.fileName))
@@ -94,15 +119,21 @@ export function loQueSeGuarda(paquete: Record<string, TrozoDelPaquete>): string[
       Object.values(paquete).filter((trozo) => trozo.type === 'chunk' && trozo.isEntry === true),
     )
     .map((trozo) => trozo.fileName);
-  return ['./', ...new Set([...delPaquete, ...DE_PUBLIC])].sort();
+  return ['./', ...new Set([...delPaquete, ...dePublic])].sort();
 }
 
-export function elTrabajadorDeServicio(): ComplementoDelTrabajador {
+export function elTrabajadorDeServicio({
+  cache = 'estook-app',
+  dePublic = DE_PUBLIC,
+}: {
+  readonly cache?: CacheDeLaApp;
+  readonly dePublic?: readonly string[];
+} = {}): ComplementoDelTrabajador {
   return {
     name: 'estook-trabajador-de-servicio',
     apply: 'build',
     generateBundle(_opciones, paquete) {
-      const archivos = loQueSeGuarda(paquete);
+      const archivos = loQueSeGuarda(paquete, dePublic);
       const version = createHash('sha256')
         .update(archivos.join('\n'))
         .update(CODIGO)
@@ -111,10 +142,10 @@ export function elTrabajadorDeServicio(): ComplementoDelTrabajador {
       this.emitFile({
         type: 'asset',
         fileName: 'sw.js',
-        source: CODIGO.replace('__VERSION__', JSON.stringify(version)).replace(
-          '__ARCHIVOS__',
-          JSON.stringify(archivos),
-        ),
+        source: CODIGO.replace('__VERSION__', JSON.stringify(version))
+          .replace('__ARCHIVOS__', JSON.stringify(archivos))
+          .replace('__CACHE__', JSON.stringify(cache))
+          .replace('__LAS_DE_LAS_APPS__', JSON.stringify(LAS_DE_LAS_APPS)),
       });
     },
   };
@@ -124,13 +155,14 @@ export function elTrabajadorDeServicio(): ComplementoDelTrabajador {
  * El trabajador, tal cual se sirve. En JavaScript del navegador, sin módulos: así lo
  * acepta todo navegador que tenga trabajadores, Safari incluido.
  */
-const CODIGO = `/* Estook · el trabajador de servicio de la app (I · decisión 0070).
+const CODIGO = `/* Estook · el trabajador de servicio de la app y de Estook TPV (I · decisión 0070; 0115).
  * Lo genera la construcción (herramientas/trabajador-de-servicio.ts): no se edita. */
 'use strict';
 
 const VERSION = __VERSION__;
 const LO_DE_ARRANCAR = __ARCHIVOS__;
-const CACHE = 'estook-app';
+const CACHE = __CACHE__;
+const LAS_DE_LAS_APPS = __LAS_DE_LAS_APPS__;
 const LISTA = '__estook_lista__';
 const ESPERA_A_LA_RED_MS = 4000;
 
@@ -177,7 +209,9 @@ self.addEventListener('activate', (evento) => {
       }
       await cache.put(aqui(LISTA), new Response(JSON.stringify(LO_DE_ARRANCAR)));
       for (const nombre of await caches.keys()) {
-        if (nombre !== CACHE && nombre.startsWith('estook-')) await caches.delete(nombre);
+        if (nombre.startsWith('estook-') && !LAS_DE_LAS_APPS.includes(nombre)) {
+          await caches.delete(nombre);
+        }
       }
       await self.clients.claim();
     })(),

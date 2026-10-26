@@ -119,35 +119,35 @@ describe('la persona sin correo (0057)', () => {
 let llave: string;
 
 describe('el aparato del local para fichar (0068)', () => {
-  it('lo vincula quien lleva el local, como «Fichar», y la llave solo se ve una vez', async () => {
-    // Desde T1 (0107) se vincula en Estook TPV, entrando con el correo en el aparato.
-    const puesto = losDatos<{ llave: string; aparato: { terminalId: string; funcion: string } }>(
-      await api.ejecutar(await api.entrar(ROSA), 'vincular_el_primer_aparato', {
-        local_id: centro,
-        funcion: 'fichar',
-        nombre: 'Tablet de la entrada',
-      }),
-    );
-    llave = puesto.llave;
-    expect(llave.length).toBeGreaterThan(20);
-    expect(puesto.aparato.funcion).toBe('fichar');
+  it('ya no se vincula uno nuevo (0115): se ficha en la caja; los de antes siguen', async () => {
+    expect(
+      elFallo(
+        await api.ejecutar(await api.entrar(ROSA), 'vincular_el_primer_aparato', {
+          local_id: centro,
+          funcion: 'fichar',
+          nombre: 'Tablet de la entrada',
+        }),
+      ),
+    ).toBe('faltan_datos');
 
+    // Uno de antes, como quedó en la base.
+    llave = await api.vincularParaFichar(ROSA, centro, 'Tablet de la entrada');
+    expect(llave.length).toBeGreaterThan(20);
     // De la llave solo se guarda su huella.
     const [fila] = await comoDuena<{ huella: string }>(
-      'select huella from estook.terminal where id = $1',
-      [puesto.aparato.terminalId],
+      `select huella from estook.terminal where nombre = 'Tablet de la entrada' and funcion = 'fichar'`,
     );
     expect(fila?.huella).toMatch(/^[0-9a-f]{64}$/);
     expect(fila?.huella).not.toBe(llave);
   });
 
-  it('un cocinero no lo puede vincular', async () => {
+  it('un cocinero no vincula aparatos', async () => {
     const marcos = await api.entrar(MARCOS);
     expect(
       elFallo(
         await api.ejecutar(marcos, 'vincular_el_primer_aparato', {
           local_id: centro,
-          funcion: 'fichar',
+          funcion: 'comandero',
           nombre: 'La mía',
         }),
       ),

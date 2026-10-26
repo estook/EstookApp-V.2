@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { tokenDelAparato } from '@estook/dominio';
 import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
-import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
+import { elFallo, entrarFichando, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
 
 /**
  * T1 · La puerta de Estook TPV (decisión 0107, migración 0083), contra una base de
@@ -15,13 +15,14 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  *     otro para **la tablet de la terraza** (comandero para todos); llegan con su función
  *   · el código no sirve dos veces, ni pasados diez minutos, ni a la vigésima primera
  *     prueba desde la misma dirección
- *   · en el móvil de Sara **no entra Marcos**; el primero del día cae en el inicio y el
- *     siguiente, en las mesas
+ *   · en el móvil de Sara **no entra Marcos**; en un comandero se cae en la sala, y en la
+ *     caja, el primero del día o sin mesas, en el inicio (0115)
  *   · **Estook TPV no se abre con la sesión de Estook**, y un aparato no es una puerta a
  *     la gestión
  *   · bloquear deja el turno sin valer, y lo pedido sin mandar sigue en la mesa
  *   · lo que Sara no puede quitar de cocina **lo aprueba Rosa con su PIN** ahí mismo
- *   · «solo entra quien ha fichado», fichar la salida pasando las mesas
+ *   · en un comandero no se entra sin fichar ni se ficha: **se ficha en la caja** (0115), y
+ *     fichar la salida pasa las mesas; en la caja, «solo entra quien ha fichado»
  *   · la tablet de la barra pasa a ser la caja 2 sin volver a vincularla
  *   · desvincular la tablet: su siguiente petición ya no vale
  */
@@ -63,9 +64,10 @@ interface Dentro {
   caeEn: string;
 }
 
+/** Entrar con el PIN; en un comandero, fichando antes en la caja si hace falta (0115). */
 async function entrarEn(llave: string, correo: string): Promise<{ token: string; dentro: Dentro }> {
   const dentro = losDatos<Dentro>(
-    await api.ejecutar(null, 'entrar_con_pin', { llave, pin: base.pinDe(correo, 'bar-centro') }),
+    await entrarFichando(api, llave, base.pinDe(correo, 'bar-centro'), llaveDeLaCaja),
   );
   return { token: tokenDelAparato(dentro.turno, llave), dentro };
 }
@@ -291,22 +293,21 @@ describe('entrar con el PIN', () => {
     );
   });
 
-  it('el primero del día cae en el inicio; el siguiente, si hay mesas, en las mesas', async () => {
-    // La tablet no ha tenido a nadie todavía hoy.
-    const primero = await entrarEn(llaveDeLaTablet, SARA);
-    expect(primero.dentro.caeEn).toBe('inicio');
-    // Sin mesas dibujadas, todos al inicio.
-    expect((await entrarEn(llaveDeLaTablet, ROSA)).dentro.caeEn).toBe('inicio');
+  it('en un comandero se cae siempre en la sala; en la caja, sin mesas, en el inicio', async () => {
+    // La tablet no ha tenido a nadie todavía hoy, y aun así: a la sala (0115).
+    expect((await entrarEn(llaveDeLaTablet, SARA)).dentro.caeEn).toBe('mesas');
+    // En la caja, sin mesas dibujadas, al inicio.
+    const enLaCaja = await entrarEn(llaveDeLaCaja, ROSA);
+    expect(enLaCaja.dentro.caeEn).toBe('inicio');
 
     // Rosa dibuja una mesa en la caja (desde T2, la sala se dibuja en el TPV).
-    const enLaCaja = await entrarEn(llaveDeLaCaja, ROSA);
     const zona = losDatos<{ zonaId: string }>(
       await api.ejecutar(enLaCaja.token, 'crear_zona_de_sala', { nombre: 'Salón' }),
     ).zonaId;
     losDatos(
       await api.ejecutar(enLaCaja.token, 'crear_mesa', { zona_id: zona, nombre: '1', plazas: 4 }),
     );
-    expect((await entrarEn(llaveDeLaTablet, SARA)).dentro.caeEn).toBe('mesas');
+    expect((await entrarEn(llaveDeLaCaja, ROSA)).dentro.caeEn).toBe('mesas');
   });
 
   it('quien entra después deja sin valer el turno del de antes', async () => {
@@ -350,11 +351,24 @@ describe('una puerta en cada sentido', () => {
       elFallo(
         await api.ejecutar(token, 'vincular_el_primer_aparato', {
           local_id: barCentro,
-          funcion: 'fichar',
-          nombre: 'Fichar',
+          funcion: 'comandero',
+          nombre: 'Comandero',
         }),
       ),
     ).toBe('sin_permiso');
+  });
+
+  it('la tablet de la sala tampoco, aunque teclee la gerente: los ajustes, en la caja (0115)', async () => {
+    const { token } = await entrarEn(llaveDeLaTablet, ROSA);
+    expect(
+      elFallo(
+        await api.ejecutar(token, 'sacar_codigo_para_vincular', {
+          funcion: 'comandero',
+          nombre: 'Otro',
+        }),
+      ),
+    ).toBe('sin_permiso');
+    expect(elFallo(await api.consultar(token, 'el_plano_del_local'))).toBe('sin_permiso');
   });
 
   it('el móvil de Sara no toca los Ajustes del TPV', async () => {
@@ -468,7 +482,83 @@ describe('servicio', () => {
     expect(alSegundo.toques.map((t) => t.tema)).toContain(latido.temaAlSegundo);
   });
 
-  it('«solo entra quien ha fichado», y fichar la salida pasa las mesas', async () => {
+  it('en un comandero no se entra sin fichar, ni se ficha: se ficha en la caja, con su PIN (0115)', async () => {
+    const pinDeSara = base.pinDe(SARA, 'bar-centro');
+    const rosa = await entrarEn(llaveDeLaCaja, ROSA);
+    // Sara está dentro (fichó en la caja para coger la tablet). Con mesas abiertas, en la caja
+    // no se va: las pasa antes, dentro.
+    expect(
+      elFallo(
+        await api.ejecutar(null, 'fichar_en_la_caja', {
+          llave: llaveDeLaCaja,
+          pin: pinDeSara,
+          que: 'salida',
+        }),
+      ),
+    ).toBe('faltan_datos');
+    const sara = await entrarEn(llaveDeLaTablet, SARA);
+    expect(elFallo(await api.ejecutar(sara.token, 'fichar_en_el_tpv', { que: 'salida' }))).toBe(
+      'faltan_datos',
+    );
+    const salida = losDatos<{ turnoAcabado: boolean; fichaje: { estado: string } }>(
+      await api.ejecutar(sara.token, 'fichar_en_el_tpv', {
+        que: 'salida',
+        pasar_mesas_a: await base.personaPorCorreo(ROSA),
+      }),
+    );
+    expect(salida).toMatchObject({ turnoAcabado: true, fichaje: { estado: 'fuera' } });
+    expect(elFallo(await api.consultar(sara.token, 'yo_en_el_tpv'))).toBe('sin_sesion');
+    const deRosa = losDatos<{ misMesas: unknown[] }>(
+      await api.consultar(rosa.token, 'yo_en_el_tpv'),
+    );
+    expect(deRosa.misMesas.length).toBeGreaterThanOrEqual(2);
+
+    // Ya fuera, en la tablet no entra, y no se puede fichar desde ahí.
+    const enLaTablet = await api.ejecutar(null, 'entrar_con_pin', {
+      llave: llaveDeLaTablet,
+      pin: pinDeSara,
+      fichar_la_entrada: true,
+    });
+    expect(elFallo(enLaTablet)).toBe('falta_fichar');
+    expect(enLaTablet.estado === 'fallo' ? enLaTablet.detalle : null).toMatchObject({
+      enLaCaja: false,
+    });
+    expect(
+      elFallo(
+        await api.ejecutar(null, 'fichar_en_la_caja', {
+          llave: llaveDeLaTablet,
+          pin: pinDeSara,
+          que: 'entrada',
+        }),
+      ),
+    ).toBe('sin_permiso');
+
+    // En la caja, con el botón naranja: quién es, y fichar. Sin entrar en la caja.
+    expect(
+      losDatos<{ estado: string }>(
+        await api.ejecutar(null, 'quien_ficha_en_la_caja', {
+          llave: llaveDeLaCaja,
+          pin: pinDeSara,
+        }),
+      ).estado,
+    ).toBe('fuera');
+    expect(
+      losDatos<{ estado: string }>(
+        await api.ejecutar(null, 'fichar_en_la_caja', {
+          llave: llaveDeLaCaja,
+          pin: pinDeSara,
+          que: 'entrada',
+        }),
+      ).estado,
+    ).toBe('dentro');
+    expect(
+      losDatos<Dentro>(
+        await api.ejecutar(null, 'entrar_con_pin', { llave: llaveDeLaTablet, pin: pinDeSara }),
+      ).fichaje,
+    ).toBe('dentro');
+  });
+
+  it('en la caja, «solo entra quien ha fichado» y se ficha al entrar', async () => {
     const rosa = await entrarEn(llaveDeLaCaja, ROSA);
     losDatos(
       await api.ejecutar(rosa.token, 'guardar_pin_y_bloqueo', {
@@ -478,39 +568,21 @@ describe('servicio', () => {
         solo_entra_quien_ficha: true,
       }),
     );
-    // Rosa ficha para poder recibir las mesas de Sara.
-    losDatos(await api.ejecutar(rosa.token, 'fichar_en_el_tpv', { que: 'entrada' }));
-
-    const pin = base.pinDe(SARA, 'bar-centro');
-    expect(
-      elFallo(await api.ejecutar(null, 'entrar_con_pin', { llave: llaveDeLaTablet, pin })),
-    ).toBe('falta_fichar');
+    // Marcos no ha fichado hoy.
+    const pin = base.pinDe(MARCOS, 'bar-centro');
+    const sinFichar = await api.ejecutar(null, 'entrar_con_pin', { llave: llaveDeLaCaja, pin });
+    expect(elFallo(sinFichar)).toBe('falta_fichar');
+    expect(sinFichar.estado === 'fallo' ? sinFichar.detalle : null).toMatchObject({
+      enLaCaja: true,
+    });
     const dentro = losDatos<Dentro>(
       await api.ejecutar(null, 'entrar_con_pin', {
-        llave: llaveDeLaTablet,
+        llave: llaveDeLaCaja,
         pin,
         fichar_la_entrada: true,
       }),
     );
     expect(dentro.fichaje).toBe('dentro');
-    const token = tokenDelAparato(dentro.turno, llaveDeLaTablet);
-
-    // Con mesas abiertas no se va sin decir a quién se las deja.
-    expect(elFallo(await api.ejecutar(token, 'fichar_en_el_tpv', { que: 'salida' }))).toBe(
-      'faltan_datos',
-    );
-    const salida = losDatos<{ turnoAcabado: boolean; fichaje: { estado: string } }>(
-      await api.ejecutar(token, 'fichar_en_el_tpv', {
-        que: 'salida',
-        pasar_mesas_a: await base.personaPorCorreo(ROSA),
-      }),
-    );
-    expect(salida).toMatchObject({ turnoAcabado: true, fichaje: { estado: 'fuera' } });
-    expect(elFallo(await api.consultar(token, 'yo_en_el_tpv'))).toBe('sin_sesion');
-    const deRosa = losDatos<{ misMesas: unknown[] }>(
-      await api.consultar(rosa.token, 'yo_en_el_tpv'),
-    );
-    expect(deRosa.misMesas.length).toBeGreaterThanOrEqual(2);
   });
 });
 

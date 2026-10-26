@@ -12,7 +12,7 @@ import { comoLista } from '../listas.ts';
 import { elLibroDelLocal } from '../escandallos.ts';
 import { elLocalDelServicio } from '../sala.ts';
 import { puedeMontarLasBebidas } from '../consultas/bebidas.ts';
-import { noEnUnMovilPersonal } from './aparatos.ts';
+import { soloEnLaCaja } from './aparatos.ts';
 import { crearElProductoEnLaPagina, laPaginaPorSuNombre } from './botonera.ts';
 import { guardarLaReceta, vincularUnPlato } from './fichas.ts';
 
@@ -38,11 +38,11 @@ const nombreDeBoton = z.string().trim().min(1).max(120);
 const DEL_TPV = {
   exige: 'accion.ajustes_del_tpv',
   enElTpv: 'solo',
-  enLosAparatos: ['caja', 'comandero'],
+  enLosAparatos: ['caja'],
 } as const;
 
 async function elLocalDeLasBebidas(contexto: Contexto): Promise<string> {
-  noEnUnMovilPersonal(contexto);
+  soloEnLaCaja(contexto);
   const localId = elLocalDelServicio(contexto);
   if (!(await puedeMontarLasBebidas(contexto, localId))) {
     throw new FalloDeAplicacion('sin_permiso', {
@@ -351,7 +351,7 @@ export const cambiarLasDosis = comando<
   ...DEL_TPV,
 
   async ejecutar(contexto, entrada) {
-    noEnUnMovilPersonal(contexto);
+    soloEnLaCaja(contexto);
     const localId = elLocalDelServicio(contexto);
     // Lo que ya está montado no cambia: la dosis de la casa vale para lo que se monte después.
     await contexto.sql`

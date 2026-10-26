@@ -5,7 +5,7 @@ import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
 import { elLocalDelServicio } from '../sala.ts';
 import { puedeEditarLaCarta } from '../consultas/mi-carta.ts';
-import { noEnUnMovilPersonal } from './aparatos.ts';
+import { soloEnLaCaja } from './aparatos.ts';
 
 /**
  * **Las opciones y los extras de cada plato, y lo de la carta que se toca desde el TPV**
@@ -29,11 +29,11 @@ const centimosDeOpcion = z.number().int().min(-100_000).max(100_000);
 const DEL_TPV = {
   exige: 'accion.ajustes_del_tpv',
   enElTpv: 'solo',
-  enLosAparatos: ['caja', 'comandero'],
+  enLosAparatos: ['caja'],
 } as const;
 
 function elLocal(contexto: Contexto): string {
-  noEnUnMovilPersonal(contexto);
+  soloEnLaCaja(contexto);
   return elLocalDelServicio(contexto);
 }
 

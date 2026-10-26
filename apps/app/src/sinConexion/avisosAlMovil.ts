@@ -1,6 +1,6 @@
 import { comoSeLlamaEsteAparato, type ClienteApi, type ErrorDeLaApi } from '@estook/cliente-api';
+import { esUnIphone, estaInstalada } from '@estook/ui';
 import { elRegistro } from './trabajador.ts';
-import { esUnIphone, estaInstalada } from './instalar.ts';
 
 /**
  * Los avisos al móvil, del lado del navegador (I · decisión 0070).

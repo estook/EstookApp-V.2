@@ -1,11 +1,14 @@
 import type { ReactNode } from 'react';
 import { inicialesDe } from '@estook/dominio';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { irAlInicio } from '../navegar.ts';
+import { irA, irAlInicio, irAlPlano } from '../navegar.ts';
 
 /**
  * **Arriba, siempre** (Anexo 11.5): el inicio a un toque en la esquina de la izquierda,
  * el local y el aparato, quién está y **Bloquear**. Lo de en medio, lo pone cada pantalla.
+ *
+ * **En la caja, «Fichar» en naranja** (0115): allí ficha el equipo. En un comandero no
+ * hay inicio: la «E» lleva a la sala.
  */
 export function LaBarraDeArriba({
   titulo,
@@ -15,12 +18,13 @@ export function LaBarraDeArriba({
   readonly children?: ReactNode;
 }) {
   const { yo, aparato, bloquear } = usarSesion();
+  const enLaCaja = aparato.funcion === 'caja';
   return (
     <header className="flex flex-wrap items-center gap-e3 border-b border-borde bg-superficie px-e4 py-e2 md:px-e5">
       <button
         type="button"
-        aria-label="Inicio"
-        onClick={irAlInicio}
+        aria-label={enLaCaja ? 'Inicio' : 'La sala'}
+        onClick={enLaCaja ? irAlInicio : irAlPlano}
         className="flex size-11 shrink-0 items-center justify-center rounded-grande bg-naranja text-seccion font-bold text-sobre-naranja"
       >
         E
@@ -33,6 +37,17 @@ export function LaBarraDeArriba({
       </div>
       {children}
       <div className="flex-1" />
+      {enLaCaja && (
+        <button
+          type="button"
+          onClick={() => {
+            irA('fichar');
+          }}
+          className="min-h-toque rounded-redondo bg-naranja px-e4 font-bold text-sobre-naranja"
+        >
+          Fichar
+        </button>
+      )}
       <button
         type="button"
         onClick={bloquear}

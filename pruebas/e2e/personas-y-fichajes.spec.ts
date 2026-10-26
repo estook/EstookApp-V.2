@@ -1,12 +1,12 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
-import { tokenDeAlguienNuevo, vincularParaFichar } from './en-la-app.ts';
+import { tokenDeAlguienNuevo, vincularUnaCaja } from './en-la-app.ts';
 
 /**
  * H1 · Personas y fichajes (decisiones 0057, 0062 y 0068), desde la pantalla.
  *
- *   1 · Dar de alta a alguien **sin correo**, poner **el aparato del local** y que
- *       esa persona fiche con su PIN: entrada, pausa, vuelta y salida.
+ *   1 · Dar de alta a alguien **sin correo** y que fiche con su PIN **en la caja** de
+ *       Estook TPV, con el botón naranja (0115): entrada, pausa, vuelta y salida.
  *   2 · **Mis fichajes**: la pausa y una corrección se ven, con lo de antes, también
  *       para quien no tiene la app Equipo.
  *   3 · **El registro para la Inspección** y **el informe en PDF**, pedidos desde la
@@ -16,6 +16,7 @@ import { tokenDeAlguienNuevo, vincularParaFichar } from './en-la-app.ts';
  * Cada proyecto usa su propia gente: corren a la vez contra la misma API.
  */
 const APP = 'http://localhost:5174/';
+const TPV = 'http://localhost:5178/';
 const API = 'http://localhost:5177/api';
 const CLAVE = 'estook en desarrollo';
 const ROSA = 'rosa@ejemplo.estook.com';
@@ -109,34 +110,36 @@ test('sin correo, y fichando con su PIN en el aparato del local', async ({ page 
   await expect(hojaDelPin).toContainText('no entra en la app');
   await hojaDelPin.getByRole('button', { name: 'Hecho' }).click();
 
-  // ── 2 · Vincular este aparato para fichar ──────────────────────────────────
-  // Desde T1 (0107) se vincula en Estook TPV, con la función «Fichar», y deja su llave
-  // para la pantalla de fichar, que sigue en Estook. En este aparato no queda la sesión
-  // de nadie.
-  const puesto = await vincularParaFichar(page.request, ROSA, `Tablet ${info.project.name}`);
-  await page.evaluate((llave) => {
+  // ── 2 · La caja de Estook TPV ──────────────────────────────────────────────
+  // Desde la 0115 se ficha en la caja: el aparato para fichar ya no se vincula.
+  const llave = await vincularUnaCaja(
+    page.request,
+    ROSA,
+    `Caja ${info.project.name.slice(0, 5)} ${String(Date.now() % 100_000)}`,
+  );
+  await abrirSinQueSeCaiga(page, TPV);
+  await page.evaluate((laLlave) => {
     window.localStorage.clear();
-    window.localStorage.setItem('estook.aparato-para-fichar', JSON.stringify(llave));
-  }, puesto);
-  await abrirSinQueSeCaiga(page, `${APP}#/aparato-para-fichar`);
-  await expect(page.getByText('Teclea tu PIN para fichar')).toBeVisible();
-  await expect(page.getByText('Bar Centro', { exact: true })).toBeVisible();
-  const token = await page.evaluate(() => window.localStorage.getItem('estook.sesion'));
-  expect(token).toBeNull();
+    window.localStorage.setItem('estook.tpv.llave', laLlave);
+  }, llave);
+  await abrirSinQueSeCaiga(page, TPV);
+  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
 
-  // ── 3 · Ficharlo todo con el PIN ───────────────────────────────────────────
-  const hacer = async (boton: string, dice: string) => {
+  // ── 3 · Ficharlo todo con el PIN, con el botón naranja, sin entrar en la caja ─
+  const hacer = async (boton: string, dice: RegExp) => {
+    await page.getByRole('button', { name: 'Fichar', exact: true }).click();
+    await expect(page.getByText('Fichar · teclea tu PIN')).toBeVisible();
     await teclear(page, pin);
-    await expect(page.getByText(`Hola, ${nombre}`)).toBeVisible();
     await page.getByRole('button', { name: boton }).click();
-    await expect(page.getByRole('status')).toContainText(`${dice}, ${nombre}`);
+    await expect(page.getByRole('status')).toHaveText(dice);
   };
-  await hacer('Fichar la entrada', 'Entrada apuntada');
-  await hacer('Empezar pausa', 'Pausa empezada');
-  await hacer('Volver de la pausa', 'De vuelta de la pausa');
-  await hacer('Fichar la salida', 'Salida apuntada');
+  await hacer('Fichar la entrada', /^✓ Extra .* · entrada a las \d\d:\d\d$/);
+  await hacer('Empezar la pausa', /^✓ Extra .* · pausa a las \d\d:\d\d$/);
+  await hacer('Volver de la pausa', /^✓ Extra .* · de vuelta de la pausa$/);
+  await hacer('Fichar la salida', /^✓ Extra .* · salida fichada$/);
 
   // Un PIN que no es de nadie de aquí lo dice, sin decir de quién podría ser.
+  await page.getByRole('button', { name: 'Fichar', exact: true }).click();
   await teclear(page, pin === '000000' ? '999999' : '000000');
   await expect(page.getByRole('alert')).toContainText('Ese PIN no es de nadie de este local');
 
@@ -163,8 +166,8 @@ test('sin correo, y fichando con su PIN en el aparato del local', async ({ page 
     persona_id: suyo?.personaId,
     correo: `extra-${info.project.name}-${Date.now()}@correo-de-prueba.com`,
   });
-  // Desvincularlo, y que deje de valer al momento, se prueba en Estook TPV
-  // (`la-puerta.spec.ts`) y contra la base (`personas-y-fichajes.prueba.ts`).
+  // Fichar en la caja, y que en un comandero no se entre sin fichar, se prueba también
+  // contra la base (`la-puerta.prueba.ts`).
 });
 
 test('mis fichajes: la pausa y la corrección, con lo de antes a la vista', async ({

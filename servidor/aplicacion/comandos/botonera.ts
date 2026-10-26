@@ -14,7 +14,7 @@ import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
 import { elLocalDelServicio } from '../sala.ts';
 import { puedeEditarLaCarta } from '../consultas/mi-carta.ts';
-import { noEnUnMovilPersonal } from './aparatos.ts';
+import { soloEnLaCaja } from './aparatos.ts';
 
 /**
  * **La botonera de Estook TPV** (T3, decisión 0111; Anexo 11.11): qué se vende en el TPV, en
@@ -42,11 +42,11 @@ const pase = z.enum(PASES_DE_LA_BOTONERA);
 const DEL_TPV = {
   exige: 'accion.ajustes_del_tpv',
   enElTpv: 'solo',
-  enLosAparatos: ['caja', 'comandero'],
+  enLosAparatos: ['caja'],
 } as const;
 
 function elLocalDeLaBotonera(contexto: Contexto): string {
-  noEnUnMovilPersonal(contexto);
+  soloEnLaCaja(contexto);
   return elLocalDelServicio(contexto);
 }
 

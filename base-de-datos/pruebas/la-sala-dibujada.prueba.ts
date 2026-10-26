@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { tokenDelAparato } from '@estook/dominio';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
-import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
+import { elFallo, entrarFichando, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
 
 /**
  * **T2 · La sala, dibujada en Estook TPV** (decisión 0110, migración 0085), contra una base
@@ -29,9 +29,10 @@ let llaveDeLaCaja: string;
 let llaveDeLaTablet: string;
 let llaveDelMovil: string;
 
+/** Entrar con el PIN; en un comandero, fichando antes en la caja (0115). */
 async function enElAparato(llave: string, correo: string): Promise<string> {
   const dentro = losDatos<{ turno: string }>(
-    await api.ejecutar(null, 'entrar_con_pin', { llave, pin: base.pinDe(correo, 'bar-centro') }),
+    await entrarFichando(api, llave, base.pinDe(correo, 'bar-centro'), llaveDeLaCaja),
   );
   return tokenDelAparato(dentro.turno, llave);
 }
@@ -354,10 +355,9 @@ describe('en pleno servicio', () => {
   });
 
   it('la mesa de quien ha fichado la salida lo dice en el plano', async () => {
-    // Sara ficha la entrada y la salida desde su móvil, en Estook: sus mesas se quedan a su
-    // nombre hasta que alguien se las quede.
+    // Sara fichó la entrada en la caja antes de coger su móvil (0115), y ahora ficha la salida
+    // en Estook: sus mesas se quedan a su nombre hasta que alguien se las quede.
     const saraEnEstook = await api.entrar(SARA);
-    losDatos(await api.ejecutar(saraEnEstook, 'fichar_entrada', { sin_donde: 'sin_senal' }));
     losDatos(await api.ejecutar(saraEnEstook, 'fichar_salida', { sin_donde: 'sin_senal' }));
     const rosa = await enElAparato(llaveDeLaTablet, ROSA);
     const plano = losDatos<{

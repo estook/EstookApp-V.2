@@ -2,7 +2,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import type { CuandoSuena } from '@estook/dominio';
-import { Aviso, Boton, Cargando, ErrorEnCristiano, Tarjeta, clases } from '@estook/ui';
+import {
+  Aviso,
+  Boton,
+  Cargando,
+  ErrorEnCristiano,
+  Tarjeta,
+  clases,
+  esUnIphone,
+  esUnMovil,
+} from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CLAVE_DE_MI_MOVIL, type MiMovil } from '../ganchos/usarMiMovil.ts';
 import {
@@ -11,7 +20,6 @@ import {
   recibirEnEsteMovil,
   type ComoEstaElMovil,
 } from '../sinConexion/avisosAlMovil.ts';
-import { esUnIphone, esUnMovil } from '../sinConexion/instalar.ts';
 
 /**
  * Ajustes → Avisos: **este móvil** y **cuándo suena** (I · decisión 0070).

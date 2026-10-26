@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { tokenDelAparato } from '@estook/dominio';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
-import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
+import { elFallo, entrarFichando, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
 
 /**
  * **T3 · 2 · 2 · «Monta tus bebidas»** (decisión 0114, migración 0089), contra una base de verdad:
@@ -28,9 +28,10 @@ let llaveDelMovil: string;
 let rosa: string;
 const producto: Record<string, string> = {};
 
+/** Entrar con el PIN; en un comandero, fichando antes en la caja (0115). */
 async function enElAparato(llave: string, correo: string): Promise<string> {
   const dentro = losDatos<{ turno: string }>(
-    await api.ejecutar(null, 'entrar_con_pin', { llave, pin: base.pinDe(correo, 'bar-centro') }),
+    await entrarFichando(api, llave, base.pinDe(correo, 'bar-centro'), llaveDeLaCaja),
   );
   return tokenDelAparato(dentro.turno, llave);
 }

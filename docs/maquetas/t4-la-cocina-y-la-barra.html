@@ -1,0 +1,1063 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Maquetas de T4</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --fondo: #0f1719;
+        --barra: #111c1f;
+        --tarjeta: #18252a;
+        --marcado: #22343a;
+        --borde: #2c4047;
+        --texto: #f1efea;
+        --suave: #9fb0b3;
+        --naranja: #ff7a00;
+        --verde: #4ec98a;
+        --ambar: #f0ae4e;
+        --azul: #6fb7e8;
+        --rojo: #f0796c;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      a {
+        color: #ff9a3d;
+      }
+      body {
+        margin: 0;
+        background: #0b1113;
+        color: var(--texto);
+        font-family: Montserrat, system-ui, sans-serif;
+        padding: 24px 16px 60px;
+      }
+      h1 {
+        font-size: 26px;
+        margin: 0 0 6px;
+      }
+      .intro {
+        color: var(--suave);
+        max-width: 900px;
+        line-height: 1.5;
+        margin: 0 0 28px;
+      }
+      .maqueta {
+        max-width: 1180px;
+        margin: 0 auto 40px;
+      }
+      .rotulo {
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--naranja);
+        margin: 0 0 4px;
+      }
+      .titulo {
+        font-size: 20px;
+        font-weight: 800;
+        margin: 0 0 6px;
+      }
+      .porque {
+        color: var(--suave);
+        margin: 0 0 12px;
+        line-height: 1.5;
+        max-width: 900px;
+      }
+      .pantalla {
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: 18px;
+        overflow: hidden;
+      }
+      .cab {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        background: var(--barra);
+        border-bottom: 1px solid var(--marcado);
+        flex-wrap: wrap;
+      }
+      .cab b {
+        font-size: 18px;
+      }
+      .pest {
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-weight: 800;
+        border: 2px solid var(--borde);
+        white-space: nowrap;
+      }
+      .pest.si {
+        background: var(--texto);
+        color: var(--fondo);
+        border-color: var(--texto);
+      }
+      .derecha {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .chip {
+        background: var(--marcado);
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .cuerpo {
+        padding: 16px 18px;
+        display: grid;
+        gap: 14px;
+      }
+      .tablero {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 12px;
+        align-items: start;
+      }
+      .tk {
+        background: var(--tarjeta);
+        border-radius: 16px;
+        border: 3px solid transparent;
+        overflow: hidden;
+      }
+      .tk .arriba {
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .tk .mesa {
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .tk .quien {
+        color: var(--suave);
+        font-size: 13px;
+        flex: 1 1 100%;
+      }
+      .tecla {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        background: var(--marcado);
+        display: inline-grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 14px;
+      }
+      .min {
+        margin-left: auto;
+        font-weight: 800;
+        font-size: 20px;
+        font-variant-numeric: tabular-nums;
+        padding: 2px 10px;
+        border-radius: 10px;
+      }
+      .en-hora {
+        background: #1f3b2e;
+        color: var(--verde);
+      }
+      .justo {
+        background: #3a2e14;
+        color: var(--ambar);
+      }
+      .tarde {
+        background: #3e1d19;
+        color: var(--rojo);
+      }
+      .franja {
+        padding: 6px 12px;
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+      .franja.alergia {
+        background: var(--rojo);
+        color: #2a0d09;
+      }
+      .franja.prisa {
+        background: var(--ambar);
+        color: #2a1d06;
+      }
+      .franja.marcha {
+        background: var(--verde);
+        color: #0b2416;
+        font-size: 16px;
+      }
+      .pase {
+        padding: 4px 12px 10px;
+        border-top: 1px solid var(--marcado);
+      }
+      .pase .nombre-pase {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--suave);
+        padding: 8px 0 4px;
+      }
+      .pase.espera {
+        opacity: 0.5;
+      }
+      .plato {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        padding: 7px 0;
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .plato .n {
+        min-width: 22px;
+        font-variant-numeric: tabular-nums;
+      }
+      .plato .detalle {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--suave);
+      }
+      .plato .nota {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ambar);
+      }
+      .plato.hecho {
+        color: var(--suave);
+        text-decoration: line-through;
+      }
+      .plato.hecho .hora {
+        text-decoration: none;
+        display: inline-block;
+        color: var(--verde);
+        font-size: 13px;
+      }
+      .plato.anulado {
+        color: var(--rojo);
+        text-decoration: line-through;
+      }
+      .marca {
+        font-size: 11px;
+        font-weight: 800;
+        border-radius: 6px;
+        padding: 2px 6px;
+        text-decoration: none;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .marca.nuevo {
+        background: var(--azul);
+        color: #0a1d2a;
+      }
+      .marca.anulado {
+        background: var(--rojo);
+        color: #2a0d09;
+      }
+      .marca.cambio {
+        background: var(--ambar);
+        color: #2a1d06;
+      }
+      .marca.vuelve {
+        background: #b78cff;
+        color: #1d0e33;
+      }
+      .marca.lleva {
+        background: transparent;
+        border: 2px solid var(--rojo);
+        color: var(--rojo);
+      }
+      .pie {
+        padding: 10px 12px;
+        border-top: 1px solid var(--marcado);
+      }
+      .boton {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        padding: 12px 20px;
+        font-weight: 800;
+        border: 2px solid var(--borde);
+        white-space: nowrap;
+      }
+      .boton.ancho {
+        width: 100%;
+      }
+      .boton.principal {
+        background: var(--naranja);
+        color: #1b1208;
+        border-color: var(--naranja);
+      }
+      .boton.peligro {
+        border-color: var(--rojo);
+        color: var(--rojo);
+      }
+      .esperando {
+        background: var(--barra);
+        border-radius: 14px;
+        padding: 10px 14px;
+      }
+      .esperando .fila-esp {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .esp {
+        background: var(--tarjeta);
+        border-radius: 12px;
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      .peq {
+        color: var(--suave);
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .bien {
+        color: var(--verde);
+        font-weight: 700;
+      }
+      .rojo {
+        color: var(--rojo);
+        font-weight: 700;
+      }
+      .hoja {
+        background: var(--tarjeta);
+        border-radius: 20px;
+        border: 1px solid var(--borde);
+        padding: 18px;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .preg {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--suave);
+        margin: 12px 0 6px;
+      }
+      .grupo {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .op {
+        border: 2px solid var(--borde);
+        border-radius: 12px;
+        padding: 8px 14px;
+        font-weight: 700;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      .op.si {
+        background: var(--texto);
+        color: var(--fondo);
+        border-color: var(--texto);
+      }
+      .op.alergia-si {
+        background: var(--rojo);
+        color: #2a0d09;
+        border-color: var(--rojo);
+      }
+      .fila {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--marcado);
+      }
+      .fila:last-child {
+        border-bottom: 0;
+      }
+      .fila .nombre {
+        font-weight: 700;
+        flex: 1 1 180px;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+        font-weight: 800;
+      }
+      .aviso {
+        position: relative;
+        margin: 0 auto;
+        max-width: 560px;
+        background: #3e1d19;
+        border: 2px solid var(--rojo);
+        border-radius: 16px;
+        padding: 14px 16px;
+      }
+      .aviso b {
+        font-size: 17px;
+      }
+      .tostada {
+        background: var(--texto);
+        color: var(--fondo);
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-weight: 700;
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .tostada u {
+        margin-left: auto;
+      }
+      .dos {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px;
+      }
+      @media (max-width: 860px) {
+        .dos {
+          grid-template-columns: 1fr;
+        }
+      }
+      .interruptor {
+        width: 46px;
+        height: 26px;
+        border-radius: 999px;
+        background: var(--naranja);
+        position: relative;
+        flex: none;
+      }
+      .interruptor::after {
+        content: '';
+        position: absolute;
+        right: 3px;
+        top: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #1b1208;
+      }
+      .campo {
+        border: 1px solid var(--borde);
+        background: var(--fondo);
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-weight: 700;
+        min-width: 90px;
+        display: inline-block;
+      }
+      .grande {
+        font-size: 34px;
+        font-weight: 800;
+      }
+      .preguntas {
+        max-width: 900px;
+        margin: 0 auto 24px;
+        background: #141e21;
+        border: 2px solid var(--naranja);
+        border-radius: 18px;
+        padding: 20px 22px;
+        line-height: 1.55;
+      }
+      .preguntas h2 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+      .preguntas li {
+        margin: 0 0 10px;
+      }
+    </style>
+    <style>
+      .salido {
+        opacity: 0.72;
+        border-color: #2f5a44 !important;
+      }
+      .salido .arriba {
+        background: #173326;
+      }
+      .franja.salio {
+        background: #1f4a35;
+        color: var(--verde);
+      }
+      .franja.espera {
+        background: var(--marcado);
+        color: var(--suave);
+      }
+      .llamar {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 12px;
+        padding: 8px 12px;
+        font-weight: 800;
+        font-size: 14px;
+        border: 2px solid var(--borde);
+      }
+      .plegada {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--marcado);
+        font-weight: 700;
+      }
+      .plegada:last-child {
+        border-bottom: 0;
+      }
+      .baile {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 12px;
+      }
+      .baile .tarj {
+        background: var(--tarjeta);
+        border-radius: 16px;
+        padding: 16px;
+        line-height: 1.5;
+      }
+      .baile h3 {
+        margin: 0 0 6px;
+        font-size: 18px;
+      }
+      .baile ul {
+        margin: 6px 0 0;
+        padding-left: 18px;
+      }
+      .naranja {
+        background: var(--naranja);
+        color: #1b1208;
+        border-color: var(--naranja);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="maqueta">
+      <h1>T4 · La cocina y la barra, y cada aparato a lo suyo — 2.ª versión</h1>
+      <p class="intro">
+        Con lo que me dijiste el 25-oct: <b>la cocina no confirma nada</b>, solo tacha lo que sale
+        y, si hace falta, llama al camarero. <b>Nada de PIN en cocina</b>: se vincula una vez y se
+        queda siempre encendida. Y cada aparato hace solo lo suyo. Abajo del todo, lo que necesito
+        que me digas.
+      </p>
+    </div>
+
+    <!-- 0 · El baile -->
+    <div class="maqueta">
+      <p class="rotulo">0 · Cada aparato, a lo suyo</p>
+      <p class="titulo">La caja, los comanderos y la cocina: un baile sincronizado</p>
+      <p class="porque">
+        Lo que ve cada uno, sin nada que no le toca. Todo lo que se pide en un comandero llega al
+        segundo a la cocina o a la barra, y lo que sale de la cocina, al camarero.
+      </p>
+      <div class="baile">
+        <div class="tarj">
+          <h3>La caja</h3>
+          <span class="peq">Windows (descargable) o una tablet. La abre el gerente.</span>
+          <ul>
+            <li>
+              <b>Fichar</b>, en naranja, arriba: aquí ficha todo el equipo al llegar y al irse
+            </li>
+            <li>Abrir y cerrar la caja, las ventas de hoy, la venta rápida (con el cobro)</li>
+            <li>Las mesas, los agotados y los <b>Ajustes del TPV</b> (solo aquí)</li>
+            <li>Imprime los tickets y abre el cajón</li>
+          </ul>
+        </div>
+        <div class="tarj">
+          <h3>Los comanderos</h3>
+          <span class="peq">El móvil o la tablet de cada camarero.</span>
+          <ul>
+            <li>Entra con su PIN <b>directo a la sala</b>: el plano y las mesas</li>
+            <li>Pedir, notas, alergias, marchar, pedir la cuenta y cobrar (con el cobro)</li>
+            <li>Sin fichar no entra: «Sin fichar · ficha en la caja o en Estook»</li>
+            <li>Ni ajustes, ni cambiar precios, ni fichar, ni agotados</li>
+          </ul>
+        </div>
+        <div class="tarj">
+          <h3>La cocina y la barra</h3>
+          <span class="peq">Una tablet grande o una tele.</span>
+          <ul>
+            <li>Se vincula una vez y <b>se queda siempre encendida</b>, sin PIN</li>
+            <li>Tachar lo que sale y «Llamar al camarero». Nada más</li>
+            <li>Suena siempre, y la pantalla no se apaga sola</li>
+          </ul>
+        </div>
+        <div class="tarj">
+          <h3>Estook</h3>
+          <span class="peq">La gestión, en el móvil o el ordenador.</span>
+          <ul>
+            <li>Fichar con la ubicación, como ya hace</li>
+            <li>
+              La carta, los escandallos y las fichas técnicas: se miran aquí, fuera del servicio
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1 · La cocina -->
+    <div class="maqueta">
+      <p class="rotulo">1 · Cocina</p>
+      <p class="titulo">En marcha: solo lo que hay que sacar</p>
+      <p class="porque">
+        Dos pestañas: <b>En marcha</b>, lo que hay que sacar, y <b>Acabados</b>, lo que ya salió
+        (maqueta 1b). <b>Lo acabado no se mezcla con lo nuevo</b>: con mucho trabajo, la pantalla no
+        se llena. Lo que va tarde, arriba. El tiempo cambia de color:
+        <span class="bien">verde</span>,
+        <span style="color: var(--ambar); font-weight: 700">ámbar</span> a los 10 minutos y
+        <span class="rojo">rojo</span> a los 20 (se cambian en la caja, en Ajustes del TPV, con el
+        sonido).
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <span class="pest si">En marcha · 5</span><span class="pest">Acabados · 23</span>
+          <div class="derecha">
+            <span class="chip">Cocina · IKATZ</span><span class="chip">🔔 Suena</span
+            ><span class="chip">21:34</span>
+          </div>
+        </div>
+        <div class="cuerpo">
+          <div class="tablero">
+            <div class="tk" style="border-color: var(--rojo)">
+              <div class="franja prisa">⚡ TIENEN PRISA</div>
+              <div class="arriba">
+                <span class="tecla">1</span><span class="mesa">Terraza 3</span
+                ><span class="min tarde">23′</span>
+                <span class="quien">2 personas · Ana</span>
+              </div>
+              <div class="pase">
+                <div class="nombre-pase">Todo junto</div>
+                <div class="plato"><span class="n">1</span><span>Entrecot</span></div>
+                <div class="plato">
+                  <span class="n">1</span
+                  ><span
+                    >Hamburguesa<span class="detalle">Patatas · doble de queso</span
+                    ><span class="nota">al punto</span></span
+                  >
+                </div>
+              </div>
+              <div class="pie"><span class="llamar">🛎 Llamar a Ana</span></div>
+            </div>
+            <div class="tk" style="border-color: var(--rojo)">
+              <div class="franja alergia">⚠ ALERGIA · GLUTEN</div>
+              <div class="arriba">
+                <span class="tecla">2</span><span class="mesa">Mesa 6</span
+                ><span class="min justo">14′</span>
+                <span class="quien">6 personas · Lucía · 2 menús</span>
+              </div>
+              <div class="pase">
+                <div class="nombre-pase">1.º · en marcha</div>
+                <div class="plato hecho">
+                  <span class="n">2</span
+                  ><span>Ensalada de la casa <span class="hora">✓ 21:31</span></span>
+                </div>
+                <div class="plato">
+                  <span class="n">3</span
+                  ><span>Croquetas <span class="marca lleva">LLEVA GLUTEN</span></span>
+                </div>
+                <div class="plato">
+                  <span class="n">1</span><span>Gazpacho<span class="detalle">menú</span></span>
+                </div>
+              </div>
+              <div class="pase espera">
+                <div class="nombre-pase">2.º · en espera</div>
+                <div class="plato"><span class="n">2</span><span>Lubina</span></div>
+                <div class="plato">
+                  <span class="n">2</span><span>Carrilleras<span class="detalle">menú</span></span>
+                </div>
+              </div>
+              <div class="pie"><span class="llamar">🛎 Llamar a Lucía</span></div>
+            </div>
+            <div class="tk" style="border-color: var(--verde)">
+              <div class="franja marcha">¡MARCHA EL 2.º!</div>
+              <div class="arriba">
+                <span class="tecla">3</span><span class="mesa">Mesa 2</span
+                ><span class="min en-hora">2′</span>
+                <span class="quien">4 personas · Lucía</span>
+              </div>
+              <div class="pase">
+                <div class="nombre-pase">2.º · en marcha</div>
+                <div class="plato"><span class="n">2</span><span>Chuletón para dos</span></div>
+                <div class="plato">
+                  <span class="n">1</span><span>Bacalao <span class="nota">sin ajo</span></span>
+                </div>
+              </div>
+              <div class="pie"><span class="llamar">🛎 Llamar a Lucía</span></div>
+            </div>
+            <div class="tk">
+              <div class="arriba">
+                <span class="tecla">4</span><span class="mesa">Mesa 9</span
+                ><span class="min en-hora">6′</span>
+                <span class="quien">3 personas · Mikel</span>
+              </div>
+              <div class="pase">
+                <div class="nombre-pase">1.º · en marcha</div>
+                <div class="plato">
+                  <span class="n">1</span
+                  ><span
+                    >Pulpo <span class="marca vuelve">VUELVE</span
+                    ><span class="detalle">«estaba frío»</span></span
+                  >
+                </div>
+                <div class="plato anulado">
+                  <span class="n">1</span
+                  ><span>Mejillones <span class="marca anulado">ANULADO</span></span>
+                </div>
+                <div class="plato">
+                  <span class="n">1</span
+                  ><span>Pimientos de Padrón <span class="marca nuevo">NUEVO 21:33</span></span>
+                </div>
+                <div class="plato">
+                  <span class="n">2</span
+                  ><span
+                    >Rabas <span class="marca cambio">CAMBIO</span
+                    ><span class="nota">una sin limón</span></span
+                  >
+                </div>
+              </div>
+              <div class="pie"><span class="llamar">🛎 Llamar a Mikel</span></div>
+            </div>
+            <div class="tk">
+              <div class="franja espera">1.º FUERA · ESPERANDO A QUE MARCHEN</div>
+              <div class="arriba">
+                <span class="mesa">Mesa 4</span><span class="quien">2 personas · Ana</span>
+              </div>
+              <div class="pase espera">
+                <div class="nombre-pase">2.º · en espera</div>
+                <div class="plato"><span class="n">2</span><span>Entrecot</span></div>
+                <div class="plato"><span class="n">1</span><span>Lubina</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1b · Acabados -->
+    <div class="maqueta">
+      <p class="rotulo">1b · Cocina · Acabados</p>
+      <p class="titulo">
+        Lo que ya salió, en su pestaña: lo de ahora a la vista, lo de antes plegado
+      </p>
+      <p class="porque">
+        Al tachar el último plato, la mesa pasa sola aquí. <b>Lo de los últimos 40 minutos</b>,
+        entero y en verde, para que el cocinero lo encuentre aunque no sepa qué mesa es;
+        <b>lo de antes</b>, plegado, con la mesa y una flecha para volver a verlo. Tocar un plato lo
+        destacha, y la mesa vuelve a «En marcha».
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <span class="pest">En marcha · 5</span><span class="pest si">Acabados · 23</span>
+          <div class="derecha">
+            <span class="chip">Cocina · IKATZ</span><span class="chip">21:34</span>
+          </div>
+        </div>
+        <div class="cuerpo">
+          <div class="tablero">
+            <div class="tk salido">
+              <div class="franja salio">✓ SALIÓ A LAS 21:30 · 12 MIN</div>
+              <div class="arriba">
+                <span class="mesa">Mesa 11</span><span class="quien">4 personas · Mikel</span>
+              </div>
+              <div class="pase">
+                <div class="plato hecho">
+                  <span class="n">4</span><span>Carrilleras <span class="hora">✓ 21:30</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="tk salido">
+              <div class="franja salio">✓ SALIÓ A LAS 21:12 · 18 MIN</div>
+              <div class="arriba">
+                <span class="mesa">Terraza 1</span><span class="quien">2 personas · Ana</span>
+              </div>
+              <div class="pase">
+                <div class="plato hecho">
+                  <span class="n">1</span><span>Entrecot <span class="hora">✓ 21:12</span></span>
+                </div>
+                <div class="plato hecho">
+                  <span class="n">1</span><span>Lubina <span class="hora">✓ 21:11</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="tk salido">
+              <div class="franja salio" style="background: #3e1d19; color: var(--rojo)">
+                ANULADA A LAS 21:05
+              </div>
+              <div class="arriba">
+                <span class="mesa">Barra · Laura</span
+                ><span class="quien">«se fueron sin pedir»</span>
+              </div>
+            </div>
+          </div>
+          <div class="esperando" style="padding: 0">
+            <div class="plegada">
+              <span>▸</span><span>Mesa 7</span><span class="peq">salió a las 20:41</span>
+            </div>
+            <div class="plegada">
+              <span>▸</span><span>Mesa 4</span><span class="peq">salió a las 20:32</span>
+            </div>
+            <div class="plegada">
+              <span>▸</span><span>Mesa 1</span><span class="peq">salió a las 20:15</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 · Tachar -->
+    <div class="maqueta">
+      <p class="rotulo">2 · Tachar</p>
+      <p class="titulo">Un toque tacha, otro toque destacha. Sin PIN, sin preguntas, siempre</p>
+      <p class="porque">
+        Es para que la cocina se organice. Al tachar el último plato de la mesa, la tarjeta pasa
+        sola a «Acabados», y la sala lo ve en su cuenta (✓ con la hora). Si fue sin querer, en
+        «Acabados» otro toque y vuelve a «En marcha». Con un teclado de cocina, la tecla de la
+        tarjeta tacha el siguiente plato. Una mesa anulada en la sala sale en rojo, «ANULADA», y se
+        va sola a «Acabados».
+      </p>
+    </div>
+
+    <!-- 3 · Alergia -->
+    <div class="maqueta">
+      <p class="rotulo">3 · La alergia de la mesa</p>
+      <p class="titulo">Se marca en la sala, avisa al camarero, y en cocina se ve en rojo</p>
+      <p class="porque">
+        En el comandero, al tocar la mesa › <b>Alergias</b>: los 14 alérgenos, de un toque. Al pedir
+        un plato que lo lleva (lo sabe su escandallo), el camarero lo ve antes de mandarlo. En
+        cocina, la franja roja y el plato marcado «LLEVA GLUTEN» (maqueta 1).
+        <b>La cocina no tiene que confirmar nada</b>: lo ve, que es lo que importa.
+      </p>
+      <div class="pantalla">
+        <div class="cab"><b>Mesa 6 · Alergias</b></div>
+        <div class="cuerpo">
+          <div class="grupo">
+            <span class="op alergia-si">Gluten</span><span class="op">Crustáceos</span
+            ><span class="op">Huevos</span><span class="op">Pescado</span
+            ><span class="op">Cacahuetes</span><span class="op">Soja</span
+            ><span class="op">Lácteos</span><span class="op">Frutos de cáscara</span
+            ><span class="op">Apio</span><span class="op">Mostaza</span
+            ><span class="op">Sésamo</span><span class="op">Sulfitos</span
+            ><span class="op">Altramuces</span><span class="op">Moluscos</span>
+          </div>
+          <div class="aviso">
+            <b>Las croquetas llevan gluten</b>
+            <p style="margin: 6px 0 12px">Y la mesa 6 tiene alergia al gluten.</p>
+            <div class="grupo">
+              <span class="boton">No pedirlas</span
+              ><span class="boton principal">Pedirlas, la cocina lo verá</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 · La barra -->
+    <div class="maqueta">
+      <p class="rotulo">4 · Barra</p>
+      <p class="titulo">Lo mismo, con lo que prepara la barra</p>
+      <p class="porque">
+        Para la barra que tenga su pantalla: bebidas, cafés y copas, todo en marcha al momento, y lo
+        que se pide en barra sin mesa. Lo de «¿Quién lo prepara? Nadie» (el pan, el agua) no sale en
+        ninguna pantalla.
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <b>Barra · IKATZ</b>
+          <div class="derecha">
+            <span class="chip">🔔 Suena</span><span class="chip">21:34</span>
+          </div>
+        </div>
+        <div class="cuerpo">
+          <div class="tablero">
+            <div class="tk">
+              <div class="arriba">
+                <span class="tecla">1</span><span class="mesa">Mesa 6</span
+                ><span class="min en-hora">1′</span><span class="quien">Lucía</span>
+              </div>
+              <div class="pase">
+                <div class="plato"><span class="n">4</span><span>Caña</span></div>
+                <div class="plato"><span class="n">1</span><span>Rioja crianza · copa</span></div>
+                <div class="plato">
+                  <span class="n">1</span><span>Coca-Cola <span class="nota">sin hielo</span></span>
+                </div>
+              </div>
+              <div class="pie"><span class="llamar">🛎 Llamar a Lucía</span></div>
+            </div>
+            <div class="tk">
+              <div class="arriba">
+                <span class="tecla">2</span><span class="mesa">Mesa 2</span
+                ><span class="min en-hora">3′</span><span class="quien">Lucía</span>
+              </div>
+              <div class="pase">
+                <div class="plato">
+                  <span class="n">2</span
+                  ><span>Ron Havana 7<span class="detalle">Coca-Cola</span></span>
+                </div>
+                <div class="plato hecho">
+                  <span class="n">2</span
+                  ><span>Café con leche <span class="hora">✓ 21:33</span></span>
+                </div>
+              </div>
+              <div class="pie"><span class="llamar">🛎 Llamar a Lucía</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 · La sala -->
+    <div class="maqueta">
+      <p class="rotulo">5 · En el comandero</p>
+      <p class="titulo">«La cocina te llama», y en la mesa, alergias y «tienen prisa»</p>
+      <p class="porque">
+        Cuando la cocina toca «Llamar», al camarero de esa mesa le vibra el comandero y le sale
+        arriba, y la mesa parpadea en el plano. Al tocar una mesa: <b>Alergias</b> y
+        <b>Tienen prisa</b> (sube la tarjeta en cocina con su franja). En la cuenta, el ✓ de cada
+        plato lleva su hora.
+      </p>
+      <div class="dos">
+        <div class="pantalla">
+          <div class="cuerpo">
+            <div class="tostada" style="background: var(--azul)">
+              🛎 La cocina te llama · Mesa 6 <u>Visto</u>
+            </div>
+          </div>
+        </div>
+        <div class="pantalla">
+          <div class="cuerpo">
+            <div class="hoja">
+              <b style="font-size: 18px">Mesa 6 · 6 personas · Lucía</b>
+              <div class="grupo" style="margin-top: 12px; flex-direction: column">
+                <span class="boton principal ancho">Marchar el 2.º</span>
+                <span class="boton ancho">Abrir la mesa</span>
+                <span class="boton ancho" style="border-color: var(--rojo)"
+                  >⚠ Alergias · Gluten</span
+                >
+                <span class="boton ancho">⚡ Tienen prisa</span>
+                <span class="peq" style="text-align: center">… y lo demás de siempre</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 · Fichar en la caja -->
+    <div class="maqueta">
+      <p class="rotulo">6 · Fichar, en la caja</p>
+      <p class="titulo">El botón naranja de arriba, y en el comandero, sin fichar no se entra</p>
+      <p class="porque">
+        En la caja, <b>Fichar</b> está siempre arriba, también con la pantalla del PIN: cada uno
+        teclea su PIN y ficha la entrada o la salida, sin entrar en la caja. Si alguien intenta
+        entrar en un comandero sin haber fichado, no entra.
+      </p>
+      <div class="dos">
+        <div class="pantalla">
+          <div class="cab">
+            <b>Caja 1 · IKATZ</b>
+            <div class="derecha"><span class="boton naranja">Fichar</span></div>
+          </div>
+          <div class="cuerpo" style="text-align: center">
+            <span class="peq">Teclea tu PIN</span>
+            <div class="grande">● ● ● ○ ○ ○</div>
+            <div class="tostada" style="background: var(--verde)">✓ Ana · entrada a las 12:02</div>
+          </div>
+        </div>
+        <div class="pantalla">
+          <div class="cab"><b>Comandero de Ana</b></div>
+          <div class="cuerpo">
+            <div class="aviso">
+              <b>Sin fichar</b>
+              <p style="margin: 6px 0 0">Ficha la entrada en la caja o en Estook, y entra.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 · Instalar -->
+    <div class="maqueta">
+      <p class="rotulo">7 · Estook TPV, instalable</p>
+      <p class="titulo">Como Estook: la primera vez te dice que la instales</p>
+      <p class="porque">
+        En el móvil, la tablet o el ordenador, Estook TPV se instala con su icono y se abre a
+        pantalla completa, sin barra del navegador. En el iPhone y el iPad, te enseña los dos toques
+        (Compartir › Añadir a la pantalla de inicio). <b>Instalada, la cocina suena siempre</b> y la
+        pantalla no se apaga.
+      </p>
+      <div class="pantalla">
+        <div class="cuerpo">
+          <div class="hoja" style="text-align: center">
+            <div class="grande">Instala Estook TPV</div>
+            <p class="peq">Con su icono, a pantalla completa, y la cocina con sonido siempre.</p>
+            <span class="boton principal">Instalar</span>
+            <p class="peq">Ahora no</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="preguntas" style="border-color: var(--verde)">
+      <h2>Los tickets: lo que te propongo</h2>
+      <ul>
+        <li>
+          <b>El ticket de la cuenta lo hace Estook</b>, con su número, su QR y lo que pide la ley
+          (VeriFactu, T6). Lo que hace falta es <b>imprimirlo</b>, y ahí está el problema: un
+          navegador no puede mandar a cualquier impresora de tickets ni abrir el cajón. Un programa
+          instalado en el ordenador, sí.
+        </li>
+        <li>
+          <b>Tu idea es la buena: la caja, descargable para Windows</b>, desde estook.com. Es el
+          mismo Estook TPV de siempre, metido en un programa que además imprime los tickets y las
+          comandas de cocina en cualquier impresora (USB o de red), abre el cajón y sigue
+          funcionando sin internet.
+          <b>Estook Link deja de ser un programa aparte: va dentro de la caja.</b>
+        </li>
+        <li>
+          <b>Lo demás no se descarga</b>: los comanderos y la cocina son Estook TPV instalado desde
+          la web, como Estook. La precuenta que pide un camarero sale por la impresora de la caja.
+        </li>
+        <li>
+          <b>Si la caja es una tablet</b> (sin Windows), se imprime con una impresora de las que se
+          conectan solas a internet (Star y Epson las tienen), sin nada en medio.
+        </li>
+        <li>
+          Así, en un local hacen falta solo tres cosas: <b>la caja</b>,
+          <b>la pantalla de cocina</b> (y la de barra si se quiere) y <b>los comanderos</b>.
+        </li>
+      </ul>
+    </div>
+
+    <div class="preguntas">
+      <h2>Lo que necesito que me digas</h2>
+      <ol>
+        <li>
+          <b>¿Te vale esta segunda versión?</b> Si algo sobra o falta, dímelo antes de programarlo.
+        </li>
+        <li>
+          <b>La caja para Windows, con Estook Link dentro.</b> Cambia T5: en vez de un programa
+          aparte, la caja descargable. ¿Lo hacemos así? Es lo que yo haría.
+        </li>
+        <li>
+          <b>«Los comanderos no tienen acceso a precios»</b>: lo he entendido como que el camarero
+          ve lo que cuesta cada cosa (para cobrar) pero
+          <b>no puede cambiar precios ni tocar ajustes</b>. ¿Es eso?
+        </li>
+      </ol>
+      <p class="peq">
+        Mientras me contestas, construyo lo que ya está claro: el comandero directo a la sala,
+        fichar en la caja y «sin fichar» en el comandero, quitar el aparato de fichar, los ajustes
+        solo en la caja, y Estook TPV instalable.
+      </p>
+    </div>
+  </body>
+</html>

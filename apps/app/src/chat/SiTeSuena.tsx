@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { estaEnSilencio } from '@estook/dominio';
 import { IconoSilenciado } from '@estook/iconos';
+import { esUnMovil } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CLAVE_DE_MI_MOVIL, usarMiMovil } from '../ganchos/usarMiMovil.ts';
 import {
@@ -10,7 +11,6 @@ import {
   recibirEnEsteMovil,
   type ComoEstaElMovil,
 } from '../sinConexion/avisosAlMovil.ts';
-import { esUnMovil } from '../sinConexion/instalar.ts';
 
 /**
  * Si el móvil te avisa del chat, y si ahora no, por qué (repaso de C1, 6-oct).

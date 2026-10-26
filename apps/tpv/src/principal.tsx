@@ -2,8 +2,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { crearRegistro, resolverEntorno } from '@estook/utiles';
 import { arrancarObservabilidad, avisarDelFallo } from '@estook/utiles/observabilidad';
-import { SiAlgoFalla } from '@estook/ui';
+import { SiAlgoFalla, escucharSiSePuedeInstalar } from '@estook/ui';
 import { Aplicacion } from './Aplicacion.tsx';
+import { ponerElTrabajador } from './datos/trabajador.ts';
 import './estilos.css';
 
 const entorno = resolverEntorno(import.meta.env);
@@ -17,6 +18,10 @@ const sesion_id = arrancarObservabilidad({
 
 const registro = crearRegistro({ base: { aplicacion: 'tpv', entorno, sesion_id } });
 registro.informacion('aplicación arrancada');
+
+// Instalable (0115): el aviso del navegador llega una vez, al cargar, y se guarda.
+escucharSiSePuedeInstalar();
+ponerElTrabajador();
 
 const raiz = document.getElementById('raiz');
 if (!raiz) throw new Error('Falta el elemento #raiz en index.html');

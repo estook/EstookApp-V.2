@@ -49,7 +49,7 @@ export const losGruposDeOpciones = consulta<Record<string, never>, SalidaLosGrup
   entrada: z.object({}).strict(),
   exige: 'accion.ajustes_del_tpv',
   enElTpv: 'solo',
-  enLosAparatos: ['caja', 'comandero'],
+  enLosAparatos: ['caja'],
 
   async ejecutar(contexto) {
     const localId = elLocalDelServicio(contexto);

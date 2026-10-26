@@ -15,7 +15,7 @@ import { tocarElServicio } from '../al-segundo.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { elLocalDelServicio } from '../sala.ts';
-import { noEnUnMovilPersonal } from './aparatos.ts';
+import { soloEnLaCaja } from './aparatos.ts';
 
 /**
  * **El plano del local, dibujado en Estook TPV, a ojo** (T2 · La sala, decisión 0110;
@@ -51,7 +51,7 @@ const texto = z.string().trim().min(1).max(40);
 const DEL_TPV = {
   exige: 'accion.ajustes_del_tpv',
   enElTpv: 'solo',
-  enLosAparatos: ['caja', 'comandero'],
+  enLosAparatos: ['caja'],
 } as const;
 
 async function anotar(
@@ -80,9 +80,9 @@ function yaExiste(error: unknown, que: string): never {
   throw error;
 }
 
-/** El local del aparato, y que no sea el móvil de nadie (Anexo 11.9: en la caja o la tablet). */
+/** El local del aparato, y que sea la caja (Anexo 11.9; 0115: los ajustes, en la caja). */
 function elLocalDelDibujo(contexto: Contexto): string {
-  noEnUnMovilPersonal(contexto);
+  soloEnLaCaja(contexto);
   return elLocalDelServicio(contexto);
 }
 

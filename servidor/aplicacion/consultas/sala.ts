@@ -229,8 +229,8 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
           return { ...m, estado: elEstado(cuenta), cuenta };
         }),
       })),
-      // En la caja o en la tablet de todos, con el permiso; en el móvil de nadie.
-      puedeDibujar: dibuja[0]?.puede === true && contexto.sesion?.aparato?.esPersonal !== true,
+      // La sala se dibuja en la caja (0115), como el resto de los ajustes del TPV.
+      puedeDibujar: dibuja[0]?.puede === true && contexto.sesion?.aparato?.funcion === 'caja',
       sinMesa: enPlano.filter((c) => c.fila.mesa_id === null).map((c) => c.cuenta),
       tocaMarchar: enPlano.flatMap((c) =>
         c.cuenta.loSiguiente.que === 'marchar'

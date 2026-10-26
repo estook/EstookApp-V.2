@@ -147,9 +147,9 @@ export const elPlanoDelLocal = consulta<Record<string, never>, SalidaElPlanoDelL
   nombre: 'el_plano_del_local',
   entrada: z.object({}).strict(),
   exige: 'accion.ajustes_del_tpv',
-  // Se dibuja en el TPV, en la caja o en la tablet; en el móvil de nadie (Anexo 11.9).
+  // Se dibuja en el TPV, en la caja (Anexo 11.9; 0115).
   enElTpv: 'solo',
-  enLosAparatos: ['caja', 'comandero'],
+  enLosAparatos: ['caja'],
 
   async ejecutar(contexto) {
     const localId = elLocalDelServicio(contexto);

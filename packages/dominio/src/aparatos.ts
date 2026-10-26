@@ -29,11 +29,14 @@ export const NOMBRE_DE_LA_FUNCION: Readonly<Record<FuncionDelAparato, string>> =
  * **Las que se eligen hoy.** Las pantallas de cocina y de barra existen en la base desde
  * T1, pero su pantalla llega con T4: hasta entonces no se ofrecen, en vez de vincular un
  * aparato que no hace nada (lo que no funciona no se enseña apagado).
+ *
+ * **El aparato para fichar ya no se elige** (0115; Richi, 25-oct): se ficha en la caja,
+ * que la abre el gerente al llegar, o en Estook con la ubicación. Los que ya estaban
+ * vinculados así lo dicen, y se vinculan otra vez como otra cosa.
  */
 export const FUNCIONES_QUE_SE_ELIGEN = [
   'caja',
   'comandero',
-  'fichar',
 ] as const satisfies readonly FuncionDelAparato[];
 
 export function esFuncionDelAparato(valor: unknown): valor is FuncionDelAparato {
@@ -146,6 +149,10 @@ export interface AjustesDelBloqueo {
   readonly alCobrar: boolean;
   /** El móvil de cada camarero. De 5 a 30. */
   readonly personalMinutos: number;
+  /**
+   * **En la caja**, si solo entra quien ha fichado. **En un comandero no se entra nunca sin
+   * fichar** (0115): se ficha antes, en la caja o en Estook.
+   */
   readonly soloEntraQuienFicha: boolean;
 }
 
@@ -178,11 +185,17 @@ export function minutosDelBloqueo(
 }
 
 /**
- * Dónde cae quien teclea su PIN (decidido por la IA, 0107): **el primero del día en ese
- * aparato, en el inicio**; los siguientes, que vienen a pedir, **en las mesas**. Sin
- * mesas dibujadas, al inicio (la venta rápida llega con T7).
+ * Dónde cae quien teclea su PIN. **En un comandero, siempre en la sala** (0115; Richi,
+ * 25-oct: «los camareros solo piden y cobran»): el inicio es de la caja. En la caja (0107),
+ * **el primero del día, en el inicio**; los siguientes, **en las mesas**; sin mesas
+ * dibujadas, en el inicio (la venta rápida llega con T7).
  */
-export function dondeCae(primeroDelDia: boolean, hayMesas: boolean): 'inicio' | 'mesas' {
+export function dondeCae(
+  funcion: FuncionDelAparato,
+  primeroDelDia: boolean,
+  hayMesas: boolean,
+): 'inicio' | 'mesas' {
+  if (funcion === 'comandero') return 'mesas';
   if (primeroDelDia || !hayMesas) return 'inicio';
   return 'mesas';
 }

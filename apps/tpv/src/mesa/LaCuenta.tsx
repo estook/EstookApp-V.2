@@ -7,8 +7,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { LoApruebaUnEncargado } from './LoApruebaUnEncargado.tsx';
 import { cambiarLinea, quitarLinea, type Borrador } from '../logica/comanda.ts';
 import { elPase, type GrupoDeLaCuenta, type LineaALaVista } from '../logica/laCuenta.ts';
-import { euros, laHora } from '../logica/texto.ts';
-import { losNombres } from './usarElAvisoDeAlergia.tsx';
+import { euros, laHora, losNombres } from '../logica/texto.ts';
 
 /**
  * La cuenta de la mesa, por grupos (`laCuenta.ts`): bebidas, menús, el 1.º y el 2.º con

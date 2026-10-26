@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { escucharAlSegundo, haySegundo } from '@estook/cliente-api/al-segundo';
-import { NOMBRE_CORTO_DEL_ALERGENO, type Alergeno } from '@estook/dominio';
 import { Cargando, EstadoVacio } from '@estook/ui';
 import { crearClienteDelTpv } from '../datos/cliente.ts';
 import type { ElAparatoPorDentro, LaPantallaDeCocina, TarjetaDeCocina } from '../datos/tipos.ts';
@@ -16,6 +15,7 @@ import {
 } from './laCocina.ts';
 import { alCambiarSiSuena, despertar, puedeSonar, tocar } from './sonidos.ts';
 import { usarPantallaEncendida, usarReloj } from '../ganchos/usarLaPantallaDeCocina.ts';
+import { losNombres } from '../logica/texto.ts';
 
 /**
  * **La pantalla de cocina** (T4 · 1, decisión 0116; Anexo 3.2; maquetas de T4 1, 1b y 2).
@@ -362,7 +362,7 @@ function Tarjeta({
           )}
           {(t.alergias ?? []).length > 0 && (
             <p className="bg-mal px-e3 py-e1 text-seccion font-bold text-fondo">
-              ⚠ ALERGIA · {nombres(t.alergias ?? []).toUpperCase()}
+              ⚠ ALERGIA · {losNombres(t.alergias ?? []).toUpperCase()}
             </p>
           )}
           {marcha !== null && (
@@ -452,7 +452,7 @@ function Tarjeta({
                     {p.cambio && <Marca tono="bg-atencion text-fondo">CAMBIO</Marca>}
                     {(p.lleva ?? []).length > 0 && !p.anulado && (
                       <Marca tono="bg-mal text-fondo">
-                        {`LLEVA ${nombres(p.lleva ?? []).toUpperCase()}`}
+                        {`LLEVA ${losNombres(p.lleva ?? []).toUpperCase()}`}
                       </Marca>
                     )}
                     {salio && (
@@ -503,13 +503,6 @@ function Tarjeta({
       )}
     </article>
   );
-}
-
-/** «Gluten y lácteos», con el nombre de servicio de cada uno. */
-function nombres(alergenos: readonly string[]): string {
-  const todos = alergenos.map((a) => NOMBRE_CORTO_DEL_ALERGENO[a as Alergeno] ?? a);
-  if (todos.length <= 1) return todos.join('');
-  return `${todos.slice(0, -1).join(', ')} y ${todos[todos.length - 1] ?? ''}`;
 }
 
 function Marca({ tono, children }: { readonly tono: string; readonly children: string }) {

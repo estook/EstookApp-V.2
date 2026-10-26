@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
-import { lasAlergiasQueLleva, NOMBRE_CORTO_DEL_ALERGENO, type Alergeno } from '@estook/dominio';
+import { lasAlergiasQueLleva } from '@estook/dominio';
 import { Boton, Hoja } from '@estook/ui';
+import { losNombres } from '../logica/texto.ts';
 
 /**
  * **El aviso de la alergia de la mesa, al pedir** (T4 · 2, decisión 0117; Anexo 3.2; maqueta
@@ -65,11 +66,4 @@ export function usarElAvisoDeAlergia(alergiasDeLaMesa: readonly string[]): {
     );
 
   return { avisar, elAviso };
-}
-
-/** «Gluten y lácteos», con los nombres de servicio. */
-export function losNombres(alergenos: readonly string[]): string {
-  const nombres = alergenos.map((a) => NOMBRE_CORTO_DEL_ALERGENO[a as Alergeno] ?? a);
-  if (nombres.length <= 1) return nombres.join('');
-  return `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1] ?? ''}`;
 }

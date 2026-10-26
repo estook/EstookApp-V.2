@@ -1,24 +1,18 @@
 import { useMemo, useState } from 'react';
-import {
-  elDestinoDeLaLinea,
-  enSuOrden,
-  esElPan,
-  NOMBRE_CORTO_DEL_ALERGENO,
-  type Alergeno,
-} from '@estook/dominio';
+import { elDestinoDeLaLinea, enSuOrden, esElPan } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import { Boton, Cargando, EstadoVacio, filtrarPorParecido } from '@estook/ui';
 import type { LaCartaDeLaSala, LaMesa, PaginaDeLaSala, PlatoDeLaSala } from '../datos/tipos.ts';
 import { anadirConLoElegido, anadirPlato, type Borrador } from '../logica/comanda.ts';
 import { elPaseDeFabrica } from '../logica/laCuenta.ts';
 import { elNumeroDelPase, laPestanaDeLaPagina, type PestanaDelPase } from '../logica/losPases.ts';
-import { euros } from '../logica/texto.ts';
+import { elAlergeno, euros } from '../logica/texto.ts';
 import { irA } from '../navegar.ts';
 import { COMO_SE_VE_EL_COLOR } from '../productos/colores.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ElMenuDelDia } from './ElMenuDelDia.tsx';
 import { LoQueSeElige } from './LoQueSeElige.tsx';
-import { usarElAvisoDeAlergia } from './usarElAvisoDeAlergia.tsx';
+import { usarElAvisoDeAlergia } from '../ganchos/usarElAvisoDeAlergia.tsx';
 
 /**
  * **Lo que se pide** (T3, maqueta 9; Anexo 11.10 y 11.11): **la botonera por páginas**, con
@@ -428,7 +422,7 @@ function Producto({
             {enSuOrden(plato.alergenos).map((a, i) => (
               <span key={a} className={deLaMesa.has(a) ? 'font-bold text-mal' : ''}>
                 {i > 0 ? ', ' : ''}
-                {NOMBRE_CORTO_DEL_ALERGENO[a as Alergeno] ?? a}
+                {elAlergeno(a)}
               </span>
             ))}
           </span>

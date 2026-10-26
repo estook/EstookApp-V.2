@@ -244,8 +244,12 @@ export interface RondaDeLaBarra {
  * entra en ella («NUEVO»). Nulo si la mesa no tiene nada mandado a la barra.
  */
 export function laRondaDeLaBarra(lineas: readonly LineaDeLaBarra[]): RondaDeLaBarra | null {
+  // Las horas van al segundo: a la misma hora, lo ya servido va antes que lo que falta (se
+  // pidió antes), para que la caña servida y el café recién pedido no caigan al azar.
+  const falta = (l: LineaDeLaBarra) => Number(l.salioEn === null && l.quitadaEn === null);
   const enOrden = [...lineas].sort(
-    (a, b) => a.mandadaEn.localeCompare(b.mandadaEn) || a.id.localeCompare(b.id),
+    (a, b) =>
+      a.mandadaEn.localeCompare(b.mandadaEn) || falta(a) - falta(b) || a.id.localeCompare(b.id),
   );
   if (enOrden.length === 0) return null;
   let empieza = 0;

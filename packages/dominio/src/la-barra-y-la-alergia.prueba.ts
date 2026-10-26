@@ -50,6 +50,14 @@ describe('la ronda de la barra (0117)', () => {
     expect(ronda?.pendientes).toBe(2);
   });
 
+  it('en el mismo segundo, lo servido va antes que lo recién pedido (las horas van al segundo)', () => {
+    const ronda = laRondaDeLaBarra([
+      linea('a-cafe', '21:00'),
+      linea('z-cana', '21:00', { salioEn: a('21:00') }),
+    ]);
+    expect(ronda?.ids).toEqual(['a-cafe']);
+  });
+
   it('lo que llega mientras la barra aún sirve entra en la misma ronda («NUEVO»)', () => {
     const ronda = laRondaDeLaBarra([
       linea('cana', '21:00', { salioEn: a('21:06') }),

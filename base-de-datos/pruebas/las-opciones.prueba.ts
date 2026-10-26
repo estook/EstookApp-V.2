@@ -41,6 +41,7 @@ interface Linea {
   precioCentimos: number;
   opciones: string[];
   pesoGramos: number | null;
+  alergenos: string[];
 }
 
 async function pedirYVer(token: string, platos: Record<string, unknown>[]) {
@@ -109,14 +110,15 @@ beforeAll(async () => {
     for (const p of hechos.creados) plato[p.nombre] = p.platoId;
   }
   // Dos productos del almacén de Bar Centro, para lo que gasta cada opción.
-  const producto = async (nombre: string) =>
+  const producto = async (nombre: string, alergenos: string[] = []) =>
     (
       await base.bd.query<{ id: string }>(
-        `insert into estook.producto (local_id, nombre, unidad_de_uso) values ($1, $2, 'g') returning id::text as id`,
-        [barCentro, nombre],
+        `insert into estook.producto (local_id, nombre, unidad_de_uso, alergenos)
+         values ($1, $2, 'g', $3::text[]) returning id::text as id`,
+        [barCentro, nombre, alergenos],
       )
     ).rows[0]?.id ?? '';
-  queso = await producto('Queso cheddar');
+  queso = await producto('Queso cheddar', ['lacteos']);
   cebolla = await producto('Cebolla');
 }, 120_000);
 
@@ -246,6 +248,22 @@ describe('al pedir', () => {
       cantidad: 30,
       unidad: 'g',
     });
+    // Y lo que lleva, congelado también (0117): el queso de más trae los lácteos.
+    expect(mesa.platos[0]?.alergenos).toEqual(['lacteos']);
+    const carta = losDatos<{
+      paginas: {
+        platos: {
+          nombre: string;
+          grupos: { opciones: { nombre: string; alergenos: string[] }[] }[];
+        }[];
+      }[];
+    }>(await api.consultar(sara2, 'la_carta_de_la_sala'));
+    const delQueso = carta.paginas
+      .flatMap((g) => g.platos)
+      .flatMap((x) => x.grupos)
+      .flatMap((g) => g.opciones)
+      .find((o) => o.nombre === 'Doble de queso');
+    expect(delQueso?.alergenos).toEqual(['lacteos']);
 
     // Dos guarniciones, no; una opción de otro plato, tampoco.
     const dos = await pedirYVer(sara2, [

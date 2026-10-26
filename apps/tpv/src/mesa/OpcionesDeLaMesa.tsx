@@ -7,9 +7,8 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAcciones } from '../ganchos/usarLaSala.ts';
 import type { CuentaEnElPlano, ElPlano } from '../datos/tipos.ts';
 import { elPase } from '../logica/laCuenta.ts';
-import { cuantoLlevan, euros, personas as lasPersonas } from '../logica/texto.ts';
+import { cuantoLlevan, euros, losNombres, personas as lasPersonas } from '../logica/texto.ts';
 import { irAlPlano } from '../navegar.ts';
-import { losNombres } from './usarElAvisoDeAlergia.tsx';
 
 /**
  * Lo que se puede hacer con una mesa abierta (0106, «MesaAcciones»), al tocarla en el

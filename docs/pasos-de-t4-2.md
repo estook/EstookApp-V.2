@@ -2,13 +2,14 @@
 
 > ## Cómo está
 >
-> Escrito el 26 de octubre de 2026, en su pull request, **sin fusionar**.
+> **En producción** desde el 26 de octubre de 2026: Richi fusionó las dos, migró y desplegó (leído
+> el 26-oct a las 21:17 UTC).
 >
-> | Qué              | Cómo está                                                                     |
-> | ---------------- | ----------------------------------------------------------------------------- |
-> | Pull requests    | **«El reloj en producción» (#143)**, solo documentos, y **«T4 · 2» (#144)**   |
-> | La base de datos | **91 de 91** en producción; esta trae **la 0092**                             |
-> | La API           | Hoy, 113 consultas y 302 comandos; con esta, **113 consultas y 303 comandos** |
+> | Qué              | Cómo está                                                 |
+> | ---------------- | --------------------------------------------------------- |
+> | Pull requests    | **«El reloj en producción» (#143)** y **«T4 · 2» (#144)** |
+> | La base de datos | **92 de 92** en producción, con **la 0092**               |
+> | La API           | **113 consultas y 303 comandos**, desplegada el 26-oct    |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -24,7 +25,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 Lo que se decidió, en la [0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md).
 
-## Lo que te toca · fusionar, migrar y desplegar
+## Lo que hiciste · fusionar, migrar y desplegar
 
 **En este orden: fusionar las dos, después migrar, y al final desplegar.** La API nueva necesita la 0092.
 
@@ -87,5 +88,5 @@ sala no puede avisar de él. Lo pedido antes de hoy no lleva sus alérgenos.
 
 - **El papel** (la comanda impresa en la barra o en la cocina): con la caja para Windows y Estook Link
   (T5).
-- **La entrada nueva del TPV** (la sala primero y el engranaje): sus maquetas esperan a que me digas si
-  valen.
+- **La entrada nueva del TPV** (la sala primero y el engranaje): construida después, en su pull request
+  ([sus pasos](pasos-de-la-entrada-del-tpv.md)).

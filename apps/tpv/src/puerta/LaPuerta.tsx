@@ -195,8 +195,8 @@ function ConLlave({
           alDesvincular(local.current);
         }}
         alEntrar={(nuevo) => {
-          // **El primero del día, al inicio; los siguientes, a las mesas** (0107).
-          irA(nuevo.caeEn === 'inicio' ? 'inicio' : '');
+          // **Todos a la sala** (la entrada nueva, 26-oct): ya no hay inicio de baldosas.
+          irA('');
           setDentro(nuevo);
         }}
       />

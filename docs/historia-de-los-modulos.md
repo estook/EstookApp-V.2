@@ -3419,6 +3419,21 @@ marca en sus opciones, avisa al pedir lo que la lleva y sale en rojo en cocina y
 Las pruebas: `la-barra-y-la-alergia.prueba.ts` (el dominio y la base), `las-opciones.prueba.ts` (lo que
 añade una opción) y `la-barra-y-la-alergia.spec.ts`.
 
+### La entrada de Estook TPV
+
+_26 de octubre de 2026._ Sin migración, decisión [0118](decisiones/0118-la-entrada-del-tpv.md), con sus
+maquetas. **Se entra a la sala**, sin inicio de baldosas; arriba, **Fichar y el engranaje**; **el plano
+cabe entero**; **los Ajustes del TPV en grupos**, con su dibujo y su color; y **mantener pulsado un
+producto** para agotarlo o pedirlo con una nota.
+
+- **El dominio**: `dondeCae`, siempre en la sala.
+- **Estook TPV**: `iconos.tsx` y `logica/comoSeVeElAparato`, la barra de arriba, los Ajustes en grupos
+  (`ajustes/AjustesDelTpv`), `ganchos/usarPulsacionLarga` y `mesa/LoDelProducto`. Se va
+  `inicio/ElInicio`.
+
+Las pruebas: `la-entrada-del-tpv.spec.ts`, `la-puerta.spec.ts`, `la-puerta.prueba.ts` y
+`comanda.prueba.ts`.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

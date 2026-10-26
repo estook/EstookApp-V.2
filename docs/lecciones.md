@@ -919,3 +919,7 @@
      bloquea a los dos minutos sin tocarla; la prueba de la barra abría las otras pantallas
      después de pedir, tardaba más que eso, y la cuenta de la sala ya no se refrescaba. Las
      pantallas se encienden antes, como en un local (`la-barra-y-la-alergia.spec.ts`).
+229. **Un botón que aún hace algo no va desactivado.** Lo agotado de la botonera iba con
+     `disabled`, y después con `aria-disabled`: un toque no lo pide, pero mantenerlo lo hace
+     volver. Desactivado, ni el lector de pantalla ni Playwright lo dejaban tocar, y la prueba
+     se quedó esperando. Va sin desactivar, y su nombre dice «agotado» (0118).

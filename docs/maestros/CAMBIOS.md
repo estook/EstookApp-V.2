@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 26 de octubre, por la noche** ([0118](../decisiones/0118-la-entrada-del-tpv.md)), sin cambiar de versión: el **Anexo** cambia 11.5, de «El inicio» a **«La entrada: la sala»** (se entra a la sala, Fichar y el engranaje arriba, el plano que cabe entero, y dónde está lo que tenía el inicio); en 11.13, **los Ajustes del TPV en grupos**, con su dibujo y su color, y el color de cada aparato; en 10.3 y 11.11, **mantener pulsado un producto**; y en 11.15, que todos caen en la sala.
+
 **El 26 de octubre, por la tarde** ([0117](../decisiones/0117-t4-2-la-barra-y-la-alergia.md)), sin cambiar de versión: el **Anexo** pone en 3.1 cómo avisa la sala de la alergia de la mesa (el borde rojo en la botonera, «No pedirlo» o «Pedirlo, la cocina lo verá») y que lo que lleva cada plato se congela al pedir; en 3.2, la barra (su pantalla, sin pases y por rondas); en 7.2, lo que lleva cada línea; y en 3.7, sus pruebas.
 
 **El 26 de octubre** ([0116](../decisiones/0116-t4-1-la-cocina.md)), sin cambiar de versión: el **Anexo** pone en 3.2 que la pantalla de cocina no confirma nada (tachar y destachar de un toque, sin margen), lo acabado en su pestaña, «Llamar al camarero», los minutos de fábrica (10 y 20), el sonido y la ficha técnica fuera del servicio; en 3.4, que la pantalla vale por su llave y solo cocina; y en 3.7 y 11.13, lo suyo.

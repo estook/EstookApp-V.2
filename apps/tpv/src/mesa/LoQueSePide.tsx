@@ -3,7 +3,12 @@ import { elDestinoDeLaLinea, enSuOrden, esElPan } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import { Boton, Cargando, EstadoVacio, filtrarPorParecido } from '@estook/ui';
 import type { LaCartaDeLaSala, LaMesa, PaginaDeLaSala, PlatoDeLaSala } from '../datos/tipos.ts';
-import { anadirConLoElegido, anadirPlato, type Borrador } from '../logica/comanda.ts';
+import {
+  anadirConLoElegido,
+  anadirConNota,
+  anadirPlato,
+  type Borrador,
+} from '../logica/comanda.ts';
 import { elPaseDeFabrica } from '../logica/laCuenta.ts';
 import { elNumeroDelPase, laPestanaDeLaPagina, type PestanaDelPase } from '../logica/losPases.ts';
 import { elAlergeno, euros } from '../logica/texto.ts';
@@ -13,6 +18,8 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { ElMenuDelDia } from './ElMenuDelDia.tsx';
 import { LoQueSeElige } from './LoQueSeElige.tsx';
 import { usarElAvisoDeAlergia } from '../ganchos/usarElAvisoDeAlergia.tsx';
+import { usarPulsacionLarga } from '../ganchos/usarPulsacionLarga.ts';
+import { LoDelProducto } from './LoDelProducto.tsx';
 
 /**
  * **Lo que se pide** (T3, maqueta 9; Anexo 11.10 y 11.11): **la botonera por páginas**, con
@@ -26,6 +33,9 @@ import { usarElAvisoDeAlergia } from '../ganchos/usarElAvisoDeAlergia.tsx';
  *
  * **Con alergia en la mesa** (0117), lo que la lleva sale en rojo en su botón, y al tocarlo
  * la sala avisa antes de pedirlo.
+ *
+ * **Mantener pulsado un botón** (la entrada nueva): «Se ha agotado» y pedirlo con una nota; lo
+ * agotado, al mantenerlo, vuelve.
  */
 
 const MENU = 'menu';
@@ -55,6 +65,7 @@ export function LoQueSePide({
   const [pagina, setPagina] = useState<string | null>(null);
   const [buscando, setBuscando] = useState('');
   const [eligiendo, setEligiendo] = useState<PlatoDeLaSala | null>(null);
+  const [pulsado, setPulsado] = useState<PlatoDeLaSala | null>(null);
   const alergias = mesa.alergias ?? [];
   const { avisar, elAviso } = usarElAvisoDeAlergia(alergias);
 
@@ -228,6 +239,7 @@ export function LoQueSePide({
               cuantos={cuantos}
               alergias={alergias}
               alPedir={pedir}
+              alMantener={setPulsado}
             />
           )}
         </div>
@@ -241,7 +253,13 @@ export function LoQueSePide({
         />
       ) : laDeAhora === LO_MAS_PEDIDO ? (
         <div className="min-h-0 flex-1 overflow-y-auto p-e3">
-          <LosProductos platos={masPedido} cuantos={cuantos} alergias={alergias} alPedir={pedir} />
+          <LosProductos
+            platos={masPedido}
+            cuantos={cuantos}
+            alergias={alergias}
+            alPedir={pedir}
+            alMantener={setPulsado}
+          />
         </div>
       ) : sinNada || laDeAhora === undefined ? (
         <div className="p-e3">
@@ -283,6 +301,7 @@ export function LoQueSePide({
             cuantos={cuantos}
             alergias={alergias}
             alPedir={pedir}
+            alMantener={setPulsado}
           />
         </div>
       )}
@@ -304,6 +323,20 @@ export function LoQueSePide({
               .filter((a) => !plato.alergenos.includes(a));
             avisar(plato.nombre, anaden, () => {
               alCambiarElBorrador(anadirConLoElegido(borrador, plato, comoVa(plato), elegido));
+            });
+          }}
+        />
+      )}
+      {pulsado !== null && (
+        <LoDelProducto
+          plato={pulsado}
+          alCerrar={() => {
+            setPulsado(null);
+          }}
+          alPedirConNota={(nota) => {
+            const plato = pulsado;
+            avisar(plato.nombre, plato.alergenos, () => {
+              alCambiarElBorrador(anadirConNota(borrador, plato, comoVa(plato), nota));
             });
           }}
         />
@@ -350,11 +383,13 @@ function LosProductos({
   cuantos,
   alergias,
   alPedir,
+  alMantener,
 }: {
   readonly platos: readonly PlatoDeLaSala[];
   readonly cuantos: (p: PlatoDeLaSala) => number;
   readonly alergias: readonly string[];
   readonly alPedir: (p: PlatoDeLaSala) => void;
+  readonly alMantener: (p: PlatoDeLaSala) => void;
 }) {
   return (
     <div className="grid grid-cols-2 gap-e2 lg:grid-cols-3 xl:grid-cols-4">
@@ -367,6 +402,9 @@ function LosProductos({
           alPedir={() => {
             alPedir(p);
           }}
+          alMantener={() => {
+            alMantener(p);
+          }}
         />
       ))}
     </div>
@@ -378,19 +416,25 @@ function Producto({
   cuantos,
   alergias,
   alPedir,
+  alMantener,
 }: {
   readonly plato: PlatoDeLaSala;
   readonly cuantos: number;
   readonly alergias: readonly string[];
   readonly alPedir: () => void;
+  readonly alMantener: () => void;
 }) {
   const deLaMesa = new Set(alergias);
   const lleva = plato.alergenos.some((a) => deLaMesa.has(a));
+  // Lo agotado no se pide con un toque, pero se mantiene pulsado para que vuelva: por eso no
+  // va desactivado, y su nombre dice «agotado».
+  const pulsar = usarPulsacionLarga(alMantener, () => {
+    if (!plato.agotado) alPedir();
+  });
   return (
     <button
       type="button"
-      disabled={plato.agotado}
-      onClick={alPedir}
+      {...pulsar}
       aria-label={`${plato.nombre}, ${euros(plato.precioCentimos)} €${plato.agotado ? ', agotado' : ''}`}
       className={[
         'relative flex min-h-[4.5rem] items-stretch gap-e2 overflow-hidden rounded-grande border bg-superficie text-left transition-transform active:scale-[0.98] sm:min-h-[5.5rem]',

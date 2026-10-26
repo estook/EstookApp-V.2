@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>La entrada del TPV</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --fondo: #0f1719;
+        --barra: #111c1f;
+        --tarjeta: #18252a;
+        --marcado: #22343a;
+        --borde: #2c4047;
+        --texto: #f1efea;
+        --suave: #9fb0b3;
+        --naranja: #ff7a00;
+        --verde: #4ec98a;
+        --ambar: #f0ae4e;
+        --azul: #6fb7e8;
+        --rojo: #f0796c;
+        --morado: #b49af0;
+        --gris: #8a9a9d;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #0b1113;
+        color: var(--texto);
+        font-family: Montserrat, system-ui, sans-serif;
+        padding: 24px 16px 60px;
+      }
+      h1 {
+        font-size: 26px;
+        margin: 0 0 6px;
+      }
+      .intro {
+        color: var(--suave);
+        max-width: 900px;
+        line-height: 1.5;
+        margin: 0 0 28px;
+      }
+      .maqueta {
+        max-width: 1180px;
+        margin: 0 auto 44px;
+      }
+      .rotulo {
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--naranja);
+        margin: 0 0 4px;
+      }
+      .titulo {
+        font-size: 20px;
+        font-weight: 800;
+        margin: 0 0 6px;
+      }
+      .porque {
+        color: var(--suave);
+        margin: 0 0 12px;
+        line-height: 1.5;
+        max-width: 900px;
+      }
+      .pantalla {
+        background: var(--fondo);
+        border: 1px solid var(--borde);
+        border-radius: 18px;
+        overflow: hidden;
+      }
+      /* ── La barra de arriba ── */
+      .cab {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        background: var(--barra);
+        border-bottom: 1px solid var(--marcado);
+        flex-wrap: wrap;
+      }
+      .logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--naranja);
+        color: #1a0d00;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+      .local b {
+        display: block;
+        font-size: 16px;
+      }
+      .local span {
+        font-size: 12px;
+        color: var(--suave);
+      }
+      .grupo {
+        display: flex;
+        gap: 2px;
+        background: var(--fondo);
+        border-radius: 999px;
+        padding: 3px;
+      }
+      .grupo span {
+        border-radius: 999px;
+        padding: 9px 14px;
+        font-weight: 700;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      .grupo .si {
+        background: #2f474e;
+      }
+      .derecha {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .boton {
+        border-radius: 999px;
+        padding: 10px 16px;
+        font-weight: 800;
+        font-size: 14px;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .b-fichar {
+        background: var(--naranja);
+        color: #1a0d00;
+      }
+      .b-caja {
+        background: rgba(78, 201, 138, 0.16);
+        color: var(--verde);
+        border: 2px solid rgba(78, 201, 138, 0.5);
+      }
+      .b-caja-cerrada {
+        background: rgba(240, 174, 78, 0.14);
+        color: var(--ambar);
+        border: 2px solid rgba(240, 174, 78, 0.6);
+      }
+      .b-ajustes {
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+        background: var(--marcado);
+        display: grid;
+        place-items: center;
+        color: var(--texto);
+      }
+      .b-quien {
+        background: var(--fondo);
+        border-radius: 999px;
+        padding: 4px 14px 4px 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 800;
+        font-size: 14px;
+      }
+      .ini {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: #2f474e;
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+      }
+      .punto {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: currentColor;
+      }
+      /* ── Las franjas ── */
+      .franja {
+        margin: 10px 16px 0;
+        border-radius: 14px;
+        padding: 8px 8px 8px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        flex-wrap: wrap;
+      }
+      .franja.llama {
+        background: var(--azul);
+        color: #06202f;
+      }
+      .franja.marcha {
+        background: rgba(111, 183, 232, 0.14);
+        color: var(--azul);
+      }
+      .franja .f {
+        flex: 1;
+      }
+      .franja .accion {
+        background: #0f1719;
+        color: var(--texto);
+        border-radius: 10px;
+        padding: 9px 14px;
+      }
+      .franja.marcha .accion {
+        background: var(--naranja);
+        color: #1a0d00;
+      }
+      /* ── El plano, que cabe entero ── */
+      .hueco {
+        padding: 12px 16px 6px;
+        height: 520px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        container-type: size;
+      }
+      .plano {
+        position: relative;
+        aspect-ratio: 16 / 10;
+        width: min(100cqw, 160cqh);
+        background: var(--tarjeta);
+        border-radius: 18px;
+      }
+      .mesa {
+        position: absolute;
+        border-radius: 999px;
+        border: 2px solid var(--borde);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: var(--suave);
+        text-align: center;
+        line-height: 1.3;
+      }
+      .mesa b {
+        color: var(--texto);
+        font-size: 15px;
+      }
+      .mesa.cuadrada {
+        border-radius: 14px;
+      }
+      .mesa.ocupada {
+        background: rgba(78, 201, 138, 0.13);
+        border-color: rgba(78, 201, 138, 0.6);
+        color: var(--verde);
+      }
+      .mesa.prisa {
+        background: rgba(240, 121, 108, 0.13);
+        border-color: var(--rojo);
+        color: var(--rojo);
+      }
+      .mesa.cuenta {
+        background: rgba(240, 174, 78, 0.13);
+        border-color: var(--ambar);
+        color: var(--ambar);
+      }
+      .cosa {
+        position: absolute;
+        border: 2px solid var(--borde);
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        color: var(--suave);
+      }
+      .pie {
+        display: flex;
+        gap: 10px;
+        padding: 6px 16px 12px;
+        font-size: 13px;
+        color: var(--suave);
+        align-items: center;
+      }
+      .pie .vivo {
+        margin-left: auto;
+        background: rgba(78, 201, 138, 0.14);
+        color: var(--verde);
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-weight: 700;
+      }
+      /* ── Las notas ── */
+      .notas {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .nota {
+        background: var(--tarjeta);
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 14px;
+        line-height: 1.45;
+        color: var(--suave);
+      }
+      .nota strong {
+        color: var(--texto);
+      }
+      .nota b {
+        color: var(--texto);
+        display: block;
+        margin-bottom: 2px;
+      }
+      .num {
+        display: inline-grid;
+        place-items: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: var(--naranja);
+        color: #1a0d00;
+        font-size: 12px;
+        font-weight: 800;
+        margin-right: 6px;
+      }
+      /* ── Ajustes ── */
+      .ajustes {
+        padding: 18px;
+        display: grid;
+        gap: 22px;
+      }
+      .seccion h3 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--suave);
+      }
+      .baldosas {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 10px;
+      }
+      .bal {
+        background: var(--tarjeta);
+        border: 2px solid var(--marcado);
+        border-radius: 16px;
+        padding: 14px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        min-height: 92px;
+      }
+      .bal.luego {
+        border-style: dashed;
+        opacity: 0.75;
+      }
+      .ico {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .bal b {
+        display: block;
+        font-size: 16px;
+        margin-bottom: 3px;
+      }
+      .bal div span {
+        font-size: 13px;
+        color: var(--suave);
+        line-height: 1.4;
+      }
+      .etq {
+        display: inline-block;
+        margin-top: 6px;
+        font-size: 11px;
+        font-weight: 800;
+        border-radius: 999px;
+        padding: 2px 9px;
+        background: var(--marcado);
+        color: var(--suave);
+      }
+      .c-rojo {
+        background: rgba(240, 121, 108, 0.18);
+        color: var(--rojo);
+      }
+      .c-verde {
+        background: rgba(78, 201, 138, 0.18);
+        color: var(--verde);
+      }
+      .c-naranja {
+        background: rgba(255, 122, 0, 0.18);
+        color: var(--naranja);
+      }
+      .c-ambar {
+        background: rgba(240, 174, 78, 0.18);
+        color: var(--ambar);
+      }
+      .c-azul {
+        background: rgba(111, 183, 232, 0.18);
+        color: var(--azul);
+      }
+      .c-morado {
+        background: rgba(180, 154, 240, 0.18);
+        color: var(--morado);
+      }
+      .c-gris {
+        background: rgba(138, 154, 157, 0.2);
+        color: var(--gris);
+      }
+      /* ── Listas de aparatos e impresoras ── */
+      .lista {
+        display: grid;
+        gap: 8px;
+        padding: 16px 18px;
+      }
+      .fila {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--tarjeta);
+        border-radius: 14px;
+        padding: 10px 14px;
+        flex-wrap: wrap;
+      }
+      .fila .que {
+        flex: 1;
+        min-width: 180px;
+      }
+      .fila .que b {
+        display: block;
+      }
+      .fila .que span {
+        font-size: 13px;
+        color: var(--suave);
+      }
+      .estado {
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 4px 12px;
+      }
+      .mini {
+        border: 2px solid var(--borde);
+        border-radius: 10px;
+        padding: 7px 12px;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .elegir {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        padding: 0 18px 18px;
+      }
+      .elegir div {
+        border: 2px solid var(--marcado);
+        border-radius: 16px;
+        padding: 14px;
+        background: var(--tarjeta);
+      }
+      .elegir b {
+        display: block;
+        margin: 8px 0 2px;
+      }
+      .elegir span:not(.ico):not(.etq) {
+        font-size: 13px;
+        color: var(--suave);
+      }
+      /* ── El móvil ── */
+      .dos {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .movil {
+        width: 360px;
+        max-width: 100%;
+        border: 1px solid var(--borde);
+        border-radius: 28px;
+        overflow: hidden;
+        background: var(--fondo);
+      }
+      .movil .cab {
+        padding: 10px 12px;
+      }
+      .rejilla {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 12px;
+      }
+      .rejilla .mesa {
+        position: static;
+        aspect-ratio: 1;
+        border-radius: 16px;
+      }
+      .boto {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 12px;
+      }
+      .boto div {
+        border-radius: 12px;
+        padding: 10px 8px;
+        font-size: 13px;
+        font-weight: 700;
+        min-height: 64px;
+        background: #234049;
+      }
+      .boto div small {
+        display: block;
+        color: var(--suave);
+        font-weight: 600;
+      }
+      .boto .agotado {
+        opacity: 0.45;
+        text-decoration: line-through;
+      }
+      .hoja {
+        margin: 0 12px 12px;
+        background: var(--tarjeta);
+        border-radius: 16px;
+        padding: 12px;
+        border: 2px solid var(--borde);
+      }
+      .hoja b {
+        display: block;
+        margin-bottom: 8px;
+      }
+      .hoja div {
+        padding: 10px;
+        border-radius: 10px;
+        background: var(--marcado);
+        margin-bottom: 6px;
+        font-weight: 700;
+        font-size: 14px;
+      }
+      /* ── La tabla de los periféricos ── */
+      .tabla {
+        overflow-x: auto;
+        border: 1px solid var(--borde);
+        border-radius: 16px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 860px;
+        font-size: 13.5px;
+      }
+      th,
+      td {
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid var(--marcado);
+        line-height: 1.4;
+      }
+      th {
+        background: var(--barra);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--suave);
+      }
+      td:first-child {
+        font-weight: 800;
+        width: 210px;
+      }
+      td small {
+        display: block;
+        font-weight: 600;
+        color: var(--suave);
+      }
+      td.ok {
+        color: var(--verde);
+        font-weight: 800;
+      }
+      .casi {
+        color: var(--ambar);
+        font-weight: 800;
+      }
+      .no {
+        color: var(--rojo);
+        font-weight: 800;
+      }
+      .flujo {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .flujo div {
+        flex: 1 1 180px;
+        background: var(--tarjeta);
+        border-radius: 14px;
+        padding: 12px 14px;
+      }
+      .flujo b {
+        display: block;
+        margin-bottom: 2px;
+      }
+      .flujo span {
+        font-size: 13px;
+        color: var(--suave);
+        line-height: 1.4;
+      }
+      .flujo i {
+        align-self: center;
+        font-style: normal;
+        font-size: 22px;
+        color: var(--naranja);
+      }
+      @media (max-width: 700px) {
+        .hueco {
+          height: 300px;
+        }
+        .ocultar-en-movil {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute">
+      <defs>
+        <symbol
+          id="i-ajustes"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
+          />
+        </symbol>
+        <symbol
+          id="i-sala"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <circle cx="17.5" cy="17.5" r="3.5" />
+        </symbol>
+        <symbol
+          id="i-agotado"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M5.6 5.6l12.8 12.8" />
+        </symbol>
+        <symbol
+          id="i-producto"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" />
+          <circle cx="7.5" cy="7.5" r="1.5" />
+        </symbol>
+        <symbol
+          id="i-cocina"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M12 3c1 3 4 4.5 4 8.5a4 4 0 0 1-8 0c0-1.6.7-2.7 1.5-3.5.2 1.4.9 2.3 1.8 2.6C11 8.5 11 5.5 12 3z"
+          />
+          <path d="M6 21h12" />
+        </symbol>
+        <symbol
+          id="i-aparatos"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="2" y="4" width="14" height="10" rx="1.5" />
+          <path d="M6 18h6M9 14v4" />
+          <rect x="17" y="8" width="5" height="12" rx="1.2" />
+        </symbol>
+        <symbol
+          id="i-impresora"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6 9V3h12v6" />
+          <rect x="3" y="9" width="18" height="8" rx="2" />
+          <path d="M6 14h12v7H6z" />
+        </symbol>
+        <symbol
+          id="i-candado"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="4" y="11" width="16" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        </symbol>
+        <symbol
+          id="i-caja"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="12" width="18" height="8" rx="1.5" />
+          <path d="M6 12V5h9v7M8 8h5M12 16h0" />
+        </symbol>
+        <symbol
+          id="i-movil"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="6" y="2" width="12" height="20" rx="2.5" />
+          <path d="M11 18h2" />
+        </symbol>
+        <symbol
+          id="i-pantalla"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="2" y="4" width="20" height="13" rx="2" />
+          <path d="M8 21h8M6 8h5M6 11h8M14 8h4" />
+        </symbol>
+        <symbol
+          id="i-reloj"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </symbol>
+        <symbol
+          id="i-tarjeta"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="2" y="5" width="20" height="14" rx="2" />
+          <path d="M2 10h20M6 15h4" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <div class="maqueta">
+      <h1>La entrada de Estook TPV, ordenada</h1>
+      <p class="intro">
+        Lo que pediste, mirado contra cómo lo hacen Revo, Toast, Lightspeed y Square:
+        <b>se entra a la sala</b>, arriba solo lo de todos los días (la caja, fichar y quién está) y
+        <b>lo que se toca una vez, dentro del engranaje</b>. Debajo de las maquetas, la tabla de
+        impresoras, cajones y cajas de cobro.
+      </p>
+    </div>
+
+    <!-- 1 · LA CAJA -->
+    <div class="maqueta">
+      <p class="rotulo">1 · La caja</p>
+      <p class="titulo">Se entra a la sala, y el plano cabe entero</p>
+      <p class="porque">
+        Ya no hay inicio de baldosas: lo primero es el plano, como en todos los TPV de restaurante.
+        El plano se encoge o se estira hasta caber en la pantalla, sin barras de desplazamiento.
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <div class="logo">E</div>
+          <div class="local"><b>IKATZ</b><span>Caja</span></div>
+          <div class="grupo">
+            <span class="si">Salón</span><span>Terraza</span><span>Barra y llevar · 2</span>
+          </div>
+          <div class="grupo"><span class="si">Todas</span><span>Mías · 3</span></div>
+          <div class="derecha">
+            <span class="boton b-caja"><span class="punto"></span>Caja abierta</span>
+            <span class="boton b-fichar"
+              ><svg width="18" height="18"><use href="#i-reloj" /></svg>Fichar</span
+            >
+            <span class="b-ajustes" title="Ajustes"
+              ><svg width="22" height="22"><use href="#i-ajustes" /></svg
+            ></span>
+            <span class="b-quien"><span class="ini">RI</span>Ricardo · Bloquear</span>
+          </div>
+        </div>
+        <div class="franja llama">
+          <span class="f">🛎 La cocina te llama · Mesa 1</span><span class="accion">Ya voy</span>
+        </div>
+        <div class="franja marcha">
+          <span class="f">Mesa 4 · ha salido todo el 1.º</span
+          ><span class="accion">Marchar el 2.º</span>
+        </div>
+        <div class="hueco">
+          <div class="plano">
+            <div class="cosa" style="left: 58%; top: 5%; width: 30%; height: 8%">BARRA</div>
+            <div class="mesa ocupada" style="left: 5%; top: 18%; width: 12%; height: 19%">
+              <b>1</b>Comiendo<br />2 · 81,50
+            </div>
+            <div class="mesa" style="left: 21%; top: 18%; width: 12%; height: 19%">
+              <b>2</b>Libre · 4
+            </div>
+            <div class="mesa prisa" style="left: 37%; top: 18%; width: 12%; height: 19%">
+              <b>3</b>Tienen prisa<br />4 · 12 min
+            </div>
+            <div class="mesa ocupada" style="left: 5%; top: 46%; width: 12%; height: 19%">
+              <b>4</b>1.º fuera<br />3 · 54,00
+            </div>
+            <div class="mesa cuenta" style="left: 21%; top: 46%; width: 12%; height: 19%">
+              <b>5</b>Pide la cuenta
+            </div>
+            <div class="mesa" style="left: 5%; top: 74%; width: 12%; height: 19%">
+              <b>6</b>Libre · 4
+            </div>
+            <div class="mesa cuadrada" style="left: 58%; top: 30%; width: 10%; height: 16%">
+              <b>7</b>Libre · 2
+            </div>
+            <div class="mesa cuadrada ocupada" style="left: 72%; top: 30%; width: 10%; height: 16%">
+              <b>8</b>Bebiendo<br />2 · 9,20
+            </div>
+            <div class="mesa cuadrada" style="left: 58%; top: 70%; width: 24%; height: 18%">
+              <b>9</b>Libre · 8
+            </div>
+          </div>
+        </div>
+        <div class="pie">
+          <span>4 mesas abiertas · 11 personas</span
+          ><span class="vivo">Cocina y sala, al segundo</span>
+        </div>
+      </div>
+      <div class="notas">
+        <div class="nota">
+          <span class="num">1</span><b>La «E» y el local</b>Siempre a la izquierda. Tocarla te
+          devuelve a la sala desde cualquier sitio.
+        </div>
+        <div class="nota">
+          <span class="num">2</span><b>Las zonas y «Mías»</b>Lo que se toca cien veces al día, al
+          lado del dedo. «Editar sala» sale de aquí y se va a Ajustes.
+        </div>
+        <div class="nota">
+          <span class="num">3</span><b>La caja, en verde o en ámbar</b>Verde: «Caja abierta». Ámbar:
+          «Abrir caja», con el fondo de ayer propuesto. Tocarla: entradas, salidas, el X y cerrar.
+          <strong>Llega con el cobro (T7)</strong>; hasta entonces no sale.
+        </div>
+        <div class="nota">
+          <span class="num">4</span><b>Fichar, en naranja</b>Como ahora: solo en la caja.
+        </div>
+        <div class="nota">
+          <span class="num">5</span><b>El engranaje</b>Todo lo que no es del servicio: la sala, los
+          productos, los aparatos, las impresoras y el PIN. Solo lo ve quien puede tocarlo.
+        </div>
+        <div class="nota"><span class="num">6</span><b>Quién está y Bloquear</b>Como ahora.</div>
+      </div>
+    </div>
+
+    <!-- 2 · AJUSTES -->
+    <div class="maqueta">
+      <p class="rotulo">2 · El engranaje</p>
+      <p class="titulo">Ajustes, en grupos y con su dibujo y su color</p>
+      <p class="porque">
+        Cada cosa con su icono y una línea que dice cómo está. Lo de trazo discontinuo llega con su
+        entrega; en el TPV no se enseña hasta que funcione.
+      </p>
+      <div class="pantalla">
+        <div class="cab">
+          <div class="logo">E</div>
+          <div class="local"><b>Ajustes</b><span>IKATZ · Caja</span></div>
+          <div class="derecha"><span class="mini">← Volver a la sala</span></div>
+        </div>
+        <div class="ajustes">
+          <div class="seccion">
+            <h3>Hoy</h3>
+            <div class="baldosas">
+              <div class="bal">
+                <span class="ico c-rojo"
+                  ><svg width="24" height="24"><use href="#i-agotado" /></svg
+                ></span>
+                <div><b>Agotados</b><span>3 platos: Croquetas, Tarta de queso, Rioja</span></div>
+              </div>
+              <div class="bal luego">
+                <span class="ico c-verde"
+                  ><svg width="24" height="24"><use href="#i-caja" /></svg
+                ></span>
+                <div>
+                  <b>La caja</b><span>El fondo, las entradas y salidas, el X y cerrar</span
+                  ><span class="etq">Con el cobro · T7</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="seccion">
+            <h3>Lo que se vende</h3>
+            <div class="baldosas">
+              <div class="bal">
+                <span class="ico c-verde"
+                  ><svg width="24" height="24"><use href="#i-sala" /></svg
+                ></span>
+                <div>
+                  <b>La sala y las mesas</b><span>2 zonas · 9 mesas. Dibujar, mover y añadir</span>
+                </div>
+              </div>
+              <div class="bal">
+                <span class="ico c-naranja"
+                  ><svg width="24" height="24"><use href="#i-producto" /></svg
+                ></span>
+                <div>
+                  <b>Productos y precios</b><span>La botonera, las opciones y las bebidas</span>
+                </div>
+              </div>
+              <div class="bal">
+                <span class="ico c-ambar"
+                  ><svg width="24" height="24"><use href="#i-cocina" /></svg
+                ></span>
+                <div>
+                  <b>Cocina y barra</b><span>Ámbar a los 10 min, rojo a los 20 · suena</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="seccion">
+            <h3>Lo que se conecta</h3>
+            <div class="baldosas">
+              <div class="bal">
+                <span class="ico c-azul"
+                  ><svg width="24" height="24"><use href="#i-aparatos" /></svg
+                ></span>
+                <div>
+                  <b>Aparatos del local</b><span>1 caja · 2 comanderos · 1 pantalla de cocina</span>
+                </div>
+              </div>
+              <div class="bal luego">
+                <span class="ico c-morado"
+                  ><svg width="24" height="24"><use href="#i-impresora" /></svg
+                ></span>
+                <div>
+                  <b>Impresoras y cajón</b
+                  ><span>Tickets, comandas en papel y el cajón del dinero</span
+                  ><span class="etq">T5</span>
+                </div>
+              </div>
+              <div class="bal luego">
+                <span class="ico c-morado"
+                  ><svg width="24" height="24"><use href="#i-tarjeta" /></svg
+                ></span>
+                <div>
+                  <b>Datáfono y cajón que da el cambio</b
+                  ><span>Cobrar con tarjeta sin teclear, CashDro y Cashlogy</span
+                  ><span class="etq">Con el cobro · T7</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="seccion">
+            <h3>Seguridad</h3>
+            <div class="baldosas">
+              <div class="bal">
+                <span class="ico c-gris"
+                  ><svg width="24" height="24"><use href="#i-candado" /></svg
+                ></span>
+                <div><b>PIN y bloqueo</b><span>Se bloquea a los 2 minutos sin tocar</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notas">
+        <div class="nota">
+          <b>Por qué «Aparatos» e «Impresoras» van separados</b>Los aparatos son donde se entra con
+          PIN (la caja, los comanderos y las pantallas). Las impresoras y el cajón no tienen a nadie
+          dentro: solo reciben. Juntos se confunden.
+        </div>
+        <div class="nota">
+          <b>Por qué Agotados está aquí y en la botonera</b>Aquí, la lista para revisarla. Durante
+          el servicio es más rápido <strong>mantener pulsado el producto</strong> en la botonera →
+          «Agotado», en cualquier aparato y por quien tenga permiso (abajo, en el móvil).
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 · APARATOS -->
+    <div class="maqueta">
+      <p class="rotulo">3 · Aparatos del local</p>
+      <p class="titulo">Cada aparato con su dibujo y su color, para no confundirlos</p>
+      <p class="porque">
+        El mismo color en la lista, al añadir y en la barra de arriba de cada aparato.
+      </p>
+      <div class="pantalla">
+        <div class="lista">
+          <div class="fila">
+            <span class="ico c-naranja"
+              ><svg width="24" height="24"><use href="#i-caja" /></svg
+            ></span>
+            <div class="que"><b>Caja 1</b><span>Caja · el PC de la barra · Cajón 1</span></div>
+            <span class="estado c-verde">Ahora · Ricardo</span><span class="mini">Cambiar</span>
+          </div>
+          <div class="fila">
+            <span class="ico c-azul"
+              ><svg width="24" height="24"><use href="#i-movil" /></svg
+            ></span>
+            <div class="que"><b>Comandero de Lucía</b><span>Comandero · su móvil</span></div>
+            <span class="estado c-verde">Hace 2 min</span><span class="mini">Cambiar</span>
+          </div>
+          <div class="fila">
+            <span class="ico c-azul"
+              ><svg width="24" height="24"><use href="#i-movil" /></svg
+            ></span>
+            <div class="que"><b>Tablet de la terraza</b><span>Comandero · de la sala</span></div>
+            <span class="estado c-gris">Ayer, 23:40</span><span class="mini">Cambiar</span>
+          </div>
+          <div class="fila">
+            <span class="ico c-verde"
+              ><svg width="24" height="24"><use href="#i-pantalla" /></svg
+            ></span>
+            <div class="que"><b>Cocina</b><span>Pantalla de cocina · sin PIN</span></div>
+            <span class="estado c-verde">Encendida</span><span class="mini">Cambiar</span>
+          </div>
+        </div>
+        <p class="porque" style="padding: 0 18px; margin: 4px 0 10px">
+          <b style="color: var(--texto)">Añadir un aparato:</b> qué va a ser
+        </p>
+        <div class="elegir">
+          <div>
+            <span class="ico c-naranja"
+              ><svg width="24" height="24"><use href="#i-caja" /></svg></span
+            ><b>Caja</b><span>Donde se cobra, se ficha y se ajusta todo</span>
+          </div>
+          <div>
+            <span class="ico c-azul"
+              ><svg width="24" height="24"><use href="#i-movil" /></svg></span
+            ><b>Comandero</b><span>Para pedir en la sala. Ve los precios, no los cambia</span>
+          </div>
+          <div>
+            <span class="ico c-verde"
+              ><svg width="24" height="24"><use href="#i-pantalla" /></svg></span
+            ><b>Pantalla de cocina</b><span>Sin PIN y siempre encendida</span>
+          </div>
+          <div style="border-style: dashed; opacity: 0.75">
+            <span class="ico c-ambar"
+              ><svg width="24" height="24"><use href="#i-pantalla" /></svg></span
+            ><b>Pantalla de barra</b><span>Lo de la barra, aparte</span
+            ><span class="etq">T4 · 2</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 · IMPRESORAS -->
+    <div class="maqueta">
+      <p class="rotulo">4 · Impresoras y cajón · llega con T5</p>
+      <p class="titulo">Cada impresora, a qué está enchufada, cómo va, y una prueba</p>
+      <p class="porque">Y por cada sitio que prepara, si quiere pantalla, papel o las dos.</p>
+      <div class="pantalla">
+        <div class="lista">
+          <div class="fila">
+            <span class="ico c-morado"
+              ><svg width="24" height="24"><use href="#i-impresora" /></svg
+            ></span>
+            <div class="que">
+              <b>Cocina</b><span>Epson TM-T20III · por la red · la imprime la Caja 1</span>
+            </div>
+            <span class="estado c-verde">Bien · hace 4 s</span
+            ><span class="mini">Imprimir prueba</span>
+          </div>
+          <div class="fila">
+            <span class="ico c-morado"
+              ><svg width="24" height="24"><use href="#i-impresora" /></svg
+            ></span>
+            <div class="que"><b>Caja</b><span>Star mC-Print3 · por USB · con el cajón</span></div>
+            <span class="estado c-ambar">Poco papel</span><span class="mini">Abrir el cajón</span>
+          </div>
+          <div class="fila">
+            <span class="ico c-ambar"
+              ><svg width="24" height="24"><use href="#i-cocina" /></svg
+            ></span>
+            <div class="que">
+              <b>Lo de la cocina sale en…</b
+              ><span>Pantalla y papel · el papel, solo lo nuevo y lo anulado</span>
+            </div>
+            <span class="mini">Pantalla</span><span class="mini">Papel</span
+            ><span class="mini" style="border-color: var(--naranja); color: var(--naranja)"
+              >Las dos</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 · EL COMANDERO -->
+    <div class="maqueta">
+      <p class="rotulo">5 · El comandero</p>
+      <p class="titulo">Solo la sala: sin fichar, sin caja y sin engranaje</p>
+      <p class="porque">
+        Ve los precios y pide; no cambia precios, ni productos, ni ajustes. Eso es de la caja y de
+        quien lleva el local. <b>Ya funciona así</b>: el servidor no le deja aunque lo intente.
+      </p>
+      <div class="dos">
+        <div class="movil">
+          <div class="cab">
+            <div class="logo" style="width: 38px; height: 38px">E</div>
+            <div class="grupo"><span class="si">Salón</span><span>Terraza</span></div>
+            <div class="derecha">
+              <span class="b-quien"><span class="ini">LU</span>Bloquear</span>
+            </div>
+          </div>
+          <div class="cab" style="border-bottom: 0; padding-top: 0">
+            <div class="grupo"><span>Todas</span><span class="si">Mías · 2</span></div>
+            <div class="grupo"><span>Barra · 2</span></div>
+          </div>
+          <div class="rejilla">
+            <div class="mesa ocupada"><b>1</b>Comiendo</div>
+            <div class="mesa prisa"><b>3</b>Prisa</div>
+            <div class="mesa"><b>6</b>Libre</div>
+            <div class="mesa"><b>7</b>Libre</div>
+            <div class="mesa ocupada"><b>8</b>Bebiendo</div>
+            <div class="mesa"><b>9</b>Libre</div>
+          </div>
+        </div>
+        <div class="movil">
+          <div class="cab">
+            <div class="logo" style="width: 38px; height: 38px">E</div>
+            <div class="local"><b>Mesa 1</b><span>2 personas · Lucía</span></div>
+          </div>
+          <div class="boto">
+            <div>Caña<small>2,20</small></div>
+            <div>Croquetas<small>9,00</small></div>
+            <div class="agotado">Tarta<small>Agotado</small></div>
+            <div>Entrecot<small>22,00</small></div>
+            <div style="outline: 3px solid var(--naranja)">Rioja<small>3,50</small></div>
+            <div>Agua<small>1,80</small></div>
+          </div>
+          <div class="hoja">
+            <b>Rioja · lo has mantenido pulsado</b>
+            <div>⊘ Se ha agotado</div>
+            <div>✎ Nota para cocina</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 · LOS PERIFÉRICOS -->
+    <div class="maqueta">
+      <p class="rotulo">6 · Impresoras, cajones y cajas de cobro</p>
+      <p class="titulo">Con qué aparato de caja funciona cada cosa</p>
+      <p class="porque">
+        La idea que lo ordena todo: <b>quien pide nunca imprime</b>. El comandero deja la comanda en
+        la nube y <b>la imprime el centro del local</b>: la app de Estook TPV en el PC de la caja, o
+        una impresora que pregunta sola a la nube. Así un móvil o un iPad pide igual de bien que un
+        PC.
+      </p>
+      <div class="flujo">
+        <div><b>Quien pide</b><span>Comandero: móvil, tablet o iPad</span></div>
+        <i>→</i>
+        <div><b>La nube de Estook</b><span>La cola de impresión</span></div>
+        <i>→</i>
+        <div>
+          <b>El centro del local</b
+          ><span>La app de Windows, con Link dentro, o la impresora que pregunta sola</span>
+        </div>
+        <i>→</i>
+        <div>
+          <b>Lo que sale</b
+          ><span
+            >Comanda de cocina, ticket y cajón, pantalla de cocina, cajón que da el cambio</span
+          >
+        </div>
+      </div>
+      <div class="tabla">
+        <table>
+          <thead>
+            <tr>
+              <th>La caja del local</th>
+              <th>Con qué Estook TPV</th>
+              <th>Ticket del cliente y cajón</th>
+              <th>Comanda en papel</th>
+              <th>Pantalla de cocina</th>
+              <th>Datáfono</th>
+              <th>Cajón que da el cambio</th>
+              <th>Sin internet</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                PC con Windows, o TPV táctil con Windows<small>El «todo en uno» de siempre</small>
+              </td>
+              <td><b>La app para Windows</b>, con Link dentro</td>
+              <td class="ok">
+                Cualquier impresora, por red, USB o Bluetooth; el cajón, enchufado a ella
+              </td>
+              <td class="ok">Cualquier impresora de cocina, también las de impacto</td>
+              <td class="ok">Sí</td>
+              <td class="ok">Sí</td>
+              <td class="casi">
+                Sí, por la red del local (CashDro, Cashlogy). Hace falta su documentación: se pide
+                al fabricante con el primer cliente
+              </td>
+              <td class="ok">Sigue pidiendo, imprimiendo y cobrando; al volver, sube todo</td>
+            </tr>
+            <tr>
+              <td>
+                Tablet Android, o TPV Android con impresora dentro<small
+                  >Sunmi, iMin y parecidos</small
+                >
+              </td>
+              <td><b>La app para Android</b> (la misma web, envuelta)</td>
+              <td class="ok">
+                La impresora de dentro, con el programa del fabricante, y las de red o Bluetooth
+              </td>
+              <td class="casi">
+                Sí, pero depende de que esa tablet esté encendida: para la cocina, mejor una
+                impresora que pregunta sola
+              </td>
+              <td class="ok">Sí</td>
+              <td class="ok">Sí</td>
+              <td class="casi">Por la red del local, como en Windows</td>
+              <td class="casi">Guarda lo suyo y lo sube; no reparte a los demás aparatos</td>
+            </tr>
+            <tr>
+              <td>iPad<small>O cualquier aparato con la web instalada</small></td>
+              <td><b>La web instalada</b> (ya está)</td>
+              <td class="casi">
+                Solo con una impresora que pregunta sola (Star CloudPRNT, Epson Server Direct
+                Print), con el cajón enchufado a ella
+              </td>
+              <td class="casi">Igual: una impresora que pregunta sola</td>
+              <td class="ok">Sí</td>
+              <td class="ok">Sí, los que van por internet (Stripe, Viva, SumUp)</td>
+              <td class="no">No desde el iPad; sí si en el local hay un PC con la app</td>
+              <td class="no">Sin internet, la impresora de nube no recibe</td>
+            </tr>
+            <tr>
+              <td>Móvil o tablet del camarero<small>Comandero</small></td>
+              <td><b>La web instalada</b> (ya está)</td>
+              <td colspan="2">
+                No imprime él: lo imprime el centro del local. Por eso le vale cualquier móvil
+              </td>
+              <td colspan="4">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="notas">
+        <div class="nota">
+          <b>Impresoras que preguntan solas a la nube</b>Sin PC ni programa: se les pone una
+          dirección y recogen lo suyo. Star: mC-Print3 y TSP143IV (CloudPRNT de serie). Epson:
+          TM-m30II y III, TM-T88VI y VII, TM-m50 (Server Direct Print).
+          <strong>La TM-T20III, muy vista en bares, no lo trae</strong>: esa va por la app de
+          Windows.
+        </div>
+        <div class="nota">
+          <b>El cajón del dinero</b>Casi todos se enchufan a la impresora de tickets (el conector
+          RJ-11), y se abren con una orden que va dentro del ticket. Así que «abrir el cajón»
+          funciona allí donde funcione la impresora.
+        </div>
+        <div class="nota">
+          <b>Los cajones que dan el cambio</b>CashDro y Cashlogy, los más vistos en España, hablan
+          por la red del local, nunca con un servidor de fuera. Por eso necesitan la app de Windows
+          (o la de Android), no la web.
+        </div>
+        <div class="nota">
+          <b>El datáfono</b>El del banco funciona desde ya: se teclea el importe y se confirma. El
+          conectado (Stripe Terminal, Viva, SumUp) va por internet, así que vale en cualquier
+          aparato, también en el iPad.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

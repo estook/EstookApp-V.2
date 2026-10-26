@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { ErrorEnCristiano } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { irAlInicio } from '../navegar.ts';
+import { irAlPlano } from '../navegar.ts';
 import { Pastilla } from '../puerta/ElegirQueSera.tsx';
 import type { ElFichaje } from '../datos/tipos.ts';
 import { LaBarraDeArriba } from './LaBarraDeArriba.tsx';
@@ -41,7 +41,7 @@ export function Fichar() {
       return;
     }
     refrescar();
-    irAlInicio();
+    irAlPlano();
   }
 
   const hora =

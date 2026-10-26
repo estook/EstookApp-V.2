@@ -186,18 +186,17 @@ export function minutosDelBloqueo(
 }
 
 /**
- * Dónde cae quien teclea su PIN. **En un comandero, siempre en la sala** (0115; Richi,
- * 25-oct: «los camareros solo piden y cobran»): el inicio es de la caja. En la caja (0107),
- * **el primero del día, en el inicio**; los siguientes, **en las mesas**; sin mesas
- * dibujadas, en el inicio (la venta rápida llega con T7).
+ * Dónde cae quien teclea su PIN: **en la sala, siempre** (la entrada nueva; Richi, 26-oct: «entrar
+ * a la sala, no al inicio de baldosas»). Ya no hay inicio: lo que tenía (los agotados, los
+ * ajustes) está detrás del engranaje, y fichar, arriba. Sin mesas dibujadas, la sala dice cómo
+ * dibujarlas y deja pedir en «Barra y llevar». Se queda la forma de antes para que una pantalla
+ * vieja, con la API nueva, también vaya a la sala.
  */
 export function dondeCae(
-  funcion: FuncionDelAparato,
-  primeroDelDia: boolean,
-  hayMesas: boolean,
+  _funcion: FuncionDelAparato,
+  _primeroDelDia: boolean,
+  _hayMesas: boolean,
 ): 'inicio' | 'mesas' {
-  if (funcion === 'comandero') return 'mesas';
-  if (primeroDelDia || !hayMesas) return 'inicio';
   return 'mesas';
 }
 

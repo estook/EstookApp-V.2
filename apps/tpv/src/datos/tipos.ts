@@ -348,6 +348,7 @@ export interface DentroDelTpv {
   readonly turno: string;
   readonly persona: { readonly id: string; readonly nombre: string; readonly iniciales: string };
   readonly fichaje: EstadoDelFichaje;
+  /** Desde la entrada nueva (26-oct), todos caen en la sala: la pantalla ya no lo mira. */
   readonly caeEn: 'inicio' | 'mesas';
 }
 

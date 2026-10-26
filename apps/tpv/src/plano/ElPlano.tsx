@@ -23,6 +23,10 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
  * empieza en «Mías». En la tablet y en la caja, **el plano como se dibujó** en el TPV, con
  * su barra y sus paredes; en el móvil, **una cuadrícula de tres en fila**, en el orden de
  * sus nombres: un plano dibujado no cabe en una mano.
+ *
+ * **Es la entrada del TPV** (la entrada nueva, 26-oct), y **el plano cabe entero**: se encoge o
+ * se estira hasta llenar lo que queda de pantalla, sin barras de desplazamiento. «Editar sala»
+ * está en el engranaje, en «La sala y las mesas».
  */
 
 const BARRA = 'barra';
@@ -118,7 +122,7 @@ export function ElPlano() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-fondo text-texto">
+    <div className="flex min-h-dvh flex-col bg-fondo text-texto md:h-dvh md:min-h-0">
       <LaBarraDeArriba>
         <nav
           aria-label="Zonas"
@@ -178,30 +182,6 @@ export function ElPlano() {
             {mias > 0 ? `Mías · ${String(mias)}` : 'Mías'}
           </BotonDeZona>
         </div>
-        {datos.puedeDibujar && (
-          <button
-            type="button"
-            onClick={() => {
-              irA('sala/editar');
-            }}
-            className="hidden min-h-toque items-center gap-e2 rounded-redondo border-2 border-borde px-e4 font-semibold md:flex"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" />
-            </svg>
-            Editar sala
-          </button>
-        )}
       </LaBarraDeArriba>
 
       <LaCocinaLlama
@@ -236,7 +216,7 @@ export function ElPlano() {
         </div>
       )}
 
-      <main className="mx-e4 mt-e3 flex-1 md:mx-e5">
+      <main className="mx-e4 mt-e3 flex flex-1 flex-col md:mx-e5 md:min-h-0 md:overflow-y-auto">
         {zona === BARRA ? (
           <LaBarra
             cuentas={datos.sinMesa}
@@ -251,22 +231,28 @@ export function ElPlano() {
           <SinPlano puedeDibujar={datos.puedeDibujar} />
         ) : (
           <>
-            {/* La tablet y la caja: el plano como se dibujó, con su barra y sus paredes. */}
-            <div className="relative hidden aspect-[16/10] w-full overflow-hidden rounded-mayor bg-superficie shadow-s2 md:block">
-              {deLaZona.cosas.map((c) => (
-                <CosaEnElPlano key={c.id} cosa={c} />
-              ))}
-              {deLaZona.mesas.filter(filtrar).map((m) => (
-                <MesaEnElPlano
-                  key={m.id}
-                  mesa={m}
-                  enElPlano
-                  alTocar={() => {
-                    if (m.cuenta === null) setAbriendo(m);
-                    else setOpciones(m.cuenta.cuentaId);
-                  }}
-                />
-              ))}
+            {/* La tablet y la caja: el plano como se dibujó, con su barra y sus paredes, y
+                entero: del ancho que quepa sin pasarse del alto que queda (16 por 10). */}
+            <div className="hidden min-h-0 flex-1 items-center justify-center [container-type:size] md:flex">
+              <div
+                aria-label="El plano"
+                className="relative aspect-[16/10] w-[min(100cqw,160cqh)] overflow-hidden rounded-mayor bg-superficie shadow-s2"
+              >
+                {deLaZona.cosas.map((c) => (
+                  <CosaEnElPlano key={c.id} cosa={c} />
+                ))}
+                {deLaZona.mesas.filter(filtrar).map((m) => (
+                  <MesaEnElPlano
+                    key={m.id}
+                    mesa={m}
+                    enElPlano
+                    alTocar={() => {
+                      if (m.cuenta === null) setAbriendo(m);
+                      else setOpciones(m.cuenta.cuentaId);
+                    }}
+                  />
+                ))}
+              </div>
             </div>
             {/* El móvil: de tres en fila, en el orden de sus nombres. */}
             <div className="grid grid-cols-3 gap-e2 md:hidden">

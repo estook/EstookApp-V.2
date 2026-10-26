@@ -58,11 +58,10 @@ describe('los aparatos de Estook TPV', () => {
     expect(minutosDelBloqueo('barra', false, BLOQUEO_DE_FABRICA)).toBeNull();
   });
 
-  it('el primero del día cae en el inicio; el siguiente, en las mesas si las hay', () => {
-    expect(dondeCae('caja', true, true)).toBe('inicio');
+  it('todos caen en la sala, también el primero del día y sin mesas (la entrada nueva)', () => {
+    expect(dondeCae('caja', true, true)).toBe('mesas');
     expect(dondeCae('caja', false, true)).toBe('mesas');
-    expect(dondeCae('caja', false, false)).toBe('inicio');
-    // El comandero, siempre a la sala (0115): el inicio es de la caja.
+    expect(dondeCae('caja', true, false)).toBe('mesas');
     expect(dondeCae('comandero', true, true)).toBe('mesas');
     expect(dondeCae('comandero', true, false)).toBe('mesas');
   });

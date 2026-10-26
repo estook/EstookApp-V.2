@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { minutosDelBloqueo, NOMBRE_DE_LA_FUNCION, tokenDelAparato } from '@estook/dominio';
+import { minutosDelBloqueo, tokenDelAparato } from '@estook/dominio';
 import { Boton, Cargando, EstadoVacio } from '@estook/ui';
 import {
   crearClienteDelTpv,
@@ -180,20 +180,10 @@ function ConLlave({
       </Pantalla>
     );
   }
-  // **La pantalla de cocina, sin PIN y siempre encendida** (T4 · 1, 0116): vale por su llave.
-  if (aparato.funcion === 'cocina') return <LaPantallaDeCocina llave={llave} aparato={aparato} />;
-  if (aparato.funcion === 'barra') {
-    return (
-      <Pantalla>
-        <EstadoVacio
-          esLaPagina
-          titulo={`${NOMBRE_DE_LA_FUNCION[aparato.funcion]}, vinculada`}
-          frase="Su pantalla llega con la próxima entrega de Estook TPV. Mientras, este aparato ya está listo y en línea."
-          dibujo="local"
-          sinAccionPorque="No hay nada que hacer aquí todavía."
-        />
-      </Pantalla>
-    );
+  // **Las pantallas de cocina y de barra, sin PIN y siempre encendidas** (T4, 0116 y 0117):
+  // valen por su llave.
+  if (aparato.funcion === 'cocina' || aparato.funcion === 'barra') {
+    return <LaPantallaDeCocina llave={llave} aparato={aparato} />;
   }
 
   if (dentro === null) {

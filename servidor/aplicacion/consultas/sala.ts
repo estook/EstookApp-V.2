@@ -6,6 +6,8 @@ import {
   fechaOperativa,
   laJornadaEntera,
   laMesaEnCocina,
+  lasAlergiasQueLleva,
+  laRondaDeLaBarra,
   loSiguienteDeLaMesa,
   losPasesDelMenu,
   LAS_PAGINAS_DE_SIEMPRE,
@@ -114,6 +116,8 @@ export interface CuentaEnElPlano {
   /** «Tienen prisa», y si la cocina llama al camarero (0116). */
   readonly conPrisa: boolean;
   readonly cocinaLlamaEn: string | null;
+  /** La alergia de la mesa (0117): «⚠ Gluten» en el plano y en sus opciones. */
+  readonly alergias: readonly string[];
   readonly loSiguiente: LoSiguiente;
   /** Su camarero ha fichado la salida: «Ana ha fichado la salida» (Anexo 11.8). */
   readonly suCamareroSeHaIdo: boolean;
@@ -168,6 +172,7 @@ function enElPlano(
     notaParaCocina: cuenta.nota_para_cocina,
     conPrisa: cuenta.con_prisa,
     cocinaLlamaEn: cuenta.cocina_llama_en,
+    alergias: cuenta.alergias,
     loSiguiente: loSiguienteDeLaMesa(platos.map(comoPlatoDeLaMesa), pases.map(comoPaseDeLaMesa)),
     suCamareroSeHaIdo: cuenta.camarero_id !== null && seHanIdo.has(cuenta.camarero_id),
   };
@@ -278,6 +283,8 @@ export interface PlatoDeLaCuenta {
   readonly opciones: readonly string[];
   /** Lo que pesó, si se vende a peso. */
   readonly pesoGramos: number | null;
+  /** Lo que lleva, congelado al pedir (0117): la sala lo cruza con la alergia de la mesa. */
+  readonly alergenos: readonly string[];
 }
 
 export interface SalidaLaMesa {
@@ -291,6 +298,8 @@ export interface SalidaLaMesa {
   readonly notaParaCocina: string | null;
   readonly conPrisa: boolean;
   readonly cocinaLlamaEn: string | null;
+  /** La alergia de la mesa (0117), en el orden del reglamento. */
+  readonly alergias: readonly string[];
   readonly abierta: boolean;
   readonly minutos: number;
   readonly totalCentimos: number;
@@ -306,8 +315,9 @@ export interface SalidaLaMesa {
 function elEstadoDelPlato(linea: FilaDeLinea, pases: readonly FilaDePase[]): EstadoDelPlato {
   if (linea.quitada_en !== null) return 'quitado';
   if (linea.mandada_en === null) return 'sin_mandar';
-  if (linea.destino !== 'cocina') return 'en_la_barra';
+  // Lo de la barra sale tachado si la barra tiene su pantalla (0117); si no, está en la barra.
   if (linea.salio_en !== null) return 'salio';
+  if (linea.destino !== 'cocina') return 'en_la_barra';
   const pase = pases.find((p) => p.numero === linea.pase);
   return pase?.marchado_en === null || pase === undefined ? 'en_espera' : 'en_marcha';
 }
@@ -338,6 +348,7 @@ export const laMesa = consulta<{ cuenta_id: string }, SalidaLaMesa>({
       notaParaCocina: cuenta.nota_para_cocina,
       conPrisa: cuenta.con_prisa,
       cocinaLlamaEn: cuenta.cocina_llama_en,
+      alergias: cuenta.alergias,
       abierta: cuenta.liberada_en === null && cuenta.anulada_en === null,
       minutos: minutosDesde(contexto, cuenta.abierta_en) ?? 0,
       totalCentimos: elTotal(platos),
@@ -358,6 +369,7 @@ export const laMesa = consulta<{ cuenta_id: string }, SalidaLaMesa>({
         vuelve: l.motivo_de_vuelve,
         opciones: l.opciones.map((o) => o.nombre),
         pesoGramos: l.peso_gramos,
+        alergenos: l.alergenos,
       })),
       pases: pases.map((p) => ({
         numero: p.numero,
@@ -389,6 +401,8 @@ export interface PlatoEnCocina {
   /** Lo elegido (T3 · 2): la guarnición, los extras. */
   readonly opciones: readonly string[];
   readonly pesoGramos: number | null;
+  /** Lo que lleva de la alergia de la mesa: «LLEVA GLUTEN» (0117). Vacío, nada. */
+  readonly lleva: readonly string[];
 }
 
 export interface TarjetaDeCocina {
@@ -404,6 +418,8 @@ export interface TarjetaDeCocina {
   readonly conPrisa: boolean;
   /** Cuándo la cocina llamó al camarero, si todavía no ha dicho «Ya voy». */
   readonly cocinaLlamaEn: string | null;
+  /** La alergia de la mesa (0117): la franja roja. La cocina no confirma nada: lo ve. */
+  readonly alergias: readonly string[];
   readonly estado: LaMesaEnCocina;
   /** La anuló un jefe: la cocina deja de hacerla. Va a «Fuera» con su motivo. */
   readonly anulada: string | null;
@@ -468,6 +484,7 @@ function laTarjeta(
     porPases: cuenta.por_pases,
     conPrisa: cuenta.con_prisa,
     cocinaLlamaEn: cuenta.cocina_llama_en,
+    alergias: cuenta.alergias,
     estado,
     anulada,
     llegoEn,
@@ -501,10 +518,37 @@ function laTarjeta(
             vuelve: l.motivo_de_vuelve,
             opciones: l.opciones.map((o) => o.nombre),
             pesoGramos: l.peso_gramos,
+            lleva: lasAlergiasQueLleva(l.alergenos, cuenta.alergias),
           })),
       };
     }),
   };
+}
+
+/**
+ * Las cuentas con algo mandado a la cocina o a la barra: las abiertas, y las de hoy ya
+ * liberadas o anuladas, para «Acabados»: una mesa anulada no desaparece sin más, la cocina
+ * la ve anulada y sabe que deja de hacerla.
+ */
+async function lasCuentasCon(
+  contexto: Contexto,
+  localId: string,
+  destino: 'cocina' | 'barra',
+): Promise<string[]> {
+  const desde = await elPrincipioDeHoy(contexto, localId);
+  const filas = await contexto.sql<{ id: string }[]>`
+    select c.id::text as id
+      from estook.cuenta c
+     where c.local_id = ${localId}::uuid
+       and ((c.liberada_en is null and c.anulada_en is null) or c.abierta_en >= ${desde}::timestamptz)
+       and c.unida_a is null
+       and exists (
+         select 1 from estook.linea_de_cuenta l
+          where l.cuenta_id = c.id and l.destino = ${destino} and l.mandada_en is not null
+       )
+     order by c.abierta_en
+  `;
+  return filas.map((f) => f.id);
 }
 
 /**
@@ -515,22 +559,7 @@ export async function laCocinaDelLocal(
   contexto: Contexto,
   localId: string,
 ): Promise<SalidaLaCocina> {
-  const desde = await elPrincipioDeHoy(contexto, localId);
-  // Las abiertas, y las de hoy ya liberadas o anuladas, para «Fuera»: una mesa anulada
-  // no desaparece sin más, la cocina la ve anulada y sabe que deja de hacerla.
-  const filas = await contexto.sql<{ id: string }[]>`
-    select c.id::text as id
-      from estook.cuenta c
-     where c.local_id = ${localId}::uuid
-       and ((c.liberada_en is null and c.anulada_en is null) or c.abierta_en >= ${desde}::timestamptz)
-       and c.unida_a is null
-       and exists (
-         select 1 from estook.linea_de_cuenta l
-          where l.cuenta_id = c.id and l.destino = 'cocina' and l.mandada_en is not null
-       )
-     order by c.abierta_en
-  `;
-  const ids = filas.map((f) => f.id);
+  const ids = await lasCuentasCon(contexto, localId, 'cocina');
   const cuentas = await lasCuentas(contexto, localId, ids);
   const platos = porCuenta(await losPlatos(contexto, ids));
   const pases = porCuenta(await losPases(contexto, ids));
@@ -545,6 +574,100 @@ export async function laCocinaDelLocal(
   return {
     enMarcha,
     esperando: tarjetas.filter((t) => t.estado === 'esperando'),
+    fuera: tarjetas
+      .filter((t) => t.estado === 'fuera')
+      .sort((a, b) => (b.fueraEn ?? '').localeCompare(a.fueraEn ?? '')),
+  };
+}
+
+/**
+ * **La tarjeta de la barra de una mesa** (T4 · 2, 0117): la misma que la de cocina, con lo
+ * que prepara la barra. Sin pases: todo sale en cuanto llega, así que es un solo bloque, ya
+ * en marcha. Y **solo su ronda** (`laRondaDeLaBarra`): lo que se pide con lo de antes ya
+ * servido empieza tarjeta nueva, para que no crezca con todo lo de la noche.
+ */
+function laTarjetaDeLaBarra(
+  contexto: Contexto,
+  cuenta: FilaDeCuenta,
+  platos: readonly FilaDeLinea[],
+): TarjetaDeCocina | null {
+  const deLaBarra = platos.filter((l) => l.destino === 'barra' && l.mandada_en !== null);
+  const ronda = laRondaDeLaBarra(
+    deLaBarra.map((l) => ({
+      id: l.id,
+      mandadaEn: l.mandada_en as string,
+      salioEn: l.salio_en,
+      quitadaEn: l.quitada_en,
+    })),
+  );
+  if (ronda === null) return null;
+  const enLaRonda = new Set(ronda.ids);
+  const anulada = cuenta.anulada_en === null ? null : (cuenta.motivo_de_anular ?? '');
+  const fuera = anulada !== null || ronda.pendientes === 0;
+  const fueraEn = !fuera ? null : anulada !== null ? cuenta.anulada_en : ronda.fueraEn;
+  return {
+    cuentaId: cuenta.id,
+    titulo: elTituloDeLaCuenta(cuenta),
+    tipo: cuenta.tipo,
+    personas: cuenta.personas,
+    camarero: cuenta.camarero,
+    camareroId: cuenta.camarero_id,
+    notaParaCocina: cuenta.nota_para_cocina,
+    porPases: false,
+    conPrisa: cuenta.con_prisa,
+    cocinaLlamaEn: cuenta.cocina_llama_en,
+    alergias: cuenta.alergias,
+    estado: fuera ? 'fuera' : 'en_marcha',
+    anulada,
+    llegoEn: ronda.llegoEn,
+    minutos: minutosDesde(contexto, ronda.llegoEn) ?? 0,
+    ultimaMarcha: null,
+    fueraEn,
+    pases: [
+      {
+        // Un solo bloque, «marchado» al llegar: en la barra no se espera a nadie.
+        numero: 0,
+        marchadoEn: ronda.llegoEn,
+        fueraEn,
+        platos: deLaBarra
+          .filter((l) => enLaRonda.has(l.id))
+          .map((l) => ({
+            id: l.id,
+            nombre: l.nombre,
+            cantidad: l.cantidad,
+            nota: l.nota,
+            delMenu: l.parte_de !== null,
+            salioEn: l.salio_en,
+            nuevo: (l.mandada_en as string) > ronda.llegoEn,
+            cambio: l.nota_cambiada_en !== null,
+            anulado: l.quitada_en !== null,
+            vuelve: l.motivo_de_vuelve,
+            opciones: l.opciones.map((o) => o.nombre),
+            pesoGramos: l.peso_gramos,
+            lleva: lasAlergiasQueLleva(l.alergenos, cuenta.alergias),
+          })),
+      },
+    ],
+  };
+}
+
+/** **Lo de la barra de un local** (T4 · 2, 0117), para su pantalla: como la cocina, sin un importe. */
+export async function laBarraDelLocal(
+  contexto: Contexto,
+  localId: string,
+): Promise<SalidaLaCocina> {
+  const ids = await lasCuentasCon(contexto, localId, 'barra');
+  const cuentas = await lasCuentas(contexto, localId, ids);
+  const platos = porCuenta(await losPlatos(contexto, ids));
+  const tarjetas = cuentas.flatMap((c) => {
+    const t = laTarjetaDeLaBarra(contexto, c, platos.get(c.id) ?? []);
+    return t === null ? [] : [t];
+  });
+  return {
+    enMarcha: tarjetas
+      .filter((t) => t.estado === 'en_marcha')
+      .sort((a, b) => Number(b.conPrisa) - Number(a.conPrisa) || b.minutos - a.minutos),
+    esperando: [],
     fuera: tarjetas
       .filter((t) => t.estado === 'fuera')
       .sort((a, b) => (b.fueraEn ?? '').localeCompare(a.fueraEn ?? '')),
@@ -591,6 +714,8 @@ export interface GrupoParaPedir {
     readonly id: string;
     readonly nombre: string;
     readonly precioCentimos: number;
+    /** Los alérgenos de lo que añade (0117), para avisar al pedir: el extra de queso. */
+    readonly alergenos: readonly string[];
   }[];
 }
 
@@ -624,6 +749,8 @@ export interface MenuDeLaSala {
       readonly nombre: string;
       readonly suplementoCentimos: number;
       readonly agotado: boolean;
+      /** Lo que lleva (0117), como en la carta: para avisar de la alergia de la mesa. */
+      readonly alergenos: readonly string[];
     }[];
   }[];
 }
@@ -697,7 +824,7 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
       agotado: p.agotado !== null,
       alergenos: [...new Set([...p.alergenos, ...p.alergenosDeLaReceta])],
       ...vale,
-      // Lo que gasta cada opción no sale de aquí: la sala solo ve su nombre y su precio.
+      // Lo que gasta cada opción no sale de aquí: la sala ve su nombre, su precio y lo que lleva.
       grupos: (grupos.get(p.id) ?? []).map((g) => ({
         id: g.id,
         nombre: g.nombre,
@@ -707,6 +834,7 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
           id: o.id,
           nombre: o.nombre,
           precioCentimos: o.precioCentimos,
+          alergenos: o.alergenos,
         })),
       })),
       aPeso: aPesoIds.has(p.id),
@@ -818,6 +946,9 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
       contexto,
       queSeSirven.map((m) => m.id),
     );
+    const loQueLleva = new Map(
+      platos.map((p) => [p.id, [...new Set([...p.alergenos, ...p.alergenosDeLaReceta])]]),
+    );
     const delMenu: MenuDeLaSala[] = [];
     for (const menu of queSeSirven) {
       const susSecciones = seccionesDeLosMenus.filter((s) => s.menuId === menu.id && s.incluida);
@@ -843,6 +974,7 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
               nombre: p.nombre,
               suplementoCentimos: p.suplementoCentimos,
               agotado: agotados.has(p.platoId),
+              alergenos: loQueLleva.get(p.platoId) ?? [],
             })),
         })),
       });

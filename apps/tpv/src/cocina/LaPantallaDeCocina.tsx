@@ -15,6 +15,7 @@ import {
 } from './laCocina.ts';
 import { alCambiarSiSuena, despertar, puedeSonar, tocar } from './sonidos.ts';
 import { usarPantallaEncendida, usarReloj } from '../ganchos/usarLaPantallaDeCocina.ts';
+import { losNombres } from '../logica/texto.ts';
 
 /**
  * **La pantalla de cocina** (T4 · 1, decisión 0116; Anexo 3.2; maquetas de T4 1, 1b y 2).
@@ -27,6 +28,10 @@ import { usarPantallaEncendida, usarReloj } from '../ganchos/usarLaPantallaDeCoc
  *
  * Suena al entrar una mesa, al marchar y con lo que pide mirar ya; la pantalla no se apaga
  * sola; y el teclado de cocina tacha con el número de cada tarjeta.
+ *
+ * **La pantalla de barra es esta misma** (T4 · 2, 0117), con lo que prepara la barra: sin
+ * pases, todo en marcha al llegar. Y en las dos, **la alergia de la mesa en rojo**: la franja
+ * arriba y «LLEVA GLUTEN» en el plato. No se confirma nada: se ve.
  */
 
 const DONDE = {
@@ -134,11 +139,13 @@ export function LaPantallaDeCocina({
     };
   }, [enMarcha, alTocarElPlato]);
 
+  const esBarra = aparato.funcion === 'barra' || lo?.prepara === 'barra';
+
   if (lo === undefined) {
     return (
       <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5 text-texto">
         {datos.isLoading ? (
-          <Cargando que="la cocina" />
+          <Cargando que={esBarra ? 'la barra' : 'la cocina'} />
         ) : (
           <EstadoVacio
             esLaPagina
@@ -163,7 +170,7 @@ export function LaPantallaDeCocina({
       }}
     >
       <header className="flex flex-wrap items-center gap-e3 border-b border-borde bg-superficie px-e4 py-e3">
-        <div role="tablist" aria-label="Cocina" className="flex gap-e2">
+        <div role="tablist" aria-label={esBarra ? 'Barra' : 'Cocina'} className="flex gap-e2">
           {(
             [
               ['en_marcha', `En marcha · ${String(lo.enMarcha.length + lo.esperando.length)}`],
@@ -213,8 +220,12 @@ export function LaPantallaDeCocina({
         {pestana === 'en_marcha' ? (
           lo.enMarcha.length + lo.esperando.length === 0 ? (
             <EstadoVacio
-              titulo="Nada que sacar"
-              frase="Cuando la sala mande una mesa, sale aquí y suena."
+              titulo={esBarra ? 'Nada que servir' : 'Nada que sacar'}
+              frase={
+                esBarra
+                  ? 'Cuando la sala pida bebida, cafés o copas, sale aquí y suena.'
+                  : 'Cuando la sala mande una mesa, sale aquí y suena.'
+              }
               dibujo="local"
               sinAccionPorque="Llega sola."
             />
@@ -245,7 +256,11 @@ export function LaPantallaDeCocina({
         ) : lo.fuera.length === 0 ? (
           <EstadoVacio
             titulo="Todavía no ha salido nada hoy"
-            frase="Al tachar el último plato de una mesa, pasa aquí sola."
+            frase={
+              esBarra
+                ? 'Al tachar lo último de una mesa, pasa aquí sola.'
+                : 'Al tachar el último plato de una mesa, pasa aquí sola.'
+            }
             dibujo="local"
             sinAccionPorque="Llega sola."
           />
@@ -320,7 +335,7 @@ function Tarjeta({
       ? 'border-mal'
       : acabada
         ? 'border-bien/40'
-        : t.conPrisa || color === 'tarde'
+        : t.conPrisa || color === 'tarde' || (t.alergias ?? []).length > 0
           ? 'border-mal'
           : marcha !== null
             ? 'border-bien'
@@ -343,6 +358,11 @@ function Tarjeta({
           {t.conPrisa && (
             <p className="bg-atencion px-e3 py-e1 text-etiqueta font-bold text-fondo">
               ⚡ TIENEN PRISA
+            </p>
+          )}
+          {(t.alergias ?? []).length > 0 && (
+            <p className="bg-mal px-e3 py-e1 text-seccion font-bold text-fondo">
+              ⚠ ALERGIA · {losNombres(t.alergias ?? []).toUpperCase()}
             </p>
           )}
           {marcha !== null && (
@@ -386,13 +406,16 @@ function Tarjeta({
           key={pase.numero}
           className={`border-t border-borde px-e3 pb-e2 ${pase.marchadoEn === null ? 'opacity-50' : ''}`}
         >
-          <p className="pt-e2 text-etiqueta font-bold uppercase tracking-wide text-texto-suave">
-            {!t.porPases
-              ? 'Todo junto'
-              : acabada
-                ? `${String(pase.numero)}.º`
-                : `${String(pase.numero)}.º · ${pase.marchadoEn === null ? 'en espera' : 'en marcha'}`}
-          </p>
+          {/* La barra no tiene pases (0117): sin título. */}
+          {pase.numero > 0 && (
+            <p className="pt-e2 text-etiqueta font-bold uppercase tracking-wide text-texto-suave">
+              {!t.porPases
+                ? 'Todo junto'
+                : acabada
+                  ? `${String(pase.numero)}.º`
+                  : `${String(pase.numero)}.º · ${pase.marchadoEn === null ? 'en espera' : 'en marcha'}`}
+            </p>
+          )}
           {pase.platos.map((p) => {
             const salio = p.salioEn !== null;
             const puede = !p.anulado && pase.marchadoEn !== null;
@@ -427,6 +450,11 @@ function Tarjeta({
                     {p.anulado && <Marca tono="bg-mal text-fondo">ANULADO</Marca>}
                     {p.nuevo && !p.anulado && <Marca tono="bg-info text-fondo">NUEVO</Marca>}
                     {p.cambio && <Marca tono="bg-atencion text-fondo">CAMBIO</Marca>}
+                    {(p.lleva ?? []).length > 0 && !p.anulado && (
+                      <Marca tono="bg-mal text-fondo">
+                        {`LLEVA ${losNombres(p.lleva ?? []).toUpperCase()}`}
+                      </Marca>
+                    )}
                     {salio && (
                       <span className="ml-e2 text-secundario font-bold text-bien">
                         ✓ {laHora(p.salioEn)}

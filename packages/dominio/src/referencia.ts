@@ -63,6 +63,27 @@ export const NOMBRE_DEL_ALERGENO: Readonly<Record<Alergeno, string>> = {
   moluscos: 'Moluscos',
 };
 
+/**
+ * **El nombre de servicio** (T4 · 2, 0117): el que cabe en un botón de la sala y en una marca
+ * de la cocina, «LLEVA GLUTEN». El largo, el del reglamento, se queda para la carta y la ficha.
+ */
+export const NOMBRE_CORTO_DEL_ALERGENO: Readonly<Record<Alergeno, string>> = {
+  gluten: 'Gluten',
+  crustaceos: 'Crustáceos',
+  huevos: 'Huevo',
+  pescado: 'Pescado',
+  cacahuetes: 'Cacahuete',
+  soja: 'Soja',
+  lacteos: 'Lácteos',
+  frutos_de_cascara: 'Frutos secos',
+  apio: 'Apio',
+  mostaza: 'Mostaza',
+  sesamo: 'Sésamo',
+  sulfitos: 'Sulfitos',
+  altramuces: 'Altramuces',
+  moluscos: 'Moluscos',
+};
+
 export function esAlergeno(valor: unknown): valor is Alergeno {
   return typeof valor === 'string' && (ALERGENOS as readonly string[]).includes(valor);
 }

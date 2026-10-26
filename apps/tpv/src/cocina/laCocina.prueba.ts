@@ -113,6 +113,18 @@ describe('la pantalla de cocina', () => {
     expect(loQueSuena(antes, pantalla([conAnulado, tarjeta('2')]))).toBe('aviso');
   });
 
+  it('suena también lo que vuelve de Acabados y lo pedido de más (0117): los postres, otra ronda', () => {
+    const acabada = pantalla([], [tarjeta('1', { estado: 'fuera' })]);
+    expect(loQueSuena(acabada, pantalla([tarjeta('1')]))).toBe('nueva');
+    const conMas = tarjeta('1', {
+      pases: [
+        ...tarjeta('1').pases,
+        { numero: 3, marchadoEn: null, fueraEn: null, platos: [plato('d')] },
+      ],
+    });
+    expect(loQueSuena(pantalla([tarjeta('1')]), pantalla([conMas]))).toBe('nueva');
+  });
+
   it('el teclado de cocina tacha el siguiente plato de lo que está en marcha', () => {
     expect(elPlatoQueSigue(tarjeta('1'))).toBe('a');
     const conA = tarjeta('1', {

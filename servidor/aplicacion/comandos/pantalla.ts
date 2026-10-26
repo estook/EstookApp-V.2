@@ -1,13 +1,14 @@
 import { z } from 'zod';
 import { tocarElServicio } from '../al-segundo.ts';
 import { comando, consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
-import { laCocinaDelLocal, type SalidaLaCocina } from '../consultas/sala.ts';
+import { laBarraDelLocal, laCocinaDelLocal, type SalidaLaCocina } from '../consultas/sala.ts';
 import { apuntarEnLaMesa, elLocalDelServicio, lasCuentas } from '../sala.ts';
 import { elAparatoDeLaLlave, soloEnLaCaja, type AparatoDelTpv } from './aparatos.ts';
-import { destacharEnElLocal, tacharEnElLocal } from './cocina.ts';
+import { destacharEnElLocal, tacharEnElLocal, type DondeSeTacha } from './cocina.ts';
 
 /**
- * **La pantalla de cocina** (T4 · 1, decisión 0116; Anexo 3.2 y 3.4). **No tiene operador**:
+ * **La pantalla de cocina** (T4 · 1, decisión 0116; Anexo 3.2 y 3.4), **y la de barra** (T4 · 2,
+ * 0117): la misma pantalla, con lo que prepara la barra. **No tiene operador**:
  * se vincula una vez y se queda encendida, sin PIN. No tiene sesión: **vale por su llave**,
  * como el aparato para fichar (0068), y la base la reconoce como la pantalla del local, con el
  * permiso de cocinar y ningún otro (0090).
@@ -23,28 +24,34 @@ import { destacharEnElLocal, tacharEnElLocal } from './cocina.ts';
 const llave = z.string().trim().min(20).max(200);
 const id = z.string().uuid();
 
-/** Hace `hacer` como la pantalla de esa llave, que tiene que ser una pantalla de cocina viva. */
+/**
+ * Hace `hacer` como la pantalla de esa llave, que tiene que ser una pantalla de cocina o de
+ * barra viva; `donde` es lo que prepara.
+ */
 async function comoLaPantalla<T>(
   contexto: Contexto,
   laLlave: string,
-  hacer: (aparato: AparatoDelTpv) => Promise<T>,
+  hacer: (aparato: AparatoDelTpv, donde: DondeSeTacha) => Promise<T>,
 ): Promise<T> {
   const aparato = await elAparatoDeLaLlave(contexto, laLlave);
-  if (aparato.funcion !== 'cocina') {
+  if (aparato.funcion !== 'cocina' && aparato.funcion !== 'barra') {
     throw new FalloDeAplicacion('sin_permiso', {
-      porque: 'Esto es de la pantalla de cocina.',
+      porque: 'Esto es de la pantalla de cocina o de barra.',
     });
   }
+  const donde: DondeSeTacha = aparato.funcion;
   // La base la reconoce solo dentro de esta transacción (`true`), y solo después de mirar
   // la llave. Al acabar bien se quita; si falla, la transacción entera se deshace con ella.
   await contexto.sql`select set_config('estook.pantalla_id', ${aparato.terminalId}, true)`;
-  const hecho = await hacer(aparato);
+  const hecho = await hacer(aparato, donde);
   await contexto.sql`select set_config('estook.pantalla_id', '', true)`;
   return hecho;
 }
 
 export interface LaPantallaDeCocina extends SalidaLaCocina {
   readonly aparato: { readonly nombre: string; readonly local: string };
+  /** Qué prepara: la cocina o la barra (0117). Lo demás es igual. */
+  readonly prepara: DondeSeTacha;
   /** Los minutos del semáforo y si suena, del local (Ajustes del TPV › Cocina y barra). */
   readonly ajustes: {
     readonly avisoMin: number;
@@ -60,9 +67,11 @@ export const laPantallaDeCocina = comando<{ llave: string }, LaPantallaDeCocina>
   sinRecordar: true,
 
   async ejecutar(contexto, entrada) {
-    return comoLaPantalla(contexto, entrada.llave, async (aparato) => {
+    return comoLaPantalla(contexto, entrada.llave, async (aparato, donde) => {
       const [cocina, ajustes, nombres] = await Promise.all([
-        laCocinaDelLocal(contexto, aparato.localId),
+        donde === 'barra'
+          ? laBarraDelLocal(contexto, aparato.localId)
+          : laCocinaDelLocal(contexto, aparato.localId),
         contexto.sql<{ aviso_min: number; tarde_min: number; suena: boolean }[]>`
           select aviso_min, tarde_min, suena from estook.la_cocina_del_local(${aparato.localId}::uuid)
         `,
@@ -80,6 +89,7 @@ export const laPantallaDeCocina = comando<{ llave: string }, LaPantallaDeCocina>
       const local = ajustes[0];
       return {
         aparato: { nombre: aparato.nombre, local: aparato.nombreDelLocal },
+        prepara: donde,
         ajustes: {
           avisoMin: local?.aviso_min ?? 10,
           tardeMin: local?.tarde_min ?? 20,
@@ -105,8 +115,8 @@ export const tacharEnLaPantalla = comando<
   sinRecordar: true,
 
   async ejecutar(contexto, entrada) {
-    return comoLaPantalla(contexto, entrada.llave, (aparato) =>
-      tacharEnElLocal(contexto, aparato.localId, entrada.linea_id, aparato.organizacionId),
+    return comoLaPantalla(contexto, entrada.llave, (aparato, donde) =>
+      tacharEnElLocal(contexto, aparato.localId, entrada.linea_id, aparato.organizacionId, [donde]),
     );
   },
 });
@@ -118,8 +128,10 @@ export const destacharEnLaPantalla = comando<z.infer<typeof entradaDelPlato>, { 
   sinRecordar: true,
 
   async ejecutar(contexto, entrada) {
-    return comoLaPantalla(contexto, entrada.llave, (aparato) =>
-      destacharEnElLocal(contexto, aparato.localId, entrada.linea_id, aparato.organizacionId),
+    return comoLaPantalla(contexto, entrada.llave, (aparato, donde) =>
+      destacharEnElLocal(contexto, aparato.localId, entrada.linea_id, aparato.organizacionId, [
+        donde,
+      ]),
     );
   },
 });

@@ -1026,6 +1026,8 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'ya_voy',
         'la_cocina_y_la_barra',
         'guardar_la_cocina_y_la_barra',
+        // Y la alergia de la mesa (0117).
+        'cambiar_las_alergias',
       ].sort(),
     );
   });

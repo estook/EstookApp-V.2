@@ -3402,6 +3402,23 @@ camarero»**. En la sala, «La cocina te llama» y «Tienen prisa».
 
 Las pruebas: `laCocina.prueba.ts`, `la-pantalla-de-cocina.prueba.ts` y `la-cocina.spec.ts`.
 
+### T4 · 2 · La barra y la alergia de la mesa
+
+_26 de octubre de 2026._ Migración `0092`, decisión [0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md),
+con las maquetas de T4 en su 2.ª versión. **La pantalla de barra**, la de cocina con lo que prepara la
+barra, sin pases y por rondas; **la hora en el ✓ de la cuenta**; y **la alergia de la mesa**, que se
+marca en sus opciones, avisa al pedir lo que la lleva y sale en rojo en cocina y en la barra.
+
+- **La base** (0092): `alergeno_de_la_cuenta`, y lo que lleva cada línea, congelado al pedir.
+- **La API**: `cambiar_las_alergias`; la pantalla de barra entra por las órdenes de la de cocina, que
+  miran qué prepara; `pedir` congela lo que lleva cada plato, con lo que añaden sus opciones.
+- **Estook TPV**: `ganchos/usarElAvisoDeAlergia`, las alergias en `mesa/OpcionesDeLaMesa`, el borde rojo
+  en la botonera, «⚠ Lleva gluten» y «✓ 21:33» en la cuenta, y la franja y «LLEVA GLUTEN» en la
+  pantalla.
+
+Las pruebas: `la-barra-y-la-alergia.prueba.ts` (el dominio y la base), `las-opciones.prueba.ts` (lo que
+añade una opción) y `la-barra-y-la-alergia.spec.ts`.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

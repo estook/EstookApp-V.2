@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { ALERGENOS, enSuOrden, NOMBRE_CORTO_DEL_ALERGENO } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { puedeEditar } from '@estook/permisos';
 import { Boton, CAJA, Envoltorio, ErrorEnCristiano, Hoja } from '@estook/ui';
@@ -6,7 +7,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAcciones } from '../ganchos/usarLaSala.ts';
 import type { CuentaEnElPlano, ElPlano } from '../datos/tipos.ts';
 import { elPase } from '../logica/laCuenta.ts';
-import { cuantoLlevan, euros, personas as lasPersonas } from '../logica/texto.ts';
+import { cuantoLlevan, euros, losNombres, personas as lasPersonas } from '../logica/texto.ts';
 import { irAlPlano } from '../navegar.ts';
 
 /**
@@ -14,9 +15,21 @@ import { irAlPlano } from '../navegar.ts';
  * plano o desde «Opciones» dentro de ella. Lo de cobrar, imprimir la cuenta y dividirla
  * llega con el cobro (M20C) y con Estook Link (M19a): hasta entonces, se cobra en el TPV
  * de siempre y aquí se libera la mesa.
+ *
+ * **Alergias** (T4 · 2, 0117): los catorce, de un toque. Al pedir lo que lleva alguno, la sala
+ * avisa; y en cocina y en la barra sale en rojo.
  */
 
-type Paso = 'lista' | 'cambiar' | 'juntar' | 'pasar' | 'nota' | 'personas' | 'liberar' | 'anular';
+type Paso =
+  | 'lista'
+  | 'cambiar'
+  | 'juntar'
+  | 'pasar'
+  | 'nota'
+  | 'personas'
+  | 'alergias'
+  | 'liberar'
+  | 'anular';
 
 export function OpcionesDeLaMesa({
   cuenta,
@@ -40,6 +53,8 @@ export function OpcionesDeLaMesa({
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
   const [haciendo, setHaciendo] = useState(false);
   const [texto, setTexto] = useState('');
+  const alergias = cuenta.alergias ?? [];
+  const [marcadas, setMarcadas] = useState<readonly string[]>(alergias);
   const esJefe = puedeEditar(yo.permisos, 'accion.quitar_de_cocina');
 
   async function hacer(nombre: string, entrada: unknown, despues: () => void = alCerrar) {
@@ -103,6 +118,19 @@ export function OpcionesDeLaMesa({
           {alAbrir !== undefined && (
             <Opcion titulo="Abrir la mesa" detalle="pedir y cambiar" onClick={alAbrir} fuerte />
           )}
+          <Opcion
+            titulo={alergias.length === 0 ? '⚠ Alergias' : `⚠ Alergias · ${losNombres(alergias)}`}
+            detalle={
+              alergias.length === 0
+                ? 'avisa al pedir, y en cocina sale en rojo'
+                : 'al pedir avisa, y en cocina sale en rojo'
+            }
+            peligro={alergias.length > 0}
+            onClick={() => {
+              setMarcadas(alergias);
+              setPaso('alergias');
+            }}
+          />
           <Opcion
             titulo={cuenta.tipo === 'mesa' ? 'Cambiar de mesa' : 'Llevar a una mesa'}
             detalle={cuenta.tipo === 'mesa' ? 'se cambian de sitio' : 'de la barra a una mesa'}
@@ -303,6 +331,50 @@ export function OpcionesDeLaMesa({
               }}
             >
               Guardar
+            </Boton>
+          </Botonera>
+        </div>
+      )}
+
+      {paso === 'alergias' && (
+        <div className="flex flex-col gap-e4">
+          <p className="text-secundario text-texto-suave">
+            Toca lo que no pueden tomar. Al pedir algo que lo lleve, te avisamos; y en cocina sale
+            en rojo.
+          </p>
+          <div className="grid grid-cols-2 gap-e2 sm:grid-cols-3">
+            {ALERGENOS.map((a) => {
+              const puesta = marcadas.includes(a);
+              return (
+                <button
+                  key={a}
+                  type="button"
+                  aria-pressed={puesta}
+                  onClick={() => {
+                    setMarcadas(puesta ? marcadas.filter((x) => x !== a) : [...marcadas, a]);
+                  }}
+                  className={[
+                    'min-h-toque-cocina rounded-grande border-2 px-e3 text-left font-bold',
+                    puesta ? 'border-mal bg-mal-suave text-mal' : 'border-borde bg-superficie',
+                  ].join(' ')}
+                >
+                  {NOMBRE_CORTO_DEL_ALERGENO[a]}
+                </button>
+              );
+            })}
+          </div>
+          <Botonera alVolver={volver}>
+            <Boton
+              tono="principal"
+              cargando={haciendo}
+              onClick={() => {
+                void hacer('cambiar_las_alergias', {
+                  cuenta_id: cuenta.cuentaId,
+                  alergenos: enSuOrden(marcadas),
+                });
+              }}
+            >
+              {marcadas.length === 0 && alergias.length > 0 ? 'Quitar las alergias' : 'Guardar'}
             </Boton>
           </Botonera>
         </div>

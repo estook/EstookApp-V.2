@@ -13,11 +13,13 @@
 > café ([0112](decisiones/0112-el-pan-y-el-cafe.md), #137); y **T3 · 2**, también en dos: **T3 · 2 · 1 ·
 > Las opciones** ([0113](decisiones/0113-t3-2-1-las-opciones.md), #138) y **T3 · 2 · 2 · Monta tus
 > bebidas** ([0114](decisiones/0114-t3-2-2-monta-tus-bebidas.md), #139), **en producción**. Antes de T4,
-> **cada aparato a lo suyo** ([0115](decisiones/0115-cada-aparato-a-lo-suyo.md)), en su pull request:
-> fichar en la caja, el comandero solo la sala y Estook TPV instalable. **T4 · Cocina y barra**, con sus
-> maquetas dadas por buenas el 26-oct: **T4 · 1 · La cocina** ([0116](decisiones/0116-t4-1-la-cocina.md),
-> migración 0090), construida, en su pull request; **lo siguiente, T4 · 2 · La barra y la alergia de la
-> mesa.**
+> **cada aparato a lo suyo** ([0115](decisiones/0115-cada-aparato-a-lo-suyo.md), #140): fichar en la caja,
+> el comandero solo la sala y Estook TPV instalable. **T4 · Cocina y barra**, con sus maquetas dadas por
+> buenas el 26-oct: **T4 · 1 · La cocina** ([0116](decisiones/0116-t4-1-la-cocina.md), migración 0090,
+> #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
+> ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092), construida, en su pull
+> request. **Lo siguiente: la entrada nueva del TPV** (sus maquetas esperan a Richi) **y T5 · Estook
+> Link.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -272,6 +274,33 @@ destachar, que no marcha ni quita, lo que lee, la prisa, la llamada y los ajuste
 (el recorrido entero en la pantalla, con la sala en otra ventana).
 
 **Lo que decidí al construirlo**: los diez de la [0116](decisiones/0116-t4-1-la-cocina.md), sección 3.
+
+### T4 · 2 · La barra y la alergia de la mesa, terminado cuando
+
+- **En IKATZ**: Richi vincula una tablet como **pantalla de barra**, sin PIN. Abre una mesa, en sus
+  opciones marca **«⚠ Alergias › Gluten»**, y al tocar un plato que lo lleva la sala avisa: «No pedirlo»
+  o «Pedirlo, la cocina lo verá». Pide una caña y ese plato, y manda: la caña sale en la barra y el plato
+  en cocina, **las dos tarjetas con la franja roja** y el plato con **«LLEVA GLUTEN»**. La barra tacha la
+  caña y la sala ve **«✓ 21:33»** en la cuenta. Un café después, tarjeta nueva en la barra.
+- **Nadie confirma nada**, ni en cocina ni en la barra, y **la barra no ve ni un importe**.
+- Pasan las pruebas de 3.7 de la alergia y de la barra.
+- **Lo de la base**: la alergia de la mesa, que la sala marca y la cocina solo lee; y lo que lleva cada
+  plato, congelado al pedir.
+
+### T4 · 2 · La barra y la alergia de la mesa, entregada (26-oct-2026)
+
+**Lo que hay** ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092): **la pantalla de
+barra**, la de cocina con lo que prepara la barra, sin pases y por rondas; **la hora en el ✓** de la
+cuenta; y **la alergia de la mesa**: en las opciones de la mesa, en la botonera (el borde rojo y el aviso
+al tocar), en la cuenta y en las pantallas de cocina y de barra (la franja y «LLEVA GLUTEN»).
+
+**Las pruebas**: `la-barra-y-la-alergia.prueba.ts` del dominio (la ronda de la barra y lo que lleva) y de
+la base (cada pantalla lo suyo, la ronda, devolver, la alergia que se congela, se cambia y se junta, y que
+la pantalla no la cambie), `las-opciones.prueba.ts` (lo que añade una opción) y
+`la-barra-y-la-alergia.spec.ts` (el recorrido entero, con la caja, la barra y la cocina a la vez).
+
+**Lo que decidí al construirlo**: los once de la [0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md),
+sección 3.
 
 ### T4 a T7
 

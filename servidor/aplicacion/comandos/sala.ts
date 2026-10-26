@@ -1,16 +1,21 @@
 import { z } from 'zod';
 import {
+  ALERGENOS,
   PESO_DE_UNA_RACION,
   TOPES_DEL_GRUPO,
+  alergenosDeLaReceta,
   centimos,
   elDestinoDeLaLinea,
   elPrecioAPeso,
   elPrecioConLasOpciones,
+  enSuOrden,
+  esAlergeno,
   fechaOperativa,
   loQueFaltaPorElegir,
   losPasesQueSalenAlMandar,
 } from '@estook/dominio';
 import { losGruposDeLosPlatos } from '../opciones.ts';
+import { elLibroDelLocal } from '../escandallos.ts';
 import { losAgotadosDelLocal } from '../agotados.ts';
 import { laBotoneraEstaMontada, loQueValeParaElPlato } from '../botonera.ts';
 import { lasSeccionesDeLosMenus, losPlatosDelDia } from '../menus.ts';
@@ -48,6 +53,7 @@ import {
  *   pasar_a_otro_camarero las mesas de quien se va, a quien entra
  *   liberar_mesa          la mesa queda libre (hasta M20C se cobra en el TPV de siempre)
  *   anular_mesa           con motivo; lo hace un jefe
+ *   cambiar_las_alergias  la alergia de la mesa: al pedir avisa, y en cocina sale en rojo
  *
  * Todo lo que cambia una mesa se apunta en la auditoría y se avisa al segundo a la sala
  * y a la cocina. Cada plato y cada mesa nacen con su id en el aparato: repetir no duplica.
@@ -86,6 +92,32 @@ async function elPlatoDeLaCuenta(
   const linea = (await losPlatos(contexto, [cuentaId])).find((l) => l.id === lineaId);
   if (linea === undefined) throw new FalloDeAplicacion('no_existe');
   return linea;
+}
+
+/**
+ * **Lo que lleva cada plato** (0117): los alérgenos puestos a mano y los que trae su receta,
+ * como en la carta. Se lee una vez por pedido, y solo si se pide algún plato.
+ */
+async function loQueLlevanLosPlatos(
+  contexto: Contexto,
+  localId: string,
+  platoIds: readonly string[],
+): Promise<ReadonlyMap<string, readonly string[]>> {
+  if (platoIds.length === 0) return new Map();
+  const [filas, elLibro] = await Promise.all([
+    contexto.sql<{ id: string; alergenos: string[] }[]>`
+      select id::text as id, alergenos from estook.plato
+       where local_id = ${localId}::uuid and id = any (${comoLista(platoIds)}::text::uuid[])
+    `,
+    elLibroDelLocal(contexto, localId, false),
+  ]);
+  return new Map(
+    filas.map((f) => {
+      const receta = elLibro.recetaDelPlato.get(f.id);
+      const deLaReceta = alergenosDeLaReceta(receta?.lineas ?? [], elLibro.libro);
+      return [f.id, [...f.alergenos, ...deLaReceta]];
+    }),
+  );
 }
 
 // ═══ Abrir ════════════════════════════════════════════════════════════════════
@@ -244,6 +276,10 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
         p.plato_id === undefined || p.parte_de !== undefined ? [] : [p.plato_id],
       ),
     );
+    // Lo que lleva cada plato, para congelarlo en su línea: la cocina lo ve sin leer la carta.
+    const loQueLleva = await loQueLlevanLosPlatos(contexto, localId, [
+      ...new Set(nuevos.flatMap((p) => (p.plato_id === undefined ? [] : [p.plato_id]))),
+    ]);
 
     for (const p of nuevos) {
       if ((p.plato_id === undefined) === (p.menu_id === undefined)) {
@@ -264,6 +300,7 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
         quita: string | null;
       }[] = [];
       let pesoGramos: number | null = null;
+      let alergenos: readonly string[] = [];
 
       if (p.menu_id !== undefined) {
         const filas = await contexto.sql<{ nombre: string; precio_centimos: number | null }[]>`
@@ -304,6 +341,7 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
           });
         }
         nombre = plato.nombre;
+        alergenos = loQueLleva.get(p.plato_id ?? '') ?? [];
         if (agotados.has(p.plato_id ?? '')) {
           throw new FalloDeAplicacion('faltan_datos', {
             porque: `«${plato.nombre}» está agotado: elige otro, o quítalo de agotados si ya hay.`,
@@ -391,6 +429,12 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
               g.opciones.map((o) => [o.id, { ...o, grupo: g.nombre }] as const),
             ),
           );
+          // Lo que añade una opción suma lo suyo; lo que quita no quita el aviso: ante la
+          // duda con una alergia, se avisa (0117).
+          alergenos = [
+            ...alergenos,
+            ...elegidas.flatMap((opcionId) => porId.get(opcionId)?.alergenos ?? []),
+          ];
           opciones = elegidas.flatMap((opcionId) => {
             const o = porId.get(opcionId);
             return o === undefined
@@ -415,13 +459,14 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
       await contexto.sql`
         insert into estook.linea_de_cuenta
           (id, cuenta_id, local_id, plato_id, menu_id, parte_de, nombre, cantidad, precio_centimos,
-           destino, pase, nota, pedida_en, pedida_por, opciones, peso_gramos)
+           destino, pase, nota, pedida_en, pedida_por, opciones, peso_gramos, alergenos)
         values (
           ${p.id}::uuid, ${cuenta.id}::uuid, ${localId}::uuid, ${p.plato_id ?? null}::uuid,
           ${menuId}::uuid, ${p.parte_de ?? null}::uuid, ${nombre}, ${p.cantidad ?? 1}, ${precio},
           ${destino}, ${pase}, ${p.nota === undefined || p.nota === '' ? null : p.nota},
           ${contexto.ahora.toISOString()}::timestamptz, ${contexto.personaId}::uuid,
-          ${JSON.stringify(opciones)}::text::jsonb, ${pesoGramos}
+          ${JSON.stringify(opciones)}::text::jsonb, ${pesoGramos},
+          ${comoLista(enSuOrden(alergenos.filter(esAlergeno)))}::text::text[]
         )
         on conflict (id) do nothing
       `;
@@ -592,9 +637,10 @@ export const devolverACocina = comando<{ linea_id: string; motivo: string }, { l
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
     const linea = await elPlatoDeLaCuenta(contexto, localId, entrada.linea_id);
-    if (linea.destino !== 'cocina' || linea.salio_en === null || linea.quitada_en !== null) {
+    // Lo de la barra también vuelve, a su pantalla (0117): la caña caliente se rehace.
+    if (linea.destino === 'ninguno' || linea.salio_en === null || linea.quitada_en !== null) {
       throw new FalloDeAplicacion('ya_hecho', {
-        porque: 'Solo se devuelve a cocina un plato que ya salió.',
+        porque: 'Solo se devuelve lo que ya salió de la cocina o de la barra.',
       });
     }
     await contexto.sql`
@@ -604,10 +650,12 @@ export const devolverACocina = comando<{ linea_id: string; motivo: string }, { l
              motivo_de_vuelve = ${entrada.motivo}
        where id = ${linea.id}::uuid
     `;
-    await contexto.sql`
-      update estook.pase set fuera_en = null
-       where cuenta_id = ${linea.cuenta_id}::uuid and numero = ${linea.pase}
-    `;
+    if (linea.pase !== null) {
+      await contexto.sql`
+        update estook.pase set fuera_en = null
+         where cuenta_id = ${linea.cuenta_id}::uuid and numero = ${linea.pase}
+      `;
+    }
     await avisar(contexto, localId, 'devolver_a_cocina', linea.cuenta_id, {
       plato: linea.nombre,
       motivo: entrada.motivo,
@@ -853,6 +901,13 @@ export const juntarMesas = comando<{ cuenta_id: string; con: string }, { cuentaI
       update estook.linea_de_cuenta set cuenta_id = ${queda.id}::uuid
        where cuenta_id = ${otra.id}::uuid
     `;
+    // La alergia de las dos se queda en la que queda (0117): nadie la tiene que marcar otra vez.
+    await contexto.sql`
+      insert into estook.alergeno_de_la_cuenta (cuenta_id, local_id, alergeno, marcado_por, marcado_en)
+      select ${queda.id}::uuid, local_id, alergeno, marcado_por, marcado_en
+        from estook.alergeno_de_la_cuenta where cuenta_id = ${otra.id}::uuid
+      on conflict (cuenta_id, alergeno) do nothing
+    `;
     await contexto.sql`
       update estook.cuenta
          set personas = coalesce(${queda.personas}::smallint, 0) + coalesce(${otra.personas}::smallint, 0)
@@ -997,5 +1052,48 @@ export const yaVoy = comando<{ cuenta_id: string }, { cuentaId: string }>({
     `;
     await avisar(contexto, localId, 'ya_voy', cuenta.id, {});
     return { cuentaId: cuenta.id };
+  },
+});
+
+/**
+ * **La alergia de la mesa** (T4 · 2, decisión 0117; Anexo 3.2): los alérgenos que la mesa no
+ * puede tomar, de los catorce. Se dice la lista entera: lo que no está, se quita. Al pedir algo
+ * que lo lleva, la sala avisa; y en cocina y en la barra sale en rojo, sin confirmar nada.
+ */
+export const cambiarLasAlergias = comando<
+  { cuenta_id: string; alergenos: (typeof ALERGENOS)[number][] },
+  { alergias: string[] }
+>({
+  nombre: 'cambiar_las_alergias',
+  entrada: z
+    .object({ cuenta_id: id, alergenos: z.array(z.enum(ALERGENOS)).max(ALERGENOS.length) })
+    .strict(),
+  exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
+  // Se recuerda, como lo demás de la sala: un reintento con la lista de antes no deshace un
+  // cambio de después.
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelServicio(contexto);
+    const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
+    const nuevas = enSuOrden(entrada.alergenos);
+    if (nuevas.join() === cuenta.alergias.join()) return { alergias: nuevas };
+    await contexto.sql`
+      delete from estook.alergeno_de_la_cuenta
+       where cuenta_id = ${cuenta.id}::uuid
+         and not (alergeno = any (${comoLista(nuevas)}::text::text[]))
+    `;
+    await contexto.sql`
+      insert into estook.alergeno_de_la_cuenta (cuenta_id, local_id, alergeno, marcado_por, marcado_en)
+      select ${cuenta.id}::uuid, ${localId}::uuid, a, ${contexto.personaId}::uuid,
+             ${contexto.ahora.toISOString()}::timestamptz
+        from unnest(${comoLista(nuevas)}::text::text[]) as a
+      on conflict (cuenta_id, alergeno) do nothing
+    `;
+    await avisar(contexto, localId, 'cambiar_las_alergias', cuenta.id, {
+      antes: cuenta.alergias,
+      ahora: nuevas,
+    });
+    return { alergias: nuevas };
   },
 });

@@ -187,8 +187,9 @@ Los tres acaban en una venta con su ticket. Lo que cambia es cuánto vive la cue
 
 **Aviso de alergia de la mesa.** Se marca al abrirla o después, eligiendo de los catorce alérgenos oficiales que Estook ya tiene (M9). A partir de ahí:
 
-- Al pedir un plato que lo lleva, **la sala avisa antes de mandarlo**.
-- La comanda **sale marcada en cocina**, en rojo y con el plato que lo lleva señalado. **La cocina no confirma nada**: lo ve, que es lo que importa (Richi, 25-oct). Llega con T4 · 2.
+- En la botonera, **lo que lo lleva sale con el borde rojo** y el alérgeno en rojo. Al tocarlo, **la sala avisa antes de pedirlo**: «No pedirlo» o «Pedirlo, la cocina lo verá». No se prohíbe: el cliente puede saber lo que pide (T4 · 2, [0117](../decisiones/0117-t4-2-la-barra-y-la-alergia.md)).
+- La comanda **sale marcada en cocina y en la barra**: la franja roja «⚠ ALERGIA · GLUTEN» arriba de la tarjeta y **«LLEVA GLUTEN»** en el plato que lo lleva. **La cocina no confirma nada**: lo ve, que es lo que importa (Richi, 25-oct).
+- **Lo que lleva cada plato se congela al pedirlo**, como el precio: los alérgenos puestos a mano, los de su receta y los de lo que añaden sus opciones (el queso de más trae los lácteos). **Lo que quita una opción no quita el aviso**: con una alergia, ante la duda, se avisa.
 
 Esto Estook lo puede hacer sin pedir un dato más, porque los alérgenos ya están en la ficha. **Ningún TPV que no tenga escandallos puede hacerlo.**
 
@@ -233,6 +234,10 @@ Se marca desde la comanda y desaparece de la carta y de la carta digital (M10 y 
 - **Lo que cambia sale en la misma tarjeta**: «NUEVO» con su hora, «ANULADO» en rojo y con sonido, «CAMBIO» de nota, y «VUELVE» arriba del todo cuando un plato devuelto se rehace.
 - **Pantalla, papel o las dos**, a elección del local. En papel sale el ticket entero con sus pases, y un papelito por cada marcha, plato nuevo o anulado.
 - **Lo que no prepara la cocina no va a cocina**: va a la barra, o a ninguna parte, según **«¿Quién lo prepara?»** de su página (11.11).
+
+### La barra
+
+**La pantalla de barra es la de cocina, con lo que prepara la barra** (T4 · 2, [0117](../decisiones/0117-t4-2-la-barra-y-la-alergia.md)): bebidas, cafés y copas, y lo que se pide en la barra sin mesa. Se vincula igual, sin PIN y siempre encendida. **No tiene pases**: lo que llega está en marcha. Como una mesa pide de beber tres o cuatro veces en la comida, **la tarjeta es la de su ronda**: lo que llega con lo de antes ya servido empieza tarjeta nueva, y lo que llega mientras la barra aún sirve entra en la misma, con «NUEVO». Al tachar lo último, a «Acabados», como en cocina. **Sin pantalla de barra**, lo de la barra lo sirve quien lo pide y en la cuenta se queda «en la barra».
 
 ### Los tiempos
 
@@ -327,7 +332,8 @@ La versión 1.1 prometía que la cocina seguía imprimiendo sin internet con una
 - Un plato tachado por error se destacha con otro toque, sin PIN ni margen, y la mesa vuelve de «Acabados» (0116).
 - Se vende en barra sin abrir mesa, y se cobra en el mismo gesto.
 - Se traspasa una mesa abierta a otro camarero y las ventas quedan a nombre del nuevo desde ese momento.
-- Un plato con un alérgeno marcado en la mesa **avisa en sala antes de mandarlo** y sale marcado en cocina.
+- Un plato con un alérgeno marcado en la mesa **avisa en sala antes de mandarlo** y sale marcado en cocina y en la barra; lo que añade una opción también avisa, y cambiar la carta después no cambia lo pedido (0117).
+- **La pantalla de barra** ve solo lo de la barra y la de cocina solo lo suyo, y ninguna tacha lo de la otra; lo que tacha la barra sale en la cuenta de la sala con su hora (0117).
 - Se corta internet **con Link**: se sigue tomando nota, **la pantalla de cocina recibe** y la comanda impresa sale; al volver, todo sube una vez y en orden.
 - Se corta internet **sin Link**: se sigue tomando nota, la sala ve en grande que la cocina no recibe, y al volver sube todo sin duplicar.
 - Un cocinero abre la ficha desde la comanda y **no recibe ni un importe**, comprobado llamando a la API a pelo.
@@ -836,7 +842,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 - `elemento_de_sala` — lo que no se abre: barra, pared, columna, puerta, planta y texto, con su sitio, su ancho, su fondo y su giro. **En su propia tabla** (0110): no tiene plazas ni cuenta, así que una cuenta nunca cae en una pared
 - `cuenta` — **tipo** (`mesa`, `barra`, `para_llevar`, `reparto`, `consumo_interno`), mesa si la tiene, **nombre o número de recogida** si es para llevar o de reparto, estado, camarero **actual**, comensales, canal, apertura, cierre, versión. **`reparto` solo lo crea el adaptador del canal** (M29) y lleva el identificador del pedido en la plataforma: es la comanda que va a cocina (10.8), no una tabla de pedidos aparte. **Su identificador nace en el aparato**, para que subirla dos veces no cree dos
 - `alergeno_de_la_cuenta` — cuenta, alérgeno, quién lo marcó y cuándo
-- `linea_de_cuenta` — plato, cantidad, **precio y tipo de impuesto congelados**, modificadores elegidos (cada uno con su precio y su escandallo), nota, **comensal** (número o nulo, solo al dividir), **tanda** (el pase: 1.º, 2.º), **salió en y quién la tachó** (0106), estado (`pedida`, `en_cocina`, `salio`, `servida`, `quitada`), y autor, motivo y aprobación si se quita. **Su identificador también nace en el aparato**, y a una cuenta **se le añaden líneas, nunca se sobreescriben**
+- `linea_de_cuenta` — plato, cantidad, **precio y tipo de impuesto congelados**, **lo que lleva (sus alérgenos), congelado al pedir** (0117), modificadores elegidos (cada uno con su precio y su escandallo), nota, **comensal** (número o nulo, solo al dividir), **tanda** (el pase: 1.º, 2.º), **salió en y quién la tachó** (0106), estado (`pedida`, `en_cocina`, `salio`, `servida`, `quitada`), y autor, motivo y aprobación si se quita. **Su identificador también nace en el aparato**, y a una cuenta **se le añaden líneas, nunca se sobreescriben**
 - `traspaso_de_cuenta` — cuenta, de quién, a quién, cuándo, quién lo hizo
 - `pagina_del_tpv` — la página de la botonera (11.11): local, nombre, orden, color, **quién lo prepara** (`cocina`, `barra`, `nadie`), **en qué pase sale** (`bebidas`, `1`, `2`, `3`, `postre`) y **la sección de la carta de la que vino**, si vino de una (lo nuevo de esa sección entra aquí)
 - `boton_del_tpv` — página, **el plato de la carta al que apunta** (no una copia), orden, color, quién lo prepara o el pase **solo si cambian** los de su página, y si está **fijado en «Lo más pedido»**

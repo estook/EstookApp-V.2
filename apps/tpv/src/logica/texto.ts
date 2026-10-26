@@ -1,4 +1,4 @@
-import { centimos, enEuros } from '@estook/dominio';
+import { centimos, enEuros, esAlergeno, NOMBRE_CORTO_DEL_ALERGENO } from '@estook/dominio';
 
 /** «12,50»: en la sala no hace falta el símbolo, se sabe que son euros. */
 export function euros(cantidad: number): string {
@@ -21,4 +21,21 @@ export function cuantoLlevan(minutos: number): string {
 export function personas(cuantas: number | null): string | null {
   if (cuantas === null) return null;
   return cuantas === 1 ? '1 persona' : `${cuantas} personas`;
+}
+
+/** «21:33»: la hora del local en el aparato, para el ✓ de lo que salió (0117). */
+export function laHora(cuando: string): string {
+  return new Date(cuando).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}
+
+/** El nombre de servicio de un alérgeno: «Gluten», «Frutos secos» (0117). */
+export function elAlergeno(codigo: string): string {
+  return esAlergeno(codigo) ? NOMBRE_CORTO_DEL_ALERGENO[codigo] : codigo;
+}
+
+/** «Gluten y lácteos»: los alérgenos de una alergia o de un plato, para leerlos. */
+export function losNombres(alergenos: readonly string[]): string {
+  const nombres = alergenos.map(elAlergeno);
+  if (nombres.length <= 1) return nombres.join('');
+  return `${nombres.slice(0, -1).join(', ')} y ${nombres.at(-1) ?? ''}`;
 }

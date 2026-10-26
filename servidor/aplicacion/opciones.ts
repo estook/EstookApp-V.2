@@ -19,6 +19,8 @@ export interface OpcionLeida {
     readonly unidad: UnidadDeUso;
   } | null;
   readonly quita: string | null;
+  /** Los alérgenos de lo que añade (0117): el extra de queso lleva lácteos. */
+  readonly alergenos: readonly string[];
 }
 
 export interface GrupoLeido {
@@ -51,14 +53,18 @@ export async function losGruposDelLocal(
         anade_cantidad: string | null;
         anade_unidad: UnidadDeUso | null;
         quita_producto_id: string | null;
+        alergenos: string[];
       }[]
     >`
-      select id::text as id, grupo_id::text as grupo_id, nombre, precio_centimos,
-             anade_producto_id::text as anade_producto_id, anade_cantidad::text as anade_cantidad,
-             anade_unidad, quita_producto_id::text as quita_producto_id
-        from estook.opcion_de_grupo
-       where local_id = ${localId}::uuid
-       order by orden, nombre
+      select o.id::text as id, o.grupo_id::text as grupo_id, o.nombre, o.precio_centimos,
+             o.anade_producto_id::text as anade_producto_id,
+             o.anade_cantidad::text as anade_cantidad, o.anade_unidad,
+             o.quita_producto_id::text as quita_producto_id,
+             coalesce(p.alergenos, '{}') as alergenos
+        from estook.opcion_de_grupo o
+        left join estook.producto p on p.id = o.anade_producto_id
+       where o.local_id = ${localId}::uuid
+       order by o.orden, o.nombre
     `,
     contexto.sql<{ grupo_id: string; plato_id: string }[]>`
       select grupo_id::text as grupo_id, plato_id::text as plato_id from estook.grupo_del_plato
@@ -86,6 +92,7 @@ export async function losGruposDelLocal(
                 unidad: o.anade_unidad,
               },
         quita: o.quita_producto_id,
+        alergenos: o.alergenos,
       })),
     platoIds: platos.filter((p) => p.grupo_id === g.id).map((p) => p.plato_id),
   }));

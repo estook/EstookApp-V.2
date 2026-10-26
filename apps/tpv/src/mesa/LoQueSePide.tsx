@@ -1,17 +1,18 @@
 import { useMemo, useState } from 'react';
-import { elDestinoDeLaLinea, esElPan } from '@estook/dominio';
+import { elDestinoDeLaLinea, enSuOrden, esElPan } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import { Boton, Cargando, EstadoVacio, filtrarPorParecido } from '@estook/ui';
 import type { LaCartaDeLaSala, LaMesa, PaginaDeLaSala, PlatoDeLaSala } from '../datos/tipos.ts';
 import { anadirConLoElegido, anadirPlato, type Borrador } from '../logica/comanda.ts';
 import { elPaseDeFabrica } from '../logica/laCuenta.ts';
 import { elNumeroDelPase, laPestanaDeLaPagina, type PestanaDelPase } from '../logica/losPases.ts';
-import { euros } from '../logica/texto.ts';
+import { elAlergeno, euros } from '../logica/texto.ts';
 import { irA } from '../navegar.ts';
 import { COMO_SE_VE_EL_COLOR } from '../productos/colores.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ElMenuDelDia } from './ElMenuDelDia.tsx';
 import { LoQueSeElige } from './LoQueSeElige.tsx';
+import { usarElAvisoDeAlergia } from '../ganchos/usarElAvisoDeAlergia.tsx';
 
 /**
  * **Lo que se pide** (T3, maqueta 9; Anexo 11.10 y 11.11): **la botonera por páginas**, con
@@ -22,6 +23,9 @@ import { LoQueSeElige } from './LoQueSeElige.tsx';
  * **Lo que se toca va al pase marcado** en las pestañas de encima de la cuenta, y **al
  * cambiar de página se marca solo el de esa página** («¿En qué pase sale?»). Cada botón va
  * a quien lo prepara: la cocina, la barra o nadie.
+ *
+ * **Con alergia en la mesa** (0117), lo que la lleva sale en rojo en su botón, y al tocarlo
+ * la sala avisa antes de pedirlo.
  */
 
 const MENU = 'menu';
@@ -51,6 +55,8 @@ export function LoQueSePide({
   const [pagina, setPagina] = useState<string | null>(null);
   const [buscando, setBuscando] = useState('');
   const [eligiendo, setEligiendo] = useState<PlatoDeLaSala | null>(null);
+  const alergias = mesa.alergias ?? [];
+  const { avisar, elAviso } = usarElAvisoDeAlergia(alergias);
 
   // Sin elegir todavía, la página del pase marcado (en una mesa recién abierta, la de las
   // bebidas); si no hay, «Lo más pedido»; si no, la primera.
@@ -102,12 +108,14 @@ export function LoQueSePide({
   }
 
   function pedir(plato: PlatoDeLaSala) {
-    // Lo que pregunta algo (sus opciones, o cuánto pesa) abre su hoja; lo demás, un toque.
-    if ((plato.grupos ?? []).length > 0 || plato.aPeso === true) {
-      setEligiendo(plato);
-      return;
-    }
-    alCambiarElBorrador(anadirPlato(borrador, plato, comoVa(plato)));
+    avisar(plato.nombre, plato.alergenos, () => {
+      // Lo que pregunta algo (sus opciones, o cuánto pesa) abre su hoja; lo demás, un toque.
+      if ((plato.grupos ?? []).length > 0 || plato.aPeso === true) {
+        setEligiendo(plato);
+        return;
+      }
+      alCambiarElBorrador(anadirPlato(borrador, plato, comoVa(plato)));
+    });
   }
 
   const cuantos = (p: PlatoDeLaSala) =>
@@ -215,7 +223,12 @@ export function LoQueSePide({
               Nada se parece a «{buscando.trim()}».
             </p>
           ) : (
-            <LosProductos platos={encontradas} cuantos={cuantos} alPedir={pedir} />
+            <LosProductos
+              platos={encontradas}
+              cuantos={cuantos}
+              alergias={alergias}
+              alPedir={pedir}
+            />
           )}
         </div>
       ) : laDeAhora === MENU ? (
@@ -224,10 +237,11 @@ export function LoQueSePide({
           mesa={mesa}
           borrador={borrador}
           alCambiarElBorrador={alCambiarElBorrador}
+          avisar={avisar}
         />
       ) : laDeAhora === LO_MAS_PEDIDO ? (
         <div className="min-h-0 flex-1 overflow-y-auto p-e3">
-          <LosProductos platos={masPedido} cuantos={cuantos} alPedir={pedir} />
+          <LosProductos platos={masPedido} cuantos={cuantos} alergias={alergias} alPedir={pedir} />
         </div>
       ) : sinNada || laDeAhora === undefined ? (
         <div className="p-e3">
@@ -264,7 +278,12 @@ export function LoQueSePide({
         </div>
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto p-e3">
-          <LosProductos platos={laDeAhora.platos} cuantos={cuantos} alPedir={pedir} />
+          <LosProductos
+            platos={laDeAhora.platos}
+            cuantos={cuantos}
+            alergias={alergias}
+            alPedir={pedir}
+          />
         </div>
       )}
       {eligiendo !== null && (
@@ -274,13 +293,22 @@ export function LoQueSePide({
             setEligiendo(null);
           }}
           alElegir={(elegido) => {
-            alCambiarElBorrador(
-              anadirConLoElegido(borrador, eligiendo, comoVa(eligiendo), elegido),
-            );
+            const plato = eligiendo;
             setEligiendo(null);
+            // Lo del plato ya se avisó al tocarlo: aquí, solo lo que añaden sus opciones.
+            const deLasOpciones = new Set(elegido.opciones.map((o) => o.id));
+            const anaden = (plato.grupos ?? [])
+              .flatMap((g) => g.opciones)
+              .filter((o) => deLasOpciones.has(o.id))
+              .flatMap((o) => o.alergenos ?? [])
+              .filter((a) => !plato.alergenos.includes(a));
+            avisar(plato.nombre, anaden, () => {
+              alCambiarElBorrador(anadirConLoElegido(borrador, plato, comoVa(plato), elegido));
+            });
           }}
         />
       )}
+      {elAviso}
     </div>
   );
 }
@@ -320,10 +348,12 @@ function BotonDePagina({
 function LosProductos({
   platos,
   cuantos,
+  alergias,
   alPedir,
 }: {
   readonly platos: readonly PlatoDeLaSala[];
   readonly cuantos: (p: PlatoDeLaSala) => number;
+  readonly alergias: readonly string[];
   readonly alPedir: (p: PlatoDeLaSala) => void;
 }) {
   return (
@@ -333,6 +363,7 @@ function LosProductos({
           key={p.id}
           plato={p}
           cuantos={cuantos(p)}
+          alergias={alergias}
           alPedir={() => {
             alPedir(p);
           }}
@@ -345,12 +376,16 @@ function LosProductos({
 function Producto({
   plato,
   cuantos,
+  alergias,
   alPedir,
 }: {
   readonly plato: PlatoDeLaSala;
   readonly cuantos: number;
+  readonly alergias: readonly string[];
   readonly alPedir: () => void;
 }) {
+  const deLaMesa = new Set(alergias);
+  const lleva = plato.alergenos.some((a) => deLaMesa.has(a));
   return (
     <button
       type="button"
@@ -359,7 +394,7 @@ function Producto({
       aria-label={`${plato.nombre}, ${euros(plato.precioCentimos)} €${plato.agotado ? ', agotado' : ''}`}
       className={[
         'relative flex min-h-[4.5rem] items-stretch gap-e2 overflow-hidden rounded-grande border bg-superficie text-left transition-transform active:scale-[0.98] sm:min-h-[5.5rem]',
-        cuantos > 0 ? 'border-naranja' : 'border-borde',
+        cuantos > 0 ? 'border-naranja' : lleva ? 'border-mal' : 'border-borde',
         plato.color === null ? '' : `border-l-[6px] ${COMO_SE_VE_EL_COLOR[plato.color].franja}`,
         plato.agotado ? 'opacity-50' : '',
       ].join(' ')}
@@ -383,7 +418,13 @@ function Producto({
         </span>
         {plato.alergenos.length > 0 && !plato.agotado && (
           <span className="truncate text-etiqueta text-texto-tenue">
-            {plato.alergenos.join(', ')}
+            {lleva && '⚠ '}
+            {enSuOrden(plato.alergenos).map((a, i) => (
+              <span key={a} className={deLaMesa.has(a) ? 'font-bold text-mal' : ''}>
+                {i > 0 ? ', ' : ''}
+                {elAlergeno(a)}
+              </span>
+            ))}
           </span>
         )}
       </span>

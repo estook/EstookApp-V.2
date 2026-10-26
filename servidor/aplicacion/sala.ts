@@ -1,5 +1,6 @@
 import {
   elPaseHaSalido,
+  enSuOrden,
   horaDeCorte,
   jornadaDe,
   type LaMesaEnCocina,
@@ -47,6 +48,8 @@ export interface FilaDeCuenta {
   readonly con_prisa: boolean;
   /** «La cocina te llama» (0116), hasta que el camarero dice «Ya voy». */
   readonly cocina_llama_en: string | null;
+  /** La alergia de la mesa (0117), en el orden del reglamento. */
+  readonly alergias: readonly string[];
 }
 
 export interface FilaDeLinea {
@@ -72,6 +75,8 @@ export interface FilaDeLinea {
   /** Lo elegido, congelado al pedir (T3 · 2): solo hace falta su nombre para enseñarlo. */
   readonly opciones: readonly { readonly nombre: string }[];
   readonly peso_gramos: number | null;
+  /** Lo que lleva, congelado al pedir (0117). Vacío en lo pedido antes de la 0092. */
+  readonly alergenos: readonly string[];
 }
 
 export interface FilaDePase {
@@ -81,14 +86,14 @@ export interface FilaDePase {
   readonly fuera_en: string | null;
 }
 
-/** Las cuentas pedidas, de este local, con su mesa y su camarero. */
+/** Las cuentas pedidas, de este local, con su mesa, su camarero y su alergia. */
 export async function lasCuentas(
   contexto: Contexto,
   localId: string,
   ids: readonly string[],
 ): Promise<FilaDeCuenta[]> {
   if (ids.length === 0) return [];
-  return contexto.sql<FilaDeCuenta[]>`
+  const filas = await contexto.sql<FilaDeCuenta[]>`
     select c.id::text as id, c.tipo, c.mesa_id::text as mesa_id, m.nombre as mesa, c.nombre,
            c.personas, c.camarero_id::text as camarero_id, p.nombre as camarero, c.por_pases,
            c.nota_para_cocina,
@@ -96,12 +101,15 @@ export async function lasCuentas(
            to_char(c.liberada_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as liberada_en,
            to_char(c.anulada_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as anulada_en,
            c.motivo_de_anular, c.con_prisa,
-           to_char(c.cocina_llama_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cocina_llama_en
+           to_char(c.cocina_llama_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cocina_llama_en,
+           coalesce((select array_agg(a.alergeno) from estook.alergeno_de_la_cuenta a
+                      where a.cuenta_id = c.id), '{}') as alergias
       from estook.cuenta c
       left join estook.mesa m on m.id = c.mesa_id
       left join estook.persona p on p.id = c.camarero_id
      where c.local_id = ${localId}::uuid and c.id = any (${comoLista(ids)}::text::uuid[])
   `;
+  return filas.map((f) => ({ ...f, alergias: enSuOrden(f.alergias) }));
 }
 
 /** La cuenta abierta de este local, o el fallo que lo explica. */
@@ -138,7 +146,7 @@ export async function losPlatos(
            to_char(l.quitada_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as quitada_en,
            l.motivo_de_quitar,
            to_char(l.vuelve_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as vuelve_en,
-           l.motivo_de_vuelve, l.opciones, l.peso_gramos
+           l.motivo_de_vuelve, l.opciones, l.peso_gramos, l.alergenos
       from estook.linea_de_cuenta l
      where l.cuenta_id = any (${comoLista(cuentaIds)}::text::uuid[])
      order by l.pedida_en, l.id

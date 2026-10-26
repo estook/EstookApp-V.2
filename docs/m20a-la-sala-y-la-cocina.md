@@ -17,8 +17,9 @@
 > el comandero solo la sala y Estook TPV instalable. **T4 · Cocina y barra**, con sus maquetas dadas por
 > buenas el 26-oct: **T4 · 1 · La cocina** ([0116](decisiones/0116-t4-1-la-cocina.md), migración 0090,
 > #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
-> ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092), construida, en su pull
-> request. **Lo siguiente: la entrada nueva del TPV** (sus maquetas esperan a Richi) **y T5 · Estook
+> ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092, #144), **en producción**.
+> **La entrada nueva** ([0118](decisiones/0118-la-entrada-del-tpv.md), sin migración), con sus
+> maquetas dadas por buenas el 26-oct, construida, en su pull request. **Lo siguiente, T5 · Estook
 > Link.**
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
@@ -300,6 +301,22 @@ la pantalla no la cambie), `las-opciones.prueba.ts` (lo que añade una opción) 
 `la-barra-y-la-alergia.spec.ts` (el recorrido entero, con la caja, la barra y la cocina a la vez).
 
 **Lo que decidí al construirlo**: los once de la [0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md),
+sección 3.
+
+### La entrada nueva, entregada (26-oct-2026)
+
+Lo pidió Richi tras T4 · 1, y va antes de T5 ([0118](decisiones/0118-la-entrada-del-tpv.md), sin
+migración, maquetas en [`docs/maquetas/la-entrada-del-tpv.html`](maquetas/la-entrada-del-tpv.html)):
+**se entra a la sala** (sin inicio de baldosas), con **Fichar y el engranaje arriba**; **el plano cabe
+entero**; **los Ajustes del TPV en grupos**, con su dibujo, su color y cómo está cada uno, y «Editar
+sala» dentro; **cada aparato con su color**; y **mantener pulsado un producto** para agotarlo o
+pedirlo con una nota.
+
+**Las pruebas**: `la-entrada-del-tpv.spec.ts` (la sala primero, el plano entero, el engranaje y
+mantener pulsado), `la-puerta.spec.ts` y `la-puerta.prueba.ts` (todos caen en la sala), y
+`comanda.prueba.ts` (pedir con una nota).
+
+**Lo que decidí al construirlo**: los doce de la [0118](decisiones/0118-la-entrada-del-tpv.md),
 sección 3.
 
 ### T4 a T7

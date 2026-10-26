@@ -293,12 +293,12 @@ describe('entrar con el PIN', () => {
     );
   });
 
-  it('en un comandero se cae siempre en la sala; en la caja, sin mesas, en el inicio', async () => {
+  it('se cae siempre en la sala: en el comandero y en la caja, con mesas o sin ellas', async () => {
     // La tablet no ha tenido a nadie todavía hoy, y aun así: a la sala (0115).
     expect((await entrarEn(llaveDeLaTablet, SARA)).dentro.caeEn).toBe('mesas');
-    // En la caja, sin mesas dibujadas, al inicio.
+    // En la caja, sin mesas dibujadas, también (la entrada nueva): ya no hay inicio.
     const enLaCaja = await entrarEn(llaveDeLaCaja, ROSA);
-    expect(enLaCaja.dentro.caeEn).toBe('inicio');
+    expect(enLaCaja.dentro.caeEn).toBe('mesas');
 
     // Rosa dibuja una mesa en la caja (desde T2, la sala se dibuja en el TPV).
     const zona = losDatos<{ zonaId: string }>(

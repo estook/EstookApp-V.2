@@ -1,14 +1,19 @@
 import type { ReactNode } from 'react';
 import { inicialesDe } from '@estook/dominio';
+import { puedeEditar } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { irA, irAlInicio, irAlPlano } from '../navegar.ts';
+import { irA, irAlPlano } from '../navegar.ts';
+import { Icono, IconoEnSuColor } from '../iconos.tsx';
+import { COMO_SE_VE_LA_FUNCION } from '../logica/comoSeVeElAparato.ts';
 
 /**
- * **Arriba, siempre** (Anexo 11.5): el inicio a un toque en la esquina de la izquierda,
- * el local y el aparato, quién está y **Bloquear**. Lo de en medio, lo pone cada pantalla.
+ * **Arriba, siempre** (la entrada nueva, maqueta 1; Anexo 11.5): a la izquierda la «E» y el
+ * local, que **devuelven a la sala desde cualquier sitio**; en medio, lo que pone cada pantalla
+ * (en la sala, las zonas y «Mías»); y a la derecha solo lo de todos los días: **Fichar en
+ * naranja** (0115), **el engranaje** y quién está con **Bloquear**.
  *
- * **En la caja, «Fichar» en naranja** (0115): allí ficha el equipo. En un comandero no
- * hay inicio: la «E» lleva a la sala.
+ * Fichar y el engranaje, **solo en la caja**: un comandero solo pide (0115). El engranaje, solo
+ * a quien puede tocar algo de dentro. La caja (abrir y cerrar) se pone aquí con el cobro (T7).
  */
 export function LaBarraDeArriba({
   titulo,
@@ -19,19 +24,30 @@ export function LaBarraDeArriba({
 }) {
   const { yo, aparato, bloquear } = usarSesion();
   const enLaCaja = aparato.funcion === 'caja';
+  const ajusta =
+    enLaCaja &&
+    (puedeEditar(yo.permisos, 'accion.ajustes_del_tpv') ||
+      puedeEditar(yo.permisos, 'accion.vincular_aparatos') ||
+      puedeEditar(yo.permisos, 'accion.marcar_agotado'));
   return (
     <header className="flex flex-wrap items-center gap-e3 border-b border-borde bg-superficie px-e4 py-e2 md:px-e5">
       <button
         type="button"
-        aria-label={enLaCaja ? 'Inicio' : 'La sala'}
-        onClick={enLaCaja ? irAlInicio : irAlPlano}
+        aria-label="La sala"
+        onClick={irAlPlano}
         className="flex size-11 shrink-0 items-center justify-center rounded-grande bg-naranja text-seccion font-bold text-sobre-naranja"
       >
         E
       </button>
       <div className="flex min-w-0 flex-col">
         <span className="truncate text-seccion font-bold">{titulo ?? aparato.local.nombre}</span>
-        <span className="truncate text-secundario text-texto-tenue">
+        <span className="flex items-center gap-e1 truncate text-secundario text-texto-tenue">
+          {/* El dibujo y el color de este aparato, los de la lista de Aparatos. */}
+          <IconoEnSuColor
+            dibujo={COMO_SE_VE_LA_FUNCION[aparato.funcion].dibujo}
+            tono={COMO_SE_VE_LA_FUNCION[aparato.funcion].tono}
+            lado={20}
+          />
           {titulo === undefined ? aparato.nombre : `${aparato.local.nombre} · ${aparato.nombre}`}
         </span>
       </div>
@@ -40,12 +56,28 @@ export function LaBarraDeArriba({
       {enLaCaja && (
         <button
           type="button"
+          aria-label="Fichar"
           onClick={() => {
             irA('fichar');
           }}
-          className="min-h-toque rounded-redondo bg-naranja px-e4 font-bold text-sobre-naranja"
+          className="flex min-h-toque min-w-toque items-center justify-center gap-e2 rounded-redondo bg-naranja px-e3 font-bold text-sobre-naranja sm:px-e4"
         >
-          Fichar
+          <Icono dibujo="reloj" lado={18} />
+          {/* En el móvil, solo el reloj: la barra cabe en una fila. */}
+          <span className="max-sm:hidden">Fichar</span>
+        </button>
+      )}
+      {ajusta && (
+        <button
+          type="button"
+          aria-label="Ajustes"
+          title="Ajustes"
+          onClick={() => {
+            irA('ajustes');
+          }}
+          className="flex size-11 shrink-0 items-center justify-center rounded-redondo bg-charcoal"
+        >
+          <Icono dibujo="ajustes" lado={22} />
         </button>
       )}
       <button

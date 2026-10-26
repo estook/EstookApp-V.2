@@ -83,25 +83,22 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   expect(guardado.llave).not.toBeNull();
   expect(guardado.sesion).toBeNull();
 
-  // ── El PIN, y el inicio ──
+  // ── El PIN, y la sala, que es la entrada (la entrada nueva) ──
   await page.keyboard.type(pin);
   await expect(page.getByRole('heading', { name: /No has fichado la entrada/ })).toBeVisible();
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
-  for (const baldosa of ['Mesas', 'Agotados', 'Ajustes del TPV']) {
-    await expect(page.getByRole('button', { name: new RegExp(`^${baldosa}`) })).toBeVisible();
-  }
-  // Fichar, arriba y en naranja (0115): en la caja ficha todo el equipo.
+  await expect(page.getByText('Tu sala aún no tiene mesas')).toBeVisible({ timeout: 15_000 });
+  // Arriba, lo de todos los días: Fichar en naranja (0115) y el engranaje.
   await expect(page.getByRole('button', { name: 'Fichar', exact: true })).toBeVisible();
   // Lo que todavía no funciona no sale, ni apagado.
   await expect(page.getByRole('button', { name: /^Venta rápida/ })).toHaveCount(0);
 
-  // ── Ajustes del TPV › Aparatos › Añadir: la tablet de la sala ──
-  await page.getByRole('button', { name: /^Ajustes del TPV/ }).click();
-  // Ajustes abre en Productos (T3 · 1), el primero después de La sala.
-  await page
-    .getByRole('navigation', { name: 'Ajustes del TPV' })
-    .getByRole('button', { name: 'Aparatos' })
-    .click();
+  // ── El engranaje › Aparatos del local › Añadir: la tablet de la sala ──
+  await page.getByRole('button', { name: 'Ajustes', exact: true }).click();
+  for (const grupo of ['Hoy', 'Lo que se vende', 'Lo que se conecta', 'Seguridad']) {
+    await expect(page.getByRole('region', { name: grupo })).toBeVisible();
+  }
+  await page.getByRole('button', { name: /^Aparatos del local/ }).click();
   await expect(page.getByRole('button', { name: /Caja 1 · este aparato/ })).toBeVisible();
   await page.getByRole('button', { name: 'Añadir aparato' }).click();
   await page.getByRole('radio', { name: /^Comandero/ }).click();

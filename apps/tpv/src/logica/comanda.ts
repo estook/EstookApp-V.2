@@ -84,6 +84,35 @@ export function anadirPlato(
   ];
 }
 
+/**
+ * **Pedir con una nota** (la entrada nueva: mantener pulsado el botón): siempre en su propia
+ * línea, para que «sin cebolla» no se le pegue a las otras dos que ya había.
+ */
+export function anadirConNota(
+  borrador: Borrador,
+  plato: PlatoQueSePide,
+  como: { readonly destino: 'cocina' | 'barra' | 'ninguno'; readonly pase: number | null },
+  nota: string,
+): Borrador {
+  const limpia = nota.trim();
+  if (limpia === '') return anadirPlato(borrador, plato, como);
+  return [
+    ...borrador,
+    {
+      id: nuevoId(),
+      platoId: plato.id,
+      menuId: null,
+      parteDe: null,
+      nombre: plato.nombre,
+      cantidad: 1,
+      precioCentimos: plato.precioCentimos,
+      destino: como.destino,
+      pase: como.destino === 'cocina' ? como.pase : null,
+      nota: limpia,
+    },
+  ];
+}
+
 /** Lo que se elige de una sección de un menú: el plato y cuántos. */
 export interface EleccionDelMenu {
   readonly seccion: { readonly pase: number | null; readonly esBebida: boolean };

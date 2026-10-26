@@ -1055,7 +1055,8 @@ descontado, los tiempos de cocina, Negocio y el «Tu dia» de mañana
 - **A la izquierda, la cuenta, por pases**, cada plato con ✓ y su hora cuando sale. Arriba, la mesa: nombre, comensales, camarero y **el aviso de alergia con icono y texto**.
 - **Abajo, siempre a la vista: Mandar** (lo nuevo va a cocina), **Cuenta** (la precuenta, 3.5) **y Cobrar** (10.5).
 - **El menú del día, en el orden de la comida** (0106): «¿Cuántos menús?» y **se cuentan los platos** (1 lentejas, 1 ensalada); **primeros y segundos juntos**, con el 2.º en espera; **postre o café al final**. Las bebidas que la mesa ya pidió **entran solas en el menú** si son de las suyas, una por menú. Una mesa puede tener **menú y carta a la vez**: es una sola cuenta. Cada elección va a cocina como su plato (M10).
-- **Agotado** sale en gris y no se puede tocar; con pocas raciones, **«Quedan 3»**, calculado con el escandallo, el stock y lo que ya está en cocina (3.1).
+- **Agotado** sale en gris y un toque no lo pide; con pocas raciones, **«Quedan 3»**, calculado con el escandallo, el stock y lo que ya está en cocina (3.1).
+- **Mantener pulsado un producto** (o el botón derecho en el ordenador; [0118](../decisiones/0118-la-entrada-del-tpv.md)): **«Se ha agotado»**, en cualquier aparato y por quien tenga permiso, y **«Con una nota para cocina»**, que lo pide en su propia línea con su nota. Lo agotado, al mantenerlo, **«Ya hay otra vez»**.
 - **«Otra ronda»**: repite lo último que pidió la mesa en dos toques. En un bar es lo que más se hace.
 - **«¿Pan para la mesa? · Pan para 4»**: un toque pone un pan por comensal ([0112](../decisiones/0112-el-pan-y-el-cafe.md)). **Nunca se pone solo**: en España el pan no se cobra si no se pide, así que se pregunta.
 - **Grupos de opciones que se reutilizan** —el refresco de las copas, la guarnición si el local la quiere preguntar; **nunca el punto** (0106)—, con mínimo, máximo, precio por canal y **su propio escandallo**: «extra de queso» gasta queso. Sin eso, el almacén miente. **Se configuran en Estook TPV**, plato a plato, sobre la carta que el TPV lee de Estook ([0092](../decisiones/0092-las-respuestas-de-m9-3.md)): cada extra sale **de los ingredientes del escandallo del plato** («doble de queso») **o de cualquier producto del almacén**, con su precio; una sustitución cambia un ingrediente por otro («pan sin gluten»); y **el extra libre**, fuera de la receta, lleva nombre y precio y **no descuenta género**, porque no se sabe qué es. El precio del plato y lo que cuesta siguen viniendo de Estook: el TPV no inventa un dato.
@@ -1256,7 +1257,7 @@ La vara de 10.3 —cuatro platos en diez toques— no basta: un camarero decide 
 
 _Añadido en la versión 1.4 (23 de octubre de 2026, [decisión 0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)), con las once respuestas de Richi sobre las maquetas [Estook TPV · el TPV completo](https://claude.ai/artifact/EUZuQhUJSg13As8qeUWk5X). Las maquetas mandan sobre el aspecto; este capítulo, sobre lo que hace cada pantalla. Se miró Square, Toast, Revo, Lightspeed, Loyverse, TableIn, ClassicGes, Glop y Sysme: **se copia cómo funcionan, no cómo se ven** (Manifiesto, capítulo 27)._
 
-> **Cómo se lee este capítulo.** Es la especificación de Estook TPV como aplicación: los aparatos, cómo se vinculan, quién entra, el inicio, la caja, las ventas, las mesas, el plano, pedir y los productos. **Lo que pasa por dentro** —la cocina (3.2), la facturación (4), el cobro (5), la impresión (6), el modelo (7) y cobrar en pantalla (10.5)— sigue en su capítulo, y aquí se enlaza. **Si algo de aquí choca con otro capítulo, el otro está mal y se corrige**: no hay dos versiones de la misma regla.
+> **Cómo se lee este capítulo.** Es la especificación de Estook TPV como aplicación: los aparatos, cómo se vinculan, quién entra, la entrada, la caja, las ventas, las mesas, el plano, pedir y los productos. **Lo que pasa por dentro** —la cocina (3.2), la facturación (4), el cobro (5), la impresión (6), el modelo (7) y cobrar en pantalla (10.5)— sigue en su capítulo, y aquí se enlaza. **Si algo de aquí choca con otro capítulo, el otro está mal y se corrige**: no hay dos versiones de la misma regla.
 >
 > **El listón:** un camarero que no ha visto nunca Estook TPV abre una mesa, pide cuatro platos y los manda **sin que nadie le explique nada**; y un dueño que viene de Revo **monta su local en una tarde** sin medir una mesa ni copiar su carta a mano.
 
@@ -1404,39 +1405,35 @@ En el aparato nuevo
 - **Lo que pide un encargado** se aprueba en el mismo aparato con su PIN (3.4): una cosa, una vez, dos minutos.
 - **Sin conexión**, los PIN los comprueba Link; sin Link, el aparato los cifra con su llave pública y la API los mira al volver (0070). Sin nube y sin Link solo entra quien ya entró ese día en ese aparato (3.4).
 
-## 11.5 El inicio
+## 11.5 La entrada: la sala
 
-**Lo primero que ve el primero que entra cada día en la caja.** **El inicio es de la caja** ([0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)): un comandero entra directo a la sala. Lo que no tiene permiso para hacer **no sale**, ni apagado.
+**Se entra a la sala, no a un inicio de baldosas** (Richi, 26-oct; [0118](../decisiones/0118-la-entrada-del-tpv.md)): lo primero es el plano, como en todos los TPV de restaurante, en la caja y en el comandero. **Arriba, solo lo de todos los días**; lo que se toca una vez, **detrás del engranaje**. Lo que no tiene permiso para hacer **no sale**, ni apagado.
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│ ESTOOK TPV · Bar Centro · Caja 1        Sara · camarera   [Bloquear] │
-├────────────────────────────────────────────┬────────────────────────┤
-│ [ Mesas        ] [ Venta rápida ] [ Caja  ]│ AHORA                  │
-│   12 abiertas      barra y llevar  abierta │ Caja abierta · 300 €   │
-│ [ Ventas de hoy] [ Llevar y      ] [Fichar]│ 12 mesas · 2 toca      │
-│   1.240 €          reparto · 1             │   marchar              │
-│ [ Agotados     ] [ Pantalla de   ] [Ajustes│ ⚠ Impresora de cocina  │
-│   3 platos         cocina          del TPV]│   sin papel            │
-└────────────────────────────────────────────┴────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│ [E] IKATZ   [Salón|Terraza|Barra y llevar] [Todas|Mías]  [Fichar] [⚙] [RI · Bloquear] │
+│     ▣ Caja 1                                                               │
+├──────────────────────────────────────────────────────────────────────────┤
+│ 🛎 La cocina te llama · Mesa 1                                   [Ya voy] │
+│ Mesa 4 · ha salido todo el 1.º                           [Marchar el 2.º] │
+│ ┌──────────────────────── el plano, entero ────────────────────────────┐ │
+│ │   (1)   (2)   (3)                       [ BARRA ]                     │ │
+│ └───────────────────────────────────────────────────────────────────────┘ │
+│ 4 mesas abiertas · 11 personas                  Cocina y sala, al segundo │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
-| Baldosa                | Qué abre                                                | En qué aparatos               | Quién la ve (Roles 1.12)                      |
-| ---------------------- | ------------------------------------------------------- | ----------------------------- | --------------------------------------------- |
-| **Mesas**              | El plano (11.8)                                         | Caja (el comandero entra ahí) | Quien toma nota                               |
-| **Venta rápida**       | Pedir y cobrar sin abrir mesa (3.1)                     | Caja                          | Quien cobra                                   |
-| **Llevar y reparto**   | Para llevar con nombre, y los pedidos de reparto (10.8) | Caja y comandero              | Quien toma nota                               |
-| **Caja**               | Abrir, entradas y salidas, X, cerrar (11.6)             | Caja                          | Jefe de sala y gerente; el camarero, su bolsa |
-| **Ventas de hoy**      | Los tickets del día (11.7)                              | Caja y comandero              | Todos; el camarero, **los suyos**             |
-| **Fichar**             | Arriba, en naranja: entrada, pausa, vuelta y salida     | Caja (0115)                   | Todos                                         |
-| **Agotados**           | Marcar y desmarcar (3.1)                                | Caja (0115)                   | Quien puede agotar                            |
-| **Pantalla de cocina** | La cocina en grande, para mirar (sin tachar)            | Caja                          | Jefe de sala y gerente                        |
-| **Ajustes del TPV**    | 11.13                                                   | Caja (0115)                   | Gerente; el jefe de cocina, lo de cocina      |
-
-- **«Ahora»**, a la derecha (abajo en el móvil): la caja (abierta con su fondo, o «Sin abrir»), las mesas abiertas y las que **toca marchar**, los pedidos de reparto por aceptar y **lo que falla** (impresora sin papel, «sin internet», cosas sin subir), cada uno con su botón de qué hacer. Si no hay nada que decir, no dice nada.
-- **Arriba, siempre**: el local, el aparato, quién está y **Bloquear**; el estado de la conexión, solo si no va bien (10.9).
-- **Dónde cae cada uno** (decidido por la IA, 0107): **en un comandero, siempre en la sala** (0115); en la caja, **el primero del día, en el inicio**, y **tras un bloqueo, el siguiente cae en Mesas** (o en Venta rápida si el local no tiene mesas), que es a lo que viene. El inicio está a un toque en la esquina de arriba a la izquierda.
-- **Con la caja sin abrir** en un aparato de caja, la baldosa Caja sale la primera y en naranja: **«Abrir caja»**. No impide nada más (11.6).
+- **La «E» y el local**, siempre a la izquierda: **devuelven a la sala desde cualquier sitio**. Debajo del local, el aparato con **su dibujo y su color** (11.13).
+- **Las zonas y «Mías»**, al lado del dedo: es lo que se toca cien veces al día (11.8).
+- **Fichar**, en naranja, **solo en la caja** (0115); en el móvil, solo su reloj.
+- **El engranaje**, **solo en la caja y a quien puede tocar algo de dentro**: los agotados, los Ajustes del TPV y los aparatos (11.13).
+- **Quién está y Bloquear**, como siempre (11.4).
+- **La caja** (abrir y cerrar, en verde o en ámbar) **se pone arriba con el cobro** (T7, 11.6): hasta entonces no sale.
+- **Las franjas** de lo que pide mirar ya: «La cocina te llama» (0116) y lo que **toca marchar**, con su botón.
+- **El plano cabe entero** en la caja y en la tablet: se encoge o se estira hasta llenar lo que queda de pantalla, sin barras de desplazamiento. En el móvil, la cuadrícula de tres en fila (11.8).
+- **Abajo**, las mesas abiertas y las personas, y si la sala y la cocina van al segundo.
+- **Lo que tenía el inicio**, dónde está ahora: **Agotados**, en el engranaje y **manteniendo pulsado el producto** en la botonera (11.11); **Ajustes del TPV**, en el engranaje; **Venta rápida**, en «Barra y llevar», y el cobro con T7; **Ventas de hoy** y **la caja**, con el cobro (T7); **la pantalla de cocina para mirar**, cuando un local la pida.
+- **Dónde cae cada uno**: **en la sala, siempre** (0118). Sin mesas dibujadas, la sala dice cómo dibujarlas y deja pedir en «Barra y llevar».
 
 ## 11.6 La caja
 
@@ -1622,7 +1619,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 - **Cambiar el precio desde el TPV** (con el permiso de la carta): es el precio de la carta para ese canal, con su historial. **No hay un precio del TPV.**
 - **Las opciones y los extras** de cada plato (10.3): los grupos reutilizables, con su mínimo, su máximo, su precio y su escandallo.
 - **«Monta tus bebidas»** (de la 0106, puntos 21 a 23, que se monta aquí y no en Estook): coge las bebidas del almacén, propone su página por el nombre y se ponen todos los precios de una vez; **varias raciones del mismo producto** (caña, doble y jarra; la copa de 150 ml y la botella); **las copas que se hacen solas** («Añadir botellas del almacén», 50 ml de la botella, el refresco del «¿Con qué?» y hielo); y **los cafés hechos**, con su coste aproximado si falta el café o la leche. Lo que guarda es lo de siempre: el plato en la carta y su escandallo «tal cual» o con receta, así que **el almacén descuenta igual**.
-- **Agotados**, como en 3.1, desde aquí o desde la mesa.
+- **Agotados**, como en 3.1, desde el engranaje (11.13) o manteniendo pulsado el producto en la mesa.
 - **El menú del día y los otros menús** vienen de Estook (M10 · 2) y salen solos en la página **Menú** los días que hay: no se montan en la botonera.
 
 ## 11.12 Cómo se ve
@@ -1643,19 +1640,23 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 ## 11.13 Ajustes del TPV
 
-**Solo en la caja** ([0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)), con el PIN de quien puede (Roles 1.12). **Solo lo de vender**: la carta, los precios del día a día y el equipo se cambian en Estook.
+**Detrás del engranaje** de arriba (11.5, [0118](../decisiones/0118-la-entrada-del-tpv.md)), **solo en la caja** ([0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)), con el PIN de quien puede (Roles 1.12). **Solo lo de vender**: la carta, los precios del día a día y el equipo se cambian en Estook. **En grupos, cada apartado con su dibujo y su color y una línea que dice cómo está** («2 zonas · 9 mesas», «1 caja · 2 comanderos»). **Lo que llega con su entrega no se enseña hasta que funcione.**
 
-| Apartado               | Qué tiene                                                                                  | Quién                    |
-| ---------------------- | ------------------------------------------------------------------------------------------ | ------------------------ |
-| **La sala**            | El editor del plano (11.9)                                                                 | Gerente                  |
-| **Productos**          | La botonera, las dos preguntas, opciones y extras, «Monta tus bebidas» (11.11)             | Gerente                  |
-| **Aparatos**           | Los vinculados, añadir (el código), cambiar función o nombre, desvincular (11.3)           | Gerente                  |
-| **Impresoras y cajón** | Darlas de alta, qué imprime cada una, «Imprimir prueba» y «Abrir el cajón» de prueba (6.5) | Gerente                  |
-| **Caja y arqueo**      | Ciego sí o no, los motivos de entrada y salida, caja central o bolsa (5.5)                 | Gerente                  |
-| **PIN y bloqueo**      | Los minutos de cada aparato, bloquear al cobrar, solo quien ha fichado (11.4)              | Gerente                  |
-| **Formas de pago**     | Efectivo, tarjeta y las del banco del local; el datáfono conectado cuando llegue (10.7)    | Gerente                  |
-| **Tickets**            | Lo que va arriba y abajo del ticket y si se imprime solo (6.5)                             | Gerente                  |
-| **Cocina y barra**     | Los minutos del semáforo y el sonido (0116); pantalla o papel, con Estook Link (3.2)       | Gerente y jefe de cocina |
+| Grupo                 | Apartado                              | Qué tiene                                                                                  | Quién                    |
+| --------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------ |
+| **Hoy**               | **Agotados** (rojo)                   | Marcar y desmarcar (3.1); también manteniendo pulsado el producto en la botonera           | Quien puede agotar       |
+|                       | **La caja** (verde), con el cobro     | Abrir, entradas y salidas, X y cerrar (11.6)                                               | Gerente                  |
+| **Lo que se vende**   | **La sala y las mesas** (verde)       | El editor del plano (11.9): ya no está arriba, en la sala                                  | Gerente                  |
+|                       | **Productos y precios** (naranja)     | La botonera, las dos preguntas, opciones y extras, «Monta tus bebidas» (11.11)             | Gerente                  |
+|                       | **Cocina y barra** (ámbar)            | Los minutos del semáforo y el sonido (0116); pantalla o papel, con Estook Link (3.2)       | Gerente y jefe de cocina |
+| **Lo que se conecta** | **Aparatos del local** (azul)         | Los vinculados, añadir (el código), cambiar función o nombre, desvincular (11.3)           | Gerente                  |
+|                       | **Impresoras y cajón**, con T5        | Darlas de alta, qué imprime cada una, «Imprimir prueba» y «Abrir el cajón» de prueba (6.5) | Gerente                  |
+|                       | **Datáfono y cajón que da el cambio** | El datáfono conectado y CashDro o Cashlogy, con el cobro (10.7)                            | Gerente                  |
+| **Seguridad**         | **PIN y bloqueo** (gris)              | Los minutos de cada aparato, bloquear al cobrar, solo quien ha fichado (11.4)              | Gerente                  |
+
+Con el cobro (T7) entran también **Caja y arqueo** (ciego sí o no, los motivos de entrada y salida, caja central o bolsa, 5.5), **Formas de pago** (10.7) y **Tickets** (6.5), en el grupo que les toque.
+
+**Cada aparato, con su dibujo y su color**, el mismo en la lista, al añadir y arriba en el propio aparato: **la caja, naranja; el comandero, azul; la pantalla de cocina, verde; la de barra, ámbar**. Así no se confunden.
 
 ## 11.14 La seguridad, en una lista
 
@@ -1677,7 +1678,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 - **Un comandero no abre el cajón** ni con el PIN del gerente; **una pantalla de cocina no recibe un importe**.
 - **El comandero personal de Sara** no deja entrar a Marcos.
 - **El bloqueo**: la caja se bloquea al acabar un cobro y a los 2 minutos; el comandero personal, a los 10; la pantalla de cocina, nunca; lo pedido sin mandar sigue en la mesa después del bloqueo.
-- **El primero del día cae en el inicio; el siguiente, tras un bloqueo, en las mesas.**
+- **Todos caen en la sala**, también el primero del día y sin mesas dibujadas (0118); el engranaje solo sale en la caja y a quien puede tocar algo de dentro.
 - **Abrir la caja en 3 toques** con el fondo propuesto; **cobrar en efectivo con la caja cerrada** la abre en el mismo gesto; **cerrar a ciegas** no enseña lo esperado hasta haber contado, y el fondo que se queda es el que se propone mañana.
 - **Todas las mesas a la vista de todos**, con las iniciales de su camarero; **«Mías»** enseña solo las suyas; **Marcos pide en la mesa de Sara** y la venta sigue siendo de Sara, con el plato a nombre de Marcos; **«Quedármela»** la pasa a Marcos con su rastro.
 - **El plano**: una mesa de 6 plazas nace más grande que una de 2; se estira y se gira sin ver un número; una mesa abierta se mueve sin tocar su cuenta y no se puede borrar; lo dibujado en la caja se ve en la tablet en menos de 2 segundos.

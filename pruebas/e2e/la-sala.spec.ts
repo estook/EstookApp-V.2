@@ -92,10 +92,7 @@ test('la sala: dibujarla en el TPV, abrir la mesa, pedir con los pases en pesta�
   await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
   await page.keyboard.type(pin);
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
-  // Sin mesas se cae en el inicio; con mesas, en las mesas (0108).
-  if (enElOrdenador) {
-    await page.getByRole('button', { name: /^Mesas/ }).click({ timeout: 15_000 });
-  }
+  // Se cae en la sala, también sin mesas (0118): dice cómo dibujarla.
 
   if (enElOrdenador) {
     // ── Dibujar la sala en el TPV, a ojo ──

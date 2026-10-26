@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
-import { CODIGO_PARA_VINCULAR, NOMBRE_DE_LA_FUNCION, inicialesDe } from '@estook/dominio';
+import { CODIGO_PARA_VINCULAR, NOMBRE_DE_LA_FUNCION } from '@estook/dominio';
 import { Cargando, ErrorEnCristiano } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { FalloDeLaSala } from '../ganchos/usarLaSala.ts';
 import { irA } from '../navegar.ts';
 import { ElegirQueSera } from '../puerta/ElegirQueSera.tsx';
+import { IconoEnSuColor } from '../iconos.tsx';
+import { COMO_SE_VE_LA_FUNCION } from '../logica/comoSeVeElAparato.ts';
 import type {
   CodigoParaVincular,
   QueSera,
@@ -19,7 +21,8 @@ import type {
  * «En línea» o «Visto hace 2 días»; **Añadir aparato**, que pide primero qué será y de
  * quién, y saca el código de 6 cifras con su QR; y en cada uno, **qué es y cómo se
  * llama**, que se cambia sin volver a vincularlo, y **Desvincular**, que lo deja sin valer
- * en su petición siguiente.
+ * en su petición siguiente. **Cada uno con su dibujo y su color** (la entrada nueva): la caja,
+ * naranja; el comandero, azul; la pantalla de cocina, verde; la de barra, ámbar.
  */
 export function LosAparatos({ resto }: { readonly resto: string }) {
   const { cliente } = usarSesion();
@@ -73,9 +76,10 @@ export function LosAparatos({ resto }: { readonly resto: string }) {
                 a.id === datos.este ? 'border-2 border-borde-fuerte' : '',
               ].join(' ')}
             >
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-grande bg-charcoal font-bold">
-                {inicialesDe(a.nombre)}
-              </span>
+              <IconoEnSuColor
+                dibujo={COMO_SE_VE_LA_FUNCION[a.funcion].dibujo}
+                tono={COMO_SE_VE_LA_FUNCION[a.funcion].tono}
+              />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-seccion font-bold">
                   {a.nombre}

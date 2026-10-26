@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { LaMesa } from '../datos/tipos.ts';
 import {
   anadirAlMenu,
+  anadirConNota,
   anadirMenus,
   anadirPlato,
   cambiarLinea,
@@ -33,6 +34,17 @@ describe('la comanda que se va tomando', () => {
     b = cambiarLinea(b, b[0]?.id ?? '', { nota: 'sin jamón' });
     b = anadirPlato(b, croquetas, { destino: 'cocina', pase: 1 });
     expect(b).toHaveLength(3);
+  });
+
+  it('pedir con una nota (mantener pulsado) es siempre su propia línea', () => {
+    let b: Borrador = anadirPlato([], croquetas, { destino: 'cocina', pase: 1 });
+    b = anadirConNota(b, croquetas, { destino: 'cocina', pase: 1 }, '  sin cebolla ');
+    expect(b).toHaveLength(2);
+    expect(b[1]?.nota).toBe('sin cebolla');
+    // Sin nada escrito, es un toque normal: suma a la de antes.
+    b = anadirConNota(b, croquetas, { destino: 'cocina', pase: 1 }, '   ');
+    expect(b).toHaveLength(2);
+    expect(b[0]?.cantidad).toBe(2);
   });
 
   it('lo de la barra no tiene pase', () => {

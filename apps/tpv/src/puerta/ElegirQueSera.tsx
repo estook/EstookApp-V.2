@@ -6,6 +6,8 @@ import {
   type FuncionDelAparato,
 } from '@estook/dominio';
 import type { QueSera } from '../datos/tipos.ts';
+import { IconoEnSuColor } from '../iconos.tsx';
+import { COMO_SE_VE_LA_FUNCION } from '../logica/comoSeVeElAparato.ts';
 
 /**
  * **Qué es este aparato** (maquetas 2 y 16; Anexo 11.3): la función se elige, **no se
@@ -94,7 +96,7 @@ export function ElegirQueSera({
       <div
         role="radiogroup"
         aria-label="Qué es"
-        className={`grid gap-e3 ${funciones.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}
+        className={`grid gap-e3 ${funciones.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2 xl:grid-cols-4'}`}
       >
         {funciones.map((f) => (
           <button
@@ -118,6 +120,11 @@ export function ElegirQueSera({
                 : 'border-2 border-borde bg-superficie',
             ].join(' ')}
           >
+            {/* Cada uno con su dibujo y su color, el mismo que en la lista (la entrada nueva). */}
+            <IconoEnSuColor
+              dibujo={COMO_SE_VE_LA_FUNCION[f].dibujo}
+              tono={COMO_SE_VE_LA_FUNCION[f].tono}
+            />
             <span className="text-pantalla font-bold">{NOMBRE_DE_LA_FUNCION[f]}</span>
             <span className="text-secundario text-texto-suave">{QUE_HACE[f]}</span>
           </button>

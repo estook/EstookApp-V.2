@@ -1070,8 +1070,8 @@ export const cambiarLasAlergias = comando<
     .strict(),
   exige: 'accion.tomar_nota',
   enElTpv: 'solo',
-  // Decir la misma lista dos veces es lo mismo.
-  sinRecordar: true,
+  // Se recuerda, como lo demás de la sala: un reintento con la lista de antes no deshace un
+  // cambio de después.
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);

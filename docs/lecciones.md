@@ -910,3 +910,12 @@
      quince minutos en dar los navegadores; ninguna prueba falló. Se lee el registro antes de
      tocar el código, y lo que depende de fuera se reintenta una vez, con su tope por intento
      (`integracion.yml`, «Instalar navegadores»).
+227. **Una hora al segundo empata, y un empate se ordena al azar.** La API da las horas sin
+     milésimas. En la barra, una caña servida y un café pedido en el mismo segundo salían en el
+     orden de sus identificadores, y la ronda nueva se juntaba con la vieja una vez de cada
+     dos. A la misma hora, lo servido va antes (`laRondaDeLaBarra`); y una prueba de un empate
+     se escribe para que el orden de los identificadores sea el malo (T4 · 2).
+228. **Una prueba de pantalla que tarda más que el bloqueo prueba otra cosa.** La caja se
+     bloquea a los dos minutos sin tocarla; la prueba de la barra abría las otras pantallas
+     después de pedir, tardaba más que eso, y la cuenta de la sala ya no se refrescaba. Las
+     pantallas se encienden antes, como en un local (`la-barra-y-la-alergia.spec.ts`).

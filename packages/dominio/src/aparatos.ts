@@ -26,9 +26,9 @@ export const NOMBRE_DE_LA_FUNCION: Readonly<Record<FuncionDelAparato, string>> =
 };
 
 /**
- * **Las que se eligen hoy.** Las pantallas de cocina y de barra existen en la base desde
- * T1, pero su pantalla llega con T4: hasta entonces no se ofrecen, en vez de vincular un
- * aparato que no hace nada (lo que no funciona no se enseña apagado).
+ * **Las que se eligen hoy.** La pantalla de cocina, desde T4 · 1 (0116); la de barra existe
+ * en la base desde T1, pero su pantalla llega con T4 · 2: hasta entonces no se ofrece, en vez
+ * de vincular un aparato que no hace nada (lo que no funciona no se enseña apagado).
  *
  * **El aparato para fichar ya no se elige** (0115; Richi, 25-oct): se ficha en la caja,
  * que la abre el gerente al llegar, o en Estook con la ubicación. Los que ya estaban
@@ -37,6 +37,7 @@ export const NOMBRE_DE_LA_FUNCION: Readonly<Record<FuncionDelAparato, string>> =
 export const FUNCIONES_QUE_SE_ELIGEN = [
   'caja',
   'comandero',
+  'cocina',
 ] as const satisfies readonly FuncionDelAparato[];
 
 export function esFuncionDelAparato(valor: unknown): valor is FuncionDelAparato {

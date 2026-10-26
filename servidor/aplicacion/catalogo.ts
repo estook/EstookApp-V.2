@@ -198,6 +198,8 @@ import { marcarAgotado, quitarAgotado } from './comandos/agotados.ts';
 import {
   abrirMesa,
   anularMesa,
+  cambiarLaPrisa,
+  yaVoy,
   cambiarDeMesa,
   cambiarLaMesa,
   cambiarPlatoDeLaMesa,
@@ -426,6 +428,14 @@ import {
   revisarMisDatosConFogon,
 } from './comandos/fogon-prepara.ts';
 import { fogonEnElAdmin } from './consultas/fogon-en-el-admin.ts';
+import {
+  destacharEnLaPantalla,
+  guardarLaCocinaYLaBarra,
+  laCocinaYLaBarra,
+  laPantallaDeCocina,
+  llamarAlCamarero,
+  tacharEnLaPantalla,
+} from './comandos/pantalla.ts';
 
 /**
  * Un fichero por comando y por consulta, y este catalogo que los junta.
@@ -534,6 +544,8 @@ export const catalogo = {
     [elPlano.nombre]: elPlano,
     [laMesa.nombre]: laMesa,
     [laCocina.nombre]: laCocina,
+    // T4 · 1 (0116): los minutos del semáforo y el sonido, en la caja.
+    [laCocinaYLaBarra.nombre]: laCocinaYLaBarra,
     [laCartaDeLaSala.nombre]: laCartaDeLaSala,
     [elPlanoDelLocal.nombre]: elPlanoDelLocal,
     // T3 · la botonera de Estook TPV, para montarla en Ajustes del TPV › Productos (0111).
@@ -971,6 +983,14 @@ export const catalogo = {
     // 0115: fichar en la caja, con el botón naranja, sin entrar.
     [quienFichaEnLaCaja.nombre]: quienFichaEnLaCaja,
     [ficharEnLaCaja.nombre]: ficharEnLaCaja,
+    // T4 · 1 (0116): la pantalla de cocina, sin sesión, con su llave; y lo que la sala le dice.
+    [laPantallaDeCocina.nombre]: laPantallaDeCocina,
+    [tacharEnLaPantalla.nombre]: tacharEnLaPantalla,
+    [destacharEnLaPantalla.nombre]: destacharEnLaPantalla,
+    [llamarAlCamarero.nombre]: llamarAlCamarero,
+    [cambiarLaPrisa.nombre]: cambiarLaPrisa,
+    [yaVoy.nombre]: yaVoy,
+    [guardarLaCocinaYLaBarra.nombre]: guardarLaCocinaYLaBarra,
     [cambiarAparato.nombre]: cambiarAparato,
     [desvincularAparato.nombre]: desvincularAparato,
     [guardarPinYBloqueo.nombre]: guardarPinYBloqueo,

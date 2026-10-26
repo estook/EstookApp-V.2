@@ -142,8 +142,22 @@ export function OpcionesDeLaMesa({
             }}
           />
           <Opcion
+            titulo={cuenta.conPrisa ? '⚡ Ya no tienen prisa' : '⚡ Tienen prisa'}
+            detalle={
+              cuenta.conPrisa
+                ? 'en cocina va arriba, con su franja'
+                : 'sube arriba en cocina, con su franja y su sonido'
+            }
+            onClick={() => {
+              void hacer('cambiar_la_prisa', {
+                cuenta_id: cuenta.cuentaId,
+                con_prisa: !cuenta.conPrisa,
+              });
+            }}
+          />
+          <Opcion
             titulo="Nota para cocina"
-            detalle={notaParaCocina ?? 'Sin nota: «tienen prisa», «es un cumpleaños»…'}
+            detalle={notaParaCocina ?? 'Sin nota: «es un cumpleaños», «sin prisa»…'}
             onClick={() => {
               setTexto(notaParaCocina ?? '');
               setPaso('nota');

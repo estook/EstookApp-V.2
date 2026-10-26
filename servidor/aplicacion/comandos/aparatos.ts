@@ -67,7 +67,7 @@ const llave = z.string().trim().min(20).max(200);
 const id = z.string().uuid();
 const version = z.string().trim().max(40).optional();
 
-/** Las que se eligen hoy (`FUNCIONES_QUE_SE_ELIGEN`): cocina y barra llegan con T4. */
+/** Las que se eligen hoy (`FUNCIONES_QUE_SE_ELIGEN`): la cocina desde T4 · 1; la barra, con T4 · 2. */
 const funcion = z.enum(FUNCIONES_QUE_SE_ELIGEN);
 
 // ═══ El aparato por dentro ════════════════════════════════════════════════════
@@ -89,7 +89,7 @@ interface FilaDelAparato {
   tema_al_segundo: string | null;
 }
 
-interface AparatoDelTpv extends ElAparato {
+export interface AparatoDelTpv extends ElAparato {
   readonly funcion: FuncionDelAparato;
   readonly duenoId: string | null;
   readonly nombreDelDueno: string | null;
@@ -115,7 +115,10 @@ function comoAparato(fila: FilaDelAparato): AparatoDelTpv {
 }
 
 /** El aparato de una llave, vivo. Si no, «ya no está vinculado». */
-async function elAparatoDeLaLlave(contexto: Contexto, laLlave: string): Promise<AparatoDelTpv> {
+export async function elAparatoDeLaLlave(
+  contexto: Contexto,
+  laLlave: string,
+): Promise<AparatoDelTpv> {
   const filas = await contexto.sql<FilaDelAparato[]>`
     select * from estook.aparato_por_llave(${await huellaDeToken(laLlave)})
   `;

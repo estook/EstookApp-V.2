@@ -26,11 +26,12 @@ async function abrirFogon(page: Page) {
   await abrirSinQueSeCaiga(page, `${APP}#/`);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
   const ventana = page.getByRole('dialog', { name: 'Fogón' });
-  // El atajo lo escucha la app cuando ya ha arrancado del todo: se repite hasta que abre.
-  await expect(async () => {
-    if (!(await ventana.isVisible())) await page.keyboard.press('Control+j');
-    await expect(ventana).toBeVisible({ timeout: 2_000 });
-  }).toPass({ timeout: 15_000 });
+  // Como una persona: el «+» y «Pregúntale a Fogón». Con el atajo de teclado, en el Safari de
+  // las pruebas a veces llegaba antes que la app y no abría (26-oct); el atajo se prueba en
+  // `pantalla.spec.ts`.
+  await page.getByRole('button', { name: 'Qué quieres hacer' }).click();
+  await page.getByRole('button', { name: /Pregúntale a Fogón/ }).click();
+  await expect(ventana).toBeVisible({ timeout: 15_000 });
   return ventana;
 }
 

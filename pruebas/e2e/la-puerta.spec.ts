@@ -135,7 +135,7 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
     timeout: 15_000,
   });
   await page.getByRole('button', { name: 'PIN y bloqueo' }).click();
-  await page.getByLabel(/^Solo entra quien ha fichado/).check();
+  await page.getByLabel(/solo entra quien ha fichado/i).check();
   await expect(page.getByRole('status')).toContainText('Guardado');
 
   // ── Cambiar lo que es, sin volver a vincular: la tablet pasa a ser la caja 2 ──

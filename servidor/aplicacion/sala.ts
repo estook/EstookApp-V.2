@@ -43,6 +43,10 @@ export interface FilaDeCuenta {
   readonly liberada_en: string | null;
   readonly anulada_en: string | null;
   readonly motivo_de_anular: string | null;
+  /** «Tienen prisa» (0116): la sala lo marca, y la tarjeta sube en cocina. */
+  readonly con_prisa: boolean;
+  /** «La cocina te llama» (0116), hasta que el camarero dice «Ya voy». */
+  readonly cocina_llama_en: string | null;
 }
 
 export interface FilaDeLinea {
@@ -91,7 +95,8 @@ export async function lasCuentas(
            to_char(c.abierta_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as abierta_en,
            to_char(c.liberada_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as liberada_en,
            to_char(c.anulada_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as anulada_en,
-           c.motivo_de_anular
+           c.motivo_de_anular, c.con_prisa,
+           to_char(c.cocina_llama_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cocina_llama_en
       from estook.cuenta c
       left join estook.mesa m on m.id = c.mesa_id
       left join estook.persona p on p.id = c.camarero_id
@@ -216,10 +221,12 @@ export async function apuntarEnLaMesa(
   cuentaId: string,
   localId: string,
   despues: unknown,
+  // La pantalla de cocina no tiene sesión (0116): dice ella de qué organización es.
+  organizacionId: string = laOrganizacionDeLaSesion(contexto),
 ): Promise<void> {
   await contexto.sql`
     select estook.anotar(
-      ${laOrganizacionDeLaSesion(contexto)}::uuid, ${accion}, 'cuenta', ${cuentaId},
+      ${organizacionId}::uuid, ${accion}, 'cuenta', ${cuentaId},
       ${localId}::uuid, null, ${JSON.stringify(despues)}::text::jsonb, null
     )
   `;

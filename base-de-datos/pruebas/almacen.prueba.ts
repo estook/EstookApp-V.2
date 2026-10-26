@@ -723,6 +723,14 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // dosis de la casa) lo cambia quien tiene los Ajustes del TPV, y el local solo lo puede
     // escribir quien tiene los Ajustes de Estook: sin ella, el cambio no se guardaba y nadie
     // se enteraba. Mira el permiso dentro. Son sesenta y siete.
+    //
+    // **Y la 0090 (T4 · 1 · La cocina) añade cuatro.** La pantalla de cocina no tiene
+    // operador: la API mira su llave y la declara, y la base la reconoce como **la pantalla
+    // del local**, con el permiso de cocinar y ningún otro. `es_la_pantalla_del_local` mira el
+    // aparato, que la pantalla no puede leer; `la_cocina_del_local`, cuándo empieza su día y
+    // los minutos del semáforo; `los_nombres_de_la_sala`, el nombre de pila de quien lleva cada
+    // mesa, para «Llamar a Lucía»; y `la_pantalla_apunta_en`, que lo que hace quede en el
+    // rastro de su local. Son setenta y una.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -758,16 +766,20 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'el_plato_entra_en_la_botonera',
       'el_uso_de',
       'es_admin_o_el_sistema',
+      'es_la_pantalla_del_local',
       'esta_en_linea',
       'fichados_en_el_aparato',
       'han_fichado_la_salida',
       'horas_de_contrato',
       'la_carta_publica',
+      'la_cocina_del_local',
+      'la_pantalla_apunta_en',
       'las_cuentas',
       'lo_gastado_en_fogon',
       'lo_que_hacen_los_clientes',
       'locales_visibles',
       'los_clientes',
+      'los_nombres_de_la_sala',
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',
       'organizaciones_visibles',

@@ -115,6 +115,8 @@ function unaMesa(parte: Partial<LaMesa>): LaMesa {
     camarero: 'Sara',
     porPases: true,
     notaParaCocina: null,
+    conPrisa: false,
+    cocinaLlamaEn: null,
     abierta: true,
     minutos: 30,
     totalCentimos: 0,

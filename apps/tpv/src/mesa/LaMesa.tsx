@@ -26,6 +26,7 @@ import { LoQueSePide } from './LoQueSePide.tsx';
 import { LosPasesEnPestanas } from './LosPasesEnPestanas.tsx';
 import { laPestanaDeFabrica, type PestanaDelPase } from '../logica/losPases.ts';
 import { OpcionesDeLaMesa } from './OpcionesDeLaMesa.tsx';
+import { LaCocinaLlama } from '../plano/LaCocinaLlama.tsx';
 
 /**
  * Una mesa (0106, «Comanda»; T2, maqueta 9): a la izquierda, **las pestañas de los pases**
@@ -40,6 +41,16 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   const conectado = usarAlSegundo();
   const mesa = usarLaMesa(cuentaId, conectado);
   const plano = usarElPlano(conectado);
+  // «La cocina te llama» también dentro de una mesa (0116): las de todo el plano.
+  const enElPlanoTodas =
+    plano.data === undefined
+      ? null
+      : [
+          ...plano.data.zonas.flatMap((z) =>
+            z.mesas.flatMap((m) => (m.cuenta === null ? [] : [m.cuenta])),
+          ),
+          ...plano.data.sinMesa,
+        ];
   const carta = usarLaCarta();
   const ejecutar = usarAcciones();
   const [borrador, setBorradorEnMemoria] = useState<Borrador>(() => leerBorrador(cuentaId));
@@ -233,6 +244,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
 
   return (
     <div className="flex h-dvh flex-col bg-fondo text-texto md:flex-row">
+      {enElPlanoTodas !== null && <LaCocinaLlama flotante cuentas={enElPlanoTodas} />}
       {/* La cuenta: a la izquierda en la tablet. */}
       <section
         aria-label="La cuenta de la mesa"

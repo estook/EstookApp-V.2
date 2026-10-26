@@ -5,6 +5,7 @@ import { irA } from '../navegar.ts';
 import { LaBarraDeArriba } from '../inicio/LaBarraDeArriba.tsx';
 import { LosAparatos } from './LosAparatos.tsx';
 import { PinYBloqueo } from './PinYBloqueo.tsx';
+import { CocinaYBarra } from './CocinaYBarra.tsx';
 import { Productos } from '../productos/Productos.tsx';
 
 /**
@@ -25,6 +26,7 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
     ...(ajusta ? [{ id: 'productos', nombre: 'Productos' }] : []),
     ...(vincula ? [{ id: 'aparatos', nombre: 'Aparatos' }] : []),
     ...(ajusta ? [{ id: 'pin', nombre: 'PIN y bloqueo' }] : []),
+    ...(ajusta ? [{ id: 'cocina', nombre: 'Cocina y barra' }] : []),
   ];
   // La sala es una pantalla entera, el editor: el apartado lleva allí.
   const sinLaSala = apartados.filter((a) => a.id !== 'sala');
@@ -78,6 +80,8 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
               <Productos resto={resto} />
             ) : elegido === 'pin' && ajusta ? (
               <PinYBloqueo />
+            ) : elegido === 'cocina' && ajusta ? (
+              <CocinaYBarra />
             ) : vincula ? (
               <LosAparatos resto={resto} />
             ) : (

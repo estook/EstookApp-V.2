@@ -84,8 +84,8 @@ export function PinYBloqueo() {
 
       <section className="rounded-mayor bg-superficie p-e5">
         <Casilla
-          titulo="Solo entra quien ha fichado"
-          frase="Apagado: a quien no ha fichado se le ofrece fichar la entrada en un toque, y entra igual"
+          titulo="En la caja, solo entra quien ha fichado"
+          frase="Apagado: a quien no ha fichado se le ofrece fichar la entrada en un toque, y entra igual. En un comandero no se entra nunca sin fichar"
           puesta={ajustes.soloEntraQuienFicha}
           ocupado={ocupado}
           alCambiar={(soloEntraQuienFicha) => void guardar({ ...ajustes, soloEntraQuienFicha })}
@@ -101,7 +101,7 @@ export function PinYBloqueo() {
   );
 }
 
-function Minutos({
+export function Minutos({
   titulo,
   frase,
   valor,
@@ -157,7 +157,7 @@ function Minutos({
   );
 }
 
-function Casilla({
+export function Casilla({
   titulo,
   frase,
   puesta,

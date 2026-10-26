@@ -111,6 +111,9 @@ export interface CuentaEnElPlano {
   /** Para las opciones de la mesa desde el plano, sin tener que abrirla. */
   readonly porPases: boolean;
   readonly notaParaCocina: string | null;
+  /** «Tienen prisa», y si la cocina llama al camarero (0116). */
+  readonly conPrisa: boolean;
+  readonly cocinaLlamaEn: string | null;
   readonly loSiguiente: LoSiguiente;
   /** Su camarero ha fichado la salida: «Ana ha fichado la salida» (Anexo 11.8). */
   readonly suCamareroSeHaIdo: boolean;
@@ -163,6 +166,8 @@ function enElPlano(
     totalCentimos: elTotal(platos),
     porPases: cuenta.por_pases,
     notaParaCocina: cuenta.nota_para_cocina,
+    conPrisa: cuenta.con_prisa,
+    cocinaLlamaEn: cuenta.cocina_llama_en,
     loSiguiente: loSiguienteDeLaMesa(platos.map(comoPlatoDeLaMesa), pases.map(comoPaseDeLaMesa)),
     suCamareroSeHaIdo: cuenta.camarero_id !== null && seHanIdo.has(cuenta.camarero_id),
   };
@@ -284,6 +289,8 @@ export interface SalidaLaMesa {
   readonly camarero: string | null;
   readonly porPases: boolean;
   readonly notaParaCocina: string | null;
+  readonly conPrisa: boolean;
+  readonly cocinaLlamaEn: string | null;
   readonly abierta: boolean;
   readonly minutos: number;
   readonly totalCentimos: number;
@@ -329,6 +336,8 @@ export const laMesa = consulta<{ cuenta_id: string }, SalidaLaMesa>({
       camarero: cuenta.camarero,
       porPases: cuenta.por_pases,
       notaParaCocina: cuenta.nota_para_cocina,
+      conPrisa: cuenta.con_prisa,
+      cocinaLlamaEn: cuenta.cocina_llama_en,
       abierta: cuenta.liberada_en === null && cuenta.anulada_en === null,
       minutos: minutosDesde(contexto, cuenta.abierta_en) ?? 0,
       totalCentimos: elTotal(platos),
@@ -388,8 +397,13 @@ export interface TarjetaDeCocina {
   readonly tipo: string;
   readonly personas: number | null;
   readonly camarero: string | null;
+  readonly camareroId: string | null;
   readonly notaParaCocina: string | null;
   readonly porPases: boolean;
+  /** «Tienen prisa» (0116): sube arriba, con su franja. */
+  readonly conPrisa: boolean;
+  /** Cuándo la cocina llamó al camarero, si todavía no ha dicho «Ya voy». */
+  readonly cocinaLlamaEn: string | null;
   readonly estado: LaMesaEnCocina;
   /** La anuló un jefe: la cocina deja de hacerla. Va a «Fuera» con su motivo. */
   readonly anulada: string | null;
@@ -414,9 +428,9 @@ export interface SalidaLaCocina {
 
 /** El principio de la jornada de hoy, con la hora de corte del local (M16a). */
 async function elPrincipioDeHoy(contexto: Contexto, localId: string): Promise<string> {
+  // Por `la_cocina_del_local` (0116): la pantalla de cocina no lee el local.
   const filas = await contexto.sql<{ zona_horaria: string; hora_de_corte: string }[]>`
-    select zona_horaria, to_char(hora_de_corte, 'HH24:MI') as hora_de_corte
-      from estook.local where id = ${localId}::uuid
+    select zona_horaria, hora_de_corte from estook.la_cocina_del_local(${localId}::uuid)
   `;
   const local = filas[0];
   if (local === undefined) throw new FalloDeAplicacion('local_ajeno');
@@ -449,8 +463,11 @@ function laTarjeta(
     tipo: cuenta.tipo,
     personas: cuenta.personas,
     camarero: cuenta.camarero,
+    camareroId: cuenta.camarero_id,
     notaParaCocina: cuenta.nota_para_cocina,
     porPases: cuenta.por_pases,
+    conPrisa: cuenta.con_prisa,
+    cocinaLlamaEn: cuenta.cocina_llama_en,
     estado,
     anulada,
     llegoEn,
@@ -490,6 +507,50 @@ function laTarjeta(
   };
 }
 
+/**
+ * **Lo de la cocina de un local** (M20A · 1; 0116): sus mesas en marcha, esperando y fuera,
+ * sin un importe. Lo leen quien cocina y **la pantalla de cocina**, que no tiene sesión.
+ */
+export async function laCocinaDelLocal(
+  contexto: Contexto,
+  localId: string,
+): Promise<SalidaLaCocina> {
+  const desde = await elPrincipioDeHoy(contexto, localId);
+  // Las abiertas, y las de hoy ya liberadas o anuladas, para «Fuera»: una mesa anulada
+  // no desaparece sin más, la cocina la ve anulada y sabe que deja de hacerla.
+  const filas = await contexto.sql<{ id: string }[]>`
+    select c.id::text as id
+      from estook.cuenta c
+     where c.local_id = ${localId}::uuid
+       and ((c.liberada_en is null and c.anulada_en is null) or c.abierta_en >= ${desde}::timestamptz)
+       and c.unida_a is null
+       and exists (
+         select 1 from estook.linea_de_cuenta l
+          where l.cuenta_id = c.id and l.destino = 'cocina' and l.mandada_en is not null
+       )
+     order by c.abierta_en
+  `;
+  const ids = filas.map((f) => f.id);
+  const cuentas = await lasCuentas(contexto, localId, ids);
+  const platos = porCuenta(await losPlatos(contexto, ids));
+  const pases = porCuenta(await losPases(contexto, ids));
+  const tarjetas = cuentas.flatMap((c) => {
+    const t = laTarjeta(contexto, c, platos.get(c.id) ?? [], pases.get(c.id) ?? []);
+    return t === null ? [] : [t];
+  });
+  // «Tienen prisa», lo primero (0116); después, lo que va tarde: el que más lleva esperando.
+  const enMarcha = tarjetas
+    .filter((t) => t.estado === 'en_marcha')
+    .sort((a, b) => Number(b.conPrisa) - Number(a.conPrisa) || b.minutos - a.minutos);
+  return {
+    enMarcha,
+    esperando: tarjetas.filter((t) => t.estado === 'esperando'),
+    fuera: tarjetas
+      .filter((t) => t.estado === 'fuera')
+      .sort((a, b) => (b.fueraEn ?? '').localeCompare(a.fueraEn ?? '')),
+  };
+}
+
 export const laCocina = consulta<Record<string, never>, SalidaLaCocina>({
   nombre: 'la_cocina',
   entrada: z.object({}).strict(),
@@ -497,41 +558,7 @@ export const laCocina = consulta<Record<string, never>, SalidaLaCocina>({
   enElTpv: 'tambien',
 
   async ejecutar(contexto) {
-    const localId = elLocalDelServicio(contexto);
-    const desde = await elPrincipioDeHoy(contexto, localId);
-    // Las abiertas, y las de hoy ya liberadas o anuladas, para «Fuera»: una mesa anulada
-    // no desaparece sin más, la cocina la ve anulada y sabe que deja de hacerla.
-    const filas = await contexto.sql<{ id: string }[]>`
-      select c.id::text as id
-        from estook.cuenta c
-       where c.local_id = ${localId}::uuid
-         and ((c.liberada_en is null and c.anulada_en is null) or c.abierta_en >= ${desde}::timestamptz)
-         and c.unida_a is null
-         and exists (
-           select 1 from estook.linea_de_cuenta l
-            where l.cuenta_id = c.id and l.destino = 'cocina' and l.mandada_en is not null
-         )
-       order by c.abierta_en
-    `;
-    const ids = filas.map((f) => f.id);
-    const cuentas = await lasCuentas(contexto, localId, ids);
-    const platos = porCuenta(await losPlatos(contexto, ids));
-    const pases = porCuenta(await losPases(contexto, ids));
-    const tarjetas = cuentas.flatMap((c) => {
-      const t = laTarjeta(contexto, c, platos.get(c.id) ?? [], pases.get(c.id) ?? []);
-      return t === null ? [] : [t];
-    });
-    // Lo que va tarde, arriba: el que más lleva esperando primero.
-    const enMarcha = tarjetas
-      .filter((t) => t.estado === 'en_marcha')
-      .sort((a, b) => b.minutos - a.minutos);
-    return {
-      enMarcha,
-      esperando: tarjetas.filter((t) => t.estado === 'esperando'),
-      fuera: tarjetas
-        .filter((t) => t.estado === 'fuera')
-        .sort((a, b) => (b.fueraEn ?? '').localeCompare(a.fueraEn ?? '')),
-    };
+    return laCocinaDelLocal(contexto, elLocalDelServicio(contexto));
   },
 });
 

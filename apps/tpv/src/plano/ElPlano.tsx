@@ -8,6 +8,7 @@ import type { CuentaEnElPlano, ElPlano as ElPlanoDeLaApi, MesaDelPlano } from '.
 import { elPase } from '../logica/laCuenta.ts';
 import { irA, irALaMesa } from '../navegar.ts';
 import { AbrirMesa } from './AbrirMesa.tsx';
+import { LaCocinaLlama } from './LaCocinaLlama.tsx';
 import { OpcionesDeLaMesa } from '../mesa/OpcionesDeLaMesa.tsx';
 import { MesaEnElPlano, TarjetaSinMesa } from './MesaEnElPlano.tsx';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -203,6 +204,14 @@ export function ElPlano() {
         )}
       </LaBarraDeArriba>
 
+      <LaCocinaLlama
+        cuentas={[
+          ...datos.zonas.flatMap((z) =>
+            z.mesas.flatMap((m) => (m.cuenta === null ? [] : [m.cuenta])),
+          ),
+          ...datos.sinMesa,
+        ]}
+      />
       {datos.tocaMarchar.map((t) => (
         <div
           key={t.cuentaId}

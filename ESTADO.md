@@ -15,7 +15,7 @@
 > | Quién ve qué                        | [Roles](docs/maestros/Estook-Roles-y-Administracion.md)                                                                                             |
 > | Qué desencadena cada cambio         | [Auditoría de flujos](docs/maestros/Estook-Auditoria-de-Flujos.md)                                                                                  |
 > | Estook TPV y la facturación         | [Anexo](docs/maestros/Estook-Anexo-TPV-y-Facturacion.md), **que manda en lo suyo**                                                                  |
-> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (118)                                                                                                |
+> | Por qué está hecho así              | [`docs/decisiones/`](docs/decisiones/LEEME.md) (119)                                                                                                |
 > | Lo que decidió la IA por su cuenta  | [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md)                                                                                      |
 > | Lo legal, y lo ya investigado       | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md)                                                        |
 > | Lo que cuesta cada local            | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                                                                                |
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** Todo está fusionado y desplegado (#146 y la API, el 27-oct). En la rama `t5-la-caja-para-windows`, solo documentos: ESTADO al día, **el nombre nuevo de T5** en el Plan, el Anexo, [el plan de Estook TPV](docs/m20a-la-sala-y-la-cocina.md) y el mapa, y [las maquetas de T5](docs/maquetas/t5-la-caja-para-windows.html). **No se programa nada de T5 hasta que Richi conteste sus cuatro preguntas** (en las maquetas). La rama vieja `la-entrada-del-tpv` (solo la maqueta) sobra.
+- **A medias: T5 · 1 · Imprimir y el cajón**, en la rama `t5-1-imprimir-y-el-cajon`, sin pull request. Escritos la [0119](docs/decisiones/0119-t5-la-caja-para-windows.md) con las cuatro respuestas de Richi (27-oct), los maestros corregidos y su «terminado cuando» en [el plan de Estook TPV](docs/m20a-la-sala-y-la-cocina.md). **Lo que falta, en ese orden**: la migración 0093 (impresoras y la cola), las órdenes de la API, el traductor (`packages/impresion`), las pantallas del TPV y el programa (`apps/caja-windows`). La #147 (las maquetas) ya está fusionada.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).

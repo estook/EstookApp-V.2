@@ -759,7 +759,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **M19a va entre M20A · 1 y M20A · 2, y M19b al final**, por lo dicho en la cabecera de la fase. **M19a es T5 · La caja para Windows** (Richi, 27-oct): un programa que se descarga en el PC de la caja, con Estook TPV tal cual y lo de abajo dentro; lo que entra y en qué orden, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md). Lo de abajo es el módulo entero; lo que entra en cada parte se dice al final de la ficha.
 
-**Entra.** Servicio en Rust, firmado, **para Windows, Linux y macOS** —vale un mini PC o una Raspberry—, que **vigila una carpeta** y sube los ficheros nuevos · emparejamiento con un código de un solo uso · solo lectura, sin puertos abiertos, saliente y cifrado · latido cada 15 minutos · cola local si no hay red · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
+**Entra.** **M19a es la caja para Windows** (0119): Estook TPV en un programa de Electron, firmado antes de vender, solo para Windows mientras ningún cliente pida otra cosa. **M19b**, el conector: un servicio que **vigila una carpeta** y sube los ficheros nuevos · emparejamiento con un código de un solo uso · solo lectura, sin puertos abiertos, saliente y cifrado · latido cada 15 minutos · cola local si no hay red · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
 
 **Y su trabajo principal: ser el centro del local** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md); Arquitectura, capítulo 7; Anexo, capítulo 6). La caja para Windows corre en el PC de la caja, que está siempre encendido, y hace tres cosas:
 
@@ -773,7 +773,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Qué entra en cada parte.**
 
-- **M19a · el centro del local** (entre M20A · 1 y M20A · 2): el servicio en Rust para Windows, Linux y macOS, firmado · emparejamiento con código de un solo uso · hacia internet, saliente y cifrado, sin puertos abiertos al exterior · **el centro de la red local**, con su cola en disco · latido · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · **la cola de impresión, su traducción a ESC/POS y el envío a la impresora por red, USB o Bluetooth** · el cajón.
+- **M19a · el centro del local** (T5, en dos: T5 · 1 imprimir y el cajón, T5 · 2 sin internet): la caja para Windows, en Electron, firmada antes de vender · emparejamiento con código de un solo uso · hacia internet, saliente y cifrado, sin puertos abiertos al exterior · **el centro de la red local**, con su cola en disco · latido · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · **la cola de impresión, su traducción a ESC/POS y el envío a la impresora por red, USB o Bluetooth** · el cajón.
 - **M19b · el conector de TPV** (con M18, al final): vigilancia de la carpeta, subida de ficheros nuevos y lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
 
 ### M20 · Ventas, emparejamiento y consumo

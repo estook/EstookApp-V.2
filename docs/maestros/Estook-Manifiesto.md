@@ -62,13 +62,14 @@ Cobrar lo puede hacer Estook con **Estook TPV** —sala, cocina, cobro y tickets
 
 ## Las superficies
 
-| Lo que ve el cliente    | Quién entra                    | Qué es                                                                                           |
-| ----------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------ |
-| **Estook**              | El restaurante y su equipo     | La gestión: el Panel y sus ocho apps                                                             |
-| **Estook TPV**          | La sala, la barra y la cocina  | El servicio: tomar nota, cocina, cobrar y la caja. Se instala aparte y **funciona sin conexión** |
-| **Estook Link**         | Se instala una vez en el local | El centro del local: impresoras, cajón, la cocina sin internet, y las ventas de un TPV ajeno     |
-| **Carta digital**       | El cliente del restaurante     | La carta pública con QR, sin login                                                               |
-| **Web y panel interno** | Cualquiera / nosotros          | Vender, contratar y administrar                                                                  |
+| Lo que ve el cliente     | Quién entra                     | Qué es                                                                                           |
+| ------------------------ | ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Estook**               | El restaurante y su equipo      | La gestión: el Panel y sus ocho apps                                                             |
+| **Estook TPV**           | La sala, la barra y la cocina   | El servicio: tomar nota, cocina, cobrar y la caja. Se instala aparte y **funciona sin conexión** |
+| **La caja para Windows** | Se descarga en el PC de la caja | Estook TPV con el centro del local dentro: impresoras, cajón y la cocina sin internet (0119)     |
+| **Estook Link**          | Se instala una vez en el local  | El conector: las ventas de un TPV ajeno, para quien no cobra con Estook (M19b)                   |
+| **Carta digital**        | El cliente del restaurante      | La carta pública con QR, sin login                                                               |
+| **Web y panel interno**  | Cualquiera / nosotros           | Vender, contratar y administrar                                                                  |
 
 > **Una sola base de código, en web.** Estook TPV es **otra puerta del mismo código**, no otra aplicación: la misma cuenta, el mismo PIN, los mismos permisos y los mismos datos al momento. Dónde vive cada pieza y por qué, en la [Arquitectura](Estook-Arquitectura.md), capítulo 1 ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)).
 
@@ -114,7 +115,7 @@ DATOS  →  INFORMACION  →  ANALISIS  →  PREDICCION  →  RECOMENDACION  →
 
 # 2 · El conector · Estook Link
 
-> **Si el local cobra con Estook TPV, este capítulo no le afecta:** las ventas ya nacen dentro. El conector es para quien sigue con su TPV. **Estook Link hace además otro trabajo, para quien sí cobra con Estook**: es el centro del local —impresoras, cajón y la cocina sin internet—, y eso está en el Anexo, capítulo 6, y en la [Arquitectura](Estook-Arquitectura.md), capítulo 7.
+> **Si el local cobra con Estook TPV, este capítulo no le afecta:** las ventas ya nacen dentro. El conector es para quien sigue con su TPV. **El centro del local para quien sí cobra con Estook** —impresoras, cajón y la cocina sin internet— lo hacía también Estook Link, y desde el 27-oct va dentro de **la caja para Windows** ([0119](../decisiones/0119-t5-la-caja-para-windows.md); Anexo, capítulo 6, y [Arquitectura](Estook-Arquitectura.md), capítulo 7).
 
 ## Cómo está el terreno
 
@@ -247,7 +248,7 @@ Una persona tiene una o varias membresías, y cada una es `persona + alcance + r
 16. **Cada dato nuevo hace más inteligente al resto de Estook.** Nada entra aislado: antes de construir algo se dice qué otras partes tienen que enterarse cuando cambie.
 17. **La facturación es intocable.** Un ticket o una factura emitidos no se editan ni se borran jamás, ni desde la app ni desde nuestro panel: se corrigen con otro documento. Viven aparte, y solo los escribe su propio módulo.
 
-> **El principio 12, en Estook TPV.** Sin internet se sigue tomando nota, la cocina sigue recibiendo (con Estook Link) y se sigue cobrando. Lo único que espera es **el ticket**: se entrega un **justificante provisional**, que dice claramente que no es una factura, y el ticket se emite al volver la conexión. **No es que la ley lo impida** —la AEAT dice que un corte no interrumpe la facturación—: es que el registro lo genera nuestro proveedor en su servidor. El detalle, y el camino para facturar también sin internet, en el Anexo 4.11 ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)).
+> **El principio 12, en Estook TPV.** Sin internet se sigue tomando nota, la cocina sigue recibiendo (con la caja para Windows) y se sigue cobrando. Lo único que espera es **el ticket**: se entrega un **justificante provisional**, que dice claramente que no es una factura, y el ticket se emite al volver la conexión. **No es que la ley lo impida** —la AEAT dice que un corte no interrumpe la facturación—: es que el registro lo genera nuestro proveedor en su servidor. El detalle, y el camino para facturar también sin internet, en el Anexo 4.11 ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)).
 
 ---
 
@@ -1400,31 +1401,31 @@ Detalles pequeños que, mal resueltos, hacen que un hostelero abandone en la pri
 
 # 29 · Casos límite
 
-| Situación                                              | Qué hace la app                                                                                                                                                                       |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Se cae el wifi en cocina                               | Fichajes, APPCC y mermas se guardan en el móvil y suben al recuperar señal (entrega I)                                                                                                |
-| El PC del local está apagado                           | Link sube lo pendiente al arrancar. No se pierde una venta                                                                                                                            |
-| El TPV cambia de versión y rompe el fichero            | Link avisa, guarda el original y se ofrece el camino manual                                                                                                                           |
-| Llegan ventas de un día ya cerrado                     | Entran en su jornada por fecha de servicio y avisan del ajuste                                                                                                                        |
-| Artículo del TPV sin emparejar                         | Cuenta en dinero, no descuenta género, y sale avisado                                                                                                                                 |
-| Dos personas editan la misma ficha                     | Gana quien guarda primero; al segundo se le enseña qué cambió                                                                                                                         |
-| El producto cambia de formato                          | Precio nuevo con su formato; se compara por unidad de uso                                                                                                                             |
-| Pescado a peso variable                                | Se pide en piezas y entra en kilos reales; el coste va por peso real                                                                                                                  |
-| Se vende un plato sin ficha                            | Cuenta en dinero, no descuenta género, sale en «sin ficha»                                                                                                                            |
-| Registrar una temperatura de hace tres días            | No se puede. Lo anterior queda `NO REGISTRADO`                                                                                                                                        |
-| Un local del grupo se queda sin gerente                | El area manager asume su Panel: ya lo tenía por alcance                                                                                                                               |
-| Se cambia una receta maestra que un local había tocado | Los obligatorios se actualizan; los desviados reciben aviso                                                                                                                           |
-| Se vende o se cierra un local del grupo                | Se archiva: deja de facturar, queda en lectura, se excluye de las medias                                                                                                              |
-| Un pedido de reparto llega dos veces por webhook       | Se descarta el duplicado por identificador de pedido                                                                                                                                  |
-| Impago                                                 | Solo lectura a los 7 días, archivo a los 60. **Nunca se borran datos**                                                                                                                |
-| Baja voluntaria                                        | Exportación completa en un clic y 60 días de lectura                                                                                                                                  |
-| Se agota el presupuesto de IA                          | Se aplaza lo automático y se abarata el modelo. **Lo que el usuario pide se responde siempre**                                                                                        |
-| Se cae internet en pleno servicio (Estook TPV)         | Con Estook Link, la sala y la cocina siguen como si nada. Al cobrar sale un justificante provisional, que no es factura; al volver, los tickets se emiten en orden, con la incidencia |
-| Hacienda no responde                                   | Se cobra y se emite con normalidad; los registros esperan en cola y se envían solos                                                                                                   |
-| Un cliente pide factura con su NIF                     | Factura completa que sustituye a su ticket (canje). El ticket original sigue intacto                                                                                                  |
-| Se devuelve un plato ya cobrado                        | Rectificativa del ticket, nunca editarlo. El género vuelve al libro solo si vuelve de verdad                                                                                          |
-| Hacienda rechaza un registro                           | Aviso al gerente con el motivo en cristiano y la corrección que toca. El original no se toca                                                                                          |
-| La impresora se queda sin papel o sin red              | Se avisa en sala y en el Panel, y los trabajos esperan en cola hasta que vuelva. Con Estook Link, **la cocina sigue recibiendo e imprimiendo aunque se caiga internet**               |
+| Situación                                              | Qué hace la app                                                                                                                                                                                |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Se cae el wifi en cocina                               | Fichajes, APPCC y mermas se guardan en el móvil y suben al recuperar señal (entrega I)                                                                                                         |
+| El PC del local está apagado                           | Link sube lo pendiente al arrancar. No se pierde una venta                                                                                                                                     |
+| El TPV cambia de versión y rompe el fichero            | Link avisa, guarda el original y se ofrece el camino manual                                                                                                                                    |
+| Llegan ventas de un día ya cerrado                     | Entran en su jornada por fecha de servicio y avisan del ajuste                                                                                                                                 |
+| Artículo del TPV sin emparejar                         | Cuenta en dinero, no descuenta género, y sale avisado                                                                                                                                          |
+| Dos personas editan la misma ficha                     | Gana quien guarda primero; al segundo se le enseña qué cambió                                                                                                                                  |
+| El producto cambia de formato                          | Precio nuevo con su formato; se compara por unidad de uso                                                                                                                                      |
+| Pescado a peso variable                                | Se pide en piezas y entra en kilos reales; el coste va por peso real                                                                                                                           |
+| Se vende un plato sin ficha                            | Cuenta en dinero, no descuenta género, sale en «sin ficha»                                                                                                                                     |
+| Registrar una temperatura de hace tres días            | No se puede. Lo anterior queda `NO REGISTRADO`                                                                                                                                                 |
+| Un local del grupo se queda sin gerente                | El area manager asume su Panel: ya lo tenía por alcance                                                                                                                                        |
+| Se cambia una receta maestra que un local había tocado | Los obligatorios se actualizan; los desviados reciben aviso                                                                                                                                    |
+| Se vende o se cierra un local del grupo                | Se archiva: deja de facturar, queda en lectura, se excluye de las medias                                                                                                                       |
+| Un pedido de reparto llega dos veces por webhook       | Se descarta el duplicado por identificador de pedido                                                                                                                                           |
+| Impago                                                 | Solo lectura a los 7 días, archivo a los 60. **Nunca se borran datos**                                                                                                                         |
+| Baja voluntaria                                        | Exportación completa en un clic y 60 días de lectura                                                                                                                                           |
+| Se agota el presupuesto de IA                          | Se aplaza lo automático y se abarata el modelo. **Lo que el usuario pide se responde siempre**                                                                                                 |
+| Se cae internet en pleno servicio (Estook TPV)         | Con la caja para Windows, la sala y la cocina siguen como si nada. Al cobrar sale un justificante provisional, que no es factura; al volver, los tickets se emiten en orden, con la incidencia |
+| Hacienda no responde                                   | Se cobra y se emite con normalidad; los registros esperan en cola y se envían solos                                                                                                            |
+| Un cliente pide factura con su NIF                     | Factura completa que sustituye a su ticket (canje). El ticket original sigue intacto                                                                                                           |
+| Se devuelve un plato ya cobrado                        | Rectificativa del ticket, nunca editarlo. El género vuelve al libro solo si vuelve de verdad                                                                                                   |
+| Hacienda rechaza un registro                           | Aviso al gerente con el motivo en cristiano y la corrección que toca. El original no se toca                                                                                                   |
+| La impresora se queda sin papel o sin red              | Se avisa en sala y en el Panel, y los trabajos esperan en cola hasta que vuelva. Con la caja para Windows, **la cocina sigue recibiendo e imprimiendo aunque se caiga internet**               |
 
 ---
 
@@ -1643,7 +1644,7 @@ Topes técnicos en el código: Google Places 0,10 €/día con corte duro · cor
 | El proyecto se vuelve inmantenible                          | Arquitectura escrita antes de programar y pruebas obligatorias por módulo                                                                                                                                                                                                                                 |
 | Un TPV deja de querer integrarse porque ahora competimos    | Integración solo por API oficial o por fichero. Link lee carpetas                                                                                                                                                                                                                                         |
 | Un ticket o una factura salen mal ante Hacienda             | Facturación aislada, proveedor especializado, entorno de pruebas y revisión del asesor antes de producción                                                                                                                                                                                                |
-| Se cae internet en el local                                 | Estook Link mantiene la sala, la cocina y la impresión. Justificante provisional y el ticket al volver. Router 4G recomendado en el alta                                                                                                                                                                  |
+| Se cae internet en el local                                 | La caja para Windows mantiene la sala, la cocina y la impresión. Justificante provisional y el ticket al volver. Router 4G recomendado en el alta                                                                                                                                                         |
 | Un TPV caído en pleno servicio                              | Soporte en horario de servicio antes de vender el primer TPV, y el latido de cada terminal a la vista de soporte                                                                                                                                                                                          |
 | Una respuesta perdida deja un ticket a medias ante Hacienda | El documento se prepara y se numera antes, y se manda con una clave que impide registrarlo dos veces (Anexo 4.9)                                                                                                                                                                                          |
 | El repositorio es público y enseña el plan de negocio       | Pasa a privado en la mudanza a Cloudflare; los datos personales ya no se escriben en los documentos                                                                                                                                                                                                       |

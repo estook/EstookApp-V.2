@@ -40,23 +40,24 @@ y hay que saber cuál.
    │  EN EL RESTAURANTE            │                                       │
    │  Estook (móvil, PC)     Estook TPV (terminales, comandero, cocina)    │
    │                               │  red del local, también sin internet  │
-   │                   Estook Link · el centro del local (M19a)            │
+   │          la caja para Windows · el centro del local (T5, 0119)        │
    │                   impresoras ESC/POS · cajón · balanza                │
    └──────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Las superficies
 
-| Superficie        | Dónde vive                            | Qué es                                                                                                                                       | Estado                    |
-| ----------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| **Web**           | `apps/web` → `estook.com`             | Vender y contratar, y lo legal                                                                                                               | En producción             |
-| **Estook**        | `apps/app` → `estook.com/app/`        | La gestión: el Panel y las ocho apps. Con conexión                                                                                           | En producción             |
-| **Estook TPV**    | `apps/tpv` → `estook.com/tpv/`        | El servicio: sala, barra, cocina, cobro y caja. **Funciona sin conexión** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)) | M20A                      |
-| **Carta digital** | `apps/carta` → `estook.com/carta/…`   | La carta pública con su QR, sin login                                                                                                        | En producción (la subida) |
-| **Panel interno** | `apps/admin` → `estook.com/admin/`    | Nuestro, para llevar a los clientes                                                                                                          | En producción             |
-| **La cáscara**    | `apps/movil`                          | Estook TPV envuelto con Capacitor, **opcional**: iPad, y el food truck sin Link. Ni una pantalla propia                                      | M20A                      |
-| **Estook Link**   | `link/`                               | El programa del local: centro sin internet, impresoras, cajón y el conector de un TPV ajeno                                                  | M19a y M19b               |
-| **La API**        | `servidor/` → Supabase Edge Functions | Toda la lógica, detrás del despachador                                                                                                       | En producción             |
+| Superficie               | Dónde vive                            | Qué es                                                                                                                                                                    | Estado                    |
+| ------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| **Web**                  | `apps/web` → `estook.com`             | Vender y contratar, y lo legal                                                                                                                                            | En producción             |
+| **Estook**               | `apps/app` → `estook.com/app/`        | La gestión: el Panel y las ocho apps. Con conexión                                                                                                                        | En producción             |
+| **Estook TPV**           | `apps/tpv` → `estook.com/tpv/`        | El servicio: sala, barra, cocina, cobro y caja. **Funciona sin conexión** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md))                              | M20A                      |
+| **Carta digital**        | `apps/carta` → `estook.com/carta/…`   | La carta pública con su QR, sin login                                                                                                                                     | En producción (la subida) |
+| **Panel interno**        | `apps/admin` → `estook.com/admin/`    | Nuestro, para llevar a los clientes                                                                                                                                       | En producción             |
+| **La cáscara**           | `apps/movil`                          | Estook TPV envuelto con Capacitor, **opcional**: Android, iPad y el food truck sin la caja. Ni una pantalla propia                                                        | M20A                      |
+| **La caja para Windows** | `apps/caja-windows`                   | Estook TPV en un programa de Windows (Electron), con el centro del local dentro: impresoras, cajón y sin internet ([0119](../decisiones/0119-t5-la-caja-para-windows.md)) | T5 (M19a)                 |
+| **Estook Link**          | —                                     | El conector de un TPV ajeno, para quien no cobra con Estook; se decide con M18                                                                                            | M19b                      |
+| **La API**               | `servidor/` → Supabase Edge Functions | Toda la lógica, detrás del despachador                                                                                                                                    | En producción             |
 
 **Una sola base de código, en web.** Estook TPV es otra puerta del mismo código: comparte
 la API, la base, el login, el PIN, los permisos y los paquetes. **No duplica ni una regla,
@@ -64,8 +65,10 @@ ni una tabla, ni un botón.** Lo que gana es lo que un TPV necesita y la gestió
 instalarse aparte, arrancar en su función, trabajar sin conexión y actualizarse cuando lo
 decide el local.
 
-**Descartado, por escrito:** rehacer el producto en nativo; un TPV de escritorio aparte
-para Windows; y una aplicación de TPV con su propio repositorio, su base o su login.
+**Descartado, por escrito:** rehacer el producto en nativo; un TPV de escritorio con sus
+propias pantallas; y una aplicación de TPV con su propio repositorio, su base o su login.
+**La caja para Windows no es nada de eso** ([0119](../decisiones/0119-t5-la-caja-para-windows.md)):
+enseña la misma Estook TPV y solo añade lo que un navegador no puede hacer.
 
 ---
 
@@ -80,18 +83,18 @@ para Windows; y una aplicación de TPV con su propio repositorio, su base o su l
 | Enrutado                   | React Router 6, con almohadilla mientras se publique en GitHub Pages                                      | [0008](../decisiones/0008-enrutado-con-almohadilla.md)                                                               |
 | Gráficas                   | Recharts, cargado aparte                                                                                  | [0064](../decisiones/0064-las-graficas-contestan-una-pregunta.md)                                                    |
 | Arrastrar                  | `@dnd-kit`, cargado aparte                                                                                | [0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)                                                        |
-| Instalable y sin conexión  | Un _service worker_ por puerta: Estook en la entrega I, Estook TPV en M20A                                | Hoy **solo hay manifiesto**; no hay _service worker_                                                                 |
+| Instalable y sin conexión  | Un _service worker_ por puerta: Estook en la entrega I, Estook TPV desde la 0115                          | Abren sin señal; trabajar sin internet en Estook TPV llega con T5 · 2                                                |
 | Base de datos              | PostgreSQL 17 en Supabase, en la Unión Europea (Irlanda)                                                  | Relacional, seguridad por filas, extensiones                                                                         |
 | API                        | Hono sobre Supabase Edge Functions (Deno)                                                                 | [0002](../decisiones/0002-runtime-de-la-api.md)                                                                      |
 | Entrar                     | Sesiones propias, PIN y Google; segundo factor propio                                                     | [0010](../decisiones/0010-el-login-es-nuestro.md), [0042](../decisiones/0042-registro-abierto-google-y-la-oferta.md) |
 | Trabajos                   | Cola en tabla, y `pg_cron` que llama a la API cada hora                                                   | [0016](../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)                                                  |
 | Documentos PDF             | Siempre en el servidor: plantillas HTML en `packages/documentos` y **Cloudflare Browser Run** las imprime | [0068](../decisiones/0068-las-respuestas-de-h.md): un Chromium no cabe en una Edge Function; el motor es un puerto   |
 | IA                         | Detrás de una interfaz propia, `ProveedorIA`                                                              | M22 · [0023](../decisiones/0023-fogon-nunca-arma-su-contexto-en-el-navegador.md)                                     |
-| Estook Link                | Rust, servicio firmado para Windows, Linux y macOS                                                        | M19a                                                                                                                 |
+| La caja para Windows       | Electron, con la misma web dentro y un puente pequeño; firmado antes de vender                            | [0119](../decisiones/0119-t5-la-caja-para-windows.md): un solo lenguaje y se prueba con Vitest y Playwright          |
 | La cuota de Estook         | Stripe, sin librería                                                                                      | [0048](../decisiones/0048-el-pago-con-stripe.md)                                                                     |
 | Facturación                | Verifacti detrás de `ProveedorFacturacion`                                                                | M20B · Anexo 4                                                                                                       |
 | Datáfonos conectados       | Detrás de `ProveedorDatafono`                                                                             | Después de M20C · Anexo 10.7                                                                                         |
-| Impresión                  | Cola en el servidor y Estook Link hablando ESC/POS                                                        | M19a · Anexo 6                                                                                                       |
+| Impresión                  | Cola en el servidor y la caja para Windows hablando ESC/POS (`packages/impresion`)                        | T5 · Anexo 6                                                                                                         |
 | Correo                     | Resend, con el dominio `estook.com` verificado                                                            | [0017](../decisiones/0017-como-avisa-estook.md)                                                                      |
 | Errores                    | Sentry, en la región de la UE                                                                             | Hoy solo el navegador; el servidor, [0061](../decisiones/0061-el-orden-y-la-infraestructura.md)                      |
 | Publicación de las páginas | GitHub Pages hoy; **Cloudflare Pages antes del primer cliente de pago**                                   | [0061](../decisiones/0061-el-orden-y-la-infraestructura.md)                                                          |
@@ -115,6 +118,7 @@ estook/
 │   ├── tpv/                  Estook TPV                                  (M20A)
 │   ├── carta/                la carta digital
 │   ├── admin/                el panel interno
+│   ├── caja-windows/         la caja para Windows, en Electron            (T5)
 │   └── movil/                la cáscara de Capacitor, sin pantallas     (M20A)
 ├── packages/
 │   ├── dominio/              tipos, reglas y cálculos, sin red
@@ -123,6 +127,7 @@ estook/
 │   ├── cliente-api/          la única salida a red del navegador
 │   ├── permisos/             el vocabulario de permisos (la matriz vive en la base)
 │   ├── documentos/           las plantillas de los documentos             (H y M11)
+│   ├── impresion/            el formato intermedio a ESC/POS              (T5)
 │   └── utiles/               fechas, dinero, unidades y formatos
 ├── servidor/
 │   ├── api/                  rutas HTTP: transporte y validación, nada más
@@ -134,7 +139,6 @@ estook/
 │   ├── conectores/           uno por TPV ajeno y por canal de reparto      (M18, M29)
 │   ├── facturacion/          el único sitio que habla con Verifacti      (M20B)
 │   └── ia/                   Fogón                                        (M22)
-├── link/                     Estook Link, en Rust                        (M19a)
 ├── base-de-datos/            migraciones numeradas y reversibles, semillas y pruebas
 ├── supabase/functions/api/   enchufa la API a Deno, nada más
 ├── pruebas/e2e/              las pruebas de pantalla
@@ -241,16 +245,16 @@ terminal y el turno del operador → con qué caja, el turno del cajón o su bol
 
 | Aparato                                                 | Cómo trabaja con Estook                                                                            |
 | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| PC con Windows táctil (el TPV de barra)                 | Estook TPV instalado desde Edge o Chrome, a pantalla completa, y Estook Link en el mismo PC        |
+| PC con Windows táctil (el TPV de barra)                 | **La caja para Windows**, que se descarga; o Estook TPV instalado desde Edge o Chrome              |
 | Tablet Android                                          | Estook TPV instalado desde Chrome, o la cáscara                                                    |
 | iPad                                                    | **La cáscara**: Safari no deja hablar con la red del local                                         |
 | Móvil del camarero                                      | Su comandero personal: vinculado a su nombre, y solo entra su PIN (Anexo 11.3)                     |
-| Pantalla de cocina y de barra                           | Estook TPV en su función de cocina o de barra, en quiosco; sin internet recibe por Link            |
-| Impresora de cocina y de tickets                        | Cualquiera ESC/POS, por Link (o las que preguntan solas a la nube)                                 |
+| Pantalla de cocina y de barra                           | Estook TPV en su función de cocina o de barra, en quiosco; sin internet recibe por la caja         |
+| Impresora de cocina y de tickets                        | Cualquiera ESC/POS, por la caja para Windows (o las que preguntan solas a la nube)                 |
 | Cajón                                                   | Enchufado a la impresora de tickets: se abre con una línea del ticket                              |
 | Datáfono                                                | El del banco, sin conectar (se cuadra al cierre); o uno conectado por internet, a nombre del local |
 | Lector de códigos, llave de camarero, teclado de cocina | Escriben como un teclado: el navegador ya los lee (el lector, desde la entrega L)                  |
-| Balanza                                                 | Por el puerto serie desde Chrome o Edge, o por Link                                                |
+| Balanza                                                 | Por el puerto serie desde Chrome o Edge, o por la caja para Windows                                |
 
 **Cuáles valen, cómo se instala cada uno y qué se les enchufa**, en el Anexo, 11.2.
 
@@ -265,7 +269,7 @@ guarda el navegador, nunca por datos del aparato físico.
 
 ## Qué funciona
 
-| Lo que pasa                             | Con Link en el local                                                                     | Sin Link                                                                              |
+| Lo que pasa                             | Con la caja para Windows                                                                 | Sin ella                                                                              |
 | --------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Hay internet, pero cae Estook           | Se toma nota, cocina recibe, se imprime y se cobra con justificante. Todo sube al volver | Cada terminal guarda su cola; la sala ve en grande que cocina no recibe; justificante |
 | Hay Estook, pero cae internet del local | Igual que arriba                                                                         | Igual que arriba                                                                      |
@@ -295,20 +299,21 @@ de alta a alguien, el datáfono conectado y los pedidos de reparto.
   sobreescriben; los cambios de estado llevan versión; una mesa tiene un camarero.
 - **La hora**: el aparato guarda la última hora del servidor y lo que ha pasado desde
   entonces, y **la hora la calcula el servidor** al subir (mejora 15).
-- **Estook Link** como centro del local
-  ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)): recibe de los
+- **La caja para Windows** como centro del local
+  ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md), [0119](../decisiones/0119-t5-la-caja-para-windows.md)): recibe de los
   terminales por la red del local, reparte a cocina, imprime, guarda la cola y comprueba
   los PIN. Escucha solo en la red del local y solo a terminales emparejados; hacia fuera
-  sale él, cifrado. Los terminales aprenden su dirección de la nube mientras hay
+  sale ella, cifrado. Los terminales aprenden su dirección de la nube mientras hay
   conexión, y el navegador le habla con el permiso de **acceso a la red local** de Chrome
-  y Edge.
+  y Edge. **Safari (iPhone y iPad) no deja**: esos aparatos guardan lo suyo y lo suben al
+  volver. La caja va **por cable** al router.
 
 ## Lo fiscal sin conexión
 
 La AEAT dice que un corte **no interrumpe la facturación** y que los registros se mandan
 después con la incidencia marcada. Estook, en su primera versión, entrega un
 **justificante provisional** y emite el ticket al volver, porque el registro lo genera
-Verifacti en su servidor. Que lo genere Link en el local es futuro
+Verifacti en su servidor. Que lo genere la caja en el local es futuro
 ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)).
 
 ---
@@ -317,8 +322,8 @@ Verifacti en su servidor. Que lo genere Link en el local es futuro
 
 - **Se instala** desde `estook.com/tpv/` («Instalar Estook TPV» en Edge o Chrome), con
   su icono y su nombre.
-- **Arranca con Windows** si el local quiere: Link deja el acceso directo en el inicio,
-  o el PC que solo cobra usa Edge en modo quiosco.
+- **En el PC de la caja, mejor la caja para Windows** (0119): se descarga, arranca con Windows
+  y a pantalla completa si el local quiere, e imprime. La web instalada sigue valiendo.
 - **A pantalla completa** y en cualquier orientación (el manifiesto de Estook fija hoy la
   vertical: se quita en la entrega I).
 - **La llave del terminal** dura hasta que se desvincula; **el operador** entra y sale con
@@ -329,7 +334,7 @@ Verifacti en su servidor. Que lo genere Link en el local es futuro
   cuentas abiertas, o al tocar «Actualizar». Si una versión es incompatible, la API lo
   dice y el TPV lo avisa antes de que nada falle. **La versión de cada terminal** se ve
   en Ajustes del TPV › Aparatos y en el panel interno.
-- **El navegador nunca habla con una impresora.** Imprime Link (o la cáscara).
+- **El navegador nunca habla con una impresora.** Imprime la caja para Windows (o la cáscara).
 
 ---
 

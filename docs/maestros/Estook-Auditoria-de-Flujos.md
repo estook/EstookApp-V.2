@@ -11,7 +11,7 @@ Esta auditoría revisa los documentos maestros buscando lo que se acaba improvis
 
 Las partes 1 a 5 son **referencia de construcción**. La parte 6 son los **hallazgos**, con la decisión tomada en cada uno. La 7 son las decisiones que hay que dejar cerradas. La 8 es la **lista que se pasa antes de cerrar cada módulo**.
 
-**La versión 1.4** (30 de septiembre de 2026) recoge la auditoría profunda ([decisión 0055](../decisiones/0055-la-auditoria-profunda.md)): **la venta nace al cobrar** y el ticket puede llegar después (2.29); sin internet la cocina sigue con Estook Link (2.32); el documento fiscal tiene sus estados (parte 4); la caja se cierra por turnos y el día suma (2.34); y entra el **2.35**, liquidar la bolsa de un camarero. Lo que cambió en cada versión, en el [registro de cambios](CAMBIOS.md).
+**La versión 1.4** (30 de septiembre de 2026) recoge la auditoría profunda ([decisión 0055](../decisiones/0055-la-auditoria-profunda.md)): **la venta nace al cobrar** y el ticket puede llegar después (2.29); sin internet la cocina sigue con Estook Link (2.32), que desde el 27-oct va dentro de la caja para Windows ([0119](../decisiones/0119-t5-la-caja-para-windows.md)); el documento fiscal tiene sus estados (parte 4); la caja se cierra por turnos y el día suma (2.34); y entra el **2.35**, liquidar la bolsa de un camarero. Lo que cambió en cada versión, en el [registro de cambios](CAMBIOS.md).
 
 ---
 
@@ -460,10 +460,10 @@ Rectificativa del ticket (R5), en la serie de rectificativas, con su registro
 
 ```
 La sala sigue tomando nota en el aparato
-├─ CON ESTOOK LINK: los terminales le hablan por la red del local
+├─ CON LA CAJA PARA WINDOWS: los terminales le hablan por la red del local
 │   ├─ la pantalla de cocina recibe y la impresora imprime, como siempre
-│   └─ Link guarda lo pendiente en su disco y lo sube al volver, sin duplicar
-├─ SIN LINK: la comanda se queda en el aparato y sube al volver;
+│   └─ la caja guarda lo pendiente en su disco y lo sube al volver, sin duplicar
+├─ SIN LA CAJA (o desde un iPhone o un iPad, que no le pueden hablar): la comanda se queda en el aparato y sube al volver;
 │   la sala ve en grande que la cocina NO la esta recibiendo
 ├─ al cobrar: el cobro y la venta se guardan; se entrega un justificante
 │   provisional, que dice que no es factura y como descargar el ticket
@@ -472,7 +472,7 @@ La sala sigue tomando nota en el aparato
    de operacion real si ha pasado mas de un dia
 ```
 
-**NO se toca:** ningún número se reserva a mano. **Entrar con PIN sin nube** lo comprueba Link; sin nube y sin Link, solo siguen quienes ya habían entrado ese día en ese terminal ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)). **[VERIFICAR con el asesor el texto del justificante provisional.]**
+**NO se toca:** ningún número se reserva a mano. **Entrar con PIN sin nube** lo comprueba la caja para Windows; sin nube y sin ella, solo siguen quienes ya habían entrado ese día en ese terminal ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)). **[VERIFICAR con el asesor el texto del justificante provisional.]**
 
 ## 2.33 Hacienda no responde, o rechaza
 
@@ -603,45 +603,45 @@ Una entidad sin máquina de estado escrita **acaba con estados imposibles**. Est
 
 Los fallos parciales son los que hunden la confianza, **porque el usuario no sabe si su trabajo se ha guardado**. Para cada uno: qué pasa por dentro y qué ve exactamente.
 
-| Fallo                                                   | Qué hace el sistema                                       | Qué ve el usuario                                                                                 |
-| ------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Se cae la red al guardar una ficha                      | Se guarda en local y se reintenta                         | «Guardado en tu móvil. Se subirá al recuperar señal.» Sin perder nada                             |
-| La foto del albarán se lee mal                          | Se guarda la foto y lo que sí ha entendido                | Pantalla de repaso con lo dudoso en amarillo: «he leído 14 líneas, revisa estas 3»                |
-| El albarán trae un producto desconocido                 | No se descarta                                            | «No conozco Aceite AOVE 5L. ¿Es tu aceite de oliva o es nuevo?»                                   |
-| El TPV manda un artículo sin emparejar                  | Entra la venta en dinero, no descuenta género             | Aviso en Servicio y contador en el Panel                                                          |
-| El fichero del TPV cambia de formato                    | Se guarda el original y no se procesa                     | «El fichero no tiene el formato de siempre. Lo he guardado.» Y aviso interno                      |
-| El inventario se queda a medias                         | Se conserva como abierto con lo contado                   | «Tienes un inventario a medias del martes, ¿sigues o lo descartas?»                               |
-| Dos personas editan la misma ficha                      | Gana quien guarda primero                                 | Al segundo: qué ha cambiado y opción de fusionar. **Nunca se pisa en silencio**                   |
-| Se agotan los créditos de Fogón                         | Se pausa **solo** lo que llama al modelo                  | «Has usado tus 300 créditos. Los avisos y los cálculos siguen funcionando.»                       |
-| Falla la generación de un PDF                           | Se reintenta una vez y se guarda la receta                | «No he podido generarlo. Reintentar / avisar», sin perder la configuración                        |
-| Google Places no responde                               | Se usa lo guardado                                        | La sección enseña la fecha del último dato, **sin error rojo**                                    |
-| Se sube un CSV con columnas raras                       | Se propone el mapeo y se pide confirmar                   | Pantalla de emparejar columnas con vista previa de 5 filas                                        |
-| El correo de invitación no llega                        | El PIN sigue siendo válido                                | «Puedes darle el PIN en mano», con el código y botón de reenviar                                  |
-| Alguien olvida su contraseña o su PIN (0109)            | Un enlace a su correo, de un uso                          | «Mira tu correo», exista o no; sin correo, quien lleva el local le da uno nuevo en Equipo         |
-| La foto pesa 8 MB                                       | Se reduce antes de subir                                  | Barra de progreso, y nada más                                                                     |
-| Alguien intenta ver otro local                          | `403` en el servidor                                      | «No tienes acceso a ese local» y vuelta a lo suyo                                                 |
-| **Un webhook de reparto llega dos veces**               | **Se descarta por identificador de pedido**               | **Nada. Es lo correcto: el usuario no tiene que enterarse**                                       |
-| **Un webhook llega con la firma mal**                   | **Se descarta y se registra el intento**                  | **Nada en el local. Aviso interno a nosotros**                                                    |
-| **No se acepta un pedido a tiempo**                     | **La plataforma lo cancela. Se registra con su motivo**   | **«Este pedido se canceló por tiempo», con la hora exacta**                                       |
-| **La API del canal de reparto cae**                     | **Se encola y se reintenta con espera creciente**         | **Estado de la integración en amarillo, con la última sincronización**                            |
-| **Fogón propone un horario imposible**                  | **Se entrega igual, con los huecos señalados**            | **«Falta 1 camarero el miércoles de 20:00 a 22:00», antes de publicar**                           |
-| No hay ubicación al fichar                              | Se ficha igual y se guarda por qué no la hay              | «Entrada apuntada». En su ficha: «sin ubicación», con el motivo                                   |
-| El Panel no se ha podido guardar                        | Lo pendiente se queda en la pantalla                      | «No se ha guardado el Panel», en rojo, con «Reintentar»                                           |
-| Un CSV de cierre trae filas raras                       | Se lee lo que se entiende y se cuenta lo que no           | «Hay filas que no he entendido», con cuáles. Lo demás, ya rellenado                               |
-| El desglose de la caja no suma el total                 | Se guarda lo que se escribió                              | Una nota con la diferencia, sin bloquear el cierre                                                |
-| **Se cae internet al cobrar**                           | **Justificante provisional y venta pendiente de ticket**  | **«Sin conexión: se entrega justificante. El ticket saldrá solo al volver la red»**               |
-| **El proveedor rechaza los datos (400)**                | **No se emite nada y la mesa sigue abierta**              | **Qué dato falla, en cristiano, y cómo arreglarlo**                                               |
-| **Hacienda rechaza un registro**                        | **El documento queda emitido con su número**              | **Aviso al gerente con el motivo y el botón de la corrección que toca**                           |
-| **Hacienda no responde**                                | **El proveedor reintenta**                                | **Nada en sala. Si pasa de una hora, aviso al gerente**                                           |
-| **La impresora de tickets no responde**                 | **El ticket ya está emitido; se reintenta**               | **«Ticket emitido, no impreso»: reimprimir o mandar por correo**                                  |
-| **Un plato no tiene partida asignada**                  | **Sale en todas las pantallas de cocina**                 | **Aparece en «platos sin partida», para arreglarlo. Nunca se pierde un plato**                    |
-| **Se marca un plato listo por error**                   | **Se puede deshacer dentro de un margen corto**           | **Botón de deshacer con su cuenta atrás. Después, lo desmarca un jefe**                           |
-| **Cae la red entre sala y cocina**                      | **La comanda se queda en el aparato y sube al volver**    | **En sala, avisado: «la cocina todavía no lo tiene». Con Estook Link, la cocina la recibe igual** |
-| **El datáfono conectado no responde**                   | **Se cobra como con el del banco y queda marcado**        | **«El datáfono no contesta: cobra en el del banco y confirma aquí»**                              |
-| **Se pierde la respuesta del proveedor de facturación** | **Se pregunta su estado y se termina con la misma clave** | **Nada: el ticket sale en cuanto se sabe. Si tarda, justificante**                                |
-| **Estook Link está apagado**                            | **Los terminales lo notan y pasan a la nube**             | **Aviso en sala y en el Panel: «sin Link, un corte de internet deja a la cocina sin comandas»**   |
-| **El cajón no se abre**                                 | **El cobro ya está hecho; se anota**                      | **«No se ha podido abrir el cajón»: reintentar, o abrirlo con la llave**                          |
-| **Otra aplicación gestiona ya la tienda**               | **No se conecta el canal**                                | **Antes de empezar: quién la gestiona hoy y qué hay que cambiar en la plataforma**                |
+| Fallo                                                   | Qué hace el sistema                                       | Qué ve el usuario                                                                                    |
+| ------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Se cae la red al guardar una ficha                      | Se guarda en local y se reintenta                         | «Guardado en tu móvil. Se subirá al recuperar señal.» Sin perder nada                                |
+| La foto del albarán se lee mal                          | Se guarda la foto y lo que sí ha entendido                | Pantalla de repaso con lo dudoso en amarillo: «he leído 14 líneas, revisa estas 3»                   |
+| El albarán trae un producto desconocido                 | No se descarta                                            | «No conozco Aceite AOVE 5L. ¿Es tu aceite de oliva o es nuevo?»                                      |
+| El TPV manda un artículo sin emparejar                  | Entra la venta en dinero, no descuenta género             | Aviso en Servicio y contador en el Panel                                                             |
+| El fichero del TPV cambia de formato                    | Se guarda el original y no se procesa                     | «El fichero no tiene el formato de siempre. Lo he guardado.» Y aviso interno                         |
+| El inventario se queda a medias                         | Se conserva como abierto con lo contado                   | «Tienes un inventario a medias del martes, ¿sigues o lo descartas?»                                  |
+| Dos personas editan la misma ficha                      | Gana quien guarda primero                                 | Al segundo: qué ha cambiado y opción de fusionar. **Nunca se pisa en silencio**                      |
+| Se agotan los créditos de Fogón                         | Se pausa **solo** lo que llama al modelo                  | «Has usado tus 300 créditos. Los avisos y los cálculos siguen funcionando.»                          |
+| Falla la generación de un PDF                           | Se reintenta una vez y se guarda la receta                | «No he podido generarlo. Reintentar / avisar», sin perder la configuración                           |
+| Google Places no responde                               | Se usa lo guardado                                        | La sección enseña la fecha del último dato, **sin error rojo**                                       |
+| Se sube un CSV con columnas raras                       | Se propone el mapeo y se pide confirmar                   | Pantalla de emparejar columnas con vista previa de 5 filas                                           |
+| El correo de invitación no llega                        | El PIN sigue siendo válido                                | «Puedes darle el PIN en mano», con el código y botón de reenviar                                     |
+| Alguien olvida su contraseña o su PIN (0109)            | Un enlace a su correo, de un uso                          | «Mira tu correo», exista o no; sin correo, quien lleva el local le da uno nuevo en Equipo            |
+| La foto pesa 8 MB                                       | Se reduce antes de subir                                  | Barra de progreso, y nada más                                                                        |
+| Alguien intenta ver otro local                          | `403` en el servidor                                      | «No tienes acceso a ese local» y vuelta a lo suyo                                                    |
+| **Un webhook de reparto llega dos veces**               | **Se descarta por identificador de pedido**               | **Nada. Es lo correcto: el usuario no tiene que enterarse**                                          |
+| **Un webhook llega con la firma mal**                   | **Se descarta y se registra el intento**                  | **Nada en el local. Aviso interno a nosotros**                                                       |
+| **No se acepta un pedido a tiempo**                     | **La plataforma lo cancela. Se registra con su motivo**   | **«Este pedido se canceló por tiempo», con la hora exacta**                                          |
+| **La API del canal de reparto cae**                     | **Se encola y se reintenta con espera creciente**         | **Estado de la integración en amarillo, con la última sincronización**                               |
+| **Fogón propone un horario imposible**                  | **Se entrega igual, con los huecos señalados**            | **«Falta 1 camarero el miércoles de 20:00 a 22:00», antes de publicar**                              |
+| No hay ubicación al fichar                              | Se ficha igual y se guarda por qué no la hay              | «Entrada apuntada». En su ficha: «sin ubicación», con el motivo                                      |
+| El Panel no se ha podido guardar                        | Lo pendiente se queda en la pantalla                      | «No se ha guardado el Panel», en rojo, con «Reintentar»                                              |
+| Un CSV de cierre trae filas raras                       | Se lee lo que se entiende y se cuenta lo que no           | «Hay filas que no he entendido», con cuáles. Lo demás, ya rellenado                                  |
+| El desglose de la caja no suma el total                 | Se guarda lo que se escribió                              | Una nota con la diferencia, sin bloquear el cierre                                                   |
+| **Se cae internet al cobrar**                           | **Justificante provisional y venta pendiente de ticket**  | **«Sin conexión: se entrega justificante. El ticket saldrá solo al volver la red»**                  |
+| **El proveedor rechaza los datos (400)**                | **No se emite nada y la mesa sigue abierta**              | **Qué dato falla, en cristiano, y cómo arreglarlo**                                                  |
+| **Hacienda rechaza un registro**                        | **El documento queda emitido con su número**              | **Aviso al gerente con el motivo y el botón de la corrección que toca**                              |
+| **Hacienda no responde**                                | **El proveedor reintenta**                                | **Nada en sala. Si pasa de una hora, aviso al gerente**                                              |
+| **La impresora de tickets no responde**                 | **El ticket ya está emitido; se reintenta**               | **«Ticket emitido, no impreso»: reimprimir o mandar por correo**                                     |
+| **Un plato no tiene partida asignada**                  | **Sale en todas las pantallas de cocina**                 | **Aparece en «platos sin partida», para arreglarlo. Nunca se pierde un plato**                       |
+| **Se marca un plato listo por error**                   | **Se puede deshacer dentro de un margen corto**           | **Botón de deshacer con su cuenta atrás. Después, lo desmarca un jefe**                              |
+| **Cae la red entre sala y cocina**                      | **La comanda se queda en el aparato y sube al volver**    | **En sala, avisado: «la cocina todavía no lo tiene». Con la caja para Windows, la cocina la recibe** |
+| **El datáfono conectado no responde**                   | **Se cobra como con el del banco y queda marcado**        | **«El datáfono no contesta: cobra en el del banco y confirma aquí»**                                 |
+| **Se pierde la respuesta del proveedor de facturación** | **Se pregunta su estado y se termina con la misma clave** | **Nada: el ticket sale en cuanto se sabe. Si tarda, justificante**                                   |
+| **La caja para Windows está apagada**                   | **Los terminales lo notan y pasan a la nube**             | **Aviso en sala y en el Panel: «sin la caja, un corte de internet deja a la cocina sin comandas»**   |
+| **El cajón no se abre**                                 | **El cobro ya está hecho; se anota**                      | **«No se ha podido abrir el cajón»: reintentar, o abrirlo con la llave**                             |
+| **Otra aplicación gestiona ya la tienda**               | **No se conecta el canal**                                | **Antes de empezar: quién la gestiona hoy y qué hay que cambiar en la plataforma**                   |
 
 **Tres reglas de error, para todos:**
 
@@ -839,7 +839,7 @@ Al cerrar cada módulo se comprueban las que apliquen. **Cada línea es una prue
 - La dirección de una impresora no aparece en el cliente ni en ningún registro.
 - Con todas las tablets apagadas, una comanda lanzada desde otro sitio se imprime igual.
 - **La misma comanda sale idéntica por tres marcas distintas de impresora**, una de ellas de impacto.
-- Con Estook Link y **sin internet**, una comanda llega a la pantalla de cocina y a la impresora en menos de 2 segundos, y al volver está en la nube **una sola vez**.
+- Con la caja para Windows y **sin internet**, una comanda llega a la pantalla de cocina y a la impresora en menos de 2 segundos, y al volver está en la nube **una sola vez**.
 - El núcleo no conoce ninguna marca de impresora: solo deja trabajos en la cola.
 
 ## Caja

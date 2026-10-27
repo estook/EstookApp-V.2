@@ -100,8 +100,10 @@ test('la entrada: la sala primero, el engranaje y mantener pulsado', async ({
   });
   await expect(page.getByRole('button', { name: /^Aparatos del local.*1 caja/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Agotados.*Nada agotado/ })).toBeVisible();
-  // Lo que llega con su entrega no sale, ni apagado.
-  await expect(page.getByRole('button', { name: /Impresoras/ })).toHaveCount(0);
+  // Impresoras y cajón, desde T5 · 1 (0119), con lo que se hace ahí mientras no hay ninguna.
+  await expect(
+    page.getByRole('button', { name: /^Impresoras y cajón.*Imprimir las comandas y la cuenta/ }),
+  ).toBeVisible();
   // La «E» devuelve a la sala desde cualquier sitio.
   await page.getByRole('button', { name: 'La sala', exact: true }).click();
   await expect(page.getByRole('button', { name: /^Mesa 1: Libre/ })).toBeVisible({

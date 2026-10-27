@@ -2,14 +2,15 @@
   "name": "@estook/caja-windows",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "La caja para Windows: Estook TPV en un programa, que imprime, abre el cajón y será el centro del local sin internet (0119)",
   "main": "dist/principal.cjs",
   "scripts": {
-    "construir": "node construir.mjs",
+    "construir": "node construir.ts",
     "preparar": "node node_modules/electron/install.js",
-    "arrancar": "node construir.mjs && node node_modules/electron/install.js && electron .",
-    "empaquetar": "node construir.mjs && electron-builder --win --publish never",
-    "publicar": "node construir.mjs && electron-builder --win --publish always",
+    "arrancar": "node construir.ts && node node_modules/electron/install.js && electron .",
+    "empaquetar": "node construir.ts && electron-builder --win --publish never",
+    "publicar": "node construir.ts && electron-builder --win --publish always",
     "tipos": "tsc --noEmit"
   },
   "dependencies": {

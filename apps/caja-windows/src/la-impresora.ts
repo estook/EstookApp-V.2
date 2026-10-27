@@ -14,7 +14,9 @@ import type { ComoSalio } from '@estook/impresion';
 export const PUERTO_DE_SIEMPRE = 9100;
 
 /** «192.168.1.50:9100», «192.168.1.50» (el 9100) o «[fe80::1]:9100». */
-export function laDireccion(texto: string): { readonly host: string; readonly puerto: number } | null {
+export function laDireccion(
+  texto: string,
+): { readonly host: string; readonly puerto: number } | null {
   const limpio = texto.trim();
   const conCorchetes = /^\[([0-9a-fA-F:.]+)\](?::(\d{1,5}))?$/.exec(limpio);
   const sencilla = /^([0-9A-Za-z.-]+)(?::(\d{1,5}))?$/.exec(limpio);

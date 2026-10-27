@@ -122,12 +122,16 @@ module.exports = {
       from: {
         path: '^(apps|packages|servidor)/',
         // vite.config es andamiaje de construccion y los .d.ts solo declaran tipos:
-        // ninguno de los dos acaba en el paquete que descarga el navegador.
-        pathNot: '(vite\\.config\\.ts|\\.d\\.ts)$',
+        // ninguno de los dos acaba en el paquete que descarga el navegador. Y el
+        // `construir.ts` de la caja para Windows (0119), que hace de su vite.config.
+        pathNot: '(vite\\.config\\.ts|\\.d\\.ts|^apps/caja-windows/construir\\.ts)$',
       },
       to: {
         dependencyTypes: ['npm-dev'],
-        pathNot: '^node_modules/(@types/|typescript/)',
+        // `electron` lo pone el propio programa al ejecutarse: va de desarrollo porque así
+        // lo pide su empaquetador, y esbuild lo deja fuera de lo construido (0119).
+        pathNot:
+          '^node_modules/(@types/|typescript/|\\.pnpm/electron@[^/]+/node_modules/electron/)',
       },
     },
     {

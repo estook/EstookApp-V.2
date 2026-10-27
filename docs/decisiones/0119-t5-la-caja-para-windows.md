@@ -109,7 +109,43 @@ Leer los ficheros de Revo, Ágora o Glop era la otra mitad de Estook Link, para 
 con Estook. Ese local no tendría «la caja para Windows»: **el mismo programa podrá hacerlo sin la
 caja**, y se decide con M18.
 
-## 4 · Lo que no se toca
+## 4 · T5 · 1, construida (27-oct): lo que decidí al construirlo
+
+Migración **0093**; la API pasa a **115 consultas y 312 comandos**; el programa, en
+`apps/caja-windows`; el traductor, en `packages/impresion`; los pasos, en
+[`docs/pasos-de-t5-1.md`](../pasos-de-t5-1.md).
+
+1. **La caja lee su cola al oír el toque al segundo** de su aparato (`impresion:<local>`, solo a las
+   cajas) **y una vez por minuto** por si se pierde. Preguntar cada dos segundos gastaría el plan de
+   Supabase en un mes.
+2. **La dirección de una impresora no llega nunca a la pantalla**: `las_impresoras` no la lleva, y
+   solo la caja que la imprime la lee, con su llave, por una función con privilegio.
+3. **Cada impresora la imprime la caja que la encontró**; si otra caja la vuelve a dar de alta, pasa a
+   imprimirla esa.
+4. **Antes de mandar un papel, se pregunta cómo está el papel** (DLE EOT 4). Sin papel o sin responder
+   en 10 segundos, sale por **la de reserva**, si es de la misma caja; y la sala lo ve en su franja.
+5. **Cinco intentos** y el trabajo se queda en error: nunca la misma comanda quince veces.
+6. **Lo que falla al dejar el papel no para el pedido**: va en su propio punto de guardado, y la sala
+   sigue (Anexo 6.7, regla 4). Pedir la cuenta o la prueba a propósito sí dice si falla.
+7. **«Pasar a la app» mueve la misma fila**: el nombre, el cajón y las impresoras se quedan, la llave
+   cambia y quien estaba dentro sale. Nunca hay dos cajas con el mismo cajón.
+8. **El permiso nuevo «Abrir el cajón»** (`accion.abrir_el_cajon`): el jefe de sala y el gerente, como
+   dice Roles 1.12, con motivo, y queda en la auditoría. Solo en la caja.
+9. **«Imprimir la cuenta» y «Reimprimir la comanda» solo salen si hay impresora** para ello: lo que
+   no funciona no se enseña.
+10. **Con «las dos»** (pantalla y papel), el papel lleva lo mismo que con «papel»: lo nuevo, la marcha,
+    lo anulado y lo que vuelve. Tachar sigue en la pantalla.
+11. **Buscar prueba el puerto 9100** de la red del PC, sesenta y cuatro a la vez, y la dirección donde
+    se pone una Epson sin router (192.168.192.168). **El modelo lo dice la propia impresora** (GS I);
+    la que no lo dice sale como «Impresora».
+12. **Electron no baja su navegador al instalar** (`neverBuiltDependencies`): si no, GitHub bajaría
+    cien megas en cada vuelta de cada máquina. Se baja al arrancar o al empaquetar el programa.
+13. **El instalador lo construye GitHub en una máquina con Windows** en cada pull request que toque el
+    programa, y **lo publica a mano** desde `main`. No es una comprobación obligatoria.
+14. **El programa carga la web publicada**: la web se actualiza al fusionar, como siempre; el programa
+    en sí, al cerrarlo.
+
+## 5 · Lo que no se toca
 
 - **Un solo código, en web.** El programa enseña la misma Estook TPV; no hay pantallas de Windows.
 - **Los datos, en la nube**: la caja no guarda nada que no esté también arriba, salvo lo que espera a

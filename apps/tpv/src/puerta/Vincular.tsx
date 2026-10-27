@@ -45,7 +45,10 @@ export function Vincular({ alVincular }: { readonly alVincular: (v: AparatoVincu
           <ol className="flex flex-col gap-e3 text-cuerpo text-texto-suave">
             <Paso n={1}>
               En la caja del navegador:{' '}
-              <b className="text-texto">Ajustes del TPV › Aparatos › esta caja › «Pasar a la app»</b>.
+              <b className="text-texto">
+                Ajustes del TPV › Aparatos › esta caja › «Pasar a la app»
+              </b>
+              .
             </Paso>
             <Paso n={2}>
               Sale un código de 6 cifras que dura 10 minutos. Escríbelo aquí: llega con su nombre,

@@ -103,7 +103,7 @@ describe('la comanda en papel (T5 · 1, 0119)', () => {
   });
 
   it('al marchar dice cuál sale, sin «YA» ni «EN ESPERA»', () => {
-    const papel = laComandaEnPapel({ ...MESA_4, que: 'marcha', pases: [MESA_4.pases[1]!] });
+    const papel = laComandaEnPapel({ ...MESA_4, que: 'marcha', pases: MESA_4.pases.slice(1) });
     const lo = textos(papel.piezas);
     expect(lo).toContain('¡MARCHA EL 2.º!');
     expect(lo).toContain('2.º');

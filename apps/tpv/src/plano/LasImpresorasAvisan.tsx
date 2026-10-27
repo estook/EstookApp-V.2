@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Boton } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAlSegundo, usarLasImpresoras } from '../ganchos/usarLaSala.ts';
@@ -21,7 +21,7 @@ import { irA } from '../navegar.ts';
 export function LasImpresorasAvisan() {
   const { aparato } = usarSesion();
   const impresoras = usarLasImpresoras(usarAlSegundo());
-  const avisos = impresoras.data?.avisos ?? [];
+  const avisos = useMemo(() => impresoras.data?.avisos ?? [], [impresoras.data]);
   const oidos = useRef(new Set<string>());
 
   useEffect(() => {
@@ -71,7 +71,12 @@ export function LasImpresorasAvisan() {
 export function DescargaLaCajaParaWindows() {
   const { aparato } = usarSesion();
   const [cerrada, setCerrada] = useState(() => laFranjaSeCerro());
-  if (aparato.funcion !== 'caja' || laCajaParaWindows() !== null || !esUnPcConWindows() || cerrada) {
+  if (
+    aparato.funcion !== 'caja' ||
+    laCajaParaWindows() !== null ||
+    !esUnPcConWindows() ||
+    cerrada
+  ) {
     return null;
   }
   return (

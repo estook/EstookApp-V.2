@@ -1,5 +1,13 @@
 import { join } from 'node:path';
-import { BrowserWindow, Menu, app, ipcMain, shell, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron';
+import {
+  BrowserWindow,
+  Menu,
+  app,
+  ipcMain,
+  shell,
+  type IpcMainEvent,
+  type IpcMainInvokeEvent,
+} from 'electron';
 import electronUpdater from 'electron-updater';
 import { crearCliente } from '@estook/cliente-api';
 import { escucharAlSegundo, type Escucha } from '@estook/cliente-api/al-segundo';
@@ -51,10 +59,15 @@ function conectar(datos: LoQueNecesitaLaCaja): void {
   cola = new LaColaEnMarcha(
     {
       leerLaCola: async () => {
-        const respuesta = await cliente.ejecutar<LaColaQueDaLaApi>('la_cola_de_la_caja', { llave: datos.llave });
+        const respuesta = await cliente.ejecutar<LaColaQueDaLaApi>('la_cola_de_la_caja', {
+          llave: datos.llave,
+        });
         if (!respuesta.ok) {
           // No es una caja, o la desvincularon: no hay nada que imprimir aquí.
-          if (respuesta.error.codigo === 'sin_permiso' || respuesta.error.codigo === 'aparato_retirado') {
+          if (
+            respuesta.error.codigo === 'sin_permiso' ||
+            respuesta.error.codigo === 'aparato_retirado'
+          ) {
             desconectar();
           }
           throw new Error(respuesta.error.codigo);
@@ -151,56 +164,74 @@ if (!app.requestSingleInstanceLock()) {
     ventana.focus();
   });
 
-  app.whenReady().then(() => {
-    Menu.setApplicationMenu(null);
+  app
+    .whenReady()
+    .then(() => {
+      Menu.setApplicationMenu(null);
 
-    ipcMain.on('caja:version', (evento) => {
-      evento.returnValue = esDeEstook(evento) ? app.getVersion() : null;
-    });
-    ipcMain.on('caja:conectar', (evento, datos: LoQueNecesitaLaCaja) => {
-      if (esDeEstook(evento) && typeof datos?.llave === 'string' && typeof datos.api === 'string') {
-        conectar(datos);
+      ipcMain.on('caja:version', (evento) => {
+        evento.returnValue = esDeEstook(evento) ? app.getVersion() : null;
+      });
+      ipcMain.on('caja:conectar', (evento, datos: LoQueNecesitaLaCaja) => {
+        if (
+          esDeEstook(evento) &&
+          typeof datos.llave === 'string' &&
+          typeof datos.api === 'string'
+        ) {
+          conectar(datos);
+        }
+      });
+      ipcMain.on('caja:desconectar', (evento) => {
+        if (esDeEstook(evento)) desconectar();
+      });
+      ipcMain.handle('caja:buscar', async (evento) =>
+        esDeEstook(evento) ? buscarImpresoras() : [],
+      );
+      ipcMain.handle(
+        'caja:imprimir-directo',
+        async (evento, direccion: unknown, anchoMm: unknown, papel: unknown) => {
+          if (!esDeEstook(evento) || typeof direccion !== 'string' || !esPapelCompuesto(papel)) {
+            return { salio: false, porque: 'No se puede' };
+          }
+          // Solo a una que acaba de contestar en la red: la web no manda bytes a donde quiera.
+          const encontradas = await lasQueContestan([direccion.split(':')[0] ?? '']);
+          if (!encontradas.includes(direccion)) return { salio: false, porque: 'No responde' };
+          return mandarALaImpresora(
+            direccion,
+            aEscPos(papel, anchoMm === 58 ? IMPRESORA_DE_58_MM : IMPRESORA_DE_80_MM),
+          );
+        },
+      );
+      ipcMain.handle('caja:como-va', (evento) => {
+        const va = cola?.comoVa() ?? { conectada: false, porSalir: 0 };
+        return esDeEstook(evento)
+          ? { ...va, porCable: null }
+          : { conectada: false, porSalir: 0, porCable: null };
+      });
+      ipcMain.handle('caja:arranca-con-windows', (evento) =>
+        esDeEstook(evento) ? app.getLoginItemSettings().openAtLogin : false,
+      );
+      ipcMain.handle('caja:poner-arranca-con-windows', (evento, si: unknown) => {
+        if (esDeEstook(evento) && typeof si === 'boolean')
+          app.setLoginItemSettings({ openAtLogin: si });
+      });
+
+      crearLaVentana();
+
+      // **Las actualizaciones**: se descargan solas y se ponen al cerrar el programa (Anexo 10.12).
+      const { autoUpdater } = electronUpdater;
+      autoUpdater.autoInstallOnAppQuit = true;
+      const mirar = () => {
+        void autoUpdater.checkForUpdates().catch(() => undefined);
+      };
+      if (app.isPackaged) {
+        mirar();
+        setInterval(mirar, 6 * 60 * 60_000);
       }
+    })
+    .catch(() => {
+      app.quit();
     });
-    ipcMain.on('caja:desconectar', (evento) => {
-      if (esDeEstook(evento)) desconectar();
-    });
-    ipcMain.handle('caja:buscar', async (evento) => (esDeEstook(evento) ? buscarImpresoras() : []));
-    ipcMain.handle('caja:imprimir-directo', async (evento, direccion: unknown, anchoMm: unknown, papel: unknown) => {
-      if (!esDeEstook(evento) || typeof direccion !== 'string' || !esPapelCompuesto(papel)) {
-        return { salio: false, porque: 'No se puede' };
-      }
-      // Solo a una que acaba de contestar en la red: la web no manda bytes a donde quiera.
-      const encontradas = await lasQueContestan([direccion.split(':')[0] ?? '']);
-      if (!encontradas.includes(direccion)) return { salio: false, porque: 'No responde' };
-      return mandarALaImpresora(direccion, aEscPos(papel, anchoMm === 58 ? IMPRESORA_DE_58_MM : IMPRESORA_DE_80_MM));
-    });
-    ipcMain.handle('caja:como-va', (evento) => {
-      const va = cola?.comoVa() ?? { conectada: false, porSalir: 0 };
-      return esDeEstook(evento) ? { ...va, porCable: null } : { conectada: false, porSalir: 0, porCable: null };
-    });
-    ipcMain.handle('caja:arranca-con-windows', (evento) =>
-      esDeEstook(evento) ? app.getLoginItemSettings().openAtLogin : false,
-    );
-    ipcMain.handle('caja:poner-arranca-con-windows', (evento, si: unknown) => {
-      if (esDeEstook(evento) && typeof si === 'boolean') app.setLoginItemSettings({ openAtLogin: si });
-    });
-
-    crearLaVentana();
-
-    // **Las actualizaciones**: se descargan solas y se ponen al cerrar el programa (Anexo 10.12).
-    const { autoUpdater } = electronUpdater;
-    autoUpdater.autoInstallOnAppQuit = true;
-    const mirar = () => {
-      void autoUpdater.checkForUpdates().catch(() => undefined);
-    };
-    if (app.isPackaged) {
-      mirar();
-      setInterval(mirar, 6 * 60 * 60_000);
-    }
-  }).catch(() => {
-    app.quit();
-  });
 
   app.on('window-all-closed', () => {
     desconectar();

@@ -1,8 +1,8 @@
 // La caja para Windows (0119): el proceso principal y el puente, de TypeScript a un solo fichero
 // cada uno. Electron se queda fuera: lo pone el propio programa.
-import { build } from 'esbuild';
+import { build, type BuildOptions } from 'esbuild';
 
-const comun = {
+const comun: BuildOptions = {
   bundle: true,
   platform: 'node',
   format: 'cjs',

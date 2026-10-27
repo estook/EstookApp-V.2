@@ -129,7 +129,9 @@ export function ImpresorasYCajon() {
 
   if (lista.isLoading) return <Cargando que="las impresoras" />;
   if (lista.data === undefined) {
-    return lista.error instanceof FalloDeLaSala ? <ErrorEnCristiano error={lista.error.error} /> : null;
+    return lista.error instanceof FalloDeLaSala ? (
+      <ErrorEnCristiano error={lista.error.error} />
+    ) : null;
   }
   const datos = lista.data;
   const conCajon = datos.impresoras.filter((i) => i.tieneCajon).length;
@@ -145,11 +147,20 @@ export function ImpresorasYCajon() {
               ? '1 impresora'
               : `${String(datos.impresoras.length)} impresoras`}
             {' · '}
-            {conCajon === 0 ? 'sin cajón' : conCajon === 1 ? '1 cajón' : `${String(conCajon)} cajones`}
+            {conCajon === 0
+              ? 'sin cajón'
+              : conCajon === 1
+                ? '1 cajón'
+                : `${String(conCajon)} cajones`}
           </span>
         </div>
         {caja !== null && (
-          <Boton tono="principal" cargando={buscando} textoCargando="Buscando" onClick={() => void buscar()}>
+          <Boton
+            tono="principal"
+            cargando={buscando}
+            textoCargando="Buscando"
+            onClick={() => void buscar()}
+          >
             Buscar impresoras
           </Boton>
         )}
@@ -165,7 +176,10 @@ export function ImpresorasYCajon() {
       {caja === null && <DescargaLaCaja />}
 
       {encontradas !== null && (
-        <section aria-label="Encontradas" className="flex flex-col gap-e3 rounded-mayor bg-superficie p-e5">
+        <section
+          aria-label="Encontradas"
+          className="flex flex-col gap-e3 rounded-mayor bg-superficie p-e5"
+        >
           <span className="text-seccion font-bold">
             {nuevasDeVerdad.length === 0
               ? 'No hay ninguna nueva en la red'
@@ -215,7 +229,9 @@ export function ImpresorasYCajon() {
                   {[
                     i.modelo ?? 'Impresora',
                     'por la red',
-                    i.imprime.length === 0 ? 'no imprime nada aún' : i.imprime.map((x) => DE_QUE_ES[x]).join(', '),
+                    i.imprime.length === 0
+                      ? 'no imprime nada aún'
+                      : i.imprime.map((x) => DE_QUE_ES[x]).join(', '),
                     i.tieneCajon ? 'con el cajón' : null,
                     i.deEstaCaja ? null : `la imprime ${i.laImprime}`,
                   ]
@@ -227,7 +243,11 @@ export function ImpresorasYCajon() {
               <Boton
                 tono="secundario"
                 onClick={() =>
-                  void hacer('imprimir_prueba', { impresora_id: i.id }, `Sale la prueba por ${i.nombre}.`)
+                  void hacer(
+                    'imprimir_prueba',
+                    { impresora_id: i.id },
+                    `Sale la prueba por ${i.nombre}.`,
+                  )
                 }
               >
                 Prueba
@@ -296,7 +316,11 @@ export function ImpresorasYCajon() {
         >
           <AbrirElCajon
             alAbrir={async (motivo) => {
-              const bien = await hacer('abrir_el_cajon', { motivo }, 'El cajón se abre. Queda apuntado.');
+              const bien = await hacer(
+                'abrir_el_cajon',
+                { motivo },
+                'El cajón se abre. Queda apuntado.',
+              );
               if (bien) setCajon(false);
             }}
           />
@@ -350,14 +374,14 @@ function LaEncontrada({
   async function probar() {
     if (caja === null) return;
     setProbando(true);
-    const ahora = new Date();
     const salio = await caja.imprimirDirecto(
       encontrada.direccion,
       80,
       laPruebaEnPapel({
         local,
         impresora: encontrada.modelo ?? 'Impresora nueva',
-        cuando: ahora.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }),
+        // La hora la pone el servidor (regla 10): en la prueba de una nueva, no hace falta.
+        cuando: 'Prueba desde la caja',
         imprime: [],
       }),
     );
@@ -374,7 +398,12 @@ function LaEncontrada({
           <span className="font-bold">{encontrada.modelo ?? 'Impresora'}</span>
           <span className="text-secundario text-texto-tenue">por la red · nueva</span>
         </div>
-        <Boton tono="principal" cargando={probando} textoCargando="Imprimiendo" onClick={() => void probar()}>
+        <Boton
+          tono="principal"
+          cargando={probando}
+          textoCargando="Imprimiendo"
+          onClick={() => void probar()}
+        >
           Imprimir prueba
         </Boton>
       </div>
@@ -470,7 +499,9 @@ function ElEditor({
       </label>
 
       <fieldset className="flex flex-col gap-e2">
-        <legend className="mb-e2 text-secundario font-semibold text-texto-tenue">Qué imprime</legend>
+        <legend className="mb-e2 text-secundario font-semibold text-texto-tenue">
+          Qué imprime
+        </legend>
         <div className="flex flex-wrap gap-e2">
           {(['cocina', 'barra', 'caja'] as const).map((x) => {
             const si = imprime.includes(x);
@@ -640,10 +671,11 @@ function AbrirElCajon({ alAbrir }: { readonly alAbrir: (motivo: string) => Promi
         cargando={ocupado}
         textoCargando="Abriendo"
         disabled={elMotivo.length < 3}
-        onClick={async () => {
+        onClick={() => {
           setOcupado(true);
-          await alAbrir(elMotivo);
-          setOcupado(false);
+          void alAbrir(elMotivo).finally(() => {
+            setOcupado(false);
+          });
         }}
       >
         Abrir el cajón
@@ -685,21 +717,28 @@ function DondeSaleCadaCosa({
     else await alGuardar();
   }
 
-  const filas: readonly { sitio: 'cocina' | 'barra'; nombre: string; frase: string; valor: DondeSale }[] =
-    [
-      {
-        sitio: 'cocina',
-        nombre: 'Cocina',
-        frase: 'Con las dos, el papel lleva lo nuevo, lo marchado y lo anulado',
-        valor: datos.cocinaSaleEn,
-      },
-      { sitio: 'barra', nombre: 'Barra', frase: 'Las bebidas, al momento', valor: datos.barraSaleEn },
-    ];
+  const filas: readonly {
+    sitio: 'cocina' | 'barra';
+    nombre: string;
+    frase: string;
+    valor: DondeSale;
+  }[] = [
+    {
+      sitio: 'cocina',
+      nombre: 'Cocina',
+      frase: 'Con las dos, el papel lleva lo nuevo, lo marchado y lo anulado',
+      valor: datos.cocinaSaleEn,
+    },
+    { sitio: 'barra', nombre: 'Barra', frase: 'Las bebidas, al momento', valor: datos.barraSaleEn },
+  ];
   const sinImpresora = (sitio: 'cocina' | 'barra') =>
     !datos.impresoras.some((i) => i.imprime.includes(sitio));
 
   return (
-    <section aria-label="Dónde sale" className="flex flex-col gap-e4 rounded-mayor bg-superficie p-e5">
+    <section
+      aria-label="Dónde sale"
+      className="flex flex-col gap-e4 rounded-mayor bg-superficie p-e5"
+    >
       <span className="text-seccion font-bold">Lo de la cocina y la barra sale en…</span>
       {error !== null && <ErrorEnCristiano error={error} />}
       {filas.map((f) => (
@@ -713,7 +752,11 @@ function DondeSaleCadaCosa({
                 : f.frase}
             </span>
           </span>
-          <div role="radiogroup" aria-label={`Dónde sale lo de ${f.nombre.toLowerCase()}`} className="flex gap-e2">
+          <div
+            role="radiogroup"
+            aria-label={`Dónde sale lo de ${f.nombre.toLowerCase()}`}
+            className="flex gap-e2"
+          >
             {DONDE.map((d) => (
               <button
                 key={d.valor}
@@ -724,7 +767,9 @@ function DondeSaleCadaCosa({
                 onClick={() => void guardar(f.sitio, d.valor)}
                 className={[
                   'min-h-toque rounded-grande border-2 px-e4 font-bold',
-                  f.valor === d.valor ? 'border-naranja bg-naranja-suave text-naranja' : 'border-borde',
+                  f.valor === d.valor
+                    ? 'border-naranja bg-naranja-suave text-naranja'
+                    : 'border-borde',
                 ].join(' ')}
               >
                 {d.texto}

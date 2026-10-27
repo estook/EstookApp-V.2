@@ -31,13 +31,21 @@ export interface TrabajoParaLaCaja {
     readonly direccion: string;
     readonly anchoMm: 58 | 80;
   };
-  readonly reserva: { readonly id: string; readonly direccion: string; readonly anchoMm: 58 | 80 } | null;
+  readonly reserva: {
+    readonly id: string;
+    readonly direccion: string;
+    readonly anchoMm: 58 | 80;
+  } | null;
 }
 
 export interface LaColaQueDaLaApi {
   readonly trabajos: readonly TrabajoParaLaCaja[];
   readonly temaAlSegundo: string | null;
-  readonly impresoras: readonly { readonly id: string; readonly nombre: string; readonly direccion: string }[];
+  readonly impresoras: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly direccion: string;
+  }[];
 }
 
 export type EstadoDeLaImpresora = 'lista' | 'poco_papel' | 'sin_papel' | 'no_responde';
@@ -70,7 +78,11 @@ export interface ComoFueLaVuelta {
   readonly impresos: number;
   readonly fallidos: number;
   readonly temaAlSegundo: string | null;
-  readonly impresoras: readonly { readonly id: string; readonly nombre: string; readonly direccion: string }[];
+  readonly impresoras: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly direccion: string;
+  }[];
 }
 
 /** **Una vuelta**: lee la cola, imprime en orden y lo apunta. */
@@ -88,16 +100,25 @@ export async function unaVuelta(fuera: LoDeFuera): Promise<ComoFueLaVuelta> {
   const apuntados: LoQueSeApunta['trabajos'][number][] = [];
   for (const t of cola.trabajos) {
     const estado = await comoEstaYa(t.impresora.id, t.impresora.direccion);
-    let salio: ComoSalio = { salio: false, porque: estado === 'sin_papel' ? 'Sin papel' : 'No responde' };
+    let salio: ComoSalio = {
+      salio: false,
+      porque: estado === 'sin_papel' ? 'Sin papel' : 'No responde',
+    };
     if (SE_PUEDE_IMPRIMIR.has(estado)) {
-      salio = await fuera.mandar(t.impresora.direccion, aEscPos(t.papel, ancho(t.impresora.anchoMm)));
+      salio = await fuera.mandar(
+        t.impresora.direccion,
+        aEscPos(t.papel, ancho(t.impresora.anchoMm)),
+      );
       if (!salio.salio) estados.set(t.impresora.id, 'no_responde');
     }
     let porLaReserva = false;
     if (!salio.salio && t.reserva !== null) {
       const deLaReserva = await comoEstaYa(t.reserva.id, t.reserva.direccion);
       if (SE_PUEDE_IMPRIMIR.has(deLaReserva)) {
-        const otra = await fuera.mandar(t.reserva.direccion, aEscPos(t.papel, ancho(t.reserva.anchoMm)));
+        const otra = await fuera.mandar(
+          t.reserva.direccion,
+          aEscPos(t.papel, ancho(t.reserva.anchoMm)),
+        );
         if (otra.salio) {
           salio = otra;
           porLaReserva = true;
@@ -182,9 +203,14 @@ export class LaColaEnMarcha {
           // Sin internet o sin API: la siguiente vuelta. Nada se pierde: sigue en la cola.
           this.conectada = false;
         }
-      } while (this.otraVez && this.reloj !== null);
+      } while (this.quiereOtraVuelta());
       this.enMarcha = null;
     })();
+  }
+
+  /** Si mientras daba la vuelta llegó otro toque, y la cola sigue en marcha. */
+  private quiereOtraVuelta(): boolean {
+    return this.otraVez && this.reloj !== null;
   }
 
   /** Para las pruebas: espera a que acabe la vuelta que haya. */

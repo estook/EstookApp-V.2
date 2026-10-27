@@ -944,3 +944,9 @@
      siguiente. Y a cada máquina le toca una conexión distinta (de 0,18 a 28 MB/s en la misma
      vuelta), así que un trozo puede caer aunque los otros tres pasen. Ahora `navegadores.yml`
      los guarda desde `main` en cada fusión, para todas las ramas.
+234. **Una dependencia puede bajarse algo enorme al instalarse.** Electron trae un script que,
+     al instalar, baja su navegador entero (unos 100 MB); pnpm 9 ejecuta esos scripts, así que
+     cada vuelta de GitHub —Calidad, Migraciones y los cuatro trozos de Pantallas— lo habría
+     bajado sin usarlo, justo después de la auditoría del 27-oct. Antes de añadir una
+     dependencia se mira qué hace al instalarse: Electron va en `neverBuiltDependencies` y su
+     navegador se baja solo al arrancar o empaquetar la caja para Windows (0119).

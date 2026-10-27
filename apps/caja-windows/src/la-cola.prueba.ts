@@ -4,7 +4,13 @@ import { laComandaEnPapel, type PapelCompuesto } from '@estook/dominio';
 import { enLaPagina858 } from '@estook/impresion';
 import { comoEstaLaImpresora, laDireccion, mandarALaImpresora, suNombre } from './la-impresora.ts';
 import { lasQueContestan, lasQueSeProbaran, lasRedesDelPc } from './buscar.ts';
-import { LaColaEnMarcha, unaVuelta, type LoDeFuera, type LoQueSeApunta, type TrabajoParaLaCaja } from './la-cola.ts';
+import {
+  LaColaEnMarcha,
+  unaVuelta,
+  type LoDeFuera,
+  type LoQueSeApunta,
+  type TrabajoParaLaCaja,
+} from './la-cola.ts';
 
 /**
  * **La caja para Windows contra una impresora de mentira** (T5 · 1, 0119; Anexo 6.8): un
@@ -22,7 +28,16 @@ interface ImpresoraDeMentira {
 const abiertas: Server[] = [];
 
 afterEach(async () => {
-  await Promise.all(abiertas.splice(0).map((s) => new Promise((r) => s.close(() => r(null)))));
+  await Promise.all(
+    abiertas.splice(0).map(
+      (s) =>
+        new Promise((r) => {
+          s.close(() => {
+            r(null);
+          });
+        }),
+    ),
+  );
 });
 
 async function unaImpresora(puerto = 0): Promise<ImpresoraDeMentira> {
@@ -37,7 +52,9 @@ async function unaImpresora(puerto = 0): Promise<ImpresoraDeMentira> {
         return;
       }
       if (datos.length === 3 && datos[0] === 0x1d && datos[1] === 0x49 && datos[2] === 0x43) {
-        conexion.write(Buffer.concat([Buffer.from([0x5f]), Buffer.from('TM-T20III'), Buffer.from([0])]));
+        conexion.write(
+          Buffer.concat([Buffer.from([0x5f]), Buffer.from('TM-T20III'), Buffer.from([0])]),
+        );
         return;
       }
       trozos = Buffer.concat([trozos, datos]);
@@ -47,7 +64,11 @@ async function unaImpresora(puerto = 0): Promise<ImpresoraDeMentira> {
     });
   });
   abiertas.push(servidor);
-  await new Promise<void>((r) => servidor.listen(puerto, '127.0.0.1', () => r()));
+  await new Promise<void>((r) => {
+    servidor.listen(puerto, '127.0.0.1', () => {
+      r();
+    });
+  });
   const direccion = servidor.address();
   if (direccion === null || typeof direccion === 'string') throw new Error('sin puerto');
   return Object.assign(impresora, {
@@ -55,7 +76,9 @@ async function unaImpresora(puerto = 0): Promise<ImpresoraDeMentira> {
     recibido,
     apagar: () =>
       new Promise<void>((r) => {
-        servidor.close(() => r());
+        servidor.close(() => {
+          r();
+        });
       }),
   });
 }
@@ -78,7 +101,22 @@ function comanda(mesa: string): PapelCompuesto {
     hora: '13:42',
     alergiasDeLaMesa: [],
     notaDeLaMesa: null,
-    pases: [{ numero: 1, espera: false, lineas: [{ cantidad: 1, nombre: 'Croquetas', opciones: [], nota: null, pesoGramos: null, alergenos: [] }] }],
+    pases: [
+      {
+        numero: 1,
+        espera: false,
+        lineas: [
+          {
+            cantidad: 1,
+            nombre: 'Croquetas',
+            opciones: [],
+            nota: null,
+            pesoGramos: null,
+            alergenos: [],
+          },
+        ],
+      },
+    ],
     motivo: null,
     quien: null,
     aparato: 'Comandero',
@@ -92,14 +130,16 @@ function unaApi(trabajos: TrabajoParaLaCaja[], impresoras: LaColaQueDaLaApiImpre
   return {
     apuntado,
     impreso,
-    leerLaCola: async () => ({
-      trabajos: trabajos.filter((t) => !impreso.has(t.id)),
-      temaAlSegundo: 'tema',
-      impresoras,
-    }),
-    apuntar: async (lo: LoQueSeApunta) => {
+    leerLaCola: () =>
+      Promise.resolve({
+        trabajos: trabajos.filter((t) => !impreso.has(t.id)),
+        temaAlSegundo: 'tema',
+        impresoras,
+      }),
+    apuntar: (lo: LoQueSeApunta) => {
       apuntado.push(lo);
       for (const t of lo.trabajos) if (t.salio) impreso.add(t.id);
+      return Promise.resolve();
     },
   };
 }
@@ -136,7 +176,9 @@ describe('hablar con la impresora', () => {
 
   it('manda los bytes enteros, y dice cómo está el papel y cómo se llama', async () => {
     const impresora = await unaImpresora();
-    expect(await mandarALaImpresora(impresora.direccion, Uint8Array.from([1, 2, 3]), 1_000)).toEqual({
+    expect(
+      await mandarALaImpresora(impresora.direccion, Uint8Array.from([1, 2, 3]), 1_000),
+    ).toEqual({
       salio: true,
       porque: null,
     });
@@ -188,18 +230,18 @@ describe('la cola de la caja', () => {
     expect(vuelta).toMatchObject({ impresos: 3, fallidos: 0 });
     await unaVuelta(conLaRed(api));
     await new Promise((r) => setTimeout(r, 50));
-    expect(otraVez.recibido.map((b) => ['1', '2', '3'].find((m) => contiene(b, `MESA ${m}`)))).toEqual([
-      '1',
-      '2',
-      '3',
-    ]);
+    expect(
+      otraVez.recibido.map((b) => ['1', '2', '3'].find((m) => contiene(b, `MESA ${m}`))),
+    ).toEqual(['1', '2', '3']);
   });
 
   it('si la suya no responde o no tiene papel, sale por la de reserva', async () => {
     const reserva = await unaImpresora();
     const api = unaApi([trabajo('1', await unaApagada(), reserva.direccion)]);
     await unaVuelta(conLaRed(api));
-    expect(api.apuntado[0]?.trabajos).toEqual([{ id: '1', salio: true, por_la_reserva: true, error: null }]);
+    expect(api.apuntado[0]?.trabajos).toEqual([
+      { id: '1', salio: true, por_la_reserva: true, error: null },
+    ]);
 
     const sinPapel = await unaImpresora();
     sinPapel.papel = 0x72;
@@ -214,13 +256,13 @@ describe('la cola de la caja', () => {
   it('sin internet, la vuelta falla sin pararse, y la siguiente lo intenta', async () => {
     let veces = 0;
     const cola = new LaColaEnMarcha({
-      leerLaCola: async () => {
+      leerLaCola: () => {
         veces += 1;
-        throw new Error('sin internet');
+        return Promise.reject(new Error('sin internet'));
       },
-      apuntar: async () => undefined,
-      mandar: async () => ({ salio: true, porque: null }),
-      comoEsta: async () => 'bien',
+      apuntar: () => Promise.resolve(),
+      mandar: () => Promise.resolve({ salio: true, porque: null }),
+      comoEsta: () => Promise.resolve('bien' as const),
     });
     cola.despertar();
     await cola.esperar();
@@ -235,12 +277,35 @@ describe('buscar impresoras', () => {
   it('prueba las redes del PC, sin la suya ni la de «sin red», y la de Epson sin router', () => {
     const redes = lasRedesDelPc({
       Ethernet: [
-        { address: '192.168.1.20', family: 'IPv4', internal: false, netmask: '255.255.255.0', mac: '', cidr: null },
+        {
+          address: '192.168.1.20',
+          family: 'IPv4',
+          internal: false,
+          netmask: '255.255.255.0',
+          mac: '',
+          cidr: null,
+        },
       ],
       'Sin red': [
-        { address: '169.254.3.4', family: 'IPv4', internal: false, netmask: '255.255.0.0', mac: '', cidr: null },
+        {
+          address: '169.254.3.4',
+          family: 'IPv4',
+          internal: false,
+          netmask: '255.255.0.0',
+          mac: '',
+          cidr: null,
+        },
       ],
-      Loopback: [{ address: '127.0.0.1', family: 'IPv4', internal: true, netmask: '255.0.0.0', mac: '', cidr: null }],
+      Loopback: [
+        {
+          address: '127.0.0.1',
+          family: 'IPv4',
+          internal: true,
+          netmask: '255.0.0.0',
+          mac: '',
+          cidr: null,
+        },
+      ],
     });
     expect(redes).toEqual([{ red: '192.168.1.', propia: '192.168.1.20' }]);
     const todas = lasQueSeProbaran(redes);
@@ -252,7 +317,10 @@ describe('buscar impresoras', () => {
   it('encuentra la que contesta en su puerto', async () => {
     const impresora = await unaImpresora();
     const puerto = Number(impresora.direccion.split(':')[1]);
-    const encontradas = await lasQueContestan(['127.0.0.2', '127.0.0.1'], { puerto, esperaMs: 300 });
+    const encontradas = await lasQueContestan(['127.0.0.2', '127.0.0.1'], {
+      puerto,
+      esperaMs: 300,
+    });
     expect(encontradas).toEqual([`127.0.0.1:${String(puerto)}`]);
   });
 });

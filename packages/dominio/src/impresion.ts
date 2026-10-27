@@ -1,3 +1,4 @@
+import { centimos, enEuros } from './dinero.ts';
 import { NOMBRE_CORTO_DEL_ALERGENO, type Alergeno } from './referencia.ts';
 
 /**
@@ -225,13 +226,8 @@ export interface LaCuentaQueSeImprime {
 }
 
 /** 7890 → «78,90». Sin el símbolo: la columna ya es de euros. */
-export function importeEnElPapel(centimos: number): string {
-  const signo = centimos < 0 ? '-' : '';
-  const absoluto = Math.abs(Math.round(centimos));
-  const euros = Math.floor(absoluto / 100);
-  const resto = String(absoluto % 100).padStart(2, '0');
-  const conPuntos = String(euros).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return `${signo}${conPuntos},${resto}`;
+export function importeEnElPapel(importe: number): string {
+  return enEuros(centimos(importe));
 }
 
 /**

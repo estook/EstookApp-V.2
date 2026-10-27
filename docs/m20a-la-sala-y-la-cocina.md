@@ -19,7 +19,7 @@
 > #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
 > ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092, #144), **en producción**.
 > **La entrada nueva** ([0118](decisiones/0118-la-entrada-del-tpv.md), sin migración), con sus
-> maquetas dadas por buenas el 26-oct, fusionada (#145). **Lo siguiente, T5 · La caja para Windows**, con sus maquetas por aprobar.
+> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en su pull request; después, **T5 · 2 · Sin internet**.
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -364,6 +364,22 @@ camareros con Android), **Android sí e iPhone si alguien lo pide**, **sin firma
   y las de pantalla de Impresoras y cajón, la cuenta y marchar sin pantalla de cocina.
 - **En el restaurante del amigo**: una comanda pedida en un Android sale en la impresora de cocina
   **en menos de 6 segundos** (Anexo 6.8), y la cuenta en la de la caja.
+
+### T5 · 1 · Imprimir y el cajón, construida (27-oct-2026)
+
+En su pull request ([0119](decisiones/0119-t5-la-caja-para-windows.md), sección 4; migración 0093;
+[sus pasos](pasos-de-t5-1.md)): **la caja para Windows** en `apps/caja-windows` (Electron), con su
+instalador hecho en GitHub; **la cola** (`impresora` y `trabajo_de_impresion`), que la caja recoge con
+su llave; **el traductor** a ESC/POS en `packages/impresion`; **Ajustes del TPV › Impresoras y cajón**;
+la comanda en papel al mandar, marchar, quitar, devolver y anular; la cuenta y reimprimir en las
+opciones de la mesa; la franja de «sin papel»; marchar directo con la cocina en papel; y **«Pasar a la
+app»**. Falta la prueba en el restaurante del amigo de Richi, con su Epson.
+
+**Las pruebas**: `impresion.prueba.ts` y `escpos.prueba.ts` (el papel y sus bytes), `la-cola.prueba.ts`
+(con una impresora de mentira en el 127.0.0.1: apagada, sin papel, la reserva, y tres que salen en
+orden y una vez al encenderla), `las-impresoras.prueba.ts` (contra la base: sin la dirección en la
+pantalla, un trabajo por sitio, ANULADO, la cuenta, COPIA, el cajón que no abre un comandero y «Pasar
+a la app»), y `la-caja-para-windows.spec.ts` (la pantalla, con un puente de mentira).
 
 ### T5 · 2 · Sin internet, terminado cuando
 

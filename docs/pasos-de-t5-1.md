@@ -5,12 +5,12 @@
 > **En su pull request, sin fusionar** (27 de octubre de 2026). Trae la migración **0093** y órdenes
 > nuevas de la API, así que van **fusionar, migrar, desplegar** y, al final, **publicar el programa**.
 >
-> | Qué              | Cómo está                                                           |
-> | ---------------- | ------------------------------------------------------------------- |
-> | Pull request     | **«T5 · 1 · Imprimir y el cajón»**, rama `t5-1-imprimir-y-el-cajon` |
-> | La base de datos | **92** en producción; esta trae **la 0093**                         |
-> | La API           | Pasa de 113 y 303 a **115 consultas y 312 comandos**                |
-> | El programa      | **La caja para Windows 1.0.0**, por publicar                        |
+> | Qué              | Cómo está                                                                  |
+> | ---------------- | -------------------------------------------------------------------------- |
+> | Pull request     | **«T5 · 1 · Imprimir y el cajón» (#148)**, rama `t5-1-imprimir-y-el-cajon` |
+> | La base de datos | **92** en producción; esta trae **la 0093**                                |
+> | La API           | Pasa de 113 y 303 a **115 consultas y 312 comandos**                       |
+> | El programa      | **La caja para Windows 1.0.0**, por publicar                               |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -32,7 +32,7 @@ el cajón al cobrar llegan con T6 y T7**; **sin internet, con T5 · 2**.
 
 **En este orden.** La API nueva necesita la 0093, y el programa necesita la API nueva.
 
-1. **En GitHub**: abre **«T5 · 1 · Imprimir y el cajón»**. Con las comprobaciones **en verde**,
+1. **En GitHub**: abre **«T5 · 1 · Imprimir y el cajón» (#148)**. Con las comprobaciones **en verde**,
    **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
 

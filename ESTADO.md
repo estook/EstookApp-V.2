@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 27 de octubre de 2026 · **En producción todo hasta la #147** (las maquetas de T5): 92 migraciones, la API con 113 consultas y 303 comandos, el reloj latiendo y GitHub en verde, comprobado el 27-oct. **En su pull request, T5 · 1 · Imprimir y el cajón** ([0119](docs/decisiones/0119-t5-la-caja-para-windows.md), migración 0093): la caja para Windows, las impresoras y la comanda en papel
+Última actualización: 27 de octubre de 2026 · **En producción todo hasta la #147** (las maquetas de T5): 92 migraciones, la API con 113 consultas y 303 comandos, el reloj latiendo y GitHub en verde, comprobado el 27-oct. **En su pull request (#148), T5 · 1 · Imprimir y el cajón** ([0119](docs/decisiones/0119-t5-la-caja-para-windows.md), migración 0093): la caja para Windows, las impresoras y la comanda en papel
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** **T5 · 1 · Imprimir y el cajón** está entera en su pull request, rama `t5-1-imprimir-y-el-cajon` ([0119](docs/decisiones/0119-t5-la-caja-para-windows.md), migración 0093, [sus pasos](docs/pasos-de-t5-1.md)): fusionar, migrar, desplegar la API y publicar el programa. Falta probarla con la Epson del restaurante del amigo de Richi. Lo siguiente, **T5 · 2 · Sin internet** (su «terminado cuando», en [el plan de Estook TPV](docs/m20a-la-sala-y-la-cocina.md)).
+- **Nada a medias.** **T5 · 1 · Imprimir y el cajón** está entera en su pull request (**#148**), rama `t5-1-imprimir-y-el-cajon` ([0119](docs/decisiones/0119-t5-la-caja-para-windows.md), migración 0093, [sus pasos](docs/pasos-de-t5-1.md)): fusionar, migrar, desplegar la API y publicar el programa. Falta probarla con la Epson del restaurante del amigo de Richi. Lo siguiente, **T5 · 2 · Sin internet** (su «terminado cuando», en [el plan de Estook TPV](docs/m20a-la-sala-y-la-cocina.md)).
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -65,7 +65,7 @@ HECHO         T3 · 2 · 1 · Las opciones (0113, #138) · T3 · 2 · 2 · Monta
 HECHO         Cada aparato a lo suyo (0115, #140) · T4 · 1 · La cocina (0116, #141) · el reloj del lunes (#142)
 HECHO         T4 · 2 · La barra y la alergia de la mesa (0117, #144) · la entrada nueva (0118, #145)
 HECHO         El cambio de hora y los navegadores en la caché de GitHub (#146)
-AHORA         T5 · 1 · Imprimir y el cajón (0119), en su pull request · luego T5 · 2 · Sin internet
+AHORA         T5 · 1 · Imprimir y el cajón (0119), en su pull request (#148) · luego T5 · 2 · Sin internet
 ESTOOK TPV    → T5 → T6 · M20B → T7 · M20C con M20 (0107)
 DESPUÉS       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b → Fases 5, 6 y 7
 ```

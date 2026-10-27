@@ -1,0 +1,79 @@
+name: La caja para Windows
+
+# T5 · 1 (decisión 0119). El instalador de la caja para Windows: Estook TPV en un programa que
+# imprime, abre el cajón y, con T5 · 2, sigue sin internet.
+#
+# ── Cuándo corre ─────────────────────────────────────────────────────────────
+#
+#   · En un pull request que toque el programa o lo que imprime: **lo construye**, para ver que
+#     el instalador sale, y lo deja como artefacto de la vuelta. No publica nada.
+#   · A mano, desde `main` (Actions → La caja para Windows → Run workflow, y escribir
+#     «publicar»): **lo publica** en las publicaciones del repositorio, que es de donde lo baja
+#     el botón «Descargar» de Estook TPV. El programa que ya está instalado se actualiza solo con
+#     eso, y se pone al cerrarlo.
+#
+# **No es una comprobación obligatoria** para fusionar (nunca se añade, como Construir y
+# Publicar): una máquina de Windows tarda más y no prueba nada que no prueben las demás.
+#
+# **Sin firmar** hasta vender (respuesta 3 de Richi): la primera vez, Windows enseña «Windows
+# protegió su PC». La firma va con la sociedad y la mudanza.
+
+on:
+  pull_request:
+    paths:
+      - 'apps/caja-windows/**'
+      - 'packages/impresion/**'
+      - '.github/workflows/caja-para-windows.yml'
+  workflow_dispatch:
+    inputs:
+      confirmar:
+        description: 'Escribe «publicar» para publicarla; vacío, solo se construye'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: caja-para-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    name: Construir el instalador
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar
+        run: pnpm install --frozen-lockfile
+
+      - name: Las pruebas del programa
+        run: pnpm exec vitest run apps/caja-windows packages/impresion
+
+      - name: Construir el instalador
+        if: github.event_name != 'workflow_dispatch' || inputs.confirmar != 'publicar'
+        working-directory: apps/caja-windows
+        run: pnpm run empaquetar
+
+      - name: Publicarlo
+        if: github.event_name == 'workflow_dispatch' && inputs.confirmar == 'publicar' && github.ref == 'refs/heads/main'
+        working-directory: apps/caja-windows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm run publicar
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: estook-tpv-caja-para-windows
+          path: apps/caja-windows/empaquetado/*.exe
+          retention-days: 7
+          if-no-files-found: error

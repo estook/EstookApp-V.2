@@ -119,7 +119,10 @@ const NO_LAS_LLAMA_NADIE: Readonly<Record<string, string>> = {
   // agujero.** Esta lista sirve para no olvidarlos, no para justificarlos.
 };
 
-/** Todos los ficheros de código de las cuatro aplicaciones, leídos una vez. */
+/**
+ * Todos los ficheros de código de las aplicaciones, leídos una vez. También la caja para Windows
+ * (0119): su cola, con su llave, la pide el programa, no una pantalla.
+ */
 async function codigoDeLasApps(): Promise<string> {
   const trozos: string[] = [];
 
@@ -137,7 +140,7 @@ async function codigoDeLasApps(): Promise<string> {
     }
   }
 
-  for (const app of ['app', 'admin', 'carta', 'web', 'tpv']) {
+  for (const app of ['app', 'admin', 'carta', 'web', 'tpv', 'caja-windows']) {
     await recorrer(join(RAIZ, 'apps', app, 'src'));
   }
 

@@ -146,9 +146,9 @@ jobs:
     # octubre de 2026—, las 32 capturas saldrian en rojo sin que la aplicacion haya
     # cambiado en nada. Se sube a mano, y con las capturas rehechas en el mismo cambio.
     runs-on: ubuntu-24.04
-    # 30: un trozo bueno va en unos 12 minutos, y un tropiezo de GitHub al bajar los
-    # navegadores (19 minutos una vez, 1-oct) cabe sin dejarlo cortado a medias.
-    timeout-minutes: 30
+    # 45: un trozo bueno va en unos 12 minutos, y bajar los navegadores con el servidor
+    # de Ubuntu lento (25 minutos como mucho) cabe sin dejar las pruebas a medias.
+    timeout-minutes: 45
     strategy:
       # Que acaben los cuatro aunque uno falle: así se ve todo lo rojo de una vez.
       fail-fast: false
@@ -186,23 +186,42 @@ jobs:
         if: matrix.trozo == 1
         run: pnpm publicacion
 
-      # Con su propio tope: si GitHub se atasca bajándolos, falla aquí y lo dice,
-      # en vez de comerse el tiempo de las pruebas (lección 139). Y **un segundo
-      # intento** (lección 226): el 26-oct, los servidores de Ubuntu tardaron más de
-      # quince minutos en un trozo y la vuelta salió en rojo sin fallar ninguna prueba.
-      # Cada intento, diez minutos como mucho; `timeout` corta también a `apt`, y antes
-      # de repetir se deja `dpkg` como estaba.
+      # **Los navegadores necesitan unos cien paquetes de Ubuntu** (fuentes, códecs), y
+      # el servidor que usa GitHub a veces los da a cuentagotas: el 26-oct, 3,5 MB en 74
+      # segundos, y tres vueltas en rojo sin fallar ninguna prueba (lecciones 226, 231 y
+      # 232). Por eso:
+      #
+      #   · **Se guardan los paquetes ya bajados** en la caché de GitHub, y la vuelta
+      #     siguiente los usa sin pedírselos al servidor. Una rama solo ve su caché y la
+      #     de `main`, así que `navegadores.yml` los guarda también desde `main`.
+      #   · El guion, en `herramientas/instalar-los-navegadores.sh`, el mismo para los dos.
+      #   · **Lo lento pero vivo se espera**, no se corta: cortarlo a los cinco minutos
+      #     dejó tres trozos en rojo (#146). `apt` solo deja una conexión muerta, sin
+      #     recibir nada en 20 s, y la vuelve a pedir.
+      #   · Si `apt` falla de verdad, un segundo intento, y antes se corta lo que quede
+      #     de él con el candado de `dpkg` cogido (lección 231).
+      #   · Con su propio tope (lección 139): si aun así no acaba, falla aquí y lo dice.
+      - name: Los paquetes de los navegadores, de una vuelta anterior
+        id: paquetes
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/paquetes-de-los-navegadores
+          key: navegadores-ubuntu-24.04-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: navegadores-ubuntu-24.04-
+
       - name: Instalar navegadores
+        id: navegadores
         timeout-minutes: 25
-        run: |
-          for intento in 1 2; do
-            if timeout 600 pnpm exec playwright install --with-deps chromium webkit; then
-              exit 0
-            fi
-            echo "::warning::Instalar los navegadores se ha atascado (intento $intento de 2)."
-            sudo dpkg --configure -a || true
-          done
-          exit 1
+        run: bash herramientas/instalar-los-navegadores.sh
+
+      # Se guardan en cuanto se han instalado, aunque luego falle una prueba: lo que
+      # tardó en bajar no se vuelve a bajar. Si ya estaban todos, no hace falta.
+      - name: Guardar los paquetes de los navegadores, para la vuelta siguiente
+        if: steps.navegadores.outcome == 'success' && steps.paquetes.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/paquetes-de-los-navegadores
+          key: navegadores-ubuntu-24.04-${{ hashFiles('pnpm-lock.yaml') }}
 
       # Playwright levanta la API de pruebas (Postgres efimero, migraciones y
       # semillas) antes de las cinco aplicaciones. Esta escrito en

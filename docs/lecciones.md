@@ -923,3 +923,24 @@
      `disabled`, y después con `aria-disabled`: un toque no lo pide, pero mantenerlo lo hace
      volver. Desactivado, ni el lector de pantalla ni Playwright lo dejaban tocar, y la prueba
      se quedó esperando. Va sin desactivar, y su nombre dice «agotado» (0118).
+230. **«Hace un día» no son 24 horas.** La prueba de las bajas de Ventas restaba 24 y 48 horas y
+     miraba el día en Madrid. El lunes 26-oct a las 23:05, con el domingo de 25 horas por el
+     cambio de hora, las dos cuentas daban el mismo domingo, y la vuelta de `main` tras la #145
+     salió en rojo (su rama, horas antes, pasó). Los días se restan en el calendario, nunca en
+     milisegundos (`las-ventas.prueba.ts`).
+231. **Un reintento que no se ha visto fallar no es un reintento.** El de la 226 cortaba a
+     `pnpm` con `timeout`, pero el `apt-get` de debajo seguía vivo con el candado de `dpkg`
+     cogido, y el segundo intento fallaba al instante («Could not get lock»): en la #146 la
+     vuelta salió en rojo otra vez sin fallar ninguna prueba. Ahora `apt` corta a los 20 s, se
+     corta también lo de debajo y se espera al candado, hasta tres veces. Y se escribió «corta
+     también a `apt`» sin comprobarlo: lo que se afirma de una herramienta, se prueba.
+232. **Lento no es atascado.** El arreglo de la 231 cortaba cada intento a los cinco minutos, y el
+     servidor de Ubuntu estaba dando los paquetes a 50 KB por segundo, pero dándolos: tres trozos
+     de Pantallas, cortados a medias tres veces. Se leyó el registro (las horas de cada paquete)
+     antes de tocar nada más. Ahora lo bajado se guarda en la caché y lo lento se espera; solo se
+     corta una conexión muerta ([la auditoría del 27-oct](la-auditoria-de-github-del-27-oct.md)).
+233. **La caché de GitHub es de cada rama.** Una rama solo ve lo guardado en ella y en `main`, y
+     en `main` las pruebas de pantalla se saltan: lo que guardaba una rama no le servía a la
+     siguiente. Y a cada máquina le toca una conexión distinta (de 0,18 a 28 MB/s en la misma
+     vuelta), así que un trozo puede caer aunque los otros tres pasen. Ahora `navegadores.yml`
+     los guarda desde `main` en cada fusión, para todas las ramas.

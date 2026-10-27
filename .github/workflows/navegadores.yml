@@ -1,0 +1,66 @@
+name: Los navegadores, guardados
+
+# **Los paquetes de los navegadores, guardados desde `main`** (la auditoría del 27-oct,
+# lección 233). Las pruebas de pantalla los guardan en la caché de GitHub, pero una rama
+# solo ve su propia caché y la de `main`, y en `main` esas pruebas se saltan (ya pasaron en
+# la rama). Sin esto, cada rama nueva volvería a bajarlos del servidor de Ubuntu, que a
+# veces los da a cuentagotas. Si ya están guardados, acaba en segundos y no hace nada.
+#
+# No es una comprobación obligatoria: no puede dejar nada en rojo que impida fusionar.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: navegadores
+  cancel-in-progress: false
+
+jobs:
+  guardar:
+    name: Guardar los navegadores
+    runs-on: ubuntu-24.04 # El mismo Ubuntu que las pruebas de pantalla: sus paquetes valen.
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Los paquetes de los navegadores, si ya están
+        id: paquetes
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/paquetes-de-los-navegadores
+          key: navegadores-ubuntu-24.04-${{ hashFiles('pnpm-lock.yaml') }}
+          lookup-only: true
+
+      - uses: pnpm/action-setup@v5
+        if: steps.paquetes.outputs.cache-hit != 'true'
+
+      - uses: actions/setup-node@v6
+        if: steps.paquetes.outputs.cache-hit != 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar
+        if: steps.paquetes.outputs.cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Bajar los navegadores, con lo que se pueda de antes
+        if: steps.paquetes.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/paquetes-de-los-navegadores
+          key: navegadores-ubuntu-24.04-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: navegadores-ubuntu-24.04-
+
+      - name: Instalar navegadores
+        if: steps.paquetes.outputs.cache-hit != 'true'
+        timeout-minutes: 30
+        run: bash herramientas/instalar-los-navegadores.sh
+
+      - name: Guardarlos, para todas las ramas
+        if: steps.paquetes.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/paquetes-de-los-navegadores
+          key: navegadores-ubuntu-24.04-${{ hashFiles('pnpm-lock.yaml') }}

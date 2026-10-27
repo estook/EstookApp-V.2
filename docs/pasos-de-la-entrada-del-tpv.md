@@ -2,13 +2,14 @@
 
 > ## Cómo está
 >
-> Escrito el 26 de octubre de 2026, en su pull request, **sin fusionar**.
+> **Fusionada** el 26 de octubre de 2026 a las 23:01 de Madrid (#145), y el sitio publicado. **Falta
+> desplegar la API**, que solo cambia dónde se cae: la pantalla nueva ya va sola a la sala.
 >
-> | Qué              | Cómo está                                                        |
-> | ---------------- | ---------------------------------------------------------------- |
-> | Pull request     | **«La entrada de Estook TPV» (#145)**                            |
-> | La base de datos | **92 de 92** en producción; esta **no trae migración**           |
-> | La API           | **113 consultas y 303 comandos**; no cambian (solo dónde se cae) |
+> | Qué              | Cómo está                                                                    |
+> | ---------------- | ---------------------------------------------------------------------------- |
+> | Pull requests    | **La entrada (#145)**, fusionada; **«El cambio de hora» (#146)**, una prueba |
+> | La base de datos | **92 de 92** en producción; no hay migración                                 |
+> | La API           | **113 consultas y 303 comandos**; desplegada a las 22:16, antes de la #145   |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -24,12 +25,13 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 Lo que se decidió, en la [0118](decisiones/0118-la-entrada-del-tpv.md).
 
-## Lo que te toca · fusionar y desplegar
+## Lo que te toca · fusionar el arreglo y desplegar
 
 **Esta vez no hay que migrar.** Se despliega la API para que diga a todos «a la sala».
 
-1. **En GitHub**: abre **«La entrada de Estook TPV» (#145)** y, con las comprobaciones en verde,
-   **Merge pull request** → **Confirm merge**.
+1. **En GitHub**: la #145 ya está fusionada. Abre **«El cambio de hora» (#146)** (arregla la prueba
+   de Ventas que puso en rojo la vuelta de `main`) y, con las comprobaciones en verde, **Merge pull
+   request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
 
    ```powershell

@@ -1,7 +1,7 @@
 # 0118 · La entrada de Estook TPV: se entra a la sala, el engranaje y mantener pulsado
 
 **Fecha:** 26 de octubre de 2026
-**Estado:** construida, en su pull request (`la-entrada-nueva`), sin migración.
+**Estado:** fusionada el 26-oct (#145), sin migración; la API, por desplegar.
 **Sigue:** la [0115](0115-cada-aparato-a-lo-suyo.md) y las maquetas de la entrada
 ([`docs/maquetas/la-entrada-del-tpv.html`](../maquetas/la-entrada-del-tpv.html)), que Richi dio por
 buenas el 26-oct: «Las maquetas de la entrada del TPV valen: constrúyela».

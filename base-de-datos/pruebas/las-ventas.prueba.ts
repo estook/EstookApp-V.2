@@ -111,7 +111,16 @@ async function lasVentas(periodo = 'mes'): Promise<TableroDeVentas> {
 
 const MADRID = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' });
 const hoy = () => MADRID.format(new Date(Date.now()));
-const haceDias = (n: number) => MADRID.format(new Date(Date.now() - n * 86_400_000));
+/**
+ * El día de Madrid de hace `n` días, **contando días del calendario, no 24 horas**: el día del
+ * cambio de hora dura 25 (o 23), y el 26-oct a las 23:05, restar 48 horas caía en el mismo
+ * domingo que restar 24 (lección 230).
+ */
+const haceDias = (n: number) => {
+  const dia = new Date(`${hoy()}T12:00:00Z`);
+  dia.setUTCDate(dia.getUTCDate() - n);
+  return dia.toISOString().slice(0, 10);
+};
 
 let pagadora: string;
 

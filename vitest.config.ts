@@ -11,6 +11,7 @@ export default defineConfig({
       'servidor/**/*.prueba.ts',
       'apps/**/*.prueba.ts',
       'base-de-datos/**/*.prueba.ts',
+      'herramientas/**/*.prueba.ts',
     ],
     exclude: ['**/node_modules/**', '**/dist/**', 'pruebas/e2e/**'],
     environment: 'node',

@@ -950,3 +950,16 @@
      bajado sin usarlo, justo después de la auditoría del 27-oct. Antes de añadir una
      dependencia se mira qué hace al instalarse: Electron va en `neverBuiltDependencies` y su
      navegador se baja solo al arrancar o empaquetar la caja para Windows (0119).
+235. **El `id` de una app instalable se resuelve contra el dominio, no contra su carpeta.** Estook
+     (`/app/`) y Estook TPV (`/tpv/`) llevaban `"id": "./"` en su manifiesto, y para el navegador
+     las dos eran `https://estook.com/`: la misma app. Desde la 0115 (25-oct), al poner Estook TPV
+     en el escritorio, Chrome pedía «actualizar» Estook y se quedaba en `/app/` (Richi, 27-oct). Se
+     separaron sus cachés y sus trabajadores, pero no su identidad. Ahora Estook es `/` (la de
+     siempre, para no perder las ya instaladas) y Estook TPV, `/tpv/`; `laAppInstalable.prueba.ts`
+     lo resuelve como el navegador.
+236. **Lo que no lleva huella en el nombre también cambia.** La versión del trabajador de servicio
+     salía de los nombres de los ficheros, y el manifiesto y los iconos se llaman igual siempre:
+     cambiar solo el manifiesto (la 235) dejaba el trabajador idéntico, el navegador no lo
+     renovaba y seguía dando el manifiesto viejo desde lo guardado. Ahora la versión mira también
+     lo que llevan dentro los de `public/`, y `herramientas/` entra en las pruebas
+     (`trabajador-de-servicio.prueba.ts`, vista fallar con el código de antes).

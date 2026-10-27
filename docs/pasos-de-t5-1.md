@@ -2,15 +2,15 @@
 
 > ## Cómo está
 >
-> **En su pull request, sin fusionar** (27 de octubre de 2026). Trae la migración **0093** y órdenes
-> nuevas de la API, así que van **fusionar, migrar, desplegar** y, al final, **publicar el programa**.
+> **Fusionada, migrada y desplegada** el 27 de octubre de 2026 (comprobado: 93 migraciones y la API
+> con 115 consultas y 312 comandos). **Falta el paso 5, publicar el programa.**
 >
-> | Qué              | Cómo está                                                                  |
-> | ---------------- | -------------------------------------------------------------------------- |
-> | Pull request     | **«T5 · 1 · Imprimir y el cajón» (#148)**, rama `t5-1-imprimir-y-el-cajon` |
-> | La base de datos | **92** en producción; esta trae **la 0093**                                |
-> | La API           | Pasa de 113 y 303 a **115 consultas y 312 comandos**                       |
-> | El programa      | **La caja para Windows 1.0.0**, por publicar                               |
+> | Qué              | Cómo está                                                      |
+> | ---------------- | -------------------------------------------------------------- |
+> | Pull request     | **«T5 · 1 · Imprimir y el cajón» (#148)**, fusionada el 27-oct |
+> | La base de datos | **93 de 93**, con **la 0093**                                  |
+> | La API           | **115 consultas y 312 comandos**, desplegada el 27-oct         |
+> | El programa      | **La caja para Windows 1.0.0**, por publicar                   |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 

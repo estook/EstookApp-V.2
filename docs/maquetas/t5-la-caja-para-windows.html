@@ -1,0 +1,1575 @@
+<title>T5 · La caja para Windows</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Courier+Prime:wght@400;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Un solo aspecto, el de Estook TPV (Anexo 11.12): oscuro, denso y de mucho contraste.
+     Cada sección: qué es, la pantalla dibujada y, plegado, el porqué. Los papeles, a 80 mm. */
+  :root {
+    color-scheme: dark;
+    --fondo-pagina: #0b1113;
+    --fondo: #0f1719;
+    --barra: #111c1f;
+    --tarjeta: #18252a;
+    --marcado: #22343a;
+    --borde: #2c4047;
+    --texto: #f1efea;
+    --suave: #9fb0b3;
+    --naranja: #ff7a00;
+    --sobre-naranja: #1a0d00;
+    --verde: #4ec98a;
+    --ambar: #f0ae4e;
+    --azul: #6fb7e8;
+    --rojo: #f0796c;
+    --papel: #fbfaf6;
+    --tinta: #141414;
+    --letra: Montserrat, system-ui, 'Segoe UI', sans-serif;
+    --letra-papel: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--fondo-pagina);
+    color: var(--texto);
+    font-family: var(--letra);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-block: 28px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .hoja-entera {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 52px;
+  }
+  h1 {
+    font-size: clamp(24px, 4vw, 34px);
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h2 {
+    font-size: 21px;
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  p {
+    margin: 0;
+  }
+  .rotulo {
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--naranja);
+  }
+  .seccion {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .lead {
+    color: var(--suave);
+    max-width: 68ch;
+  }
+  .lead b,
+  .porque b {
+    color: var(--texto);
+  }
+  details.porque {
+    color: var(--suave);
+    max-width: 78ch;
+  }
+  details.porque summary {
+    cursor: pointer;
+    color: var(--azul);
+    font-weight: 700;
+    font-size: 14px;
+    width: fit-content;
+  }
+  details.porque > div {
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  :focus-visible {
+    outline: 3px solid var(--naranja);
+    outline-offset: 2px;
+  }
+
+  /* ── El resumen de arriba ── */
+  .indice {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .indice a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 14px 16px;
+    color: var(--texto);
+    text-decoration: none;
+  }
+  .indice a b {
+    font-size: 16px;
+  }
+  .indice a span {
+    color: var(--suave);
+    font-size: 13px;
+  }
+  .indice a.tuyo {
+    border-color: var(--naranja);
+  }
+
+  /* ── Las pantallas ── */
+  .pantalla {
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .ventana {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    background: #070b0c;
+    color: var(--suave);
+    font-size: 12px;
+  }
+  .ventana .puntos {
+    margin-left: auto;
+    letter-spacing: 6px;
+  }
+  .cab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--barra);
+    border-bottom: 1px solid var(--marcado);
+    flex-wrap: wrap;
+  }
+  .logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--naranja);
+    color: var(--sobre-naranja);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 19px;
+    flex-shrink: 0;
+  }
+  .local b {
+    display: block;
+    font-size: 15px;
+  }
+  .local span {
+    font-size: 12px;
+    color: var(--suave);
+  }
+  .grupo {
+    display: flex;
+    gap: 2px;
+    background: var(--fondo);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .grupo span {
+    border-radius: 999px;
+    padding: 8px 13px;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .grupo .si {
+    background: var(--marcado);
+  }
+  .derecha {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-weight: 700;
+    font-size: 13px;
+    border: 1px solid var(--borde);
+    background: var(--tarjeta);
+    white-space: nowrap;
+  }
+  .chip i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .b-naranja {
+    background: var(--naranja);
+    color: var(--sobre-naranja);
+    border-color: var(--naranja);
+  }
+  .franja {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+  .franja .boton {
+    margin-left: auto;
+  }
+  .franja.tranquila {
+    background: #16302a;
+    color: #bfeed6;
+  }
+  .franja.ambar {
+    background: #3a2c0c;
+    color: #ffd99a;
+  }
+  .franja.roja {
+    background: #3a1714;
+    color: #ffc2bb;
+  }
+  .franja.azul {
+    background: #13293a;
+    color: #c4e4fa;
+  }
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 14px;
+    border: 1px solid var(--borde);
+    background: var(--tarjeta);
+    color: var(--texto);
+    white-space: nowrap;
+  }
+  .boton.principal {
+    background: var(--naranja);
+    border-color: var(--naranja);
+    color: var(--sobre-naranja);
+  }
+  .plano {
+    position: relative;
+    height: 230px;
+    background:
+      radial-gradient(circle at 1px 1px, #1d2c31 1px, transparent 0) 0 0 / 22px 22px,
+      var(--fondo);
+  }
+  .m {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    border: 2px solid #4a5c61;
+    font-weight: 800;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .m small {
+    display: block;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--suave);
+  }
+  .m.comiendo {
+    background: #1f6b4a;
+    border-color: #1f6b4a;
+  }
+  .m.comiendo small,
+  .m.marchar small {
+    color: #d6f1e4;
+  }
+  .m.marchar {
+    background: #2c6e9b;
+    border-color: #2c6e9b;
+  }
+  .m.redonda {
+    border-radius: 50%;
+  }
+  .pie {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 14px;
+    font-size: 12px;
+    color: var(--suave);
+    border-top: 1px solid var(--marcado);
+    flex-wrap: wrap;
+  }
+
+  /* ── Listas de ajustes ── */
+  .lista {
+    display: flex;
+    flex-direction: column;
+  }
+  .fila {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--marcado);
+    flex-wrap: wrap;
+  }
+  .fila:last-child {
+    border-bottom: 0;
+  }
+  .ico {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+  .que {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+  .que b {
+    display: block;
+  }
+  .que span {
+    font-size: 13px;
+    color: var(--suave);
+  }
+  .estado {
+    font-weight: 700;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .estado i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+  }
+  .c-verde {
+    color: var(--verde);
+  }
+  .c-ambar {
+    color: var(--ambar);
+  }
+  .c-rojo {
+    color: var(--rojo);
+  }
+  .c-azul {
+    color: var(--azul);
+  }
+  .f-verde {
+    background: #173a2c;
+  }
+  .f-ambar {
+    background: #3a2c0c;
+  }
+  .f-naranja {
+    background: #3d2209;
+  }
+  .f-azul {
+    background: #13293a;
+  }
+  .f-gris {
+    background: var(--marcado);
+  }
+  .elegir {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .elegir span {
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .elegir .si {
+    border-color: var(--naranja);
+    color: var(--naranja);
+    background: #2a1a0a;
+  }
+  .subtitulo-lista {
+    padding: 12px 16px 6px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--suave);
+    background: var(--barra);
+  }
+
+  /* ── Rejillas ── */
+  .dos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .tres {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .rotulo-pantalla {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--suave);
+    margin-bottom: 8px;
+  }
+
+  /* ── El papel de 80 mm ── */
+  .papeles {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .papel-y-rotulo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(100%, 300px);
+  }
+  .papel {
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: var(--letra-papel);
+    font-size: 14px;
+    line-height: 1.35;
+    padding: 16px 16px 22px;
+    width: 100%;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    /* el corte de la impresora, en dientes */
+    -webkit-mask:
+      linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 8px
+        repeat-x;
+    mask:
+      linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 8px
+        repeat-x;
+  }
+  .papel .grande {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .papel .centro {
+    text-align: center;
+  }
+  .papel .raya {
+    border-top: 2px dashed var(--tinta);
+    margin: 8px 0;
+  }
+  .papel .linea {
+    display: flex;
+    gap: 8px;
+  }
+  .papel .linea b {
+    min-width: 2ch;
+  }
+  .papel .linea .precio {
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .papel .negativo {
+    background: var(--tinta);
+    color: var(--papel);
+    font-weight: 700;
+    padding: 3px 6px;
+    display: inline-block;
+  }
+  .papel .nota {
+    padding-left: 3ch;
+  }
+  .papel .espera {
+    opacity: 0.85;
+  }
+  .papel .tachado {
+    text-decoration: line-through;
+  }
+  .papel.gris {
+    opacity: 0.55;
+  }
+  .papel .qr {
+    width: 84px;
+    height: 84px;
+    margin: 8px auto 0;
+    background: conic-gradient(
+        var(--tinta) 25%,
+        transparent 0 50%,
+        var(--tinta) 0 75%,
+        transparent 0
+      )
+      0 0 / 14px 14px;
+    border: 6px solid var(--tinta);
+  }
+  .rotulo-papel {
+    font-size: 13px;
+    color: var(--suave);
+  }
+  .rotulo-papel b {
+    color: var(--texto);
+  }
+
+  /* ── El camino de una comanda ── */
+  .caminos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
+    gap: 16px;
+  }
+  .camino {
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .camino h3 {
+    margin: 0;
+    font-size: 16px;
+  }
+  .pasos {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .pasos div {
+    flex: 1 1 110px;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .pasos div b {
+    display: block;
+    font-size: 14px;
+  }
+  .pasos div span {
+    color: var(--suave);
+  }
+  .pasos .flecha {
+    flex: 0 0 auto;
+    background: none;
+    border: 0;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    color: var(--naranja);
+    font-weight: 800;
+  }
+  .pasos .centro-local {
+    border-color: var(--naranja);
+  }
+
+  /* ── Tablas ── */
+  .tabla {
+    overflow-x: auto;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 640px;
+    font-size: 14px;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--marcado);
+    vertical-align: top;
+  }
+  th {
+    background: var(--barra);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--suave);
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  td.ok {
+    color: #bfeed6;
+  }
+  td.casi {
+    color: #ffd99a;
+  }
+  td.no {
+    color: #ffc2bb;
+  }
+
+  /* ── Lo que no cuadra, mejoras y preguntas ── */
+  .tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 14px;
+  }
+  .tarjeta {
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .tarjeta b.t {
+    font-size: 15px;
+  }
+  .tarjeta p {
+    color: var(--suave);
+    font-size: 14px;
+  }
+  .tarjeta p strong {
+    color: var(--texto);
+  }
+  .tarjeta .hago {
+    color: #bfeed6;
+    font-size: 14px;
+  }
+  .pregunta {
+    background: var(--tarjeta);
+    border: 1px solid var(--naranja);
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .pregunta h3 {
+    margin: 0;
+    font-size: 18px;
+    text-wrap: balance;
+  }
+  .pregunta .de {
+    font-size: 13px;
+    color: var(--suave);
+  }
+  .pregunta .texto {
+    color: var(--suave);
+    max-width: 80ch;
+  }
+  .pregunta .texto b {
+    color: var(--texto);
+  }
+  .opciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 10px;
+  }
+  .opcion {
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: var(--fondo);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    min-width: 0;
+  }
+  .opcion b {
+    font-size: 15px;
+  }
+  .opcion span {
+    color: var(--suave);
+  }
+  .opcion.recomendada {
+    border-color: var(--verde);
+  }
+  .opcion.recomendada b::after {
+    content: '  · la que recomiendo';
+    color: var(--verde);
+    font-size: 13px;
+  }
+  .decides {
+    font-weight: 800;
+    color: var(--naranja);
+  }
+  .partes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 14px;
+  }
+  .parte {
+    border-radius: 16px;
+    padding: 16px;
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .parte ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--suave);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .parte .cuando {
+    font-size: 13px;
+    color: var(--verde);
+    font-weight: 700;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .indice a,
+    .boton {
+      transition: transform 0.15s ease;
+    }
+    .indice a:hover {
+      transform: translateY(-2px);
+    }
+  }
+</style>
+
+<div class="hoja-entera">
+  <!-- ═══ ARRIBA ═══ -->
+  <header class="seccion">
+    <p class="rotulo">Estook TPV · T5 · 27 de octubre · maquetas para aprobar</p>
+    <h1>La caja para Windows: imprimir, el cajón y seguir sin internet</h1>
+    <p class="lead">
+      Un programa que se descarga en el PC de la caja. Dentro va <b>Estook TPV tal cual</b> (la
+      misma sala, la misma botonera) y lo que antes llamábamos Estook Link:
+      <b>hablar con las impresoras y el cajón, y ser el centro del local cuando se va internet</b>.
+      Los móviles y tablets siguen como están; la caja imprime por ellos. Nada de esto está
+      programado todavía.
+    </p>
+    <nav class="indice" aria-label="Lo que hay en esta página">
+      <a href="#instalar"
+        ><b>1 · Descargarla y pasar la caja</b><span>Sin volver a montar nada</span></a
+      >
+      <a href="#impresoras"
+        ><b>2 · Impresoras y cajón</b
+        ><span>Las busca sola, una prueba y qué imprime cada una</span></a
+      >
+      <a href="#papel"
+        ><b>3 · Lo que sale en papel</b><span>La comanda, la barra y la cuenta</span></a
+      >
+      <a href="#sin-internet"
+        ><b>4 · Sin internet</b><span>Qué ve cada aparato y por dónde va la comanda</span></a
+      >
+      <a href="#no-cuadra"
+        ><b>5 · Lo que no cuadra</b><span>8 cosas de lo escrito o lo hecho</span></a
+      >
+      <a href="#mejoras"><b>6 · Mejoras que propongo</b><span>Las hago si no dices nada</span></a>
+      <a href="#preguntas" class="tuyo"
+        ><b>7 · Lo que te pregunto</b><span>4 preguntas, solo lo que es tuyo</span></a
+      >
+      <a href="#partes"
+        ><b>8 · Cómo la entrego</b><span>En dos partes, y cuándo se da por buena</span></a
+      >
+    </nav>
+  </header>
+
+  <!-- ═══ 1 · INSTALAR ═══ -->
+  <section class="seccion" id="instalar">
+    <p class="rotulo">1 · Descargarla y pasar la caja</p>
+    <h2>Desde la caja de siempre, un botón; y la caja se pasa con un código</h2>
+    <p class="lead">
+      En un PC con Windows, la caja web enseña una franja para descargarla. Al abrir el programa por
+      primera vez, se le pasa la caja con el código de 6 cifras de siempre:
+      <b>llega con su nombre, su cajón y su función</b>, y la del navegador se desvincula sola para
+      que no haya dos cajas.
+    </p>
+    <div class="dos">
+      <div>
+        <p class="rotulo-pantalla">La caja web, en un PC con Windows</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>IKATZ</b><span>▣ Caja 1 · en el navegador</span></div>
+            <div class="grupo"><span class="si">Salón</span><span>Terraza</span></div>
+            <div class="derecha">
+              <span class="chip b-naranja">Fichar</span><span class="chip">⚙</span
+              ><span class="chip">RI · Bloquear</span>
+            </div>
+          </div>
+          <div class="franja azul">
+            🖨 Descarga la caja para Windows: imprime, abre el cajón y sigue sin internet.
+            <span class="boton principal">Descargar</span><span class="boton">Ahora no</span>
+          </div>
+          <div class="plano">
+            <div class="m comiendo" style="left: 6%; top: 18%; width: 15%; height: 30%">
+              1<small>Comiendo</small>
+            </div>
+            <div class="m redonda" style="left: 27%; top: 18%; width: 11%; height: 30%">
+              2<small>Libre</small>
+            </div>
+            <div class="m marchar" style="left: 44%; top: 18%; width: 15%; height: 30%">
+              4<small>Marchar 2.º</small>
+            </div>
+            <div class="m" style="left: 6%; top: 60%; width: 24%; height: 28%">
+              6<small>Libre</small>
+            </div>
+            <div class="m" style="left: 70%; top: 18%; width: 24%; height: 18%">BARRA</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">El programa, la primera vez que se abre</p>
+        <div class="pantalla">
+          <div class="ventana">
+            Estook TPV · la caja para Windows<span class="puntos">— ▢ ✕</span>
+          </div>
+          <div
+            class="lista"
+            style="padding: 22px 16px; gap: 14px; align-items: center; text-align: center"
+          >
+            <div class="logo" style="width: 60px; height: 60px; font-size: 26px">E</div>
+            <b style="font-size: 19px">Pasa aquí tu caja</b>
+            <span style="color: var(--suave); max-width: 40ch">
+              En la caja del navegador: ⚙ › Aparatos › Caja 1 › «Pasar a la app». Te da un código.
+            </span>
+            <div style="display: flex; gap: 8px; justify-content: center">
+              <span class="chip" style="font-size: 22px; padding: 10px 14px">4</span
+              ><span class="chip" style="font-size: 22px; padding: 10px 14px">8</span
+              ><span class="chip" style="font-size: 22px; padding: 10px 14px">2</span
+              ><span class="chip" style="font-size: 22px; padding: 10px 14px">9</span
+              ><span class="chip" style="font-size: 22px; padding: 10px 14px">1</span
+              ><span class="chip" style="font-size: 22px; padding: 10px 14px">·</span>
+            </div>
+            <span style="color: var(--suave); font-size: 13px"
+              >¿Es un PC nuevo y no hay caja? «Es el primero: entro con mi correo»</span
+            >
+            <div class="elegir" style="justify-content: center">
+              <span class="si">Arrancar con Windows</span
+              ><span class="si">A pantalla completa</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>¿Por qué así?</summary>
+      <div>
+        <p>
+          Es el mismo código de vincular que ya usas (T1), así que no hay nada nuevo que aprender, y
+          <b>no se monta la sala ni los productos otra vez</b>: todo vive en la nube. La web sigue
+          valiendo en cualquier PC, como dijiste; la franja solo avisa de que descargada va mejor.
+        </p>
+        <p>
+          <b>Las actualizaciones</b> llegan solas y se ponen al cerrar la caja o sin mesas abiertas,
+          nunca en mitad del servicio (ya está escrito así en el Anexo, 10.12).
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ 2 · IMPRESORAS ═══ -->
+  <section class="seccion" id="impresoras">
+    <p class="rotulo">2 · Ajustes del TPV › Impresoras y cajón</p>
+    <h2>Las busca sola en la red, una prueba con «¿Ha salido?», y qué imprime cada una</h2>
+    <p class="lead">
+      Nadie teclea una dirección: «Buscar impresoras» mira la red del local y las conectadas por
+      USB. Se toca una, sale un papel de prueba, y se dice qué imprime.
+      <b>El cajón se prueba aquí</b>, con el PIN de quien puede, y queda apuntado quién lo abrió.
+    </p>
+    <div class="dos">
+      <div>
+        <p class="rotulo-pantalla">Lo que tiene el local</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="local"><b>Impresoras y cajón</b><span>3 impresoras · 1 cajón</span></div>
+            <div class="derecha"><span class="boton">Buscar impresoras</span></div>
+          </div>
+          <div class="lista">
+            <div class="fila">
+              <span class="ico f-verde">🍳</span>
+              <div class="que">
+                <b>Cocina</b><span>Epson TM-T20III · por la red · comandas</span>
+              </div>
+              <span class="estado c-verde"><i style="background: var(--verde)"></i>Lista</span>
+              <span class="boton">Prueba</span>
+            </div>
+            <div class="fila">
+              <span class="ico f-ambar">🍷</span>
+              <div class="que"><b>Barra</b><span>Star TSP143 · por USB · lo de la barra</span></div>
+              <span class="estado c-ambar"><i style="background: var(--ambar)"></i>Poco papel</span>
+              <span class="boton">Prueba</span>
+            </div>
+            <div class="fila">
+              <span class="ico f-naranja">🧾</span>
+              <div class="que">
+                <b>Caja</b
+                ><span>Epson TM-T20III · por USB · la cuenta y el ticket · con el cajón</span>
+              </div>
+              <span class="estado c-verde"><i style="background: var(--verde)"></i>Lista</span>
+              <span class="boton">Abrir el cajón</span>
+            </div>
+            <div class="subtitulo-lista">Si una no responde</div>
+            <div class="fila">
+              <span class="ico f-gris">↪</span>
+              <div class="que">
+                <b>La de reserva</b
+                ><span>Si la de cocina no responde en 10 s, sale por la de la caja</span>
+              </div>
+              <div class="elegir"><span class="si">Caja</span><span>Ninguna</span></div>
+            </div>
+            <div class="subtitulo-lista">Lo de la cocina sale en…</div>
+            <div class="fila">
+              <span class="ico f-verde">🍳</span>
+              <div class="que">
+                <b>Cocina</b
+                ><span>Con las dos, el papel lleva lo nuevo, lo marchado y lo anulado</span>
+              </div>
+              <div class="elegir">
+                <span>Pantalla</span><span>Papel</span><span class="si">Las dos</span>
+              </div>
+            </div>
+            <div class="fila">
+              <span class="ico f-ambar">🍷</span>
+              <div class="que"><b>Barra</b><span>Las bebidas, al momento</span></div>
+              <div class="elegir">
+                <span>Pantalla</span><span class="si">Papel</span><span>Las dos</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">Al tocar «Buscar impresoras»</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="local"><b>Encontradas</b><span>en la red del local y por USB</span></div>
+          </div>
+          <div class="lista">
+            <div class="fila">
+              <span class="ico f-gris">🖨</span>
+              <div class="que"><b>Epson TM-T20III</b><span>por la red · nueva</span></div>
+              <span class="boton principal">Imprimir prueba</span>
+            </div>
+            <div class="fila">
+              <span class="ico f-gris">🖨</span>
+              <div class="que"><b>Impresora de impacto</b><span>por la red · nueva</span></div>
+              <span class="boton">Imprimir prueba</span>
+            </div>
+          </div>
+          <div class="franja azul">
+            ¿Ha salido el papel de prueba? <span class="boton principal">Sí, ha salido</span
+            ><span class="boton">No</span>
+          </div>
+          <div class="lista">
+            <div class="fila">
+              <div class="que"><b>¿Qué imprime?</b><span>Una o varias</span></div>
+              <div class="elegir">
+                <span class="si">Cocina</span><span>Barra</span><span>Caja</span>
+              </div>
+            </div>
+            <div class="fila">
+              <div class="que">
+                <b>¿Tiene el cajón enchufado?</b><span>Solo la de la caja suele tenerlo</span>
+              </div>
+              <div class="elegir"><span>Sí</span><span class="si">No</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="rotulo-pantalla" style="margin-top: 14px">Y si sale «No»</p>
+        <div class="pantalla">
+          <div class="franja ambar">
+            No ha salido. Mira que esté encendida, con papel y con el cable de red puesto.
+            <span class="boton">Probar otra vez</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>¿Por qué buscarlas solas, y la de reserva?</summary>
+      <div>
+        <p>
+          Casi todas las impresoras de bar escuchan en la red de la misma forma (ESC/POS, que es
+          como el «idioma» de las impresoras de tickets), así que se pueden encontrar sin que nadie
+          sepa qué es una dirección IP. <b>Vale cualquier marca</b>, también las de impacto de
+          cocina.
+        </p>
+        <p>
+          <b>La de reserva</b> es lo que hace Toast con su «backup printer»: si la de cocina se
+          queda sin papel en pleno servicio, la comanda no se pierde, sale en la caja y el camarero
+          la lleva. Y la caja avisa con sonido.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ 3 · EL PAPEL ═══ -->
+  <section class="seccion" id="papel">
+    <p class="rotulo">3 · Lo que sale en papel, a 80 mm</p>
+    <h2>La comanda con lo que sabe Estook: el pase, la alergia en negro y la nota</h2>
+    <p class="lead">
+      Lo mismo que ve la pantalla de cocina (T4), en papel. <b>La mesa, enorme</b>; el 2.º sale «en
+      espera» hasta que la sala lo marcha, y entonces sale su papel. Anular o cambiar algo también
+      sale, para que nadie cocine lo que ya no va.
+    </p>
+    <div class="papeles">
+      <div class="papel-y-rotulo">
+        <span class="rotulo-papel"><b>Cocina</b> · al mandar</span>
+        <div class="papel">
+          <div>COCINA · 13:42</div>
+          <div class="grande">MESA 4</div>
+          <div>4 personas · Lucía</div>
+          <div class="raya"></div>
+          <div class="negativo">⚠ ALERGIA EN LA MESA: GLUTEN</div>
+          <div class="raya"></div>
+          <div><b>1.º · YA</b></div>
+          <div class="linea"><b>2</b> Croquetas de jamón</div>
+          <div class="linea"><b>1</b> Ensalada de tomate</div>
+          <div class="linea">
+            <b>1</b> Burrata <span class="negativo" style="padding: 0 4px">SIN GLUTEN</span>
+          </div>
+          <div class="raya"></div>
+          <div class="espera"><b>2.º · EN ESPERA</b></div>
+          <div class="linea espera"><b>2</b> Entrecot</div>
+          <div class="nota espera">» uno poco hecho</div>
+          <div class="linea espera"><b>1</b> Lubina</div>
+          <div class="raya"></div>
+          <div class="centro">Estook TPV · Caja 1</div>
+        </div>
+      </div>
+      <div class="papel-y-rotulo">
+        <span class="rotulo-papel"><b>Cocina</b> · al marchar, y al anular</span>
+        <div class="papel">
+          <div>COCINA · 14:05</div>
+          <div class="grande">¡MARCHA EL 2.º!</div>
+          <div class="grande">MESA 4</div>
+          <div class="raya"></div>
+          <div class="linea"><b>2</b> Entrecot</div>
+          <div class="nota">» uno poco hecho</div>
+          <div class="linea"><b>1</b> Lubina</div>
+        </div>
+        <div class="papel">
+          <div>COCINA · 14:07</div>
+          <div class="grande">ANULADO · MESA 4</div>
+          <div class="raya"></div>
+          <div class="linea tachado"><b>1</b> Lubina</div>
+          <div>Lo quita Lucía · lo aprueba Richi</div>
+        </div>
+      </div>
+      <div class="papel-y-rotulo">
+        <span class="rotulo-papel"><b>Barra</b> · las bebidas, al momento</span>
+        <div class="papel">
+          <div>BARRA · 13:40</div>
+          <div class="grande">MESA 4</div>
+          <div>Lucía</div>
+          <div class="raya"></div>
+          <div class="linea"><b>2</b> Caña</div>
+          <div class="linea"><b>1</b> Rioja · copa</div>
+          <div class="linea"><b>1</b> Ron Barceló con cola</div>
+          <div class="linea"><b>1</b> Agua con gas</div>
+        </div>
+        <span class="rotulo-papel" style="margin-top: 8px"><b>La cuenta</b> · antes de cobrar</span>
+        <div class="papel">
+          <div class="centro"><b>IKATZ</b></div>
+          <div class="centro">PRECUENTA</div>
+          <div>Mesa 4 · 4 personas · 15:10</div>
+          <div class="raya"></div>
+          <div class="linea"><b>2</b> Caña<span class="precio">4,40</span></div>
+          <div class="linea"><b>2</b> Croquetas<span class="precio">18,00</span></div>
+          <div class="linea"><b>2</b> Entrecot<span class="precio">44,00</span></div>
+          <div class="linea"><b>1</b> Burrata<span class="precio">12,50</span></div>
+          <div class="raya"></div>
+          <div class="linea">
+            <b></b><b>TOTAL</b><span class="precio grande" style="font-size: 20px">78,90 €</span>
+          </div>
+          <div class="raya"></div>
+          <div class="centro">Documento no válido como factura</div>
+        </div>
+      </div>
+      <div class="papel-y-rotulo">
+        <span class="rotulo-papel"
+          ><b>El ticket del cobro</b> · se dibuja ya, se imprime con T6 y T7</span
+        >
+        <div class="papel gris">
+          <div class="centro"><b>IKATZ</b></div>
+          <div class="centro">NIF · dirección del local</div>
+          <div class="centro">FACTURA SIMPLIFICADA</div>
+          <div>Serie T · nº 000123 · 15:14</div>
+          <div class="raya"></div>
+          <div class="linea"><b>2</b> Caña<span class="precio">4,40</span></div>
+          <div class="linea"><b>…</b><span class="precio"></span></div>
+          <div class="raya"></div>
+          <div class="linea"><b></b>Base 10 %<span class="precio">71,73</span></div>
+          <div class="linea"><b></b>IVA 10 %<span class="precio">7,17</span></div>
+          <div class="linea"><b></b><b>TOTAL</b><span class="precio">78,90 €</span></div>
+          <div>Efectivo 80,00 · cambio 1,10</div>
+          <div class="qr" aria-label="El QR de Hacienda"></div>
+          <div class="centro">VERI*FACTU</div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>¿Por qué la alergia en negro, y por qué el ticket aún no?</summary>
+      <div>
+        <p>
+          En papel no hay rojo: <b>el negro invertido</b> (letras blancas sobre negro) es lo único
+          que salta a la vista en una comanda, y es lo que hacen los TPV buenos con lo importante.
+        </p>
+        <p>
+          <b>El ticket del cobro es la factura simplificada</b>: lleva su número de serie y el QR de
+          Hacienda, y eso solo existe cuando Verifacti lo registra (T6). Imprimirlo antes sería
+          imprimir un papel que no vale. En T5 queda todo listo para que, cuando llegue el cobro,
+          sea una línea más.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ 4 · SIN INTERNET ═══ -->
+  <section class="seccion" id="sin-internet">
+    <p class="rotulo">4 · Sin internet</p>
+    <h2>La caja hace de centro: la sala y la cocina siguen hablándose por el wifi del local</h2>
+    <p class="lead">
+      Con internet, la comanda va a la nube y la caja la imprime.
+      <b>Sin internet, va por el wifi del local directa a la caja</b>, que la imprime, se la pasa a
+      la pantalla de cocina y la guarda para subirla después, una sola vez.
+    </p>
+    <div class="caminos">
+      <div class="camino">
+        <h3>Con internet</h3>
+        <div class="pasos">
+          <div><b>El camarero</b><span>manda desde su móvil</span></div>
+          <div class="flecha">→</div>
+          <div><b>La nube</b><span>lo apunta</span></div>
+          <div class="flecha">→</div>
+          <div class="centro-local"><b>La caja para Windows</b><span>lo imprime</span></div>
+          <div class="flecha">→</div>
+          <div><b>Cocina y barra</b><span>papel y pantalla</span></div>
+        </div>
+      </div>
+      <div class="camino">
+        <h3>Sin internet</h3>
+        <div class="pasos">
+          <div><b>El camarero</b><span>manda desde su móvil</span></div>
+          <div class="flecha">→</div>
+          <div><b>El wifi del local</b><span>sin salir a internet</span></div>
+          <div class="flecha">→</div>
+          <div class="centro-local">
+            <b>La caja para Windows</b><span>imprime y lo guarda</span>
+          </div>
+          <div class="flecha">→</div>
+          <div><b>Cocina y barra</b><span>papel y pantalla</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="tres">
+      <div>
+        <p class="rotulo-pantalla">La caja, sin internet</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>IKATZ</b><span>▣ Caja 1</span></div>
+            <div class="derecha">
+              <span class="chip"><i style="background: var(--ambar)"></i>Sin internet</span>
+            </div>
+          </div>
+          <div class="franja tranquila">
+            Sin internet. Todo sigue funcionando en el local · 7 por subir
+          </div>
+          <div class="pie">
+            <span>4 aparatos conectados a esta caja</span><span>Cocina y sala, al segundo</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">Un móvil Android o la tablet</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>Mesa 4</b><span>Lucía</span></div>
+          </div>
+          <div class="franja tranquila">Sin internet. Va por la caja: la cocina lo recibe</div>
+          <div class="pie"><span>Lo pedido sale en cocina igual</span></div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">Un iPhone (ver la pregunta 2)</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>Mesa 6</b><span>Marcos</span></div>
+          </div>
+          <div class="franja ambar">
+            Sin conexión. Se guarda aquí: <b>la cocina aún no lo recibe</b>
+          </div>
+          <div class="pie">
+            <span>2 comandas guardadas en este móvil</span><span>Pídelo en la caja</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pantalla">
+      <div class="franja azul">Conexión recuperada · 12 cosas subidas, ninguna repetida</div>
+    </div>
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr>
+            <th>Sin internet</th>
+            <th>Funciona</th>
+            <th>Espera a que vuelva</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>En la sala</td>
+            <td class="ok">
+              Entrar con el PIN, abrir mesas, pedir, mandar y marchar, la cuenta en papel
+            </td>
+            <td class="casi">Cambiar precios o productos, dar de alta a alguien</td>
+          </tr>
+          <tr>
+            <td>En cocina y barra</td>
+            <td class="ok">Recibir, imprimir, tachar, llamar al camarero</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>En la caja</td>
+            <td class="ok">Fichar, abrir el cajón con permiso</td>
+            <td class="casi">
+              Cobrar con ticket (con T6 y T7 saldrá un justificante, y el ticket al volver)
+            </td>
+          </tr>
+          <tr>
+            <td>Si se va la luz o el wifi</td>
+            <td class="no" colspan="2">
+              Cada aparato guarda lo suyo y lo sube al volver; la cocina no recibe lo de los demás.
+              Para esto, un router con 4G de respaldo
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <details class="porque">
+      <summary>¿Cómo lo hacen los demás?</summary>
+      <div>
+        <p>
+          <b>Toast</b> hace lo mismo con un aparato del local que hace de centro, y pide que ese
+          aparato vaya <b>por cable</b>, no por wifi, y que no sea un móvil. Sin centro, sus
+          terminales solo se guardan lo suyo. <b>Square</b> deja cobrar sin internet con topes, y
+          <b>Revo</b> tiene un modo sin conexión que vuelca al volver.
+        </p>
+        <p>
+          Estook mejora a Toast en una cosa: con la caja de centro,
+          <b>los aparatos del local se siguen viendo entre sí</b> (la mesa que abre uno la ve el
+          otro), no solo la cocina.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ 5 · LO QUE NO CUADRA ═══ -->
+  <section class="seccion" id="no-cuadra">
+    <p class="rotulo">5 · Lo que no cuadra</p>
+    <h2>Lo que encontré al repasar lo escrito y lo hecho</h2>
+    <p class="lead">Ninguno frena T5. Te digo cada uno y lo que hago con él.</p>
+    <div class="tarjetas">
+      <div class="tarjeta">
+        <b class="t">1 · El ticket del cliente no se puede imprimir todavía</b>
+        <p>
+          Pediste imprimir «la comanda y el ticket».
+          <strong>El ticket es la factura simplificada</strong> y necesita la facturación (T6) y el
+          cobro (T7). Y el cajón «al cobrar en efectivo» necesita el cobro.
+        </p>
+        <span class="hago"
+          >Lo que hago: en T5, la comanda, la cuenta, la prueba y el cajón de prueba. El ticket
+          queda dibujado y listo para T6 y T7.</span
+        >
+      </div>
+      <div class="tarjeta">
+        <b class="t">2 · Hoy Estook TPV no funciona sin internet, aunque se abra</b>
+        <p>
+          El PIN lo comprueba el servidor, el plano, la carta y las mesas llegan del servidor, y al
+          recargar se pierde quién estaba dentro.
+          <strong>«Sin internet» es la mitad del trabajo de T5.</strong>
+        </p>
+        <span class="hago">Lo que hago: partir T5 en dos (pregunta 4).</span>
+      </div>
+      <div class="tarjeta">
+        <b class="t">3 · La Arquitectura descarta «un TPV aparte para Windows»</b>
+        <p>
+          Lo escribimos en septiembre. Tu idea no es otro TPV:
+          <strong>es el mismo Estook TPV dentro de un programa</strong> que además habla con las
+          impresoras.
+        </p>
+        <span class="hago"
+          >Lo que hago: corregirlo, con su decisión. Sigue habiendo un solo código.</span
+        >
+      </div>
+      <div class="tarjeta">
+        <b class="t">4 · El iPhone tampoco puede hablar con la caja sin internet</b>
+        <p>
+          Los documentos decían que solo el iPad lo necesitaba.
+          <strong>Safari, en iPhone y en iPad, no deja</strong> que una web hable con un aparato del
+          wifi. Chrome en Android y Windows, sí.
+        </p>
+        <span class="hago">Lo que hago: corregir el Anexo y preguntarte (pregunta 2).</span>
+      </div>
+      <div class="tarjeta">
+        <b class="t">5 · Con la cocina solo en papel, marchar molesta</b>
+        <p>
+          Si la cocina no tiene pantalla, nadie tacha. Entonces la sala nunca sabe que «ha salido
+          todo el 1.º», y
+          <strong>cada vez que el camarero marcha le sale «lo de antes aún no ha salido»</strong>.
+        </p>
+        <span class="hago"
+          >Lo que hago: sin pantalla de cocina, marchar va directo, sin aviso.</span
+        >
+      </div>
+      <div class="tarjeta">
+        <b class="t">6 · La caja tiene que ir por cable</b>
+        <p>
+          Si el centro del local va por wifi, un microcorte deja a la cocina sin comandas. Toast lo
+          exige por eso.
+        </p>
+        <span class="hago"
+          >Lo que hago: decirlo al instalarla, y avisar en Ajustes si va por wifi.</span
+        >
+      </div>
+      <div class="tarjeta">
+        <b class="t">7 · Link prometía Linux, Mac y una Raspberry</b>
+        <p>Para un local sin PC. Lo que hay en los bares es Windows, y es lo que pediste.</p>
+        <span class="hago">Lo que hago: T5 solo Windows. Lo demás, cuando un cliente lo pida.</span>
+      </div>
+      <div class="tarjeta">
+        <b class="t">8 · Link también leía los ficheros de otros TPV (M19b)</b>
+        <p>
+          Para quien sigue con Revo, Ágora o Glop y no cobra con Estook. Ese local no tendría «la
+          caja para Windows».
+        </p>
+        <span class="hago"
+          >Lo que hago: lo dejo escrito para M19b, en el mismo programa sin la caja.</span
+        >
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 6 · MEJORAS ═══ -->
+  <section class="seccion" id="mejoras">
+    <p class="rotulo">6 · Mejoras que propongo</p>
+    <h2>Van dentro de T5 si no me dices lo contrario</h2>
+    <div class="tarjetas">
+      <div class="tarjeta">
+        <b class="t">Buscar las impresoras solas</b>
+        <p>Nadie teclea una dirección ni llama a un técnico. Ya dibujado arriba.</p>
+      </div>
+      <div class="tarjeta">
+        <b class="t">La impresora de reserva</b>
+        <p>Si la de cocina se queda sin papel, la comanda sale por la caja y suena un aviso.</p>
+      </div>
+      <div class="tarjeta">
+        <b class="t">Avisar antes de que nadie lo mire</b>
+        <p>
+          «Sin papel en Cocina» o «La barra no responde», en la caja y en el móvil de quien mandó.
+        </p>
+      </div>
+      <div class="tarjeta">
+        <b class="t">Reimprimir la comanda</b>
+        <p>
+          En las opciones de la mesa, por si un papel se moja o se pierde. Sale marcado «COPIA».
+        </p>
+      </div>
+      <div class="tarjeta">
+        <b class="t">Pasar la caja a la app sin montar nada</b>
+        <p>Con el código de siempre, y la del navegador se desvincula sola: nunca dos cajas.</p>
+      </div>
+      <div class="tarjeta">
+        <b class="t">Ver cómo está el centro</b>
+        <p>En Ajustes › Aparatos: «Esta caja es el centro · 4 aparatos la ven · por cable».</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 7 · PREGUNTAS ═══ -->
+  <section class="seccion" id="preguntas">
+    <p class="rotulo">7 · Lo que te pregunto</p>
+    <h2>Cuatro preguntas: lo demás lo decido como lo hace el sector</h2>
+
+    <div class="pregunta">
+      <h3>1 · ¿Qué hay en IKATZ?</h3>
+      <p class="de">De dónde sale: para probar T5 con lo de verdad, no con lo que yo imagine.</p>
+      <p class="texto">
+        Dime lo que tienes o vas a poner, aunque sea «no sé el modelo»:
+        <b>el PC de la caja</b> (¿Windows? ¿táctil?), <b>las impresoras</b> (marca y modelo si lo
+        pone en la pegatina de abajo, y si van con cable de red o USB),
+        <b>si el cajón está enchufado a una impresora</b>, si
+        <b>la cocina quiere papel, pantalla o las dos</b>, si <b>la barra imprime</b>, y
+        <b>qué móviles llevan los camareros</b> (iPhone o Android).
+      </p>
+      <p class="decides">Lo que decides: me lo cuentas y lo pruebo con eso.</p>
+    </div>
+
+    <div class="pregunta">
+      <h3>2 · Los iPhone, cuando se va internet</h3>
+      <p class="de">De dónde sale: lo encontrado en el punto 4 de «Lo que no cuadra».</p>
+      <p class="texto">
+        <b>Qué pasa:</b> sin internet, un Android o la tablet mandan la comanda a la caja por el
+        wifi y la cocina la recibe. <b>Un iPhone no puede</b>: Apple no deja que una web hable con
+        un aparato del wifi. Ejemplo: se va internet un sábado a las 14:00; Lucía (Android) sigue
+        mandando y sale en cocina; Marcos (iPhone) manda, su móvil lo guarda y le dice en ámbar «la
+        cocina aún no lo recibe», así que Marcos lo pide en la caja o en otro aparato. Al volver
+        internet, sube todo sin repetir.
+      </p>
+      <div class="opciones">
+        <div class="opcion recomendada">
+          <b>A · Así por ahora</b>
+          <span
+            >Con el aviso ámbar bien grande. Y al montar el local se recomienda que los comanderos
+            sean Android o una tablet. Sin coste.</span
+          >
+        </div>
+        <div class="opcion">
+          <b>B · Hacer también la app para iPhone</b>
+          <span
+            >La misma web envuelta para el App Store, que sí puede hablar con la caja. Es más
+            trabajo, una revisión de Apple y 99 $ al año de cuenta de Apple. Propongo hacerla
+            después del cobro (T7).</span
+          >
+        </div>
+      </div>
+      <p class="decides">Lo que decides: A o B (o A ahora y B después).</p>
+    </div>
+
+    <div class="pregunta">
+      <h3>3 · La firma del programa</h3>
+      <p class="de">De dónde sale: Windows desconfía de los programas que no vienen «firmados».</p>
+      <p class="texto">
+        <b>Qué es:</b> una firma digital que dice a Windows quién hizo el programa. Sin ella, al
+        instalarlo sale la pantalla azul <b>«Windows protegió su PC»</b> y hay que tocar «Más
+        información › Ejecutar de todas formas». Una vez por PC. <b>Cuánto cuesta:</b> el servicio
+        de Microsoft vale unos 10 $ al mes, pero en Europa solo se lo dan a empresas (la sociedad);
+        como autónomo o persona, un certificado de una empresa de firmas, que cuesta más (el precio
+        se mira al comprarlo).
+      </p>
+      <div class="opciones">
+        <div class="opcion recomendada">
+          <b>A · Sin firmar para IKATZ, y firmar antes de vender</b>
+          <span
+            >Lo instalamos tú y yo sabiendo lo del aviso azul. La firma va con la mudanza y la
+            sociedad, antes del primer cliente que pague.</span
+          >
+        </div>
+        <div class="opcion">
+          <b>B · Firmar desde ya</b>
+          <span
+            >Sin aviso desde el primer día, pagando ya el certificado. Sin la sociedad, el más
+            caro.</span
+          >
+        </div>
+      </div>
+      <p class="decides">Lo que decides: A o B.</p>
+    </div>
+
+    <div class="pregunta">
+      <h3>4 · Entregarla en dos partes</h3>
+      <p class="de">De dónde sale: lo encontrado en el punto 2 de «Lo que no cuadra».</p>
+      <p class="texto">
+        T5 entera es grande: imprimir y, sobre todo, que todo funcione sin internet. En dos, pruebas
+        la primera en IKATZ (la comanda saliendo en papel) mientras hago la segunda.
+      </p>
+      <div class="opciones">
+        <div class="opcion recomendada">
+          <b>A · En dos: primero imprimir, luego sin internet</b>
+          <span
+            >La primera ya sirve en el servicio de cada día. Lo de abajo, en «Cómo la
+            entrego».</span
+          >
+        </div>
+        <div class="opcion">
+          <b>B · Entera de una vez</b>
+          <span>Un solo pull request más largo, y no la pruebas hasta el final.</span>
+        </div>
+      </div>
+      <p class="decides">Lo que decides: A o B.</p>
+    </div>
+  </section>
+
+  <!-- ═══ 8 · PARTES ═══ -->
+  <section class="seccion" id="partes">
+    <p class="rotulo">8 · Cómo la entrego</p>
+    <h2>Si contestas A en la pregunta 4</h2>
+    <div class="partes">
+      <div class="parte">
+        <b>T5 · 1 · Imprimir y el cajón</b>
+        <ul>
+          <li>
+            La caja para Windows: descargarla, pasar la caja, arrancar con Windows y actualizarse
+            con la caja cerrada
+          </li>
+          <li>
+            Impresoras y cajón: buscarlas, la prueba, qué imprime cada una, la de reserva, el cajón
+            de prueba
+          </li>
+          <li>
+            La comanda en papel al mandar, al marchar y al anular; la barra; la cuenta; reimprimir
+          </li>
+          <li>
+            Los avisos de sin papel y no responde; marchar sin aviso si la cocina es solo papel
+          </li>
+        </ul>
+        <span class="cuando"
+          >Terminada cuando: en IKATZ, una comanda pedida en un móvil sale en la impresora de cocina
+          en menos de 6 segundos, y con la impresora apagada sale después, una vez y en orden.</span
+        >
+      </div>
+      <div class="parte">
+        <b>T5 · 2 · Sin internet</b>
+        <ul>
+          <li>
+            Cada aparato guarda el plano, la carta y las mesas, y entra con el PIN sin internet
+          </li>
+          <li>La caja hace de centro: recibe por el wifi, imprime y reparte a cocina y barra</li>
+          <li>Lo que falta por subir, contado en pantalla; al volver, sube una sola vez</li>
+          <li>Las franjas de cada aparato, como en la sección 4</li>
+        </ul>
+        <span class="cuando"
+          >Terminada cuando: con el router de internet desenchufado, una comanda tomada en una
+          tablet sale en la pantalla de cocina y en la impresora en menos de 2 segundos, y al volver
+          está en la nube una sola vez.</span
+        >
+      </div>
+    </div>
+  </section>
+</div>

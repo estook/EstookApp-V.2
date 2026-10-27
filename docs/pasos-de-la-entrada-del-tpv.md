@@ -2,14 +2,16 @@
 
 > ## Cómo está
 >
-> **Fusionada** el 26 de octubre de 2026 a las 23:01 de Madrid (#145), y el sitio publicado. **Falta
-> desplegar la API**, que solo cambia dónde se cae: la pantalla nueva ya va sola a la sala.
+> **En producción entera.** Fusionada el 26 de octubre de 2026 a las 23:01 de Madrid (#145), con
+> el arreglo de «El cambio de hora» (#146) fusionado el 27-oct a las 02:14 y **la API desplegada
+> a las 02:24**. Comprobado el 27-oct: 92 migraciones, 113 consultas y 303 comandos, y el reloj
+> latiendo.
 >
-> | Qué              | Cómo está                                                                    |
-> | ---------------- | ---------------------------------------------------------------------------- |
-> | Pull requests    | **La entrada (#145)**, fusionada; **«El cambio de hora» (#146)**, una prueba |
-> | La base de datos | **92 de 92** en producción; no hay migración                                 |
-> | La API           | **113 consultas y 303 comandos**; desplegada a las 22:16, antes de la #145   |
+> | Qué              | Cómo está                                                          |
+> | ---------------- | ------------------------------------------------------------------ |
+> | Pull requests    | **La entrada (#145)** y **«El cambio de hora» (#146)**, fusionadas |
+> | La base de datos | **92 de 92** en producción; no hubo migración                      |
+> | La API           | **113 consultas y 303 comandos**, desplegada el 27-oct             |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -25,34 +27,9 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 Lo que se decidió, en la [0118](decisiones/0118-la-entrada-del-tpv.md).
 
-## Lo que te toca · fusionar el arreglo y desplegar
+## Lo que te tocaba · hecho
 
-**Esta vez no hay que migrar.** Se despliega la API para que diga a todos «a la sala».
-
-1. **En GitHub**: la #145 ya está fusionada. Abre **«El cambio de hora» (#146)** (arregla la prueba
-   de Ventas que puso en rojo la vuelta de `main`) y, con las comprobaciones en verde, **Merge pull
-   request** → **Confirm merge**.
-2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
-
-   ```powershell
-   git checkout main
-   ```
-
-   ```powershell
-   git pull
-   ```
-
-3. **En GitHub**: **Actions** → **Desplegar la API** → **Run workflow**, rama `main`, escribe
-   **`desplegar`**, y espera al **círculo verde**.
-4. **En PowerShell**:
-
-   ```powershell
-   .\estook.cmd bd:comprobar-api
-   ```
-
-   Todo en verde, con **113 consultas y 303 comandos**.
-
-**Si algo falla:** dime en qué paso y qué sale. No hace falta deshacer nada.
+Fusionar la #146 y desplegar la API: **hecho el 27-oct**. Queda probarlo en IKATZ, abajo.
 
 ## Probarlo en IKATZ
 
@@ -77,4 +54,4 @@ Estook TPV se actualiza solo al fusionar (unos minutos). Si la caja sigue igual,
 ## Lo que no está todavía, para que no lo busques
 
 - **La caja arriba** (abrir y cerrar), **las ventas de hoy** y **el datáfono**: con el cobro (T7).
-- **Impresoras y cajón**: con Estook Link y la caja para Windows (T5).
+- **Impresoras y cajón**: con la caja para Windows (T5), con sus maquetas por aprobar.

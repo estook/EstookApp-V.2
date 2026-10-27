@@ -9,7 +9,7 @@ nota: Cómo Estook toma nota, cobra y emite tickets y facturas cumpliendo VeriFa
 
 **Estook cobra.** El local elige entre cobrar con **Estook TPV**, conectar su TPV o apuntar las ventas a mano (Manifiesto, capítulo 1). Este anexo es la especificación completa de la primera forma, y **manda sobre cualquier otro documento donde se hable de lo mismo**: los demás dicen un párrafo y enlazan aquí.
 
-Va dirigido a quien construya Estook, que será en su mayor parte una IA. Cubre los módulos **M16a (la jornada)**, **M19a (Estook Link)**, **M20A (sala y cocina)**, **M20B (facturación VeriFactu)** y **M20C (cobro y caja)**, que se construyen **justo después de M10** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)).
+Va dirigido a quien construya Estook, que será en su mayor parte una IA. Cubre los módulos **M16a (la jornada)**, **M19a (la caja para Windows, que lleva dentro lo que se llamaba Estook Link)**, **M20A (sala y cocina)**, **M20B (facturación VeriFactu)** y **M20C (cobro y caja)**, que se construyen **justo después de M10** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)).
 
 Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (cómo está hecho: las piezas, el modelo, los aparatos y qué funciona sin conexión), **Plan de desarrollo** (cómo se construye y en qué orden), **Roles y administración** (quién puede qué, apartado 1.12) y **Auditoría de flujos** (efectos en cadena 2.27 a 2.34, estados, fallos y las listas de comprobación de Facturación y Caja). Lo que cambió en cada versión, en el [registro de cambios](CAMBIOS.md).
 
@@ -21,12 +21,12 @@ Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (có
 
 |                                            | Decisión                                                                                                                                                                                                                                        |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ¿Web o nativo?                             | **Web, una sola base de código.** La cáscara nativa es opcional (iPad y food truck sin Link)                                                                                                                                                    |
+| ¿Web o nativo?                             | **Web, una sola base de código.** La cáscara nativa es opcional (iPad y food truck sin la caja para Windows)                                                                                                                                    |
 | ¿Una aplicación aparte para el TPV?        | **Sí, con su inicio**, `apps/tpv`, del mismo código: mismos datos, permisos y PIN, y **solo en aparatos vinculados** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md), [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)) |
 | ¿Estook toca el dinero?                    | **Nunca.** El efectivo va al cajón y la tarjeta al datáfono del local. Estook apunta ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md))                                                                                               |
 | ¿Quién hace la parte técnica de VeriFactu? | **Verifacti**, detrás de un adaptador. Estook responde de su parte (1.5)                                                                                                                                                                        |
-| ¿Qué impresoras?                           | **Cualquiera ESC/POS**, por Estook Link. Ninguna marca en el núcleo (capítulo 6)                                                                                                                                                                |
-| ¿Sin internet?                             | **Se sigue trabajando** con Estook Link en el local; el ticket, con justificante y al volver (3.6 y 4.11)                                                                                                                                       |
+| ¿Qué impresoras?                           | **Cualquiera ESC/POS**, por la caja para Windows. Ninguna marca en el núcleo (capítulo 6)                                                                                                                                                       |
+| ¿Sin internet?                             | **Se sigue trabajando** con la caja para Windows en el local; el ticket, con justificante y al volver (3.6 y 4.11)                                                                                                                              |
 | ¿Un «modo formación»?                      | **No existe en producción.** Se practica en el local de ejemplo (4.12)                                                                                                                                                                          |
 | ¿Partidas en cocina?                       | **No.** A cocina llega el ticket entero de la mesa, y marcha el camarero ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md))                                                                                                         |
 | ¿Dónde se monta lo de vender?              | **En Estook TPV**: el plano, la botonera, los aparatos, la caja y el PIN. En Estook no se añade nada más ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md), 11.1)                                                                         |
@@ -300,7 +300,7 @@ El modelo entero —persona, terminal, operador, aprobación— está en la [Arq
 
 **Al reiniciar o cerrarse**, vuelve a su función, bloqueado, con lo pendiente de subir intacto.
 
-**Sin conexión, los PIN los comprueba Estook Link**, que guarda los del local cifrados y solo para el servicio. Sin nube y sin Link, solo siguen quienes ya entraron ese día en ese terminal: guardar las huellas de los PIN en una tablet no es seguro.
+**Sin conexión, los PIN los comprueba la caja para Windows**, que guarda los del local cifrados y solo para el servicio. Sin nube y sin ella, solo siguen quienes ya entraron ese día en ese terminal: guardar las huellas de los PIN en una tablet no es seguro.
 
 **Vincular un terminal**, en 11.3: **el primero** lo vincula quien lleva el local entrando con su correo en ese aparato, y su sesión se cierra al acabar; **los demás**, con **un código de 6 cifras o su QR** que se saca en Ajustes del TPV › Aparatos, con la función y el nombre elegidos antes, de un solo uso y que caduca a los 10 minutos. **El terminal queda vinculado al local, no a nadie** (salvo el comandero personal, que es de su dueño), y se desvincula desde la misma pantalla si se pierde.
 
@@ -318,10 +318,10 @@ Documento **no fiscal**:
 
 La versión 1.1 prometía que la cocina seguía imprimiendo sin internet con una cola que vivía en la nube, y eso no podía funcionar: sin internet, la tablet no llega a la cola. Queda así ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md), y el detalle en la [Arquitectura](Estook-Arquitectura.md), capítulo 7):
 
-- **Con Estook Link en el local**, los terminales le mandan la comanda **por la red del local**, sin pasar por internet. Link la reparte a las pantallas de cocina, la imprime y la guarda para subirla al volver. **La sala y la cocina siguen hablándose** como si nada.
-- **Sin Link**, la comanda **se guarda en el aparato y sube al recuperar la señal**, y la sala ve en grande que **la cocina no la está recibiendo**: si el camarero cree que la cocina lo tiene y no es así, el servicio se rompe.
+- **Con la caja para Windows en el local**, los terminales le mandan la comanda **por la red del local**, sin pasar por internet. La caja la reparte a las pantallas de cocina, la imprime y la guarda para subirla al volver. **La sala y la cocina siguen hablándose** como si nada.
+- **Sin la caja para Windows**, la comanda **se guarda en el aparato y sube al recuperar la señal**, y la sala ve en grande que **la cocina no la está recibiendo**: si el camarero cree que la cocina lo tiene y no es así, el servicio se rompe.
 - **Cada comanda nace con su identificador en el aparato**: subirla dos veces no crea dos, y a una cuenta se le **añaden** líneas, nunca se sobreescriben.
-- Es la razón de fondo para recomendar Link en cualquier local con cocina.
+- Es la razón de fondo para recomendar la caja para Windows en cualquier local con cocina. **Desde un iPhone o un iPad no se le puede hablar sin internet**: Safari no deja que una web hable con un aparato del wifi (27-oct); esos aparatos guardan lo suyo y lo suben al volver.
 
 ## 3.7 Lo que hay que probar
 
@@ -334,8 +334,8 @@ La versión 1.1 prometía que la cocina seguía imprimiendo sin internet con una
 - Se traspasa una mesa abierta a otro camarero y las ventas quedan a nombre del nuevo desde ese momento.
 - Un plato con un alérgeno marcado en la mesa **avisa en sala antes de mandarlo** y sale marcado en cocina y en la barra; lo que añade una opción también avisa, y cambiar la carta después no cambia lo pedido (0117).
 - **La pantalla de barra** ve solo lo de la barra y la de cocina solo lo suyo, y ninguna tacha lo de la otra; lo que tacha la barra sale en la cuenta de la sala con su hora (0117).
-- Se corta internet **con Link**: se sigue tomando nota, **la pantalla de cocina recibe** y la comanda impresa sale; al volver, todo sube una vez y en orden.
-- Se corta internet **sin Link**: se sigue tomando nota, la sala ve en grande que la cocina no recibe, y al volver sube todo sin duplicar.
+- Se corta internet **con la caja para Windows**: se sigue tomando nota, **la pantalla de cocina recibe** y la comanda impresa sale; al volver, todo sube una vez y en orden.
+- Se corta internet **sin la caja para Windows**: se sigue tomando nota, la sala ve en grande que la cocina no recibe, y al volver sube todo sin duplicar.
 - Un cocinero abre la ficha desde la comanda y **no recibe ni un importe**, comprobado llamando a la API a pelo.
 - Dos camareros en la **misma tablet**: cada venta queda a nombre de quien la hizo, no del aparato ni del primero que entró.
 - El terminal **se bloquea solo** a los 2 minutos sin tocar y al acabar un cobro (11.4), y el siguiente entra con su PIN sin correo.
@@ -558,7 +558,7 @@ Al volver la conexion: se emiten en ese orden
 
 **[VERIFICAR con el asesor el texto del justificante y que esta forma de trabajar cumple.]** En el alta se recomienda un router con 4G de respaldo.
 
-> **El futuro, y la ventaja:** que **Estook Link** genere el registro en el local cuando no hay internet y lo mande después con la incidencia, como permite la AEAT. Sería facturar de verdad sin conexión, que pocos TPV en la nube pueden. Exige saber **cómo se encadenan los registros de varios locales del mismo NIF**, si Verifacti admite registros generados fuera, y el visto bueno del asesor. Se estudia después de M20B.
+> **El futuro, y la ventaja:** que **la caja para Windows** genere el registro en el local cuando no hay internet y lo mande después con la incidencia, como permite la AEAT. Sería facturar de verdad sin conexión, que pocos TPV en la nube pueden. Exige saber **cómo se encadenan los registros de varios locales del mismo NIF**, si Verifacti admite registros generados fuera, y el visto bueno del asesor. Se estudia después de M20B.
 
 ## 4.12 Lo que el software no puede tener nunca
 
@@ -699,12 +699,12 @@ La forma profesional de montar esto en un SaaS es **C y D a la vez, sobre una mi
 Camarero manda a cocina  /  Se cobra una mesa
                  ↓
    CON INTERNET: COLA DE IMPRESION (Supabase)          SIN INTERNET: el terminal
-   trabajo: local, impresora, contenido, estado        se lo da a Link por la red
-                 ↓                                     del local, y Link lo apunta
+   trabajo: local, impresora, contenido, estado        se lo da a la caja por la red
+                 ↓                                     del local, y la caja lo apunta
    ┌─────────────┼─────────────┬──────────────┐        en su cola para subirlo
    ▼             ▼             ▼              ▼
-ESTOOK        LA CASCARA    IMPRESORA      CORREO
-LINK          (Capacitor)   QUE PREGUNTA   (PDF)
+LA CAJA PARA  LA CASCARA    IMPRESORA      CORREO
+WINDOWS       (Capacitor)   QUE PREGUNTA   (PDF)
    │             │             │
 ESC/POS       ESC/POS       ella sola
 TCP · USB     TCP · BT      por HTTPS
@@ -714,9 +714,9 @@ CUALQUIER     CUALQUIER      Star / Epson
 IMPRESORA     IMPRESORA      compatibles
 ```
 
-### Vía 1 · Estook Link · **la principal**
+### Vía 1 · La caja para Windows · **la principal**
 
-El programa del local, **y su centro** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)): **lee la cola por HTTPS cuando hay internet, recibe las comandas de los terminales por la red del local cuando no lo hay, y habla ESC/POS con las impresoras**. También hace de relevo hacia las pantallas de cocina y trae los datos de un TPV ajeno (M19b). **Su parte de impresión y de centro se construye en M19a, antes de la sala y la cocina**, porque sin ella M20A no sirve de nada.
+El programa del PC de la caja: **Estook TPV tal cual, y dentro lo que se llamaba Estook Link**, el centro del local ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md); el nombre, de Richi el 27-oct): **lee la cola por HTTPS cuando hay internet, recibe las comandas de los terminales por la red del local cuando no lo hay, y habla ESC/POS con las impresoras**. También hace de relevo hacia las pantallas de cocina y trae los datos de un TPV ajeno (M19b). **Su parte de impresión y de centro se construye en M19a, antes de la sala y la cocina**, porque sin ella M20A no sirve de nada.
 
 - **Vale cualquier impresora ESC/POS**: Epson, Star, Bixolon, HPRT, Citizen, las genéricas chinas, y las de impacto de cocina. Por red, por USB o por Bluetooth.
 - Imprime **en silencio**, sin cuadros de diálogo.
@@ -727,7 +727,7 @@ El programa del local, **y su centro** ([0056](../decisiones/0056-estook-tpv-su-
 
 ### Vía 2 · La cáscara de Estook TPV
 
-**Y aquí está la respuesta a «¿web o nativo?»: no hay que elegir.** Estook TPV es web, y para el iPad y para imprimir sin Link se envuelve en una cáscara nativa —Capacitor— que se publica en Google Play y en la App Store. Es opcional.
+**Y aquí está la respuesta a «¿web o nativo?»: no hay que elegir.** Estook TPV es web, y para el iPad y para imprimir sin la caja para Windows se envuelve en una cáscara nativa —Capacitor— que se publica en Google Play y en la App Store. Es opcional.
 
 Dentro de la cáscara, la web es exactamente la misma. Lo que la cáscara añade es lo que un navegador no puede dar:
 
@@ -736,7 +736,7 @@ Dentro de la cáscara, la web es exactamente la misma. Lo que la cáscara añade
 - Bloquear el apagado de pantalla durante el servicio.
 - Avisos con sonido aunque la app esté en segundo plano.
 - Cámara y lector de códigos de verdad.
-- **Hablar con Link por la red del local en el iPad**, que Safari no deja.
+- **Hablar con la caja para Windows por la red del local en el iPad y el iPhone**, que Safari no deja.
 
 **No se rehace nada.** Se empaqueta lo que ya hay.
 
@@ -760,13 +760,13 @@ Y el **ticket por correo o por QR**, que el cliente se lleva en el móvil.
 
 La puesta en marcha pregunta qué tiene, no qué le vendemos:
 
-| Lo que tiene el local        | Lo que se le pone                                                     |
-| ---------------------------- | --------------------------------------------------------------------- |
-| Ya tiene impresoras y un PC  | **Estook Link.** No compra nada                                       |
-| Ya tiene impresoras, sin PC  | Estook Link en una Raspberry (~50 €), o la cáscara en una tablet fija |
-| No tiene nada y abre de cero | Pantalla de cocina, y una impresora que pregunta sola para la caja    |
-| Food truck, barra pequeña    | La cáscara en la tablet, imprimiendo directamente                     |
-| Varios locales               | Estook Link en cada uno, gestionados desde el panel de cadena         |
+| Lo que tiene el local        | Lo que se le pone                                                    |
+| ---------------------------- | -------------------------------------------------------------------- |
+| Ya tiene impresoras y un PC  | **La caja para Windows.** No compra nada                             |
+| Ya tiene impresoras, sin PC  | La cáscara en una tablet fija; un mini PC, cuando un cliente lo pida |
+| No tiene nada y abre de cero | Pantalla de cocina, y una impresora que pregunta sola para la caja   |
+| Food truck, barra pequeña    | La cáscara en la tablet, imprimiendo directamente                    |
+| Varios locales               | La caja para Windows en cada uno, vistas desde el panel de cadena    |
 
 **Ningún local se queda fuera**, y en la web pública no se promete una marca: se dice «funciona con tu impresora».
 
@@ -778,8 +778,8 @@ La puesta en marcha pregunta qué tiene, no qué le vendemos:
 
 **Cómo lee cada agente la cola:**
 
-- **Estook Link y la cáscara:** se suscriben en tiempo real a la cola (Realtime de Supabase), con una consulta periódica de seguridad por si se pierde un aviso. Confirman cada trabajo.
-- **Sin internet, Link recibe los trabajos directamente de los terminales** por la red del local, con el mismo identificador que tendrían en la cola: al volver internet los sube, y la cola sabe que ya están impresos.
+- **La caja para Windows y la cáscara:** se suscriben en tiempo real a la cola (Realtime de Supabase), con una consulta periódica de seguridad por si se pierde un aviso. Confirman cada trabajo.
+- **Sin internet, la caja para Windows recibe los trabajos directamente de los terminales** por la red del local, con el mismo identificador que tendrían en la cola: al volver internet los sube, y la cola sabe que ya están impresos.
 - **Impresora que pregunta sola:** una Edge Function con los tres métodos de su protocolo —pregunta, recogida y confirmación—, con un identificador largo e irrepetible por impresora y autenticación básica. **La dirección de una impresora es un secreto.**
 
 **Reintentos.** Un trabajo `entregado` que no se confirma en un tiempo razonable vuelve a `pendiente`, con un límite de intentos para no imprimir la misma comanda quince veces.
@@ -793,7 +793,7 @@ La puesta en marcha pregunta qué tiene, no qué le vendemos:
 El papel térmico es sensible al calor, a la luz y a la humedad, así que en una cocina con vapor una comanda térmica puede volverse ilegible.
 
 - **Para la comanda** da igual en la práctica: vive minutos. Y la térmica es silenciosa y rápida, que en cocina se agradece.
-- **Si el local usa impacto** (la clásica Epson TM-U220), va por Estook Link o por la cáscara: ESC/POS es ESC/POS. Es una razón más para que la vía principal sea el agente y no una impresora concreta.
+- **Si el local usa impacto** (la clásica Epson TM-U220), va por la caja para Windows o por la cáscara: ESC/POS es ESC/POS. Es una razón más para que la vía principal sea el agente y no una impresora concreta.
 - **Para el ticket de caja**, térmica siempre.
 
 ## 6.7 Reglas
@@ -807,10 +807,10 @@ El papel térmico es sensible al calor, a la luz y a la humedad, así que en una
 
 ## 6.8 Qué hay que probar
 
-- La misma comanda sale igual por **Link, por la cáscara y por una impresora que pregunta sola**. Es la prueba de que el formato intermedio funciona.
+- La misma comanda sale igual por **la caja para Windows, por la cáscara y por una impresora que pregunta sola**. Es la prueba de que el formato intermedio funciona.
 - Mandar a cocina y cronometrar: **menos de 6 segundos**.
 - Apagar la impresora, mandar tres comandas y encenderla: salen las tres, en orden y sin repetirse.
-- Cortar internet con Link instalado y mandar una comanda desde un terminal: **la cocina la recibe y la imprime**, y al volver sube una vez.
+- Cortar internet con la caja para Windows instalada y mandar una comanda desde un terminal: **la cocina la recibe y la imprime**, y al volver sube una vez.
 - Quitar el papel: Estook lo avisa antes de que nadie lo mire.
 - Una comanda con platos de cocina y de barra: dos trabajos.
 - Reimprimir un ticket: idéntico, marcado como copia, sin registro nuevo.
@@ -876,7 +876,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 
 - `impresora` — local, nombre, **agente** (`link`, `cascara`, `pregunta_sola`), dirección o identificador, ancho de papel, **qué imprime** (cocina o barra), activa, último contacto, **último estado que mandó**
 - `trabajo_de_impresion` — local, impresora, tipo (`comanda`, `ticket`, `justificante`, `precuenta`, `informe`), **contenido ya compuesto en el formato intermedio**, estado (`pendiente`, `entregado`, `impreso`, `error`), intentos, momentos de cada paso, referencia a lo que lo originó
-- **Identificador único por trabajo**, que es lo que hace que un reintento —o un trabajo que Link imprimió sin internet y sube después— no imprima dos veces
+- **Identificador único por trabajo**, que es lo que hace que un reintento —o un trabajo que la caja para Windows imprimió sin internet y sube después— no imprima dos veces
 
 ## 7.6 Facturación (esquema `facturacion`, solo inserción)
 
@@ -1109,7 +1109,7 @@ descontado, los tiempos de cocina, Negocio y el «Tu dia» de mañana
 
 **Estook no toca el dinero**: el efectivo lo guarda el cajón del local. Lo que hace Estook es **abrirlo cuando toca y apuntar por qué**.
 
-- **Cómo se abre.** El cajón va enchufado a la impresora de tickets, que es lo normal, y se abre con una orden de la propia impresora. Por eso **abrir el cajón es una línea más del formato intermedio** de impresión (6.5): el ticket de un cobro en efectivo la lleva —o el justificante, si no hay conexión (4.11)—, y la ejecuta el agente que tenga el local —Link, la cáscara o la impresora que pregunta sola—. **[VERIFICAR que las impresoras que preguntan solas aceptan la orden del cajón en sus modelos actuales.]**
+- **Cómo se abre.** El cajón va enchufado a la impresora de tickets, que es lo normal, y se abre con una orden de la propia impresora. Por eso **abrir el cajón es una línea más del formato intermedio** de impresión (6.5): el ticket de un cobro en efectivo la lleva —o el justificante, si no hay conexión (4.11)—, y la ejecuta el agente que tenga el local —la caja para Windows, la cáscara o la impresora que pregunta sola—. **[VERIFICAR que las impresoras que preguntan solas aceptan la orden del cajón en sus modelos actuales.]**
 - **Se abre solo** al cobrar en efectivo (o la parte en efectivo de un mixto), al abrir caja y en cada entrada o salida de caja.
 - **Abrir el cajón sin venta** —cambiar un billete— se puede, **con permiso, motivo y rastro**, y cada apertura sale en el informe X y en el Z con quién y cuándo. Es la vía clásica por la que se escapa dinero de una caja, y los buenos TPV lo controlan así.
 - **Un turno de caja por cajón.** Con uno, una caja; con dos —barra y comedor—, dos, cada una con su fondo y su arqueo.
@@ -1175,12 +1175,12 @@ Y tres cosas que un TPV sin almacén no puede hacer:
 
 Arriba del TPV, siempre con icono y texto, nunca solo con color:
 
-| Estado                                | Qué pasa                                                                                | Qué ve la sala                                                                        |
-| ------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Todo bien                             | —                                                                                       | Nada                                                                                  |
-| **Hacienda no responde**              | Se emite normal y el envío espera (4.10)                                                | Nada. Al gerente, un aviso si pasa de una hora                                        |
-| **Sin conexión con Estook, con Link** | Se toma nota, **la cocina recibe**, se imprime y se cobra con justificante (3.6 y 4.11) | Una franja discreta: «Sin internet. Todo sigue funcionando en el local»               |
-| **Sin conexión con Estook, sin Link** | Se toma nota y se cobra con justificante; la cocina no recibe                           | Una franja ámbar: «Sin conexión. Se sigue trabajando; **la cocina aún no lo recibe**» |
+| Estado                        | Qué pasa                                                                                | Qué ve la sala                                                                        |
+| ----------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Todo bien                     | —                                                                                       | Nada                                                                                  |
+| **Hacienda no responde**      | Se emite normal y el envío espera (4.10)                                                | Nada. Al gerente, un aviso si pasa de una hora                                        |
+| **Sin conexión, con la caja** | Se toma nota, **la cocina recibe**, se imprime y se cobra con justificante (3.6 y 4.11) | Una franja discreta: «Sin internet. Todo sigue funcionando en el local»               |
+| **Sin conexión, sin la caja** | Se toma nota y se cobra con justificante; la cocina no recibe                           | Una franja ámbar: «Sin conexión. Se sigue trabajando; **la cocina aún no lo recibe**» |
 
 Y al volver, **una vez**: «Conexión recuperada · 3 tickets emitidos».
 
@@ -1198,7 +1198,7 @@ Lo que ninguno de los investigados tiene junto, porque ninguno tiene detrás el 
 | **Tarjeta y efectivo cuadrados el mismo día** (10.6)                               | Se ve a fin de mes                                 |
 | El tiempo real de cada plato vuelve a su ficha y al cuadrante (3.3)                | Se queda en la pantalla                            |
 | Fogón explica el día, y **nunca toca un ticket** (4.12)                            | —                                                  |
-| **Sin internet, la sala y la cocina siguen hablándose** por Estook Link (3.6)      | Solo la cocina recibe, o nada                      |
+| **Sin internet, la sala y la cocina siguen hablándose** por la caja (3.6)          | Solo la cocina recibe, o nada                      |
 | **Fichar y entrar al TPV con el mismo PIN**, y el TPV solo para quien ha fichado   | Dos sistemas que no se conocen                     |
 | Todo en la misma cuenta, con el mismo PIN                                          | Dos programas y dos accesos                        |
 
@@ -1208,13 +1208,13 @@ Que un local que viene de otro TPV **no tenga que reescribir nada**:
 
 1. **Los productos**, por uno de los tres caminos de 11.11: traer toda la carta, elegir lo que se vende, o empezar de cero. Si viene de otro TPV, se importa su catálogo de artículos con el mismo lector de M18 y se empareja con las fichas.
 2. **El plano**, desde la plantilla del tipo de local, a ojo (11.9).
-3. **Estook Link**, si la cocina quiere papel o el local quiere trabajar sin internet (6.4). Lo instalamos en una sesión remota.
+3. **La caja para Windows**, si la cocina quiere papel o el local quiere trabajar sin internet (6.4). Lo instalamos en una sesión remota.
 4. **Los aparatos** (11.3) y **las impresoras**, con su botón de imprimir prueba (6.5). El cajón se prueba desde ahí.
 5. **La caja:** el fondo de siempre, y si el local usa **bolsa del camarero** o caja central (5.5).
 6. **La facturación:** los cinco pasos de 4.3. Hasta el último, **el botón de cobrar sale bloqueado diciendo qué falta**.
 7. **Practicar, en el local de ejemplo**, nunca en el de verdad. **No hay «modo formación» en producción** (4.12): una venta de mentira en el local real es justo lo que persigue la ley antifraude.
 
-**Qué hace falta, sin atar marca:** una tablet de 10 pulgadas o más para la sala, o los móviles de los camareros · una pantalla en cocina, que puede ser una tablet · una impresora térmica de 80 mm ESC/POS por red **con el cajón enchufado a ella** · Estook Link en el PC del TPV, en un mini PC o en una Raspberry, si la cocina quiere papel o el local quiere trabajar sin internet (6.4) · el datáfono del banco · y un router con 4G de respaldo (4.11).
+**Qué hace falta, sin atar marca:** una tablet de 10 pulgadas o más para la sala, o los móviles de los camareros · una pantalla en cocina, que puede ser una tablet · una impresora térmica de 80 mm ESC/POS por red **con el cajón enchufado a ella** · la caja para Windows en el PC del TPV, si la cocina quiere papel o el local quiere trabajar sin internet (6.4) · el datáfono del banco · y un router con 4G de respaldo (4.11).
 
 ## 10.12 Lo que hay que probar, además de 3.7 y del capítulo 8
 
@@ -1281,27 +1281,27 @@ _Añadido en la versión 1.4 (23 de octubre de 2026, [decisión 0107](../decisio
 
 **Estook TPV se vende a cualquier local**, así que vale lo que cada local ya tenga (respuesta 2 de la 0107). **Es la misma aplicación web en todos**; lo que cambia es cómo se instala y qué aparatos se le enchufan.
 
-| Aparato                                                            | Para qué suele ser             | Cómo se instala                                                                              | Pantalla mínima      | Quiosco (que no se salga nadie)                     |
-| ------------------------------------------------------------------ | ------------------------------ | -------------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------- |
-| **Ordenador con Windows, táctil** (el TPV de caja de toda la vida) | Caja                           | Edge o Chrome › «Instalar Estook TPV». Link en el mismo ordenador (6.3)                      | 12″, apaisado        | El «acceso asignado» de Windows con Edge en quiosco |
-| **Tablet Android**                                                 | Caja o comandero de sala       | Chrome › «Instalar aplicación»                                                               | 8″; 10″ para la caja | «Fijar pantalla» de Android, o la cáscara           |
-| **iPad**                                                           | Caja o comandero de sala       | Safari › Compartir › «Añadir a pantalla de inicio». **La cáscara** si imprime sin Link (6.3) | 9″; 10″ para la caja | «Acceso guiado» del iPad                            |
-| **Móvil Android o iPhone**                                         | Comandero (personal o de sala) | Chrome o Safari, igual que arriba                                                            | 5,8″, en vertical    | No hace falta: es el móvil de alguien               |
-| **Pantalla de cocina o de barra**                                  | Pantalla de cocina o de barra  | Una tablet de 13″ o más, o una tele con un mini PC con Chrome; en quiosco                    | 13″, apaisada        | El del sistema que tenga, como arriba               |
+| Aparato                                                            | Para qué suele ser             | Cómo se instala                                                                                 | Pantalla mínima      | Quiosco (que no se salga nadie)                     |
+| ------------------------------------------------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------- |
+| **Ordenador con Windows, táctil** (el TPV de caja de toda la vida) | Caja                           | **La caja para Windows**, que se descarga; o Edge › «Instalar»                                  | 12″, apaisado        | El «acceso asignado» de Windows con Edge en quiosco |
+| **Tablet Android**                                                 | Caja o comandero de sala       | Chrome › «Instalar aplicación»                                                                  | 8″; 10″ para la caja | «Fijar pantalla» de Android, o la cáscara           |
+| **iPad**                                                           | Caja o comandero de sala       | Safari › Compartir › «Añadir a pantalla de inicio». **La cáscara** si imprime sin la caja (6.3) | 9″; 10″ para la caja | «Acceso guiado» del iPad                            |
+| **Móvil Android o iPhone**                                         | Comandero (personal o de sala) | Chrome o Safari, igual que arriba                                                               | 5,8″, en vertical    | No hace falta: es el móvil de alguien               |
+| **Pantalla de cocina o de barra**                                  | Pantalla de cocina o de barra  | Una tablet de 13″ o más, o una tele con un mini PC con Chrome; en quiosco                       | 13″, apaisada        | El del sistema que tenga, como arriba               |
 
 - **Navegadores:** Edge y Chrome de los dos últimos años; **Safari 16.4 o más nuevo** (es el que deja instalar con avisos en el iPhone y el iPad). Uno más viejo ve «Actualiza el navegador para usar Estook TPV», nunca una pantalla rota.
 - **En vertical y en apaisado** (Arquitectura, capítulo 8): la caja y la cocina se piensan apaisadas; el comandero en el móvil, en vertical; la tablet de sala, en las dos.
 - **Lo que se le enchufa**, y quién habla con ello:
 
-| Periférico                                              | Cómo se conecta                                                                                                    | Quién le habla                                                                   |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| Impresora de tickets o de cocina (ESC/POS)              | Por red, USB o Bluetooth                                                                                           | **Estook Link** (o la cáscara, o la que pregunta sola): nunca el navegador (6.1) |
-| Cajón                                                   | **Enchufado a la impresora de tickets** (el conector RJ-11 que traen todas)                                        | La orden de abrir va dentro del trabajo de impresión (10.6)                      |
-| Datáfono del banco                                      | No se conecta: se teclea el importe y se confirma en Estook TPV (nivel 1, 10.7)                                    | El camarero; se cuadra al cerrar la caja                                         |
-| Datáfono conectado                                      | Por internet (Stripe Terminal, Viva.com, SumUp) o por Link (Redsys TPV-PC con su pinpad) **[VERIFICAR al llegar]** | La API de Estook, detrás de `ProveedorDatafono` (10.7)                           |
-| Lector de códigos, teclado de cocina, llave de camarero | USB o Bluetooth: escriben como un teclado                                                                          | El navegador, sin nada más                                                       |
-| Balanza                                                 | Puerto serie                                                                                                       | Chrome o Edge, o Link                                                            |
-| Pantalla para el cliente (el total a la vista)          | Segunda pantalla del ordenador de caja                                                                             | **Más adelante**: no entra en T1 a T7                                            |
+| Periférico                                              | Cómo se conecta                                                                                                       | Quién le habla                                                                |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Impresora de tickets o de cocina (ESC/POS)              | Por red, USB o Bluetooth                                                                                              | **La caja para Windows** (o la cáscara, o la que pregunta sola): nunca la web |
+| Cajón                                                   | **Enchufado a la impresora de tickets** (el conector RJ-11 que traen todas)                                           | La orden de abrir va dentro del trabajo de impresión (10.6)                   |
+| Datáfono del banco                                      | No se conecta: se teclea el importe y se confirma en Estook TPV (nivel 1, 10.7)                                       | El camarero; se cuadra al cerrar la caja                                      |
+| Datáfono conectado                                      | Por internet (Stripe Terminal, Viva.com, SumUp) o por la caja (Redsys TPV-PC con su pinpad) **[VERIFICAR al llegar]** | La API de Estook, detrás de `ProveedorDatafono` (10.7)                        |
+| Lector de códigos, teclado de cocina, llave de camarero | USB o Bluetooth: escriben como un teclado                                                                             | El navegador, sin nada más                                                    |
+| Balanza                                                 | Puerto serie                                                                                                          | Chrome o Edge, o la caja para Windows                                         |
+| Pantalla para el cliente (el total a la vista)          | Segunda pantalla del ordenador de caja                                                                                | **Más adelante**: no entra en T1 a T7                                         |
 
 **Ninguna marca en el núcleo** (6.7, regla 6): en la web se dice «funciona con tu impresora», no «compra esta».
 
@@ -1403,7 +1403,7 @@ En el aparato nuevo
 - **No se bloquea en mitad de algo**: con el teclado del cobro abierto o escribiendo una nota, el tiempo cuenta desde el último toque, y lo que se estaba pidiendo **se queda en la mesa sin mandar** (1 · 2, decisión 4), con aviso al siguiente que la abra.
 - **Se ficha en la caja** (3.4, [0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)): «Fichar», en naranja arriba, **también en la pantalla del PIN**: cada uno teclea su PIN y ficha la entrada, la pausa o la salida sin entrar en la caja; o en Estook con el móvil. **En un comandero, sin fichar no se entra**: «Sin fichar · ficha la entrada en la caja o en Estook». En la caja, a quien no ha fichado le sale, después del PIN, «No has fichado» con «Fichar la entrada y entrar»; si el local pide que **solo quien ha fichado la use** (apagado de fábrica), sin fichar no entra. **Fichar la salida con mesas abiertas** pregunta a quién se las pasa; con el botón naranja, sin entrar, dice que se entre a pasarlas.
 - **Lo que pide un encargado** se aprueba en el mismo aparato con su PIN (3.4): una cosa, una vez, dos minutos.
-- **Sin conexión**, los PIN los comprueba Link; sin Link, el aparato los cifra con su llave pública y la API los mira al volver (0070). Sin nube y sin Link solo entra quien ya entró ese día en ese aparato (3.4).
+- **Sin conexión**, los PIN los comprueba la caja para Windows; sin ella, el aparato los cifra con su llave pública y la API los mira al volver (0070). Sin nube y sin la caja solo entra quien ya entró ese día en ese aparato (3.4).
 
 ## 11.5 La entrada: la sala
 
@@ -1648,7 +1648,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 |                       | **La caja** (verde), con el cobro     | Abrir, entradas y salidas, X y cerrar (11.6)                                               | Gerente                  |
 | **Lo que se vende**   | **La sala y las mesas** (verde)       | El editor del plano (11.9): ya no está arriba, en la sala                                  | Gerente                  |
 |                       | **Productos y precios** (naranja)     | La botonera, las dos preguntas, opciones y extras, «Monta tus bebidas» (11.11)             | Gerente                  |
-|                       | **Cocina y barra** (ámbar)            | Los minutos del semáforo y el sonido (0116); pantalla o papel, con Estook Link (3.2)       | Gerente y jefe de cocina |
+|                       | **Cocina y barra** (ámbar)            | Los minutos del semáforo y el sonido (0116); pantalla o papel, con la caja (3.2)           | Gerente y jefe de cocina |
 | **Lo que se conecta** | **Aparatos del local** (azul)         | Los vinculados, añadir (el código), cambiar función o nombre, desvincular (11.3)           | Gerente                  |
 |                       | **Impresoras y cajón**, con T5        | Darlas de alta, qué imprime cada una, «Imprimir prueba» y «Abrir el cajón» de prueba (6.5) | Gerente                  |
 |                       | **Datáfono y cajón que da el cambio** | El datáfono conectado y CashDro o Cashlogy, con el cobro (10.7)                            | Gerente                  |

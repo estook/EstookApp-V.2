@@ -36,9 +36,11 @@ IA; y uno de una prueba vieja con el cambio de hora.
 
 1. **Los navegadores** (la causa que más se repite): se guardan los paquetes ya bajados en la caché
    de GitHub, lo lento se espera en vez de cortarse, y el segundo intento ya no choca con el primero
-   ([`integracion.yml`](../.github/workflows/integracion.yml), lecciones 226, 231 y 232). **Esto solo
-   se puede ver funcionar en GitHub**: la primera vuelta todavía baja los paquetes (y puede tardar);
-   las siguientes, ya no.
+   ([`integracion.yml`](../.github/workflows/integracion.yml), lecciones 226, 231 y 232). **Y desde
+   `main`** ([`navegadores.yml`](../.github/workflows/navegadores.yml), lección 233): la caché de
+   GitHub es de cada rama, y solo la de `main` la ven todas. En la tercera vuelta de la #146 la
+   caché se guardó (119 MB) y tres trozos pasaron; el cuarto cayó porque a su máquina le tocó una
+   conexión lentísima antes de que hubiera nada guardado. **Esto solo se ve funcionar en GitHub.**
 2. **La prueba de Ventas**: resta días del calendario (lección 230).
 3. **Antes de abrir un pull request, todo en local**: tipos, lint, formato, textos, todas las
    pruebas y las de pantalla de lo que se toca. Lo que se sube a medias para el relevo va a su rama

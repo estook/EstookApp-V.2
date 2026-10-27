@@ -20,7 +20,7 @@
 > | Lo legal, y lo ya investigado       | [`docs/legal/`](docs/legal/cumplimiento.md) · [lo investigado](docs/legal/lo-investigado.md)                                      |
 > | Lo que cuesta cada local            | [`docs/coste-por-local.md`](docs/coste-por-local.md)                                                                              |
 > | Lo que hizo cada entrega            | [`docs/historia-de-los-modulos.md`](docs/historia-de-los-modulos.md)                                                              |
-> | Lo aprendido fallando (232)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                                          |
+> | Lo aprendido fallando (233)         | [`docs/lecciones.md`](docs/lecciones.md)                                                                                          |
 > | Los pasos de Richi                  | [la entrada](docs/pasos-de-la-entrada-del-tpv.md); para probar, [T4 · 2](docs/pasos-de-t4-2.md) y [T4 · 1](docs/pasos-de-t4-1.md) |
 > | Dónde vive cada clave               | [`config/claves.md`](config/claves.md) (los nombres, nunca los valores)                                                           |
 
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** **La entrada nueva** está fusionada (#145) y publicada; falta desplegar la API ([sus pasos](docs/pasos-de-la-entrada-del-tpv.md)), que solo cambia dónde se cae (la pantalla nueva ya va sola a la sala). **«El cambio de hora»** (#146) arregla la prueba de Ventas del cambio de hora (230) y bajar los navegadores en GitHub, ahora con caché ([la auditoría del 27-oct](docs/la-auditoria-de-github-del-27-oct.md), 231 y 232). La rama vieja `la-entrada-del-tpv` (solo la maqueta) sobra. Lo siguiente, **T5 · Estook Link** ([el plan](docs/m20a-la-sala-y-la-cocina.md)).
+- **Nada a medias.** **La entrada nueva** está fusionada (#145) y publicada; falta desplegar la API ([sus pasos](docs/pasos-de-la-entrada-del-tpv.md)), que solo cambia dónde se cae (la pantalla nueva ya va sola a la sala). **«El cambio de hora»** (#146) arregla la prueba de Ventas del cambio de hora (230) y bajar los navegadores en GitHub, ahora con caché, también desde `main` ([la auditoría del 27-oct](docs/la-auditoria-de-github-del-27-oct.md), 231 a 233). La rama vieja `la-entrada-del-tpv` (solo la maqueta) sobra. Lo siguiente, **T5 · Estook Link** ([el plan](docs/m20a-la-sala-y-la-cocina.md)).
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -175,7 +175,7 @@ Dónde vive cada pieza, cada servicio y cada clave: [Arquitectura](docs/maestros
 
 - **Base:** Supabase `efgtzujwjztihyiwgpwg`, Irlanda, **plan gratuito**. `.\estook.cmd bd:comprobar` la lee; `bd:comprobar-api`, la API desplegada.
 - **La API**, en Supabase Edge Functions, **pedida en Irlanda** con la cabecera `x-region` (0090, lección 193).
-- **GitHub:** `main` protegida, con tres comprobaciones obligatorias —`Calidad`, `Construccion y presupuestos` (desde el 19-oct junta los cuatro trozos de «Pantallas») y `Migraciones reversibles`—. **Nunca añadir `Construir` ni `Publicar`.** Las máquinas, fijas en Ubuntu 24; pasar a la 26 se hace a mano, todas a la vez y con las capturas rehechas. `Copia de seguridad` corre los lunes y, sin secretos, solo deja un aviso.
+- **GitHub:** `main` protegida, con tres comprobaciones obligatorias —`Calidad`, `Construccion y presupuestos` (desde el 19-oct junta los cuatro trozos de «Pantallas») y `Migraciones reversibles`—. **Nunca añadir `Construir` ni `Publicar`.** Las máquinas, fijas en Ubuntu 24; pasar a la 26 se hace a mano, todas a la vez y con las capturas rehechas. `Copia de seguridad` corre los lunes y, sin secretos, solo deja un aviso. `Los navegadores, guardados` deja en la caché, desde `main`, los paquetes que necesitan las pruebas de pantalla (lección 233).
 - **El peso inicial** (26-sep): `app` 317,8 KB y `admin` 222,5. Se mide y no bloquea; manda la velocidad. Richi notó la app **«un 25 % más rápida»** tras el repaso del 16-oct.
 
 ---

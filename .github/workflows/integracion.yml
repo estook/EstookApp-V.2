@@ -192,7 +192,9 @@ jobs:
       # 232). Por eso:
       #
       #   · **Se guardan los paquetes ya bajados** en la caché de GitHub, y la vuelta
-      #     siguiente los usa sin pedírselos al servidor.
+      #     siguiente los usa sin pedírselos al servidor. Una rama solo ve su caché y la
+      #     de `main`, así que `navegadores.yml` los guarda también desde `main`.
+      #   · El guion, en `herramientas/instalar-los-navegadores.sh`, el mismo para los dos.
       #   · **Lo lento pero vivo se espera**, no se corta: cortarlo a los cinco minutos
       #     dejó tres trozos en rojo (#146). `apt` solo deja una conexión muerta, sin
       #     recibir nada en 20 s, y la vuelve a pedir.
@@ -210,32 +212,7 @@ jobs:
       - name: Instalar navegadores
         id: navegadores
         timeout-minutes: 25
-        run: |
-          printf '%s\n' 'APT::Keep-Downloaded-Packages "true";' \
-            'Binary::apt::APT::Keep-Downloaded-Packages "true";' \
-            'Acquire::http::Timeout "20";' 'Acquire::https::Timeout "20";' \
-            'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/99-estook > /dev/null
-          sudo rm -f /etc/apt/apt.conf.d/docker-clean
-          if ls ~/paquetes-de-los-navegadores/*.deb > /dev/null 2>&1; then
-            sudo cp ~/paquetes-de-los-navegadores/*.deb /var/cache/apt/archives/
-            echo "Paquetes de una vuelta anterior: $(ls ~/paquetes-de-los-navegadores/*.deb | wc -l)"
-          fi
-          for intento in 1 2; do
-            if pnpm exec playwright install --with-deps chromium webkit; then
-              mkdir -p ~/paquetes-de-los-navegadores
-              cp /var/cache/apt/archives/*.deb ~/paquetes-de-los-navegadores/ 2> /dev/null || true
-              exit 0
-            fi
-            echo "::warning::Instalar los navegadores ha fallado (intento $intento de 2)."
-            sudo pkill -9 -x apt-get || true
-            sudo pkill -9 -x dpkg || true
-            for _ in $(seq 1 30); do
-              sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock > /dev/null 2>&1 || break
-              sleep 2
-            done
-            sudo dpkg --configure -a || true
-          done
-          exit 1
+        run: bash herramientas/instalar-los-navegadores.sh
 
       # Se guardan en cuanto se han instalado, aunque luego falle una prueba: lo que
       # tardó en bajar no se vuelve a bajar. Si ya estaban todos, no hace falta.

@@ -939,3 +939,8 @@
      de Pantallas, cortados a medias tres veces. Se leyó el registro (las horas de cada paquete)
      antes de tocar nada más. Ahora lo bajado se guarda en la caché y lo lento se espera; solo se
      corta una conexión muerta ([la auditoría del 27-oct](la-auditoria-de-github-del-27-oct.md)).
+233. **La caché de GitHub es de cada rama.** Una rama solo ve lo guardado en ella y en `main`, y
+     en `main` las pruebas de pantalla se saltan: lo que guardaba una rama no le servía a la
+     siguiente. Y a cada máquina le toca una conexión distinta (de 0,18 a 28 MB/s en la misma
+     vuelta), así que un trozo puede caer aunque los otros tres pasen. Ahora `navegadores.yml`
+     los guarda desde `main` en cada fusión, para todas las ramas.

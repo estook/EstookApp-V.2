@@ -47,6 +47,7 @@ alter table estook.codigo_para_vincular drop column pasa_terminal_id;
 drop function estook.apuntar_como_esta_la_impresora(uuid, uuid, text, timestamptz);
 drop function estook.apuntar_lo_impreso(uuid, uuid, boolean, boolean, text, timestamptz);
 drop function estook.la_cola_de_la_caja(uuid, timestamptz);
+drop function estook.las_impresoras_de_la_caja(uuid);
 drop function estook.es_una_caja_viva(uuid);
 
 drop table estook.trabajo_de_impresion;

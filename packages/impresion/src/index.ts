@@ -9,3 +9,11 @@ export {
   enLineas,
 } from './escpos.ts';
 export type { ComoEsLaImpresora, ComoEstaElPapel } from './escpos.ts';
+export { DONDE_SE_DESCARGA, NOMBRE_DEL_PUENTE, elPuenteDeLaCaja } from './puente.ts';
+export type {
+  ComoSalio,
+  ComoVaLaCaja,
+  ImpresoraEncontrada,
+  LoQueNecesitaLaCaja,
+  PuenteDeLaCaja,
+} from './puente.ts';

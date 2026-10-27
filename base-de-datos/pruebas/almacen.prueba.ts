@@ -734,7 +734,14 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     //
     // **Y la 0091 (el reloj del lunes) añade una.** `locales_revisados_de_noche` le dice al
     // reloj qué locales ya tienen su revisión de noche esa semana, sin abrirle la tabla: no
-    // la veía y repetía cada hora los mismos (lección 225). Son setenta y dos.
+    // la veía y repetía cada hora los mismos (lección 225).
+    //
+    // **Y la 0093 (T5 · 1 · Imprimir) añade cinco.** La caja para Windows recoge su cola **con
+    // su llave y sin nadie dentro**, como la pantalla de cocina: `es_una_caja_viva` mira el
+    // aparato; `la_cola_de_la_caja` le da lo suyo con la dirección de sus impresoras (que la
+    // pantalla no lee); `las_impresoras_de_la_caja`, las que imprime; y `apuntar_lo_impreso` y
+    // `apuntar_como_esta_la_impresora`, cómo salió cada papel y cómo está cada impresora. Son
+    // setenta y siete.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -754,6 +761,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'anotar_intento_de_registro',
       'anotar_intento_en_terminal',
       'aparato_por_llave',
+      'apuntar_como_esta_la_impresora',
+      'apuntar_lo_impreso',
       'cambiar_la_suscripcion',
       'cambiar_lo_del_tpv_del_local',
       'cerrar_demostracion',
@@ -771,14 +780,17 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'el_uso_de',
       'es_admin_o_el_sistema',
       'es_la_pantalla_del_local',
+      'es_una_caja_viva',
       'esta_en_linea',
       'fichados_en_el_aparato',
       'han_fichado_la_salida',
       'horas_de_contrato',
       'la_carta_publica',
       'la_cocina_del_local',
+      'la_cola_de_la_caja',
       'la_pantalla_apunta_en',
       'las_cuentas',
+      'las_impresoras_de_la_caja',
       'lo_gastado_en_fogon',
       'lo_que_hacen_los_clientes',
       'locales_revisados_de_noche',

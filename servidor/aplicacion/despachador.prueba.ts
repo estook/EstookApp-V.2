@@ -459,6 +459,10 @@ describe('las puertas se cierran solas', () => {
         'tachar_en_la_pantalla',
         'destachar_en_la_pantalla',
         'llamar_al_camarero',
+        // 0119 · la caja para Windows recoge su cola sin nadie dentro: vale por su llave, y
+        // solo la de una caja. Lee lo suyo con la dirección de sus impresoras y dice cómo salió.
+        'la_cola_de_la_caja',
+        'apuntar_lo_impreso',
         // 0109 · recuperar el acceso, que se pide precisamente sin haber entrado: el
         // enlace al correo (diez por hora desde una dirección, y no dice si un correo
         // existe) y lo que se hace con él, que vale por su token, de un uso.
@@ -751,6 +755,8 @@ describe('los secretos no se guardan para repetirlos', () => {
         'vincular_con_codigo',
         'sacar_codigo_para_vincular',
         'entrar_con_pin',
+        // 0119 · el código de «Pasar a la app», que es el de vincular para esta misma caja.
+        'sacar_codigo_para_pasar_a_la_app',
         // C1 (0073) · el tema secreto por el que llega el toque al segundo del chat.
         'abrir_el_chat',
         // 0109 · el PIN nuevo que da el enlace del correo, una sola vez.
@@ -787,12 +793,17 @@ describe('los secretos no se guardan para repetirlos', () => {
     //
     // T4 · 1 (0116) · la pantalla de cocina: leer, tachar, destachar y llamar, que el estado
     // de cada plato protege; y «Ya voy», que dicho dos veces es lo mismo.
+    //
+    // T5 · 1 (0119) · la cola de la caja, cada vez que oye el toque y una vez por minuto, y
+    // cómo salió cada papel: lo impreso se queda impreso, así que decirlo dos veces es lo mismo.
     expect(sinRecordar).toEqual([
+      'apuntar_lo_impreso',
       'bloquear',
       'destachar_en_la_pantalla',
       'fichar_aqui',
       'fichar_en_el_tpv',
       'fichar_en_la_caja',
+      'la_cola_de_la_caja',
       'la_pantalla_de_cocina',
       'latir_el_aparato',
       'leer_el_canal',
@@ -1028,6 +1039,17 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'guardar_la_cocina_y_la_barra',
         // Y la alergia de la mesa (0117).
         'cambiar_las_alergias',
+        // T5 · 1 (0119): imprimir, el cajón y «Pasar a la app», en la caja; y en la sala, cómo
+        // están las impresoras, la cuenta y reimprimir.
+        'sacar_codigo_para_pasar_a_la_app',
+        'las_impresoras',
+        'guardar_impresora',
+        'quitar_impresora',
+        'imprimir_prueba',
+        'abrir_el_cajon',
+        'como_estan_las_impresoras',
+        'imprimir_la_cuenta',
+        'reimprimir_la_comanda',
       ].sort(),
     );
   });

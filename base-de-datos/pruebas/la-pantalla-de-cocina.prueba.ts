@@ -291,10 +291,13 @@ describe('Ajustes del TPV › Cocina y barra', () => {
         suena: false,
       }),
     );
+    // Y dónde sale cada una (T5 · 1, 0119): sin tocarlo, en su pantalla.
     expect(losDatos(await api.consultar(enLaCaja, 'la_cocina_y_la_barra'))).toEqual({
       avisoMin: 8,
       tardeMin: 15,
       suena: false,
+      cocinaSaleEn: 'pantalla',
+      barraSaleEn: 'pantalla',
     });
     expect((await laPantalla()).ajustes).toEqual({ avisoMin: 8, tardeMin: 15, suena: false });
     // En la tablet de la sala no: los ajustes, en la caja (0115).

@@ -235,6 +235,7 @@ as $$
 $$;
 
 revoke all on function estook.es_una_caja_viva(uuid) from public;
+grant execute on function estook.es_una_caja_viva(uuid) to estook_api;
 
 -- Lo que tiene que imprimir: lo pendiente, y lo entregado que no confirmó en un minuto (se
 -- cortó a medias). Lo marca entregado al darlo. Con la dirección de su impresora y, si su
@@ -304,6 +305,34 @@ comment on function estook.la_cola_de_la_caja(uuid, timestamptz) is
 
 revoke all on function estook.la_cola_de_la_caja(uuid, timestamptz) from public;
 grant execute on function estook.la_cola_de_la_caja(uuid, timestamptz) to estook_api;
+
+-- Las impresoras que imprime esa caja, con su dirección: para mirar cómo están aunque no haya
+-- nada que imprimir.
+create function estook.las_impresoras_de_la_caja(p_terminal uuid)
+returns table (impresora_id uuid, impresora text, direccion text)
+language plpgsql
+stable
+security definer
+set search_path = estook, pg_catalog, pg_temp
+as $$
+#variable_conflict use_column
+begin
+  if not estook.es_una_caja_viva(p_terminal) then
+    raise exception 'sin_permiso' using errcode = '42501';
+  end if;
+  return query
+  select i.id, i.nombre, i.direccion
+    from estook.impresora i
+   where i.terminal_id = p_terminal and i.retirada_en is null
+   order by i.creada_en;
+end;
+$$;
+
+comment on function estook.las_impresoras_de_la_caja(uuid) is
+  'Las impresoras que imprime esa caja, con su dirección (0119). Solo la ejecuta estook_api, después de mirar la llave.';
+
+revoke all on function estook.las_impresoras_de_la_caja(uuid) from public;
+grant execute on function estook.las_impresoras_de_la_caja(uuid) to estook_api;
 
 -- Cómo salió un trabajo, y cómo está su impresora. Lo impreso no vuelve atrás: confirmarlo
 -- dos veces no hace nada.

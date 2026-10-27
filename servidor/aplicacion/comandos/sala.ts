@@ -20,6 +20,7 @@ import { losAgotadosDelLocal } from '../agotados.ts';
 import { laBotoneraEstaMontada, loQueValeParaElPlato } from '../botonera.ts';
 import { lasSeccionesDeLosMenus, losPlatosDelDia } from '../menus.ts';
 import { tocarElServicio } from '../al-segundo.ts';
+import { alPapelSinPararElServicio, elNombreDeQuien } from '../impresion.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
@@ -624,6 +625,22 @@ export const quitarPlato = comando<EntradaQuitarPlato, { lineaId: string; borrad
       salio: linea.salio_en !== null,
       ...(aprobacionId === null ? {} : { aprobacion: aprobacionId }),
     });
+    // En papel (T5 · 1): ANULADO, para que nadie cocine lo que ya no va. Lo que ya salió, no.
+    if (linea.salio_en === null) {
+      const quien = await elNombreDeQuien(contexto);
+      const susPlatos = (await losPlatos(contexto, [linea.cuenta_id]))
+        .filter((l) => l.id === linea.id || l.parte_de === linea.id)
+        .map((l) => l.id);
+      await alPapelSinPararElServicio(contexto, localId, linea.cuenta_id, {
+        que: 'anulado',
+        lineaIds: susPlatos,
+        motivo: entrada.motivo,
+        quien:
+          quien === null
+            ? null
+            : `Lo quita ${quien}${aprobacionId === null ? '' : ' · lo aprueba un encargado'}`,
+      });
+    }
     return { lineaId: linea.id, borrado: false };
   },
 });
@@ -658,6 +675,11 @@ export const devolverACocina = comando<{ linea_id: string; motivo: string }, { l
     }
     await avisar(contexto, localId, 'devolver_a_cocina', linea.cuenta_id, {
       plato: linea.nombre,
+      motivo: entrada.motivo,
+    });
+    await alPapelSinPararElServicio(contexto, localId, linea.cuenta_id, {
+      que: 'vuelve',
+      lineaIds: [linea.id],
       motivo: entrada.motivo,
     });
     return { lineaId: linea.id };
@@ -740,6 +762,11 @@ export const mandarACocina = comando<{ cuenta_id: string }, SalidaMandar>({
       esperan,
     };
     await avisar(contexto, localId, 'mandar_a_cocina', cuenta.id, salida);
+    // En papel (T5 · 1): lo nuevo, a la cocina y a la barra que trabajan en papel.
+    await alPapelSinPararElServicio(contexto, localId, cuenta.id, {
+      que: 'nueva',
+      lineaIds: nuevos.map((l) => l.id),
+    });
     return salida;
   },
 });
@@ -772,6 +799,19 @@ export const marchar = comando<{ cuenta_id: string; pase: number }, { pase: numb
       });
     }
     await avisar(contexto, localId, 'marchar', cuenta.id, { pase: entrada.pase });
+    // En papel (T5 · 1): «¡Marcha el 2.º!», con lo que falta por salir de ese pase.
+    const delPase = (await losPlatos(contexto, [cuenta.id])).filter(
+      (l) =>
+        l.pase === entrada.pase &&
+        l.destino === 'cocina' &&
+        l.mandada_en !== null &&
+        l.quitada_en === null &&
+        l.salio_en === null,
+    );
+    await alPapelSinPararElServicio(contexto, localId, cuenta.id, {
+      que: 'marcha',
+      lineaIds: delPase.map((l) => l.id),
+    });
     return { pase: entrada.pase };
   },
 });
@@ -996,6 +1036,10 @@ export const anularMesa = comando<{ cuenta_id: string; motivo: string }, { cuent
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
     const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
+    // Lo que está en cocina o en la barra sin salir: sale ANULADO en papel (T5 · 1).
+    const enMarcha = (await losPlatos(contexto, [cuenta.id])).filter(
+      (l) => l.mandada_en !== null && l.quitada_en === null && l.salio_en === null,
+    );
     await contexto.sql`
       update estook.cuenta
          set anulada_en = ${contexto.ahora.toISOString()}::timestamptz,
@@ -1004,6 +1048,12 @@ export const anularMesa = comando<{ cuenta_id: string; motivo: string }, { cuent
        where id = ${cuenta.id}::uuid
     `;
     await avisar(contexto, localId, 'anular_mesa', cuenta.id, { motivo: entrada.motivo });
+    await alPapelSinPararElServicio(contexto, localId, cuenta.id, {
+      que: 'anulado',
+      lineaIds: enMarcha.map((l) => l.id),
+      motivo: entrada.motivo,
+      quien: null,
+    });
     return { cuentaId: cuenta.id };
   },
 });

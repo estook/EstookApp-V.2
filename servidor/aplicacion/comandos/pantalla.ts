@@ -5,6 +5,7 @@ import { laBarraDelLocal, laCocinaDelLocal, type SalidaLaCocina } from '../consu
 import { apuntarEnLaMesa, elLocalDelServicio, lasCuentas } from '../sala.ts';
 import { elAparatoDeLaLlave, soloEnLaCaja, type AparatoDelTpv } from './aparatos.ts';
 import { destacharEnElLocal, tacharEnElLocal, type DondeSeTacha } from './cocina.ts';
+import { loDelLocalParaImprimir, type DondeSale } from '../impresion.ts';
 
 /**
  * **La pantalla de cocina** (T4 · 1, decisión 0116; Anexo 3.2 y 3.4), **y la de barra** (T4 · 2,
@@ -181,15 +182,27 @@ export interface LaCocinaYLaBarra {
   readonly avisoMin: number;
   readonly tardeMin: number;
   readonly suena: boolean;
+  /** Dónde ve cada una lo suyo (T5 · 1, 0119): en su pantalla, en papel o en las dos. */
+  readonly cocinaSaleEn: DondeSale;
+  readonly barraSaleEn: DondeSale;
 }
 
 async function losDeLaCocina(contexto: Contexto, localId: string): Promise<LaCocinaYLaBarra> {
-  const filas = await contexto.sql<{ aviso_min: number; tarde_min: number; suena: boolean }[]>`
-    select aviso_min, tarde_min, suena from estook.la_cocina_del_local(${localId}::uuid)
-  `;
+  const [filas, local] = await Promise.all([
+    contexto.sql<{ aviso_min: number; tarde_min: number; suena: boolean }[]>`
+      select aviso_min, tarde_min, suena from estook.la_cocina_del_local(${localId}::uuid)
+    `,
+    loDelLocalParaImprimir(contexto, localId),
+  ]);
   const fila = filas[0];
-  if (fila === undefined) throw new FalloDeAplicacion('local_ajeno');
-  return { avisoMin: fila.aviso_min, tardeMin: fila.tarde_min, suena: fila.suena };
+  if (fila === undefined || local === null) throw new FalloDeAplicacion('local_ajeno');
+  return {
+    avisoMin: fila.aviso_min,
+    tardeMin: fila.tarde_min,
+    suena: fila.suena,
+    cocinaSaleEn: local.cocinaSaleEn,
+    barraSaleEn: local.barraSaleEn,
+  };
 }
 
 /** **Los minutos del semáforo y el sonido** (Anexo 3.2, 11.13): en la caja, para todo el local. */
@@ -210,6 +223,8 @@ const entradaCocinaYBarra = z
     aviso_min: z.number().int().min(1).max(120),
     tarde_min: z.number().int().min(2).max(180),
     suena: z.boolean(),
+    cocina_sale_en: z.enum(['pantalla', 'papel', 'las_dos']).optional(),
+    barra_sale_en: z.enum(['pantalla', 'papel', 'las_dos']).optional(),
   })
   .strict()
   .refine((e) => e.tarde_min > e.aviso_min, {
@@ -234,7 +249,8 @@ export const guardarLaCocinaYLaBarra = comando<
     await contexto.sql`
       select estook.cambiar_lo_del_tpv_del_local(
         ${localId}::uuid, null, null, null, null, null,
-        ${entrada.aviso_min}::smallint, ${entrada.tarde_min}::smallint, ${entrada.suena}
+        ${entrada.aviso_min}::smallint, ${entrada.tarde_min}::smallint, ${entrada.suena},
+        ${entrada.cocina_sale_en ?? null}, ${entrada.barra_sale_en ?? null}
       )
     `;
     return losDeLaCocina(contexto, localId);

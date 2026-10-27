@@ -8,6 +8,7 @@ import {
   usarElPlano,
   usarLaCarta,
   usarLaMesa,
+  usarLasImpresoras,
 } from '../ganchos/usarLaSala.ts';
 import type { CuentaEnElPlano } from '../datos/tipos.ts';
 import {
@@ -41,6 +42,10 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   const conectado = usarAlSegundo();
   const mesa = usarLaMesa(cuentaId, conectado);
   const plano = usarElPlano(conectado);
+  // **Con la cocina solo en papel, marchar va directo** (T5 · 1, 0119): nadie tacha, así que
+  // «lo de antes aún no ha salido» saldría siempre.
+  const impresoras = usarLasImpresoras(conectado);
+  const sinPreguntarAlMarchar = impresoras.data?.cocinaSaleEn === 'papel';
   // «La cocina te llama» también dentro de una mesa (0116): las de todo el plano.
   const enElPlanoTodas =
     plano.data === undefined
@@ -231,6 +236,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
       porPases={datos.porPases}
       pases={datos.pases.map((p) => p.numero)}
       tocaMarchar={siguiente.que === 'marchar' ? siguiente.pase : null}
+      sinPreguntarAlMarchar={sinPreguntarAlMarchar}
       alMarchar={(pase) => {
         void marchar(pase);
       }}

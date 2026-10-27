@@ -9,6 +9,7 @@ import { elPase } from '../logica/laCuenta.ts';
 import { irA, irALaMesa } from '../navegar.ts';
 import { AbrirMesa } from './AbrirMesa.tsx';
 import { LaCocinaLlama } from './LaCocinaLlama.tsx';
+import { DescargaLaCajaParaWindows, LasImpresorasAvisan } from './LasImpresorasAvisan.tsx';
 import { OpcionesDeLaMesa } from '../mesa/OpcionesDeLaMesa.tsx';
 import { MesaEnElPlano, TarjetaSinMesa } from './MesaEnElPlano.tsx';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -192,6 +193,8 @@ export function ElPlano() {
           ...datos.sinMesa,
         ]}
       />
+      <LasImpresorasAvisan />
+      <DescargaLaCajaParaWindows />
       {datos.tocaMarchar.map((t) => (
         <div
           key={t.cuentaId}

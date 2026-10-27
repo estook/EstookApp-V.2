@@ -76,6 +76,9 @@ export const PERMISOS_DE_ACCION = [
   // cambiarlos, desvincularlos) y los Ajustes del TPV (el PIN y el bloqueo, de momento).
   'accion.vincular_aparatos',
   'accion.ajustes_del_tpv',
+  // T5 · 1 (Roles 1.12, 0119): abrir el cajón sin una venta, con motivo; el jefe de sala y el
+  // gerente. Queda quién y cuándo.
+  'accion.abrir_el_cajon',
 ] as const;
 
 export const PERMISOS = [...PERMISOS_DE_APP, ...PERMISOS_DE_DATO, ...PERMISOS_DE_ACCION] as const;

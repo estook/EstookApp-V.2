@@ -19,7 +19,7 @@
 > #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
 > ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092, #144), **en producción**.
 > **La entrada nueva** ([0118](decisiones/0118-la-entrada-del-tpv.md), sin migración), con sus
-> maquetas dadas por buenas el 26-oct, fusionada (#145). **Lo siguiente, T5 · La caja para Windows**, con sus maquetas por aprobar.
+> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en su pull request; después, **T5 · 2 · Sin internet**.
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -318,11 +318,87 @@ mantener pulsado), `la-puerta.spec.ts` y `la-puerta.prueba.ts` (todos caen en la
 **Lo que decidí al construirlo**: los doce de la [0118](decisiones/0118-la-entrada-del-tpv.md),
 sección 3.
 
-### T4 a T7
+### T5 · La caja para Windows, en dos (27-oct)
 
-Su «Terminado cuando» es el del Plan para cada módulo (M20A, M19a, M20B y M20C) con las pruebas de
-3.7, 6.8, el capítulo 8, 10.12 y 11.15 que les tocan. Se escribe aquí entero **antes de empezar cada
-una**, con lo que se haya aprendido en las anteriores.
+Lo que se llamaba Estook Link va dentro de **un programa para el PC de la caja**, con Estook TPV tal
+cual ([0119](decisiones/0119-t5-la-caja-para-windows.md), maquetas en
+[`docs/maquetas/t5-la-caja-para-windows.html`](maquetas/t5-la-caja-para-windows.html), #147). Richi
+contestó sus cuatro preguntas el 27-oct: se prueba **en el restaurante de un amigo** (Windows
+táctil, una Epson por cable de red, la cocina con papel y pantalla, la barra que prepara y los
+camareros con Android), **Android sí e iPhone si alguien lo pide**, **sin firmar hasta vender**, y
+**en dos entregas**.
+
+### T5 · 1 · Imprimir y el cajón, terminado cuando
+
+- **La caja para Windows** (`apps/caja-windows`, Electron) se descarga desde la franja de la caja web
+  en Windows, se instala sin firmar (con el aviso azul de Windows) y **se le pasa la caja** con un
+  código de «Pasar a la app» de Ajustes del TPV › Aparatos: llega con su nombre, su cajón y su
+  función, y **la del navegador deja de valer** en su petición siguiente. Arranca con Windows y a
+  pantalla completa si se marca, y se actualiza sola con la caja sin mesas abiertas.
+- **Ajustes del TPV › Impresoras y cajón** (gerente): **«Buscar impresoras»** en la red del local
+  (solo dentro del programa; en la web dice que se descargue), **«Imprimir prueba» y «¿Ha
+  salido?»**, qué imprime cada una (cocina, barra o caja), si tiene el cajón, **la de reserva**,
+  quitarla, y **«Abrir el cajón»** de prueba, con permiso, motivo y su rastro en la auditoría. Su
+  línea dice cómo están («3 impresoras · 1 cajón»). **La dirección de una impresora nunca llega a
+  la pantalla**: solo a la caja que la imprime (Anexo 6.8).
+- **Cocina y barra dicen dónde sale lo suyo**: pantalla, papel o las dos (Ajustes › Cocina y barra).
+- **En papel, a 80 mm**, como en las maquetas: **la comanda** de cocina y la de la barra al mandar,
+  con la mesa enorme, el pase, lo que espera, la nota, la alergia de la mesa en negro invertido y
+  quién la pidió; **«¡Marcha el 2.º!»** al marchar; **ANULADO** al quitar algo ya mandado o anular
+  la mesa; **VUELVE** al devolver un plato; **la cuenta** desde las opciones de la mesa, con
+  «Documento no válido como factura»; **reimprimir la comanda**, marcada «COPIA»; y el papel de
+  prueba. Lo de «Nadie» no imprime. Una comanda con cocina y barra son **dos trabajos**.
+- **El contenido lo compone el servidor una vez**, en el formato intermedio (Anexo 6.5), y el
+  programa lo traduce a ESC/POS (`packages/impresion`). **Cada trabajo tiene su id**: reintentar no
+  imprime dos veces.
+- **La caja imprime también bloqueada** y sin nadie dentro: recoge la cola **con su llave**, al oír
+  el toque al segundo y una vez por minuto por si acaso.
+- **Si una impresora no responde**, a los 10 segundos sale por **la de reserva**; **sin papel o sin
+  responder**, la sala lo ve en una franja en todos los aparatos, y la caja suena.
+- **Sin pantalla de cocina, marchar va directo**, sin el aviso «lo de antes aún no ha salido».
+- **El ticket del cobro y el cajón al cobrar**, no: llegan con T6 y T7.
+- **Las pruebas**: el traductor y la composición byte a byte; la cola con una impresora de mentira
+  que escucha en el 9100 (apagarla, mandar tres comandas y encenderla: salen las tres, en orden y
+  sin repetirse); que un comandero no abre el cajón ni con el PIN del gerente; que la dirección de
+  la impresora no sale en ninguna respuesta de la pantalla; la que ataca la API desde otro negocio;
+  y las de pantalla de Impresoras y cajón, la cuenta y marchar sin pantalla de cocina.
+- **En el restaurante del amigo**: una comanda pedida en un Android sale en la impresora de cocina
+  **en menos de 6 segundos** (Anexo 6.8), y la cuenta en la de la caja.
+
+### T5 · 1 · Imprimir y el cajón, construida (27-oct-2026)
+
+En su pull request ([0119](decisiones/0119-t5-la-caja-para-windows.md), sección 4; migración 0093;
+[sus pasos](pasos-de-t5-1.md)): **la caja para Windows** en `apps/caja-windows` (Electron), con su
+instalador hecho en GitHub; **la cola** (`impresora` y `trabajo_de_impresion`), que la caja recoge con
+su llave; **el traductor** a ESC/POS en `packages/impresion`; **Ajustes del TPV › Impresoras y cajón**;
+la comanda en papel al mandar, marchar, quitar, devolver y anular; la cuenta y reimprimir en las
+opciones de la mesa; la franja de «sin papel»; marchar directo con la cocina en papel; y **«Pasar a la
+app»**. Falta la prueba en el restaurante del amigo de Richi, con su Epson.
+
+**Las pruebas**: `impresion.prueba.ts` y `escpos.prueba.ts` (el papel y sus bytes), `la-cola.prueba.ts`
+(con una impresora de mentira en el 127.0.0.1: apagada, sin papel, la reserva, y tres que salen en
+orden y una vez al encenderla), `las-impresoras.prueba.ts` (contra la base: sin la dirección en la
+pantalla, un trabajo por sitio, ANULADO, la cuenta, COPIA, el cajón que no abre un comandero y «Pasar
+a la app»), y `la-caja-para-windows.spec.ts` (la pantalla, con un puente de mentira).
+
+### T5 · 2 · Sin internet, terminado cuando
+
+- **Cada aparato guarda** el plano, la botonera, las mesas abiertas y quién puede entrar, y **entra
+  con el PIN sin internet** (el PIN, comprobado por la caja; sin ella, quien ya entró ese día).
+- **La caja hace de centro**: los Android y la pantalla de cocina le mandan y le leen por el wifi
+  del local (con el permiso de red local de Chrome), ella imprime y reparte, y **guarda en su disco**
+  lo que falta por subir. **Los iPhone y los iPad** guardan lo suyo con la franja ámbar.
+- **Las franjas** de 10.9: «Sin internet. Todo sigue funcionando en el local · 7 por subir», la ámbar
+  donde la cocina no recibe, y «Conexión recuperada · 12 cosas subidas, ninguna repetida».
+- **Con el router de internet desenchufado**, una comanda tomada en un Android sale en la pantalla
+  de cocina y en la impresora **en menos de 2 segundos**, y al volver está en la nube **una sola
+  vez** (M19a, Anexo 3.7 y 6.8).
+
+### T6 y T7
+
+Su «Terminado cuando» es el del Plan para cada módulo (M20B y M20C) con las pruebas del capítulo 8,
+10.12 y 11.15 que les tocan. Se escribe aquí entero **antes de empezar cada una**, con lo que se haya
+aprendido en las anteriores.
 
 ## Lo que ya está hecho (M20A · 1 · 1 y 1 · 2)
 

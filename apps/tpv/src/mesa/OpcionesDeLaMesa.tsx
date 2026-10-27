@@ -4,7 +4,7 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { puedeEditar } from '@estook/permisos';
 import { Boton, CAJA, Envoltorio, ErrorEnCristiano, Hoja } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { usarAcciones } from '../ganchos/usarLaSala.ts';
+import { usarAcciones, usarAlSegundo, usarLasImpresoras } from '../ganchos/usarLaSala.ts';
 import type { CuentaEnElPlano, ElPlano } from '../datos/tipos.ts';
 import { elPase } from '../logica/laCuenta.ts';
 import { cuantoLlevan, euros, losNombres, personas as lasPersonas } from '../logica/texto.ts';
@@ -12,9 +12,11 @@ import { irAlPlano } from '../navegar.ts';
 
 /**
  * Lo que se puede hacer con una mesa abierta (0106, «MesaAcciones»), al tocarla en el
- * plano o desde «Opciones» dentro de ella. Lo de cobrar, imprimir la cuenta y dividirla
- * llega con el cobro (M20C) y con Estook Link (M19a): hasta entonces, se cobra en el TPV
- * de siempre y aquí se libera la mesa.
+ * plano o desde «Opciones» dentro de ella. Lo de cobrar y dividirla llega con el cobro (M20C):
+ * hasta entonces, se cobra en el TPV de siempre y aquí se libera la mesa.
+ *
+ * **Imprimir la cuenta y reimprimir la comanda** (T5 · 1, 0119), si hay impresora para ello:
+ * lo imprime la caja para Windows, desde cualquier aparato.
  *
  * **Alergias** (T4 · 2, 0117): los catorce, de un toque. Al pedir lo que lleva alguno, la sala
  * avisa; y en cocina y en la barra sale en rojo.
@@ -56,6 +58,8 @@ export function OpcionesDeLaMesa({
   const alergias = cuenta.alergias ?? [];
   const [marcadas, setMarcadas] = useState<readonly string[]>(alergias);
   const esJefe = puedeEditar(yo.permisos, 'accion.quitar_de_cocina');
+  const impresoras = usarLasImpresoras(usarAlSegundo());
+  const [impreso, setImpreso] = useState<string | null>(null);
 
   async function hacer(nombre: string, entrada: unknown, despues: () => void = alCerrar) {
     setHaciendo(true);
@@ -99,6 +103,11 @@ export function OpcionesDeLaMesa({
           <ErrorEnCristiano error={fallo} />
         </div>
       )}
+      {impreso !== null && (
+        <p role="status" className="mb-e4 font-semibold text-bien">
+          {impreso}
+        </p>
+      )}
 
       {paso === 'lista' && (
         <div className="flex flex-col gap-e2">
@@ -117,6 +126,18 @@ export function OpcionesDeLaMesa({
           )}
           {alAbrir !== undefined && (
             <Opcion titulo="Abrir la mesa" detalle="pedir y cambiar" onClick={alAbrir} fuerte />
+          )}
+          {impresoras.data?.hayParaLaCuenta === true && (
+            <Opcion
+              titulo="🧾 Imprimir la cuenta"
+              detalle="lo que llevan, antes de cobrar"
+              onClick={() => {
+                setImpreso(null);
+                void hacer('imprimir_la_cuenta', { cuenta_id: cuenta.cuentaId }, () => {
+                  setImpreso('La cuenta sale por la impresora de la caja.');
+                });
+              }}
+            />
           )}
           <Opcion
             titulo={alergias.length === 0 ? '⚠ Alergias' : `⚠ Alergias · ${losNombres(alergias)}`}
@@ -214,6 +235,18 @@ export function OpcionesDeLaMesa({
               detalle="lo nuevo, en su pase"
               onClick={() => {
                 void hacer('cambiar_la_mesa', { cuenta_id: cuenta.cuentaId, por_pases: true });
+              }}
+            />
+          )}
+          {impresoras.data?.hayParaLaComanda === true && (
+            <Opcion
+              titulo="Reimprimir la comanda"
+              detalle="lo ya mandado, otra vez, marcado «COPIA»"
+              onClick={() => {
+                setImpreso(null);
+                void hacer('reimprimir_la_comanda', { cuenta_id: cuenta.cuentaId }, () => {
+                  setImpreso('La comanda sale otra vez, marcada «COPIA».');
+                });
               }}
             />
           )}

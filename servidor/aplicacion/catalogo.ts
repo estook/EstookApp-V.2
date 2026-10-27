@@ -111,6 +111,7 @@ import {
   guardarPinYBloqueo,
   latirElAparato,
   losAparatos,
+  sacarCodigoParaPasarALaApp,
   sacarCodigoParaVincular,
   vincularConCodigo,
   vincularElPrimerAparato,
@@ -437,6 +438,18 @@ import {
   llamarAlCamarero,
   tacharEnLaPantalla,
 } from './comandos/pantalla.ts';
+import {
+  abrirElCajon,
+  apuntarLoImpreso,
+  comoEstanLasImpresoras,
+  guardarImpresora,
+  imprimirLaCuenta,
+  imprimirPrueba,
+  laColaDeLaCaja,
+  lasImpresoras,
+  quitarImpresora,
+  reimprimirLaComanda,
+} from './comandos/impresion.ts';
 
 /**
  * Un fichero por comando y por consulta, y este catalogo que los junta.
@@ -547,6 +560,9 @@ export const catalogo = {
     [laCocina.nombre]: laCocina,
     // T4 · 1 (0116): los minutos del semáforo y el sonido, en la caja.
     [laCocinaYLaBarra.nombre]: laCocinaYLaBarra,
+    // T5 · 1 (0119): las impresoras, sin su dirección, y cómo están para la sala.
+    [lasImpresoras.nombre]: lasImpresoras,
+    [comoEstanLasImpresoras.nombre]: comoEstanLasImpresoras,
     [laCartaDeLaSala.nombre]: laCartaDeLaSala,
     [elPlanoDelLocal.nombre]: elPlanoDelLocal,
     // T3 · la botonera de Estook TPV, para montarla en Ajustes del TPV › Productos (0111).
@@ -977,6 +993,16 @@ export const catalogo = {
     [vincularElPrimerAparato.nombre]: vincularElPrimerAparato,
     [sacarCodigoParaVincular.nombre]: sacarCodigoParaVincular,
     [vincularConCodigo.nombre]: vincularConCodigo,
+    // T5 · 1 (0119): «Pasar a la app», imprimir, el cajón, y la cola de la caja con su llave.
+    [sacarCodigoParaPasarALaApp.nombre]: sacarCodigoParaPasarALaApp,
+    [guardarImpresora.nombre]: guardarImpresora,
+    [quitarImpresora.nombre]: quitarImpresora,
+    [imprimirPrueba.nombre]: imprimirPrueba,
+    [abrirElCajon.nombre]: abrirElCajon,
+    [imprimirLaCuenta.nombre]: imprimirLaCuenta,
+    [reimprimirLaComanda.nombre]: reimprimirLaComanda,
+    [laColaDeLaCaja.nombre]: laColaDeLaCaja,
+    [apuntarLoImpreso.nombre]: apuntarLoImpreso,
     [latirElAparato.nombre]: latirElAparato,
     [entrarConPin.nombre]: entrarConPin,
     [bloquear.nombre]: bloquear,

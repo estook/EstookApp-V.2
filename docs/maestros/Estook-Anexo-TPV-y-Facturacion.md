@@ -778,11 +778,15 @@ La puesta en marcha pregunta qué tiene, no qué le vendemos:
 
 **Cómo lee cada agente la cola:**
 
-- **La caja para Windows y la cáscara:** se suscriben en tiempo real a la cola (Realtime de Supabase), con una consulta periódica de seguridad por si se pierde un aviso. Confirman cada trabajo.
+- **La caja para Windows y la cáscara:** oyen el toque al segundo de su aparato (Realtime de Supabase) y entonces leen la cola **con la llave del aparato**, también bloqueados y sin nadie dentro, con una lectura por minuto por si se pierde un toque. Confirman cada trabajo, con el estado de la impresora (0119).
 - **Sin internet, la caja para Windows recibe los trabajos directamente de los terminales** por la red del local, con el mismo identificador que tendrían en la cola: al volver internet los sube, y la cola sabe que ya están impresos.
 - **Impresora que pregunta sola:** una Edge Function con los tres métodos de su protocolo —pregunta, recogida y confirmación—, con un identificador largo e irrepetible por impresora y autenticación básica. **La dirección de una impresora es un secreto.**
 
 **Reintentos.** Un trabajo `entregado` que no se confirma en un tiempo razonable vuelve a `pendiente`, con un límite de intentos para no imprimir la misma comanda quince veces.
+
+**Si una impresora no responde**, a los 10 segundos el trabajo sale por **su impresora de reserva**, si la tiene (la de la caja, por ejemplo), y la sala lo ve en una franja en todos los aparatos; la caja suena. Es lo que Toast llama la impresora de respaldo (0119).
+
+**Pantalla, papel o las dos.** La cocina y la barra eligen dónde sale lo suyo (Ajustes del TPV › Cocina y barra). **Con las dos**, el papel lleva lo nuevo, lo marchado, lo anulado y lo que vuelve; tachar sigue en la pantalla. **Sin pantalla de cocina**, marchar va directo, sin el aviso de que lo de antes aún no ha salido: nadie tacha.
 
 **Varias impresoras.** Cada plato va **a quien lo prepara** —cocina o barra—, según **«¿Quién lo prepara?»** de su página de la botonera o del propio plato (11.11); lo de «Nadie» no imprime. Una comanda que toca cocina y barra genera **dos trabajos**, cada uno con lo suyo.
 
@@ -874,8 +878,9 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 
 ## 7.5 Impresión
 
-- `impresora` — local, nombre, **agente** (`link`, `cascara`, `pregunta_sola`), dirección o identificador, ancho de papel, **qué imprime** (cocina o barra), activa, último contacto, **último estado que mandó**
-- `trabajo_de_impresion` — local, impresora, tipo (`comanda`, `ticket`, `justificante`, `precuenta`, `informe`), **contenido ya compuesto en el formato intermedio**, estado (`pendiente`, `entregado`, `impreso`, `error`), intentos, momentos de cada paso, referencia a lo que lo originó
+- `impresora` — local, nombre, **agente** (`caja`, `cascara`, `pregunta_sola`), **la caja que la imprime**, dirección o identificador (que solo lee esa caja), ancho de papel, **qué imprime** (cocina, barra o caja), **si tiene el cajón**, **su impresora de reserva**, activa, último contacto, **último estado que mandó**
+- **Dónde sale lo de la cocina y lo de la barra** —pantalla, papel o las dos—, en el local, junto a los minutos del semáforo (0116, 0119)
+- `trabajo_de_impresion` — local, impresora, tipo (`comanda`, `ticket`, `justificante`, `precuenta`, `informe`, y `prueba` y `cajon` para probar), **contenido ya compuesto en el formato intermedio**, estado (`pendiente`, `entregado`, `impreso`, `error`), intentos, momentos de cada paso, referencia a lo que lo originó
 - **Identificador único por trabajo**, que es lo que hace que un reintento —o un trabajo que la caja para Windows imprimió sin internet y sube después— no imprima dos veces
 
 ## 7.6 Facturación (esquema `facturacion`, solo inserción)

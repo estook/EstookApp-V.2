@@ -3,6 +3,7 @@ import { elAparato as elNavegador, type ErrorDeLaApi } from '@estook/cliente-api
 import { CODIGO_PARA_VINCULAR, elCodigoDeLaDireccion } from '@estook/dominio';
 import { ErrorEnCristiano } from '@estook/ui';
 import { crearClienteDelTpv, LA_VERSION } from '../datos/cliente.ts';
+import { laCajaParaWindows } from '../datos/laCajaParaWindows.ts';
 import type { AparatoVinculado, DondeSePuedeVincular, QueSera } from '../datos/tipos.ts';
 import { Teclado } from './Teclado.tsx';
 import { cifraDeLaTecla } from './teclas.ts';
@@ -20,6 +21,8 @@ import { ElegirQueSera, Pastilla } from './ElegirQueSera.tsx';
  */
 export function Vincular({ alVincular }: { readonly alVincular: (v: AparatoVinculado) => void }) {
   const [conCorreo, setConCorreo] = useState(false);
+  // **Dentro de la caja para Windows** (0119): lo normal es pasarle la caja del navegador.
+  const enLaApp = laCajaParaWindows() !== null;
   return (
     <main className="flex min-h-dvh flex-col bg-fondo text-texto lg:flex-row">
       <section className="flex flex-col gap-e5 border-borde bg-superficie p-e5 lg:w-[28rem] lg:border-r lg:p-e7">
@@ -32,11 +35,29 @@ export function Vincular({ alVincular }: { readonly alVincular: (v: AparatoVincu
             <span className="text-secundario text-texto-tenue">Sala, caja y cocina</span>
           </span>
         </div>
-        <h1 className="text-cifra font-bold">Vincula este aparato a tu local</h1>
+        <h1 className="text-cifra font-bold">
+          {enLaApp ? 'Pasa aquí tu caja' : 'Vincula este aparato a tu local'}
+        </h1>
         <p className="text-cuerpo text-texto-suave">
           Una vez y ya está. Después, cada persona entra con su PIN, el mismo con el que ficha.
         </p>
-        {!conCorreo && (
+        {!conCorreo && enLaApp && (
+          <ol className="flex flex-col gap-e3 text-cuerpo text-texto-suave">
+            <Paso n={1}>
+              En la caja del navegador:{' '}
+              <b className="text-texto">
+                Ajustes del TPV › Aparatos › esta caja › «Pasar a la app»
+              </b>
+              .
+            </Paso>
+            <Paso n={2}>
+              Sale un código de 6 cifras que dura 10 minutos. Escríbelo aquí: llega con su nombre,
+              su cajón y sus impresoras.
+            </Paso>
+            <Paso n={3}>¿Es un PC nuevo y no hay caja todavía? Entra con tu correo, abajo.</Paso>
+          </ol>
+        )}
+        {!conCorreo && !enLaApp && (
           <ol className="flex flex-col gap-e3 text-cuerpo text-texto-suave">
             <Paso n={1}>
               En otro aparato del local:{' '}

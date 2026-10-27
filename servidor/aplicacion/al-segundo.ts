@@ -86,6 +86,29 @@ export async function tocarElServicio(contexto: Contexto, localId: string): Prom
   );
 }
 
+/**
+ * **«Hay algo que imprimir»** (T5 · 1, 0119): solo a las cajas del local, que son las que
+ * imprimen. La caja para Windows lo oye con su tema y lee su cola, también bloqueada.
+ */
+export async function tocarLaCaja(contexto: Contexto, localId: string): Promise<void> {
+  if ((contexto.alSegundo ?? null) === null) return;
+  const temas = await enNombreDelSistema(
+    contexto,
+    () =>
+      contexto.sql<{ tema: string }[]>`
+      select a.tema_al_segundo as tema
+        from estook.terminal a
+       where a.local_id = ${localId}::uuid and a.retirado_en is null
+         and a.funcion = 'caja' and a.tema_al_segundo is not null
+    `,
+  );
+  apuntar(
+    contexto,
+    temas.map((t) => t.tema),
+    `impresion:${localId}`,
+  );
+}
+
 /** «Hay algo nuevo en tu campana» (0071, lo que decido yo, 6). */
 export async function tocarLaCampana(
   contexto: Contexto,

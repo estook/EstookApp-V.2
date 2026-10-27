@@ -25,6 +25,7 @@ export function LaCuenta({
   pases,
   tocaMarchar,
   alMarchar,
+  sinPreguntarAlMarchar = false,
 }: {
   readonly grupos: readonly GrupoDeLaCuenta[];
   readonly borrador: Borrador;
@@ -38,6 +39,11 @@ export function LaCuenta({
   readonly alMarchar: (pase: number) => void;
   /** El pase que ya toca marchar (lo de antes ha salido entero), o nulo. */
   readonly tocaMarchar: number | null;
+  /**
+   * Sin pantalla de cocina (la cocina solo en papel, 0119) nadie tacha: la sala nunca sabe si lo
+   * de antes ha salido, así que marchar va directo, sin preguntar.
+   */
+  readonly sinPreguntarAlMarchar?: boolean;
 }) {
   const [tocada, setTocada] = useState<LineaALaVista | null>(null);
   // Marchar no tiene vuelta atrás: si lo de antes aún no ha salido, se pregunta.
@@ -77,7 +83,7 @@ export function LaCuenta({
                 tamano="s"
                 onClick={() => {
                   const pase = Number(g.clave.replace('pase-', ''));
-                  if (pase === tocaMarchar) alMarchar(pase);
+                  if (pase === tocaMarchar || sinPreguntarAlMarchar) alMarchar(pase);
                   else setAntesDeTiempo(pase);
                 }}
               >

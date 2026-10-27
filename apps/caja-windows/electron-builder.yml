@@ -1,0 +1,29 @@
+# La caja para Windows (0119): el instalador. Sin firmar hasta vender (respuesta 3 de Richi):
+# la primera vez, Windows dice «Windows protegió su PC». El nombre del fichero no cambia de una
+# versión a otra, para que el enlace de «Descargar» sirva siempre (`DONDE_SE_DESCARGA`).
+appId: com.estook.caja
+productName: Estook TPV
+copyright: Estook
+directories:
+  output: empaquetado
+files:
+  - dist/**
+  - recursos/**
+  - package.json
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: recursos/icono.png
+  artifactName: Estook-TPV-caja-para-Windows.${ext}
+nsis:
+  oneClick: true
+  perMachine: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Estook TPV
+publish:
+  - provider: github
+    owner: estook
+    repo: EstookApp-V.2
+    releaseType: release

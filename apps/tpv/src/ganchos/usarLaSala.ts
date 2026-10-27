@@ -15,7 +15,8 @@ import type { ElPlano, LaCartaDeLaSala, LaMesa } from '../datos/tipos.ts';
  * cada cinco segundos todo el servicio gastaría medio plan de Supabase al mes.
  */
 
-const DONDE = {
+/** Dónde está Supabase, para oír el toque; también lo usa la caja para Windows (0119). */
+export const DONDE = {
   direccion: (import.meta.env['VITE_SUPABASE_URL'] as string | undefined) ?? '',
   clavePublica: (import.meta.env['VITE_SUPABASE_ANON_KEY'] as string | undefined) ?? '',
 };
@@ -102,6 +103,35 @@ export function usarLaMesa(cuentaId: string, conectado: boolean) {
     queryKey: ['sala', 'la_mesa', cuentaId],
     queryFn: () => leer<LaMesa>(cliente, 'la_mesa', { cuenta_id: cuentaId }),
     refetchInterval: cadaCuanto(conectado),
+  });
+}
+
+export type DondeSale = 'pantalla' | 'papel' | 'las_dos';
+
+/** **Cómo están las impresoras** (T5 · 1, 0119): para la franja de la sala y lo que se ofrece. */
+export interface ComoEstanLasImpresoras {
+  readonly cocinaSaleEn: DondeSale;
+  readonly barraSaleEn: DondeSale;
+  readonly hayParaLaCuenta: boolean;
+  readonly hayParaLaComanda: boolean;
+  readonly avisos: readonly {
+    readonly impresora: string;
+    readonly que: 'sin_papel' | 'no_responde' | 'no_sale';
+    readonly sinSalir: number;
+  }[];
+}
+
+/**
+ * Se lee con la sala (su clave empieza por «sala»): el toque que avisa de un papel que no sale
+ * la vuelve a leer, como a todo lo de la sala. Quien no toma nota no la necesita.
+ */
+export function usarLasImpresoras(conectado: boolean, tomaNota = true) {
+  const { cliente } = usarSesion();
+  return useQuery({
+    queryKey: ['sala', 'como_estan_las_impresoras'],
+    queryFn: () => leer<ComoEstanLasImpresoras>(cliente, 'como_estan_las_impresoras'),
+    refetchInterval: cadaCuanto(conectado),
+    enabled: tomaNota,
   });
 }
 

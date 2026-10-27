@@ -46,6 +46,9 @@ import { pasarAOtroCamarero } from './sala.ts';
  *   sacar_codigo_para_vincular  los demás, desde un aparato ya vinculado: la función y el
  *                               nombre primero, y sale el código de 6 cifras (10 minutos)
  *   vincular_con_codigo         en el aparato nuevo, sin nadie dentro todavía
+ *   sacar_codigo_para_pasar_a_la_app   «Pasar a la app» (T5 · 1, 0119): la misma caja, a la
+ *                               caja para Windows; al usarlo, cambia de llave y la de antes
+ *                               deja de valer
  *   latir_el_aparato            cada minuto: «en línea», su versión, y lo que enseña su
  *                               pantalla del PIN (fichados, el bloqueo)
  *   los_aparatos · cambiar_aparato · desvincular_aparato   Ajustes del TPV › Aparatos
@@ -94,6 +97,7 @@ export interface AparatoDelTpv extends ElAparato {
   readonly duenoId: string | null;
   readonly nombreDelDueno: string | null;
   readonly nombreDelCajon: string | null;
+  readonly cajonId: string | null;
   readonly temaAlSegundo: string | null;
 }
 
@@ -110,6 +114,7 @@ function comoAparato(fila: FilaDelAparato): AparatoDelTpv {
     duenoId: fila.persona_id,
     nombreDelDueno: fila.nombre_del_dueno,
     nombreDelCajon: fila.nombre_del_cajon,
+    cajonId: fila.cajon_id,
     temaAlSegundo: fila.tema_al_segundo,
   };
 }
@@ -398,6 +403,35 @@ async function crearElAparato(
   return { terminalId, llave: laLlave };
 }
 
+/**
+ * **«Pasar a la app»** (T5 · 1, 0119): la misma caja —su nombre, su función, su cajón, sus
+ * impresoras— con **otra llave**. La de antes deja de valer en su petición siguiente (la
+ * caja del navegador ve «Este aparato ya no está vinculado»), y quien estaba dentro sale.
+ */
+async function pasarElAparato(
+  contexto: Contexto,
+  terminalId: string,
+  laVersion: string | null,
+): Promise<{ terminalId: string; llave: string }> {
+  const laLlave = tokenNuevo();
+  const filas = await contexto.sql<{ id: string }[]>`
+    update estook.terminal
+       set huella = ${await huellaDeToken(laLlave)}, version_de_la_app = ${laVersion},
+           ultimo_latido_en = ${contexto.ahora.toISOString()}::timestamptz
+     where id = ${terminalId}::uuid and retirado_en is null
+    returning id::text as id
+  `;
+  if (filas[0] === undefined) throw new FalloDeAplicacion('aparato_retirado');
+  await enNombreDelSistema(contexto, async () => {
+    await contexto.sql`
+      update estook.turno_del_operador
+         set hasta = ${contexto.ahora.toISOString()}::timestamptz, por_que_acabo = 'otro_operador'
+       where terminal_id = ${terminalId}::uuid and hasta is null
+    `;
+  });
+  return { terminalId, llave: laLlave };
+}
+
 // ═══ Vincular el primero, con el correo ═══════════════════════════════════════
 
 export interface DondeSePuedeVincular {
@@ -600,6 +634,46 @@ export const sacarCodigoParaVincular = comando<
   },
 });
 
+/**
+ * **El código de «Pasar a la app»** (T5 · 1, 0119), en la caja del navegador: el mismo de
+ * siempre (6 cifras, 10 minutos, un uso), para **esta** caja. Se teclea en la caja para
+ * Windows, que llega con todo lo de esta.
+ */
+export const sacarCodigoParaPasarALaApp = comando<Record<string, never>, CodigoParaVincular>({
+  nombre: 'sacar_codigo_para_pasar_a_la_app',
+  entrada: z.object({}).strict(),
+  exige: 'accion.vincular_aparatos',
+  enElTpv: 'solo',
+  enLosAparatos: ['caja'],
+  conSecreto: true,
+
+  async ejecutar(contexto) {
+    soloEnLaCaja(contexto);
+    const aparato = await elAparatoDeLaSesion(contexto);
+    const caducaEn = new Date(contexto.ahora.getTime() + CODIGO_PARA_VINCULAR.minutos * 60_000);
+    for (let intento = 0; intento < 10; intento++) {
+      const codigo = pinNuevo(CODIGO_PARA_VINCULAR.cifras);
+      const huella = await huellaDeToken(codigo);
+      const vivo = await contexto.sql<{ codigo_id: string }[]>`
+        select codigo_id from estook.codigo_vivo_por_huella(${huella}, ${contexto.ahora.toISOString()}::timestamptz)
+      `;
+      if (vivo.length > 0) continue;
+      await contexto.sql`
+        insert into estook.codigo_para_vincular
+          (local_id, funcion, nombre, persona_id, cajon_id, huella, creado_por, creado_desde,
+           creado_en, caduca_en, pasa_terminal_id)
+        values (${aparato.localId}::uuid, ${aparato.funcion}, ${aparato.nombre},
+                ${aparato.duenoId}::uuid, ${aparato.cajonId}::uuid, ${huella},
+                ${contexto.personaId}::uuid, ${aparato.terminalId}::uuid,
+                ${contexto.ahora.toISOString()}::timestamptz, ${caducaEn.toISOString()}::timestamptz,
+                ${aparato.terminalId}::uuid)
+      `;
+      return { codigo, caducaEn: caducaEn.toISOString() };
+    }
+    throw new FalloDeAplicacion('fallo_nuestro');
+  },
+});
+
 export const entradaVincularConCodigo = z
   .object({ codigo: z.string().trim().min(1).max(12), version })
   .strict();
@@ -655,6 +729,7 @@ export const vincularConCodigo = comando<
             persona_id: string | null;
             cajon_id: string | null;
             creado_por: string;
+            pasa_terminal_id: string | null;
           }[]
         >`select * from estook.codigo_vivo_por_huella(
           ${await huellaDeToken(entrada.codigo)}, ${contexto.ahora.toISOString()}::timestamptz
@@ -671,17 +746,20 @@ export const vincularConCodigo = comando<
     // Lo vincula quien sacó el código: con su identidad, y con su permiso de ahora.
     await contexto.sql`select set_config('estook.persona_id', ${elCodigo.creado_por}, true)`;
     const ctx: Contexto = { ...contexto, personaId: elCodigo.creado_por };
-    const { terminalId, llave: laLlave } = await crearElAparato(
-      ctx,
-      elCodigo.local_id,
-      {
-        funcion: elCodigo.funcion,
-        nombre: elCodigo.nombre,
-        ...(elCodigo.persona_id === null ? {} : { persona_id: elCodigo.persona_id }),
-      },
-      { personaId: elCodigo.persona_id, cajonId: elCodigo.cajon_id },
-      entrada.version ?? null,
-    );
+    const { terminalId, llave: laLlave } =
+      elCodigo.pasa_terminal_id === null
+        ? await crearElAparato(
+            ctx,
+            elCodigo.local_id,
+            {
+              funcion: elCodigo.funcion,
+              nombre: elCodigo.nombre,
+              ...(elCodigo.persona_id === null ? {} : { persona_id: elCodigo.persona_id }),
+            },
+            { personaId: elCodigo.persona_id, cajonId: elCodigo.cajon_id },
+            entrada.version ?? null,
+          )
+        : await pasarElAparato(ctx, elCodigo.pasa_terminal_id, entrada.version ?? null);
     await contexto.sql`
       update estook.codigo_para_vincular
          set usado_en = ${contexto.ahora.toISOString()}::timestamptz, terminal_id = ${terminalId}::uuid
@@ -690,7 +768,7 @@ export const vincularConCodigo = comando<
     await apuntar(ctx, elCodigo.organizacion_id, 'vincular', terminalId, elCodigo.local_id, {
       nombre: elCodigo.nombre,
       funcion: elCodigo.funcion,
-      como: 'con un código',
+      como: elCodigo.pasa_terminal_id === null ? 'con un código' : 'pasado a la app',
     });
     // Y el aparato nuevo empieza sin nadie dentro.
     await contexto.sql`select set_config('estook.persona_id', '', true)`;

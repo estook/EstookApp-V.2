@@ -4,18 +4,20 @@ import { minutosDelBloqueo, tokenDelAparato } from '@estook/dominio';
 import { Boton, Cargando, EstadoVacio } from '@estook/ui';
 import {
   crearClienteDelTpv,
+  DIRECCION_DE_LA_API,
   guardarLaLlave,
   hayApi,
   LA_VERSION,
   leerLaLlave,
 } from '../datos/cliente.ts';
+import { laCajaParaWindows } from '../datos/laCajaParaWindows.ts';
 import type {
   AparatoVinculado,
   DentroDelTpv,
   ElAparatoPorDentro,
   YoEnElTpv,
 } from '../datos/tipos.ts';
-import { FalloDeLaSala } from '../ganchos/usarLaSala.ts';
+import { DONDE, FalloDeLaSala } from '../ganchos/usarLaSala.ts';
 import { irA } from '../navegar.ts';
 import { ContextoDeSesion, type SesionDeLaSala } from '../sesion/Sesion.tsx';
 import { ElPin } from './ElPin.tsx';
@@ -48,6 +50,8 @@ export function LaPuerta({ children }: { readonly children: ReactNode }) {
   }, []);
 
   const alDesvincular = useCallback((local: string | null) => {
+    // En la caja para Windows (0119), el programa deja de imprimir la cola de esta caja.
+    laCajaParaWindows()?.desconectar();
     guardarLaLlave(null);
     setLlave(null);
     setDesvinculado({ local });
@@ -84,6 +88,12 @@ export function LaPuerta({ children }: { readonly children: ReactNode }) {
   );
 }
 
+/** La versión que dice el latido: la de la web, y la del programa si está dentro (0119). */
+function laVersion(): string {
+  const caja = laCajaParaWindows();
+  return (caja === null ? LA_VERSION : `${LA_VERSION} · caja ${caja.version}`).slice(0, 40);
+}
+
 function Pantalla({ children }: { readonly children: ReactNode }) {
   return (
     <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5 text-texto">
@@ -104,6 +114,12 @@ function ConLlave({
 }) {
   const cliente = useMemo(() => crearClienteDelTpv({ token: () => null }), []);
   const [dentro, setDentro] = useState<DentroDelTpv | null>(null);
+
+  // **Dentro de la caja para Windows** (T5 · 1, 0119): el programa imprime la cola de esta
+  // caja con su llave, también bloqueada. Si no es una caja, la API se lo dice y no hace nada.
+  useEffect(() => {
+    laCajaParaWindows()?.conectar({ api: DIRECCION_DE_LA_API, llave, supabase: DONDE });
+  }, [llave]);
   const local = useRef<string | null>(null);
 
   const latido = useQuery({
@@ -111,7 +127,7 @@ function ConLlave({
     queryFn: async () => {
       const respuesta = await cliente.ejecutar<ElAparatoPorDentro>('latir_el_aparato', {
         llave,
-        version: LA_VERSION,
+        version: laVersion(),
       });
       if (!respuesta.ok) throw new FalloDeLaSala(respuesta.error);
       return respuesta.datos;

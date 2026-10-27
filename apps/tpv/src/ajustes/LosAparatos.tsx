@@ -9,6 +9,7 @@ import { irA } from '../navegar.ts';
 import { ElegirQueSera } from '../puerta/ElegirQueSera.tsx';
 import { IconoEnSuColor } from '../iconos.tsx';
 import { COMO_SE_VE_LA_FUNCION } from '../logica/comoSeVeElAparato.ts';
+import { DONDE_SE_DESCARGA, laCajaParaWindows } from '../datos/laCajaParaWindows.ts';
 import type {
   CodigoParaVincular,
   QueSera,
@@ -187,9 +188,12 @@ function AnadirAparato({ datos }: { readonly datos: LosAparatosDeLaApi }) {
 function ElCodigo({
   codigo,
   alAcabar,
+  paraLaApp = false,
 }: {
   readonly codigo: CodigoParaVincular & { readonly nombre: string };
   readonly alAcabar: () => void;
+  /** «Pasar a la app» (0119): en el mismo PC, sin QR. */
+  readonly paraLaApp?: boolean;
 }) {
   const direccion = `${window.location.origin}${import.meta.env.BASE_URL}vincular/#${codigo.codigo}`;
   const [camino, setCamino] = useState<{ d: string; lado: number } | null>(null);
@@ -221,15 +225,28 @@ function ElCodigo({
   return (
     <div className="flex max-w-[40rem] flex-col gap-e5">
       <div className="flex flex-col">
-        <span className="text-secundario text-texto-tenue">Aparatos › Añadir · paso 2 de 2</span>
-        <h1 className="text-cifra-media font-bold">Vincula «{codigo.nombre}»</h1>
+        <span className="text-secundario text-texto-tenue">
+          {paraLaApp ? `Aparatos › ${codigo.nombre}` : 'Aparatos › Añadir · paso 2 de 2'}
+        </span>
+        <h1 className="text-cifra-media font-bold">
+          {paraLaApp ? `Pasa «${codigo.nombre}» a la app` : `Vincula «${codigo.nombre}»`}
+        </h1>
       </div>
       <p className="text-cuerpo text-texto-suave">
-        En el aparato nuevo abre <b className="text-texto">estook.com/tpv</b> y escribe el código, o
-        lee el QR con su cámara.
+        {paraLaApp ? (
+          <>
+            Abre <b className="text-texto">la caja para Windows</b> y escribe este código: llega con
+            su nombre, su cajón y sus impresoras. Esta, la del navegador, deja de valer al momento.
+          </>
+        ) : (
+          <>
+            En el aparato nuevo abre <b className="text-texto">estook.com/tpv</b> y escribe el
+            código, o lee el QR con su cámara.
+          </>
+        )}
       </p>
       <div className="flex flex-wrap items-center gap-e6 rounded-mayor bg-superficie p-e5">
-        {camino !== null && (
+        {camino !== null && !paraLaApp && (
           <svg
             role="img"
             aria-label="El QR para vincular el aparato nuevo"
@@ -292,7 +309,34 @@ function ElAparato({
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [guardado, setGuardado] = useState(false);
+  const [paraLaApp, setParaLaApp] = useState<CodigoParaVincular | null>(null);
   const seCambiaLoQueEs = aparato.funcion === 'caja' || aparato.funcion === 'comandero';
+  // **«Pasar a la app»** (0119): esta caja, si es la del navegador.
+  const sePasaALaApp = esEste && aparato.funcion === 'caja' && laCajaParaWindows() === null;
+
+  async function pasarALaApp() {
+    setOcupado(true);
+    setError(null);
+    const respuesta = await cliente.ejecutar<CodigoParaVincular>(
+      'sacar_codigo_para_pasar_a_la_app',
+      {},
+    );
+    setOcupado(false);
+    if (respuesta.ok) setParaLaApp(respuesta.datos);
+    else setError(respuesta.error);
+  }
+
+  if (paraLaApp !== null) {
+    return (
+      <ElCodigo
+        paraLaApp
+        codigo={{ ...paraLaApp, nombre: aparato.nombre }}
+        alAcabar={() => {
+          setParaLaApp(null);
+        }}
+      />
+    );
+  }
 
   async function guardar(que: QueSera) {
     setOcupado(true);
@@ -410,6 +454,32 @@ function ElAparato({
             </button>
           </span>
         </label>
+      )}
+
+      {sePasaALaApp && (
+        <section className="flex flex-col gap-e3 rounded-mayor border-2 border-info bg-info-suave p-e5">
+          <span className="text-seccion font-bold">Pasar a la caja para Windows</span>
+          <span className="text-cuerpo text-texto-suave">
+            La misma caja en un programa, que imprime y abre el cajón. Descárgala, ábrela, y aquí
+            sale el código que se le escribe.
+          </span>
+          <span className="flex flex-wrap gap-e3">
+            <a
+              href={DONDE_SE_DESCARGA}
+              className="inline-flex min-h-toque-cocina items-center rounded-grande border-2 border-borde px-e5 font-bold"
+            >
+              Descargar
+            </a>
+            <button
+              type="button"
+              disabled={ocupado}
+              onClick={() => void pasarALaApp()}
+              className="min-h-toque-cocina rounded-grande bg-naranja px-e5 font-bold text-sobre-naranja disabled:opacity-60"
+            >
+              Pasar a la app
+            </button>
+          </span>
+        </section>
       )}
 
       <section className="flex flex-col gap-e3 rounded-mayor border-2 border-mal bg-mal-suave p-e5">

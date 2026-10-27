@@ -11,6 +11,7 @@ import type { LosAparatos as LosAparatosDeLaApi } from '../datos/tipos.ts';
 import { LosAparatos } from './LosAparatos.tsx';
 import { PinYBloqueo } from './PinYBloqueo.tsx';
 import { CocinaYBarra } from './CocinaYBarra.tsx';
+import { ImpresorasYCajon } from './ImpresorasYCajon.tsx';
 import { Productos } from '../productos/Productos.tsx';
 
 /**
@@ -19,8 +20,8 @@ import { Productos } from '../productos/Productos.tsx';
  * está cada cosa. Solo lo de vender: la carta, los precios y el equipo se cambian en Estook.
  * **Solo en la caja** (0115), y cada apartado solo a quien puede tocarlo.
  *
- * Lo que llega con su entrega (la caja, las impresoras y el cajón, el datáfono) **no se enseña
- * hasta que funcione**. «Editar sala» vive aquí, en «La sala y las mesas».
+ * Lo que llega con su entrega (la caja y el datáfono) **no se enseña hasta que funcione**; las
+ * impresoras y el cajón, desde T5 · 1 (0119). «Editar sala» vive aquí, en «La sala y las mesas».
  */
 
 interface Apartado {
@@ -34,7 +35,7 @@ interface Apartado {
 }
 
 const GRUPOS = ['Hoy', 'Lo que se vende', 'Lo que se conecta', 'Seguridad'] as const;
-const DE_AQUI_DENTRO: readonly string[] = ['productos', 'cocina', 'aparatos', 'pin'];
+const DE_AQUI_DENTRO: readonly string[] = ['productos', 'cocina', 'aparatos', 'impresoras', 'pin'];
 
 function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
   const ajusta = puedeEditar(permisos, 'accion.ajustes_del_tpv');
@@ -90,6 +91,18 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             tono: 'azul',
             grupo: 'Lo que se conecta',
             ir: 'ajustes/aparatos',
+          } as const,
+        ]
+      : []),
+    ...(ajusta
+      ? [
+          {
+            id: 'impresoras',
+            nombre: 'Impresoras y cajón',
+            dibujo: 'impresora',
+            tono: 'naranja',
+            grupo: 'Lo que se conecta',
+            ir: 'ajustes/impresoras',
           } as const,
         ]
       : []),
@@ -209,6 +222,8 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
             <PinYBloqueo />
           ) : elegido === 'cocina' ? (
             <CocinaYBarra />
+          ) : elegido === 'impresoras' ? (
+            <ImpresorasYCajon />
           ) : (
             <LosAparatos resto={resto} />
           )}
@@ -245,6 +260,7 @@ function ComoEsta({ id }: { readonly id: string }) {
   if (id === 'productos') return <>La botonera, las opciones y las bebidas</>;
   if (id === 'cocina') return <LaCocina />;
   if (id === 'aparatos') return <LosAparatosDelLocal />;
+  if (id === 'impresoras') return <LasImpresorasDelLocal />;
   return <ElBloqueo />;
 }
 
@@ -348,6 +364,34 @@ function LosAparatosDelLocal() {
     return [n === 1 ? `1 ${EN_SINGULAR[f]}` : `${String(n)} ${EN_PLURAL[f]}`];
   });
   return <>{partes.join(' · ')}</>;
+}
+
+/** «2 impresoras · 1 cajón», o qué se hace ahí si todavía no hay ninguna. */
+function LasImpresorasDelLocal() {
+  const { cliente } = usarSesion();
+  const lista = useQuery({
+    queryKey: ['las_impresoras'],
+    queryFn: async () => {
+      const respuesta = await cliente.consultar<{
+        impresoras: readonly { readonly tieneCajon: boolean; readonly estado: string }[];
+      }>('las_impresoras');
+      if (!respuesta.ok) throw new FalloDeLaSala(respuesta.error);
+      return respuesta.datos;
+    },
+  });
+  const impresoras = lista.data?.impresoras;
+  if (impresoras === undefined || impresoras.length === 0) {
+    return <>Imprimir las comandas y la cuenta, y el cajón</>;
+  }
+  const cajones = impresoras.filter((i) => i.tieneCajon).length;
+  const mal = impresoras.filter((i) => i.estado === 'sin_papel' || i.estado === 'no_responde');
+  return (
+    <>
+      {impresoras.length === 1 ? '1 impresora' : `${String(impresoras.length)} impresoras`}
+      {cajones === 0 ? '' : cajones === 1 ? ' · 1 cajón' : ` · ${String(cajones)} cajones`}
+      {mal.length === 0 ? '' : ` · ${String(mal.length)} con un problema`}
+    </>
+  );
 }
 
 function ElBloqueo() {

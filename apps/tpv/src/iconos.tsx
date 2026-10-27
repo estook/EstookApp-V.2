@@ -35,7 +35,8 @@ export type Dibujo =
   | 'caja'
   | 'movil'
   | 'pantalla'
-  | 'reloj';
+  | 'reloj'
+  | 'impresora';
 
 const TRAZOS: Readonly<Record<Dibujo, ReactNode>> = {
   ajustes: (
@@ -105,6 +106,14 @@ const TRAZOS: Readonly<Record<Dibujo, ReactNode>> = {
     <>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 2" />
+    </>
+  ),
+  impresora: (
+    <>
+      <path d="M7 9V3h10v6" />
+      <rect x="3" y="9" width="18" height="8" rx="1.5" />
+      <path d="M7 14h10v7H7z" />
+      <path d="M17.5 12h.01" />
     </>
   ),
 };

@@ -1,0 +1,19 @@
+{
+  "name": "@estook/impresion",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "El formato intermedio de lo que se imprime, traducido a ESC/POS. Sin red.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "tipos": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@estook/dominio": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

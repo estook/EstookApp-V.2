@@ -400,6 +400,16 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  packages/impresion:
+    dependencies:
+      '@estook/dominio':
+        specifier: workspace:*
+        version: link:../dominio
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/permisos:
     dependencies:
       '@estook/dominio':

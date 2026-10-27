@@ -1191,3 +1191,28 @@ export type {
   QueEsLaBebida,
   RacionQueSePropone,
 } from './bebidas.ts';
+
+// ── T5 · 1 · Imprimir (0119): el formato intermedio y lo que lleva cada papel ──
+export {
+  VERSION_DEL_PAPEL,
+  abrirElCajonEnPapel,
+  elNombreDelPase,
+  esPapelCompuesto,
+  importeEnElPapel,
+  laComandaEnPapel,
+  laCuentaEnPapel,
+  laPruebaEnPapel,
+} from './impresion.ts';
+export type {
+  Alineacion,
+  LaComandaQueSeImprime,
+  LaCuentaQueSeImprime,
+  LaPruebaQueSeImprime,
+  LineaDeLaComanda,
+  LineaDeLaCuenta,
+  PapelCompuesto,
+  PaseDeLaComanda,
+  PiezaDelPapel,
+  QueSaleEnLaComanda,
+  TamanoDeLetra,
+} from './impresion.ts';

@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 /**
  * El trabajador de servicio de la app (I · decisión 0070).
@@ -48,6 +50,7 @@ interface ContextoDelComplemento {
 export interface ComplementoDelTrabajador {
   name: string;
   apply: 'build';
+  configResolved(config: { readonly publicDir: string }): void;
   generateBundle(
     this: ContextoDelComplemento,
     opciones: unknown,
@@ -122,6 +125,32 @@ export function loQueSeGuarda(
   return ['./', ...new Set([...delPaquete, ...dePublic])].sort();
 }
 
+/**
+ * **La versión del trabajador**, que es lo que hace que el navegador lo cambie. Cambia con los
+ * nombres, con su código **y con lo que llevan dentro los de `public/`**, que no llevan huella en
+ * el nombre: sin eso, cambiar solo el manifiesto dejaba el trabajador igual, y el navegador
+ * seguía sirviendo el viejo desde lo guardado (lección 236).
+ */
+function laVersion(
+  archivos: readonly string[],
+  loDePublic: readonly (string | Uint8Array)[],
+): string {
+  const huella = createHash('sha256').update(archivos.join('\n')).update(CODIGO);
+  for (const contenido of loDePublic) huella.update(contenido);
+  return huella.digest('hex').slice(0, 16);
+}
+
+/** Lo que llevan dentro los de `public/`; el que no está (el Fogón, en Estook TPV), vacío. */
+function leerLoDePublic(carpeta: string, dePublic: readonly string[]): Uint8Array[] {
+  return dePublic.map((fichero) => {
+    try {
+      return readFileSync(join(carpeta, fichero));
+    } catch {
+      return new Uint8Array();
+    }
+  });
+}
+
 export function elTrabajadorDeServicio({
   cache = 'estook-app',
   dePublic = DE_PUBLIC,
@@ -129,16 +158,16 @@ export function elTrabajadorDeServicio({
   readonly cache?: CacheDeLaApp;
   readonly dePublic?: readonly string[];
 } = {}): ComplementoDelTrabajador {
+  let carpetaPublic = '';
   return {
     name: 'estook-trabajador-de-servicio',
     apply: 'build',
+    configResolved(config) {
+      carpetaPublic = config.publicDir;
+    },
     generateBundle(_opciones, paquete) {
       const archivos = loQueSeGuarda(paquete, dePublic);
-      const version = createHash('sha256')
-        .update(archivos.join('\n'))
-        .update(CODIGO)
-        .digest('hex')
-        .slice(0, 16);
+      const version = laVersion(archivos, leerLoDePublic(carpetaPublic, dePublic));
       this.emitFile({
         type: 'asset',
         fileName: 'sw.js',

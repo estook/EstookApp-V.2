@@ -119,7 +119,7 @@ El riesgo principal de construir esto con una IA es que a mitad de camino olvide
 
 **Está en la [Arquitectura](Estook-Arquitectura.md), capítulo 1**, y en la [decisión 0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md). En una línea:
 
-> **Todo Estook es una sola base de código, en web.** **Estook** (`apps/app`) es la gestión y **Estook TPV** (`apps/tpv`) es el servicio: otra puerta del mismo código, con la misma API, la misma base, el mismo PIN y los mismos paquetes, que se instala aparte y funciona sin conexión. **Estook Link** (`link/`) es el programa del local. Y `apps/movil` es una cáscara opcional, sin una sola pantalla propia.
+> **Todo Estook es una sola base de código, en web.** **Estook** (`apps/app`) es la gestión y **Estook TPV** (`apps/tpv`) es el servicio: otra puerta del mismo código, con la misma API, la misma base, el mismo PIN y los mismos paquetes, que se instala aparte y funciona sin conexión. **La caja para Windows** es el programa del PC de la caja: Estook TPV con lo que se llamaba Estook Link dentro (27-oct). Y `apps/movil` es una cáscara opcional, sin una sola pantalla propia.
 
 **Descartado, por escrito:** rehacer el producto en nativo; un TPV de escritorio para Windows; y un TPV con su propio repositorio, su base o su login.
 
@@ -481,7 +481,7 @@ ANTES DE M8   H · Horarios  →  I · La app instalable  →  C · El chat
               →  A3 · Vendedores  →  A4 · Ventas del admin
 FASE 2        M8 → M9 → M10
 ESTOOK TPV    M16a · La jornada → M20A · 1 (base y API) → T1 · La puerta → T2 · La sala
-              → T3 · Los productos → T4 · Cocina y barra → T5 · Estook Link (M19a y M20A · 2)
+              → T3 · Los productos → T4 · Cocina y barra → T5 · La caja para Windows (M19a y M20A · 2)
               → T6 · Facturación (M20B) → T7 · Cobro, caja y ventas (M20C, con M20)
 DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b
               → Fase 5 (M21 a M25) → Fase 6 (M26 a M28) → Fase 7 (M29 y M30)
@@ -734,13 +734,13 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 > **Orden de construcción, desde el 23-oct-2026** ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)), en siete entregas de Estook TPV:
 >
-> **M16a → M20A · 1 → T1 · La puerta → T2 · La sala → T3 · Los productos → T4 · La cocina y la barra → T5 · Estook Link (M19a y M20A · 2) → T6 · M20B → T7 · M20C con M20**, justo después de M10; y **M18 y M19b**, al final de la Fase 3. Qué deja cada una y cuándo se da por buena, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md); qué hace cada pantalla, en el Anexo, capítulo 11.
+> **M16a → M20A · 1 → T1 · La puerta → T2 · La sala → T3 · Los productos → T4 · La cocina y la barra → T5 · La caja para Windows (M19a y M20A · 2) → T6 · M20B → T7 · M20C con M20**, justo después de M10; y **M18 y M19b**, al final de la Fase 3. Qué deja cada una y cuándo se da por buena, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md); qué hace cada pantalla, en el Anexo, capítulo 11.
 >
 > **M20A · 1 (la base y la API de la sala y la cocina) ya está en producción**, y sus primeras pantallas se rehacen en T1 a T3: Richi pidió **un TPV entero, aparte de Estook**, no un comandero (0107). **M20 deja de ir el primero**: el cierre a mano no trae platos, así que sin cobro no tiene ventas que mover; va con M20C, donde nace la venta ([el plan](../m20-ventas-y-consumo.md)). Hasta la 0106 el orden era M16a → M20 → M19a → M20A (1.4).
 >
-> **Y Estook Link se parte en dos, porque hace dos cosas que se necesitan en momentos distintos:**
+> **Y lo que se llamaba Estook Link se parte en dos, porque hace dos cosas que se necesitan en momentos distintos:**
 >
-> - **M19a · el centro del local.** El programa, su emparejamiento con el local, el centro que mantiene sala y cocina sin internet, y la impresión. Va **entre M20A · 1 y M20A · 2**: la sala y la cocina se prueban primero en pantalla y con internet, y Link les da el papel y el aguante a los cortes antes de que cobren.
+> - **M19a · el centro del local.** El programa, su emparejamiento con el local, el centro que mantiene sala y cocina sin internet, y la impresión. Va **entre M20A · 1 y M20A · 2**: la sala y la cocina se prueban primero en pantalla y con internet, y la caja para Windows les da el papel y el aguante a los cortes antes de que cobren (T5).
 > - **M19b · el conector de TPV.** Vigilar la carpeta y los lectores de formato de cada marca. Va con M18, porque solo lo necesita quien sigue con su TPV.
 
 ### M18 · El conector · vía nube
@@ -755,19 +755,19 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 > **Aclaración que evita un error caro.** El TPV trae **artículos de venta, no ingredientes**. Sabe que se vendió una hamburguesa a 14,50 €; no sabe qué lleva dentro ni lo que costó. Conectar monta la Carta; el almacén y los escandallos los pone el restaurante, y eso es precisamente lo que aporta Estook.
 
-### M19 · Estook Link · se entrega en dos partes
+### M19 · La caja para Windows y el conector · se entrega en dos partes
 
-**M19a va entre M20A · 1 y M20A · 2, y M19b al final**, por lo dicho en la cabecera de la fase. Lo de abajo es el módulo entero; lo que entra en cada parte se dice al final de la ficha.
+**M19a va entre M20A · 1 y M20A · 2, y M19b al final**, por lo dicho en la cabecera de la fase. **M19a es T5 · La caja para Windows** (Richi, 27-oct): un programa que se descarga en el PC de la caja, con Estook TPV tal cual y lo de abajo dentro; lo que entra y en qué orden, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md). Lo de abajo es el módulo entero; lo que entra en cada parte se dice al final de la ficha.
 
 **Entra.** Servicio en Rust, firmado, **para Windows, Linux y macOS** —vale un mini PC o una Raspberry—, que **vigila una carpeta** y sube los ficheros nuevos · emparejamiento con un código de un solo uso · solo lectura, sin puertos abiertos, saliente y cifrado · latido cada 15 minutos · cola local si no hay red · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
 
-**Y su trabajo principal: ser el centro del local** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md); Arquitectura, capítulo 7; Anexo, capítulo 6). Link corre en un aparato del local que está siempre encendido y hace tres cosas:
+**Y su trabajo principal: ser el centro del local** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md); Arquitectura, capítulo 7; Anexo, capítulo 6). La caja para Windows corre en el PC de la caja, que está siempre encendido, y hace tres cosas:
 
 - **Imprime.** Lee la cola de impresión y habla **ESC/POS** con las impresoras del local, por red, USB o Bluetooth. **Vale con cualquier impresora** y funciona con todas las tablets apagadas. El cajón se abre como una línea más del trabajo de impresión.
-- **Mantiene la sala y la cocina sin internet.** Los terminales le hablan por la red del local: la comanda llega a la pantalla de cocina y a la impresora aunque no haya internet, y Link sube todo al volver, en orden y sin duplicar.
+- **Mantiene la sala y la cocina sin internet.** Los terminales le hablan por la red del local: la comanda llega a la pantalla de cocina y a la impresora aunque no haya internet, y la caja lo sube todo al volver, en orden y sin duplicar.
 - **Guarda la cola del local.** Lo que no ha subido se queda en su disco, no en la memoria de una tablet.
 
-**Reglas críticas.** **Link no entra en la base de datos del TPV ajeno.** Si un formato cambia, guarda el fichero original, avisa y no rompe nada. **Si se cae internet, Link sigue repartiendo e imprimiendo.** **Link no decide nada**: no calcula precios, no numera tickets y no guarda una clave de servicio; lo que sube pasa por los mismos comandos, los mismos permisos y las mismas claves de idempotencia que todo lo demás. **El navegador le habla por la red local**, y eso pide el permiso de red local del navegador y un certificado: cómo, en la Arquitectura, capítulo 7, y **se comprueba con un prototipo antes de escribir M20A · 2** (M20A · 1 va por internet).
+**Reglas críticas.** **El conector (M19b) no entra en la base de datos del TPV ajeno.** Si un formato cambia, guarda el fichero original, avisa y no rompe nada. **Si se cae internet, la caja sigue repartiendo e imprimiendo.** **Ni la caja ni el conector deciden nada**: no calcula precios, no numera tickets y no guarda una clave de servicio; lo que sube pasa por los mismos comandos, los mismos permisos y las mismas claves de idempotencia que todo lo demás. **Los demás aparatos le hablan por la red local**, y eso pide el permiso de red local de Chrome y Edge (desde un iPhone o un iPad, Safari no deja): cómo, en la Arquitectura, capítulo 7, y **se comprueba con un prototipo antes de escribir M20A · 2** (M20A · 1 va por internet).
 
 **Terminado cuando.** M19a: **con el router de internet desenchufado, una comanda tomada en una tablet sale en la pantalla de cocina y en la impresora en menos de 2 segundos**, y al volver la conexión está en la nube una sola vez. M19b: con el PC apagado dos días, al arrancar sube lo pendiente sin duplicar; y un fichero con formato inesperado se queda guardado con su aviso.
 
@@ -814,7 +814,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Lo que la cocina devuelve:** tiempo real por plato y partida hacia M9 y M21, agotados hacia M7, devoluciones hacia la merma de M8.
 - **Precuenta** con «PRECUENTA · No válido como factura», sin serie ni QR.
 - **Cola de impresión** con su formato intermedio propio, con Ajustes del TPV › Impresoras y cajón y su botón de imprimir prueba (capítulo 6 del Anexo).
-- **Sin internet**, con Estook Link la sala y la cocina siguen igual; sin Link, la comanda se guarda en el aparato y sube al volver (Anexo 3.6).
+- **Sin internet**, con la caja para Windows la sala y la cocina siguen igual; sin ella, la comanda se guarda en el aparato y sube al volver (Anexo 3.6).
 
 **Y su capa inteligente.** Prioridades, retrasos y el aviso de «quedan pocas raciones» son **reglas en código**, sin gastar créditos. Lo que sí es de Fogón —por qué un plato va tarde siempre— llega con M22 y se alimenta de lo que se mide aquí.
 
@@ -824,7 +824,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Reglas críticas.** **Sala y Cocina viven en Estook TPV, no son destinos de Servicio.** **Ni una regla, ni una tabla, ni un botón duplicados** entre `apps/app` y `apps/tpv`. Una comanda no es una factura y no lleva nada que lo parezca. Lo que se quita queda con autor y motivo. La cocina funciona sin IA. Un cocinero no recibe importes, tampoco en la respuesta del servidor.
 
-**Terminado cuando.** Pasan **todas las pruebas del apartado 3.7 del Anexo**. En corto: pasan las de 11.15 que tocan a cada entrega (T1 a T5, con su «Terminado cuando» en [el plan](../m20a-la-sala-y-la-cocina.md)); un servicio de una mesa de seis con tres pases, dos alergias y un plato retirado ya en cocina cuadra en la sala y en la tarjeta de cocina; se vende en barra sin abrir mesa; se traspasa una mesa a otro camarero; **la misma comanda sale idéntica por tres marcas de impresora, una de impacto, en menos de 6 segundos y con todas las tablets apagadas**; **con internet cortado y Link encendido, la cocina sigue recibiendo**; con el wifi cortado se sigue tomando nota; y un cocinero no recibe ni un importe llamando a la API a pelo.
+**Terminado cuando.** Pasan **todas las pruebas del apartado 3.7 del Anexo**. En corto: pasan las de 11.15 que tocan a cada entrega (T1 a T5, con su «Terminado cuando» en [el plan](../m20a-la-sala-y-la-cocina.md)); un servicio de una mesa de seis con tres pases, dos alergias y un plato retirado ya en cocina cuadra en la sala y en la tarjeta de cocina; se vende en barra sin abrir mesa; se traspasa una mesa a otro camarero; **la misma comanda sale idéntica por tres marcas de impresora, una de impacto, en menos de 6 segundos y con todas las tablets apagadas**; **con internet cortado y la caja para Windows encendida, la cocina sigue recibiendo**; con el wifi cortado se sigue tomando nota; y un cocinero no recibe ni un importe llamando a la API a pelo.
 
 ### M20B · Facturación VeriFactu
 

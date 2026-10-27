@@ -19,7 +19,7 @@
 > #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
 > ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092, #144), **en producción**.
 > **La entrada nueva** ([0118](decisiones/0118-la-entrada-del-tpv.md), sin migración), con sus
-> maquetas dadas por buenas el 26-oct, fusionada (#145). **Lo siguiente, T5 · Estook Link.**
+> maquetas dadas por buenas el 26-oct, fusionada (#145). **Lo siguiente, T5 · La caja para Windows**, con sus maquetas por aprobar.
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -43,14 +43,14 @@
 | **T2 · La sala**                                   | **El editor del plano en el TPV**, a ojo, con formas, giro, barra, paredes, salas y plantillas (11.9) · **el plano con sus dueños**, Todas · Mías y los estados (11.8), «Quedármela» · **pedir con los pases en pestañas** (11.10), con una página por sección de la carta hasta T3 · **el comandero en el móvil**                                                                                                              | «Tu sala» de Ajustes › Tu local                                                |
 | **T3 · Los productos**                             | **La botonera** con sus tres caminos, «¿Quién lo prepara?» y «¿En qué pase sale?» (11.11) · **las opciones y los extras** (10.3) · **«Monta tus bebidas»**, varias raciones, las copas que se hacen solas y los cafés hechos (0106, 21 a 23) · `es_bebida` pasa a la botonera y se quita                                                                                                                                        | El interruptor «Es de bebidas» de la Carta                                     |
 | **T4 · La cocina y la barra**                      | **La pantalla de cocina** (3.2): En marcha · Delivery · Fuera, tachar, «Esperando la marcha», NUEVO, ANULADO, CAMBIO y VUELVE, con su sonido · **la pantalla de barra**, con lo que prepara la barra                                                                                                                                                                                                                            | —                                                                              |
-| **T5 · Estook Link** (M19a y M20A · 2)             | **Imprimir** la comanda y la cuenta, **el cajón**, y sala y cocina **sin internet** (capítulo 6, 3.6) · Ajustes del TPV › Impresoras y cajón                                                                                                                                                                                                                                                                                    | —                                                                              |
+| **T5 · La caja para Windows** (M19a y M20A · 2)    | **Imprimir** la comanda y la cuenta, **el cajón**, y sala y cocina **sin internet** (capítulo 6, 3.6) · Ajustes del TPV › Impresoras y cajón                                                                                                                                                                                                                                                                                    | —                                                                              |
 | **T6 · La facturación** (M20B)                     | **VeriFactu con Verifacti**, entero (capítulo 4), con el asesor                                                                                                                                                                                                                                                                                                                                                                 | —                                                                              |
 | **T7 · Cobrar, la caja y las ventas** (M20C y M20) | **Cobrar** (10.5), **la caja** (11.6), **las ventas de hoy** (11.7), venta rápida y para llevar, y **el motor que resta del almacén** lo vendido (M20)                                                                                                                                                                                                                                                                          | —                                                                              |
 | **Después, local a local**                         | El datáfono conectado (10.7), los pedidos de reparto (10.8, M29) y Revo conectado (M18)                                                                                                                                                                                                                                                                                                                                         | —                                                                              |
 
 **Por qué en este orden.** Sin la puerta no hay TPV: todo lo demás necesita saber qué aparato es y
 quién lo usa. La sala y los productos van antes que la cocina porque son lo que Richi ve primero y lo
-que rechazó; la cocina ya tiene su base y su API desde 1 · 1. Link va antes del cobro porque el cajón
+que rechazó; la cocina ya tiene su base y su API desde 1 · 1. La caja para Windows va antes del cobro porque el cajón
 y el ticket salen por la impresora. **Y nadie cobra con Estook TPV hasta que T6 esté entera** (Anexo,
 capítulo 9): vender un programa de facturación que no cumple ya está prohibido desde el 29-jul-2025.
 
@@ -234,7 +234,7 @@ ni margen; la mesa sale sola al tachar el último), **«Llamar al camarero»**, 
 pestaña, «Acabados»** (lo de los últimos 40 minutos a la vista, lo de antes plegado; Richi, 26-oct: «si
 se vende mucho se peta»), **sin fichas técnicas en el servicio**, la alergia de la mesa solo para verla,
 y el sonido siempre. **Richi las dio por buenas el 26-oct** con ese cambio. Siguen abiertas dos
-preguntas que no frenan T4: la caja para Windows con Estook Link dentro (T5), y qué es «sin acceso a
+preguntas que no frenan T4: la caja para Windows con lo de Estook Link dentro (T5), y qué es «sin acceso a
 precios» en el comandero.
 
 ### T4 · La cocina y la barra, en dos (26-oct)
@@ -376,7 +376,7 @@ mismo toque del chat (0073). Si el toque no llega, la pantalla pregunta cada poc
 | ¿Qué automatiza Fogón?              | Nada. Todo son reglas en código, sin gastar créditos (Anexo 3.2)                                                                                                       |
 | ¿Qué aprueba una persona?           | Quitar un plato que ya está en cocina, y anular la mesa                                                                                                                |
 | Permisos                            | Roles 1.12, en la base y no en la pantalla                                                                                                                             |
-| ¿Sin internet?                      | En 1 · 1 a 1 · 4, no: va por internet. Sin internet, con Estook Link (M19a)                                                                                            |
+| ¿Sin internet?                      | En 1 · 1 a 1 · 4, no: va por internet. Sin internet, con la caja para Windows (M19a, T5)                                                                               |
 | ¿Dos veces?                         | Cada línea y cada mesa nacen con su identificador: mandar dos veces no pide dos platos                                                                                 |
 | Auditoría                           | Abrir, mandar, marchar, tachar, quitar, cambiar, juntar, pasar y anular, con quién y cuándo                                                                            |
 | 16 · ¿Trabajo nuevo?                | No: sustituye a la libreta y al grito a cocina. Quien lleva el local dibuja su plano una vez                                                                           |

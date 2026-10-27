@@ -5,11 +5,11 @@
 > **En su pull request, sin fusionar** (27 de octubre de 2026). **Sin migración y sin tocar la API**:
 > solo fusionar, y se publica solo.
 >
-> | Qué              | Cómo está                                                        |
-> | ---------------- | ---------------------------------------------------------------- |
-> | Pull request     | **«Estook TPV, su propia app»**, rama `estook-tpv-su-propia-app` |
-> | La base de datos | **93 de 93**, no cambia                                          |
-> | La API           | **115 consultas y 312 comandos**, no cambia                      |
+> | Qué              | Cómo está                                                               |
+> | ---------------- | ----------------------------------------------------------------------- |
+> | Pull request     | **«Estook TPV, su propia app» (#149)**, rama `estook-tpv-su-propia-app` |
+> | La base de datos | **93 de 93**, no cambia                                                 |
+> | La API           | **115 consultas y 312 comandos**, no cambia                             |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -31,7 +31,7 @@ para Windows** (el programa, T5 · 1) es otra cosa, que no tiene este problema.
 
 ## Lo que te toca
 
-1. **En GitHub**: abre **«Estook TPV, su propia app»**. Con las comprobaciones **en verde**,
+1. **En GitHub**: abre **«Estook TPV, su propia app» (#149)**. Con las comprobaciones **en verde**,
    **Merge pull request** → **Confirm merge**. Espera a que **«Publicar en GitHub Pages»**, en
    **Actions**, salga con el **círculo verde** (unos 3 minutos).
 2. **En PowerShell**, para tener la carpeta al día:

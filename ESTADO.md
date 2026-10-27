@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 27 de octubre de 2026 · **En producción todo hasta la #148**, T5 · 1 · Imprimir y el cajón ([0119](docs/decisiones/0119-t5-la-caja-para-windows.md)): 93 migraciones y la API con 115 consultas y 312 comandos, comprobado el 27-oct. **Falta publicar el programa** (la caja para Windows). **En su pull request, Estook TPV con su propia identidad**: al instalarlo en el escritorio, el navegador lo tomaba por Estook (lección 235)
+Última actualización: 27 de octubre de 2026 · **En producción todo hasta la #148**, T5 · 1 · Imprimir y el cajón ([0119](docs/decisiones/0119-t5-la-caja-para-windows.md)): 93 migraciones y la API con 115 consultas y 312 comandos, comprobado el 27-oct. **Falta publicar el programa** (la caja para Windows). **En su pull request (#149), Estook TPV con su propia identidad**: al instalarlo en el escritorio, el navegador lo tomaba por Estook (lección 235)
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** **T5 · 1** está en producción (#148, fusionada, migrada y desplegada el 27-oct; sus vueltas, en verde y sin flaky, con el instalador construido en Windows); **falta publicar el programa** y probarlo con la Epson del amigo de Richi ([sus pasos](docs/pasos-de-t5-1.md)). **En su pull request, rama `estook-tpv-su-propia-app`**: Estook TPV con su propia identidad (lección 235). Lo siguiente, **T5 · 2 · Sin internet** ([el plan](docs/m20a-la-sala-y-la-cocina.md)), con sus maquetas primero.
+- **Nada a medias.** **T5 · 1** está en producción (#148, fusionada, migrada y desplegada el 27-oct; sus vueltas, en verde y sin flaky, con el instalador construido en Windows); **falta publicar el programa** y probarlo con la Epson del amigo de Richi ([sus pasos](docs/pasos-de-t5-1.md)). **En su pull request (#149), rama `estook-tpv-su-propia-app`**: Estook TPV con su propia identidad (lección 235). Lo siguiente, **T5 · 2 · Sin internet** ([el plan](docs/m20a-la-sala-y-la-cocina.md)), con sus maquetas primero.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -66,7 +66,7 @@ HECHO         Cada aparato a lo suyo (0115, #140) · T4 · 1 · La cocina (0116,
 HECHO         T4 · 2 · La barra y la alergia de la mesa (0117, #144) · la entrada nueva (0118, #145)
 HECHO         El cambio de hora y los navegadores en la caché de GitHub (#146)
 HECHO         T5 · 1 · Imprimir y el cajón (0119, #148), sin publicar el programa todavía
-AHORA         Estook TPV con su propia identidad, en su pull request · luego T5 · 2 · Sin internet
+AHORA         Estook TPV con su propia identidad, en su pull request (#149) · luego T5 · 2 · Sin internet
 ESTOOK TPV    → T5 → T6 · M20B → T7 · M20C con M20 (0107)
 DESPUÉS       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b → Fases 5, 6 y 7
 ```
@@ -119,7 +119,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 
 **Ahora:**
 
-1. **Fusionar «Estook TPV, su propia app»** y, en el PC donde lo pusiste en el escritorio, **quitar los iconos de Estook y de Estook TPV y volver a ponerlos** ([sus pasos](docs/pasos-de-estook-tpv-su-propia-app.md)).
+1. **Fusionar «Estook TPV, su propia app» (#149)** y, en el PC donde lo pusiste en el escritorio, **quitar los iconos de Estook y de Estook TPV y volver a ponerlos** ([sus pasos](docs/pasos-de-estook-tpv-su-propia-app.md)).
 2. **Publicar la caja para Windows** (T5 · 1 ya está fusionada, migrada y desplegada: [sus pasos](docs/pasos-de-t5-1.md), el 5) y **probarla en el restaurante de tu amigo**: el PC de la caja, su Epson por cable de red, la cocina en las dos y un Android pidiendo.
 3. **Probar en IKATZ la entrada nueva y T4 · 2** ([la entrada](docs/pasos-de-la-entrada-del-tpv.md), [T4 · 2](docs/pasos-de-t4-2.md)): la sala primero, el engranaje, mantener pulsado, la barra, la alergia y el ✓ con su hora.
 4. **Probar en IKATZ T4 · 1 y «Cada aparato a lo suyo»**: fichar en la caja y un comandero sin fichar ([sus pasos](docs/pasos-de-cada-aparato-a-lo-suyo.md)), y vincular una tablet como pantalla de cocina, pedir, tachar, marchar y llamar ([sus pasos](docs/pasos-de-t4-1.md)).

@@ -9,7 +9,7 @@ import { Marco } from './Marco.tsx';
  * Richi: «redáctalas tú, básicas». Están escritas para decir la verdad de lo que
  * Estook hace hoy —qué datos guarda, con quién los comparte, qué se paga— y en
  * lenguaje llano. **Antes de crecer, que las revise alguien que sepa**: está
- * apuntado en `docs/pasos-antes-de-m8.md`.
+ * apuntado en `docs/historia/pasos/pasos-antes-de-m8.md`.
  *
  * ── Quién es el titular ──────────────────────────────────────────────────────
  *

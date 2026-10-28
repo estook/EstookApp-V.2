@@ -2,7 +2,7 @@
 
 **Fecha:** 7 de octubre de 2026
 **Estado:** decidido por Richi y **construido el 7-oct**, con la migración `0057` (lo que decidí al construirlo, al final).
-**Cambia:** las respuestas 2, 3 y 5 de la [0071](0071-las-respuestas-de-c.md); lo que construyó C1 de «Cocina» y «Sala» ([0073](0073-c1-hablar.md)); el plan de [`c-el-chat.md`](../c-el-chat.md); y el capítulo 23 del [Manifiesto](../maestros/Estook-Manifiesto.md) y la línea del chat del [Plan](../maestros/Estook-Plan-de-Desarrollo.md), que decían «un canal por área» y «traducción».
+**Cambia:** las respuestas 2, 3 y 5 de la [0071](0071-las-respuestas-de-c.md); lo que construyó C1 de «Cocina» y «Sala» ([0073](0073-c1-hablar.md)); el plan de [`c-el-chat.md`](../historia/modulos/c-el-chat.md); y el capítulo 23 del [Manifiesto](../maestros/Estook-Manifiesto.md) y la línea del chat del [Plan](../maestros/Estook-Plan-de-Desarrollo.md), que decían «un canal por área» y «traducción».
 
 ## Lo que contestó Richi
 
@@ -39,7 +39,7 @@ Es más sencillo y hace lo mismo. Una casilla marcada de fábrica se manda sin p
 | **El horario**        | Al publicar, **«¿Avisar en Todo el equipo?» Sí o No**. Un aviso con «Ver el horario». No suena en el móvil ni pide confirmar                                   |
 | **El correo**         | Solo a quien **no** tiene los avisos del móvil; solo **privados y lo que le nombra**; **uno al día como mucho, al empezar su turno**                           |
 
-El detalle de C2, con lo que decido yo, en [`c-el-chat.md`](../c-el-chat.md), al final.
+El detalle de C2, con lo que decido yo, en [`c-el-chat.md`](../historia/modulos/c-el-chat.md), al final.
 
 ## Lo que decidí al construirlo, y por qué
 

@@ -2,7 +2,7 @@
 
 **Fecha:** 8 de octubre de 2026
 **Estado:** decidido por Richi y **construido el 8-oct**, con la migración `0059` (lo que decidí al construirlo, al final).
-**Cambia:** el capítulo 4 de [`panel-de-administracion.md`](../panel-de-administracion.md), que se precisa con esto. El plan, en [`a4-ventas.md`](../a4-ventas.md).
+**Cambia:** el capítulo 4 de [`panel-de-administracion.md`](../panel-de-administracion.md), que se precisa con esto. El plan, en [`a4-ventas.md`](../historia/modulos/a4-ventas.md).
 
 ## Lo que contestó Richi
 

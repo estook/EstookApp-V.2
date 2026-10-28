@@ -1,8 +1,8 @@
 # C · El chat · el plan
 
-**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). **C1 · Hablar, en producción desde el 6-oct** ([0073](decisiones/0073-c1-hablar.md), migración `0056`), con su repaso (#91). **C2 · Lo oficial, contestado, construido y en producción el 7-oct** (#93, 0075, migración `0057`): el plan, al final.
+**Escrito el 2 de octubre de 2026**, con I · La app instalable en producción y comprobada. Dice qué es C, qué estaba decidido, lo que decido yo, lo que cuesta, lo que no entra y **seis preguntas de sí o no** para Richi. **Richi contestó el 3-oct: sí a las seis** ([0071](../../decisiones/0071-las-respuestas-de-c.md)). **C1 · Hablar, en producción desde el 6-oct** ([0073](../../decisiones/0073-c1-hablar.md), migración `0056`), con su repaso (#91). **C2 · Lo oficial, contestado, construido y en producción el 7-oct** (#93, 0075, migración `0057`): el plan, al final.
 
-De dónde sale: el capítulo 23 del [Manifiesto](maestros/Estook-Manifiesto.md), lo que pidió Richi el 30-sep ([0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)), el adelanto a después de I ([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)) y lo que I dejó para aquí ([0070](decisiones/0070-la-app-instalable.md)).
+De dónde sale: el capítulo 23 del [Manifiesto](../../maestros/Estook-Manifiesto.md), lo que pidió Richi el 30-sep ([0066](../../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)), el adelanto a después de I ([0067](../../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)) y lo que I dejó para aquí ([0070](../../decisiones/0070-la-app-instalable.md)).
 
 ## Qué es C, en llano
 
@@ -21,22 +21,22 @@ Arriba, al lado de la campana, un icono nuevo con el número de los sin leer.
 
 ## Lo que ya está decidido, y no se vuelve a preguntar
 
-| Qué                                                                                                                   | Dónde se decidió                                                                             |
-| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **Es la forma oficial de hablar del trabajo**, y por eso queda registrado                                             | Manifiesto 23 y [0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)          |
-| Va **justo después de I**: un chat que no suena no sirve                                                              | [0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)                        |
-| El equipo, un canal por área y los privados                                                                           | Manifiesto 23                                                                                |
-| Texto, fotos, documentos, notas de voz y tarjetas **con los permisos de quien la recibe** (a un cocinero, sin costes) | Manifiesto 23 y Plan (M23)                                                                   |
-| Entregado y leído, responder, reacciones, menciones que avisan al móvil, fijados, buscador                            | Manifiesto 23                                                                                |
-| **«Confirmar que lo he leído»** en lo importante, con quién ha confirmado y quién falta                               | Manifiesto 23 y Richi (0066)                                                                 |
-| **Silencio fuera del turno**: es ley (derecho a la desconexión, LOPDGDD art. 88). El mensaje espera                   | [0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md) y los avisos de I (0070) |
-| **Nadie lee los privados de otros**: ni el gerente, ni el dueño, ni el equipo de Estook                               | Manifiesto 23 y [Roles](maestros/Estook-Roles-y-Administracion.md) (1.7 y 4.8)               |
-| La gestoría no ve el chat                                                                                             | Roles (1.8)                                                                                  |
-| **Quien se va, sale solo**: deja de leer y de escribir, y lo que dijo se queda                                        | Manifiesto 23 y [Auditoría de flujos](maestros/Estook-Auditoria-de-Flujos.md)                |
-| Los ficheros, **con enlace firmado y que caduca**, como el resto                                                      | Manifiesto 23 y el almacén de ficheros (M5)                                                  |
-| **Nada de efectos ocultos**: escribir «se acabó el pulpo» no marca nada como agotado                                  | Manifiesto 23                                                                                |
-| **Gerente y jefes mandan el horario al chat**, con la tarjeta que H2 ya dejó hecha, que abre el horario de verdad     | Richi, respuesta 5 de [`h-horarios.md`](h-horarios.md) (0068)                                |
-| **Lo que cambia al segundo**, que I dejó para aquí (`apps/app/src/datos/alDia.ts`)                                    | [0070](decisiones/0070-la-app-instalable.md)                                                 |
+| Qué                                                                                                                   | Dónde se decidió                                                                                   |
+| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Es la forma oficial de hablar del trabajo**, y por eso queda registrado                                             | Manifiesto 23 y [0066](../../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)          |
+| Va **justo después de I**: un chat que no suena no sirve                                                              | [0067](../../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)                        |
+| El equipo, un canal por área y los privados                                                                           | Manifiesto 23                                                                                      |
+| Texto, fotos, documentos, notas de voz y tarjetas **con los permisos de quien la recibe** (a un cocinero, sin costes) | Manifiesto 23 y Plan (M23)                                                                         |
+| Entregado y leído, responder, reacciones, menciones que avisan al móvil, fijados, buscador                            | Manifiesto 23                                                                                      |
+| **«Confirmar que lo he leído»** en lo importante, con quién ha confirmado y quién falta                               | Manifiesto 23 y Richi (0066)                                                                       |
+| **Silencio fuera del turno**: es ley (derecho a la desconexión, LOPDGDD art. 88). El mensaje espera                   | [0066](../../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md) y los avisos de I (0070) |
+| **Nadie lee los privados de otros**: ni el gerente, ni el dueño, ni el equipo de Estook                               | Manifiesto 23 y [Roles](../../maestros/Estook-Roles-y-Administracion.md) (1.7 y 4.8)               |
+| La gestoría no ve el chat                                                                                             | Roles (1.8)                                                                                        |
+| **Quien se va, sale solo**: deja de leer y de escribir, y lo que dijo se queda                                        | Manifiesto 23 y [Auditoría de flujos](../../maestros/Estook-Auditoria-de-Flujos.md)                |
+| Los ficheros, **con enlace firmado y que caduca**, como el resto                                                      | Manifiesto 23 y el almacén de ficheros (M5)                                                        |
+| **Nada de efectos ocultos**: escribir «se acabó el pulpo» no marca nada como agotado                                  | Manifiesto 23                                                                                      |
+| **Gerente y jefes mandan el horario al chat**, con la tarjeta que H2 ya dejó hecha, que abre el horario de verdad     | Richi, respuesta 5 de [`h-horarios.md`](h-horarios.md) (0068)                                      |
+| **Lo que cambia al segundo**, que I dejó para aquí (`apps/app/src/datos/alDia.ts`)                                    | [0070](../../decisiones/0070-la-app-instalable.md)                                                 |
 
 ## Lo que decido yo, para que lo sepas
 
@@ -57,7 +57,7 @@ Si alguna no te cuadra, dímelo y se cambia.
 13. **Las notas de voz se graban con lo que trae el móvil**, sin librerías. Android y el iPhone graban en formatos distintos: se prueba que cada uno oye las del otro antes de entregar.
 14. **El buscador busca en lo que tú puedes ver**, en el servidor, con y sin acentos, como el de productos. Nunca enseña un privado ajeno.
 15. **Las tarjetas que entran**: el horario (la de H2), un pedido y un producto, que es lo que ya existe. «Compartir» gana «Al chat», al lado de lo que ya abre el móvil (WhatsApp, correo). La ficha técnica y el plato llegan con sus módulos (escandallos y carta); la tarjeta queda preparada.
-16. **Cuánto se guarda**: mientras exista el local. Los plazos de borrado de [`conservacion-de-datos.md`](legal/conservacion-de-datos.md) los aplica M27, como todo.
+16. **Cuánto se guarda**: mientras exista el local. Los plazos de borrado de [`conservacion-de-datos.md`](../../legal/conservacion-de-datos.md) los aplica M27, como todo.
 
 ## Lo que cuesta · cero
 
@@ -84,7 +84,7 @@ Si alguna no te cuadra, dímelo y se cambia.
 
 ## Las seis preguntas
 
-> **Contestadas el 3-oct: sí a las seis** ([0071](decisiones/0071-las-respuestas-de-c.md)). En la 5, la casilla viene marcada **y se puede desmarcar**.
+> **Contestadas el 3-oct: sí a las seis** ([0071](../../decisiones/0071-las-respuestas-de-c.md)). En la 5, la casilla viene marcada **y se puede desmarcar**.
 
 Cada una con mi recomendación y por qué. **Basta con contestar «sí» o «no»** a cada número.
 
@@ -137,7 +137,7 @@ En WhatsApp se puede apagar; aquí la idea es que no.
 
 ## C2 · Lo oficial · el plan, contestado
 
-**Escrito el 7 de octubre de 2026**, con C1 en producción y probado por Richi y Santiago. **Richi contestó el mismo día**: las cinco de C2 y, de paso, **cambió tres de las seis de C** ([0075](decisiones/0075-las-respuestas-de-c2.md)). Manda lo de aquí abajo; lo de arriba que choque, lo cambia la 0075.
+**Escrito el 7 de octubre de 2026**, con C1 en producción y probado por Richi y Santiago. **Richi contestó el mismo día**: las cinco de C2 y, de paso, **cambió tres de las seis de C** ([0075](../../decisiones/0075-las-respuestas-de-c2.md)). Manda lo de aquí abajo; lo de arriba que choque, lo cambia la 0075.
 
 ### Qué entra en C2, en una sola entrega
 

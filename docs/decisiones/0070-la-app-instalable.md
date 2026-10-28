@@ -1,7 +1,7 @@
 # 0070 · I · La app instalable: en la pantalla de inicio, sin conexión y con avisos al móvil
 
 **Fecha:** 1 de octubre de 2026
-**Estado:** construido, con la migración `0054`. Sigue lo que contestó Richi el mismo día a las seis preguntas de [`i-la-app-instalable.md`](../i-la-app-instalable.md), y las mejoras 14 y 15 de [`mejoras-antes-de-m8.md`](../mejoras-antes-de-m8.md).
+**Estado:** construido, con la migración `0054`. Sigue lo que contestó Richi el mismo día a las seis preguntas de [`i-la-app-instalable.md`](../historia/modulos/i-la-app-instalable.md), y las mejoras 14 y 15 de [`mejoras-antes-de-m8.md`](../historia/modulos/mejoras-antes-de-m8.md).
 **Cambia:** cómo avisa Estook ([0017](0017-como-avisa-estook.md)): el tercer canal, el móvil, queda montado; Ajustes → Avisos ([0052](0052-la-campana-y-los-avisos.md)) gana la columna «Móvil»; el aparato del local ([0068](0068-las-respuestas-de-h.md)) ficha sin wifi; y el fichaje se puede apuntar a mano.
 
 ## Lo que contestó Richi (1-oct)

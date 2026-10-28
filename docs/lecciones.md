@@ -938,7 +938,7 @@
      servidor de Ubuntu estaba dando los paquetes a 50 KB por segundo, pero dándolos: tres trozos
      de Pantallas, cortados a medias tres veces. Se leyó el registro (las horas de cada paquete)
      antes de tocar nada más. Ahora lo bajado se guarda en la caché y lo lento se espera; solo se
-     corta una conexión muerta ([la auditoría del 27-oct](la-auditoria-de-github-del-27-oct.md)).
+     corta una conexión muerta ([la auditoría del 27-oct](auditorias/la-auditoria-de-github-del-27-oct.md)).
 233. **La caché de GitHub es de cada rama.** Una rama solo ve lo guardado en ella y en `main`, y
      en `main` las pruebas de pantalla se saltan: lo que guardaba una rama no le servía a la
      siguiente. Y a cada máquina le toca una conexión distinta (de 0,18 a 28 MB/s en la misma
@@ -963,3 +963,9 @@
      renovaba y seguía dando el manifiesto viejo desde lo guardado. Ahora la versión mira también
      lo que llevan dentro los de `public/`, y `herramientas/` entra en las pruebas
      (`trabajador-de-servicio.prueba.ts`, vista fallar con el código de antes).
+237. **Al guardar, los ficheros por su nombre; nunca una carpeta entera.** Al ordenar los
+     documentos (#150) se añadió `pruebas/` de golpe, y se coló
+     `capturas-del-repaso-temporal.spec.ts`, el fichero sin subir de otra sesión que no se toca:
+     en GitHub falló en tres trozos de Pantallas. En local ya había salido en rojo, y se descartó
+     con «no va a GitHub» sin mirar qué se estaba guardando. Antes de cada commit,
+     `git diff --cached --name-status` y que no haya ni un fichero que no sea de la entrega.

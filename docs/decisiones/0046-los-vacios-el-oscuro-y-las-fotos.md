@@ -8,7 +8,7 @@
 ## De dónde sale
 
 Son los dos puntos que le faltaban a la entrega V, tal como los dejó escritos el
-plan de las mejoras (`docs/mejoras-antes-de-m8.md`, puntos 4 y 5) y con las reglas
+plan de las mejoras (`docs/historia/modulos/mejoras-antes-de-m8.md`, puntos 4 y 5) y con las reglas
 que Richi puso al mirar la primera parte el 23 de septiembre ([0045](0045-el-aspecto-y-el-orden.md)):
 poco texto, lo esencial a la vista, nada de huecos y aspecto de aplicación de ahora.
 Y con su instrucción de fondo para esta entrega: «hazlo todo bien, sin dejarte nada,

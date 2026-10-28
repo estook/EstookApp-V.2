@@ -1,7 +1,7 @@
 # 0069 · H2 · El horario de la semana
 
 **Fecha:** 1 de octubre de 2026
-**Estado:** construido en H2, con migración `0053`. Sigue lo decidido por Richi en la [0068](0068-las-respuestas-de-h.md) y los once puntos de «Lo que decido yo» de [`h-horarios.md`](../h-horarios.md).
+**Estado:** construido en H2, con migración `0053`. Sigue lo decidido por Richi en la [0068](0068-las-respuestas-de-h.md) y los once puntos de «Lo que decido yo» de [`h-horarios.md`](../historia/modulos/h-horarios.md).
 **Cambia:** Roles (el horario publicado se mira en Calendario › Turnos y en «Mi turno»), el Panel de fábrica de la sala y la cocina, y lo que miran «entras en cinco minutos», quién entra hoy y los retrasos.
 
 ## Lo que hay

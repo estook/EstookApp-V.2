@@ -16,7 +16,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## Lo que te toca ahora · el repaso del 20-oct
 
-Lo que pasaba y lo hecho, en la [0100](decisiones/0100-el-repaso-del-20-oct.md). **Con migración (la 0077) y con la API.** La 0077 arregla los datos de IKATZ sin borrar nada: anula las dos entradas mal valoradas (contramuslos a 4,55 € el gramo y aceite a 25 € el litro) y las vuelve a apuntar a su precio de hoy, deja los contramuslos en **50 kg** y cierra los precios «sin proveedor» repetidos.
+Lo que pasaba y lo hecho, en la [0100](../../decisiones/0100-el-repaso-del-20-oct.md). **Con migración (la 0077) y con la API.** La 0077 arregla los datos de IKATZ sin borrar nada: anula las dos entradas mal valoradas (contramuslos a 4,55 € el gramo y aceite a 25 € el litro) y las vuelve a apuntar a su precio de hoy, deja los contramuslos en **50 kg** y cierra los precios «sin proveedor» repetidos.
 
 1. **En GitHub**: abre el pull request **«El repaso del 20-oct…»** y, con las **tres comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno: `git checkout main`, `git pull` y `.\estook.cmd bd:migrar`. **Qué tiene que decir:** «1 migracion(es) aplicadas · 77 en total».

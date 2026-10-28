@@ -1,6 +1,6 @@
 # I · La app instalable · el plan
 
-**Escrito el 1 de octubre de 2026**, con H entera en producción, y **construido el mismo día** con las respuestas de Richi ([0070](decisiones/0070-la-app-instalable.md), migración `0054`). Dice qué es I, qué estaba decidido, lo que decidí yo, lo que contestó Richi, lo que cuesta y lo que hay que saber del iPhone. Las mejoras de las que sale son la **14** y la **15** de [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md).
+**Escrito el 1 de octubre de 2026**, con H entera en producción, y **construido el mismo día** con las respuestas de Richi ([0070](../../decisiones/0070-la-app-instalable.md), migración `0054`). Dice qué es I, qué estaba decidido, lo que decidí yo, lo que contestó Richi, lo que cuesta y lo que hay que saber del iPhone. Las mejoras de las que sale son la **14** y la **15** de [`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md).
 
 ## Qué es I, en llano
 
@@ -14,20 +14,20 @@ Hoy Estook se abre en el navegador del móvil y, si se añade a la pantalla de i
 
 ## Lo que ya está decidido, y no se vuelve a preguntar
 
-| Qué                                                                                                                   | Dónde se decidió                                         |
-| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Avisos al móvil **con claves propias (VAPID), sin servicio de pago**                                                  | Mejora 14                                                |
-| En iPhone, **solo con Estook en la pantalla de inicio** (iOS 16.4 o posterior), y la app lo explica                   | Mejora 14 y [0017](decisiones/0017-como-avisa-estook.md) |
-| **El permiso se pide cuando tiene sentido**, nunca al entrar                                                          | Mejora 14                                                |
-| Tres avisos nuevos: **lo que caduca**, **«entras en 5 minutos»** y **el pedido que no ha llegado**                    | Mejora 14                                                |
-| **Lo que suena en el móvil no llega también por correo**                                                              | 0017                                                     |
-| **Cada uno elige qué le llega y cuándo suena**: en su turno, o fuera de sus **horas de silencio**                     | 0017 (regla 3), mejora 14 y Richi (pregunta 4)           |
-| Sin conexión, **solo fichar y apuntar mermas**                                                                        | Mejora 15                                                |
-| **La hora la pone el servidor**, nunca el móvil; el fichaje sale **«hecho sin conexión»** y con más de 12 h se revisa | Regla 10 del Plan y mejora 15                            |
-| La app dice **cuántas cosas tiene sin mandar**: guardar sin decirlo es peor que no guardar                            | Mejora 15 (regla 34)                                     |
-| Mandar dos veces lo mismo **no apunta dos veces**: cada comando ya lleva su clave                                     | Cliente de la API, desde M2                              |
-| **La campana es lo que ha pasado**; los interruptores viven en **Ajustes → Avisos**                                   | [0052](decisiones/0052-la-campana-y-los-avisos.md)       |
-| **Al segundo, no**: que el servidor empuje lo que cambia mientras miras llega con el chat                             | `apps/app/src/datos/alDia.ts`                            |
+| Qué                                                                                                                   | Dónde se decidió                                               |
+| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Avisos al móvil **con claves propias (VAPID), sin servicio de pago**                                                  | Mejora 14                                                      |
+| En iPhone, **solo con Estook en la pantalla de inicio** (iOS 16.4 o posterior), y la app lo explica                   | Mejora 14 y [0017](../../decisiones/0017-como-avisa-estook.md) |
+| **El permiso se pide cuando tiene sentido**, nunca al entrar                                                          | Mejora 14                                                      |
+| Tres avisos nuevos: **lo que caduca**, **«entras en 5 minutos»** y **el pedido que no ha llegado**                    | Mejora 14                                                      |
+| **Lo que suena en el móvil no llega también por correo**                                                              | 0017                                                           |
+| **Cada uno elige qué le llega y cuándo suena**: en su turno, o fuera de sus **horas de silencio**                     | 0017 (regla 3), mejora 14 y Richi (pregunta 4)                 |
+| Sin conexión, **solo fichar y apuntar mermas**                                                                        | Mejora 15                                                      |
+| **La hora la pone el servidor**, nunca el móvil; el fichaje sale **«hecho sin conexión»** y con más de 12 h se revisa | Regla 10 del Plan y mejora 15                                  |
+| La app dice **cuántas cosas tiene sin mandar**: guardar sin decirlo es peor que no guardar                            | Mejora 15 (regla 34)                                           |
+| Mandar dos veces lo mismo **no apunta dos veces**: cada comando ya lleva su clave                                     | Cliente de la API, desde M2                                    |
+| **La campana es lo que ha pasado**; los interruptores viven en **Ajustes → Avisos**                                   | [0052](../../decisiones/0052-la-campana-y-los-avisos.md)       |
+| **Al segundo, no**: que el servidor empuje lo que cambia mientras miras llega con el chat                             | `apps/app/src/datos/alDia.ts`                                  |
 
 ## Lo que decido yo, para que lo sepas
 
@@ -42,11 +42,11 @@ Si alguna no te cuadra, dímelo y se cambia.
 7. **Si un móvil deja de existir** (se cambió de teléfono, desinstaló Estook), su suscripción se borra sola al primer fallo, y ese aviso sale por correo si lo tenía encendido.
 8. **El número en el icono** de Estook: los avisos sin leer de la campana, en Android y en iPhone.
 9. **El reloj solo despierta a la API cuando hay algo que mandar.** «Entras en 5 minutos» necesita mirar cada minuto, y hoy el reloj late cada hora. Mirar cada minuto se hace dentro de la base, que es gratis; la API solo se llama si alguien tiene que recibir algo.
-10. **Lo de la semana siguiente**: «entras en 5 minutos» del domingo por la noche mirará el horario de la semana que empieza (lo que la [0069](decisiones/0069-el-horario.md) dejó para aquí).
+10. **Lo de la semana siguiente**: «entras en 5 minutos» del domingo por la noche mirará el horario de la semana que empieza (lo que la [0069](../../decisiones/0069-el-horario.md) dejó para aquí).
 
 ## Las respuestas de Richi (1-oct)
 
-Contestó las seis el mismo día, pidiendo **«lo mejor para la empresa y el restaurante, lo más lógico y menos enrevesado, que se sienta pulido y profesional»**. Cada respuesta, y lo que hice con ella, está en la [0070](decisiones/0070-la-app-instalable.md). En corto:
+Contestó las seis el mismo día, pidiendo **«lo mejor para la empresa y el restaurante, lo más lógico y menos enrevesado, que se sienta pulido y profesional»**. Cada respuesta, y lo que hice con ella, está en la [0070](../../decisiones/0070-la-app-instalable.md). En corto:
 
 | #   | La pregunta                          | Quedó así                                                                                                           |
 | --- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
@@ -70,7 +70,7 @@ Contestó las seis el mismo día, pidiendo **«lo mejor para la empresa y el res
 | Correo (Resend)                           | **Baja**: lo que suene en el móvil deja de salir por correo                                                                                        |
 | El trocito que se queda en el móvil       | Unos KB. No se usa ninguna librería de fuera: se hace a mano, pequeño y rápido                                                                     |
 
-**Lo único que hace falta de Richi** son **dos secretos en Supabase** (`VAPID_CLAVE_PUBLICA` y `VAPID_CLAVE_PRIVADA`), que se generan con `.\estook.cmd movil:claves` en su ordenador y **no pasan por el chat**. Los pasos, en [`pasos-antes-de-m8.md`](pasos-antes-de-m8.md).
+**Lo único que hace falta de Richi** son **dos secretos en Supabase** (`VAPID_CLAVE_PUBLICA` y `VAPID_CLAVE_PRIVADA`), que se generan con `.\estook.cmd movil:claves` en su ordenador y **no pasan por el chat**. Los pasos, en [`pasos-antes-de-m8.md`](../pasos/pasos-antes-de-m8.md).
 
 ## Lo que hay que saber del iPhone
 

@@ -1,6 +1,6 @@
 # La experiencia · el repaso de cómo se ve, cómo se usa y lo que falla
 
-**Pedido por Richi el 13 de octubre de 2026**, con la #100 ya en producción y **antes de M9**. Decisión [0083](decisiones/0083-la-experiencia.md).
+**Pedido por Richi el 13 de octubre de 2026**, con la #100 ya en producción y **antes de M9**. Decisión [0083](../../decisiones/0083-la-experiencia.md).
 
 > «Siento que es algo lioso todo y que no parece una app verdaderamente profesional. Está bien pero no tiene
 > profundidad, o intenta imitar a apps buenas sin llegar a serlo: no por funcionalidades, sino por diseño,
@@ -29,4 +29,4 @@ oscura y con fotos cuadradas), los filtros de Productos («se ve feísimo») y u
 ## La auditoría
 
 Los fallos encontrados, los de lógica y los de experiencia, con lo que se ha hecho con cada uno, están en
-[`docs/auditorias/auditoria-2026-10-14-la-experiencia.md`](auditorias/auditoria-2026-10-14-la-experiencia.md).
+[`docs/auditorias/auditoria-2026-10-14-la-experiencia.md`](../../auditorias/auditoria-2026-10-14-la-experiencia.md).

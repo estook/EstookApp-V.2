@@ -169,7 +169,7 @@ vez te dice que ya se trajo.
 
 Las claves y accesos. **Ninguno frena lo que hay hecho**, y todos se ponen en
 **Supabase → Edge Functions → Secrets**, nunca en el chat ni en el código. El detalle
-de cada uno, en [`config/claves.md`](../config/claves.md).
+de cada uno, en [`config/claves.md`](../../../config/claves.md).
 
 | Qué                  | Nombre del secreto                           | Para qué                                 | Cómo está en el código            |
 | -------------------- | -------------------------------------------- | ---------------------------------------- | --------------------------------- |
@@ -339,7 +339,7 @@ que te debo decir antes:
 ## Lo que me confirmaste, y dónde queda
 
 1. **El IVA**: tus precios lo llevan, y querías elegir. Hecho en la entrega 1
-   ([0033](decisiones/0033-los-precios-de-compra-se-guardan-sin-iva.md)); el paso 4 lo
+   ([0033](../../decisiones/0033-los-precios-de-compra-se-guardan-sin-iva.md)); el paso 4 lo
    deja bien.
 2. **Mandar pedidos**, de jefe de cocina para arriba, y **«te han invitado a hacer
    este pedido»** para que otro lo rellene y el jefe lo mande: **entrega 2**.
@@ -352,8 +352,8 @@ que te debo decir antes:
 
 **Antes de M8 van tus veinte mejoras y el panel de administración**, en diez entregas.
 El orden y el porqué de cada una están en
-[`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md), y el admin entero en
-[`panel-de-administracion.md`](panel-de-administracion.md). Las dos entregas que
+[`mejoras-antes-de-m8.md`](../modulos/mejoras-antes-de-m8.md), y el admin entero en
+[`panel-de-administracion.md`](../../panel-de-administracion.md). Las dos entregas que
 quedaban de este repaso van dentro de ese orden:
 
 | Entrega | Qué                                                                                                                                     | Dónde queda                            |

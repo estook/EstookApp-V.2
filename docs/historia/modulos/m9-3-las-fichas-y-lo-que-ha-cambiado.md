@@ -2,25 +2,25 @@
 
 > **Estado: construido el 18-oct-2026** en la rama `m9-3-escalar-y-lo-que-ha-cambiado` (migración
 > 0073), con lo que decidí al construirlo al final de la
-> [0092](decisiones/0092-las-respuestas-de-m9-3.md); en producción cuando Richi fusione, migre y
+> [0092](../../decisiones/0092-las-respuestas-de-m9-3.md); en producción cuando Richi fusione, migre y
 > despliegue. Richi contestó las siete preguntas y las cuatro siguientes el 17-oct
-> ([0092](decisiones/0092-las-respuestas-de-m9-3.md) y
-> [0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)). Es la última entrega de M9
+> ([0092](../../decisiones/0092-las-respuestas-de-m9-3.md) y
+> [0093](../../decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)). Es la última entrega de M9
 > ([el plan de M9](m9-escandallos.md)); después viene M10. **El coste teórico y los avisos de lo
 > que se escapa** van con M20 y viven en su documento:
-> [`como-detecta-estook-lo-que-se-escapa.md`](como-detecta-estook-lo-que-se-escapa.md).
+> [`como-detecta-estook-lo-que-se-escapa.md`](../../como-detecta-estook-lo-que-se-escapa.md).
 
 ## Lo que contestó Richi, y lo que significa
 
-| Pregunta                        | Richi, 17-oct                                                                                           | Qué hace Estook                                                                               |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| 1 · «Qué ha cambiado»           | **B**                                                                                                   | Un bloque en Escandallos › Resumen, y aviso en la campana solo cuando un plato cruza una raya |
-| 2 · Empezar desde una receta    | **B**                                                                                                   | Cada ingrediente pregunta cuál de tus productos es; nada se crea solo                         |
-| 3 · Escalar                     | Sí, en la ficha técnica: «poner cuántas raciones y que multiplique»                                     | La pieza 1 de abajo                                                                           |
-| 4 · Extras y sustituciones      | **En Estook TPV**, no en la app de gestión: «el TPV son ventas»                                         | Salen de M9 y van a M20A, con su escandallo (ver «Lo que sale de M9»)                         |
-| 5 · «Ya la sé»                  | **No**: la ficha es para consultarla, no para estudiarla. Y que se pueda hacer por raciones o por tanda | Fuera «ya la sé» y el modo aprendizaje. La tanda, en la pieza 1                               |
-| 6 · El QR de la ficha impresa   | **Ninguno**: sin QR. Se imprime, se encuaderna o se descarga                                            | Fuera el QR                                                                                   |
-| 7 · Coste teórico y calibración | **A**, con el TPV; y antes, investigar cómo lo hacen los mejores, sin porcentajes inventados            | Diseñado en [su documento](como-detecta-estook-lo-que-se-escapa.md). Se construye con M20     |
+| Pregunta                        | Richi, 17-oct                                                                                           | Qué hace Estook                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 1 · «Qué ha cambiado»           | **B**                                                                                                   | Un bloque en Escandallos › Resumen, y aviso en la campana solo cuando un plato cruza una raya   |
+| 2 · Empezar desde una receta    | **B**                                                                                                   | Cada ingrediente pregunta cuál de tus productos es; nada se crea solo                           |
+| 3 · Escalar                     | Sí, en la ficha técnica: «poner cuántas raciones y que multiplique»                                     | La pieza 1 de abajo                                                                             |
+| 4 · Extras y sustituciones      | **En Estook TPV**, no en la app de gestión: «el TPV son ventas»                                         | Salen de M9 y van a M20A, con su escandallo (ver «Lo que sale de M9»)                           |
+| 5 · «Ya la sé»                  | **No**: la ficha es para consultarla, no para estudiarla. Y que se pueda hacer por raciones o por tanda | Fuera «ya la sé» y el modo aprendizaje. La tanda, en la pieza 1                                 |
+| 6 · El QR de la ficha impresa   | **Ninguno**: sin QR. Se imprime, se encuaderna o se descarga                                            | Fuera el QR                                                                                     |
+| 7 · Coste teórico y calibración | **A**, con el TPV; y antes, investigar cómo lo hacen los mejores, sin porcentajes inventados            | Diseñado en [su documento](../../como-detecta-estook-lo-que-se-escapa.md). Se construye con M20 |
 
 **Por qué la 7 va con el TPV, con datos:** en IKATZ hay **21 cierres de caja y solo 1 trae los
 platos** (mirado el 17-oct). Sin saber cuántas raciones de cada plato se vendieron, no se puede
@@ -66,7 +66,7 @@ especias y el picante no escalan igual**.
 - **Quién**: todos los que ven las fichas (cocina y sala). **No se guarda nada**: cerrar la
   ficha la deja como estaba.
 
-**Lo que no es:** **no son las elaboraciones**, que siguen paradas ([0090](decisiones/0090-el-repaso-del-16-oct.md)).
+**Lo que no es:** **no son las elaboraciones**, que siguen paradas ([0090](../../decisiones/0090-el-repaso-del-16-oct.md)).
 Una elaboración es algo que se usa **dentro de otros platos** y tiene su stock; la tanda es solo
 **cómo está escrita la receta de este plato**. Necesita una columna en la receta (cuántas
 raciones salen; vacía = 1).
@@ -108,7 +108,7 @@ raciones)»**. Si dices que sí:
 Para **encuadernarlas** (Richi: A): **«Descargar todas»** en Fichas hace un solo PDF con todas las
 fichas técnicas, **por secciones de la carta, con un índice y sin euros**.
 
-### 5 · Lo que no tiene escandallo (18-oct, [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md))
+### 5 · Lo que no tiene escandallo (18-oct, [0095](../../decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md))
 
 Lo que no necesita IA entra ya:
 
@@ -147,7 +147,7 @@ cuatro platos en diez toques o menos**.
 ## El coste teórico, los avisos y la calibración
 
 **Van con M20**, y su diseño entero vive en
-[`como-detecta-estook-lo-que-se-escapa.md`](como-detecta-estook-lo-que-se-escapa.md): los cuatro
+[`como-detecta-estook-lo-que-se-escapa.md`](../../como-detecta-estook-lo-que-se-escapa.md): los cuatro
 filtros (datos fiables, lo normal de cada producto, no es lo de siempre, que cueste dinero), el
 arranque sin datos, la fuga constante con la calibración en tres botones, y la auditoría de la
 sencillez. Lo investigado para hacerlo (Apicbase, Restaurant365, MarketMan, meez, y las reglas de
@@ -182,7 +182,7 @@ los gráficos de control) está allí.
 1. **Escalar también tocando un ingrediente: A.**
 2. **«Descargar todas» las fichas en un PDF: A.**
 3. **La regla para avisar: C**, con el estudio que pidió: en
-   [`como-detecta-estook-lo-que-se-escapa.md`](como-detecta-estook-lo-que-se-escapa.md), con dos
+   [`como-detecta-estook-lo-que-se-escapa.md`](../../como-detecta-estook-lo-que-se-escapa.md), con dos
    preguntas suyas al final.
 4. **La calibración: sí, pero sin complicar Estook**: queda como una pregunta de tres botones,
    una sola vez, ante una fuga constante (mismo documento, sección 5).

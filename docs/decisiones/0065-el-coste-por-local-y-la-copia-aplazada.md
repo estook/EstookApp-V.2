@@ -26,7 +26,7 @@ suya**. Queda de esta forma:
   semana. Lanzado a mano sin secretos, sí falla y dice qué falta.
 - **Se enciende en la mudanza** a Cloudflare, junto con Supabase Pro, el repositorio en
   privado y las claves nuevas: los cuatro pasos van juntos en
-  [`pasos-antes-de-m8.md`](../pasos-antes-de-m8.md).
+  [`pasos-antes-de-m8.md`](../historia/pasos/pasos-antes-de-m8.md).
 - **La condición no cambia**: antes del primer cliente que pague de verdad.
 
 **El riesgo, dicho claro:** hasta entonces **no hay ninguna copia** de la base de

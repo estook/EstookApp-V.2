@@ -7,7 +7,7 @@
 
 ## De dónde sale
 
-La mejora 2 de [`mejoras-antes-de-m8.md`](../mejoras-antes-de-m8.md): «flechas y
+La mejora 2 de [`mejoras-antes-de-m8.md`](../historia/modulos/mejoras-antes-de-m8.md): «flechas y
 gráficas pequeñas también en Inventario, Servicio y Equipo». El plan ya decía cómo
 —«no se copia la tarjeta: se usa la misma»— y dejaba tres preguntas de producto sin
 contestar. Richi las contestó el 23 de septiembre de 2026:

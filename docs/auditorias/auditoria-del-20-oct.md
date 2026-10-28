@@ -2,7 +2,7 @@
 
 > Una auditoría entera de Estook App, pedida por Richi el 20 de octubre de 2026: seguridad,
 > permisos, datos, cálculos, IA, pantallas y pruebas. **Sin el TPV ni lo que no existe.**
-> Lo hecho se resume en la [0101](decisiones/0101-la-auditoria-del-20-oct.md); aquí está lo
+> Lo hecho se resume en la [0101](../decisiones/0101-la-auditoria-del-20-oct.md); aquí está lo
 > mirado, la evidencia, lo que queda y lo que no se ha podido comprobar.
 >
 > Se distingue siempre: **confirmado** (visto fallar, con prueba), **sospecha** (razonada, sin

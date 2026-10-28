@@ -1,15 +1,15 @@
 # M10 · La carta, los menús y el análisis
 
 > **Estado: M10 · 1, en producción** desde el 20-oct-2026 (#125, migración 0078, decisión
-> [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md)). **M10 · 2, construida el 22-oct** en la
-> rama `m10-2-los-menus` (migración 0079, decisión [0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md)):
+> [0102](../../decisiones/0102-m10-1-la-carta-que-trabaja.md)). **M10 · 2, construida el 22-oct** en la
+> rama `m10-2-los-menus` (migración 0079, decisión [0104](../../decisiones/0104-m10-2-los-menus-y-tu-zona.md)):
 > los menús y «Analiza mi zona»; en producción cuando Richi fusione, migre y despliegue. Es el
-> último módulo antes de Estook TPV ([0061](decisiones/0061-el-orden-y-la-infraestructura.md)): **la
+> último módulo antes de Estook TPV ([0061](../../decisiones/0061-el-orden-y-la-infraestructura.md)): **la
 > carta es lo que se va a picar en el TPV**.
 
 ## Lo que ya estaba hecho
 
-M9 · 1 se adelantó media M10 ([0086](decisiones/0086-las-respuestas-de-m9.md)): las secciones, los
+M9 · 1 se adelantó media M10 ([0086](../../decisiones/0086-las-respuestas-de-m9.md)): las secciones, los
 platos con su foto, los canales con su comisión (Uber Eats) y **el precio de cada plato en cada
 canal**. Lo que queda de M10, según el Plan: agotados, el precio al cierre de caja, leer la carta
 subida, el equilibrio de la carta, los menús, el menú del día, el análisis de lo que deja cada plato,
@@ -19,12 +19,12 @@ el orden como se imprime y la comparación con la zona.
 
 Lo que **ya estaba decidido por escrito**, pieza a pieza, y por eso se ha construido sin preguntar:
 
-| Pieza                          | Dónde estaba decidido                                                                                                        | Lo que hace                                                                                                                                                                                                                 |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1 · Agotados**               | Auditoría de Flujos 2.4 · Roles 1.12 · Manifiesto cap. 14                                                                    | Dos toques desde el móvil: el plato sale «Agotado» en la carta, avisa al equipo en el chat y **vuelve solo al empezar la jornada siguiente** (o cuando alguien lo quita). No toca el stock. Lo pueden marcar sala y cocina  |
-| **2 · El precio en el cierre** | Plan, M10: «y le da el precio al cierre de caja»                                                                             | Al apuntar un plato en el cierre, el importe sale **del precio de sala de la carta**; lo de la última vez queda para lo que no está en la carta                                                                             |
-| **3 · Leer tu carta**          | Plan, M10, y [0049](decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md): «4 platos nuevos, 2 precios distintos…» | Subes el PDF de tu carta (o fotos) y Estook propone: **platos nuevos, precios distintos y los que ya no están**. Nada cambia hasta que dices que sí. Un PDF con texto se lee sin IA; una foto o un PDF escaneado, con Fogón |
-| **4 · El equilibrio**          | Manifiesto cap. 14, «El equilibrio de la carta» · Plan, M10                                                                  | En Carta › Análisis: cuántos platos por sección, el salto de precios y si falta la franja media, **con los principios de Omnes**, los que usan las escuelas de hostelería                                                   |
+| Pieza                          | Dónde estaba decidido                                                                                                              | Lo que hace                                                                                                                                                                                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 · Agotados**               | Auditoría de Flujos 2.4 · Roles 1.12 · Manifiesto cap. 14                                                                          | Dos toques desde el móvil: el plato sale «Agotado» en la carta, avisa al equipo en el chat y **vuelve solo al empezar la jornada siguiente** (o cuando alguien lo quita). No toca el stock. Lo pueden marcar sala y cocina  |
+| **2 · El precio en el cierre** | Plan, M10: «y le da el precio al cierre de caja»                                                                                   | Al apuntar un plato en el cierre, el importe sale **del precio de sala de la carta**; lo de la última vez queda para lo que no está en la carta                                                                             |
+| **3 · Leer tu carta**          | Plan, M10, y [0049](../../decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md): «4 platos nuevos, 2 precios distintos…» | Subes el PDF de tu carta (o fotos) y Estook propone: **platos nuevos, precios distintos y los que ya no están**. Nada cambia hasta que dices que sí. Un PDF con texto se lee sin IA; una foto o un PDF escaneado, con Fogón |
+| **4 · El equilibrio**          | Manifiesto cap. 14, «El equilibrio de la carta» · Plan, M10                                                                        | En Carta › Análisis: cuántos platos por sección, el salto de precios y si falta la franja media, **con los principios de Omnes**, los que usan las escuelas de hostelería                                                   |
 
 ### 1 · Agotados
 
@@ -92,8 +92,8 @@ entera), y la relación calidad-precio de Omnes, que necesita lo vendido plato a
 
 ## M10 · 2 · Los menús y «Analiza mi zona»
 
-**Contestado por Richi el 21-oct** ([0103](decisiones/0103-las-respuestas-de-m10-2.md), con sus palabras) y
-**construido el 22-oct** ([0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md), con lo que decidí al
+**Contestado por Richi el 21-oct** ([0103](../../decisiones/0103-las-respuestas-de-m10-2.md), con sus palabras) y
+**construido el 22-oct** ([0104](../../decisiones/0104-m10-2-los-menus-y-tu-zona.md), con lo que decidí al
 construirlo). Lo que no entra, y cuándo llega, en la última tabla: **nada se pierde por el camino**.
 
 ### 1 · Los menús

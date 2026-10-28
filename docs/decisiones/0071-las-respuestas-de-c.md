@@ -2,7 +2,7 @@
 
 **Fecha:** 3 de octubre de 2026
 **Estado:** decidido por Richi. C1 · Hablar se construye con esto; C2 · Lo oficial, después.
-**Completa:** el plan de [`docs/c-el-chat.md`](../c-el-chat.md), que dejó las seis preguntas.
+**Completa:** el plan de [`docs/historia/modulos/c-el-chat.md`](../historia/modulos/c-el-chat.md), que dejó las seis preguntas.
 
 ## Lo que contestó Richi
 
@@ -24,7 +24,7 @@
 | 5   | **La casilla viene marcada y se puede desmarcar**: es una opción, no una obligación. Se manda la tarjeta del horario que dejó hecha H2, pidiendo «Confirmar que lo he visto»                                                                          |
 | 6   | **«Leído» siempre a la vista**, sin interruptor para ocultarlo. Leído es con el mensaje en pantalla, no al llegar al móvil                                                                                                                            |
 
-Lo demás —lo que decido yo, lo que cuesta y lo que no entra— sigue como está escrito en [`c-el-chat.md`](../c-el-chat.md).
+Lo demás —lo que decido yo, lo que cuesta y lo que no entra— sigue como está escrito en [`c-el-chat.md`](../historia/modulos/c-el-chat.md).
 
 ## Lo que no se decide aquí
 

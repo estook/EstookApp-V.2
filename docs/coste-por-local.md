@@ -113,7 +113,7 @@ Lo decidió Richi el 30-sep-2026 ([decisión 0067](decisiones/0067-pro-a-99-el-c
 
 - **El asesor** fiscal y laboral: no hay presupuesto todavía. Va dentro de los 600 € fijos del punto de equilibrio, que son de DOCUMENTO y hay que rehacer cuando lo haya.
 - **El tiempo de soporte** y la puesta en marcha remota de Pro.
-- **El certificado para firmar Estook Link** en Windows, y la cuenta de Google Play (25 $, una vez).
+- **El certificado para firmar la caja para Windows** ([0119](decisiones/0119-t5-la-caja-para-windows.md)), y la cuenta de Google Play (25 $, una vez).
 - **Los minutos de GitHub** si el repositorio privado pasa de 2.000 al mes: cada vuelta entera de las comprobaciones son unos 20 minutos, así que caben unas cien.
 - **El datáfono**: su comisión es del local con su banco. Estook no cobra ni paga nada ahí.
 - **Las comisiones de Stripe si un cobro se devuelve o se disputa.**

@@ -16,7 +16,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## Lo que te toca ahora · el repaso del 19-oct
 
-Los ocho fallos y la auditoría ([0099](decisiones/0099-el-repaso-del-19-oct.md)). **Con migración (la 0076) y con la API.** La 0076 arregla los datos rotos de IKATZ: cada producto pasa a valer lo de su precio de hoy, con una línea «Revalorado a lo pagado» en sus movimientos (no se borra nada).
+Los ocho fallos y la auditoría ([0099](../../decisiones/0099-el-repaso-del-19-oct.md)). **Con migración (la 0076) y con la API.** La 0076 arregla los datos rotos de IKATZ: cada producto pasa a valer lo de su precio de hoy, con una línea «Revalorado a lo pagado» en sus movimientos (no se borra nada).
 
 1. **En GitHub**: abre el pull request **«El repaso del 19-oct…»** y, con las **tres comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno: `git checkout main`, `git pull` y `.\estook.cmd bd:migrar`. **Qué tiene que decir:** «1 migracion(es) aplicadas · 76 en total».

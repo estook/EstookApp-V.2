@@ -2,7 +2,7 @@
 
 **Fecha:** 16 de octubre de 2026
 **Estado:** en producción desde el 16-oct (#106, migración `0069`, API 90 y 194). El punto 3 de «Lo que decido yo» lo cambia la [0088](0088-todo-el-almacen-y-el-historial-que-solo-crece.md).
-**Cambia:** el [Plan](../maestros/Estook-Plan-de-Desarrollo.md) (B5: las vistas de Escandallos · Fichas), [Roles](../maestros/Estook-Roles-y-Administracion.md) (1.3 y 1.5: la sala ve las fichas), [el mapa](../MAPA-de-modulos.md) y [el plan de M9](../m9-escandallos.md).
+**Cambia:** el [Plan](../maestros/Estook-Plan-de-Desarrollo.md) (B5: las vistas de Escandallos · Fichas), [Roles](../maestros/Estook-Roles-y-Administracion.md) (1.3 y 1.5: la sala ve las fichas), [el mapa](../MAPA-de-modulos.md) y [el plan de M9](../historia/modulos/m9-escandallos.md).
 
 Richi, el 16-oct, con M9 · 1 en producción, pidió dos cosas: **arreglar y mejorar la Carta** (tres puntos) y **construir M9 · 2** con lo que es cada pieza para él. Esto es lo que queda.
 

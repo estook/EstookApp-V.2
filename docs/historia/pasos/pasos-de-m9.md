@@ -17,7 +17,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## Lo que te toca ahora · el arranque y el precio en la jornada
 
-Lo que viste al abrir el iPhone, arreglado, y el precio en la jornada del local, como dijiste ([0096](decisiones/0096-el-arranque-y-el-precio-en-la-jornada.md)). **Sin migración, pero hay que desplegar la API** (cambia cómo se fecha un precio). El orden: **fusionar y después desplegar**.
+Lo que viste al abrir el iPhone, arreglado, y el precio en la jornada del local, como dijiste ([0096](../../decisiones/0096-el-arranque-y-el-precio-en-la-jornada.md)). **Sin migración, pero hay que desplegar la API** (cambia cómo se fecha un precio). El orden: **fusionar y después desplegar**.
 
 ### 1 · Fusionar
 
@@ -71,15 +71,15 @@ Fusionada (#113 y #114), migrada (**0073**) y la API desplegada (**92 y 196**): 
 
 ## Hecho · cómo detecta Estook lo que se escapa
 
-Fusionado (#112). El diseño, para M20, en [`como-detecta-estook-lo-que-se-escapa.md`](como-detecta-estook-lo-que-se-escapa.md); tus dos respuestas, en la [0094](decisiones/0094-la-prueba-de-la-plantilla.md).
+Fusionado (#112). El diseño, para M20, en [`como-detecta-estook-lo-que-se-escapa.md`](../../como-detecta-estook-lo-que-se-escapa.md); tus dos respuestas, en la [0094](../../decisiones/0094-la-prueba-de-la-plantilla.md).
 
 ## Hecho · el plan de M9 · 3
 
-Fusionado (#111), con tus respuestas ([0092](decisiones/0092-las-respuestas-de-m9-3.md)) y las cuatro siguientes ([0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)). Construido el 18-oct: arriba, sus pasos.
+Fusionado (#111), con tus respuestas ([0092](../../decisiones/0092-las-respuestas-de-m9-3.md)) y las cuatro siguientes ([0093](../../decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)). Construido el 18-oct: arriba, sus pasos.
 
 ## Hecho · la puesta al día del 17-oct
 
-Fusionada (#110), con las tres comprobaciones en verde y sin pruebas repetidas. Sin migración ni API ([0091](decisiones/0091-estado-a-250-lineas-y-los-documentos-al-dia.md)).
+Fusionada (#110), con las tres comprobaciones en verde y sin pruebas repetidas. Sin migración ni API ([0091](../../decisiones/0091-estado-a-250-lineas-y-los-documentos-al-dia.md)).
 
 ## Hecho · el repaso del 16-oct
 
@@ -91,11 +91,11 @@ Fusionados (#107 y #108), migrados (**0070** y **0071**) y la API desplegada: co
 
 ## Hecho · M9 · 2 · Fichas y escandallos (en producción desde el 16-oct)
 
-Fusionada (#106), migrada (0069) y la API desplegada ([decisión 0087](decisiones/0087-fichas-y-escandallos.md)). **Desde el repaso del 16-oct** ([0090](decisiones/0090-el-repaso-del-16-oct.md)), Escandallos se usa así: **Resumen · Escandallos · Fichas**. En **Escandallos**, un plato se desgrana (lo que lleva y lo que cuesta, y lo que te deja en cada canal); en **Fichas**, la ficha técnica coge ese plato y le añade **los pasos, cada uno con su foto**, y el PDF sin euros. **Ya no hay modo cocina en Escandallos ni se crean elaboraciones** (las que había se siguen viendo).
+Fusionada (#106), migrada (0069) y la API desplegada ([decisión 0087](../../decisiones/0087-fichas-y-escandallos.md)). **Desde el repaso del 16-oct** ([0090](../../decisiones/0090-el-repaso-del-16-oct.md)), Escandallos se usa así: **Resumen · Escandallos · Fichas**. En **Escandallos**, un plato se desgrana (lo que lleva y lo que cuesta, y lo que te deja en cada canal); en **Fichas**, la ficha técnica coge ese plato y le añade **los pasos, cada uno con su foto**, y el PDF sin euros. **Ya no hay modo cocina en Escandallos ni se crean elaboraciones** (las que había se siguen viendo).
 
 ## Hecho · M9 · 1 · El plato y tu carta (en producción desde el 15-oct)
 
-Fusionada (#104), migrada (0068) y la API desplegada ([decisión 0086](decisiones/0086-las-respuestas-de-m9.md)). En IKATZ: **14 platos y Uber Eats activo** (mirado el 17-oct).
+Fusionada (#104), migrada (0068) y la API desplegada ([decisión 0086](../../decisiones/0086-las-respuestas-de-m9.md)). En IKATZ: **14 platos y Uber Eats activo** (mirado el 17-oct).
 
 ## Lo que queda tuyo, si no lo has hecho
 

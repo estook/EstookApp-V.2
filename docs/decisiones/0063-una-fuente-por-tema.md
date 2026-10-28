@@ -42,7 +42,7 @@ Fogón, las alertas, el chat, la API y el mercado estaban escritos en los dos.
 | **Lo que cambió en cada versión**         | `docs/maestros/CAMBIOS.md`                                                                                                                     | Sale de la cabecera de cada maestro          |
 | **Lo que hizo cada entrega**              | `docs/historia-de-los-modulos.md`                                                                                                              | Sale de `ESTADO.md`                          |
 | **Lo aprendido fallando**                 | `docs/lecciones.md`                                                                                                                            | —                                            |
-| **Los pasos de Richi**                    | `docs/pasos-antes-de-m8.md`, uno por entrega                                                                                                   | —                                            |
+| **Los pasos de Richi**                    | `docs/historia/pasos/pasos-antes-de-m8.md`, uno por entrega                                                                                    | —                                            |
 
 **Siguen siendo seis maestros**: el Manifiesto, la Arquitectura, el Plan, Roles, la
 Auditoría de flujos y el Anexo. **La Evolución deja de serlo**: su fichero se queda con

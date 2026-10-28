@@ -1,6 +1,6 @@
 # A3 · Vendedores · el plan
 
-**Escrito el 7 de octubre de 2026** y **contestado por Richi ese mismo día** ([0076](decisiones/0076-a3-los-vendedores.md)), que lo simplificó: **el vendedor solo trae el cliente, no entra en Estook, y las comisiones se pactan fuera**. Construido en la misma entrega, con la migración `0058`.
+**Escrito el 7 de octubre de 2026** y **contestado por Richi ese mismo día** ([0076](../../decisiones/0076-a3-los-vendedores.md)), que lo simplificó: **el vendedor solo trae el cliente, no entra en Estook, y las comisiones se pactan fuera**. Construido en la misma entrega, con la migración `0058`.
 
 ## Qué es A3, en llano
 

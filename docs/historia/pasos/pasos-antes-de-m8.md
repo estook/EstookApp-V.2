@@ -27,7 +27,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 **Fusionada, migrada (0059) y desplegada**: comprobado el 8-oct por la noche leyendo producción, 59 migraciones y la API con 74 y 163. **Queda mirarlo, el paso 4**: lo de Stripe, desde la mañana del 9-oct, y el correo, el lunes 12. Lo de abajo se queda como estaba.
 
-Tus respuestas del 8-oct —**1A sin IVA, 2A lo cobrado, 3B solo las visitas de los vendedores, 4A el correo de los lunes**—, construidas ([decisión 0077](decisiones/0077-a4-las-ventas.md)). **Una migración** (la **0059**) y **un despliegue**. Ninguna clave nueva, y **en Stripe no hay que tocar nada**: el aviso nuevo de las devoluciones lo pide el código solo, la primera mañana.
+Tus respuestas del 8-oct —**1A sin IVA, 2A lo cobrado, 3B solo las visitas de los vendedores, 4A el correo de los lunes**—, construidas ([decisión 0077](../../decisiones/0077-a4-las-ventas.md)). **Una migración** (la **0059**) y **un despliegue**. Ninguna clave nueva, y **en Stripe no hay que tocar nada**: el aviso nuevo de las devoluciones lo pide el código solo, la primera mañana.
 
 **Qué trae:**
 
@@ -96,7 +96,7 @@ Si algo no sale como aquí, hazle una captura y me la pasas.
 
 **Fusionada, migrada (0058) y desplegada**: comprobado el 8-oct a mediodía leyendo producción, 58 migraciones y la API con 73 y 162. En la base ya están **tu vendedor y su código** (con un 10 %), y **ninguna cuenta ha llegado todavía por un enlace**: **queda el paso 4**. **Hazlo con un vendedor «Prueba» aparte, no con el tuyo**: una cuenta que llega por un código se queda para siempre como traída por ese vendedor, y no quieres una de prueba en tus cifras. Al acabar, el paso 6 da de baja a «Prueba», no a ti. Lo de abajo se queda como estaba.
 
-Tus respuestas del 7-oct, construidas ([decisión 0076](decisiones/0076-a3-los-vendedores.md)). **Una migración** (la **0058**) y **un despliegue**. Ninguna clave nueva, y **en Stripe no hay que tocar nada**: el cupón de cada descuento y el aviso nuevo de «la prueba acaba» los pide el código solo, la primera vez que alguien abra la página de pago.
+Tus respuestas del 7-oct, construidas ([decisión 0076](../../decisiones/0076-a3-los-vendedores.md)). **Una migración** (la **0058**) y **un despliegue**. Ninguna clave nueva, y **en Stripe no hay que tocar nada**: el cupón de cada descuento y el aviso nuevo de «la prueba acaba» los pide el código solo, la primera vez que alguien abra la página de pago.
 
 **Qué trae:**
 
@@ -165,7 +165,7 @@ Si algo no sale como aquí, hazle una captura y me la pasas.
 
 **Fusionada, migrada (0057) y desplegada**: comprobado el 7-oct por la tarde leyendo producción, 57 migraciones y la API con 70 y 156. **Lo único que queda es el paso 4, probarlo con alguien del equipo**, si no lo has hecho ya. Lo de abajo se queda como estaba.
 
-Tus respuestas del 7-oct, construidas ([decisión 0075](decisiones/0075-las-respuestas-de-c2.md)). **Una migración** (la **0057**) y **un despliegue**. Ninguna clave nueva.
+Tus respuestas del 7-oct, construidas ([decisión 0075](../../decisiones/0075-las-respuestas-de-c2.md)). **Una migración** (la **0057**) y **un despliegue**. Ninguna clave nueva.
 
 **Qué trae:**
 
@@ -232,7 +232,7 @@ Si algo no sale como aquí, hazle una captura y me la pasas.
 
 ## El repaso de C1 (#91) y las respuestas de C2 (#92) · **hecho** (7-oct)
 
-Fusionadas las dos y la API desplegada (7-oct, 01:20). Comprobado en producción: 56 migraciones y 70 y 151. Lo que traía el repaso, en la [decisión 0074](decisiones/0074-el-repaso-de-c1.md); tus respuestas, en la [0075](decisiones/0075-las-respuestas-de-c2.md).
+Fusionadas las dos y la API desplegada (7-oct, 01:20). Comprobado en producción: 56 migraciones y 70 y 151. Lo que traía el repaso, en la [decisión 0074](../../decisiones/0074-el-repaso-de-c1.md); tus respuestas, en la [0075](../../decisiones/0075-las-respuestas-de-c2.md).
 
 ---
 
@@ -240,7 +240,7 @@ Fusionadas las dos y la API desplegada (7-oct, 01:20). Comprobado en producción
 
 **Fusionada, migrada (0056) y desplegada (70 y 151)**, comprobado en producción el 6-oct por la noche. Probado por Richi y Santiago entre dos móviles: lo que salió está arriba.
 
-El chat de verdad ([decisión 0073](decisiones/0073-c1-hablar.md)), con tus seis respuestas
+El chat de verdad ([decisión 0073](../../decisiones/0073-c1-hablar.md)), con tus seis respuestas
 (0071). Una migración (la **0056**) y un despliegue. **Ninguna clave nueva**: usa las del
 almacén que ya están puestas.
 
@@ -311,7 +311,7 @@ Si algo no sale como aquí, hazle una captura y me la pasas.
 Fusionado (#88 y #89), migrado (0055) y desplegado (66 y 138), comprobado en producción el
 3-oct. La venta del atún ya la anulaste tú desde su ficha.
 
-Los tres fallos que viste ([decisión 0072](decisiones/0072-el-repaso-del-3-oct.md)). Una
+Los tres fallos que viste ([decisión 0072](../../decisiones/0072-el-repaso-del-3-oct.md)). Una
 migración (la **0055**) y un despliegue.
 
 **Qué trae:**
@@ -396,7 +396,7 @@ Recarga la app (**Ctrl + F5** en el ordenador; en el móvil, ciérrala y ábrela
 
 ## C · El chat, el plan (#87) · **contestado** (3-oct)
 
-**Sí a las seis** ([decisión 0071](decisiones/0071-las-respuestas-de-c.md)). En la 5, la
+**Sí a las seis** ([decisión 0071](../../decisiones/0071-las-respuestas-de-c.md)). En la 5, la
 casilla de mandar el horario al chat viene marcada **y se puede desmarcar**. **C1 · Hablar**
 está arriba; después viene **C2 · Lo oficial**.
 
@@ -408,7 +408,7 @@ está arriba; después viene **C2 · Lo oficial**.
 Comprobado el 2-oct leyendo producción: 54 migraciones, la API con 66 y 137, los avisos al
 móvil encendidos, `/tareas/movil` y el latido de cada minuto.
 
-**Construida, en una sola entrega**, con tus respuestas ([decisión 0070](decisiones/0070-la-app-instalable.md)).
+**Construida, en una sola entrega**, con tus respuestas ([decisión 0070](../../decisiones/0070-la-app-instalable.md)).
 Una migración (la **0054**), un despliegue y **dos secretos que hiciste tú**, una sola vez.
 
 **Qué trae:**
@@ -565,7 +565,7 @@ migraciones, y la API con sus 65 consultas y 130 comandos.
 - **La app se pone al día sola**: al volver a ella y, mientras la miras, cada minuto el
   Tablón, «Lo de hoy» y quién ha fichado. Al segundo, con el chat (entrega C).
 
-**Qué trae H2 · El horario** ([decisión 0069](decisiones/0069-el-horario.md)):
+**Qué trae H2 · El horario** ([decisión 0069](../../decisiones/0069-el-horario.md)):
 
 - **El horario de la semana**, en **Equipo → Horarios**. Tocas la casilla de una persona
   y un día, y le pones un tramo (entra, sale y su descanso), otro si es horario partido,
@@ -656,7 +656,7 @@ Si algo no se ve como te digo, hazle una captura y me la pasas.
 Fusionada, migrada (`0052`), desplegada (62 y 125) y con Cloudflare puesto por ti el
 30-sep. Lo de abajo se queda como estaba, por si hay que repetirlo.
 
-**Qué trae** ([decisión 0068](decisiones/0068-las-respuestas-de-h.md)):
+**Qué trae** ([decisión 0068](../../decisiones/0068-las-respuestas-de-h.md)):
 
 - **La persona sin correo**: al invitar, la casilla «No tiene correo, o no lo quiere
   dar». Ficha solo con su PIN, en el aparato del local. Si un día lo da, en su ficha,
@@ -801,13 +801,13 @@ Si algo no se ve como te digo, hazle una captura y me la pasas.
 ## Pro a 99 €, el chat y el plan de H (#82) · **hecho** (30-sep)
 
 Fusionada, y la API desplegada y comprobada (58 y 117) el 30-sep. Lo que trae, en la
-[decisión 0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md); tus seis
-respuestas de H, en la [0068](decisiones/0068-las-respuestas-de-h.md).
+[decisión 0067](../../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md); tus seis
+respuestas de H, en la [0068](../../decisiones/0068-las-respuestas-de-h.md).
 
 ### Lo que tiene fecha
 
 - **La oferta de Verifacti caduca hacia el 19 de octubre**
-  ([`docs/el-precio-de-verifacti.md`](el-precio-de-verifacti.md)). Su web deja contratar
+  ([`docs/el-precio-de-verifacti.md`](../../el-precio-de-verifacti.md)). Su web deja contratar
   desde un solo NIF, así que lo más probable es que **no haya mínimo de diez**. Si quieres
   asegurarlo, el correo son dos líneas: «¿Cuánto cuesta al mes con 1, 3 y 5 NIF en
   producción? ¿Hay algún mínimo?».
@@ -816,7 +816,7 @@ respuestas de H, en la [0068](decisiones/0068-las-respuestas-de-h.md).
 
 ## La mudanza · cuando toque, todo junto
 
-**Decidido el 30-sep** ([0065](decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)):
+**Decidido el 30-sep** ([0065](../../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)):
 la copia de seguridad, Supabase Pro, Cloudflare y el repositorio en privado se hacen **a
 la vez**, antes del primer cliente que pague de verdad o de vender Estook TPV. Los pasos de
 Cloudflare y del repositorio se escriben cuando llegue el día; los de la copia ya están
@@ -867,19 +867,19 @@ cifrada.
 URL_DE_LA_COPIA o CLAVE_DE_LA_COPIA», es que un nombre no está escrito igual.
 
 A partir de ahí se hace sola **cada lunes de madrugada**. Cómo se restaura, paso a paso,
-en [`docs/copias-de-seguridad.md`](copias-de-seguridad.md).
+en [`docs/copias-de-seguridad.md`](../../copias-de-seguridad.md).
 
 ### 4 · Cloudflare Pages y el repositorio en privado
 
 Se escriben el día de la mudanza. Lo que cambia y lo que no —las claves se quedan donde
-están— está en la [decisión 0061](decisiones/0061-el-orden-y-la-infraestructura.md).
+están— está en la [decisión 0061](../../decisiones/0061-el-orden-y-la-infraestructura.md).
 
 ---
 
 ## R2 · El pedido sugerido, los informes y Google (#77) · **hecho** (27-sep)
 
 Fusionada, migrada (`0051`), desplegada y comprobada (58 y 117) el 27-sep. Lo que trae, en
-la [decisión 0053](decisiones/0053-el-pedido-los-informes-y-google.md).
+la [decisión 0053](../../decisiones/0053-el-pedido-los-informes-y-google.md).
 
 ---
 
@@ -1384,8 +1384,8 @@ si la base va por detrás**.
 cada app (antes «Hoy»); las tarjetas **en mosaico**, sin huecos; **Ajustes por
 secciones** con buscador; **el aspecto nuevo**; y **el arreglo de entrar**: la cuenta que
 solo es del admin ya no pide el código en la app, y la pantalla del código dice de qué
-cuenta es ([0044](decisiones/0044-las-cifras-de-cada-app.md),
-[0045](decisiones/0045-el-aspecto-y-el-orden.md)).
+cuenta es ([0044](../../decisiones/0044-las-cifras-de-cada-app.md),
+[0045](../../decisiones/0045-el-aspecto-y-el-orden.md)).
 
 **El orden importa, y no se cambia:** primero fusionar, luego la migración, luego la
 API, **seguidos y en ese orden**. Si se aplica la migración antes de fusionar, la base
@@ -1503,7 +1503,7 @@ Si algo no se ve como te digo, hazle una captura y me la pasas.
 > secretos, los dos probados por Richi. **No hay nada que hacer.** Lo de abajo se queda
 > como referencia, por si un día hay que volver a montarlo.
 
-Lo que trae ([0042](decisiones/0042-registro-abierto-google-y-la-oferta.md)): la portada
+Lo que trae ([0042](../../decisiones/0042-registro-abierto-google-y-la-oferta.md)): la portada
 básica de `estook.com` con **Crear cuenta** e **Iniciar sesión**; la privacidad y las
 condiciones; crear cuenta **con Google o con correo y código**; entrar **con Google,
 contraseña o PIN**; **Elegir plan** al crear la cuenta; y **admin → Oferta** para
@@ -1898,7 +1898,7 @@ web» llamado Estook. Eso hace falta.
 
 **1 · Lo de Supabase, no.** La pantalla de tus capturas —**Authentication → Sign In /
 Providers → Google**— es **el login de Supabase**, y Estook no lo usa: el login es
-nuestro ([0010](decisiones/0010-el-login-es-nuestro.md)). Encenderlo no conecta Business
+nuestro ([0010](../../decisiones/0010-el-login-es-nuestro.md)). Encenderlo no conecta Business
 Profile; abriría otra puerta de entrada que no queremos. **Pulsa «Cancel»** y comprueba
 que **«Enable Sign in with Google» queda apagado**.
 

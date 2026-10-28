@@ -2,7 +2,7 @@
 
 **Fecha:** 15 de octubre de 2026
 **Estado:** contestado por Richi el 15-oct. La primera entrega (**M9 · 1 · El plato y tu carta**) se construye a continuación, en su pull request.
-**Cambia:** el [Manifiesto](../maestros/Estook-Manifiesto.md) (capítulos 9, 13 y 14), el [Plan](../maestros/Estook-Plan-de-Desarrollo.md) (B5, M9 y M10), [el mapa](../MAPA-de-modulos.md) y [el plan de M9](../m9-escandallos.md).
+**Cambia:** el [Manifiesto](../maestros/Estook-Manifiesto.md) (capítulos 9, 13 y 14), el [Plan](../maestros/Estook-Plan-de-Desarrollo.md) (B5, M9 y M10), [el mapa](../MAPA-de-modulos.md) y [el plan de M9](../historia/modulos/m9-escandallos.md).
 
 Las cinco preguntas del plan de M9 se le hicieron a Richi en llano el 15-oct. Contestó las cinco, añadió dos (los precios por canal y el orden en que el hostelero monta las cosas) y aclaró para qué sirve cada pieza. Esto es lo que queda.
 

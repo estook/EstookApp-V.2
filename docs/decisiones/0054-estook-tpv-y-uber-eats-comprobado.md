@@ -126,7 +126,7 @@ Terminal, Viva.com y SumUp, como próximamente.
 ## El punto por punto
 
 Qué hay construido de cada punto de Richi, qué falta y en qué módulo cae, en
-[`docs/la-evolucion-punto-por-punto.md`](../la-evolucion-punto-por-punto.md).
+[`docs/historia/modulos/la-evolucion-punto-por-punto.md`](../historia/modulos/la-evolucion-punto-por-punto.md).
 
 ## Lo que queda por decidir, y es de Richi
 

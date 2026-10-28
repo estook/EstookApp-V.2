@@ -1,7 +1,7 @@
 # 0092 · Las respuestas de M9 · 3: escalar por ración o por tanda, los extras al TPV, sin QR ni «ya la sé»
 
 **Fecha:** 17 de octubre de 2026
-**Estado:** contestado por Richi; el plan, en [`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](../m9-3-las-fichas-y-lo-que-ha-cambiado.md), con sus cuatro preguntas contestadas en la [0093](0093-como-detecta-estook-lo-que-se-escapa.md). **Construido el 18-oct** en la rama `m9-3-escalar-y-lo-que-ha-cambiado` (migración 0073); al final, «Lo que decidí al construirlo».
+**Estado:** contestado por Richi; el plan, en [`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](../historia/modulos/m9-3-las-fichas-y-lo-que-ha-cambiado.md), con sus cuatro preguntas contestadas en la [0093](0093-como-detecta-estook-lo-que-se-escapa.md). **Construido el 18-oct** en la rama `m9-3-escalar-y-lo-que-ha-cambiado` (migración 0073); al final, «Lo que decidí al construirlo».
 **Sigue:** [0086](0086-las-respuestas-de-m9.md) y [0090](0090-el-repaso-del-16-oct.md). Donde el Plan, el Manifiesto o Roles dicen otra cosa de los extras, del QR, del modo aprendizaje o de la calibración, manda esta.
 
 ## Lo que contestó Richi

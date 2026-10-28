@@ -1,7 +1,7 @@
 # 0073 · C1 · Hablar: el chat del equipo, al segundo y en el móvil
 
 **Fecha:** 6 de octubre de 2026
-**Estado:** construido, con la migración `0056`. Sigue el plan de [`docs/c-el-chat.md`](../c-el-chat.md) y las seis respuestas de Richi ([0071](0071-las-respuestas-de-c.md)).
+**Estado:** construido, con la migración `0056`. Sigue el plan de [`docs/historia/modulos/c-el-chat.md`](../historia/modulos/c-el-chat.md) y las seis respuestas de Richi ([0071](0071-las-respuestas-de-c.md)).
 **Cambia:** la barra de arriba (el botón del chat, con su número, abre el chat de verdad), la campana (llega al segundo), el aviso del móvil (también por el chat) y la política de seguridad de la app (`wss:` a nuestro Supabase y el audio de las notas de voz).
 
 ## Lo que se ha construido

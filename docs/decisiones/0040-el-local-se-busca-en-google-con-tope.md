@@ -80,7 +80,7 @@ Se guarda **de dónde sale** la posición del fichaje (`posicion_de`: `a_mano` o
 
 **Lo que sigue siendo tuyo en Google Cloud**, porque es lo único que corta del lado
 de Google: la cuota diaria de la API y el aviso de presupuesto
-([`pasos-para-cerrar-m7.md`](../pasos-para-cerrar-m7.md), paso 6).
+([`pasos-para-cerrar-m7.md`](../historia/pasos/pasos-para-cerrar-m7.md), paso 6).
 
 ## Lo que queda para después, y por qué
 

@@ -49,17 +49,17 @@
 - Del repaso del 9-oct ([0080](decisiones/0080-el-repaso-del-9-oct.md)), llamar «Historial» a la pestaña, que «Ajustes» lleve lo que corrigió un inventario y que el aviso del pedido mínimo solo salga si no llega.
 - Los quince de «Lo que decidí al construirlo» de la [0079](decisiones/0079-lo-gastado-y-la-desviacion.md), como que «lo que falta» sea solo de lo vendido tal cual, que el food cost real se mida frente al objetivo hasta que haya teórico, o que entre dos inventarios se mida por posición en el libro.
 - Los doce de «Lo que decidí al construirlo» de la [0078](decisiones/0078-las-respuestas-de-m8.md), como que «Toca contar» no salga en «Hoy» del Panel o que los lotes que ya había empiecen con lo que trajeron.
-- Los doce de «Lo que decido yo» de [`m8-inventario-mermas-y-desviacion.md`](m8-inventario-mermas-y-desviacion.md), como que «Toca contar» elija por lo que se gasta, que la desviación nunca señale a nadie o que la hoja impresa vaya sin las cifras del libro.
-- Los once de «Lo que decido yo» de [`a4-ventas.md`](a4-ventas.md) y los nueve de «Lo que decidí al construirlo» de la [0077](decisiones/0077-a4-las-ventas.md), como que IKATZ no cuente, que con menos de diez clientes la pérdida se dé en «1 de 4», que Pausa salga en Pagando o que una visita repetida por la red cuente dos veces.
-- Los diez de «Lo que decido yo» de [`a3-vendedores.md`](a3-vendedores.md) y los ocho de «Lo que decidí al construirlo» de la [0076](decisiones/0076-a3-los-vendedores.md), como que el descuento no se cambie una vez puesto, que solo valga en el pago mensual o que con prueba se ponga al acabarla.
-- Los siete de «Lo que decido yo» de C2, al final de [`c-el-chat.md`](c-el-chat.md), como quitar «Cocina» y «Sala» porque estaban vacías, y los ocho de «Lo que decidí al construirlo» de la 0075, como que el recordatorio de confirmar sea un aviso de la campana y que el correo del chat no lleve el texto de los mensajes.
+- Los doce de «Lo que decido yo» de [`m8-inventario-mermas-y-desviacion.md`](historia/modulos/m8-inventario-mermas-y-desviacion.md), como que «Toca contar» elija por lo que se gasta, que la desviación nunca señale a nadie o que la hoja impresa vaya sin las cifras del libro.
+- Los once de «Lo que decido yo» de [`a4-ventas.md`](historia/modulos/a4-ventas.md) y los nueve de «Lo que decidí al construirlo» de la [0077](decisiones/0077-a4-las-ventas.md), como que IKATZ no cuente, que con menos de diez clientes la pérdida se dé en «1 de 4», que Pausa salga en Pagando o que una visita repetida por la red cuente dos veces.
+- Los diez de «Lo que decido yo» de [`a3-vendedores.md`](historia/modulos/a3-vendedores.md) y los ocho de «Lo que decidí al construirlo» de la [0076](decisiones/0076-a3-los-vendedores.md), como que el descuento no se cambie una vez puesto, que solo valga en el pago mensual o que con prueba se ponga al acabarla.
+- Los siete de «Lo que decido yo» de C2, al final de [`c-el-chat.md`](historia/modulos/c-el-chat.md), como quitar «Cocina» y «Sala» porque estaban vacías, y los ocho de «Lo que decidí al construirlo» de la 0075, como que el recordatorio de confirmar sea un aviso de la campana y que el correo del chat no lleve el texto de los mensajes.
 - Los seis de «Lo que decidí al construirlo» de la [0074](decisiones/0074-el-repaso-de-c1.md), como que sin red no salga ninguno hasta que salga el primero.
 - Los nueve de «Lo que decidí al construirlo» de la [0073](decisiones/0073-c1-hablar.md), como que el toque al segundo vaya por un canal público con nombre secreto y sin el mensaje, o que en el modo cocina estrecho se recoja el buscador y no el chat.
 - Los cuatro de «Lo que decidí al construirlo» de la [0072](decisiones/0072-el-repaso-del-3-oct.md), como que una merma no se confirme (no puede pasar de lo que hay) y que solo se anule lo de 31 días.
-- Los dieciséis de «Lo que decido yo» de [`c-el-chat.md`](c-el-chat.md), como que el aviso de «hay algo nuevo» no lleve el mensaje dentro.
+- Los dieciséis de «Lo que decido yo» de [`c-el-chat.md`](historia/modulos/c-el-chat.md), como que el aviso de «hay algo nuevo» no lleve el mensaje dentro.
 - Los once de «Lo que decidí al construirlo» de la [0070](decisiones/0070-la-app-instalable.md), como que en blanco el pedido no avise o que un 403 no borre el móvil.
 - Subir Cadena a 89 € junto con Pro.
-- Los once puntos de «Lo que decido yo» de [`h-horarios.md`](h-horarios.md).
+- Los once puntos de «Lo que decido yo» de [`h-horarios.md`](historia/modulos/h-horarios.md).
 - Que abrir el aparato para fichar cierre la sesión de quien lo abre.
 - Que la pausa, de fábrica, no cuente como trabajo (lo dice la ley si el convenio calla).
 - Los seis de «Lo que decidí al construirlo» de la [0069](decisiones/0069-el-horario.md), como que el correo del horario lleve lo suyo escrito y no un PDF.
@@ -68,3 +68,5 @@
 - El 10 % de límite de descuento del jefe de sala, de fábrica.
 - Los plazos entre corchetes de [`conservacion-de-datos.md`](legal/conservacion-de-datos.md).
 - Del coste, los supuestos marcados como tales y los dos umbrales de la prueba final (que Pro a tope deje un 60 %, y que lo medido no se separe más de un 20 %).
+- Ordenar lo viejo en `docs/historia/` (con `pasos/` y `modulos/`), que ya existía, en vez de abrir una carpeta «pasados» nueva; y qué papeles se mueven: los pasos de entregas que ESTADO ya no pide y los planes de módulos terminados (28-oct).
+- Que el botón de Estook TPV en Ajustes lo vean gerente y dirección, los que ya vinculan los aparatos, y que en el móvil abra Estook TPV sin hoja intermedia ni la descarga de Windows (la maqueta del 28-oct).

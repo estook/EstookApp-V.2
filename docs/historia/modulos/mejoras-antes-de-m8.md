@@ -10,7 +10,7 @@ optimizar o hacer mucho mejor, hazlo». **M8 no empieza hasta que esto esté al 
 > necesita** que no depende de nosotros. Al final, el orden de las entregas.
 
 El panel de administración va en su propio documento:
-[`panel-de-administracion.md`](panel-de-administracion.md).
+[`panel-de-administracion.md`](../../panel-de-administracion.md).
 
 ---
 
@@ -18,15 +18,15 @@ El panel de administración va en su propio documento:
 
 **Diecisiete de las veinte están en producción** (2-oct), y el QR de la 20. Las primeras: la 1, 2, 3 y 7 desde el 23 de
 septiembre de 2026 (#64), la 4 y la 5 desde el 24 (#67,
-[0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)), y la 6, 8, 9, 17 y el QR de
-la 20 desde el 25 (#69, [0047](decisiones/0047-lo-que-se-ordena.md)). **V y O están
+[0046](../../decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)), y la 6, 8, 9, 17 y el QR de
+la 20 desde el 25 (#69, [0047](../../decisiones/0047-lo-que-se-ordena.md)). **V y O están
 enteras.** Cada una cambia a «En producción» cuando se fusiona y se despliega su entrega.
 **La 10 (el lector) se adelanta** a después del repaso del 25-sep: Richi pidió «Escanear
-producto» junto a «Añadir producto» ([0049](decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)).
+producto» junto a «Añadir producto» ([0049](../../decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)).
 Y **de la 20, la carta que ya tiene el local se puede subir** desde el repaso del 25-sep,
 y la enseña su QR (0049). **La 10 está en producción** desde el 26-sep (#73), **la 13** desde
-el 27-sep con R1 (#76, [0052](decisiones/0052-la-campana-y-los-avisos.md)), y **la 12, la 16
-y el aviso de la 19** desde el 27-sep con R2 (#77, [0053](decisiones/0053-el-pedido-los-informes-y-google.md)); **la 18** desde el 1-oct con H2 (#85), y **la 14 y la 15** desde el 1-oct con I (#86, [0070](decisiones/0070-la-app-instalable.md)).
+el 27-sep con R1 (#76, [0052](../../decisiones/0052-la-campana-y-los-avisos.md)), y **la 12, la 16
+y el aviso de la 19** desde el 27-sep con R2 (#77, [0053](../../decisiones/0053-el-pedido-los-informes-y-google.md)); **la 18** desde el 1-oct con H2 (#85), y **la 14 y la 15** desde el 1-oct con I (#86, [0070](../../decisiones/0070-la-app-instalable.md)).
 
 | #   | Mejora                                   | Entrega                  | Necesita de fuera                        | Cómo está                                         |
 | --- | ---------------------------------------- | ------------------------ | ---------------------------------------- | ------------------------------------------------- |
@@ -119,7 +119,7 @@ misma forma. **Una cifra, un dueño**: el food cost de Servicio y el del Panel y
 mismo, y una prueba lo vigila.
 
 **Hecho (23 de septiembre de 2026, en la rama).** Lo decidió Richi y está razonado en
-la [0044](decisiones/0044-las-cifras-de-cada-app.md):
+la [0044](../../decisiones/0044-las-cifras-de-cada-app.md):
 
 - **En la primera pantalla de cada app**, bajo el título «Cómo va»: Almacén ·
   Resumen (**arriba del todo**, desde el 23-sep), Servicio · Cierre (debajo de lo
@@ -139,7 +139,7 @@ la [0044](decisiones/0044-las-cifras-de-cada-app.md):
 
 ### 3 · Cada app abre con su resumen
 
-**Hecho (23 de septiembre de 2026, en la rama)**, con la [0045](decisiones/0045-el-aspecto-y-el-orden.md).
+**Hecho (23 de septiembre de 2026, en la rama)**, con la [0045](../../decisiones/0045-el-aspecto-y-el-orden.md).
 Richi eligió el camino corto y más limpio: **no hay un «Inicio» nuevo; el primer
 destino se llama «Resumen»** (Almacén, Escandallos y Equipo), porque ya era la
 pantalla que abría la app con lo urgente y «Cómo va». En Equipo, el «Resumen» de antes
@@ -180,7 +180,7 @@ acción**, y se repasa uno por uno. Los dibujos:
   quitar el filtro, no crear algo.
 
 **Hecho (24 de septiembre de 2026, en la rama `v-vacios-oscuro-y-fotos`)**, con la
-[0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md): veinte dibujos de una
+[0046](../../decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md): veinte dibujos de una
 familia, cada uno en su trozo; el dibujo, obligatorio en `EstadoVacio`; un botón que
 dice lo que hace —las acciones del catálogo, solo a quien las puede hacer— y los
 ejemplos como salida en texto; `NadaConEso` para lo filtrado; Almacén · Resumen
@@ -207,7 +207,7 @@ fila se escribe después de subir y la foto vieja se borra.
   cadena se hereda.
 
 **Hecho (24 de septiembre de 2026, en la misma rama)**, con la
-[0046](decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md):
+[0046](../../decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md):
 
 - **El oscuro**: una prueba mide el contraste de cada texto en diecisiete pantallas,
   en los dos temas y en ordenador y móvil; lo que encontró —el color de la app como
@@ -226,7 +226,7 @@ fila se escribe después de subir y la foto vieja se borra.
 
 ### 6 · La barra de acciones en el móvil
 
-**Hecha en la entrega O** ([0047](decisiones/0047-lo-que-se-ordena.md)): un botón «+»
+**Hecha en la entrega O** ([0047](../../decisiones/0047-lo-que-se-ordena.md)): un botón «+»
 redondo, con **Fogón arriba en su propio banner** (lo pidió Richi), fichar cuando se
 puede y los atajos de cada puesto, que son los mismos que las acciones rápidas. Lo que
 sigue es el plan de antes.
@@ -351,16 +351,16 @@ por semana**, y el semáforo lo pinta el Panel con `comoVa`, que ya está en el 
 ## R · El reloj y los avisos
 
 > **En dos entregas** (27-sep). **R1**, en producción (#76,
-> [0052](decisiones/0052-la-campana-y-los-avisos.md)): la campana, los avisos a quien manda,
+> [0052](../../decisiones/0052-la-campana-y-los-avisos.md)): la campana, los avisos a quien manda,
 > pedir ayuda con un pedido (la entrega 2 de M7), las subidas de precio (13), Ajustes →
 > Avisos con campana y correo, y el buscador que se cierra. **R2**, hecha
-> ([0053](decisiones/0053-el-pedido-los-informes-y-google.md)): mañana toca pedir y la cuenta
+> ([0053](../../decisiones/0053-el-pedido-los-informes-y-google.md)): mañana toca pedir y la cuenta
 > por días de la semana (12), Negocio → Informes con los correos (16) y la nota en Google
 > con Reseñas (19). **Lo que dicen las decisiones manda sobre lo de abajo donde lo cambia.**
 
 Estas cuatro necesitan que Estook **haga cosas sin que nadie abra la app**: mirar a
 las 7:00 qué pedido no ha llegado, mandar el informe el lunes. Eso es **el reloj**, la
-decisión [0016](decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md) que nunca se
+decisión [0016](../../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md) que nunca se
 llegó a montar: `pg_cron` dentro de Supabase llamando a nuestra API. **Es gratis en
 el plan actual.** Se monta al principio de esta entrega, y con él se cierran también
 la actualización diaria de Google (0040) y **la entrega 2 del repaso de M7**:
@@ -455,14 +455,14 @@ un enlace. Así:
 ## H · Horarios
 
 > **El plan entero de H** —lo decidido, las preguntas a Richi y el motor de los PDF— está
-> en [`h-horarios.md`](h-horarios.md) (30-sep, [0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)).
+> en [`h-horarios.md`](h-horarios.md) (30-sep, [0067](../../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)).
 > Y entre la I y los vendedores entra una entrega nueva, **C · El chat**.
 >
-> **Richi contestó las seis el 30-sep** ([0068](decisiones/0068-las-respuestas-de-h.md)):
+> **Richi contestó las seis el 30-sep** ([0068](../../decisiones/0068-las-respuestas-de-h.md)):
 > H va en dos. **H1 · Personas y fichajes**, hecha (la persona sin correo, la pausa, el
 > aparato del local, las correcciones con rastro, el registro para la Inspección y los
 > PDF). **H2 · El horario**, que es esta mejora 18 y la entrega 3 de M7, hecha el 1-oct
-> ([0069](decisiones/0069-el-horario.md)).
+> ([0069](../../decisiones/0069-el-horario.md)).
 
 ### 18 · Cuadrante con coste en vivo y horas extra
 
@@ -485,7 +485,7 @@ app entera. No se hace aparte: sería montar el cuadrante dos veces.
 
 **El plan, lo que cuesta, lo del iPhone y las seis preguntas** (1-oct): en
 [`i-la-app-instalable.md`](i-la-app-instalable.md). **Construida el mismo día, en una
-entrega**, con las respuestas de Richi: [decisión 0070](decisiones/0070-la-app-instalable.md).
+entrega**, con las respuestas de Richi: [decisión 0070](../../decisiones/0070-la-app-instalable.md).
 
 Push y sin conexión comparten la misma pieza: **un _service worker_**, que hoy no
 existe. Con él, Estook se instala en el móvil como una app. Se hacen juntas.
@@ -531,14 +531,14 @@ decir que no se ha mandado es peor que no guardar (regla 34).
 **El plan** (2-oct): en [`c-el-chat.md`](c-el-chat.md). Qué es, lo ya decidido, lo que
 decido yo, lo que cuesta (nada al mes) y **seis preguntas de sí o no** para Richi. No es
 una de las veinte mejoras: entró el 30-sep, al adelantar el chat de M23
-([0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)). Trae también lo
+([0067](../../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)). Trae también lo
 que I dejó fuera, **que lo que cambia se vea al segundo**.
 
 **Las respuestas** (3-oct): sí a las seis
-([0071](decisiones/0071-las-respuestas-de-c.md)).
+([0071](../../decisiones/0071-las-respuestas-de-c.md)).
 
 **C1 · Hablar** (6-oct): construida, con la migración `0056`
-([0073](decisiones/0073-c1-hablar.md)). Los tres canales de fábrica, canales y privados,
+([0073](../../decisiones/0073-c1-hablar.md)). Los tres canales de fábrica, canales y privados,
 texto, fotos, documentos y notas de voz, leído a la vista, al segundo y en el móvil. Falta
 **C2 · Lo oficial**.
 
@@ -657,7 +657,7 @@ El 16 de septiembre de 2026, a las tres preguntas que dejaba este plan:
 3. **El modo cocina lo elige cada aparato**, como el tema; y en el alta de una tableta
    de cocina se propone encendido.
 
-### El 27 de septiembre, a las preguntas de R ([0052](decisiones/0052-la-campana-y-los-avisos.md))
+### El 27 de septiembre, a las preguntas de R ([0052](../../decisiones/0052-la-campana-y-los-avisos.md))
 
 1. **La campana de arriba** es donde llegan los avisos, y al correo lo importante.
 2. **A quien manda**, lo que hace su equipo, una vez por cosa: lo recomendado.
@@ -670,7 +670,7 @@ El 16 de septiembre de 2026, a las tres preguntas que dejaba este plan:
 6. **Ventas y «Tu semana»**, ya; el PDF, con Horarios.
 7. **Google, un punto medio**: cada tres días sola, y al mirarla si tiene más de uno.
 
-### El 27 de septiembre, a las preguntas de R2 ([0053](decisiones/0053-el-pedido-los-informes-y-google.md))
+### El 27 de septiembre, a las preguntas de R2 ([0053](../../decisiones/0053-el-pedido-los-informes-y-google.md))
 
 1. **Informes, sección propia de Negocio**: Ventas · Informes · Pulse · Costes · Reseñas.
 2. **De fábrica**, los tres informes a la campana; al correo, **la semana y el mes**.

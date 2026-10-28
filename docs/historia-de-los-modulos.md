@@ -2061,7 +2061,7 @@ nadie: ni elegir el local en Google, ni traer su ficha otra vez.
 El 16 de septiembre Richi paró M7 con **veinte mejoras** y **el panel de
 administración** entero —clientes, vendedores con código, ventas y auditoría—, y una
 condición: M8 no empieza hasta tenerlo todo. Se escribieron los dos planes
-([`mejoras-antes-de-m8.md`](mejoras-antes-de-m8.md) y
+([`mejoras-antes-de-m8.md`](historia/modulos/mejoras-antes-de-m8.md) y
 [`panel-de-administracion.md`](panel-de-administracion.md), #52) y se construyó la
 primera entrega, **A1 · la puerta** (#53, migración `0037`).
 
@@ -2961,7 +2961,7 @@ antes de que nadie la busque.
 - Líneas duplicadas en el Anexo 3.7 y en la tabla de Roles 1.12.
 
 El repaso del esquema y del código contra el Anexo está hecho y escrito en
-**[`docs/lo-que-el-tpv-toca-de-lo-construido.md`](lo-que-el-tpv-toca-de-lo-construido.md)**:
+**[`docs/historia/modulos/lo-que-el-tpv-toca-de-lo-construido.md`](historia/modulos/lo-que-el-tpv-toca-de-lo-construido.md)**:
 qué hay que ampliar del cierre de caja, del motor fiscal y de los permisos, y las dos
 cosas que hay que **decidir antes de escribir la primera pantalla de Sala**.
 
@@ -3064,7 +3064,7 @@ repaso del 16-oct) está en su decisión, de la [0073](decisiones/0073-c1-hablar
 _18 de octubre de 2026._ Migración `0073`, decisiones
 [0092](decisiones/0092-las-respuestas-de-m9-3.md) a
 [0095](decisiones/0095-lo-vendido-sin-escandallo-y-cuando-llega-fogon.md), el plan en
-[`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](m9-3-las-fichas-y-lo-que-ha-cambiado.md). La
+[`m9-3-las-fichas-y-lo-que-ha-cambiado.md`](historia/modulos/m9-3-las-fichas-y-lo-que-ha-cambiado.md). La
 última entrega de M9.
 
 - **La receta de olla**: una columna, `receta.raciones` (vacía o de 2 a 1.000, solo en un
@@ -3095,13 +3095,13 @@ historial, los PDF, «Qué ha cambiado», los permisos y el aviso del reloj, una
 ### De Fogón 1 a la auditoría del 20-oct, en sus decisiones
 
 Fogón 1 entero (0097, 0098), los repasos del 19 y del 20-oct (0099, 0100) y la auditoría del
-20-oct (0101, con [su informe](auditoria-del-20-oct.md)) están contados en su decisión.
+20-oct (0101, con [su informe](auditorias/auditoria-del-20-oct.md)) están contados en su decisión.
 
 ### M10 · 1 · La carta que trabaja
 
 _20 de octubre de 2026._ Migración `0078`, decisión
 [0102](decisiones/0102-m10-1-la-carta-que-trabaja.md), el plan de M10 entero en
-[`m10-la-carta-menus-y-analisis.md`](m10-la-carta-menus-y-analisis.md). La primera mitad de
+[`m10-la-carta-menus-y-analisis.md`](historia/modulos/m10-la-carta-menus-y-analisis.md). La primera mitad de
 M10: lo que los maestros ya decían; la segunda espera las respuestas de Richi.
 
 - **Agotados** (`plato_agotado`): hasta el principio de la jornada siguiente
@@ -3533,7 +3533,7 @@ raíz hay [`estook.cmd`](../estook.cmd), que lo busca donde de verdad está:
 
 Con M4 sirviendo de verdad se hizo el primer repaso **mirando algo que
 funciona**, y salieron cosas que ninguna prueba veía. Está entero en
-[`docs/repaso-despues-de-m4.md`](repaso-despues-de-m4.md). Lo que hay que
+[`docs/historia/modulos/repaso-despues-de-m4.md`](historia/modulos/repaso-despues-de-m4.md). Lo que hay que
 tener presente al empezar M5:
 
 - **Hay tres mecanismos de fondo y ninguno se ejecuta**: la bandeja de salida, la

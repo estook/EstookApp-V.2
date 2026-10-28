@@ -11,7 +11,7 @@
 > | La API           | Desplegada con M20A · 1 · 2: **107 consultas y 253 comandos**                           |
 >
 > **M20A · 1 está en producción entera**: fusionada, migrada, desplegada y comprobada el 23-oct.
-> Lo de antes, en [`pasos-de-m16a.md`](pasos-de-m16a.md).
+> Lo de antes, en [`pasos-de-m16a.md`](../../pasos-de-m16a.md).
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -21,7 +21,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 Es **solo documentos**: no hay migración ni API que desplegar.
 
-1. **Lee la decisión**: [`docs/decisiones/0107-estook-tpv-el-tpv-entero.md`](decisiones/0107-estook-tpv-el-tpv-entero.md).
+1. **Lee la decisión**: [`docs/decisiones/0107-estook-tpv-el-tpv-entero.md`](../../decisiones/0107-estook-tpv-el-tpv-entero.md).
    Tus once respuestas están en el apartado 2, tal cual las diste. **Mira sobre todo el
    apartado 6, «Lo que decidí yo»**: son diez cosas que no me dijiste y he decidido como lo hacen
    los mejores. Si alguna no te cuadra, dímelo con su número.
@@ -44,7 +44,7 @@ Es **solo documentos**: no hay migración ni API que desplegar.
   Puedes seguir probándolas, pero **no las uses en un servicio de verdad**.
 - **No hay todavía**: vincular aparatos, el PIN de cada uno, el inicio, la caja, el editor del plano
   en el TPV, la botonera, la pantalla de cocina, imprimir ni cobrar. Cada cosa tiene su entrega en
-  [el plan](m20a-la-sala-y-la-cocina.md).
+  [el plan](../../m20a-la-sala-y-la-cocina.md).
 
 ## Lo siguiente · T1 · La puerta
 

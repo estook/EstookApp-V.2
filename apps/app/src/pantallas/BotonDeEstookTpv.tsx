@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconoDescargar, IconoFlechaDerecha, IconoServicio } from '@estook/iconos';
+import { IconoAbrirFuera, IconoDescargar, IconoFlechaDerecha, IconoServicio } from '@estook/iconos';
 import { DONDE_SE_DESCARGA_LA_CAJA, centimos, conSimbolo, planPorCodigo } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import { Boton, Hoja, clases, usarEsEscritorio } from '@estook/ui';
@@ -23,6 +23,13 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * ese aparato. Lo que decide si se puede es la API (`queLleveEstookTpv`); esto solo lo pinta.
  */
 const DIRECCION_DE_ESTOOK_TPV = `${import.meta.env.BASE_URL}../tpv/`;
+
+/**
+ * **«Aprende más»** lleva a la web, que se hace la última (Richi, 28-oct). Hasta entonces, a
+ * estook.com tal cual: nadie lo verá antes de que todo esté al 100 %, que es cuando se vende.
+ * El día que exista la página de Estook TPV, se cambia aquí.
+ */
+const DONDE_SE_EXPLICA_ESTOOK_TPV = 'https://estook.com/';
 
 export function BotonDeEstookTpv() {
   const { yo, permisos } = usarSesion();
@@ -179,6 +186,15 @@ export function BotonDeEstookTpv() {
                 El plan lo cambia quien lleva la suscripción de tu negocio.
               </p>
             )}
+            <a
+              href={DONDE_SE_EXPLICA_ESTOOK_TPV}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-toque items-center gap-e1 self-start font-semibold text-texto underline underline-offset-4"
+            >
+              Aprende más sobre Estook TPV
+              <IconoAbrirFuera size={16} />
+            </a>
           </div>
         </Hoja>
       )}

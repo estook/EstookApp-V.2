@@ -1,7 +1,7 @@
 # 0120 · Estook TPV es de Pro, y se llega por el botón de Ajustes
 
 **Fecha:** 28 de octubre de 2026
-**Estado:** decidido y construido en la rama `estook-tpv-es-de-pro` (migración 0094).
+**Estado:** decidido y construido en la #151 (migración 0094); las dos últimas respuestas, en el punto 4.
 **Sigue:** la [0107](0107-estook-tpv-el-tpv-entero.md), la [0119](0119-t5-la-caja-para-windows.md)
 y [la maqueta del botón](../maquetas/estook-tpv-en-ajustes.html), contestada por Richi el 28-oct.
 **Cambia:** el Manifiesto (32, los planes), el Anexo (lo decidido), el Plan (M19b), lo que lleva
@@ -51,8 +51,11 @@ Y al contestar la maqueta:
 4. **Los textos del botón, cortos** («Sala, cocina y caja», «Cobra con Estook»): en la columna de
    Ajustes del ordenador, los largos se partían en dos líneas.
 
-## 4 · Lo que falta contestar
+## 4 · Lo que contestó Richi después
 
-- **Dónde ficha en Esencial quien no tiene móvil.** Desde la 0115 se ficha en la caja, y un local
-  en Esencial no tiene caja.
-- **Adónde lleva «Aprende más» mientras no haya web.**
+- **En Esencial se ficha con el móvil**, en Estook. Un local en Esencial ya tiene su propio TPV:
+  o ficha allí, o con su móvil. **No hay aparato para fichar en Esencial**, y no se construye nada
+  más por ahora.
+- **«Aprende más» lleva a estook.com** hasta que exista la web, que se hace la última. Da igual que
+  hoy quede corto: **la primera venta será cuando todo esté al 100 %**, y nadie lo verá antes. El día
+  que exista la página de Estook TPV, se cambia `DONDE_SE_EXPLICA_ESTOOK_TPV`.

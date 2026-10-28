@@ -48,6 +48,11 @@ test('con Esencial, sale con «PRO» y vende Estook TPV', async ({ page, request
   const hoja = page.getByRole('dialog', { name: 'Actualiza a Pro para cobrar con nuestro TPV' });
   await expect(hoja).toContainText('Lo vendido baja solo del almacén');
   await expect(hoja).toContainText('99,00 €');
+  // Hasta que exista la web de Estook TPV, a estook.com (0120).
+  await expect(hoja.getByRole('link', { name: /Aprende más sobre Estook TPV/ })).toHaveAttribute(
+    'href',
+    'https://estook.com/',
+  );
   await hoja.getByRole('button', { name: 'Pasar a Pro' }).click();
   await expect(page).toHaveURL(/ajustes\/suscripcion/);
 });

@@ -150,7 +150,7 @@ test.describe('el catálogo', () => {
     await expect(page.getByText('null · no es lo mismo que cero')).toBeVisible();
   });
 
-  test('los cincuenta errores del catálogo se pintan, y ninguno enseña su código', async ({
+  test('los cincuenta y un errores del catálogo se pintan, y ninguno enseña su código', async ({
     page,
   }) => {
     // «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría
@@ -203,6 +203,9 @@ test.describe('el catálogo', () => {
     //
     // Y la 0109 añade `demasiados_enlaces`: los enlaces al correo de «He olvidado mi
     // contraseña» y «He olvidado mi PIN» tienen su tope por dirección. Cincuenta.
+    //
+    // Y la 0120 añade `estook_tpv_es_de_pro`: el aparato de un local sin Pro espera, sin
+    // borrar nada. Cincuenta y uno, y falló en GitHub, que es para lo que está.
     await abrir(page);
     await irA(page, 'Avisos y vacíos');
 
@@ -210,7 +213,7 @@ test.describe('el catálogo', () => {
       has: page.getByRole('heading', { name: 'ErrorEnCristiano' }),
     });
     const avisos = seccion.getByRole('alert');
-    await expect(avisos).toHaveCount(50);
+    await expect(avisos).toHaveCount(51);
 
     const texto = (await seccion.innerText()).toLowerCase();
     for (const codigo of [

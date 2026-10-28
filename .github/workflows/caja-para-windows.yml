@@ -10,7 +10,8 @@ name: La caja para Windows
 #   · A mano, desde `main` (Actions → La caja para Windows → Run workflow, y escribir
 #     «publicar»): **lo publica** en las publicaciones del repositorio, que es de donde lo baja
 #     el botón «Descargar» de Estook TPV. El programa que ya está instalado se actualiza solo con
-#     eso, y se pone al cerrarlo.
+#     eso (lee `latest.yml`), y se pone al cerrarlo. Sin «publicar», o fuera de `main`, solo se
+#     construye.
 #
 # **No es una comprobación obligatoria** para fusionar (nunca se añade, como Construir y
 # Publicar): una máquina de Windows tarda más y no prueba nada que no prueben las demás.
@@ -59,17 +60,35 @@ jobs:
       - name: Las pruebas del programa
         run: pnpm exec vitest run apps/caja-windows packages/impresion
 
+      # Igual en un pull request y al publicar: sale el instalador, su `.blockmap` y `latest.yml`.
       - name: Construir el instalador
-        if: github.event_name != 'workflow_dispatch' || inputs.confirmar != 'publicar'
         working-directory: apps/caja-windows
         run: pnpm run empaquetar
 
+      # **Publicarlo en orden y de una vez** (lección 238). Lo hacía electron-builder, que sube
+      # los ficheros a la vez, y cada subida intentaba crear la publicación: chocaban, y la
+      # v1.0.0 (28-oct) se quedó con el instalador y sin `latest.yml`, que es lo que lee el
+      # programa para actualizarse solo. Ahora la hace `gh`: la crea con los tres si no existe,
+      # y si existe se los pone, cambiando los que ya tuviera.
       - name: Publicarlo
         if: github.event_name == 'workflow_dispatch' && inputs.confirmar == 'publicar' && github.ref == 'refs/heads/main'
-        working-directory: apps/caja-windows
+        working-directory: apps/caja-windows/empaquetado
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm run publicar
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version=$(node -p "require('../package.json').version")
+          etiqueta="v$version"
+          ficheros=(Estook-TPV-caja-para-Windows.exe Estook-TPV-caja-para-Windows.exe.blockmap latest.yml)
+          if gh release view "$etiqueta" > /dev/null 2>&1; then
+            gh release upload "$etiqueta" "${ficheros[@]}" --clobber
+          else
+            titulo="Estook TPV para Windows $version"
+            notas="La caja para Windows (0119): Estook TPV en un programa, que imprime y abre el cajón."
+            gh release create "$etiqueta" "${ficheros[@]}" --target "$GITHUB_SHA" --title "$titulo" --notes "$notas"
+          fi
+          gh release view "$etiqueta" --json assets --jq '.assets[].name'
 
       - uses: actions/upload-artifact@v4
         with:

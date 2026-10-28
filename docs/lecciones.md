@@ -969,3 +969,15 @@
      en GitHub falló en tres trozos de Pantallas. En local ya había salido en rojo, y se descartó
      con «no va a GitHub» sin mirar qué se estaba guardando. Antes de cada commit,
      `git diff --cached --name-status` y que no haya ni un fichero que no sea de la entrega.
+238. **Una herramienta que sube a la vez no debe crear lo que comparten.** electron-builder subía
+     el instalador y su `.blockmap` en paralelo, y cada subida intentaba crear la publicación
+     v1.0.0: una la creó y la otra chocó («Published releases must have a valid tag»). La
+     publicación quedó sin `latest.yml`, que es lo que lee el programa para actualizarse solo, y la
+     vuelta salió en rojo. Ahora se construye igual que en un pull request y la publica `gh`, en
+     un solo paso: la crea si no existe, y si existe le pone los tres ficheros.
+239. **Una prueba con un programa de mentira, primero se comprueba que usa el de mentira.** Para
+     probar el guion de publicar se puso un `gh` falso delante en el `PATH`, con la ruta de Windows
+     (`C:/…`): los dos puntos partieron el `PATH` y se ejecutó **el `gh` de verdad**, que subió a la
+     v1.0.0 los tres ficheros construidos en el PC de Richi. Quedó completa y coherente, pero
+     hecha desde aquí y sin pedirlo. Ahora, antes de ejecutar, `command -v` dice cuál se usará, y
+     si no es el falso se para.

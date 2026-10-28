@@ -2,15 +2,14 @@
 
 > ## Cómo está
 >
-> **En su pull request, sin fusionar** (28 de octubre de 2026). Trae **la migración 0094** y cambia
-> la API, así que van **fusionar, migrar y desplegar**. **Antes**, fusiona «Los documentos en orden»
-> (#150): esta va encima.
+> **En producción** desde el 28 de octubre de 2026: Richi fusionó la #150 y la #151, migró la 0094 y
+> desplegó la API (comprobado: 94 migraciones, 115 consultas y 312 comandos). **Te queda probarlo.**
 >
-> | Qué              | Cómo está                                                      |
-> | ---------------- | -------------------------------------------------------------- |
-> | Pull request     | **«Estook TPV es de Pro» (#151)**, rama `estook-tpv-es-de-pro` |
-> | La base de datos | **93** en producción; esta trae **la 0094**                    |
-> | La API           | Sigue en **115 consultas y 312 comandos**; cambia lo de dentro |
+> | Qué              | Cómo está                                              |
+> | ---------------- | ------------------------------------------------------ |
+> | Pull request     | **«Estook TPV es de Pro» (#151)**, fusionada el 28-oct |
+> | La base de datos | **94 de 94**, con **la 0094**                          |
+> | La API           | **115 consultas y 312 comandos**, desplegada el 28-oct |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 

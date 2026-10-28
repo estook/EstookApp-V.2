@@ -3,14 +3,15 @@
 > ## Cómo está
 >
 > **Fusionada, migrada y desplegada** el 27 de octubre de 2026 (comprobado: 93 migraciones y la API
-> con 115 consultas y 312 comandos). **Falta el paso 5, publicar el programa.**
+> con 115 consultas y 312 comandos). **El programa, publicado el 28-oct** (completado a mano, lección
+> 239); **falta el paso 5 una vez más**, con el flujo arreglado (lección 238), para que sea el de GitHub.
 >
 > | Qué              | Cómo está                                                      |
 > | ---------------- | -------------------------------------------------------------- |
 > | Pull request     | **«T5 · 1 · Imprimir y el cajón» (#148)**, fusionada el 27-oct |
 > | La base de datos | **93 de 93**, con **la 0093**                                  |
 > | La API           | **115 consultas y 312 comandos**, desplegada el 27-oct         |
-> | El programa      | **La caja para Windows 1.0.0**, por publicar                   |
+> | El programa      | **La caja para Windows 1.0.0**, publicada (falta el paso 5)    |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 
@@ -60,9 +61,14 @@ el cajón al cobrar llegan con T6 y T7**; **sin internet, con T5 · 2**.
 
    Todo en verde, con **115 consultas y 312 comandos**.
 
-5. **En GitHub**: **Actions** → **La caja para Windows** → **Run workflow**, rama `main`, escribe
-   **`publicar`**, y espera al **círculo verde** (unos 10 minutos: es una máquina con Windows). Sale
-   en **Releases**, a la derecha de la página del repositorio, como «v1.0.0».
+5. **En GitHub**, con **«Publicar la caja entera»** ya fusionada: **Actions** → **La caja para Windows**
+   → **Run workflow**, rama `main`, y en la casilla escribe **`publicar`**: en minúsculas, sin
+   espacios ni comillas. Espera al **círculo verde** (unos 10 minutos: es una máquina con Windows).
+   - **Qué debe salir:** en **Releases**, a la derecha de la página del repositorio, «v1.0.0» con
+     **tres ficheros**: `Estook-TPV-caja-para-Windows.exe`, su `.blockmap` y `latest.yml`. Sin
+     `latest.yml`, el programa instalado no se actualiza solo.
+   - **Si la casilla no dice exactamente `publicar`**, solo se construye: sale en verde y no publica
+     nada. Vuelve a lanzarlo.
 
 **Si algo falla:** dime en qué paso y qué sale. No hace falta deshacer nada.
 

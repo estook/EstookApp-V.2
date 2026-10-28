@@ -61,7 +61,7 @@ el cajón al cobrar llegan con T6 y T7**; **sin internet, con T5 · 2**.
 
    Todo en verde, con **115 consultas y 312 comandos**.
 
-5. **En GitHub**, con **«Publicar la caja entera»** ya fusionada: **Actions** → **La caja para Windows**
+5. **En GitHub**, con **«Publicar la caja entera» (#152)** ya fusionada: **Actions** → **La caja para Windows**
    → **Run workflow**, rama `main`, y en la casilla escribe **`publicar`**: en minúsculas, sin
    espacios ni comillas. Espera al **círculo verde** (unos 10 minutos: es una máquina con Windows).
    - **Qué debe salir:** en **Releases**, a la derecha de la página del repositorio, «v1.0.0» con

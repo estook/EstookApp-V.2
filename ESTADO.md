@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 28 de octubre de 2026 · **En producción todo hasta la #151** ([Estook TPV es de Pro](docs/decisiones/0120-estook-tpv-es-de-pro.md)): 94 migraciones y la API con 115 consultas y 312 comandos, comprobado el 28-oct. **La caja para Windows 1.0.0, publicada** (completa a mano, lección 239). **En su pull request, publicar la caja entera**: el flujo que la publica, arreglado (lección 238)
+Última actualización: 28 de octubre de 2026 · **En producción todo hasta la #151** ([Estook TPV es de Pro](docs/decisiones/0120-estook-tpv-es-de-pro.md)): 94 migraciones y la API con 115 consultas y 312 comandos, comprobado el 28-oct. **La caja para Windows 1.0.0, publicada** (completa a mano, lección 239). **En su pull request (#152), publicar la caja entera**: el flujo que la publica, arreglado (lección 238)
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** Todo hasta la **#151** está en producción y comprobado (28-oct). **En su pull request, rama `publicar-la-caja-entera`**: el flujo de publicar arreglado, ESTADO al día y las lecciones 238 y 239; al fusionarlo, Richi publica una vez con «publicar» para que la v1.0.0 sea la de GitHub ([sus pasos](docs/pasos-de-t5-1.md), el 5). Falta probarla con la Epson del amigo de Richi. **El siguiente chat de Richi es una pausa para arreglar fallos**; lo primero, el mapa (M15 aún promete fichar en un aparato del local). Después, **T5 · 2 · Sin internet**.
+- **Nada a medias.** Todo hasta la **#151** está en producción y comprobado (28-oct). **En su pull request (#152), rama `publicar-la-caja-entera`**: el flujo de publicar arreglado, ESTADO al día y las lecciones 238 y 239; al fusionarlo, Richi publica una vez con «publicar» para que la v1.0.0 sea la de GitHub ([sus pasos](docs/pasos-de-t5-1.md), el 5). Falta probarla con la Epson del amigo de Richi. **El siguiente chat de Richi es una pausa para arreglar fallos**; lo primero, el mapa (M15 aún promete fichar en un aparato del local). Después, **T5 · 2 · Sin internet**.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -120,7 +120,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 
 **Ahora:**
 
-1. **Fusionar «Publicar la caja entera» y publicar una vez la caja para Windows** con «publicar» ([sus pasos](docs/pasos-de-t5-1.md), el 5). Y en el PC donde pusiste Estook TPV en el escritorio, **quitar los iconos y volver a ponerlos** ([sus pasos](docs/pasos-de-estook-tpv-su-propia-app.md), del 3 al 5).
+1. **Fusionar «Publicar la caja entera» (#152) y publicar una vez la caja para Windows** con «publicar» ([sus pasos](docs/pasos-de-t5-1.md), el 5). Y en el PC donde pusiste Estook TPV en el escritorio, **quitar los iconos y volver a ponerlos** ([sus pasos](docs/pasos-de-estook-tpv-su-propia-app.md), del 3 al 5).
 2. **Probar la caja para Windows en el restaurante de tu amigo** ([sus pasos](docs/pasos-de-t5-1.md)): el PC de la caja, su Epson por cable de red, la cocina en las dos y un Android pidiendo; y **el botón de Estook TPV en Ajustes** ([sus pasos](docs/pasos-de-estook-tpv-es-de-pro.md)).
 3. **Probar en IKATZ la entrada nueva y T4 · 2** ([la entrada](docs/pasos-de-la-entrada-del-tpv.md), [T4 · 2](docs/pasos-de-t4-2.md)): la sala primero, el engranaje, mantener pulsado, la barra, la alergia y el ✓ con su hora.
 4. **Probar en IKATZ T4 · 1 y «Cada aparato a lo suyo»**: fichar en la caja y un comandero sin fichar ([sus pasos](docs/pasos-de-cada-aparato-a-lo-suyo.md)), y vincular una tablet como pantalla de cocina, pedir, tachar, marchar y llamar ([sus pasos](docs/pasos-de-t4-1.md)).
@@ -207,6 +207,6 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Una pausa para arreglar fallos** (el siguiente chat de Richi), con lo primero el mapa: M15 aún promete fichar en un aparato del local, y en Esencial se ficha con el móvil (0120). Antes, Richi fusiona «Publicar la caja entera», la publica una vez y la prueba con la Epson. Después, **T5 · 2 · Sin internet** ([el plan](docs/m20a-la-sala-y-la-cocina.md)): la caja como centro del local, los Android hablándole por el wifi y lo pendiente subido una vez. **El conector de otros TPV (M19b)** se decide con M18.
+**Una pausa para arreglar fallos** (el siguiente chat de Richi), con lo primero el mapa: M15 aún promete fichar en un aparato del local, y en Esencial se ficha con el móvil (0120). Antes, Richi fusiona «Publicar la caja entera» (#152), la publica una vez y la prueba con la Epson. Después, **T5 · 2 · Sin internet** ([el plan](docs/m20a-la-sala-y-la-cocina.md)): la caja como centro del local, los Android hablándole por el wifi y lo pendiente subido una vez. **El conector de otros TPV (M19b)** se decide con M18.
 
 **Lo que decidió la IA por su cuenta**, para que Richi lo sepa: que la caja para Windows sea **Electron y no Rust** (se prueba entero aquí y un solo traductor para todos), y los catorce de T5 · 1 en la [0119](docs/decisiones/0119-t5-la-caja-para-windows.md), sección 4 (como que la caja lea su cola al oír el toque y una vez por minuto, que la dirección de una impresora no llegue a la pantalla, o la reserva a los 10 segundos). **Todo lo anterior**, entrega a entrega, en [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md).

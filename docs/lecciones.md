@@ -963,3 +963,9 @@
      renovaba y seguía dando el manifiesto viejo desde lo guardado. Ahora la versión mira también
      lo que llevan dentro los de `public/`, y `herramientas/` entra en las pruebas
      (`trabajador-de-servicio.prueba.ts`, vista fallar con el código de antes).
+237. **Al guardar, los ficheros por su nombre; nunca una carpeta entera.** Al ordenar los
+     documentos (#150) se añadió `pruebas/` de golpe, y se coló
+     `capturas-del-repaso-temporal.spec.ts`, el fichero sin subir de otra sesión que no se toca:
+     en GitHub falló en tres trozos de Pantallas. En local ya había salido en rojo, y se descartó
+     con «no va a GitHub» sin mirar qué se estaba guardando. Antes de cada commit,
+     `git diff --cached --name-status` y que no haya ni un fichero que no sea de la entrega.

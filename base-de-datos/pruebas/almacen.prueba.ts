@@ -776,6 +776,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'cuentas_con_fogon',
       'dar_de_alta_persona',
       'direccion_libre_para_la_carta',
+      // 0094 (0120): el plan, para la API, sin sesión; Estook TPV es de Pro.
+      'el_plan_de',
       'el_plato_entra_en_la_botonera',
       'el_uso_de',
       'es_admin_o_el_sistema',

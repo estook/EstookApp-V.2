@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Browser } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
-import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
+import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
 
 /**
@@ -51,7 +51,7 @@ test('la barra y la alergia: avisar al pedir, la franja en rojo, y el ✓ con su
   test.setTimeout(300_000);
   const enElOrdenador = info.project.name === 'escritorio';
   await cuentaNueva(page, request, `barra-${unico(info)}@correo-de-prueba.com`, 'Bar Barra');
-  await pagarEsencial(page);
+  await pagarPro(page);
   await sinElAlta(page);
   const token = (await page.evaluate(() => window.localStorage.getItem('estook.sesion'))) ?? '';
 

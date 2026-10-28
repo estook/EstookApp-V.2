@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 import {
   esPeriodoDelIndicador,
+  llevaEstookTpv,
   type ComoEstaLaCuenta,
   type Destino as ADonde,
   type Idioma,
@@ -10,7 +11,7 @@ import {
 import { esPermiso, type Nivel, type PermisosResueltos } from '@estook/permisos';
 import type { Sql } from '../../infraestructura/postgres.ts';
 import { decidirDestino, guardarContexto } from '../acceso.ts';
-import { comoEstaAhora, laSuscripcionDe } from '../pago.ts';
+import { comoEstaAhora, laSuscripcionDe, paraElDominio } from '../pago.ts';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { rolesQuePuedeDar } from '../jerarquia.ts';
 
@@ -170,6 +171,8 @@ export interface QuienSoy {
      * vista de cadena, que es justo donde entra quien más paga.
      */
     readonly laLlevo: boolean;
+    /** Si su plan lleva Estook TPV (0120): el botón de Ajustes, abierto o con candado. */
+    readonly conEstookTpv: boolean;
   } | null;
 
   /**
@@ -284,7 +287,13 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
     const loTiene = dobleFactor[0]?.confirmado === true;
     const laLlevo = nivelDeFacturacion[0]?.nivel === 'ver_y_editar';
     const cuenta =
-      suscripcion === null ? null : { ...comoEstaAhora(suscripcion, contexto.ahora), laLlevo };
+      suscripcion === null
+        ? null
+        : {
+            ...comoEstaAhora(suscripcion, contexto.ahora),
+            laLlevo,
+            conEstookTpv: llevaEstookTpv(paraElDominio(suscripcion)),
+          };
 
     const foto = laFirmada(fotos, persona.foto_clave);
 

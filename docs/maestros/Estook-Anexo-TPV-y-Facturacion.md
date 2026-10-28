@@ -30,7 +30,7 @@ Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (có
 | ¿Un «modo formación»?                      | **No existe en producción.** Se practica en el local de ejemplo (4.12)                                                                                                                                                                          |
 | ¿Partidas en cocina?                       | **No.** A cocina llega el ticket entero de la mesa, y marcha el camarero ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md))                                                                                                         |
 | ¿Dónde se monta lo de vender?              | **En Estook TPV**: el plano, la botonera, los aparatos, la caja y el PIN. En Estook no se añade nada más ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md), 11.1)                                                                         |
-| ¿En qué planes entra?                      | **En Pro y en Cadena.** Con Esencial, el botón de Estook TPV en Ajustes sale con candado y explica qué gana con Pro (Richi, 28-oct; [la maqueta](../maquetas/estook-tpv-en-ajustes.html))                                                       |
+| ¿En qué planes entra?                      | **Solo en Pro y en Cadena, y lo cierra la API** ([0120](../decisiones/0120-estook-tpv-es-de-pro.md)). Con Esencial, el botón de Ajustes sale con «PRO» y vende Estook TPV; un aparato de un local sin Pro espera, sin borrar nada               |
 
 ## Lo que sigue pendiente de Richi, y no frena nada hasta la Fase 4
 

@@ -88,6 +88,8 @@ export interface QuienSoy {
     readonly diasQuedan: number | null;
     /** Si lleva «Plan y facturación», que es de la organización y no del local. */
     readonly laLlevo: boolean;
+    /** Si su plan lleva Estook TPV (0120). Opcional mientras la API no esté desplegada. */
+    readonly conEstookTpv?: boolean;
   } | null;
   /**
    * Lo que recuerda su cuenta en todos sus aparatos (0084): el periodo de cada widget y

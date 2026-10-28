@@ -135,7 +135,10 @@ function ConLlave({
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,
     retry: (veces, fallo) =>
-      !(fallo instanceof FalloDeLaSala && fallo.error.codigo === 'aparato_retirado') && veces < 2,
+      !(
+        fallo instanceof FalloDeLaSala &&
+        (fallo.error.codigo === 'aparato_retirado' || fallo.error.codigo === 'estook_tpv_es_de_pro')
+      ) && veces < 2,
   });
 
   const aparato = latido.data;
@@ -151,6 +154,25 @@ function ConLlave({
     setDentro(null);
     void latido.refetch();
   }, [latido]);
+
+  // **Estook TPV es de Pro** (0120): si el local no lo tiene, el aparato espera vinculado y sin
+  // borrar nada, aunque guarde lo de antes; vuelve solo en cuanto el local pase a Pro.
+  if (
+    latido.error instanceof FalloDeLaSala &&
+    latido.error.error.codigo === 'estook_tpv_es_de_pro'
+  ) {
+    return (
+      <Pantalla>
+        <EstadoVacio
+          esLaPagina
+          titulo={latido.error.error.quePasa}
+          frase={latido.error.error.queSePuedeHacer}
+          dibujo="local"
+          sinAccionPorque="El plan lo cambia quien lleva la suscripción, en Estook."
+        />
+      </Pantalla>
+    );
+  }
 
   if (aparato === undefined) {
     if (latido.isLoading || retirado) {

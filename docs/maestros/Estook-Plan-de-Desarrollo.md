@@ -741,7 +741,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 > **Y lo que se llamaba Estook Link se parte en dos, porque hace dos cosas que se necesitan en momentos distintos:**
 >
 > - **M19a · el centro del local.** El programa, su emparejamiento con el local, el centro que mantiene sala y cocina sin internet, y la impresión. Va **entre M20A · 1 y M20A · 2**: la sala y la cocina se prueban primero en pantalla y con internet, y la caja para Windows les da el papel y el aguante a los cortes antes de que cobren (T5).
-> - **M19b · el conector de TPV.** Vigilar la carpeta y los lectores de formato de cada marca. Va con M18, porque solo lo necesita quien sigue con su TPV.
+> - **M19b · el conector de TPV.** Vigilar la carpeta y los lectores de formato de cada marca. Va con M18, porque solo lo necesita quien sigue con su TPV. **Es de Estook, con Esencial**: quien cobra con otro TPV solo trae sus datos (Richi, 28-oct; [0120](../decisiones/0120-estook-tpv-es-de-pro.md)).
 
 ### M18 · El conector · vía nube
 

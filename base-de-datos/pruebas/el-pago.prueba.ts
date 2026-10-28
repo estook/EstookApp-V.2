@@ -270,7 +270,13 @@ describe('un cobro que falla', () => {
     const primerDia = losDatos<{ cuenta: { como: string; diasQuedan: number } }>(
       await api.consultar(token, 'quien_soy'),
     );
-    expect(primerDia.cuenta).toEqual({ como: 'impago', diasQuedan: 7, laLlevo: true });
+    expect(primerDia.cuenta).toEqual({
+      como: 'impago',
+      diasQuedan: 7,
+      laLlevo: true,
+      // Paga Esencial: sin Estook TPV (0120).
+      conEstookTpv: false,
+    });
     losDatos(
       await api.ejecutar(token, 'crear_producto', {
         nombre: 'Aceite',

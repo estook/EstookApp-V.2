@@ -61,7 +61,7 @@ export function PinYBloqueo() {
         />
         <Casilla
           titulo="Y al acabar cada cobro"
-          frase="El siguiente cliente lo atiende quien teclee su PIN"
+          frase="Para la caja que tocan muchos a la vez. Apagado, quien está dentro sigue cobrando sin repetir su PIN"
           puesta={ajustes.alCobrar}
           ocupado={ocupado}
           alCambiar={(alCobrar) => void guardar({ ...ajustes, alCobrar })}

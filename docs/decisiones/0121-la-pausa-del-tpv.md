@@ -2,8 +2,8 @@
 
 **Fecha:** 28 de octubre de 2026
 **Estado:** construido y fusionado en la #153 (migración 0095); **la caja (el punto 6) queda escrita
-para T7, con las respuestas de Richi** (punto 5). La barra de la app, en la rama
-`las-respuestas-de-la-caja` (punto 6).
+para T7, con las respuestas de Richi** (punto 5) y **cerrada como la hacen los mejores** (punto 7,
+migración 0096). La barra de la app, fusionada en la #154 (punto 6).
 **Sigue:** la [0107](0107-estook-tpv-el-tpv-entero.md), la [0111](0111-t3-1-la-botonera.md), la
 [0115](0115-cada-aparato-a-lo-suyo.md) y la [0119](0119-t5-la-caja-para-windows.md).
 **Cambia:** el Anexo (11.3, 11.4, 11.6, 11.10 y 11.11), el plan de M20A (T7) y ESTADO.
@@ -101,7 +101,7 @@ permiso y rastro, y la venta que nace con el cobro. **Se añade a T7** (su «Ter
 ## 5 · Lo que contestó Richi (28-oct, por la tarde)
 
 1. **La caja la abre el gerente y se queda abierta todo el día, y cada cobro pide el PIN de quien
-   cobra.** Si falta dinero, se sabe quién cobró. **La pausa del gerente no cierra su sesión** (ya
+   cobra** (lo del PIN en cada cobro lo cambia el punto 7). Si falta dinero, se sabe quién cobró. **La pausa del gerente no cierra su sesión** (ya
    es así: «Empezar la pausa» le deja dentro). Para **la salida**, Richi propuso preguntar si deja su
    sesión abierta o la cierra; **se mejora así**: lo que se queda abierto todo el día es **la caja**
    —el dinero, su turno de caja—, no la sesión de quien se va. Dejar abierta la sesión de alguien que
@@ -128,3 +128,54 @@ emborronado (`backdrop-blur`). Desde iOS 26, con la app instalada, el iPhone pon
 difuminado** bajo el reloj, y juntos hacían el velo blanco que vio Richi; en Safari no, porque allí la
 barra del navegador tapa esa franja. **Ahora la barra es maciza**, del color del fondo: no queda nada
 que emborronar. En el ordenador sigue como estaba (no tiene ese problema). Lección 240, ampliada.
+
+## 7 · La caja, como la hacen los mejores (28-oct, por la noche)
+
+Richi: «¿Cada vez que cobren pide PIN? No tiene sentido, es un coñazo para los trabajadores». Y que
+se mire cómo lo hacen las mejores marcas el PIN, empezar el día y el cajón, para dejarlo cerrado.
+
+**Lo que hacen:**
+
+| Qué                     | Toast                                                                                                                | Square                                                                                                              | Lightspeed · Qamarero                                                      |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **El PIN**              | Al entrar; vuelve al teclado tras un rato sin tocar, y si se pide, tras mandar o cobrar (_Auto-Switch_, por aparato) | Al entrar; «tras cada venta» o «tras un rato», a elegir. **El propio Square aconseja no bloquear entre cada venta** | Al entrar, y a los minutos sin tocar                                       |
+| **Lo que pide permiso** | El PIN de un encargado **solo si quien está dentro no lo tiene**                                                     | Igual: el código del encargado solo si falta el permiso                                                             | Igual                                                                      |
+| **Empezar el día**      | El cajón se abre con su fondo; sin abrirlo no entra efectivo                                                         | Al tocar «Cobrar» sin caja abierta, **sale «Empezar la caja» ahí mismo**                                            | Se cuenta al empezar. Qamarero: si se activa, **sin apertura no se opera** |
+| **El cajón sin venta**  | «No sale» (dar cambio), «Pay out» (sacar, con motivo) y «Cash in» (meter), cada uno con su permiso                   | «No sale», «Paid in» y «Paid out», con importe y descripción                                                        | «Money in/out», con importe y motivo                                       |
+| **Cerrar**              | Recuento ciego                                                                                                       | Recuento y diferencia                                                                                               | **Arqueo ciego**: quien cuenta no ve lo esperado                           |
+
+**Cómo queda en Estook TPV** (cambia el punto 5 donde lo dice otra cosa):
+
+1. **El PIN se teclea al ponerse delante, no al cobrar.** Quien entra con su PIN está dentro, y lo
+   que cobra va a su nombre sin volver a pedirlo, hasta que **toca su nombre** (arriba, «Bloquear»)
+   o pasan **los minutos sin tocar** (2 de fábrica, de 1 a 10). **Bloquear al acabar cada cobro pasa
+   a apagado de fábrica** (migración 0096; era la respuesta 4 de la 0107) y se queda como opción en
+   Ajustes del TPV › PIN y bloqueo, para la caja que tocan muchos a la vez. Nadie cobra todavía con
+   Estook TPV, así que no cambia nada de lo que se hace hoy.
+2. **El PIN de un encargado, solo si hace falta**: empezar el día, abrir el cajón, invitar o anular
+   lo cobrado **no piden nada más si quien está dentro ya puede**; si no, lo aprueba un encargado con
+   su PIN ahí mismo (3.4). El gerente que tiene la caja abierta no teclea su PIN dos veces.
+3. **Sin empezar el día no se cobra**, como pidió Richi, pero **sin dar un paso de más**: como en
+   Square, al tocar «Cobrar» sale «Empieza el día para cobrar» con el fondo propuesto, «Es eso» y a
+   cobrar. Tomar nota y mandar a cocina no la piden. Con tarjeta tampoco se cobra: el ticket de cada
+   cobro va al día de su caja (Verifactu, 10.2).
+4. **«Empezar el día» y «Cerrar el día»**: el fondo que se quedó al cerrar, propuesto (el primer día,
+   la pregunta de con cuánto se empieza); el cierre contando sin ver lo esperado, el datáfono, lo que
+   se queda para mañana y solo entonces la diferencia, como en el Anexo 11.6.
+5. **«Abrir el cajón», un solo botón para todo lo que no es una venta**, que siempre pregunta para
+   qué: **Cambio** (sin importe), **Sacar dinero** (importe y motivo: compras, un proveedor, propinas,
+   al banco u otro) y **Meter dinero** (importe y motivo: cambio del banco u otro). Sustituye a la
+   «Entrada o salida de dinero» y al «Abrir el cajón sin venta» que el Anexo tenía por separado.
+   Todo queda con su rastro y sale en el X y en el Z.
+6. **La salida de quien tiene la caja abierta** cierra su sesión y la caja sigue abierta (punto 5):
+   en Toast y Square el cajón es del aparato, no de una persona. Un recuento al cambiar de turno
+   (el «arqueo por turno» de Qamarero) no se hace de fábrica; si un local lo pide, se añade.
+
+Fuentes: [Toast, Auto-Switch](https://intercom.help/toast-central/en/articles/14728324-configure-automated-order-screen),
+[Toast, permisos del cajón](https://intercom.help/toast-central/en/articles/14710653-permissions-reference-guide),
+[Toast, Pay Out](https://support.toasttab.com/en/article/Pay-Outs-1492803987392),
+[Square, el PIN](https://squareup.com/help/us/en/article/8357),
+[Square, la caja](https://squareup.com/help/us/en/article/8344-start-and-end-a-cash-drawer-session),
+[Square, el PIN tras cada venta](https://community.squareup.com/t5/Square-for-Restaurants/How-to-turn-on-require-a-passcode-after-each-transaction-setting/m-p/801072),
+[Lightspeed, el cajón](https://k-series-support.lightspeedhq.com/hc/articles/1260804606710),
+[Qamarero, el arqueo](https://intercom.help/qamarero-9e4c4f5026e3/es/articles/12910032-configurar-los-ajustes-de-arqueo).

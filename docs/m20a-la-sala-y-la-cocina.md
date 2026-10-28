@@ -411,15 +411,18 @@ Su «Terminado cuando» es el del Plan para cada módulo (M20B y M20C) con las p
 10.12 y 11.15 que les tocan. Se escribe aquí entero **antes de empezar cada una**, con lo que se haya
 aprendido en las anteriores.
 
-**Lo que T7 ya tiene que cumplir** (Richi, 28-oct; 0121, punto 4; Anexo 11.6):
+**Lo que T7 ya tiene que cumplir** (Richi, 28-oct; 0121, puntos 4, 5 y 7; Anexo 11.4 y 11.6):
 
-- **El día en la caja**: **«Empezar el día»** con el PIN de un encargado (el primer día,
-  preguntando con cuánto se empieza; después, proponiendo lo que se quedó), y **sin empezarlo no se
-  cobra**; **«Abrir el cajón»**, aparte, con el PIN de un encargado y siempre preguntando para qué
-  (Cambio · Sacar dinero · Meter); y **«Cerrar el día»** contando el efectivo, sin ver lo esperado,
-  con la diferencia después (fondo + cobrado en efectivo + metido − sacado).
-- **La caja se queda abierta todo el día y cada cobro pide el PIN de quien cobra.** La pausa del
-  gerente no cierra su sesión; su salida sí, y la caja sigue abierta para el siguiente.
+- **El día en la caja**: **«Empezar el día»** (el primer día, preguntando con cuánto se empieza;
+  después, proponiendo lo que se quedó), y **sin empezarlo no se cobra**: al tocar «Cobrar» sale
+  ahí mismo, como en Square; **«Abrir el cajón»**, aparte, siempre preguntando para qué (Cambio ·
+  Sacar dinero · Meter dinero, con importe y motivo); y **«Cerrar el día»** contando el efectivo,
+  sin ver lo esperado, con la diferencia después (fondo + cobrado en efectivo + metido − sacado).
+  Los tres son de encargado: **el PIN de uno solo si quien está dentro no lo es**.
+- **El PIN se teclea al entrar, no en cada cobro**: lo cobrado va a quien está dentro, y la caja se
+  bloquea a los minutos sin tocar (bloquear al cobrar, apagado de fábrica, 0096). La caja se queda
+  abierta todo el día; la pausa del gerente no cierra su sesión; su salida sí, y la caja sigue
+  abierta para el siguiente.
 - **Una venta, una sola vez**, y **solo al cobrar**. La venta nace del cobro con la clave del cobro,
   nacida en el aparato; **la base no deja** dos ventas del mismo cobro ni que una línea baje dos veces
   del almacén (índices únicos), aunque el código fallara. Nada de lo de antes de cobrar cuenta.
@@ -429,7 +432,8 @@ aprendido en las anteriores.
   cocinero que tacha, destacha o recibe un VUELVE no cambia nada; anular antes de cobrar no baja
   nada; anular o devolver después hace el movimiento contrario, una vez; y el arqueo cuadra al
   céntimo con el fondo, lo cobrado y lo metido y sacado.
-- **Contestado por Richi** el 28-oct (0121, punto 5).
+- **Contestado por Richi** el 28-oct y **cerrado** como lo hacen Toast, Square y Lightspeed (0121,
+  puntos 5 y 7).
 
 ## Lo que ya está hecho (M20A · 1 · 1 y 1 · 2)
 

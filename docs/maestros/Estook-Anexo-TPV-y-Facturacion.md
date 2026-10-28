@@ -1398,17 +1398,18 @@ En el aparato nuevo
 - **Los fallos** (lo que ya existe, 0018 y 0068): cinco seguidos de la misma persona la paran 15 minutos; diez seguidos en un aparato lo paran 5. La pantalla dice cuánto falta, sin decir nunca si el PIN era de alguien.
 - **El bloqueo** (respuesta 4):
 
-| Aparato                       | Se bloquea                                               | Lo cambia el gerente                     |
-| ----------------------------- | -------------------------------------------------------- | ---------------------------------------- |
-| Caja y comandero compartido   | **Al acabar cada cobro** y a los **2 minutos** sin tocar | De 1 a 10 minutos; lo del cobro, sí o no |
-| Comandero personal            | A los **10 minutos** sin tocar                           | De 5 a 30 minutos                        |
-| Pantalla de cocina y de barra | Nunca                                                    | —                                        |
-| Fichar (los de antes, 0115)   | Después de cada fichaje                                  | —                                        |
+| Aparato                       | Se bloquea                     | Lo cambia el gerente                                                            |
+| ----------------------------- | ------------------------------ | ------------------------------------------------------------------------------- |
+| Caja y comandero compartido   | A los **2 minutos** sin tocar  | De 1 a 10 minutos; y si también al acabar cada cobro (apagado de fábrica, 0121) |
+| Comandero personal            | A los **10 minutos** sin tocar | De 5 a 30 minutos                                                               |
+| Pantalla de cocina y de barra | Nunca                          | —                                                                               |
+| Fichar (los de antes, 0115)   | Después de cada fichaje        | —                                                                               |
 
+- **El PIN se teclea al ponerse delante, no en cada cobro** (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md), punto 7): quien está dentro cobra a su nombre sin repetirlo, como en Toast y Square. Bloquear también al acabar cada cobro es una opción, para la caja que tocan muchos a la vez.
 - **«Bloquear»** está siempre arriba a la derecha: un toque y el siguiente entra con su PIN.
 - **No se bloquea en mitad de algo**: con el teclado del cobro abierto o escribiendo una nota, el tiempo cuenta desde el último toque, y lo que se estaba pidiendo **se queda en la mesa sin mandar** (1 · 2, decisión 4), con aviso al siguiente que la abra.
 - **Se ficha en la caja** (3.4, [0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)): «Fichar», en naranja arriba, **también en la pantalla del PIN**: cada uno teclea su PIN y ficha la entrada, la pausa o la salida sin entrar en la caja; o en Estook con el móvil. **Con la caja abierta, «Fichar» también pide el PIN a todos** (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)): en ese ordenador ficha cualquiera, así que no ficha a quien la tiene abierta. Sale «Hola, Ana · ¿Fichar la entrada?» con «Sí» o «No, volver», y al acabar «✓ Ana · entrada a las 12:02» con el teclado listo para el siguiente. **Si el PIN es el de quien tiene la caja abierta**, lo suyo: sus mesas y «Fichar la salida y cerrar sesión». **Una salida por error no rompe nada**: si vuelve y ficha la entrada el mismo día, es otro tramo de la misma jornada (la jornada partida). **En un comandero, sin fichar no se entra**: «Sin fichar · ficha la entrada en la caja o en Estook». En la caja, a quien no ha fichado le sale, después del PIN, «No has fichado» con «Fichar la entrada y entrar»; si el local pide que **solo quien ha fichado la use** (apagado de fábrica), sin fichar no entra. **Fichar la salida con mesas abiertas** pregunta a quién se las pasa; con el botón naranja, sin entrar, dice que se entre a pasarlas.
-- **Lo que pide un encargado** se aprueba en el mismo aparato con su PIN (3.4): una cosa, una vez, dos minutos.
+- **Lo que pide un encargado** se aprueba en el mismo aparato con su PIN (3.4): una cosa, una vez, dos minutos. **Si quien está dentro ya puede, no se pide nada más.**
 - **Sin conexión**, los PIN los comprueba la caja para Windows; sin ella, el aparato los cifra con su llave pública y la API los mira al volver (0070). Sin nube y sin la caja solo entra quien ya entró ese día en ese aparato (3.4).
 
 ## 11.5 La entrada: la sala
@@ -1445,22 +1446,21 @@ En el aparato nuevo
 
 **Una caja por cajón, y el cierre ciego de fábrica** (respuesta 9). Lo de dentro —turno de caja, bolsa del camarero, X, Z y el cierre del día— está en 5.5 y 10.6; aquí, cómo se hace.
 
-**Abrir** (3 toques con el fondo propuesto, 10.13):
+**Empezar el día** (3 toques con el fondo propuesto, 10.13):
 
-1. Caja › **Abrir caja**. Se propone **lo que se dejó en el cajón al cerrar la última vez** («Se queda para mañana», abajo).
+1. **Empezar el día**. Se propone **lo que se dejó en el cajón al cerrar la última vez** («Se queda para mañana», abajo).
 2. «Es eso» con un toque, o **«Contar»**: billetes y monedas, de 500 € a 1 céntimo, con el `+` y el `−` o escribiendo la cantidad de cada uno, y el total sumándose solo.
-3. **Abrir**: el cajón se abre para meter el fondo, y queda a nombre de quien abrió.
+3. **Empezar**: el cajón se abre para meter el fondo, y queda a nombre de quien la empezó.
 
 **Durante el día:**
 
-- **Entrada o salida de dinero** (Caja › Entrada o salida): importe y motivo, que se elige —**cambio, pago a un proveedor, propina, retirada al banco, otro**— y, si es «otro», se escribe. El cajón se abre. Sale en el X y en el Z.
-- **Abrir el cajón sin venta**: con permiso, motivo y rastro (10.6). En la caja, un botón; quien no puede, lo pide y lo aprueba un encargado con su PIN.
+- **«Abrir el cajón»**, un solo botón para todo lo que no es una venta, que **siempre pregunta para qué** (Richi, 28-oct; como el «No sale», «Pay out» y «Cash in» de Toast): **Cambio** (sin importe), **Sacar dinero** (importe y motivo: **compras, un proveedor, propinas, al banco u otro**) o **Meter dinero** (importe y motivo: **cambio del banco u otro**); con «otro», se escribe. Con permiso de encargado: si quien está dentro no lo tiene, lo aprueba uno con su PIN ahí mismo. Rastro siempre (10.6); sale en el X y en el Z.
 - **El informe X**: cómo va sin cerrarla —ventas por forma de pago, entradas y salidas, lo que debería haber en efectivo— **a quien tiene permiso de verlo**; el camarero ve el de su bolsa.
-- **Sin empezar el día no se cobra**, ni en efectivo ni con tarjeta (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)): el cobro dice «Empieza el día para cobrar», y lo empieza ahí mismo un encargado con su PIN y el fondo propuesto. **Tomar nota y mandar no piden la caja.**
+- **Sin empezar el día no se cobra**, ni en efectivo ni con tarjeta (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)): el cobro dice «Empieza el día para cobrar», y se empieza ahí mismo con el fondo propuesto, como en Square (si quien está dentro no es encargado, con el PIN de uno). **Tomar nota y mandar no piden la caja.**
 
-**Cerrar** (lo que se tarde en contar):
+**Cerrar el día** (lo que se tarde en contar):
 
-1. Caja › **Cerrar caja**. Si hay mesas abiertas, lo dice («Quedan 3 mesas abiertas: el efectivo que cobren irá a la caja de mañana») y deja seguir.
+1. **Cerrar el día**. Si hay mesas abiertas, lo dice («Quedan 3 mesas abiertas: el efectivo que cobren irá a la caja de mañana») y deja seguir.
 2. **Contar sin ver lo esperado** (ciego, de fábrica; el gerente lo puede apagar): billetes y monedas como al abrir.
 3. **El total del cierre del datáfono**: se escribe (nivel 1) o viene solo (nivel 2, 10.7).
 4. **«Se queda para mañana»**: se propone el fondo de hoy; lo demás es lo que se retira.
@@ -1470,8 +1470,8 @@ En el aparato nuevo
 
 **Lo que añadió Richi el 28-oct** ([0121](../decisiones/0121-la-pausa-del-tpv.md), punto 4), para T7:
 
-- **Dos botones distintos, con el PIN de un encargado**: **«Empezar el día»**, que abre la caja con su fondo (lo de «Abrir», arriba) y dura hasta **«Cerrar el día»**, con el recuento; y **«Abrir el cajón»**, que **siempre pregunta para qué**: **Cambio** (sin importe), **Sacar dinero** (compras, el banco…, con importe y motivo) o **Meter** (con importe y motivo). Así el efectivo cuadra siempre.
-- **La caja la abre el gerente y se queda abierta todo el día; cada cobro pide el PIN de quien cobra.** Su pausa no cierra su sesión; **su salida sí**, y la caja —el dinero— sigue abierta: «La caja sigue abierta · el siguiente entra con su PIN». Lo de después nunca queda a nombre de quien se ha ido.
+- **Dos botones distintos, de encargado**: **«Empezar el día»**, que abre la caja con su fondo y dura hasta **«Cerrar el día»**, con el recuento; y **«Abrir el cajón»**, que **siempre pregunta para qué** (arriba). Así el efectivo cuadra siempre.
+- **La caja la abre el gerente y se queda abierta todo el día; el PIN se teclea al entrar, no en cada cobro** (0121, punto 7). Su pausa no cierra su sesión; **su salida sí**, y la caja —el dinero— sigue abierta: «La caja sigue abierta · el siguiente entra con su PIN». Lo de después nunca queda a nombre de quien se ha ido.
 - **El primer día se pregunta con cuánto se empieza**: no hay nada que proponer.
 - **Una venta cuenta una sola vez, y solo al cobrar**: la venta nace del cobro con su clave, y cada línea cobrada baja del almacén una sola vez, **guardado por la base** (un índice único por venta y línea). Pedir, mandar, tachar, cambiar, anular o devolver a cocina antes de cobrar **no cuenta**; anular después de cobrar es una devolución (5.4), con su movimiento contrario.
 

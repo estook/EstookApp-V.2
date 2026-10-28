@@ -10,7 +10,6 @@
     "preparar": "node node_modules/electron/install.js",
     "arrancar": "node construir.ts && node node_modules/electron/install.js && electron .",
     "empaquetar": "node construir.ts && electron-builder --win --publish never",
-    "publicar": "node construir.ts && electron-builder --win --publish always",
     "tipos": "tsc --noEmit"
   },
   "dependencies": {

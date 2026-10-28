@@ -155,6 +155,7 @@ export function esPinFacil(pin: string): boolean {
 export interface AjustesDelBloqueo {
   /** La caja y el comandero para todos, sin tocar. De 1 a 10. */
   readonly minutos: number;
+  /** Bloquear también al acabar cada cobro. Apagado de fábrica: el PIN, al entrar (0121). */
   readonly alCobrar: boolean;
   /** El móvil de cada camarero. De 5 a 30. */
   readonly personalMinutos: number;
@@ -165,10 +166,10 @@ export interface AjustesDelBloqueo {
   readonly soloEntraQuienFicha: boolean;
 }
 
-/** Los de fábrica (respuesta 4 de la 0107). */
+/** Los de fábrica (respuesta 4 de la 0107; sin bloquear al cobrar desde la 0121). */
 export const BLOQUEO_DE_FABRICA: AjustesDelBloqueo = {
   minutos: 2,
-  alCobrar: true,
+  alCobrar: false,
   personalMinutos: 10,
   soloEntraQuienFicha: false,
 };

@@ -2,13 +2,13 @@
 
 > ## Cómo está
 >
-> **Fusionada** (28-oct, en verde). Te queda migrar la 0095 y desplegar la API (pasos 2 y 3). La
-> barra de arriba de la app va aparte, en **«Las respuestas de la caja» (#154)**.
+> **Fusionada** (28-oct, en verde), y **«Las respuestas de la caja» (#154)** también. Lo último,
+> **«Lo de la caja, cerrado» (#155)**, va en su pull request: trae **la 0096** (quedarán **96**).
 >
 > | Qué              | Cómo está                                               |
 > | ---------------- | ------------------------------------------------------- |
 > | Pull request     | **«La pausa del TPV» (#153)**, rama `la-pausa-del-tpv`  |
-> | La base de datos | Trae **la 0095**: hay que migrar (quedarán **95**)      |
+> | La base de datos | Trae **la 0095** y, con lo último, **la 0096**: **96**  |
 > | La API           | Cambia: **115 consultas y 313 comandos** al desplegarla |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
@@ -47,7 +47,8 @@ Lo decidido, en la [0121](decisiones/0121-la-pausa-del-tpv.md).
    .\estook.cmd bd:migrar
    ```
 
-   Tiene que decir que aplica **la 0095** y que hay **95 en total**.
+   Tiene que decir que aplica **la 0095** y que hay **95 en total** (con «Lo de la caja, cerrado»
+   fusionado, también **la 0096**: **96**).
 
 3. **En GitHub**: **Actions** → **Desplegar la API** → **Run workflow**, rama `main`. Cuando acabe
    en verde, ya está.
@@ -85,8 +86,7 @@ Con el iPhone, en el comandero (Estook TPV instalado), y en el ordenador de la c
 
 ## Lo que no está y por qué
 
-- **La caja (abrir, el cajón con «Cambiar · Sacar · Meter», cerrar contando) y que cada venta
-  cuente una sola vez** son de **T7**, el cobro: está escrito para que se haga así ([la 0121](decisiones/0121-la-pausa-del-tpv.md),
-  punto 4) y faltan **tus respuestas** del punto 5.
-- **La barra de arriba de Estook (la app)**, con su velo en el iPhone: va en «Las respuestas de
-  la caja», con lo que contestaste de la caja.
+- **La caja (empezar el día, «Abrir el cajón» con Cambio · Sacar · Meter, cerrar contando) y que
+  cada venta cuente una sola vez** son de **T7**, el cobro: está escrito y cerrado para que se haga
+  así ([la 0121](decisiones/0121-la-pausa-del-tpv.md), puntos 4, 5 y 7). **El PIN, al entrar y no en
+  cada cobro**: en Ajustes del TPV › PIN y bloqueo, «Y al acabar cada cobro» sale **apagado**.

@@ -987,4 +987,7 @@
      debajo del reloj y de la isla del iPhone, y con iOS 26 lo de debajo además se emborrona (lo vio
      Richi en el comandero, 28-oct). Ninguna prueba lo cazaba: el Chrome de las pruebas no tiene
      muesca. Ahora el hueco lo deja la raíz de la aplicación, y las pantallas miden
-     `min-h-pantalla`, no `100dvh`; una pantalla nueva no puede olvidarlo.
+     `min-h-pantalla`, no `100dvh`; una pantalla nueva no puede olvidarlo. **Y lo que va debajo
+     del reloj, macizo**: la barra de Estook era translúcida y emborronaba lo de debajo, y con el
+     difuminado que iOS 26 pone bajo el reloj salía un velo blanco (Richi, 28-oct; en Safari no se
+     ve, porque allí la barra del navegador tapa esa franja).

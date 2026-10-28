@@ -120,7 +120,12 @@ export function BarraArribaMovil({
         // La zona segura del teléfono (23-sep): con la app instalada, la página se pinta
         // debajo del reloj y de la muesca del iPhone, así que la barra deja ese
         // hueco arriba y a los lados, con su fondo detrás.
-        'sticky top-0 z-30 flex items-center gap-e1 border-b border-borde/70 bg-fondo/85 backdrop-blur-xl backdrop-saturate-150',
+        //
+        // **Opaca, sin cristal** (Richi, 28-oct): era translúcida y emborronaba lo de debajo
+        // (`backdrop-blur`), y desde iOS 26 el iPhone, con la app instalada, pone además su
+        // propio difuminado bajo el reloj: juntos, un velo blanco sobre la barra. Con fondo
+        // macizo no hay nada que emborronar.
+        'sticky top-0 z-30 flex items-center gap-e1 border-b border-borde/70 bg-fondo',
         'pl-[max(var(--spacing-e2),env(safe-area-inset-left))] pr-[max(var(--spacing-e2),env(safe-area-inset-right))]',
         'h-[calc(var(--alto-barra-movil)+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] lg:hidden no-imprimir',
       )}

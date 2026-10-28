@@ -1,8 +1,9 @@
 # 0121 · La pausa del TPV: el pase lo elige el camarero, lo de llevar a su hora, fichar con PIN y volver a vincular
 
 **Fecha:** 28 de octubre de 2026
-**Estado:** construido en la rama `la-pausa-del-tpv` (migración 0095); **la caja (el punto 6) queda
-escrita para T7 y con tres preguntas a Richi** (punto 5).
+**Estado:** construido y fusionado en la #153 (migración 0095); **la caja (el punto 6) queda escrita
+para T7, con las respuestas de Richi** (punto 5). La barra de la app, en la rama
+`las-respuestas-de-la-caja` (punto 6).
 **Sigue:** la [0107](0107-estook-tpv-el-tpv-entero.md), la [0111](0111-t3-1-la-botonera.md), la
 [0115](0115-cada-aparato-a-lo-suyo.md) y la [0119](0119-t5-la-caja-para-windows.md).
 **Cambia:** el Anexo (11.3, 11.4, 11.6, 11.10 y 11.11), el plan de M20A (T7) y ESTADO.
@@ -97,13 +98,33 @@ permiso y rastro, y la venta que nace con el cobro. **Se añade a T7** (su «Ter
   misma mesa a la vez, la red que se cae después de cobrar, dividir en tres y anular antes y
   después.
 
-## 5 · Lo que queda por contestar (de Richi)
+## 5 · Lo que contestó Richi (28-oct, por la tarde)
 
-1. **¿Quién entra en la caja?** (A) Solo gerente y jefes, y la sesión se queda abierta todo el día
-   (lo que dijo Richi); o (B) entra cualquiera con su PIN y cada cobro queda a nombre de quien lo
-   hace (lo de hoy). Recomendado: **A, pero cada cobro con el PIN de quien cobra**, como Toast: la
-   caja abierta todo el día y, si falta dinero, se sabe quién cobró.
-2. **Sin abrir caja, ¿se cobra?** Recomendado: **no**, pero sin frenar: al primer cobro con la caja
-   cerrada sale «Abre la caja» y la abre ahí mismo un encargado con su PIN.
-3. **«Abrir caja» y «abrir el día»** son lo mismo para quien está en la caja: un solo botón. Por
-   dentro el día (la jornada de M16a) ya se abre solo; no se le añade otro botón.
+1. **La caja la abre el gerente y se queda abierta todo el día, y cada cobro pide el PIN de quien
+   cobra.** Si falta dinero, se sabe quién cobró. **La pausa del gerente no cierra su sesión** (ya
+   es así: «Empezar la pausa» le deja dentro). Para **la salida**, Richi propuso preguntar si deja su
+   sesión abierta o la cierra; **se mejora así**: lo que se queda abierto todo el día es **la caja**
+   —el dinero, su turno de caja—, no la sesión de quien se va. Dejar abierta la sesión de alguien que
+   ya no está haría que lo de después quedase a su nombre, y es justo lo que evitan Toast y Square.
+   Al fichar su salida, «Fichar la salida y cerrar sesión», y la pantalla dice **«La caja sigue
+   abierta · el siguiente entra con su PIN»** (con T7, que es cuando hay caja abierta).
+2. **Sin abrir caja no se cobra.** Al ir a cobrar con la caja sin abrir, sale «Empieza el día para
+   cobrar», que lo hace un encargado con su PIN.
+3. **Son dos botones distintos**:
+   - **«Empezar el día»** (con el PIN de un encargado): cuenta el fondo —el primer día pregunta con
+     cuánto se empieza— y desde ahí se cobra. Dura hasta **«Cerrar el día»**, con el recuento de la
+     caja. Por dentro, la jornada de M16a sigue abriéndose sola por la hora de corte: el cierre del
+     TPV rellena su cierre del día.
+   - **«Abrir el cajón»** (con el PIN de un encargado), que **siempre pregunta para qué**: **Cambio**
+     (sin importe), **Sacar dinero** (compras, el banco… con importe y motivo) o **Meter** (con
+     importe y motivo), para que el efectivo cuadre siempre.
+4. **La barra de arriba de Estook en el iPhone** (la app, no el TPV): instalada, se veía con un velo
+   blanco por encima, «antes no pasaba»; en Safari, bien. Ver el punto 6.
+
+## 6 · La barra de la app, con el velo
+
+La barra de arriba de Estook en el móvil era **translúcida**: fondo al 85 % y el contenido de debajo
+emborronado (`backdrop-blur`). Desde iOS 26, con la app instalada, el iPhone pone además **su propio
+difuminado** bajo el reloj, y juntos hacían el velo blanco que vio Richi; en Safari no, porque allí la
+barra del navegador tapa esa franja. **Ahora la barra es maciza**, del color del fondo: no queda nada
+que emborronar. En el ordenador sigue como estaba (no tiene ese problema). Lección 240, ampliada.

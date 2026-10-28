@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
-import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
+import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
 
 /**
@@ -20,7 +20,7 @@ test('el comandero sin fichar no entra; se ficha en la caja; y el comandero va a
 }, info) => {
   test.slow();
   await cuentaNueva(page, request, `aparatos-${unico(info)}@correo-de-prueba.com`, 'Bar Aparatos');
-  await pagarEsencial(page);
+  await pagarPro(page);
   await sinElAlta(page);
   const token = (await page.evaluate(() => window.localStorage.getItem('estook.sesion'))) ?? '';
 

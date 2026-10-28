@@ -1494,7 +1494,7 @@ Para el bar que quiere controlar su cocina sin cambiar nada más.
 
 Las ocho apps completas · carta digital con QR · documentos sin límite · auditorías con autoevaluación · acceso para la gestoría · **Fogón Esencial**: 300 créditos al mes, con el modelo económico.
 
-Las ventas y el catálogo entran **por fichero**, con la guía de exportación de su TPV.
+Las ventas y el catálogo de **su TPV** entran **por fichero**, con la guía de exportación, y **conectadas cuando lleguen los conectores** (M19b): quien cobra con otro TPV solo trae sus datos, y no se le pide Pro ([0120](../decisiones/0120-estook-tpv-es-de-pro.md); Richi, 28-oct).
 
 _Lo que cuesta y lo que deja, en [`coste-por-local.md`](../coste-por-local.md)._
 
@@ -1502,8 +1502,7 @@ _Lo que cuesta y lo que deja, en [`coste-por-local.md`](../coste-por-local.md)._
 
 Para el local que factura de verdad y quiere que Estook trabaje solo. Todo lo de Esencial, y además:
 
-- **Cobro con Estook**: sala, cocina, caja y tickets y facturas cumpliendo VeriFactu. _Las cuentas salen con el precio del proveedor delante —el margen aguanta entre el 84 % y el 44 % según cuántos tickets haga el local—, y **falta una respuesta suya: qué se paga con menos de diez NIF** ([`el-precio-de-verifacti.md`](../el-precio-de-verifacti.md)). Hasta entonces, propuesta._
-- **Conexión automática con el TPV**, sincronizando cada 15 minutos y al cierre.
+- **Cobro con Estook**, que es **Estook TPV, solo de Pro** ([0120](../decisiones/0120-estook-tpv-es-de-pro.md)): sala, cocina, caja y tickets y facturas cumpliendo VeriFactu. _Las cuentas salen con el precio del proveedor delante —el margen aguanta entre el 84 % y el 44 % según cuántos tickets haga el local—, y **falta una respuesta suya: qué se paga con menos de diez NIF** ([`el-precio-de-verifacti.md`](../el-precio-de-verifacti.md)). Hasta entonces, propuesta._
 - **Canales de reparto conectados**, con su comisión descontada.
 - **Fogón Pro**: 1.500 créditos al mes, con el modelo grande. Análisis del cierre cada noche, resumen semanal, propuestas de menú, de precios y de cuadrante.
 - **Estook Pulse** con su histórico.

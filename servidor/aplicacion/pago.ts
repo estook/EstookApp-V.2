@@ -8,6 +8,7 @@ import {
   dejaMirar,
   elEstadoDeStripe,
   laCuotaSinIva,
+  llevaEstookTpv,
   type CodigoDePlan,
   type CodigoDeError,
   type EstadoDeSuscripcion,
@@ -209,7 +210,41 @@ export async function porQueNoPasaElPago(
   const { como } = comoEstaAhora(fila, contexto.ahora);
   if (!dejaMirar(como)) return 'cuenta_sin_pagar';
   if (para === 'ejecutar' && !dejaEscribir(como)) return 'cuenta_en_solo_lectura';
+  // **Estook TPV es de Pro** (0120): lo que se hace en un aparato tras teclear el PIN. Fichar
+  // es de Horarios, no del TPV.
+  const aparato = sesion.aparato ?? null;
+  if (aparato !== null && aparato.funcion !== 'fichar' && !llevaEstookTpv(paraElDominio(fila))) {
+    return 'estook_tpv_es_de_pro';
+  }
   return null;
+}
+
+/**
+ * **Estook TPV es de Pro** (0120), para lo que entra con la llave del aparato y sin sesión
+ * —el latido, el PIN, la pantalla de cocina— y para vincular uno nuevo. Fichar es de
+ * Horarios: no se cierra.
+ */
+export async function queLleveEstookTpv(
+  contexto: Contexto,
+  organizacionId: string,
+  funcion: string,
+): Promise<void> {
+  if (funcion === 'fichar') return;
+  // Por la 0094: sin sesión, la suscripción no se ve, y leída a pelo llegaba vacía.
+  const filas = await contexto.sql<
+    { plan: string | null; de_la_casa: boolean; es_ejemplo: boolean }[]
+  >`select plan, de_la_casa, es_ejemplo from estook.el_plan_de(${organizacionId}::uuid)`;
+  const fila = filas[0];
+  if (
+    fila !== undefined &&
+    !llevaEstookTpv({
+      plan: fila.plan as CodigoDePlan | null,
+      deLaCasa: fila.de_la_casa,
+      esEjemplo: fila.es_ejemplo,
+    })
+  ) {
+    throw new FalloDeAplicacion('estook_tpv_es_de_pro');
+  }
 }
 
 // ── El catálogo de Stripe ────────────────────────────────────────────────────

@@ -40,6 +40,14 @@ export const FUNCIONES_QUE_SE_ELIGEN = [
   'barra',
 ] as const satisfies readonly FuncionDelAparato[];
 
+/**
+ * **Dónde se descarga la caja para Windows** (0119): las publicaciones del repositorio mientras
+ * sea público; con la mudanza, del alojamiento nuevo. El nombre del instalador no cambia de una
+ * versión a otra. Lo ofrecen Estook TPV y el botón de Ajustes de Estook (0120).
+ */
+export const DONDE_SE_DESCARGA_LA_CAJA =
+  'https://github.com/estook/EstookApp-V.2/releases/latest/download/Estook-TPV-caja-para-Windows.exe';
+
 export function esFuncionDelAparato(valor: unknown): valor is FuncionDelAparato {
   return typeof valor === 'string' && (FUNCIONES_DEL_APARATO as readonly string[]).includes(valor);
 }

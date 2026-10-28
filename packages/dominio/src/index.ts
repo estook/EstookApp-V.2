@@ -710,6 +710,7 @@ export {
   elEstadoDeStripe,
   elPlanPorLosLocales,
   laCuota,
+  llevaEstookTpv,
 } from './suscripcion.ts';
 export type {
   ComoEstaLaCuenta,
@@ -1079,6 +1080,7 @@ export {
   BLOQUEO_DE_FABRICA,
   CIFRAS_DEL_PIN,
   CODIGO_PARA_VINCULAR,
+  DONDE_SE_DESCARGA_LA_CAJA,
   FUNCIONES_DEL_APARATO,
   FUNCIONES_QUE_SE_ELIGEN,
   LIMITES_DEL_BLOQUEO,

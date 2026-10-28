@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
-import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
+import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
 
 /**
@@ -20,7 +20,7 @@ test('monta tus bebidas: la caña, la Coca-Cola y una copa, y pedirlas', async (
   test.slow();
   const enElOrdenador = info.project.name === 'escritorio';
   await cuentaNueva(page, request, `bebidas-${unico(info)}@correo-de-prueba.com`, 'Bar Bebidas');
-  await pagarEsencial(page);
+  await pagarPro(page);
   await sinElAlta(page);
   const token = (await page.evaluate(() => window.localStorage.getItem('estook.sesion'))) ?? '';
 

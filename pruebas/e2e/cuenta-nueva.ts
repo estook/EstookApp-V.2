@@ -50,7 +50,17 @@ export async function cuentaNueva(
 
 /** Elegir Esencial y pagar en la página de Stripe (la de mentira paga al abrirla). */
 export async function pagarEsencial(page: Page) {
-  await page.getByRole('button', { name: /^(Elegir|Probar) Esencial/ }).click();
+  await pagarElPlan(page, 'Esencial');
+}
+
+/** Pro, que es el que lleva Estook TPV (0120): sin él, el local no vincula ni un aparato. */
+export async function pagarPro(page: Page) {
+  await pagarElPlan(page, 'Pro');
+}
+
+async function pagarElPlan(page: Page, plan: 'Esencial' | 'Pro') {
+  const boton = plan === 'Pro' ? /^(Elegir|Probar) Pro\b/ : /^(Elegir|Probar) Esencial/;
+  await page.getByRole('button', { name: boton }).click();
   // De vuelta en la app, con el pago confirmado: al alta, y la dirección limpia.
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     /¿Cómo te llamas\?|¿Qué tipo de local tienes\?|¿Dónde está tu local\?/,

@@ -67,6 +67,7 @@ import { TuCartaSubida } from './TuCartaSubida.tsx';
 import { TusMenus } from './TusMenus.tsx';
 import { TuSuscripcion } from './TuSuscripcion.tsx';
 import { TusAvisos } from './TusAvisos.tsx';
+import { BotonDeEstookTpv } from './BotonDeEstookTpv.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
 import {
   ajustesQueVe,
@@ -246,6 +247,8 @@ export function Ajustes() {
           <div className="max-w-[40rem]">{buscador}</div>
           <div className="flex items-start gap-e6">
             <div className="sticky top-[calc(var(--alto-barra-escritorio)+var(--spacing-e4))] flex w-[15rem] shrink-0 flex-col gap-e3">
+              {/* Estook TPV, arriba y con su color (0120): lo único que no es un ajuste más. */}
+              <BotonDeEstookTpv />
               {lista}
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-e4">
@@ -256,6 +259,7 @@ export function Ajustes() {
         </div>
       ) : abierta === undefined ? (
         <div className="flex flex-col gap-e3">
+          <BotonDeEstookTpv />
           {buscador}
           {resultados}
           {buscando.trim() === '' && lista}

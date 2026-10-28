@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
-import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
+import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
 
 /**
@@ -74,7 +74,7 @@ test('la caja para Windows: impresoras, la cuenta, marchar en papel y sin papel'
 }, info) => {
   test.slow();
   await cuentaNueva(page, request, `caja-${unico(info)}@correo-de-prueba.com`, 'Bar Caja');
-  await pagarEsencial(page);
+  await pagarPro(page);
   await sinElAlta(page);
   const token = (await page.evaluate(() => window.localStorage.getItem('estook.sesion'))) ?? '';
 

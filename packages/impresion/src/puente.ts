@@ -72,9 +72,5 @@ export function elPuenteDeLaCaja(ventana: unknown): PuenteDeLaCaja | null {
     : null;
 }
 
-/**
- * **Dónde se descarga** (0119): las publicaciones del repositorio mientras sea público; con la
- * mudanza, del alojamiento nuevo. El nombre del instalador no cambia de una versión a otra.
- */
-export const DONDE_SE_DESCARGA =
-  'https://github.com/estook/EstookApp-V.2/releases/latest/download/Estook-TPV-caja-para-Windows.exe';
+/** **Dónde se descarga** (0119): vive en el dominio, que lo leen también Estook y su Ajustes (0120). */
+export { DONDE_SE_DESCARGA_LA_CAJA as DONDE_SE_DESCARGA } from '@estook/dominio';

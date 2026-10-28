@@ -107,7 +107,9 @@ export const PLANES: readonly Plan[] = [
       'Carta digital con QR',
       'Documentos sin límite',
       'Acceso para tu gestoría',
-      'Ventas y catálogo por fichero',
+      // Los conectores de otro TPV son de Esencial (0120; Richi, 28-oct: «no usan nuestro
+      // sistema de TPV, solo traen los datos de otro»). Hoy, por fichero; los automáticos, al final.
+      'Las ventas de tu TPV, por fichero o conectado',
     ],
   },
   {
@@ -120,7 +122,8 @@ export const PLANES: readonly Plan[] = [
     localesHasta: null,
     loQueLleva: [
       'Todo lo de Esencial',
-      'Conexión automática con tu TPV',
+      // Estook TPV es de Pro (0120): la sala, la cocina y la caja, unidas a Estook.
+      'Estook TPV: la sala, la cocina y la caja',
       'Canales de reparto conectados',
       'Reseñas con respuesta propuesta',
       'Soporte prioritario y puesta en marcha',

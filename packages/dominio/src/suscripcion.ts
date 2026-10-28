@@ -104,6 +104,17 @@ export function dejaMirar(como: ComoEstaLaCuenta): boolean {
   return como !== 'sin_pagar';
 }
 
+/**
+ * **Estook TPV es de Pro** (0120; Richi, 28-oct: «TPV es únicamente Pro»). Cadena es Pro en
+ * cada local, y durante la prueba vale el plan elegido. Esencial y Pausa, no. La casa (IKATZ,
+ * «prueba en modo Pro») y los locales de ejemplo, donde se practica, lo tienen todo. Lo mira la
+ * API en cada petición de un aparato; la pantalla solo lo pinta.
+ */
+export function llevaEstookTpv(s: Pick<LaSuscripcion, 'plan' | 'deLaCasa' | 'esEjemplo'>): boolean {
+  if (s.deLaCasa || s.esEjemplo) return true;
+  return s.plan === 'pro' || s.plan === 'cadena';
+}
+
 // ── El plan y lo que cuesta ──────────────────────────────────────────────────
 
 /**

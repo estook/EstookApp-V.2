@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
-import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
+import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 const API = 'http://localhost:5177/api';
 const APP = 'http://localhost:5174/';
 
@@ -33,7 +33,7 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   test.slow();
   const correo = `puerta-${unico(info)}@correo-de-prueba.com`;
   await cuentaNueva(page, request, correo, 'Bar Puerta');
-  await pagarEsencial(page);
+  await pagarPro(page);
   await sinElAlta(page);
   // **Sin PIN**: quien crea el restaurante no tiene ninguno. Antes de la 0109 no había
   // forma de entrar en su propio TPV; ahora se lo da el primer aparato.

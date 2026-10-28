@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
-import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
+import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
 
 /**
@@ -21,7 +21,7 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
 }, info) => {
   test.slow();
   await cuentaNueva(page, request, `botonera-${unico(info)}@correo-de-prueba.com`, 'Bar Botones');
-  await pagarEsencial(page);
+  await pagarPro(page);
   await sinElAlta(page);
   const token = (await page.evaluate(() => window.localStorage.getItem('estook.sesion'))) ?? '';
 

@@ -21,7 +21,7 @@ import {
   falloQueSeGuarda,
   type Contexto,
 } from '../contrato.ts';
-import { enNombreDelSistema } from '../pago.ts';
+import { enNombreDelSistema, queLleveEstookTpv } from '../pago.ts';
 import { leerPermisos } from '../consultas/quien-soy.ts';
 import { ponerPinNuevo } from '../pines.ts';
 import { cerrarLaSesion } from './salir.ts';
@@ -130,6 +130,7 @@ export async function elAparatoDeLaLlave(
   const fila = filas[0];
   if (fila === undefined) throw new FalloDeAplicacion('aparato_retirado');
   if (fila.parado) throw new FalloDeAplicacion('aparato_parado');
+  await queLleveEstookTpv(contexto, fila.organizacion_id, fila.funcion);
   return comoAparato(fila);
 }
 
@@ -524,6 +525,8 @@ export const vincularElPrimerAparato = comando<
         porque: 'Vincula aparatos quien lleva el local. Pídeselo a tu gerente.',
       });
     }
+    // Sin Pro no se vincula (0120): lo dice antes de crear nada.
+    await queLleveEstookTpv(contexto, fila.organizacion_id, entrada.funcion);
     const preparado = await prepararLoQueSera(contexto, entrada.local_id, entrada);
     const { terminalId, llave: laLlave } = await crearElAparato(
       contexto,
@@ -742,6 +745,8 @@ export const vincularConCodigo = comando<
       throw falloQueSeGuarda('codigo_no_vale');
     }
     await apuntarIntento(true);
+    // Un código sacado antes de dejar Pro no vincula después (0120).
+    await queLleveEstookTpv(contexto, elCodigo.organizacion_id, elCodigo.funcion);
 
     // Lo vincula quien sacó el código: con su identidad, y con su permiso de ahora.
     await contexto.sql`select set_config('estook.persona_id', ${elCodigo.creado_por}, true)`;

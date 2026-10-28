@@ -9,6 +9,7 @@ import {
   elEstadoDeStripe,
   elPlanPorLosLocales,
   laCuota,
+  llevaEstookTpv,
   type LaSuscripcion,
 } from './suscripcion.ts';
 import type { FechaOperativa } from './tiempo.ts';
@@ -193,5 +194,25 @@ describe('el correo de cada día', () => {
   it('a la casa y a quien está al día, ninguno', () => {
     expect(elCorreoDeHoy(cuenta({ estado: 'impago', deLaCasa: true }), AHORA, HOY)).toBeNull();
     expect(elCorreoDeHoy(cuenta({}), AHORA, HOY)).toBeNull();
+  });
+});
+
+describe('Estook TPV es de Pro (0120)', () => {
+  it('Pro y Cadena lo llevan; Esencial, Pausa y sin plan, no', () => {
+    expect(llevaEstookTpv(una({ plan: 'pro' }))).toBe(true);
+    expect(llevaEstookTpv(una({ plan: 'cadena' }))).toBe(true);
+    expect(llevaEstookTpv(una({ plan: 'esencial' }))).toBe(false);
+    expect(llevaEstookTpv(una({ plan: 'pausa' }))).toBe(false);
+    expect(llevaEstookTpv(una({ plan: null }))).toBe(false);
+  });
+
+  it('en la prueba vale el plan elegido', () => {
+    expect(llevaEstookTpv(una({ estado: 'prueba', plan: 'pro' }))).toBe(true);
+    expect(llevaEstookTpv(una({ estado: 'prueba', plan: 'esencial' }))).toBe(false);
+  });
+
+  it('la casa y los locales de ejemplo lo tienen todo', () => {
+    expect(llevaEstookTpv(una({ plan: 'esencial', deLaCasa: true }))).toBe(true);
+    expect(llevaEstookTpv(una({ plan: null, esEjemplo: true }))).toBe(true);
   });
 });

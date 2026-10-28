@@ -253,6 +253,14 @@ export const ERRORES = {
     429,
   ),
 
+  // Estook TPV es de Pro (0120). El aparato no se desvincula ni se borra nada: espera.
+  estook_tpv_es_de_pro: error(
+    'estook_tpv_es_de_pro',
+    'Este local no tiene Estook TPV: es de Pro.',
+    'El aparato sigue vinculado y no se ha borrado nada. En cuanto el local pase a Pro, entra como siempre. Lo cambia quien lleva la suscripción, en Estook › Ajustes › Suscripción.',
+    403,
+  ),
+
   // Desde T1 (0107) los aparatos se vinculan en Estook TPV, y desde allí se desvinculan.
   aparato_retirado: error(
     'aparato_retirado',

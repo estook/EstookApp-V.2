@@ -3,7 +3,7 @@
 > ## Cómo está
 >
 > **Fusionada** (28-oct, en verde). Te queda migrar la 0095 y desplegar la API (pasos 2 y 3). La
-> barra de arriba de la app va aparte, en **«Las respuestas de la caja»**.
+> barra de arriba de la app va aparte, en **«Las respuestas de la caja» (#154)**.
 >
 > | Qué              | Cómo está                                               |
 > | ---------------- | ------------------------------------------------------- |

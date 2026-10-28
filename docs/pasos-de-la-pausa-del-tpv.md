@@ -3,7 +3,7 @@
 > ## Cómo está
 >
 > **Fusionada** (28-oct, en verde), y **«Las respuestas de la caja» (#154)** también. Lo último,
-> **«Lo de la caja, cerrado»**, va en su pull request: trae **la 0096** (quedarán **96**).
+> **«Lo de la caja, cerrado» (#155)**, va en su pull request: trae **la 0096** (quedarán **96**).
 >
 > | Qué              | Cómo está                                               |
 > | ---------------- | ------------------------------------------------------- |

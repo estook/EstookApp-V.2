@@ -2,8 +2,8 @@
 
 > ## Cómo está
 >
-> **En su pull request**, sin fusionar: hasta que lo fusiones, migres y despliegues, en estook.com
-> no se ve nada de esto.
+> **Fusionada** (28-oct, en verde). Te queda migrar la 0095 y desplegar la API (pasos 2 y 3). La
+> barra de arriba de la app va aparte, en **«Las respuestas de la caja» (#154)**.
 >
 > | Qué              | Cómo está                                               |
 > | ---------------- | ------------------------------------------------------- |
@@ -88,4 +88,5 @@ Con el iPhone, en el comandero (Estook TPV instalado), y en el ordenador de la c
 - **La caja (abrir, el cajón con «Cambiar · Sacar · Meter», cerrar contando) y que cada venta
   cuente una sola vez** son de **T7**, el cobro: está escrito para que se haga así ([la 0121](decisiones/0121-la-pausa-del-tpv.md),
   punto 4) y faltan **tus respuestas** del punto 5.
-- **La barra de arriba de Estook (la app)**: no se ha tocado hasta que me digas qué ves mal.
+- **La barra de arriba de Estook (la app)**, con su velo en el iPhone: va en «Las respuestas de
+  la caja», con lo que contestaste de la caja.

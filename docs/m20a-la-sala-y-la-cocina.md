@@ -413,10 +413,13 @@ aprendido en las anteriores.
 
 **Lo que T7 ya tiene que cumplir** (Richi, 28-oct; 0121, punto 4; Anexo 11.6):
 
-- **El día en la caja**: se abre caja con el PIN de un encargado (el primer día, preguntando con
-  cuánto se empieza; después, proponiendo lo que se quedó); **el cajón, con «Cambiar · Sacar ·
-  Meter»** y el PIN de un encargado; y se cierra contando el efectivo, sin ver lo esperado, con la
-  diferencia después (fondo + cobrado en efectivo + metido − sacado).
+- **El día en la caja**: **«Empezar el día»** con el PIN de un encargado (el primer día,
+  preguntando con cuánto se empieza; después, proponiendo lo que se quedó), y **sin empezarlo no se
+  cobra**; **«Abrir el cajón»**, aparte, con el PIN de un encargado y siempre preguntando para qué
+  (Cambio · Sacar dinero · Meter); y **«Cerrar el día»** contando el efectivo, sin ver lo esperado,
+  con la diferencia después (fondo + cobrado en efectivo + metido − sacado).
+- **La caja se queda abierta todo el día y cada cobro pide el PIN de quien cobra.** La pausa del
+  gerente no cierra su sesión; su salida sí, y la caja sigue abierta para el siguiente.
 - **Una venta, una sola vez**, y **solo al cobrar**. La venta nace del cobro con la clave del cobro,
   nacida en el aparato; **la base no deja** dos ventas del mismo cobro ni que una línea baje dos veces
   del almacén (índices únicos), aunque el código fallara. Nada de lo de antes de cobrar cuenta.
@@ -426,7 +429,7 @@ aprendido en las anteriores.
   cocinero que tacha, destacha o recibe un VUELVE no cambia nada; anular antes de cobrar no baja
   nada; anular o devolver después hace el movimiento contrario, una vez; y el arqueo cuadra al
   céntimo con el fondo, lo cobrado y lo metido y sacado.
-- **Pendiente de Richi** (0121, punto 5): quién entra en la caja y si se cobra sin abrirla.
+- **Contestado por Richi** el 28-oct (0121, punto 5).
 
 ## Lo que ya está hecho (M20A · 1 · 1 y 1 · 2)
 

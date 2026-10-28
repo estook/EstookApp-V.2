@@ -1456,7 +1456,7 @@ En el aparato nuevo
 - **Entrada o salida de dinero** (Caja › Entrada o salida): importe y motivo, que se elige —**cambio, pago a un proveedor, propina, retirada al banco, otro**— y, si es «otro», se escribe. El cajón se abre. Sale en el X y en el Z.
 - **Abrir el cajón sin venta**: con permiso, motivo y rastro (10.6). En la caja, un botón; quien no puede, lo pide y lo aprueba un encargado con su PIN.
 - **El informe X**: cómo va sin cerrarla —ventas por forma de pago, entradas y salidas, lo que debería haber en efectivo— **a quien tiene permiso de verlo**; el camarero ve el de su bolsa.
-- **Cobrar en efectivo con la caja cerrada** no se puede, pero **no frena a nadie**: el cobro dice «Abre la caja para cobrar en efectivo», se abre ahí mismo con el fondo propuesto y el cobro sigue. **Tomar nota, mandar y cobrar con tarjeta no piden la caja.**
+- **Sin empezar el día no se cobra**, ni en efectivo ni con tarjeta (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)): el cobro dice «Empieza el día para cobrar», y lo empieza ahí mismo un encargado con su PIN y el fondo propuesto. **Tomar nota y mandar no piden la caja.**
 
 **Cerrar** (lo que se tarde en contar):
 
@@ -1470,10 +1470,10 @@ En el aparato nuevo
 
 **Lo que añadió Richi el 28-oct** ([0121](../decisiones/0121-la-pausa-del-tpv.md), punto 4), para T7:
 
-- **El cajón, con el PIN de un encargado y tres botones**: **Cambiar** (dar cambio: entra lo mismo que sale, sin importe), **Sacar** (importe y motivo) y **Meter** (importe y motivo). Así el efectivo cuadra siempre.
+- **Dos botones distintos, con el PIN de un encargado**: **«Empezar el día»**, que abre la caja con su fondo (lo de «Abrir», arriba) y dura hasta **«Cerrar el día»**, con el recuento; y **«Abrir el cajón»**, que **siempre pregunta para qué**: **Cambio** (sin importe), **Sacar dinero** (compras, el banco…, con importe y motivo) o **Meter** (con importe y motivo). Así el efectivo cuadra siempre.
+- **La caja la abre el gerente y se queda abierta todo el día; cada cobro pide el PIN de quien cobra.** Su pausa no cierra su sesión; **su salida sí**, y la caja —el dinero— sigue abierta: «La caja sigue abierta · el siguiente entra con su PIN». Lo de después nunca queda a nombre de quien se ha ido.
 - **El primer día se pregunta con cuánto se empieza**: no hay nada que proponer.
 - **Una venta cuenta una sola vez, y solo al cobrar**: la venta nace del cobro con su clave, y cada línea cobrada baja del almacén una sola vez, **guardado por la base** (un índice único por venta y línea). Pedir, mandar, tachar, cambiar, anular o devolver a cocina antes de cobrar **no cuenta**; anular después de cobrar es una devolución (5.4), con su movimiento contrario.
-- **Pendiente de Richi** (0121, punto 5): si en la caja entran solo gerente y jefes con la sesión abierta todo el día, y si se cobra con la caja sin abrir. Hasta su respuesta, manda lo de arriba.
 
 ## 11.7 Ventas de hoy
 

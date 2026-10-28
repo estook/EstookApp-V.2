@@ -31,7 +31,7 @@ export function LaCocinaLlama({
   if (llaman.length === 0) return null;
   return (
     <div
-      className={`flex flex-col gap-e2 px-e4 pt-e3 md:px-e5 ${flotante ? 'fixed inset-x-0 top-0 z-30 pb-e3' : ''}`}
+      className={`flex flex-col gap-e2 px-e4 md:px-e5 ${flotante ? 'fixed inset-x-0 top-0 z-30 pb-e3 pt-[calc(env(safe-area-inset-top)+var(--spacing-e3))]' : 'pt-e3'}`}
     >
       {llaman.map((c) => (
         <div

@@ -42,7 +42,7 @@ export function OlvideMiPin({
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5 text-texto">
+    <main className="flex min-h-pantalla items-center justify-center bg-fondo p-e5 text-texto">
       <section className="flex w-full max-w-[32rem] flex-col gap-e4 rounded-mayor bg-superficie p-e6">
         <h1 className="text-cifra-media font-bold">¿Has olvidado tu PIN?</h1>
         {mandado === null ? (

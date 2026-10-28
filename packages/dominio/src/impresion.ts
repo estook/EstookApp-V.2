@@ -98,6 +98,8 @@ export interface LaComandaQueSeImprime {
   readonly hora: string;
   readonly alergiasDeLaMesa: readonly Alergeno[];
   readonly notaDeLaMesa: string | null;
+  /** Lo de llevar programado (0121): «21:30», en la hora del local. */
+  readonly paraLas?: string | null;
   readonly pases: readonly PaseDeLaComanda[];
   /** Por qué se anula o por qué vuelve. */
   readonly motivo: string | null;
@@ -163,10 +165,15 @@ export function laComandaEnPapel(c: LaComandaQueSeImprime): PapelCompuesto {
     piezas.push(texto(titulo, { tamano: 'doble', negrita: true, negativo: true }));
   }
   piezas.push(texto(c.mesa.toUpperCase(), { tamano: 'grande', negrita: true }));
+  if (c.paraLas !== undefined && c.paraLas !== null) {
+    piezas.push(
+      texto(` PARA LAS ${c.paraLas} `, { tamano: 'doble', negrita: true, negativo: true }),
+    );
+  }
   const quienes = [
     c.personas === null
       ? null
-      : `${String(c.personas)} ${c.personas === 1 ? 'persona' : 'personas'}`,
+      : `${String(c.personas)} ${c.personas === 1 ? 'comensal' : 'comensales'}`,
     c.camarero,
   ].filter((t): t is string => t !== null && t !== '');
   if (quienes.length > 0) piezas.push(texto(quienes.join(' · ')));
@@ -245,7 +252,7 @@ export function laCuentaEnPapel(c: LaCuentaQueSeImprime): PapelCompuesto {
     c.mesa,
     c.personas === null
       ? null
-      : `${String(c.personas)} ${c.personas === 1 ? 'persona' : 'personas'}`,
+      : `${String(c.personas)} ${c.personas === 1 ? 'comensal' : 'comensales'}`,
     c.camarero,
   ].filter((t): t is string => t !== null && t !== '');
   piezas.push(texto(quienes.join(' · ')));

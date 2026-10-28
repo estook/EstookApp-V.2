@@ -49,7 +49,7 @@ function Dentro() {
     pantalla = <EditorDeLaSala />;
   } else if (!tomaNota) {
     pantalla = (
-      <div className="flex min-h-dvh flex-col bg-fondo text-texto">
+      <div className="flex min-h-pantalla flex-col bg-fondo text-texto">
         {enLaCaja && <LaBarraDeArriba />}
         <main className="flex flex-1 items-center justify-center p-e5">
           <div className="w-full max-w-[32rem]">

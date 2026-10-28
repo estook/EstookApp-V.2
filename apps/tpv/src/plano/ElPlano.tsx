@@ -77,14 +77,14 @@ export function ElPlano() {
 
   if (plano.isLoading) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-fondo">
+      <main className="flex min-h-pantalla items-center justify-center bg-fondo">
         <Cargando que="el plano" />
       </main>
     );
   }
   if (plano.data === undefined) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5">
+      <main className="flex min-h-pantalla items-center justify-center bg-fondo p-e5">
         {plano.error instanceof FalloDeLaSala ? (
           <ErrorEnCristiano error={plano.error.error} />
         ) : (
@@ -123,7 +123,7 @@ export function ElPlano() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-fondo text-texto md:h-dvh md:min-h-0">
+    <div className="flex min-h-pantalla flex-col bg-fondo text-texto md:h-pantalla md:min-h-0">
       <LaBarraDeArriba>
         <nav
           aria-label="Zonas"
@@ -281,7 +281,9 @@ export function ElPlano() {
       <footer className="flex flex-wrap items-center gap-e3 px-e4 py-e3 text-secundario text-texto-suave md:px-e5">
         <span>
           {cuantas === 1 ? '1 mesa abierta' : `${cuantas} mesas abiertas`}
-          {comensales > 0 ? ` · ${comensales} personas` : ''}
+          {comensales > 0
+            ? ` · ${comensales === 1 ? '1 comensal' : `${String(comensales)} comensales`}`
+            : ''}
         </span>
         <div className="flex-1" />
         <span

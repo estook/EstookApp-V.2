@@ -50,6 +50,8 @@ export interface FilaDeCuenta {
   readonly cocina_llama_en: string | null;
   /** La alergia de la mesa (0117), en el orden del reglamento. */
   readonly alergias: readonly string[];
+  /** Lo de llevar programado (0121): para cuándo lo quiere el cliente. */
+  readonly para_las: string | null;
 }
 
 export interface FilaDeLinea {
@@ -103,7 +105,8 @@ export async function lasCuentas(
            c.motivo_de_anular, c.con_prisa,
            to_char(c.cocina_llama_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cocina_llama_en,
            coalesce((select array_agg(a.alergeno) from estook.alergeno_de_la_cuenta a
-                      where a.cuenta_id = c.id), '{}') as alergias
+                      where a.cuenta_id = c.id), '{}') as alergias,
+           to_char(c.para_las at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as para_las
       from estook.cuenta c
       left join estook.mesa m on m.id = c.mesa_id
       left join estook.persona p on p.id = c.camarero_id

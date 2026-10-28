@@ -757,6 +757,8 @@ describe('los secretos no se guardan para repetirlos', () => {
         'entrar_con_pin',
         // 0119 · el código de «Pasar a la app», que es el de vincular para esta misma caja.
         'sacar_codigo_para_pasar_a_la_app',
+        // 28-oct · el de «Volver a vincular» un aparato que ya existe (el móvil que borró la app).
+        'sacar_codigo_para_volver_a_vincular',
         // C1 (0073) · el tema secreto por el que llega el toque al segundo del chat.
         'abrir_el_chat',
         // 0109 · el PIN nuevo que da el enlace del correo, una sola vez.
@@ -1042,6 +1044,8 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         // T5 · 1 (0119): imprimir, el cajón y «Pasar a la app», en la caja; y en la sala, cómo
         // están las impresoras, la cuenta y reimprimir.
         'sacar_codigo_para_pasar_a_la_app',
+        // «Volver a vincular» (28-oct), también en la caja.
+        'sacar_codigo_para_volver_a_vincular',
         'las_impresoras',
         'guardar_impresora',
         'quitar_impresora',

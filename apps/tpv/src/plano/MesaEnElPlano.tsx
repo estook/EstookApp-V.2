@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
+import { IconoPersona } from '@estook/iconos';
 import type { CuentaEnElPlano, MesaDelPlano } from '../datos/tipos.ts';
 import { elPase } from '../logica/laCuenta.ts';
-import { cuantoLlevan, euros } from '../logica/texto.ts';
+import { cuantoLlevan, euros, laHora } from '../logica/texto.ts';
 import { enderezar, estiloEnElPlano, redondeoDeLaForma } from './dibujo.tsx';
 
 /**
@@ -148,9 +149,20 @@ export function MesaEnElPlano({
           </span>
         )}
         {cuenta !== null && !pequena && (
-          <span className="truncate text-etiqueta leading-tight text-texto-suave">
-            {cuenta.personas === null ? '' : `${String(cuenta.personas)} pers · `}
-            {euros(cuenta.totalCentimos)}
+          <span className="flex items-center gap-e1 truncate text-etiqueta leading-tight text-texto-suave">
+            {/* Los comensales con su muñeco, que en una casilla de tres en fila no cabe la palabra. */}
+            {cuenta.personas !== null && (
+              <span
+                className="flex shrink-0 items-center gap-[2px]"
+                aria-label={
+                  cuenta.personas === 1 ? '1 comensal' : `${String(cuenta.personas)} comensales`
+                }
+              >
+                <IconoPersona size={12} aria-hidden />
+                {cuenta.personas} ·
+              </span>
+            )}
+            <span className="truncate">{euros(cuenta.totalCentimos)}</span>
           </span>
         )}
         {seHaIdo && !pequena && (
@@ -190,7 +202,14 @@ export function TarjetaSinMesa({
         <span className="text-cuerpo font-bold">{cuenta.titulo}</span>
         <Pastilla cuenta={cuenta} />
       </span>
-      <span className="text-secundario text-texto-suave">{cuantoLlevan(cuenta.minutos)}</span>
+      {cuenta.paraLas !== undefined && cuenta.paraLas !== null ? (
+        // Lo de llevar programado (0121): su hora, que es lo que importa, y no cuánto lleva.
+        <span className="text-secundario font-bold text-info">
+          Para las {laHora(cuenta.paraLas)}
+        </span>
+      ) : (
+        <span className="text-secundario text-texto-suave">{cuantoLlevan(cuenta.minutos)}</span>
+      )}
       <span className="text-secundario text-texto-suave">{euros(cuenta.totalCentimos)} €</span>
     </button>
   );

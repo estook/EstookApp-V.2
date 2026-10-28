@@ -10,7 +10,7 @@ import {
   type Borrador,
 } from '../logica/comanda.ts';
 import { elPaseDeFabrica } from '../logica/laCuenta.ts';
-import { elNumeroDelPase, laPestanaDeLaPagina, type PestanaDelPase } from '../logica/losPases.ts';
+import { elNumeroDelPase, laPestanaDelPase, type PestanaDelPase } from '../logica/losPases.ts';
 import { elAlergeno, euros } from '../logica/texto.ts';
 import { irA } from '../navegar.ts';
 import { COMO_SE_VE_EL_COLOR } from '../productos/colores.ts';
@@ -27,9 +27,10 @@ import { LoDelProducto } from './LoDelProducto.tsx';
  * tolera erratas y la página **Menú** los días que hay menú. Cada producto es un botón con
  * su nombre entero, su precio, su color y su foto; **agotado**, en gris y sin tocar.
  *
- * **Lo que se toca va al pase marcado** en las pestañas de encima de la cuenta, y **al
- * cambiar de página se marca solo el de esa página** («¿En qué pase sale?»). Cada botón va
- * a quien lo prepara: la cocina, la barra o nadie.
+ * **Lo que se toca va al pase marcado** en las pestañas de encima de la cuenta, y **el pase lo
+ * elige siempre el camarero** (Richi, 28-oct): un plato no está atado a un pase, porque el
+ * cliente pide en el orden que quiere («el chuletón, de segundo»). Cambiar de página no
+ * cambia el pase. Cada botón va a quien lo prepara: la cocina, la barra o nadie.
  *
  * **Con alergia en la mesa** (0117), lo que la lleva sale en rojo en su botón, y al tocarlo
  * la sala avisa antes de pedirlo.
@@ -69,12 +70,21 @@ export function LoQueSePide({
   const alergias = mesa.alergias ?? [];
   const { avisar, elAviso } = usarElAvisoDeAlergia(alergias);
 
-  // Sin elegir todavía, la página del pase marcado (en una mesa recién abierta, la de las
-  // bebidas); si no hay, «Lo más pedido»; si no, la primera.
-  // «Pan y agua» no: el pan tiene su botón arriba («Pan para 4»).
+  // Sin elegir todavía: con «Bebidas» marcada (la mesa recién abierta), la primera página de lo
+  // que prepara la barra, que se sientan y piden de beber; si no, «Lo más pedido»; si no, la
+  // primera. «Pan y agua» no: el pan tiene su botón arriba («Pan para 4»).
+  const normales = paginas.filter((g) => (g.deSiempre ?? null) === null);
+  const deBeber = normales.find(
+    (g) =>
+      g.platos.length > 0 &&
+      g.platos.every((p) => elDestinoDeLaLinea(p.quienLoPrepara) === 'barra'),
+  );
   const deFabrica =
-    paginas.find((g) => (g.deSiempre ?? null) === null && laPestanaDeLaPagina(g.pase) === marcada)
-      ?.id ?? (masPedido.length > 0 ? LO_MAS_PEDIDO : paginas[0]?.id);
+    marcada === 'bebidas' && deBeber !== undefined
+      ? deBeber.id
+      : masPedido.length > 0
+        ? LO_MAS_PEDIDO
+        : (normales[0]?.id ?? paginas[0]?.id);
   const elegida = pagina ?? deFabrica;
   const laDeAhora: PaginaDeLaSala | typeof MENU | typeof LO_MAS_PEDIDO | undefined =
     elegida === MENU && menus.length > 0
@@ -90,8 +100,6 @@ export function LoQueSePide({
       return;
     }
     setPagina(cual.id);
-    // **Se marca solo el pase de esa página**, en una mesa por pases.
-    if (mesa.porPases) alMarcar(laPestanaDeLaPagina(cual.pase));
   }
 
   const encontradas = useMemo<readonly PlatoDeLaSala[]>(() => {
@@ -106,16 +114,26 @@ export function LoQueSePide({
 
   function comoVa(plato: PlatoDeLaSala) {
     const destino = elDestinoDeLaLinea(plato.quienLoPrepara);
-    // Lo de la cocina, al pase marcado; con «Bebidas» marcada, al suyo (el de su página).
+    // Lo de la cocina, al pase marcado; con «Bebidas» marcada, al que toca: el último con
+    // algo, o el 1.º.
     const pase =
       destino !== 'cocina'
         ? null
         : !mesa.porPases
           ? 1
-          : (elNumeroDelPase(marcada) ??
-            elNumeroDelPase(laPestanaDeLaPagina(plato.pase)) ??
-            elPaseDeFabrica(mesa, borrador));
+          : (elNumeroDelPase(marcada) ?? elPaseDeFabrica(mesa, borrador));
     return { destino, pase };
+  }
+
+  /**
+   * Lo añade, y si estaba marcada «Bebidas» y era comida, **marca el pase al que ha ido**: el
+   * camarero ve dónde está y, si no es ese, toca otra pestaña.
+   */
+  function anadir(como: ReturnType<typeof comoVa>, nuevo: Borrador) {
+    alCambiarElBorrador(nuevo);
+    if (mesa.porPases && marcada === 'bebidas' && como.pase !== null) {
+      alMarcar(laPestanaDelPase(como.pase));
+    }
   }
 
   function pedir(plato: PlatoDeLaSala) {
@@ -125,7 +143,8 @@ export function LoQueSePide({
         setEligiendo(plato);
         return;
       }
-      alCambiarElBorrador(anadirPlato(borrador, plato, comoVa(plato)));
+      const como = comoVa(plato);
+      anadir(como, anadirPlato(borrador, plato, como));
     });
   }
 
@@ -322,7 +341,8 @@ export function LoQueSePide({
               .flatMap((o) => o.alergenos ?? [])
               .filter((a) => !plato.alergenos.includes(a));
             avisar(plato.nombre, anaden, () => {
-              alCambiarElBorrador(anadirConLoElegido(borrador, plato, comoVa(plato), elegido));
+              const como = comoVa(plato);
+              anadir(como, anadirConLoElegido(borrador, plato, como, elegido));
             });
           }}
         />
@@ -336,7 +356,8 @@ export function LoQueSePide({
           alPedirConNota={(nota) => {
             const plato = pulsado;
             avisar(plato.nombre, plato.alergenos, () => {
-              alCambiarElBorrador(anadirConNota(borrador, plato, comoVa(plato), nota));
+              const como = comoVa(plato);
+              anadir(como, anadirConNota(borrador, plato, como, nota));
             });
           }}
         />

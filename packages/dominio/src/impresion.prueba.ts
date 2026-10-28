@@ -82,12 +82,23 @@ describe('la comanda en papel (T5 · 1, 0119)', () => {
     expect(textos(papel.piezas)).toEqual(
       expect.arrayContaining([
         'COCINA · 13:42',
-        '4 personas · Lucía',
+        '4 comensales · Lucía',
         '1.º · YA',
         '2.º · EN ESPERA',
       ]),
     );
     expect(papel.piezas.at(-1)).toEqual({ tipo: 'cortar' });
+  });
+
+  it('lo de llevar programado sale con su hora, enorme y en negro (0121)', () => {
+    const papel = laComandaEnPapel({ ...MESA_4, mesa: 'Para llevar · Laura', paraLas: '21:30' });
+    const hora = papel.piezas.find((p) => p.tipo === 'texto' && p.texto === ' PARA LAS 21:30 ');
+    expect(hora).toMatchObject({ tamano: 'doble', negrita: true, negativo: true });
+    expect(
+      laComandaEnPapel(MESA_4).piezas.some(
+        (p) => p.tipo === 'texto' && p.texto.includes('PARA LAS'),
+      ),
+    ).toBe(false);
   });
 
   it('marca en negro la alergia de la mesa, y en el plato solo lo que la lleva', () => {

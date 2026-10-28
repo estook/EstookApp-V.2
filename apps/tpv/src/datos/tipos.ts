@@ -34,6 +34,8 @@ export interface CuentaEnElPlano {
   readonly totalCentimos: number;
   readonly porPases: boolean;
   readonly notaParaCocina: string | null;
+  /** Lo de llevar programado (0121): para cuándo. Una API de antes no lo dice. */
+  readonly paraLas?: string | null;
   /** «Tienen prisa», y si la cocina llama al camarero (0116). */
   readonly conPrisa: boolean;
   readonly cocinaLlamaEn: string | null;
@@ -130,6 +132,8 @@ export interface LaMesa {
   readonly camarero: string | null;
   readonly porPases: boolean;
   readonly notaParaCocina: string | null;
+  /** Lo de llevar programado (0121): para cuándo. Una API de antes no lo dice. */
+  readonly paraLas?: string | null;
   readonly conPrisa: boolean;
   readonly cocinaLlamaEn: string | null;
   /** La alergia de la mesa (0117). Una API de antes no la dice. */
@@ -182,7 +186,7 @@ export interface PaginaDeLaSala {
   readonly id: string;
   readonly nombre: string;
   readonly color: ColorDeLaBotonera | null;
-  /** Qué pestaña se marca sola al abrirla (Anexo 11.10). */
+  /** Lo que se le propuso al crearla (T3). Desde el 28-oct no marca nada: el pase lo elige el camarero. */
   readonly pase: PaseDeLaBotonera;
   /** «Pan y agua» o «Cafés» (0112): no es la que se abre sola al sentarse. */
   readonly deSiempre?: 'pan' | 'cafes' | null;
@@ -353,6 +357,8 @@ export interface DentroDelTpv {
 }
 
 export interface ElFichaje {
+  /** Una API de antes del 28-oct no lo dice. */
+  readonly personaId?: string;
   readonly nombre: string;
   readonly estado: EstadoDelFichaje;
   readonly desde: string | null;
@@ -400,6 +406,13 @@ export interface DondeSePuedeVincular {
     readonly nombre: string;
     readonly cajones: readonly { readonly id: string; readonly nombre: string }[];
     readonly aparatos: readonly string[];
+    /** Los que ya hay, para volver a vincular uno (28-oct). Una API de antes no los dice. */
+    readonly deAntes?: readonly {
+      readonly id: string;
+      readonly nombre: string;
+      readonly funcion: FuncionDelAparato;
+      readonly vistoEn: string | null;
+    }[];
     readonly personas: readonly { readonly id: string; readonly nombre: string }[];
   }[];
 }
@@ -497,6 +510,8 @@ export interface TarjetaDeCocina {
   readonly camarero: string | null;
   readonly camareroId: string | null;
   readonly notaParaCocina: string | null;
+  /** Lo de llevar programado (0121): para cuándo. Una API de antes no lo dice. */
+  readonly paraLas?: string | null;
   readonly porPases: boolean;
   readonly conPrisa: boolean;
   readonly cocinaLlamaEn: string | null;

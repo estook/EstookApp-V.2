@@ -18,13 +18,17 @@ import { ElegirQueSera, Pastilla } from './ElegirQueSera.tsx';
  *   · **Es el primero: entro con mi correo**: quien lleva el local, una vez, en este
  *     aparato. Elige qué es, y **su sesión se cierra al acabar**: lo que se queda es la
  *     llave del aparato.
+ *
+ * **Si el local ya tiene aparatos, primero «¿Es uno que ya tenías?»** (Richi, 28-oct: entrar
+ * con el correo creaba «Caja 2» en el mismo ordenador). Elegido, vuelve ese mismo, con otra
+ * llave, y la de antes deja de valer; «Es uno nuevo» sigue como siempre.
  */
 export function Vincular({ alVincular }: { readonly alVincular: (v: AparatoVinculado) => void }) {
   const [conCorreo, setConCorreo] = useState(false);
   // **Dentro de la caja para Windows** (0119): lo normal es pasarle la caja del navegador.
   const enLaApp = laCajaParaWindows() !== null;
   return (
-    <main className="flex min-h-dvh flex-col bg-fondo text-texto lg:flex-row">
+    <main className="flex min-h-pantalla flex-col bg-fondo text-texto lg:flex-row">
       <section className="flex flex-col gap-e5 border-borde bg-superficie p-e5 lg:w-[28rem] lg:border-r lg:p-e7">
         <div className="flex items-center gap-e3">
           <span className="flex size-12 items-center justify-center rounded-grande bg-naranja text-pantalla font-bold text-sobre-naranja">
@@ -229,13 +233,23 @@ type Paso =
   | { readonly que: 'entrar' }
   | { readonly que: 'doble_factor' }
   | { readonly que: 'elegir_local'; readonly donde: DondeSePuedeVincular['locales'] }
-  | { readonly que: 'que_sera'; readonly local: DondeSePuedeVincular['locales'][number] }
+  | { readonly que: 'que_sera'; readonly local: ElLocal }
+  | { readonly que: 'cual_es'; readonly local: ElLocal }
+  | { readonly que: 'confirmar'; readonly local: ElLocal; readonly aparato: AparatoDeAntes }
   | {
       readonly que: 'tu_pin';
       readonly pin: string;
       readonly local: string;
       readonly vinculado: AparatoVinculado;
     };
+
+type ElLocal = DondeSePuedeVincular['locales'][number];
+type AparatoDeAntes = NonNullable<ElLocal['deAntes']>[number];
+
+/** Con aparatos en el local, primero «¿Es uno que ya tenías?»; sin ninguno, qué es. */
+function primerPaso(local: ElLocal): Paso {
+  return (local.deAntes ?? []).length > 0 ? { que: 'cual_es', local } : { que: 'que_sera', local };
+}
 
 function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado) => void }) {
   // **La sesión vive solo en la memoria y solo para esto**: no se guarda en el aparato,
@@ -264,7 +278,7 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
       token.current = null;
       setPaso({ que: 'entrar' });
     } else if (locales.length === 1 && locales[0] !== undefined) {
-      setPaso({ que: 'que_sera', local: locales[0] });
+      setPaso(primerPaso(locales[0]));
     } else {
       setPaso({ que: 'elegir_local', donde: locales });
     }
@@ -318,7 +332,7 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
     await dondeSePuede();
   }
 
-  async function vincular(localId: string, que: QueSera) {
+  async function vincular(localId: string, que: QueSera, vuelve?: string) {
     setOcupado(true);
     setError(null);
     const respuesta = await cliente.ejecutar<AparatoVinculado>('vincular_el_primer_aparato', {
@@ -326,6 +340,7 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
       ...que,
       version: LA_VERSION,
       ...(pinNuevo ? { pin_nuevo: true } : {}),
+      ...(vuelve === undefined ? {} : { vuelve_terminal_id: vuelve }),
     });
     setOcupado(false);
     if (!respuesta.ok) {
@@ -449,13 +464,102 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
                 key={l.id}
                 puesta={false}
                 alElegir={() => {
-                  setPaso({ que: 'que_sera', local: l });
+                  setPaso(primerPaso(l));
                 }}
               >
                 {l.nombre}
               </Pastilla>
             ))}
           </div>
+        </div>
+      )}
+
+      {paso.que === 'cual_es' && (
+        <div className="flex flex-col gap-e4">
+          <div className="flex flex-col">
+            <span className="text-secundario text-texto-tenue">{paso.local.nombre}</span>
+            <h2 className="text-cifra-media font-bold">¿Es uno que ya tenías?</h2>
+          </div>
+          <p className="text-cuerpo text-texto-suave">
+            Si este aparato ya estaba vinculado (borraron la app o cambió el navegador), elígelo:
+            vuelve con su nombre y lo suyo, y donde estuviera antes deja de valer.
+          </p>
+          <div role="radiogroup" aria-label="Los que ya hay" className="flex flex-wrap gap-e2">
+            {(paso.local.deAntes ?? []).map((a) => (
+              <Pastilla
+                key={a.id}
+                puesta={false}
+                alElegir={() => {
+                  setPaso({ que: 'confirmar', local: paso.local, aparato: a });
+                }}
+              >
+                {a.nombre}
+              </Pastilla>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setPaso({ que: 'que_sera', local: paso.local });
+            }}
+            className="min-h-toque-cocina self-start rounded-grande bg-charcoal px-e5 text-seccion font-bold"
+          >
+            No, es uno nuevo
+          </button>
+        </div>
+      )}
+
+      {paso.que === 'confirmar' && (
+        <div className="flex flex-col gap-e4">
+          <div className="flex flex-col">
+            <span className="text-secundario text-texto-tenue">{paso.local.nombre}</span>
+            <h2 className="text-cifra-media font-bold">
+              ¿Volver a vincular {paso.aparato.nombre}?
+            </h2>
+          </div>
+          <p className="text-cuerpo text-texto-suave">
+            Este aparato pasa a ser {paso.aparato.nombre}.{' '}
+            {paso.aparato.vistoEn === null
+              ? 'No se había usado nunca.'
+              : `Se usó por última vez el ${new Date(paso.aparato.vistoEn).toLocaleString('es-ES', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}.`}{' '}
+            <b className="text-texto">Si sigue encendido en otro sitio, allí deja de valer.</b>
+          </p>
+          <label className="flex min-h-toque items-center gap-e3 text-cuerpo">
+            <input
+              type="checkbox"
+              checked={pinNuevo}
+              onChange={(e) => {
+                setPinNuevo(e.target.checked);
+              }}
+              className="size-6 accent-naranja"
+            />
+            No recuerdo mi PIN de este local: dame uno nuevo
+          </label>
+          <span className="flex flex-wrap gap-e3">
+            <button
+              type="button"
+              disabled={ocupado}
+              onClick={() => {
+                void vincular(
+                  paso.local.id,
+                  { funcion: paso.aparato.funcion, nombre: paso.aparato.nombre },
+                  paso.aparato.id,
+                );
+              }}
+              className="min-h-toque-cocina rounded-grande bg-naranja px-e5 text-seccion font-bold text-sobre-naranja disabled:opacity-60"
+            >
+              {ocupado ? 'Vinculando…' : `Sí, es ${paso.aparato.nombre}`}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPaso({ que: 'cual_es', local: paso.local });
+              }}
+              className="min-h-toque-cocina rounded-grande border-2 border-borde px-e5 font-bold"
+            >
+              No
+            </button>
+          </span>
         </div>
       )}
 

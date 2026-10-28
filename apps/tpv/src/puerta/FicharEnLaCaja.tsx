@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { CIFRAS_DEL_PIN } from '@estook/dominio';
 import { ErrorEnCristiano } from '@estook/ui';
@@ -10,8 +10,17 @@ import { cifraDeLaTecla } from './teclas.ts';
 /**
  * **«Fichar», el botón naranja de la caja** (0115; Richi, 25-oct): cada uno teclea su PIN y
  * ficha, **sin entrar en la caja**. Los cocineros y los camareros fichan aquí al llegar,
- * antes de coger su aparato, y al irse. Primero quién es y cómo está; después, solo los
- * botones que le tocan. Al acabar, «✓ Ana · entrada a las 12:02», y vuelve al PIN.
+ * antes de coger su aparato, y al irse. Primero quién es y cómo está —«Hola, Ana ·
+ * ¿Fichar la entrada?»—; después, solo los botones que le tocan. Al acabar, «✓ Ana ·
+ * entrada a las 12:02».
+ *
+ * **Es el mismo con la caja abierta** (Richi, 28-oct): el «Fichar» de arriba **pide el PIN a
+ * todos**, porque en el ordenador de la caja ficha cualquiera, y no ficha a quien la tiene
+ * abierta. Si el PIN es el suyo, `alSerQuienEstaDentro` lo lleva a lo suyo: su salida
+ * cierra también su sesión.
+ *
+ * **Una salida por error no rompe nada**: si vuelve y ficha la entrada el mismo día, es otro
+ * tramo de la misma jornada (la jornada partida de siempre, desde M4).
  */
 
 type Que = 'entrada' | 'pausa' | 'vuelta' | 'salida';
@@ -26,10 +35,22 @@ const LO_QUE_SE_HIZO: Readonly<Record<Que, string>> = {
 export function FicharEnLaCaja({
   llave,
   alAcabar,
+  cabecera,
+  alSerQuienEstaDentro,
+  aviso,
 }: {
   readonly llave: string;
   /** Con lo que se fichó, para decirlo en la pantalla del PIN; nulo si se volvió sin fichar. */
   readonly alAcabar: (hecho: string | null) => void;
+  /** Con la caja abierta, la barra de arriba. */
+  readonly cabecera?: ReactNode;
+  /**
+   * Con la caja abierta: si el PIN es de quien la tiene abierta, devuelve verdadero y se
+   * encarga él (sus mesas, y cerrar su sesión al irse).
+   */
+  readonly alSerQuienEstaDentro?: (fichaje: ElFichaje) => boolean;
+  /** «✓ Ana · entrada a las 12:02», del que acaba de fichar, mientras teclea el siguiente. */
+  readonly aviso?: string | null;
 }) {
   const cliente = useMemo(() => crearClienteDelTpv({ token: () => null }), []);
   const [pin, setPin] = useState('');
@@ -53,9 +74,10 @@ export function FicharEnLaCaja({
         setError(respuesta.error);
         return;
       }
+      if (alSerQuienEstaDentro?.(respuesta.datos) === true) return;
       setQuien({ pin: elPin, fichaje: respuesta.datos });
     },
-    [cliente, llave],
+    [cliente, llave, alSerQuienEstaDentro],
   );
 
   const fichar = useCallback(
@@ -117,11 +139,21 @@ export function FicharEnLaCaja({
   const boton =
     'min-h-toque-cocina rounded-grande px-e5 text-seccion font-bold disabled:opacity-60';
 
-  return (
-    <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5 text-texto">
+  const cuerpo = (
+    <main
+      className={`flex items-center justify-center bg-fondo p-e5 text-texto ${cabecera === undefined ? 'min-h-pantalla' : 'flex-1'}`}
+    >
       <section className="flex w-full max-w-[28rem] flex-col items-center gap-e5">
         {quien === null ? (
           <>
+            {aviso !== undefined && aviso !== null && (
+              <p
+                role="status"
+                className="rounded-redondo bg-bien-suave px-e4 py-e2 font-semibold text-bien"
+              >
+                {aviso}
+              </p>
+            )}
             <span className="text-pantalla font-bold">Fichar · teclea tu PIN</span>
             <Puntos tecleadas={pin.length} de={CIFRAS_DEL_PIN} />
             {error !== null && <ErrorEnCristiano error={error} />}
@@ -130,14 +162,14 @@ export function FicharEnLaCaja({
         ) : (
           <div className="flex w-full flex-col gap-e4">
             <span className="text-pantalla font-bold">
-              {quien.fichaje.nombre}
+              Hola, {quien.fichaje.nombre}
               <br />
               <span className="text-seccion text-texto-suave">
                 {quien.fichaje.estado === 'dentro'
-                  ? 'Estás dentro'
+                  ? `Estás dentro desde las ${laHora(quien.fichaje.desde)}`
                   : quien.fichaje.estado === 'en_pausa'
-                    ? 'Estás en la pausa'
-                    : 'No has fichado la entrada'}
+                    ? `Estás en la pausa desde las ${laHora(quien.fichaje.desde)}`
+                    : '¿Fichar la entrada?'}
               </span>
             </span>
             {error !== null && <ErrorEnCristiano error={error} />}
@@ -148,7 +180,7 @@ export function FicharEnLaCaja({
                 onClick={() => void fichar('entrada')}
                 className={`${boton} bg-naranja text-sobre-naranja`}
               >
-                Fichar la entrada
+                Sí, fichar la entrada
               </button>
             )}
             {quien.fichaje.estado === 'en_pausa' && (
@@ -186,13 +218,33 @@ export function FicharEnLaCaja({
         <button
           type="button"
           onClick={() => {
-            alAcabar(null);
+            if (quien === null) {
+              alAcabar(null);
+              return;
+            }
+            // «No»: no ficha, y vuelve al teclado para el siguiente.
+            setQuien(null);
+            setError(null);
           }}
           className="min-h-toque text-secundario font-semibold text-texto-tenue"
         >
-          Volver
+          {quien === null ? 'Volver' : 'No, volver'}
         </button>
       </section>
     </main>
   );
+
+  if (cabecera === undefined) return cuerpo;
+  return (
+    <div className="flex min-h-pantalla flex-col bg-fondo text-texto">
+      {cabecera}
+      {cuerpo}
+    </div>
+  );
+}
+
+/** «12:02», la hora del aparato; vacía si no hay. */
+function laHora(cuando: string | null): string {
+  if (cuando === null) return '';
+  return new Date(cuando).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 }

@@ -19,7 +19,7 @@ import {
   type Borrador,
 } from '../logica/comanda.ts';
 import { elPase, losGruposDeLaCuenta } from '../logica/laCuenta.ts';
-import { cuantoLlevan, eurosConSimbolo, personas } from '../logica/texto.ts';
+import { comensales, cuantoLlevan, eurosConSimbolo, laHora } from '../logica/texto.ts';
 import { irAlPlano } from '../navegar.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { LaCuenta } from './LaCuenta.tsx';
@@ -85,7 +85,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
 
   if (mesa.isLoading) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-fondo">
+      <main className="flex min-h-pantalla items-center justify-center bg-fondo">
         <Cargando que="la mesa" />
       </main>
     );
@@ -93,7 +93,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   const datos = mesa.data;
   if (datos === undefined) {
     return (
-      <main className="flex min-h-dvh flex-col items-center justify-center gap-e4 bg-fondo p-e5">
+      <main className="flex min-h-pantalla flex-col items-center justify-center gap-e4 bg-fondo p-e5">
         {mesa.error instanceof FalloDeLaSala ? (
           <ErrorEnCristiano error={mesa.error.error} />
         ) : (
@@ -110,7 +110,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   // no se llegó a mandar se enseña para pedirlo donde toque, en vez de perderlo callado.
   if (!datos.abierta) {
     return (
-      <main className="flex min-h-dvh flex-col items-center justify-center gap-e4 bg-fondo p-e5">
+      <main className="flex min-h-pantalla flex-col items-center justify-center gap-e4 bg-fondo p-e5">
         <div className="w-full max-w-[32rem]">
           <Aviso tono="atencion" titulo={`${datos.titulo} ya no está abierta`}>
             Se liberó, se anuló o se juntó con otra desde otro aparato.
@@ -224,7 +224,14 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
       ? 'Todo en marcha o servido.'
       : `El ${elPase(espera.numero)} espera: te avisamos cuando salga todo lo de antes.`;
 
-  const subtitulo = [personas(datos.personas), datos.camarero, cuantoLlevan(datos.minutos)]
+  const subtitulo = [
+    datos.paraLas === undefined || datos.paraLas === null
+      ? null
+      : `Para las ${laHora(datos.paraLas)}`,
+    comensales(datos.personas),
+    datos.camarero,
+    cuantoLlevan(datos.minutos),
+  ]
     .filter((x) => x !== null)
     .join(' · ');
 
@@ -249,7 +256,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   };
 
   return (
-    <div className="flex h-dvh flex-col bg-fondo text-texto md:flex-row">
+    <div className="flex h-pantalla flex-col bg-fondo text-texto md:flex-row">
       {enElPlanoTodas !== null && <LaCocinaLlama flotante cuentas={enElPlanoTodas} />}
       {/* La cuenta: a la izquierda en la tablet. */}
       <section

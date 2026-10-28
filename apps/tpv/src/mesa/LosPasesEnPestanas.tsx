@@ -57,7 +57,7 @@ export function LosPasesEnPestanas({
       <span className="text-etiqueta text-texto-tenue">
         {marcada === 'bebidas'
           ? 'Lo de beber va a la barra al momento; la comida, al pase que toque.'
-          : `Lo que toques va al ${elNombreDeLaPestana(marcada).toLowerCase()}. Al cambiar de página, se marca solo el pase de esa página.`}
+          : `Lo que toques va al ${elNombreDeLaPestana(marcada).toLowerCase()}. Para otro pase, toca su pestaña.`}
       </span>
     </div>
   );

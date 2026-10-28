@@ -131,6 +131,8 @@ export const entradaAbrirMesa = z
     nombre: z.string().trim().min(1).max(40).optional(),
     personas: z.number().int().min(1).max(99).optional(),
     por_pases: z.boolean().optional(),
+    /** Lo de llevar, programado (0121): para cuándo lo quiere el cliente. */
+    para_las: z.string().datetime().optional(),
   })
   .strict();
 export type EntradaAbrirMesa = z.infer<typeof entradaAbrirMesa>;
@@ -144,11 +146,28 @@ export const abrirMesa = comando<EntradaAbrirMesa, { cuentaId: string; yaEstaba:
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
     const tipo = entrada.tipo ?? 'mesa';
-    const porPases = entrada.por_pases ?? true;
+    // **Para llevar sale todo junto** (Richi, 28-oct): se lo lleva entero, no hay pases que
+    // esperar. Ni se pregunta ni se puede pedir otra cosa.
+    const porPases = tipo === 'para_llevar' ? false : (entrada.por_pases ?? true);
     if ((tipo === 'mesa') !== (entrada.mesa_id !== undefined)) {
       throw new FalloDeAplicacion('faltan_datos', {
         porque: 'Una mesa se abre eligiendo la mesa; la barra y lo de llevar, sin mesa.',
       });
+    }
+    // **Programar lo de llevar** (Richi, 28-oct): solo lo de llevar, y para dentro de hoy.
+    const paraLas = entrada.para_las === undefined ? null : new Date(entrada.para_las);
+    if (paraLas !== null) {
+      if (tipo !== 'para_llevar') {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: 'Solo lo de llevar se programa: una mesa y la barra comen ahora.',
+        });
+      }
+      const minutos = (paraLas.getTime() - contexto.ahora.getTime()) / 60_000;
+      if (minutos < 0 || minutos > 24 * 60) {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: 'La hora de recogida es de ahora a 24 horas vista.',
+        });
+      }
     }
     const yaEstaba = await contexto.sql<{ id: string }[]>`
       select id::text as id from estook.cuenta where id = ${entrada.cuenta_id}::uuid
@@ -179,18 +198,21 @@ export const abrirMesa = comando<EntradaAbrirMesa, { cuentaId: string; yaEstaba:
 
     await contexto.sql`
       insert into estook.cuenta
-        (id, local_id, tipo, mesa_id, nombre, personas, camarero_id, por_pases, abierta_en, abierta_por)
+        (id, local_id, tipo, mesa_id, nombre, personas, camarero_id, por_pases, abierta_en, abierta_por,
+         para_las)
       values (
         ${entrada.cuenta_id}::uuid, ${localId}::uuid, ${tipo},
         ${entrada.mesa_id ?? null}::uuid, ${entrada.nombre ?? null}, ${entrada.personas ?? null},
         ${contexto.personaId}::uuid, ${porPases},
-        ${contexto.ahora.toISOString()}::timestamptz, ${contexto.personaId}::uuid
+        ${contexto.ahora.toISOString()}::timestamptz, ${contexto.personaId}::uuid,
+        ${paraLas === null ? null : paraLas.toISOString()}::timestamptz
       )
     `;
     await avisar(contexto, localId, 'abrir_mesa', entrada.cuenta_id, {
       tipo,
       personas: entrada.personas ?? null,
       por_pases: porPases,
+      ...(paraLas === null ? {} : { para_las: paraLas.toISOString() }),
     });
     return { cuentaId: entrada.cuenta_id, yaEstaba: false };
   },
@@ -837,6 +859,11 @@ export const cambiarLaMesa = comando<EntradaCambiarLaMesa, { cuentaId: string }>
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
     const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
+    if (entrada.por_pases === true && cuenta.tipo === 'para_llevar') {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Lo de llevar sale todo junto: no va por pases.',
+      });
+    }
     const nota =
       entrada.nota_para_cocina === undefined
         ? cuenta.nota_para_cocina
@@ -897,7 +924,7 @@ export const cambiarDeMesa = comando<{ cuenta_id: string; mesa_id: string }, { c
       });
     }
     await contexto.sql`
-      update estook.cuenta set tipo = 'mesa', mesa_id = ${entrada.mesa_id}::uuid
+      update estook.cuenta set tipo = 'mesa', mesa_id = ${entrada.mesa_id}::uuid, para_las = null
        where id = ${cuenta.id}::uuid
     `;
     await avisar(contexto, localId, 'cambiar_de_mesa', cuenta.id, {

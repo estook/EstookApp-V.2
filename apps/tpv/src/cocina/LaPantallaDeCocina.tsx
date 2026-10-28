@@ -8,6 +8,8 @@ import { FalloDeLaSala } from '../ganchos/usarLaSala.ts';
 import {
   elColorDelTiempo,
   elPaseQueAcabaDeMarchar,
+  separarLoProgramado,
+  cuandoSeEmpieza,
   elPlatoQueSigue,
   losAcabados,
   loQueSuena,
@@ -122,8 +124,9 @@ export function LaPantallaDeCocina({
     [hacer],
   );
 
-  // **El teclado de cocina**: la tecla de cada tarjeta tacha su siguiente plato.
-  const enMarcha = lo?.enMarcha;
+  // **El teclado de cocina**: la tecla de cada tarjeta tacha su siguiente plato. Lo programado
+  // que aún no toca no lleva tecla (0121).
+  const enMarcha = lo === undefined ? undefined : separarLoProgramado(lo.enMarcha, ahora).ya;
   useEffect(() => {
     const alPulsar = (evento: KeyboardEvent) => {
       despertar();
@@ -143,7 +146,7 @@ export function LaPantallaDeCocina({
 
   if (lo === undefined) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5 text-texto">
+      <main className="flex min-h-pantalla items-center justify-center bg-fondo p-e5 text-texto">
         {datos.isLoading ? (
           <Cargando que={esBarra ? 'la barra' : 'la cocina'} />
         ) : (
@@ -160,11 +163,12 @@ export function LaPantallaDeCocina({
   }
 
   const acabados = losAcabados(lo.fuera, ahora);
+  const { ya, programados } = separarLoProgramado(lo.enMarcha, ahora);
   const hora = new Date(ahora).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
   return (
     <div
-      className="flex min-h-dvh flex-col bg-fondo text-texto"
+      className="flex min-h-pantalla flex-col bg-fondo text-texto"
       onPointerDown={() => {
         despertar();
       }}
@@ -231,7 +235,7 @@ export function LaPantallaDeCocina({
             />
           ) : (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] items-start gap-e3">
-              {lo.enMarcha.map((t, i) => (
+              {ya.map((t, i) => (
                 <Tarjeta
                   key={t.cuentaId}
                   tarjeta={t}
@@ -249,6 +253,17 @@ export function LaPantallaDeCocina({
                   ajustes={lo.ajustes}
                   alTocarElPlato={alTocarElPlato}
                   alLlamar={() => void hacer('llamar_al_camarero', { cuenta_id: t.cuentaId })}
+                />
+              ))}
+              {/* Lo de llevar programado, al final y en gris, hasta que toca empezarlo (0121). */}
+              {programados.map((t) => (
+                <Tarjeta
+                  key={t.cuentaId}
+                  tarjeta={t}
+                  tecla={null}
+                  ajustes={lo.ajustes}
+                  alTocarElPlato={alTocarElPlato}
+                  todaviaNo
                 />
               ))}
             </div>
@@ -320,12 +335,15 @@ function Tarjeta({
   ajustes,
   alTocarElPlato,
   alLlamar,
+  todaviaNo = false,
 }: {
   readonly tarjeta: TarjetaDeCocina;
   readonly tecla: number | null;
   readonly ajustes: LaPantallaDeCocina['ajustes'];
   readonly alTocarElPlato: (lineaId: string, salio: boolean) => void;
   readonly alLlamar?: () => void;
+  /** Lo de llevar programado que aún no toca empezar (0121): en gris, con su hora. */
+  readonly todaviaNo?: boolean;
 }) {
   const acabada = t.estado === 'fuera';
   const marcha = acabada ? null : elPaseQueAcabaDeMarchar(t);
@@ -343,8 +361,16 @@ function Tarjeta({
   return (
     <article
       aria-label={t.titulo}
-      className={`overflow-hidden rounded-mayor border-[3px] bg-superficie ${borde} ${acabada ? 'opacity-80' : ''}`}
+      className={`overflow-hidden rounded-mayor border-[3px] bg-superficie ${borde} ${acabada ? 'opacity-80' : todaviaNo ? 'opacity-60' : ''}`}
     >
+      {t.paraLas !== undefined && t.paraLas !== null && !acabada && (
+        <p className="bg-info px-e3 py-e1 text-seccion font-bold text-fondo">
+          PARA LAS {laHora(t.paraLas)}
+          {todaviaNo
+            ? ` · se empieza a las ${laHora(new Date(cuandoSeEmpieza(t) ?? 0).toISOString())}`
+            : ''}
+        </p>
+      )}
       {t.anulada !== null ? (
         <p className="bg-mal px-e3 py-e1 text-etiqueta font-bold text-fondo">
           ANULADA{t.anulada === '' ? '' : ` · «${t.anulada}»`}
@@ -393,7 +419,9 @@ function Tarjeta({
         )}
         <span className="w-full text-secundario text-texto-suave">
           {[
-            t.personas === null ? null : `${String(t.personas)} personas`,
+            t.personas === null
+              ? null
+              : `${String(t.personas)} ${t.personas === 1 ? 'comensal' : 'comensales'}`,
             t.camarero,
             t.notaParaCocina,
           ]

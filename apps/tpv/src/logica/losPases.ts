@@ -1,11 +1,10 @@
-import type { PaseDeLaBotonera } from '@estook/dominio';
 import type { LaMesa } from '../datos/tipos.ts';
 
 /**
  * **Los pases, en pestañas encima de la cuenta** (T2, Anexo 11.10), como las «órdenes» de
- * Revo: **Bebidas · 1.º · 2.º · 3.º · Postre**. Lo que se toca va al pase marcado, y al
- * cambiar de página de la carta **se marca solo el de esa página**: así casi nunca hay que
- * tocar la pestaña.
+ * Revo: **Bebidas · 1.º · 2.º · 3.º · Postre**. Lo que se toca va al pase marcado, y **el pase
+ * lo elige el camarero** (Richi, 28-oct): ningún plato está atado a un pase, ni cambiar de
+ * página de la carta lo cambia.
  *
  * El postre es el pase 4 por dentro: sale cuando ha salido lo de antes, como siempre (0106).
  * Bebidas no es un pase: va a la barra al momento, al mandar.
@@ -34,16 +33,6 @@ export function elNombreDeLaPestana(pestana: PestanaDelPase): string {
   if (pestana === 'bebidas') return 'Bebidas';
   if (pestana === 'postre') return 'Postre';
   return `${String(pestana)}.º`;
-}
-
-/**
- * **La pestaña que se marca sola al abrir una página de la botonera** (Anexo 11.10): la de
- * su «¿En qué pase sale?» (T3, 11.11). Entrantes, el 1.º; Principales, el 2.º; Bebidas,
- * Bebidas.
- */
-export function laPestanaDeLaPagina(pase: PaseDeLaBotonera): PestanaDelPase {
-  if (pase === 'bebidas' || pase === 'postre') return pase;
-  return Number(pase) as 1 | 2 | 3;
 }
 
 export type ComoVaLaPestana = 'salio' | 'en_marcha' | 'en_espera' | null;

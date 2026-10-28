@@ -55,7 +55,7 @@ export function Agotados() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-fondo text-texto">
+    <div className="flex min-h-pantalla flex-col bg-fondo text-texto">
       <LaBarraDeArriba titulo="Agotados" />
       <main className="flex flex-col gap-e5 p-e4 md:p-e5">
         <p className="text-cuerpo text-texto-suave">

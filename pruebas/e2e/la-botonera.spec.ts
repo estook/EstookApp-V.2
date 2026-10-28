@@ -96,7 +96,7 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
   ).toBeVisible();
   await page.getByRole('button', { name: 'Traer la carta' }).click();
 
-  // ── Una página por sección, con sus dos preguntas contestadas por su nombre ──
+  // ── Una página por sección, con quién la prepara contestado por su nombre ──
   const entrantes = page.getByRole('region', { name: 'Página Entrantes' });
   const refrescos = page.getByRole('region', { name: 'Página Refrescos' });
   await expect(entrantes.getByText('1 botón')).toBeVisible({ timeout: 15_000 });
@@ -105,11 +105,8 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
       name: 'Barra',
     }),
   ).toHaveAttribute('aria-checked', 'true');
-  await expect(
-    refrescos.getByRole('radiogroup', { name: '¿En qué pase sale?' }).getByRole('radio', {
-      name: 'Bebidas',
-    }),
-  ).toHaveAttribute('aria-checked', 'true');
+  // **El pase no se pregunta** (Richi, 28-oct): lo elige el camarero en cada mesa.
+  await expect(refrescos.getByRole('radiogroup', { name: '¿En qué pase sale?' })).toHaveCount(0);
 
   // ── El pan no va en Entrantes: va en «Pan y agua», de «Nadie», sin tocar nada (0112) ──
   const panYAgua = page.getByRole('region', { name: 'Página Pan y agua' });
@@ -142,8 +139,9 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
   // Una mesa recién abierta empieza en Bebidas: la página de Refrescos.
   await page.getByRole('button', { name: /^Coca-Cola, 2,50 €/ }).click({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Entrantes', exact: true }).click();
-  await expect(page.getByRole('radio', { name: '1.º', checked: true })).toBeVisible();
   await page.getByRole('button', { name: /^Tortilla, 8,00 €/ }).click();
+  // La comida va al 1.º, y se marca: el pase lo elige el camarero (28-oct).
+  await expect(page.getByRole('radio', { name: '1.º', checked: true })).toBeVisible();
   await page.getByRole('button', { name: 'Mandar' }).click();
   await expect(page.getByRole('status')).toHaveText(
     'Mandado: a cocina 1, a la barra 1 y 1 tal cual · sale el 1.º',

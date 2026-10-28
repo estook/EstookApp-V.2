@@ -19,7 +19,7 @@
 > #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
 > ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092, #144), **en producción**.
 > **La entrada nueva** ([0118](decisiones/0118-la-entrada-del-tpv.md), sin migración), con sus
-> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en su pull request; después, **T5 · 2 · Sin internet**.
+> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en producción (#148); después, **la pausa del TPV** ([0121](decisiones/0121-la-pausa-del-tpv.md)) y **T5 · 2 · Sin internet**.
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -365,9 +365,9 @@ camareros con Android), **Android sí e iPhone si alguien lo pide**, **sin firma
 - **En el restaurante del amigo**: una comanda pedida en un Android sale en la impresora de cocina
   **en menos de 6 segundos** (Anexo 6.8), y la cuenta en la de la caja.
 
-### T5 · 1 · Imprimir y el cajón, construida (27-oct-2026)
+### T5 · 1 · Imprimir y el cajón, en producción (27-oct-2026)
 
-En su pull request ([0119](decisiones/0119-t5-la-caja-para-windows.md), sección 4; migración 0093;
+En producción (#148) ([0119](decisiones/0119-t5-la-caja-para-windows.md), sección 4; migración 0093;
 [sus pasos](pasos-de-t5-1.md)): **la caja para Windows** en `apps/caja-windows` (Electron), con su
 instalador hecho en GitHub; **la cola** (`impresora` y `trabajo_de_impresion`), que la caja recoge con
 su llave; **el traductor** a ESC/POS en `packages/impresion`; **Ajustes del TPV › Impresoras y cajón**;
@@ -380,6 +380,17 @@ app»**. Falta la prueba en el restaurante del amigo de Richi, con su Epson.
 orden y una vez al encenderla), `las-impresoras.prueba.ts` (contra la base: sin la dirección en la
 pantalla, un trabajo por sitio, ANULADO, la cuenta, COPIA, el cajón que no abre un comandero y «Pasar
 a la app»), y `la-caja-para-windows.spec.ts` (la pantalla, con un puente de mentira).
+
+### La pausa del TPV (28-oct-2026)
+
+Lo que vio Richi con la caja para Windows ya publicada, antes de seguir ([0121](decisiones/0121-la-pausa-del-tpv.md),
+migración 0095, [sus pasos](pasos-de-la-pausa-del-tpv.md)): **la zona segura del iPhone** en todo Estook
+TPV; **el pase lo elige el camarero** (fuera «¿En qué pase sale?»); **lo de llevar, todo junto y
+programado** a una hora; **«Nº de comensales»**; **«Fichar» con la caja abierta pide el PIN a todos**;
+y **volver a vincular** un aparato sin duplicarlo. Las pruebas: `la-puerta.prueba.ts` (volver a
+vincular con el código y con el correo, sin otra caja, y quién ficha), `la-sala-y-la-cocina.prueba.ts`
+(lo de llevar, todo junto y programado), `laCocina.prueba.ts`, `texto.prueba.ts`, `impresion.prueba.ts`,
+y las de pantalla de la sala y la botonera, que ya no esperan que la página marque el pase.
 
 ### T5 · 2 · Sin internet, terminado cuando
 
@@ -399,6 +410,23 @@ a la app»), y `la-caja-para-windows.spec.ts` (la pantalla, con un puente de men
 Su «Terminado cuando» es el del Plan para cada módulo (M20B y M20C) con las pruebas del capítulo 8,
 10.12 y 11.15 que les tocan. Se escribe aquí entero **antes de empezar cada una**, con lo que se haya
 aprendido en las anteriores.
+
+**Lo que T7 ya tiene que cumplir** (Richi, 28-oct; 0121, punto 4; Anexo 11.6):
+
+- **El día en la caja**: se abre caja con el PIN de un encargado (el primer día, preguntando con
+  cuánto se empieza; después, proponiendo lo que se quedó); **el cajón, con «Cambiar · Sacar ·
+  Meter»** y el PIN de un encargado; y se cierra contando el efectivo, sin ver lo esperado, con la
+  diferencia después (fondo + cobrado en efectivo + metido − sacado).
+- **Una venta, una sola vez**, y **solo al cobrar**. La venta nace del cobro con la clave del cobro,
+  nacida en el aparato; **la base no deja** dos ventas del mismo cobro ni que una línea baje dos veces
+  del almacén (índices únicos), aunque el código fallara. Nada de lo de antes de cobrar cuenta.
+- **Las pruebas que la dan por buena**: el mismo cobro mandado dos veces (y con la respuesta perdida)
+  deja una venta y un descuento; dos aparatos cobrando la misma mesa a la vez, uno gana y el otro lo
+  dice; la red que se cae justo después de cobrar; dividir en tres suma lo mismo que la cuenta; el
+  cocinero que tacha, destacha o recibe un VUELVE no cambia nada; anular antes de cobrar no baja
+  nada; anular o devolver después hace el movimiento contrario, una vez; y el arqueo cuadra al
+  céntimo con el fondo, lo cobrado y lo metido y sacado.
+- **Pendiente de Richi** (0121, punto 5): quién entra en la caja y si se cobra sin abrirla.
 
 ## Lo que ya está hecho (M20A · 1 · 1 y 1 · 2)
 

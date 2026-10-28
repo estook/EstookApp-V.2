@@ -6,6 +6,7 @@ import {
   elPlatoQueSigue,
   losAcabados,
   loQueSuena,
+  separarLoProgramado,
 } from './laCocina.ts';
 
 const plato = (
@@ -159,5 +160,18 @@ describe('la pantalla de cocina', () => {
     expect(elPaseQueAcabaDeMarchar(marchada)).toBe(2);
     expect(elPaseQueAcabaDeMarchar({ ...marchada, minutos: 6 })).toBeNull();
     expect(elPaseQueAcabaDeMarchar(tarjeta('1'))).toBeNull();
+  });
+});
+
+describe('lo de llevar programado (0121)', () => {
+  it('se ve aparte hasta veinte minutos antes de su hora, por orden de hora', () => {
+    const ahora = Date.parse('2026-10-28T19:00:00Z');
+    const ya = tarjeta('1');
+    const a2130 = tarjeta('L1', { tipo: 'para_llevar', paraLas: '2026-10-28T21:30:00Z' });
+    const a2000 = tarjeta('L2', { tipo: 'para_llevar', paraLas: '2026-10-28T20:00:00Z' });
+    const a1915 = tarjeta('L3', { tipo: 'para_llevar', paraLas: '2026-10-28T19:15:00Z' });
+    const { ya: hoy, programados } = separarLoProgramado([ya, a2130, a2000, a1915], ahora);
+    expect(hoy.map((t) => t.cuentaId)).toEqual(['1', 'L3']);
+    expect(programados.map((t) => t.cuentaId)).toEqual(['L2', 'L1']);
   });
 });

@@ -8,7 +8,7 @@
 >
 > | Qué              | Cómo está                                                      |
 > | ---------------- | -------------------------------------------------------------- |
-> | Pull request     | **«Estook TPV es de Pro»**, rama `estook-tpv-es-de-pro`        |
+> | Pull request     | **«Estook TPV es de Pro» (#151)**, rama `estook-tpv-es-de-pro` |
 > | La base de datos | **93** en producción; esta trae **la 0094**                    |
 > | La API           | Sigue en **115 consultas y 312 comandos**; cambia lo de dentro |
 
@@ -31,7 +31,7 @@ Lo decidido, en la [0120](decisiones/0120-estook-tpv-es-de-pro.md).
 **En este orden.** La API nueva necesita la 0094.
 
 1. **En GitHub**: fusiona antes **«Los documentos en orden» (#150)**, y después **«Estook TPV es de
-   Pro»**. Cada una, con las comprobaciones **en verde**: **Merge pull request** → **Confirm merge**.
+   Pro» (#151)**. Cada una, con las comprobaciones **en verde**: **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
 
    ```powershell

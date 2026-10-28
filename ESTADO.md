@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 28 de octubre de 2026 · **En producción todo hasta la #149** (Estook TPV con su propia identidad): 93 migraciones y la API con 115 consultas y 312 comandos, comprobado el 27-oct. **Falta publicar el programa** (la caja para Windows). **En sus pull requests, uno encima del otro:** los documentos en orden y [la auditoría del 28-oct](docs/auditorias/auditoria-del-28-oct.md) (#150), y **Estook TPV es de Pro** ([0120](docs/decisiones/0120-estook-tpv-es-de-pro.md), migración 0094): el botón de Ajustes y la API que lo cierra a Esencial
+Última actualización: 28 de octubre de 2026 · **En producción todo hasta la #149** (Estook TPV con su propia identidad): 93 migraciones y la API con 115 consultas y 312 comandos, comprobado el 27-oct. **Falta publicar el programa** (la caja para Windows). **En sus pull requests, uno encima del otro:** los documentos en orden y [la auditoría del 28-oct](docs/auditorias/auditoria-del-28-oct.md) (#150), y **Estook TPV es de Pro** (#151, [0120](docs/decisiones/0120-estook-tpv-es-de-pro.md), migración 0094): el botón de Ajustes y la API que lo cierra a Esencial
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** **T5 · 1** (#148) y **la identidad de cada app** (#149) están en producción; **falta publicar el programa** y probarlo con la Epson ([sus pasos](docs/pasos-de-t5-1.md)). **Dos pull requests, uno encima del otro**: «Los documentos en orden» (#150) y **«Estook TPV es de Pro»** (rama `estook-tpv-es-de-pro`, [0120](docs/decisiones/0120-estook-tpv-es-de-pro.md), migración 0094, [sus pasos](docs/pasos-de-estook-tpv-es-de-pro.md)); sus capturas de Ajustes en el ordenador se rehacen en GitHub con `pnpm capturas:traer`. **Sin contestar** (la 0120, punto 4): dónde ficha en Esencial quien no tiene móvil, y adónde lleva «Aprende más». Lo siguiente, **T5 · 2**, tras la Epson.
+- **Nada a medias.** **T5 · 1** (#148) y **la identidad de cada app** (#149) están en producción; **falta publicar el programa** y probarlo con la Epson ([sus pasos](docs/pasos-de-t5-1.md)). **Dos pull requests, uno encima del otro**: «Los documentos en orden» (#150) y **«Estook TPV es de Pro»** (#151, rama `estook-tpv-es-de-pro`, [0120](docs/decisiones/0120-estook-tpv-es-de-pro.md), migración 0094, [sus pasos](docs/pasos-de-estook-tpv-es-de-pro.md)); sus capturas de Ajustes en el ordenador se rehacen en GitHub con `pnpm capturas:traer`. **Sin contestar** (la 0120, punto 4): dónde ficha en Esencial quien no tiene móvil, y adónde lleva «Aprende más». Lo siguiente, **T5 · 2**, tras la Epson.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -67,7 +67,7 @@ HECHO         T4 · 2 · La barra y la alergia de la mesa (0117, #144) · la ent
 HECHO         El cambio de hora y los navegadores en la caché de GitHub (#146)
 HECHO         T5 · 1 · Imprimir y el cajón (0119, #148), sin publicar el programa todavía
 HECHO         Estook TPV con su propia identidad (#149)
-AHORA         Los documentos en orden (#150) · Estook TPV es de Pro (0120) · luego T5 · 2
+AHORA         Los documentos en orden (#150) · Estook TPV es de Pro (0120, #151) · luego T5 · 2
 ESTOOK TPV    → T5 → T6 · M20B → T7 · M20C con M20 (0107)
 DESPUÉS       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b → Fases 5, 6 y 7
 ```
@@ -120,7 +120,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 
 **Ahora:**
 
-1. **Fusionar «Los documentos en orden» (#150) y «Estook TPV es de Pro», migrar la 0094 y desplegar la API** ([sus pasos](docs/pasos-de-estook-tpv-es-de-pro.md)); y contestar las dos preguntas de la [0120](docs/decisiones/0120-estook-tpv-es-de-pro.md). Y en el PC donde pusiste Estook TPV en el escritorio, **quitar los iconos y volver a ponerlos** ([sus pasos](docs/pasos-de-estook-tpv-su-propia-app.md), del 3 al 5).
+1. **Fusionar «Los documentos en orden» (#150) y «Estook TPV es de Pro» (#151), migrar la 0094 y desplegar la API** ([sus pasos](docs/pasos-de-estook-tpv-es-de-pro.md)); y contestar las dos preguntas de la [0120](docs/decisiones/0120-estook-tpv-es-de-pro.md). Y en el PC donde pusiste Estook TPV en el escritorio, **quitar los iconos y volver a ponerlos** ([sus pasos](docs/pasos-de-estook-tpv-su-propia-app.md), del 3 al 5).
 2. **Publicar la caja para Windows** (T5 · 1 ya está fusionada, migrada y desplegada: [sus pasos](docs/pasos-de-t5-1.md), el 5) y **probarla en el restaurante de tu amigo**: el PC de la caja, su Epson por cable de red, la cocina en las dos y un Android pidiendo.
 3. **Probar en IKATZ la entrada nueva y T4 · 2** ([la entrada](docs/pasos-de-la-entrada-del-tpv.md), [T4 · 2](docs/pasos-de-t4-2.md)): la sala primero, el engranaje, mantener pulsado, la barra, la alergia y el ✓ con su hora.
 4. **Probar en IKATZ T4 · 1 y «Cada aparato a lo suyo»**: fichar en la caja y un comandero sin fichar ([sus pasos](docs/pasos-de-cada-aparato-a-lo-suyo.md)), y vincular una tablet como pantalla de cocina, pedir, tachar, marchar y llamar ([sus pasos](docs/pasos-de-t4-1.md)).
@@ -206,6 +206,6 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**Que Richi fusione la #150 y «Estook TPV es de Pro», migre y despliegue** ([sus pasos](docs/pasos-de-estook-tpv-es-de-pro.md)), conteste las dos preguntas de la [0120](docs/decisiones/0120-estook-tpv-es-de-pro.md), **publique la caja para Windows** ([el paso 5 de T5 · 1](docs/pasos-de-t5-1.md)) y la pruebe con la Epson de su amigo. Después, **T5 · 2 · Sin internet** ([el plan](docs/m20a-la-sala-y-la-cocina.md)): la caja como centro del local, los Android hablándole por el wifi y lo pendiente subido una vez. **El conector de otros TPV (M19b)** se decide con M18.
+**Que Richi fusione la #150 y la #151, migre y despliegue** ([sus pasos](docs/pasos-de-estook-tpv-es-de-pro.md)), conteste las dos preguntas de la [0120](docs/decisiones/0120-estook-tpv-es-de-pro.md), **publique la caja para Windows** ([el paso 5 de T5 · 1](docs/pasos-de-t5-1.md)) y la pruebe con la Epson de su amigo. Después, **T5 · 2 · Sin internet** ([el plan](docs/m20a-la-sala-y-la-cocina.md)): la caja como centro del local, los Android hablándole por el wifi y lo pendiente subido una vez. **El conector de otros TPV (M19b)** se decide con M18.
 
 **Lo que decidió la IA por su cuenta**, para que Richi lo sepa: que la caja para Windows sea **Electron y no Rust** (se prueba entero aquí y un solo traductor para todos), y los catorce de T5 · 1 en la [0119](docs/decisiones/0119-t5-la-caja-para-windows.md), sección 4 (como que la caja lea su cola al oír el toque y una vez por minuto, que la dirección de una impresora no llegue a la pantalla, o la reserva a los 10 segundos). **Todo lo anterior**, entrega a entrega, en [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md).

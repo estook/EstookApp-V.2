@@ -189,11 +189,14 @@ function ElCodigo({
   codigo,
   alAcabar,
   paraLaApp = false,
+  vuelve = false,
 }: {
   readonly codigo: CodigoParaVincular & { readonly nombre: string };
   readonly alAcabar: () => void;
   /** «Pasar a la app» (0119): en el mismo PC, sin QR. */
   readonly paraLaApp?: boolean;
+  /** «Volver a vincular» (28-oct): el mismo aparato, en el móvil que borró la app. */
+  readonly vuelve?: boolean;
 }) {
   const direccion = `${window.location.origin}${import.meta.env.BASE_URL}vincular/#${codigo.codigo}`;
   const [camino, setCamino] = useState<{ d: string; lado: number } | null>(null);
@@ -226,14 +229,24 @@ function ElCodigo({
     <div className="flex max-w-[40rem] flex-col gap-e5">
       <div className="flex flex-col">
         <span className="text-secundario text-texto-tenue">
-          {paraLaApp ? `Aparatos › ${codigo.nombre}` : 'Aparatos › Añadir · paso 2 de 2'}
+          {paraLaApp || vuelve ? `Aparatos › ${codigo.nombre}` : 'Aparatos › Añadir · paso 2 de 2'}
         </span>
         <h1 className="text-cifra-media font-bold">
-          {paraLaApp ? `Pasa «${codigo.nombre}» a la app` : `Vincula «${codigo.nombre}»`}
+          {paraLaApp
+            ? `Pasa «${codigo.nombre}» a la app`
+            : vuelve
+              ? `Vuelve a vincular «${codigo.nombre}»`
+              : `Vincula «${codigo.nombre}»`}
         </h1>
       </div>
       <p className="text-cuerpo text-texto-suave">
-        {paraLaApp ? (
+        {vuelve ? (
+          <>
+            En ese aparato abre <b className="text-texto">estook.com/tpv</b> y escribe el código, o
+            lee el QR con su cámara. Vuelve el mismo, con su nombre y lo suyo; donde estuviera
+            antes, deja de valer.
+          </>
+        ) : paraLaApp ? (
           <>
             Abre <b className="text-texto">la caja para Windows</b> y escribe este código: llega con
             su nombre, su cajón y sus impresoras. Esta, la del navegador, deja de valer al momento.
@@ -310,6 +323,7 @@ function ElAparato({
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [guardado, setGuardado] = useState(false);
   const [paraLaApp, setParaLaApp] = useState<CodigoParaVincular | null>(null);
+  const [paraVolver, setParaVolver] = useState<CodigoParaVincular | null>(null);
   const seCambiaLoQueEs = aparato.funcion === 'caja' || aparato.funcion === 'comandero';
   // **«Pasar a la app»** (0119): esta caja, si es la del navegador.
   const sePasaALaApp = esEste && aparato.funcion === 'caja' && laCajaParaWindows() === null;
@@ -326,6 +340,22 @@ function ElAparato({
     else setError(respuesta.error);
   }
 
+  // **«Volver a vincular»** (28-oct): otro aparato de aquí, que borró la app o se reinstaló.
+  // Se recupera el mismo, sin duplicarlo; este no, que ya está aquí.
+  const seVuelveAVincular = !esEste && aparato.funcion !== 'fichar';
+
+  async function volverAVincular() {
+    setOcupado(true);
+    setError(null);
+    const respuesta = await cliente.ejecutar<CodigoParaVincular>(
+      'sacar_codigo_para_volver_a_vincular',
+      { terminal_id: aparato.id },
+    );
+    setOcupado(false);
+    if (respuesta.ok) setParaVolver(respuesta.datos);
+    else setError(respuesta.error);
+  }
+
   if (paraLaApp !== null) {
     return (
       <ElCodigo
@@ -333,6 +363,19 @@ function ElAparato({
         codigo={{ ...paraLaApp, nombre: aparato.nombre }}
         alAcabar={() => {
           setParaLaApp(null);
+        }}
+      />
+    );
+  }
+
+  if (paraVolver !== null) {
+    return (
+      <ElCodigo
+        vuelve
+        codigo={{ ...paraVolver, nombre: aparato.nombre }}
+        alAcabar={() => {
+          setParaVolver(null);
+          void cache.invalidateQueries({ queryKey: ['los_aparatos'] });
         }}
       />
     );
@@ -479,6 +522,24 @@ function ElAparato({
               Pasar a la app
             </button>
           </span>
+        </section>
+      )}
+
+      {seVuelveAVincular && (
+        <section className="flex flex-col gap-e3 rounded-mayor bg-superficie p-e5">
+          <span className="text-seccion font-bold">Volver a vincular</span>
+          <span className="text-cuerpo text-texto-suave">
+            Si en ese aparato borraron la app, cambiaron de navegador o es uno nuevo para lo mismo:
+            vuelve {aparato.nombre}, con su nombre y lo suyo, sin crear otro.
+          </span>
+          <button
+            type="button"
+            disabled={ocupado}
+            onClick={() => void volverAVincular()}
+            className="min-h-toque-cocina self-start rounded-grande bg-charcoal px-e5 font-bold disabled:opacity-60"
+          >
+            Sacar el código
+          </button>
         </section>
       )}
 

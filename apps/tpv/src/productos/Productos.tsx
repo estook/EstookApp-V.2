@@ -4,8 +4,6 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import {
   COLORES_DE_LA_BOTONERA,
   NOMBRE_DE_QUIEN_LO_PREPARA,
-  NOMBRE_DEL_PASE,
-  PASES_DE_LA_BOTONERA,
   QUIEN_LO_PREPARA,
   centimos,
   cuantasSeEligen,
@@ -13,7 +11,6 @@ import {
   type CaminoDeLaBotonera,
   type Centimos,
   type ColorDeLaBotonera,
-  type PaseDeLaBotonera,
   type QuienLoPrepara,
 } from '@estook/dominio';
 import {
@@ -47,11 +44,12 @@ import { moverUnPuesto, usarArrastrar } from '../ganchos/usarArrastrar.ts';
 /**
  * **Ajustes del TPV › Productos: la botonera** (T3, maquetas «Productos: cómo empezar» y
  * «Productos: la botonera»; Anexo 11.11). Qué se vende en el TPV, en qué página y de qué
- * color, **quién lo prepara** y **en qué pase sale**.
+ * color y **quién lo prepara**. **En qué pase sale no se pregunta** (Richi, 28-oct): lo elige el
+ * camarero en cada mesa con las pestañas de los pases, que el cliente manda en su orden.
  *
  *   · **Al empezar, tres caminos**: traer toda la carta, elegir lo que se vende aquí o
  *     empezar de cero
- *   · **las páginas**, cada una con sus dos preguntas, que heredan sus botones; se
+ *   · **las páginas**, cada una con quién la prepara, que heredan sus botones; se
  *     arrastran para ordenarlas
  *   · **los botones**: «+ De la carta», su color, lo suyo si cambia lo de su página (el pan,
  *     de «Nadie»), fijarlo en «Lo más pedido», moverlo o quitarlo
@@ -349,7 +347,7 @@ function LaBotoneraMontada({
             </div>
           ) : (
             <p className="text-secundario text-texto-suave">
-              Arrastra para ordenar. Toca un botón para su color, quién lo prepara o su pase.
+              Arrastra para ordenar. Toca un botón para su color o quién lo prepara.
             </p>
           )}
           {paginas.map((g) => (
@@ -503,19 +501,6 @@ function TarjetaDePagina({
               }}
             >
               {NOMBRE_DE_QUIEN_LO_PREPARA[q]}
-            </Opcion>
-          ))}
-        </Pregunta>
-        <Pregunta titulo="¿En qué pase sale?">
-          {PASES_DE_LA_BOTONERA.map((p) => (
-            <Opcion
-              key={p}
-              puesto={pagina.pase === p}
-              onClick={() => {
-                cambiar({ pase: p });
-              }}
-            >
-              {NOMBRE_DEL_PASE[p]}
             </Opcion>
           ))}
         </Pregunta>
@@ -810,7 +795,6 @@ function HojaDeBoton({
   const suyos = boton.grupoIds ?? [];
   // Lo de la hoja se ve al momento; se guarda cada toque.
   const [quien, setQuien] = useState<QuienLoPrepara | null>(boton.quienLoPrepara);
-  const [pase, setPase] = useState<PaseDeLaBotonera | null>(boton.pase);
   const [color, setColor] = useState<ColorDeLaBotonera | null>(boton.color);
   const [fijado, setFijado] = useState(boton.fijado);
   const ids = pagina.botones.map((b) => b.botonId);
@@ -956,29 +940,6 @@ function HojaDeBoton({
             </Opcion>
           ))}
         </Pregunta>
-        <Pregunta titulo="¿En qué pase sale?">
-          <Opcion
-            puesto={pase === null}
-            onClick={() => {
-              setPase(null);
-              void cambiar({ pase: null });
-            }}
-          >
-            Lo de {pagina.nombre} ({NOMBRE_DEL_PASE[pagina.pase]})
-          </Opcion>
-          {PASES_DE_LA_BOTONERA.filter((p) => p !== pagina.pase).map((p) => (
-            <Opcion
-              key={p}
-              puesto={pase === p}
-              onClick={() => {
-                setPase(p);
-                void cambiar({ pase: p });
-              }}
-            >
-              {NOMBRE_DEL_PASE[p]}
-            </Opcion>
-          ))}
-        </Pregunta>
         <ElegirColor
           color={color}
           alCambiar={(c) => {
@@ -1098,8 +1059,8 @@ function HojaNuevaPagina({
         />
         {nombre.trim() !== '' && (
           <p className="text-secundario text-texto-suave">
-            La prepara {NOMBRE_DE_QUIEN_LO_PREPARA[propone.quienLoPrepara].toLowerCase()} y sale en{' '}
-            {NOMBRE_DEL_PASE[propone.pase]}. Se cambia después con un toque.
+            La prepara {NOMBRE_DE_QUIEN_LO_PREPARA[propone.quienLoPrepara].toLowerCase()}. Se cambia
+            después con un toque.
           </p>
         )}
       </div>

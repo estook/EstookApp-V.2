@@ -1074,7 +1074,7 @@ descontado, los tiempos de cocina, Negocio y el «Tu dia» de mañana
 
 **En la barra**, arriba del todo y siempre: **«Venta rápida»**. Se pide y se cobra sin abrir nada (3.1).
 
-**Las bebidas, los cafés y las copas** salen en sus páginas de la botonera, con «¿Quién lo prepara? Barra» y «¿En qué pase sale? Bebidas» (11.11), y **se montan en Ajustes del TPV › Productos** con «Monta tus bebidas»: tal cual entero, a raciones —la copa de vino de 150 ml, la caña— o con receta —las copas, que se hacen solas con la dosis de la casa, y los cafés, que vienen hechos— (0106, apartado 2; dónde se monta, [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)).
+**Las bebidas, los cafés y las copas** salen en sus páginas de la botonera, con «¿Quién lo prepara? Barra» (11.11), y **se montan en Ajustes del TPV › Productos** con «Monta tus bebidas»: tal cual entero, a raciones —la copa de vino de 150 ml, la caña— o con receta —las copas, que se hacen solas con la dosis de la casa, y los cafés, que vienen hechos— (0106, apartado 2; dónde se monta, [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)).
 
 ## 10.4 El plano
 
@@ -1371,6 +1371,7 @@ En el aparato nuevo
 6. **Desvincular** (Ajustes del TPV › Aparatos › el aparato › «Desvincular», con PIN de quien puede) deja la llave sin valer **en la petición siguiente**, y el aparato enseña «Este aparato ya no está vinculado» y vuelve a «Vincular este aparato». Lo que tenía sin subir se sube antes si hay conexión, o se pierde, y la pantalla de desvincular lo avisa con el número («Tiene 2 cosas sin subir»).
 7. **Si se pierden todos los aparatos**, quien lleva el local vincula uno nuevo entrando con su correo (el primer aparato, arriba) y desvincula los demás desde él. **No hace falta tocar Estook.**
 8. **Cada aparato late cada minuto**: Ajustes del TPV › Aparatos dice «En línea» o «Visto hace 2 días», su versión y su función. Soporte lo ve igual en el panel interno (capítulo 9, punto 10).
+9. **Volver a vincular no crea otro aparato** (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)). Si en un móvil borraron la app, o en el ordenador de la caja se entra otra vez con el correo, **vuelve el mismo** —su nombre, función, cajón, dueño e impresoras— **con otra llave**, y la de antes deja de valer. En la caja: **Aparatos › el aparato › «Volver a vincular»**, que saca el código de siempre (6 cifras, 10 minutos, un uso). Con el correo: si el local ya tiene aparatos, primero **«¿Es uno que ya tenías?»** con la lista, y «No, es uno nuevo». **Un aparato no se reconoce solo** (borrar la app borra su llave, y nada del hardware se usa): lo elige quien puede vincular, como en Square y Toast.
 
 **Un aparato vinculado no es una puerta a la gestión** (3.4): Estook TPV no lleva a Estook, ni con un enlace. Quien quiera gestionar abre Estook en su móvil.
 
@@ -1406,7 +1407,7 @@ En el aparato nuevo
 
 - **«Bloquear»** está siempre arriba a la derecha: un toque y el siguiente entra con su PIN.
 - **No se bloquea en mitad de algo**: con el teclado del cobro abierto o escribiendo una nota, el tiempo cuenta desde el último toque, y lo que se estaba pidiendo **se queda en la mesa sin mandar** (1 · 2, decisión 4), con aviso al siguiente que la abra.
-- **Se ficha en la caja** (3.4, [0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)): «Fichar», en naranja arriba, **también en la pantalla del PIN**: cada uno teclea su PIN y ficha la entrada, la pausa o la salida sin entrar en la caja; o en Estook con el móvil. **En un comandero, sin fichar no se entra**: «Sin fichar · ficha la entrada en la caja o en Estook». En la caja, a quien no ha fichado le sale, después del PIN, «No has fichado» con «Fichar la entrada y entrar»; si el local pide que **solo quien ha fichado la use** (apagado de fábrica), sin fichar no entra. **Fichar la salida con mesas abiertas** pregunta a quién se las pasa; con el botón naranja, sin entrar, dice que se entre a pasarlas.
+- **Se ficha en la caja** (3.4, [0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)): «Fichar», en naranja arriba, **también en la pantalla del PIN**: cada uno teclea su PIN y ficha la entrada, la pausa o la salida sin entrar en la caja; o en Estook con el móvil. **Con la caja abierta, «Fichar» también pide el PIN a todos** (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)): en ese ordenador ficha cualquiera, así que no ficha a quien la tiene abierta. Sale «Hola, Ana · ¿Fichar la entrada?» con «Sí» o «No, volver», y al acabar «✓ Ana · entrada a las 12:02» con el teclado listo para el siguiente. **Si el PIN es el de quien tiene la caja abierta**, lo suyo: sus mesas y «Fichar la salida y cerrar sesión». **Una salida por error no rompe nada**: si vuelve y ficha la entrada el mismo día, es otro tramo de la misma jornada (la jornada partida). **En un comandero, sin fichar no se entra**: «Sin fichar · ficha la entrada en la caja o en Estook». En la caja, a quien no ha fichado le sale, después del PIN, «No has fichado» con «Fichar la entrada y entrar»; si el local pide que **solo quien ha fichado la use** (apagado de fábrica), sin fichar no entra. **Fichar la salida con mesas abiertas** pregunta a quién se las pasa; con el botón naranja, sin entrar, dice que se entre a pasarlas.
 - **Lo que pide un encargado** se aprueba en el mismo aparato con su PIN (3.4): una cosa, una vez, dos minutos.
 - **Sin conexión**, los PIN los comprueba la caja para Windows; sin ella, el aparato los cifra con su llave pública y la API los mira al volver (0070). Sin nube y sin la caja solo entra quien ya entró ese día en ese aparato (3.4).
 
@@ -1467,6 +1468,13 @@ En el aparato nuevo
 
 **Dos cajones** (barra y comedor) son dos cajas, cada una con su fondo, su cierre y su Z; el cierre del día los suma (5.5). **Una caja que se quedó abierta ayer** no deja abrir la de hoy en ese cajón: sale «La caja de ayer sigue abierta · Cerrarla», y mientras tanto se sigue vendiendo con ella.
 
+**Lo que añadió Richi el 28-oct** ([0121](../decisiones/0121-la-pausa-del-tpv.md), punto 4), para T7:
+
+- **El cajón, con el PIN de un encargado y tres botones**: **Cambiar** (dar cambio: entra lo mismo que sale, sin importe), **Sacar** (importe y motivo) y **Meter** (importe y motivo). Así el efectivo cuadra siempre.
+- **El primer día se pregunta con cuánto se empieza**: no hay nada que proponer.
+- **Una venta cuenta una sola vez, y solo al cobrar**: la venta nace del cobro con su clave, y cada línea cobrada baja del almacén una sola vez, **guardado por la base** (un índice único por venta y línea). Pedir, mandar, tachar, cambiar, anular o devolver a cocina antes de cobrar **no cuenta**; anular después de cobrar es una devolución (5.4), con su movimiento contrario.
+- **Pendiente de Richi** (0121, punto 5): si en la caja entran solo gerente y jefes con la sesión abierta todo el día, y si se cobra con la caja sin abrir. Hasta su respuesta, manda lo de arriba.
+
 ## 11.7 Ventas de hoy
 
 Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos arriba:
@@ -1502,8 +1510,9 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 - **Filtros**: **Todas · Mías**, y las salas en pestañas (Salón · Terraza · Barra). El aparato recuerda el último filtro; en el comandero personal empieza en **Mías**.
 - **En la tablet y en la caja, el plano** tal como se dibujó (11.9). **En el móvil, una cuadrícula** con las mismas mesas y sus estados, de tres en fila, en el orden de sus nombres: un plano dibujado no cabe en una mano.
-- **Tocar una mesa libre**: «¿Cuántos sois?» (un toque) y, si el local trabaja por pases, «Por pases · Todo junto» con «Por pases» marcado. Y a pedir.
-- **Tocar una mesa con cuenta**: sus opciones, pegadas a la mesa (como Revo, 0106): **el botón grande con lo siguiente** (Pedir, Mandar, Marchar el 2.º o Cobrar), Abrir la mesa, Cobro rápido; y Imprimir la cuenta, Dividir, Cambiar de mesa, Juntar, **Quedármela**, **Pasar a otro camarero**, Pasar a la barra o para llevar, Nota, Personas y alergias, Lo que ha pasado y Anular (con permiso y motivo).
+- **Tocar una mesa libre**: «Nº de comensales» (un toque) y «Por pases · Todo junto» con «Por pases» marcado. Y a pedir. **Las palabras, las de la sala** (Richi, 28-oct): «comensales», no «¿cuántos sois?» ni «personas».
+- **En barra o para llevar**, sin mesa: el nombre si se quiere. **Lo de llevar sale todo junto** y **se programa** (0121): «¿Para cuándo? · Ahora · Programar», con los cuartos de las tres horas siguientes u «Otra hora». La sala ve «Para las 21:30»; **la cocina lo ve aparte, en gris, hasta veinte minutos antes**, y el papel sale con «PARA LAS 21:30».
+- **Tocar una mesa con cuenta**: sus opciones, pegadas a la mesa (como Revo, 0106): **el botón grande con lo siguiente** (Pedir, Mandar, Marchar el 2.º o Cobrar), Abrir la mesa, Cobro rápido; y Imprimir la cuenta, Dividir, Cambiar de mesa, Juntar, **Quedármela**, **Pasar a otro camarero**, Pasar a la barra o para llevar, Nota, Comensales y alergias, Lo que ha pasado y Anular (con permiso y motivo).
 - **Quién se queda la venta**: **el camarero de la mesa** (el que la abrió, o el que se la quedó o la recibió). Cada plato queda además a nombre de quien lo pidió, y «Lo que ha pasado» lo cuenta. **Cualquier camarero puede quedarse una mesa o pasarla a otro**, y queda en el rastro (0107: el control de todo).
 - **Lo que cambia en un aparato se ve en los demás en menos de 2 segundos** (3.7).
 
@@ -1535,7 +1544,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 ```
 ┌──────────────────────────────┬───────────────────────────────────────────┐
-│ ‹ Mesa 6 · 4 pax · SA · 34′  │ [Lo más pedido] [Entrantes] [Principales]  │
+│ ‹ Mesa 6 · 4 com. · SA · 34′ │ [Lo más pedido] [Entrantes] [Principales]  │
 │ ! Sin frutos secos           │ [Postres] [Bebidas] [Vinos] [Menú]   [🔍]   │
 │ [Bebidas][1.º ✓][2.º][3.º][Postre]                                        │
 │  Bebidas · en la barra       │ ┌────────┐┌────────┐┌────────┐┌────────┐   │
@@ -1553,9 +1562,9 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 **Las pestañas de los pases, encima de la cuenta** (0107, punto 14), como las «órdenes» de Revo:
 
 - **Bebidas · 1.º · 2.º · 3.º · Postre.** **Lo que se toca va al pase marcado.** Cada pestaña dice cómo va su pase: ✓ si salió, «en marcha», «en espera».
-- **Al cambiar de página de la botonera se marca sola la pestaña de esa página** («¿En qué pase sale?», 11.11): Entrantes marca el 1.º, Principales el 2.º, Bebidas marca Bebidas. **Así casi nunca se toca la pestaña**: solo para mandar un principal en el 1.º (se marca el 1.º y se toca el plato) o una bebida con el postre.
+- **El pase lo elige el camarero** (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)): **ningún plato está atado a un pase**, porque el cliente pide en el orden que quiere («el chuletón, de segundo»). Cambiar de página de la botonera **no cambia la pestaña**. La mesa recién abierta empieza en **Bebidas** y en la página de lo que prepara la barra; **la comida tocada con «Bebidas» marcada va al pase que toca** (el 1.º, o el último con algo) **y se marca ese**, para que el camarero vea dónde ha ido. Para otro pase, un toque en su pestaña.
 - **Bebidas no es un pase**: sale **al momento** a quien la prepara (la barra) al mandar. **El 3.º sale solo si se usa**: la pestaña está, y la cuenta lo enseña cuando tiene algo.
-- **Las reglas de la 0106 no cambian**: el primer pase con algo sale al mandar y los siguientes esperan a que el camarero los marche; un pase que ya esperaba no sale solo al añadirle algo; si todo lo de antes ha salido, lo nuevo sale al momento (los postres al final); una mesa «todo junto» no tiene pestañas de pase.
+- **Las reglas de la 0106 no cambian**: el primer pase con algo sale al mandar y los siguientes esperan a que el camarero los marche; un pase que ya esperaba no sale solo al añadirle algo; si todo lo de antes ha salido, lo nuevo sale al momento (los postres al final); una mesa «todo junto» no tiene pestañas de pase. **Lo de llevar sale siempre todo junto** (0121): ni se pregunta al abrirlo ni se pasa a pases.
 - **El botón grande dice siempre lo siguiente** (0106, 7): Mandar · Marchar el 2.º · Cobrar.
 
 **La botonera, a la derecha** (11.11): sus páginas en pestañas, **«Lo más pedido» la primera** (lo más vendido a esa hora en las últimas cuatro semanas, sola; se pueden fijar productos), el buscador que tolera erratas, y la página **Menú** los días que hay menú (M10 · 2). Cada producto, un botón con su nombre entero, su precio, su color y su foto si la tiene; **agotado** en gris y sin tocar, **«Quedan 3»** cuando bajan (3.1).
@@ -1568,7 +1577,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 ## 11.11 Los productos del TPV: la botonera
 
-**«Es de bebidas» desaparece** (respuesta 6: no se entendía). Lo que hacía lo dicen ahora dos preguntas que cualquiera entiende, y la decisión de **qué se vende en el TPV** pasa a ser del TPV.
+**«Es de bebidas» desaparece** (respuesta 6: no se entendía). Lo que hacía lo dice ahora una pregunta que cualquiera entiende —**quién lo prepara**—, y la decisión de **qué se vende en el TPV** pasa a ser del TPV. **«¿En qué pase sale?» también se fue** (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)): el pase lo elige el camarero en cada mesa (11.10).
 
 ### La carta y la botonera, cada una con lo suyo
 
@@ -1576,28 +1585,23 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 | -------------------------------------------------------- | ---------------------------------------------------- |
 | El plato: nombre, precio por canal, IVA, foto, alérgenos | **Qué productos salen** en el TPV                    |
 | Su escandallo y su ficha                                 | **En qué página** y en qué orden, y **de qué color** |
-| Su sección de la carta (la que ve el cliente)            | **Quién lo prepara** y **en qué pase sale** (abajo)  |
+| Su sección de la carta (la que ve el cliente)            | **Quién lo prepara** (abajo)                         |
 | Si está agotado                                          | Sus opciones y extras (10.3)                         |
 
 **La botonera no copia nada de la carta**: guarda a qué plato apunta cada botón. Si el plato cambia de precio en Estook, el botón cobra el nuevo. Es el «Item grid» de Square: el catálogo es uno y la botonera es la forma de ponerlo en la pantalla.
 
-### Las dos preguntas
+### La pregunta
 
 - **«¿Quién lo prepara?» · Cocina · Barra · Nadie (se sirve tal cual).** Decide **a qué pantalla o impresora va** al mandar: lo de la cocina, al ticket de cocina (3.2); lo de la barra, a la pantalla o la impresora de la barra; lo de «Nadie» (una botella de agua, el pan, un artículo libre), a ninguna. **Si la barra no tiene pantalla ni impresora**, lo suyo no va a ninguna parte y lo prepara el camarero, que es lo normal en un bar. Es lo que Lightspeed llama «centro de producción».
-- **«¿En qué pase sale?» · Bebidas (al momento) · 1.º · 2.º · 3.º · Postre.** Decide **qué pestaña se marca sola** al abrir la página (11.10).
+  **Se contesta por página**, y lo hereda cada producto de la página; **un producto puede cambiarla** (la gilda, en Entrantes, la saca la barra). **Viene propuesta por el nombre** de la sección, y se cambia con un toque:
 
-**Se contestan por página**, y lo hereda cada producto de la página; **un producto puede cambiarlas** (la gilda, en Entrantes, la saca la barra). **Vienen propuestas por el nombre** de la sección, y se cambian con un toque:
+| Si la sección se llama…                                                                        | Quién lo prepara |
+| ---------------------------------------------------------------------------------------------- | ---------------- |
+| Pan, Pan y agua                                                                                | Nadie            |
+| Bebidas, Refrescos, Cervezas, Vinos, Cavas, Cafés, Infusiones, Copas, Cócteles, Licores, Aguas | Barra            |
+| Cualquier otra (Entrantes, Principales, Postres…)                                              | Cocina           |
 
-| Si la sección se llama…                                                                        | Quién lo prepara | Pase    |
-| ---------------------------------------------------------------------------------------------- | ---------------- | ------- |
-| Pan, Pan y agua                                                                                | Nadie            | Bebidas |
-| Bebidas, Refrescos, Cervezas, Vinos, Cavas, Cafés, Infusiones, Copas, Cócteles, Licores, Aguas | Barra            | Bebidas |
-| Entrantes, Para picar, Tapas, Raciones, Ensaladas, Primeros, Sopas, Para compartir             | Cocina           | 1.º     |
-| Principales, Segundos, Carnes, Pescados, Arroces, Pizzas, Hamburguesas                         | Cocina           | 2.º     |
-| Postres, Dulces                                                                                | Cocina           | Postre  |
-| Cualquier otra                                                                                 | Cocina           | 1.º     |
-
-**Lo que ya estaba marcado «de bebidas»** (`es_bebida`, la 0082) pasa a «Barra» y «Bebidas» al migrar, sin que nadie toque nada, y la columna se quita (T3).
+**Lo que ya estaba marcado «de bebidas»** (`es_bebida`, la 0082) pasa a «Barra» al migrar, sin que nadie toque nada, y la columna se quita (T3). **El pase propuesto por el nombre se sigue guardando** (`pagina_del_tpv.pase`), sin uso desde la 0121: no hizo falta migración.
 
 **El pan, el agua y los cafés, en su página de siempre** ([0112](../decisiones/0112-el-pan-y-el-cafe.md)): **«Pan y agua»**, la primera, de «Nadie» (los sirve el camarero), y **«Cafés»**, la última, de la barra. Aunque la carta los tenga en Entrantes o en Postres, en el TPV van ahí, que es donde se buscan; se reconocen por su nombre («Pan», «Picos», «Agua con gas», «Cortado», «Té»…), y lo que se cocina no («Pan con tomate», «Tarta de café»). Si ya están en su sección («Cafés e infusiones»), se quedan en la suya.
 
@@ -1612,7 +1616,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
  ( ) Empezar de cero             Creas los productos aquí; van también a tu carta.
 ```
 
-1. **Traer toda la carta** (recomendado si la carta ya está en Estook): cada sección, una página con su nombre, en el orden de la carta, con las dos preguntas propuestas. **Lo que se añade a la carta después entra solo** en su página.
+1. **Traer toda la carta** (recomendado si la carta ya está en Estook): cada sección, una página con su nombre, en el orden de la carta, con quién lo prepara propuesto. **Lo que se añade a la carta después entra solo** en su página.
 2. **Elegir lo que se vende aquí**: la carta entera, sección a sección, con una casilla por plato y **«Todos»** en cada sección. Lo marcado se coloca en su página. **Lo nuevo de la carta no entra solo**: sale en Productos como **«Nuevos en la carta · 3»**, con «Añadir» de un toque (es el «eligiéndolos, no que se añadan directamente» de Richi).
 3. **Empezar de cero**: páginas vacías, y **«Nuevo producto»**: nombre, precio, página y quién lo prepara; **el IVA, el de la actividad** (el 10 % de la hostelería), como todo lo de la carta: el plato guardará el suyo con el cobro (T7 · M20C, [0111](../decisiones/0111-t3-1-la-botonera.md), punto 11). **Se crea a la vez en la carta de Estook**, en la sección del mismo nombre que la página (se crea si no existe), **marcado «sin escandallo»** para completarlo allí cuando se quiera (0095). Sin eso, el almacén no podría descontarlo.
 
@@ -1652,7 +1656,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 | **Hoy**               | **Agotados** (rojo)                   | Marcar y desmarcar (3.1); también manteniendo pulsado el producto en la botonera           | Quien puede agotar       |
 |                       | **La caja** (verde), con el cobro     | Abrir, entradas y salidas, X y cerrar (11.6)                                               | Gerente                  |
 | **Lo que se vende**   | **La sala y las mesas** (verde)       | El editor del plano (11.9): ya no está arriba, en la sala                                  | Gerente                  |
-|                       | **Productos y precios** (naranja)     | La botonera, las dos preguntas, opciones y extras, «Monta tus bebidas» (11.11)             | Gerente                  |
+|                       | **Productos y precios** (naranja)     | La botonera, quién lo prepara, opciones y extras, «Monta tus bebidas» (11.11)              | Gerente                  |
 |                       | **Cocina y barra** (ámbar)            | Los minutos del semáforo y el sonido (0116); pantalla o papel, con la caja (3.2)           | Gerente y jefe de cocina |
 | **Lo que se conecta** | **Aparatos del local** (azul)         | Los vinculados, añadir (el código), cambiar función o nombre, desvincular (11.3)           | Gerente                  |
 |                       | **Impresoras y cajón**, con T5        | Darlas de alta, qué imprime cada una, «Imprimir prueba» y «Abrir el cajón» de prueba (6.5) | Gerente                  |

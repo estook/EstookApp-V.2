@@ -163,14 +163,14 @@ export function EditorDeLaSala() {
   }
   if (plano.isLoading) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-fondo">
+      <main className="flex min-h-pantalla items-center justify-center bg-fondo">
         <Cargando que="la sala" />
       </main>
     );
   }
   if (datos === undefined) {
     return (
-      <main className="flex min-h-dvh flex-col items-center justify-center gap-e4 bg-fondo p-e5 text-texto">
+      <main className="flex min-h-pantalla flex-col items-center justify-center gap-e4 bg-fondo p-e5 text-texto">
         {plano.error instanceof FalloDeLaSala ? (
           <ErrorEnCristiano error={plano.error.error} />
         ) : null}
@@ -645,7 +645,7 @@ export function EditorDeLaSala() {
         <SoloEnLaTablet />
       </div>
       <div
-        className="hidden h-dvh flex-col bg-fondo text-texto md:flex"
+        className="hidden h-pantalla flex-col bg-fondo text-texto md:flex"
         onPointerMove={alMoverElDedo}
         onPointerUp={(e) => void alSoltar(e)}
         onKeyDown={(e) => {
@@ -1431,7 +1431,7 @@ function BotonSuave({
 
 function SoloEnLaTablet() {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-e4 bg-fondo p-e5 text-center text-texto">
+    <main className="flex min-h-pantalla flex-col items-center justify-center gap-e4 bg-fondo p-e5 text-center text-texto">
       <h1 className="text-pantalla font-bold">Edita la sala en una tablet o en la caja</h1>
       <p className="max-w-[28rem] text-cuerpo text-texto-suave">
         En el móvil no cabe un plano para dibujarlo con el dedo.

@@ -73,7 +73,7 @@ interface Plano {
       } | null;
     }[];
   }[];
-  sinMesa: { cuentaId: string; titulo: string }[];
+  sinMesa: { cuentaId: string; titulo: string; porPases?: boolean; paraLas?: string | null }[];
   tocaMarchar: { cuentaId: string; titulo: string; pase: number; salioEl: number }[];
   camareros: { id: string; nombre: string }[];
 }
@@ -1229,6 +1229,76 @@ describe('«todo junto», «marchar todo» y la barra', () => {
           tipo: 'barra',
           mesa_id: mesa['6'],
         }),
+      ),
+    ).toBe('faltan_datos');
+  });
+
+  it('lo de llevar se programa: la sala y la cocina ven su hora; una mesa no (0121)', async () => {
+    const enUnaHora = new Date(reloj.getTime() + 60 * 60_000).toISOString();
+    const llevar = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
+        cuenta_id: llevar,
+        tipo: 'para_llevar',
+        nombre: 'Iker',
+        para_las: enUnaHora,
+      }),
+    );
+    expect((await elPlano(saraTpv)).sinMesa.find((c) => c.cuentaId === llevar)).toMatchObject({
+      paraLas: enUnaHora.replace(/\.\d{3}Z$/, 'Z'),
+    });
+    losDatos(
+      await api.ejecutar(saraTpv, 'pedir', {
+        cuenta_id: llevar,
+        platos: [{ id: crypto.randomUUID(), plato_id: plato['Ensalada'], pase: 1 }],
+      }),
+    );
+    losDatos(await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: llevar }));
+    const suya = (await laCocina()).enMarcha.find((t) => t.cuentaId === llevar) as
+      { paraLas?: string | null } | undefined;
+    expect(suya?.paraLas).toBe(enUnaHora.replace(/\.\d{3}Z$/, 'Z'));
+
+    // Solo lo de llevar, y de ahora a 24 horas.
+    expect(
+      elFallo(
+        await api.ejecutar(saraTpv, 'abrir_mesa', {
+          cuenta_id: crypto.randomUUID(),
+          tipo: 'barra',
+          para_las: enUnaHora,
+        }),
+      ),
+    ).toBe('faltan_datos');
+    expect(
+      elFallo(
+        await api.ejecutar(saraTpv, 'abrir_mesa', {
+          cuenta_id: crypto.randomUUID(),
+          tipo: 'para_llevar',
+          para_las: new Date(reloj.getTime() - 60_000).toISOString(),
+        }),
+      ),
+    ).toBe('faltan_datos');
+    // Y la base tampoco lo deja en una mesa.
+    await expect(
+      base.bd.query(`update estook.cuenta set tipo = 'barra' where id = $1`, [llevar]),
+    ).rejects.toThrow(/cuenta_para_las_solo_para_llevar/);
+  });
+
+  it('lo de llevar sale todo junto, aunque se pida por pases, y no se pasa a pases (28-oct)', async () => {
+    const llevar = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
+        cuenta_id: llevar,
+        tipo: 'para_llevar',
+        nombre: 'Laura',
+        por_pases: true,
+      }),
+    );
+    expect((await elPlano(saraTpv)).sinMesa.find((c) => c.cuentaId === llevar)?.porPases).toBe(
+      false,
+    );
+    expect(
+      elFallo(
+        await api.ejecutar(saraTpv, 'cambiar_la_mesa', { cuenta_id: llevar, por_pases: true }),
       ),
     ).toBe('faltan_datos');
   });

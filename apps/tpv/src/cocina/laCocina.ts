@@ -35,6 +35,35 @@ export function losAcabados(
   return { recientes, plegados };
 }
 
+/**
+ * **Lo de llevar programado se empieza veinte minutos antes de su hora** (0121; Richi, 28-oct:
+ * «el cliente llama y lo quiere para una hora concreta»). Hasta entonces la cocina lo ve
+ * aparte, con su hora, y no le da tecla: no se cocina antes de tiempo ni se olvida.
+ */
+export const MINUTOS_ANTES_DE_LO_PROGRAMADO = 20;
+
+/** Cuándo empieza la cocina lo programado; nulo si es para ya. */
+export function cuandoSeEmpieza(t: TarjetaDeCocina): number | null {
+  const paraLas = t.paraLas ?? null;
+  return paraLas === null ? null : Date.parse(paraLas) - MINUTOS_ANTES_DE_LO_PROGRAMADO * 60_000;
+}
+
+/** Lo que se hace ya, y lo programado que aún no toca, por su hora. */
+export function separarLoProgramado(
+  enMarcha: readonly TarjetaDeCocina[],
+  ahoraMs: number,
+): { readonly ya: TarjetaDeCocina[]; readonly programados: TarjetaDeCocina[] } {
+  const ya: TarjetaDeCocina[] = [];
+  const programados: TarjetaDeCocina[] = [];
+  for (const t of enMarcha) {
+    const empieza = cuandoSeEmpieza(t);
+    if (empieza !== null && empieza > ahoraMs) programados.push(t);
+    else ya.push(t);
+  }
+  programados.sort((a, b) => (cuandoSeEmpieza(a) ?? 0) - (cuandoSeEmpieza(b) ?? 0));
+  return { ya, programados };
+}
+
 export type Sonido = 'nueva' | 'marcha' | 'aviso';
 
 /**

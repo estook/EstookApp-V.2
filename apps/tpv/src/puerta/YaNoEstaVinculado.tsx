@@ -11,7 +11,7 @@ export function YaNoEstaVinculado({
   readonly alVincular: () => void;
 }) {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5 text-texto">
+    <main className="flex min-h-pantalla items-center justify-center bg-fondo p-e5 text-texto">
       <section className="flex max-w-[30rem] flex-col items-center gap-e4 text-center">
         <span className="flex size-20 items-center justify-center rounded-redondo bg-superficie">
           <svg

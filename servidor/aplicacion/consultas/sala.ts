@@ -113,6 +113,8 @@ export interface CuentaEnElPlano {
   /** Para las opciones de la mesa desde el plano, sin tener que abrirla. */
   readonly porPases: boolean;
   readonly notaParaCocina: string | null;
+  /** Lo de llevar programado (0121): para cuándo lo quiere el cliente. */
+  readonly paraLas: string | null;
   /** «Tienen prisa», y si la cocina llama al camarero (0116). */
   readonly conPrisa: boolean;
   readonly cocinaLlamaEn: string | null;
@@ -170,6 +172,7 @@ function enElPlano(
     totalCentimos: elTotal(platos),
     porPases: cuenta.por_pases,
     notaParaCocina: cuenta.nota_para_cocina,
+    paraLas: cuenta.para_las,
     conPrisa: cuenta.con_prisa,
     cocinaLlamaEn: cuenta.cocina_llama_en,
     alergias: cuenta.alergias,
@@ -296,6 +299,8 @@ export interface SalidaLaMesa {
   readonly camarero: string | null;
   readonly porPases: boolean;
   readonly notaParaCocina: string | null;
+  /** Lo de llevar programado (0121): para cuándo lo quiere el cliente. */
+  readonly paraLas: string | null;
   readonly conPrisa: boolean;
   readonly cocinaLlamaEn: string | null;
   /** La alergia de la mesa (0117), en el orden del reglamento. */
@@ -346,6 +351,7 @@ export const laMesa = consulta<{ cuenta_id: string }, SalidaLaMesa>({
       camarero: cuenta.camarero,
       porPases: cuenta.por_pases,
       notaParaCocina: cuenta.nota_para_cocina,
+      paraLas: cuenta.para_las,
       conPrisa: cuenta.con_prisa,
       cocinaLlamaEn: cuenta.cocina_llama_en,
       alergias: cuenta.alergias,
@@ -413,6 +419,8 @@ export interface TarjetaDeCocina {
   readonly camarero: string | null;
   readonly camareroId: string | null;
   readonly notaParaCocina: string | null;
+  /** Lo de llevar programado (0121): para cuándo lo quiere el cliente. */
+  readonly paraLas: string | null;
   readonly porPases: boolean;
   /** «Tienen prisa» (0116): sube arriba, con su franja. */
   readonly conPrisa: boolean;
@@ -481,6 +489,7 @@ function laTarjeta(
     camarero: cuenta.camarero,
     camareroId: cuenta.camarero_id,
     notaParaCocina: cuenta.nota_para_cocina,
+    paraLas: cuenta.para_las,
     porPases: cuenta.por_pases,
     conPrisa: cuenta.con_prisa,
     cocinaLlamaEn: cuenta.cocina_llama_en,
@@ -613,6 +622,7 @@ function laTarjetaDeLaBarra(
     camarero: cuenta.camarero,
     camareroId: cuenta.camarero_id,
     notaParaCocina: cuenta.nota_para_cocina,
+    paraLas: cuenta.para_las,
     porPases: false,
     conPrisa: cuenta.con_prisa,
     cocinaLlamaEn: cuenta.cocina_llama_en,

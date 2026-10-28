@@ -175,7 +175,7 @@ export function ElPin({
   if (sinFichar !== null && !sinFichar.enLaCaja) {
     // **En un comandero no se entra sin fichar, ni se ficha** (0115).
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5 text-texto">
+      <main className="flex min-h-pantalla items-center justify-center bg-fondo p-e5 text-texto">
         <section className="flex w-full max-w-[32rem] flex-col gap-e4 rounded-mayor border-2 border-mal bg-superficie p-e6">
           <h1 className="text-cifra-media font-bold text-mal">Sin fichar</h1>
           <p className="text-seccion">
@@ -199,7 +199,7 @@ export function ElPin({
 
   if (sinFichar !== null) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5 text-texto">
+      <main className="flex min-h-pantalla items-center justify-center bg-fondo p-e5 text-texto">
         <section className="flex w-full max-w-[32rem] flex-col gap-e4 rounded-mayor bg-superficie p-e6">
           <h1 className="text-cifra-media font-bold">
             Hola{sinFichar.nombre === '' ? '' : `, ${sinFichar.nombre}`}.
@@ -268,7 +268,7 @@ export function ElPin({
   });
 
   return (
-    <main className="flex min-h-dvh flex-col bg-fondo text-texto md:flex-row">
+    <main className="flex min-h-pantalla flex-col bg-fondo text-texto md:flex-row">
       <section className="flex flex-col gap-e4 p-e5 md:flex-1 md:p-e7">
         <div className="flex flex-col gap-e1">
           <span className="text-[4rem] font-bold leading-none tabular-nums max-md:text-cifra">

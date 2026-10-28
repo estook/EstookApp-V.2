@@ -238,6 +238,11 @@ export const prepararElAparatoSinConexion = comando<{ llave: string }, { clavePu
 export type EstadoEnElAparato = 'fuera' | 'dentro' | 'en_pausa';
 
 export interface QuienFichaAqui {
+  /**
+   * Quién es (28-oct): en la caja, el «Fichar» de arriba pide el PIN a todos, y si es quien
+   * tiene la caja abierta, su salida cierra también su sesión.
+   */
+  readonly personaId: string;
   readonly nombre: string;
   readonly estado: EstadoEnElAparato;
   /** Desde cuándo está dentro o en la pausa. */
@@ -349,6 +354,7 @@ export async function comoEsta(
   const fila = filas[0];
   if (fila === undefined) throw new FalloDeAplicacion('sin_permiso');
   return {
+    personaId,
     nombre: fila.apellidos === null ? fila.nombre : `${fila.nombre} ${fila.apellidos.charAt(0)}.`,
     estado:
       fila.pausa_desde !== null ? 'en_pausa' : fila.dentro_desde !== null ? 'dentro' : 'fuera',

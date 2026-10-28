@@ -49,6 +49,15 @@ import { pasarAOtroCamarero } from './sala.ts';
  *   sacar_codigo_para_pasar_a_la_app   «Pasar a la app» (T5 · 1, 0119): la misma caja, a la
  *                               caja para Windows; al usarlo, cambia de llave y la de antes
  *                               deja de valer
+ *   sacar_codigo_para_volver_a_vincular   «Volver a vincular» (28-oct): lo mismo para
+ *                               cualquier aparato del local (el móvil que borró la app). Y
+ *                               con el correo, `vuelve_terminal_id` en el primero
+ *
+ * **Volver a vincular no crea otro aparato** (Richi, 28-oct: «me dice Caja 2 y se duplica»):
+ * es el mismo —su nombre, su función, su cajón, sus impresoras, su historia— con **otra
+ * llave**, y la de antes deja de valer en su petición siguiente. Un aparato no se reconoce
+ * por nada suyo (Arquitectura, capítulo 6: nada de huellas del hardware, y borrar la app
+ * borra la llave): lo reconoce **quien puede vincular**, eligiéndolo en la lista.
  *   latir_el_aparato            cada minuto: «en línea», su versión, y lo que enseña su
  *                               pantalla del PIN (fichados, el bloqueo)
  *   los_aparatos · cambiar_aparato · desvincular_aparato   Ajustes del TPV › Aparatos
@@ -433,7 +442,39 @@ async function pasarElAparato(
   return { terminalId, llave: laLlave };
 }
 
+/** Un aparato de este local que sigue vinculado, para volver a vincularlo (28-oct). */
+async function elAparatoDelLocal(
+  contexto: Contexto,
+  localId: string,
+  terminalId: string,
+): Promise<{ id: string; nombre: string; funcion: FuncionDelAparato }> {
+  const filas = await contexto.sql<{ id: string; nombre: string; funcion: FuncionDelAparato }[]>`
+    select id::text as id, nombre, funcion from estook.terminal
+     where id = ${terminalId}::uuid and local_id = ${localId}::uuid and retirado_en is null
+  `;
+  const fila = filas[0];
+  if (fila === undefined) {
+    throw new FalloDeAplicacion('no_existe', {
+      porque: 'Ese aparato ya no está vinculado a este local: vincula uno nuevo.',
+    });
+  }
+  if (fila.funcion === 'fichar') {
+    throw new FalloDeAplicacion('faltan_datos', {
+      porque: 'Los aparatos para fichar ya no se vinculan: se ficha en la caja (0115).',
+    });
+  }
+  return fila;
+}
+
 // ═══ Vincular el primero, con el correo ═══════════════════════════════════════
+
+export interface AparatoDeAntes {
+  readonly id: string;
+  readonly nombre: string;
+  readonly funcion: FuncionDelAparato;
+  /** La última vez que latió o se usó; nulo si nunca. */
+  readonly vistoEn: string | null;
+}
 
 export interface DondeSePuedeVincular {
   readonly locales: readonly {
@@ -441,6 +482,8 @@ export interface DondeSePuedeVincular {
     readonly nombre: string;
     readonly cajones: readonly { readonly id: string; readonly nombre: string }[];
     readonly aparatos: readonly string[];
+    /** Los que ya hay, para «Es uno que ya tenía» (28-oct): volver a vincularlo, sin duplicarlo. */
+    readonly deAntes: readonly AparatoDeAntes[];
     readonly personas: readonly { readonly id: string; readonly nombre: string }[];
   }[];
 }
@@ -466,13 +509,23 @@ export const dondePuedoVincular = consulta<Record<string, never>, DondeSePuedeVi
               select id::text as id, nombre from estook.cajon
                where local_id = ${l.id}::uuid and retirado_en is null order by nombre
             `,
-            contexto.sql<{ nombre: string }[]>`
-              select nombre from estook.terminal
+            contexto.sql<AparatoDeAntes[]>`
+              select id::text as id, nombre, funcion,
+                     to_char(coalesce(ultimo_latido_en, ultimo_uso_en) at time zone 'UTC',
+                             'YYYY-MM-DD"T"HH24:MI:SS"Z"') as "vistoEn"
+                from estook.terminal
                where local_id = ${l.id}::uuid and retirado_en is null order by nombre
             `,
             quienesTomanNota(contexto, l.id),
           ]);
-          return { ...l, cajones, aparatos: aparatos.map((a) => a.nombre), personas };
+          return {
+            ...l,
+            cajones,
+            aparatos: aparatos.map((a) => a.nombre),
+            // Los de fichar de antes (0115) ya no se vinculan: tampoco se vuelven a vincular.
+            deAntes: aparatos.filter((a) => a.funcion !== 'fichar'),
+            personas,
+          };
         }),
       ),
     };
@@ -486,6 +539,11 @@ export const entradaVincularElPrimero = z
     version,
     /** «No recuerdo mi PIN»: quien vincula, que ya ha entrado con su correo, saca uno nuevo. */
     pin_nuevo: z.boolean().optional(),
+    /**
+     * «Es uno que ya tenía» (28-oct): vuelve a vincular ese aparato aquí, con otra llave, en
+     * lugar de crear otro. Lo de `queSera` no cambia nada: se queda con lo suyo.
+     */
+    vuelve_terminal_id: id.optional(),
   })
   .strict();
 
@@ -525,21 +583,43 @@ export const vincularElPrimerAparato = comando<
         porque: 'Vincula aparatos quien lleva el local. Pídeselo a tu gerente.',
       });
     }
-    // Sin Pro no se vincula (0120): lo dice antes de crear nada.
-    await queLleveEstookTpv(contexto, fila.organizacion_id, entrada.funcion);
-    const preparado = await prepararLoQueSera(contexto, entrada.local_id, entrada);
-    const { terminalId, llave: laLlave } = await crearElAparato(
-      contexto,
-      entrada.local_id,
-      entrada,
-      preparado,
-      entrada.version ?? null,
-    );
-    await apuntar(contexto, fila.organizacion_id, 'vincular', terminalId, entrada.local_id, {
-      nombre: entrada.nombre,
-      funcion: entrada.funcion,
-      como: 'con el correo',
-    });
+    let terminalId: string;
+    let laLlave: string;
+    if (entrada.vuelve_terminal_id === undefined) {
+      // Sin Pro no se vincula (0120): lo dice antes de crear nada.
+      await queLleveEstookTpv(contexto, fila.organizacion_id, entrada.funcion);
+      const preparado = await prepararLoQueSera(contexto, entrada.local_id, entrada);
+      ({ terminalId, llave: laLlave } = await crearElAparato(
+        contexto,
+        entrada.local_id,
+        entrada,
+        preparado,
+        entrada.version ?? null,
+      ));
+      await apuntar(contexto, fila.organizacion_id, 'vincular', terminalId, entrada.local_id, {
+        nombre: entrada.nombre,
+        funcion: entrada.funcion,
+        como: 'con el correo',
+      });
+    } else {
+      // **El mismo aparato, otra llave** (28-oct): uno de este local que siga vinculado.
+      const elDeAntes = await elAparatoDelLocal(
+        contexto,
+        entrada.local_id,
+        entrada.vuelve_terminal_id,
+      );
+      await queLleveEstookTpv(contexto, fila.organizacion_id, elDeAntes.funcion);
+      ({ terminalId, llave: laLlave } = await pasarElAparato(
+        contexto,
+        elDeAntes.id,
+        entrada.version ?? null,
+      ));
+      await apuntar(contexto, fila.organizacion_id, 'vincular', terminalId, entrada.local_id, {
+        nombre: elDeAntes.nombre,
+        funcion: elDeAntes.funcion,
+        como: 'vuelto a vincular con el correo',
+      });
+    }
 
     // **Su PIN, si no tiene en este local** (0109): quien crea el restaurante entraba con su
     // correo y no tenía ninguno, así que no podía entrar en su propio TPV. Ya ha
@@ -653,29 +733,65 @@ export const sacarCodigoParaPasarALaApp = comando<Record<string, never>, CodigoP
   async ejecutar(contexto) {
     soloEnLaCaja(contexto);
     const aparato = await elAparatoDeLaSesion(contexto);
-    const caducaEn = new Date(contexto.ahora.getTime() + CODIGO_PARA_VINCULAR.minutos * 60_000);
-    for (let intento = 0; intento < 10; intento++) {
-      const codigo = pinNuevo(CODIGO_PARA_VINCULAR.cifras);
-      const huella = await huellaDeToken(codigo);
-      const vivo = await contexto.sql<{ codigo_id: string }[]>`
-        select codigo_id from estook.codigo_vivo_por_huella(${huella}, ${contexto.ahora.toISOString()}::timestamptz)
-      `;
-      if (vivo.length > 0) continue;
-      await contexto.sql`
-        insert into estook.codigo_para_vincular
-          (local_id, funcion, nombre, persona_id, cajon_id, huella, creado_por, creado_desde,
-           creado_en, caduca_en, pasa_terminal_id)
-        values (${aparato.localId}::uuid, ${aparato.funcion}, ${aparato.nombre},
-                ${aparato.duenoId}::uuid, ${aparato.cajonId}::uuid, ${huella},
-                ${contexto.personaId}::uuid, ${aparato.terminalId}::uuid,
-                ${contexto.ahora.toISOString()}::timestamptz, ${caducaEn.toISOString()}::timestamptz,
-                ${aparato.terminalId}::uuid)
-      `;
-      return { codigo, caducaEn: caducaEn.toISOString() };
-    }
-    throw new FalloDeAplicacion('fallo_nuestro');
+    return codigoParaPasar(contexto, aparato.terminalId, aparato.terminalId);
   },
 });
+
+/**
+ * **«Volver a vincular»** (Ajustes del TPV › Aparatos, 28-oct): el código de siempre (6
+ * cifras, 10 minutos, un uso) para **ese** aparato. Quien lo teclea en el móvil que borró la
+ * app recupera su Comandero 1 —su nombre, de quién es—, y la llave de antes deja de valer.
+ */
+export const sacarCodigoParaVolverAVincular = comando<{ terminal_id: string }, CodigoParaVincular>({
+  nombre: 'sacar_codigo_para_volver_a_vincular',
+  entrada: z.object({ terminal_id: id }).strict(),
+  exige: 'accion.vincular_aparatos',
+  enElTpv: 'solo',
+  enLosAparatos: ['caja'],
+  conSecreto: true,
+
+  async ejecutar(contexto, entrada) {
+    soloEnLaCaja(contexto);
+    const desde = await elAparatoDeLaSesion(contexto);
+    const elDeAntes = await elAparatoDelLocal(contexto, desde.localId, entrada.terminal_id);
+    return codigoParaPasar(contexto, elDeAntes.id, desde.terminalId);
+  },
+});
+
+/**
+ * El código que lleva un aparato que ya existe a otro sitio, con otra llave: el de «Pasar a
+ * la app» y el de «Volver a vincular». Lo que será es lo del aparato tal cual está.
+ */
+async function codigoParaPasar(
+  contexto: Contexto,
+  terminalId: string,
+  sacadoDesde: string,
+): Promise<CodigoParaVincular> {
+  const caducaEn = new Date(contexto.ahora.getTime() + CODIGO_PARA_VINCULAR.minutos * 60_000);
+  for (let intento = 0; intento < 10; intento++) {
+    const codigo = pinNuevo(CODIGO_PARA_VINCULAR.cifras);
+    const huella = await huellaDeToken(codigo);
+    const vivo = await contexto.sql<{ codigo_id: string }[]>`
+      select codigo_id from estook.codigo_vivo_por_huella(${huella}, ${contexto.ahora.toISOString()}::timestamptz)
+    `;
+    if (vivo.length > 0) continue;
+    const filas = await contexto.sql<{ id: string }[]>`
+      insert into estook.codigo_para_vincular
+        (local_id, funcion, nombre, persona_id, cajon_id, huella, creado_por, creado_desde,
+         creado_en, caduca_en, pasa_terminal_id)
+      select t.local_id, t.funcion, t.nombre, t.persona_id, t.cajon_id, ${huella},
+             ${contexto.personaId}::uuid, ${sacadoDesde}::uuid,
+             ${contexto.ahora.toISOString()}::timestamptz, ${caducaEn.toISOString()}::timestamptz,
+             t.id
+        from estook.terminal t
+       where t.id = ${terminalId}::uuid and t.retirado_en is null
+      returning id::text as id
+    `;
+    if (filas[0] === undefined) throw new FalloDeAplicacion('aparato_retirado');
+    return { codigo, caducaEn: caducaEn.toISOString() };
+  }
+  throw new FalloDeAplicacion('fallo_nuestro');
+}
 
 export const entradaVincularConCodigo = z
   .object({ codigo: z.string().trim().min(1).max(12), version })

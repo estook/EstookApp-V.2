@@ -636,6 +636,111 @@ describe('cambiar lo que es un aparato', () => {
   });
 });
 
+describe('volver a vincular (28-oct): el mismo aparato, sin duplicarlo', () => {
+  it('desde la caja, el móvil de Sara que borró la app vuelve con su nombre y su dueña', async () => {
+    const rosa = await entrarEn(llaveDeLaCaja, ROSA);
+    const { rows: antes } = await base.bd.query<{ id: string }>(
+      `select id::text as id from estook.terminal where nombre = 'Móvil de Sara' and retirado_en is null`,
+    );
+    const movil = antes[0]?.id ?? '';
+    const { codigo } = losDatos<{ codigo: string }>(
+      await api.ejecutar(rosa.token, 'sacar_codigo_para_volver_a_vincular', {
+        terminal_id: movil,
+      }),
+    );
+    const vuelto = losDatos<{ llave: string; aparato: Aparato }>(
+      await api.ejecutar(null, 'vincular_con_codigo', { codigo }),
+    );
+    expect(vuelto.aparato).toMatchObject({
+      terminalId: movil,
+      nombre: 'Móvil de Sara',
+      esPersonal: true,
+      dueno: { id: saraId },
+    });
+    // La llave de antes, la del móvil sin la app, ya no vale.
+    expect(elFallo(await api.ejecutar(null, 'latir_el_aparato', { llave: llaveDelMovil }))).toBe(
+      'aparato_retirado',
+    );
+    llaveDelMovil = vuelto.llave;
+    const { rows } = await base.bd.query<{ cuantos: number }>(
+      `select count(*)::int as cuantos from estook.terminal
+        where nombre = 'Móvil de Sara' and retirado_en is null`,
+    );
+    expect(rows[0]?.cuantos).toBe(1);
+  });
+
+  it('con el correo, «Es uno que ya tenía»: la Caja 1 vuelve, y no sale una Caja 2', async () => {
+    const rosa = await api.entrar(ROSA);
+    const donde = losDatos<{
+      locales: { id: string; deAntes: { id: string; nombre: string; funcion: string }[] }[];
+    }>(await api.consultar(rosa, 'donde_puedo_vincular'));
+    const caja1 = donde.locales
+      .find((l) => l.id === barCentro)
+      ?.deAntes.find((a) => a.nombre === 'Caja 1');
+    expect(caja1?.funcion).toBe('caja');
+    const { rows: cajasAntes } = await base.bd.query<{ cuantas: number }>(
+      `select count(*)::int as cuantas from estook.terminal
+        where local_id = $1 and funcion = 'caja' and retirado_en is null`,
+      [barCentro],
+    );
+
+    const vuelta = losDatos<{ llave: string; aparato: Aparato }>(
+      await api.ejecutar(rosa, 'vincular_el_primer_aparato', {
+        local_id: barCentro,
+        funcion: 'caja',
+        nombre: 'Caja 1',
+        vuelve_terminal_id: caja1?.id,
+      }),
+    );
+    expect(vuelta.aparato).toMatchObject({ terminalId: caja1?.id, nombre: 'Caja 1' });
+    expect(elFallo(await api.ejecutar(null, 'latir_el_aparato', { llave: llaveDeLaCaja }))).toBe(
+      'aparato_retirado',
+    );
+    llaveDeLaCaja = vuelta.llave;
+    const { rows: cajasDespues } = await base.bd.query<{ cuantas: number }>(
+      `select count(*)::int as cuantas from estook.terminal
+        where local_id = $1 and funcion = 'caja' and retirado_en is null`,
+      [barCentro],
+    );
+    expect(cajasDespues[0]?.cuantas).toBe(cajasAntes[0]?.cuantas);
+    // Y su sesión tampoco se queda.
+    expect(elFallo(await api.consultar(rosa, 'quien_soy'))).toBe('sin_sesion');
+  });
+
+  it('un aparato que no es de este local no se vuelve a vincular, y Sara no saca el código', async () => {
+    const rosa = await api.entrar(ROSA);
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'vincular_el_primer_aparato', {
+          local_id: barCentro,
+          funcion: 'caja',
+          nombre: 'Caja 1',
+          vuelve_terminal_id: crypto.randomUUID(),
+        }),
+      ),
+    ).toBe('no_existe');
+    const sara = await entrarEn(llaveDeLaCaja, SARA);
+    expect(
+      elFallo(
+        await api.ejecutar(sara.token, 'sacar_codigo_para_volver_a_vincular', {
+          terminal_id: tablet,
+        }),
+      ),
+    ).toBe('sin_permiso');
+  });
+
+  it('en la caja, el «Fichar» de arriba sabe de quién es el PIN', async () => {
+    expect(
+      losDatos<{ personaId: string }>(
+        await api.ejecutar(null, 'quien_ficha_en_la_caja', {
+          llave: llaveDeLaCaja,
+          pin: base.pinDe(SARA, 'bar-centro'),
+        }),
+      ).personaId,
+    ).toBe(saraId);
+  });
+});
+
 describe('desvincular', () => {
   it('la tablet de la terraza deja de valer en su petición siguiente', async () => {
     const enLaTablet = await entrarEn(llaveDeLaTablet, ROSA);

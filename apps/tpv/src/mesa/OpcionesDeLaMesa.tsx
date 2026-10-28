@@ -7,7 +7,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAcciones, usarAlSegundo, usarLasImpresoras } from '../ganchos/usarLaSala.ts';
 import type { CuentaEnElPlano, ElPlano } from '../datos/tipos.ts';
 import { elPase } from '../logica/laCuenta.ts';
-import { cuantoLlevan, euros, losNombres, personas as lasPersonas } from '../logica/texto.ts';
+import { comensales, cuantoLlevan, euros, losNombres } from '../logica/texto.ts';
 import { irAlPlano } from '../navegar.ts';
 
 /**
@@ -89,7 +89,7 @@ export function OpcionesDeLaMesa({
     <Hoja abierta alCerrar={alCerrar} titulo={cuenta.titulo}>
       <p className="mb-e4 text-secundario text-texto-suave">
         {[
-          lasPersonas(cuenta.personas),
+          comensales(cuenta.personas),
           cuenta.camarero,
           cuantoLlevan(cuenta.minutos),
           `${euros(cuenta.totalCentimos)} €`,
@@ -213,14 +213,15 @@ export function OpcionesDeLaMesa({
             }}
           />
           <Opcion
-            titulo="Personas"
-            detalle={lasPersonas(cuenta.personas) ?? 'cuántos son'}
+            titulo="Comensales"
+            detalle={comensales(cuenta.personas) ?? 'sin decir'}
             onClick={() => {
               setTexto(cuenta.personas === null ? '' : String(cuenta.personas));
               setPaso('personas');
             }}
           />
-          {porPases && (
+          {/* Lo de llevar sale siempre todo junto (28-oct): ni pases ni «Sacadlo todo». */}
+          {porPases && cuenta.tipo !== 'para_llevar' && (
             <Opcion
               titulo="Sacadlo todo"
               detalle="lo que espera sale ya, y lo nuevo, todo junto"
@@ -229,7 +230,7 @@ export function OpcionesDeLaMesa({
               }}
             />
           )}
-          {!porPases && (
+          {!porPases && cuenta.tipo !== 'para_llevar' && (
             <Opcion
               titulo="Por pases"
               detalle="lo nuevo, en su pase"
@@ -340,7 +341,7 @@ export function OpcionesDeLaMesa({
 
       {paso === 'personas' && (
         <div className="flex flex-col gap-e4">
-          <Envoltorio id="personas-de-la-mesa" etiqueta="¿Cuántos son?">
+          <Envoltorio id="personas-de-la-mesa" etiqueta="Nº de comensales">
             <input
               id="personas-de-la-mesa"
               inputMode="numeric"

@@ -1,19 +1,82 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { ErrorEnCristiano } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { irAlPlano } from '../navegar.ts';
+import { leerLaLlave } from '../datos/cliente.ts';
 import { Pastilla } from '../puerta/ElegirQueSera.tsx';
+import { FicharEnLaCaja } from '../puerta/FicharEnLaCaja.tsx';
 import type { ElFichaje } from '../datos/tipos.ts';
 import { LaBarraDeArriba } from './LaBarraDeArriba.tsx';
 
 /**
- * **Fichar, con el mismo PIN** (0057; Anexo 11.4, maqueta 19): la entrada, la pausa, la
- * vuelta y la salida de quien está. **Fichar la salida con mesas abiertas** pregunta a
- * quién se las pasa: la venta pasa a esa persona y lo que ya pidió sigue a su nombre.
- * Quien ficha la salida se va: el aparato vuelve al PIN.
+ * **Fichar, en la caja abierta** (0057; Anexo 11.4; Richi, 28-oct): **pide el PIN a todos**.
+ * La caja la abre el gerente y se queda abierta todo el día, y en ese ordenador ficha
+ * cualquiera: el que llega teclea su PIN y le sale «Hola, Ana · ¿Fichar la entrada?», sin
+ * tocar la sesión de quien la tiene abierta. Al acabar, «✓ Ana · entrada a las 12:02» y el
+ * teclado listo para el siguiente.
+ *
+ * **Si el PIN es el de quien tiene la caja abierta**, es lo suyo (`LoMio`): sus mesas, y su
+ * salida cierra también su sesión.
  */
 export function Fichar() {
+  const { yo, refrescar } = usarSesion();
+  const llave = leerLaLlave();
+  const [esLoMio, setEsLoMio] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [vuelta, setVuelta] = useState(0);
+
+  // «✓ Ana · entrada a las 12:02» se queda unos segundos y se va, como en el PIN.
+  useEffect(() => {
+    if (aviso === null) return undefined;
+    const fuera = window.setTimeout(() => {
+      setAviso(null);
+    }, 5_000);
+    return () => {
+      window.clearTimeout(fuera);
+    };
+  }, [aviso]);
+
+  if (llave === null || esLoMio) {
+    return (
+      <LoMio
+        alVolver={() => {
+          setEsLoMio(false);
+        }}
+      />
+    );
+  }
+  return (
+    <FicharEnLaCaja
+      key={vuelta}
+      llave={llave}
+      cabecera={<LaBarraDeArriba titulo="Fichar" />}
+      aviso={aviso}
+      alSerQuienEstaDentro={(fichaje) => {
+        if (fichaje.personaId !== yo.personaId) return false;
+        setEsLoMio(true);
+        return true;
+      }}
+      alAcabar={(hecho) => {
+        if (hecho === null) {
+          irAlPlano();
+          return;
+        }
+        setAviso(hecho);
+        setVuelta((v) => v + 1);
+        refrescar();
+      }}
+    />
+  );
+}
+
+/**
+ * **Lo de quien tiene la caja abierta** (0057, maqueta 19): la entrada, la pausa, la vuelta y
+ * la salida. **Fichar la salida con mesas abiertas** pregunta a quién se las pasa: la venta
+ * pasa a esa persona y lo que ya pidió sigue a su nombre. **Su salida cierra su sesión**: el
+ * aparato vuelve al PIN.
+ */
+function LoMio({ alVolver }: { readonly alVolver: () => void }) {
   const { cliente, datos, refrescar, bloquear } = usarSesion();
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
@@ -52,15 +115,19 @@ export function Fichar() {
     'min-h-toque-cocina rounded-grande px-e5 text-seccion font-bold disabled:opacity-60';
 
   return (
-    <div className="flex min-h-dvh flex-col bg-fondo text-texto">
+    <div className="flex min-h-pantalla flex-col bg-fondo text-texto">
       <LaBarraDeArriba titulo="Fichar" />
       <main className="mx-auto flex w-full max-w-[40rem] flex-col gap-e5 p-e4 md:p-e6">
         <p className="text-pantalla font-bold">
-          {estado === 'dentro'
-            ? `Dentro desde las ${hora}`
-            : estado === 'en_pausa'
-              ? `En la pausa desde las ${hora}`
-              : 'No has fichado la entrada'}
+          Hola, {datos.fichaje.nombre}
+          <br />
+          <span className="text-seccion text-texto-suave">
+            {estado === 'dentro'
+              ? `Estás dentro desde las ${hora}`
+              : estado === 'en_pausa'
+                ? `Estás en la pausa desde las ${hora}`
+                : '¿Fichar la entrada?'}
+          </span>
         </p>
         {error !== null && <ErrorEnCristiano error={error} />}
 
@@ -71,7 +138,7 @@ export function Fichar() {
             onClick={() => void fichar('entrada')}
             className={`${boton} bg-naranja text-sobre-naranja`}
           >
-            Fichar la entrada
+            Sí, fichar la entrada
           </button>
         )}
 
@@ -140,11 +207,18 @@ export function Fichar() {
               className={`${boton} bg-naranja text-sobre-naranja`}
             >
               {conMesas && aQuien !== null
-                ? `Pasar a ${datos.companeros.find((c) => c.id === aQuien)?.nombre ?? ''} y fichar la salida`
-                : 'Fichar la salida'}
+                ? `Pasar a ${datos.companeros.find((c) => c.id === aQuien)?.nombre ?? ''}, fichar la salida y cerrar sesión`
+                : 'Fichar la salida y cerrar sesión'}
             </button>
           </>
         )}
+        <button
+          type="button"
+          onClick={alVolver}
+          className="min-h-toque text-secundario font-semibold text-texto-tenue"
+        >
+          No, volver
+        </button>
       </main>
     </div>
   );

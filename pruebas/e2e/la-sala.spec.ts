@@ -12,7 +12,7 @@ import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
  *     → dos mesas tocando la paleta, una de 6 plazas; «Listo» (en el móvil no se dibuja:
  *     «Edita la sala en una tablet o en la caja», y el plano se pone por la API)
  *   · el plano con **Todas · Mías**; abrir la mesa para dos y pedir con **los pases en
- *     pestañas**: Bebidas se marca solo, Entrantes marca el 1.º y Principales el 2.º
+ *     pestañas**: Bebidas se marca solo, la comida va al 1.º y el 2.º lo elige el camarero
  *   · **cuatro platos en diez toques o menos, desde el plano** (10.3), contados
  *   · lo que dice al mandar, marchar el 2.º, y la mesa en el plano con sus iniciales
  */
@@ -139,18 +139,23 @@ test('la sala: dibujarla en el TPV, abrir la mesa, pedir con los pases en pesta�
     timeout: 15_000,
   });
   await tocar(page.getByRole('button', { name: /^Caña, 2,50 €/ }));
-  // Entrantes marca el 1.º; Principales, el 2.º.
+  // **El pase lo elige el camarero** (Richi, 28-oct): cambiar de página no lo cambia. La
+  // comida tocada con «Bebidas» marcada va al 1.º, y se marca el 1.º.
   await tocar(page.getByRole('button', { name: 'Entrantes', exact: true }));
+  await expect(page.getByRole('radio', { name: 'Bebidas', checked: true })).toBeVisible();
+  await tocar(page.getByRole('button', { name: /^Croquetas, 9,00 €/ }));
   await expect(page.getByRole('radio', { name: '1.º', checked: true })).toBeVisible();
   await tocar(page.getByRole('button', { name: /^Croquetas, 9,00 €/ }));
-  await tocar(page.getByRole('button', { name: /^Croquetas, 9,00 €/ }));
   await tocar(page.getByRole('button', { name: 'Principales', exact: true }));
-  await expect(page.getByRole('radio', { name: '2.º', checked: true })).toBeVisible();
+  await expect(page.getByRole('radio', { name: '1.º', checked: true })).toBeVisible();
+  // El entrecot, de segundo: un toque en su pestaña.
+  await tocar(page.getByRole('radio', { name: '2.º', exact: true }));
   await tocar(page.getByRole('button', { name: /^Entrecot, 22,00 €/ }));
   await tocar(page.getByRole('button', { name: 'Mandar' }));
-  expect(toques, 'una comanda de cuatro platos en diez toques o menos (10.3)').toBeLessThanOrEqual(
-    10,
-  );
+  expect(
+    toques,
+    'una comanda de cuatro platos en diez toques, y uno por cada pase que elige el camarero (10.3)',
+  ).toBeLessThanOrEqual(11);
   await expect(page.getByRole('status')).toHaveText(
     'Mandado: a cocina 2 y a la barra 1 · sale el 1.º, el 2.º espera',
     { timeout: 15_000 },

@@ -981,3 +981,10 @@
      v1.0.0 los tres ficheros construidos en el PC de Richi. Quedó completa y coherente, pero
      hecha desde aquí y sin pedirlo. Ahora, antes de ejecutar, `command -v` dice cuál se usará, y
      si no es el falso se para.
+240. **Lo que se instala a pantalla completa deja el hueco del teléfono en todas sus pantallas.**
+     Estook TPV se instala con `viewport-fit=cover` y la barra translúcida, como Estook, pero solo
+     Estook dejaba el hueco del reloj (`env(safe-area-inset-top)` en su barra): el TPV se pintaba
+     debajo del reloj y de la isla del iPhone, y con iOS 26 lo de debajo además se emborrona (lo vio
+     Richi en el comandero, 28-oct). Ninguna prueba lo cazaba: el Chrome de las pruebas no tiene
+     muesca. Ahora el hueco lo deja la raíz de la aplicación, y las pantallas miden
+     `min-h-pantalla`, no `100dvh`; una pantalla nueva no puede olvidarlo.

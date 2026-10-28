@@ -112,6 +112,7 @@ import {
   latirElAparato,
   losAparatos,
   sacarCodigoParaPasarALaApp,
+  sacarCodigoParaVolverAVincular,
   sacarCodigoParaVincular,
   vincularConCodigo,
   vincularElPrimerAparato,
@@ -995,6 +996,7 @@ export const catalogo = {
     [vincularConCodigo.nombre]: vincularConCodigo,
     // T5 · 1 (0119): «Pasar a la app», imprimir, el cajón, y la cola de la caja con su llave.
     [sacarCodigoParaPasarALaApp.nombre]: sacarCodigoParaPasarALaApp,
+    [sacarCodigoParaVolverAVincular.nombre]: sacarCodigoParaVolverAVincular,
     [guardarImpresora.nombre]: guardarImpresora,
     [quitarImpresora.nombre]: quitarImpresora,
     [imprimirPrueba.nombre]: imprimirPrueba,

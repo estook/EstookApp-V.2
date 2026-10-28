@@ -90,6 +90,14 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await expect(page.getByText('Tu sala aún no tiene mesas')).toBeVisible({ timeout: 15_000 });
   // Arriba, lo de todos los días: Fichar en naranja (0115) y el engranaje.
   await expect(page.getByRole('button', { name: 'Fichar', exact: true })).toBeVisible();
+  // «Fichar» con la caja abierta pide el PIN a todos (0121); con el suyo, lo de quien la abrió.
+  await page.getByRole('button', { name: 'Fichar', exact: true }).click();
+  await expect(page.getByText('Fichar · teclea tu PIN')).toBeVisible();
+  await page.keyboard.type(pin);
+  await expect(page.getByText('¿Fichar la entrada?')).toBeVisible({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'No, volver' }).click();
+  await page.getByRole('button', { name: 'Volver', exact: true }).click();
+  await expect(page.getByText('Tu sala aún no tiene mesas')).toBeVisible({ timeout: 15_000 });
   // Lo que todavía no funciona no sale, ni apagado.
   await expect(page.getByRole('button', { name: /^Venta rápida/ })).toHaveCount(0);
 
@@ -135,9 +143,28 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await page.getByLabel(/solo entra quien ha fichado/i).check();
   await expect(page.getByRole('status')).toContainText('Guardado');
 
-  // ── Cambiar lo que es, sin volver a vincular: la tablet pasa a ser la caja 2 ──
+  // ── Volver a vincular (0121): la tablet que borró la app vuelve la misma, sin otra ──
   await page.getByRole('button', { name: 'Aparatos' }).click();
   await page.getByRole('button', { name: /Tablet terraza/ }).click();
+  await page.getByRole('button', { name: 'Sacar el código' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Vuelve a vincular «Tablet terraza»' }),
+  ).toBeVisible({ timeout: 15_000 });
+  const otraVez = ((await page.getByLabel(/^Código \d/).getAttribute('aria-label')) ?? '').replace(
+    /\D/g,
+    '',
+  );
+  expect(otraVez).toMatch(/^\d{6}$/);
+  await page.getByRole('button', { name: 'Hecho' }).click();
+  const sinLaApp = await browser.newContext();
+  const deNuevo = await sinLaApp.newPage();
+  await abrirSinQueSeCaiga(deNuevo, TPV);
+  await expect(deNuevo.getByText('El código de vinculación')).toBeVisible({ timeout: 15_000 });
+  await deNuevo.keyboard.type(otraVez);
+  await expect(deNuevo.getByText(/Tablet terraza · Bar Puerta/)).toBeVisible({ timeout: 15_000 });
+  await sinLaApp.close();
+
+  // ── Cambiar lo que es, sin volver a vincular: la tablet pasa a ser la caja 2 ──
   await expect(page.getByRole('radio', { name: /^Comandero/ })).toHaveAttribute(
     'aria-checked',
     'true',

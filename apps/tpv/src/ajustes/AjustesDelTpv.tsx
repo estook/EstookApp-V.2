@@ -131,7 +131,7 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
 
   if (aparato.funcion !== 'caja' || apartados.length === 0) {
     return (
-      <div className="flex min-h-dvh flex-col bg-fondo text-texto">
+      <div className="flex min-h-pantalla flex-col bg-fondo text-texto">
         <LaBarraDeArriba titulo="Ajustes" />
         <main className="p-e5">
           <EstadoVacio
@@ -152,7 +152,7 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
   // **El engranaje**: los grupos, con lo que dice cada uno.
   if (elegido === undefined || !puede(elegido)) {
     return (
-      <div className="flex min-h-dvh flex-col bg-fondo text-texto">
+      <div className="flex min-h-pantalla flex-col bg-fondo text-texto">
         <LaBarraDeArriba titulo="Ajustes" />
         <main className="flex flex-col gap-e6 p-e4 md:p-e6">
           {GRUPOS.map((grupo) => {
@@ -181,7 +181,7 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
 
   // **Un apartado**, con los demás a un lado para pasar de uno a otro.
   return (
-    <div className="flex min-h-dvh flex-col bg-fondo text-texto">
+    <div className="flex min-h-pantalla flex-col bg-fondo text-texto">
       <LaBarraDeArriba titulo="Ajustes" />
       <div className="flex flex-1 flex-col md:flex-row">
         <nav

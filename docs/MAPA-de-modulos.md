@@ -77,7 +77,7 @@ Turnos, turnos partidos, plantillas, coste en vivo mientras montas el cuadrante,
 
 ### M15 · Fichajes
 
-Modo quiosco en un aparato del local, comparativa de lo planificado contra lo fichado, **las pausas, y las horas ordinarias frente a las extraordinarias**.
+Comparativa de lo planificado contra lo fichado, **las pausas, y las horas ordinarias frente a las extraordinarias**. **Dónde se ficha ya está decidido**: con el móvil en Estook, o con el PIN en la caja de Estook TPV, que es de Pro ([0115](decisiones/0115-cada-aparato-a-lo-suyo.md), [0120](decisiones/0120-estook-tpv-es-de-pro.md)); en Esencial no hay aparato para fichar.
 
 > **Aquí hay ley.** Registrar la jornada es obligatorio desde 2019 y ya se sanciona. Y hay un Real Decreto de registro horario digital **en tramitación, todavía no publicado en el BOE**, cuyo borrador exige inmutabilidad, credencial individual, nada de biometría, pausas, clasificación de horas, cuatro años de conservación y acceso de la Inspección. Estook ya cumple la mitad por diseño; el resto entra en este módulo.
 

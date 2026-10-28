@@ -96,7 +96,7 @@ function laVersion(): string {
 
 function Pantalla({ children }: { readonly children: ReactNode }) {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-fondo p-e5 text-texto">
+    <main className="flex min-h-pantalla items-center justify-center bg-fondo p-e5 text-texto">
       <div className="w-full max-w-[32rem]">{children}</div>
     </main>
   );

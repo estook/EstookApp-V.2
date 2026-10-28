@@ -4,3 +4,24 @@
  */
 @import '@estook/ui/estilos';
 @source "./";
+
+/*
+ * **La zona segura del teléfono** (28-oct). Instalada, Estook TPV se pinta debajo del reloj y
+ * de la isla del iPhone (`viewport-fit=cover` con la barra translúcida), y desde iOS 26 lo que
+ * queda debajo además se emborrona: la barra de arriba se metía detrás del reloj (Richi lo vio
+ * en el comandero). Toda la aplicación deja ese hueco, arriba, abajo y a los lados, y las
+ * pantallas miden lo que queda: `min-h-pantalla` y `h-pantalla` en lugar de `100dvh`. En
+ * Windows, Android y el iPad sin muesca el hueco es cero y no cambia nada.
+ */
+#raiz {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+@utility min-h-pantalla {
+  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
+
+@utility h-pantalla {
+  height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}

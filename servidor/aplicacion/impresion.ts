@@ -194,6 +194,10 @@ export async function laComandaALaCola(
       hora: horaEnElLocal(contexto.ahora, local.zonaHoraria),
       alergiasDeLaMesa: alergias,
       notaDeLaMesa: lo.que === 'nueva' ? cuenta.nota_para_cocina : null,
+      paraLas:
+        cuenta.para_las === null
+          ? null
+          : horaEnElLocal(new Date(cuenta.para_las), local.zonaHoraria),
       pases: pasesDelPapel,
       motivo: lo.motivo ?? null,
       quien: lo.quien ?? null,

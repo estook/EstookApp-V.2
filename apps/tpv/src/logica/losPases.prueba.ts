@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LaMesa, PlatoDeLaCuenta } from '../datos/tipos.ts';
-import {
-  comoVaElPase,
-  elNumeroDelPase,
-  laPestanaDeFabrica,
-  laPestanaDeLaPagina,
-} from './losPases.ts';
+import { comoVaElPase, elNumeroDelPase, laPestanaDeFabrica } from './losPases.ts';
 
 /** Las pestañas de los pases encima de la cuenta (T2, Anexo 11.10 y 11.15). */
 function unaMesa(platos: Partial<PlatoDeLaCuenta>[], pases: LaMesa['pases'] = []): LaMesa {
@@ -46,12 +41,9 @@ function unaMesa(platos: Partial<PlatoDeLaCuenta>[], pases: LaMesa['pases'] = []
 }
 
 describe('los pases en pestañas', () => {
-  it('al abrir una página se marca la pestaña de su «¿En qué pase sale?» (T3)', () => {
-    expect(laPestanaDeLaPagina('2')).toBe(2);
-    expect(laPestanaDeLaPagina('1')).toBe(1);
-    expect(laPestanaDeLaPagina('3')).toBe(3);
-    expect(laPestanaDeLaPagina('postre')).toBe('postre');
-    expect(laPestanaDeLaPagina('bebidas')).toBe('bebidas');
+  it('un plato no está atado a un pase (28-oct): ni se puede saber desde su página', async () => {
+    const losPases = await import('./losPases.ts');
+    expect('laPestanaDeLaPagina' in losPases).toBe(false);
   });
 
   it('Bebidas no es un pase, y el postre va detrás del 3.º', () => {

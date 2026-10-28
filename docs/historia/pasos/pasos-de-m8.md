@@ -18,7 +18,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## Lo que te toca ahora · la 0085
 
-El Panel en una sola petición, las siluetas de carga, el buscador con pedidos, facturas y recientes, y la puesta en marcha ([decisión 0085](decisiones/0085-una-peticion-siluetas-buscador-y-puesta-en-marcha.md)). **Hay una migración** (`0067`: solo la función del buscador, no toca datos) y **hay que desplegar la API** (una consulta nueva y la ruta que junta las consultas). **No hay secretos nuevos.** El orden importa: **fusionar, migrar y después desplegar**.
+El Panel en una sola petición, las siluetas de carga, el buscador con pedidos, facturas y recientes, y la puesta en marcha ([decisión 0085](../../decisiones/0085-una-peticion-siluetas-buscador-y-puesta-en-marcha.md)). **Hay una migración** (`0067`: solo la función del buscador, no toca datos) y **hay que desplegar la API** (una consulta nueva y la ruta que junta las consultas). **No hay secretos nuevos.** El orden importa: **fusionar, migrar y después desplegar**.
 
 > Si la web se publica antes de que despliegues la API, **no se rompe nada**: la app nueva pide el lote, la API de antes dice que no lo conoce y la app pide como siempre. Solo va más lenta hasta que despliegues.
 

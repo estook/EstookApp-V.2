@@ -2,15 +2,15 @@
 
 > **Al día el 30 de septiembre de 2026.** La auditoría profunda repasó esta lista contra
 > el esquema y cambió tres cosas de fondo: **Estook TPV tiene su propia puerta**
-> (`apps/tpv`, [0056](decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)), **va justo
-> después de M10** y no en la Fase 4 ([0061](decisiones/0061-el-orden-y-la-infraestructura.md)),
-> y **la persona puede no tener correo** ([0057](decisiones/0057-quien-es-quien-en-el-tpv.md)).
+> (`apps/tpv`, [0056](../../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)), **va justo
+> después de M10** y no en la Fase 4 ([0061](../../decisiones/0061-el-orden-y-la-infraestructura.md)),
+> y **la persona puede no tener correo** ([0057](../../decisiones/0057-quien-es-quien-en-el-tpv.md)).
 > El modelo que manda es el del Anexo, capítulo 7, y el de la
-> [Arquitectura](maestros/Estook-Arquitectura.md), capítulo 5. Lo de abajo se conserva
+> [Arquitectura](../../maestros/Estook-Arquitectura.md), capítulo 5. Lo de abajo se conserva
 > como se escribió el 20-sep: vale como lista de lo que hay que ampliar, no como diseño.
 
 **Escrito el 20 de septiembre de 2026**, repasando el esquema y el código de verdad
-contra la Evolución 1.1 y el [Anexo · TPV y facturación](maestros/Estook-Anexo-TPV-y-Facturacion.md).
+contra la Evolución 1.1 y el [Anexo · TPV y facturación](../../maestros/Estook-Anexo-TPV-y-Facturacion.md).
 
 > **Para qué existe este papel.** El TPV es la **Fase 4**, trece módulos por delante.
 > Para cuando llegue, nadie se va a acordar de que un aparato no puede existir sin
@@ -39,7 +39,7 @@ pide. Los cuatro primeros son ampliar; el quinto es una decisión de arquitectur
 
 ## 1 · El cierre de caja de M6½ · ampliar
 
-La migración [`0029`](../base-de-datos/migraciones/0029_el_cierre_de_caja.sql) se
+La migración [`0029`](../../../base-de-datos/migraciones/0029_el_cierre_de_caja.sql) se
 escribió previendo que un día el TPV escribiera aquí, y **acertó**. Lo que no previó
 es que el TPV pudiera ser el nuestro.
 
@@ -62,7 +62,7 @@ juntan las cuatro vías. El adelanto de M6½ apuntaba exactamente a esto.
 ## 2 · El motor fiscal de M2 · ampliar
 
 `desglosar()` en
-[`packages/dominio/src/fiscal/desglose.ts`](../packages/dominio/src/fiscal/desglose.ts)
+[`packages/dominio/src/fiscal/desglose.ts`](../../../packages/dominio/src/fiscal/desglose.ts)
 **sirve, y es lo mejor que nos encontramos en el repaso.** Hace ya lo que pide el
 Anexo 4.9: agrupa por tratamiento fiscal, suma sin redondear por el camino, calcula
 sobre el total del grupo y **redondea una sola vez**. Y con precio con impuesto
@@ -185,14 +185,14 @@ Esto es la otra mitad de la noticia, y es buena:
 Orientativo, y **la siguiente libre hoy es la `0040`**. El orden es
 **M20 → M19a → M20A → M20B → M20C → M18 → M19b**.
 
-| Módulo         | Aprox. | Tablas nuevas                                                                                                                                        | Qué modifica de lo existente                                                                                  |
-| -------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **M20**        | 2      | `venta`, `linea_de_venta`, `emparejamiento_de_articulo`                                                                                              | `local.como_se_cierra` (+`estook`), `cierre_de_caja.origen` (+`estook_tpv`), `linea_de_cierre` (plato y tipo) |
-| **M19a**       | 2      | `impresora`, `impresion_trabajo`, `agente_enlace`                                                                                                    | Nada                                                                                                          |
-| **M20A**       | 4      | `zona_sala`, `mesa`, `cuenta`, `cuenta_alergeno`, `cuenta_linea`, `cuenta_traspaso`, `partida`, `cocina_pantalla`, `cocina_tanda`, `tiempo_objetivo` | **El aparato compartido** (punto 4)                                                                           |
-| **M20B**       | 3      | **Esquema `facturacion`**: `obligados`, `series`, `documentos`, `registros`, `webhooks_recibidos`, `justificantes_provisionales`                     | Marcar al **titular**; reglas del **IGIC** ([0043](decisiones/0043-hasta-donde-llega-la-facturacion.md))      |
-| **M20C**       | 2      | `cobro`, `caja_sesion`, `caja_movimiento`                                                                                                            | Nada                                                                                                          |
-| **M18 / M19b** | 2      | `conector_tpv`, `bandeja_de_webhooks`                                                                                                                | Identificador externo en `venta`                                                                              |
+| Módulo         | Aprox. | Tablas nuevas                                                                                                                                        | Qué modifica de lo existente                                                                                   |
+| -------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **M20**        | 2      | `venta`, `linea_de_venta`, `emparejamiento_de_articulo`                                                                                              | `local.como_se_cierra` (+`estook`), `cierre_de_caja.origen` (+`estook_tpv`), `linea_de_cierre` (plato y tipo)  |
+| **M19a**       | 2      | `impresora`, `impresion_trabajo`, `agente_enlace`                                                                                                    | Nada                                                                                                           |
+| **M20A**       | 4      | `zona_sala`, `mesa`, `cuenta`, `cuenta_alergeno`, `cuenta_linea`, `cuenta_traspaso`, `partida`, `cocina_pantalla`, `cocina_tanda`, `tiempo_objetivo` | **El aparato compartido** (punto 4)                                                                            |
+| **M20B**       | 3      | **Esquema `facturacion`**: `obligados`, `series`, `documentos`, `registros`, `webhooks_recibidos`, `justificantes_provisionales`                     | Marcar al **titular**; reglas del **IGIC** ([0043](../../decisiones/0043-hasta-donde-llega-la-facturacion.md)) |
+| **M20C**       | 2      | `cobro`, `caja_sesion`, `caja_movimiento`                                                                                                            | Nada                                                                                                           |
+| **M18 / M19b** | 2      | `conector_tpv`, `bandeja_de_webhooks`                                                                                                                | Identificador externo en `venta`                                                                               |
 
 **Y dos migraciones transversales** que conviene diseñar a la vez aunque entren con su
 módulo: **los permisos nuevos** (catálogo + matriz de los doce roles) y **los eventos

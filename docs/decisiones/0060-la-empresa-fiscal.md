@@ -5,7 +5,7 @@
 construye con la primera necesidad: los datos fiscales de quien paga la cuota o M20B,
 lo que llegue antes.
 **Resuelve:** la pregunta abierta del punto 5 de
-[`lo-que-el-tpv-toca-de-lo-construido.md`](../lo-que-el-tpv-toca-de-lo-construido.md)
+[`lo-que-el-tpv-toca-de-lo-construido.md`](../historia/modulos/lo-que-el-tpv-toca-de-lo-construido.md)
 («de qué cuelga el obligado tributario»).
 **Cambia:** el Anexo (4.3 y 7), la [Arquitectura](../maestros/Estook-Arquitectura.md) y
 Roles (1.12).

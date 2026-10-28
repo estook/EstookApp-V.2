@@ -20,7 +20,7 @@
 > - **Lo aprendido fallando** (127 lecciones): [`docs/lecciones.md`](../lecciones.md)
 > - **Las trece reglas** que no se discuten: [`docs/reglas.md`](../maestros/Estook-Plan-de-Desarrollo.md)
 > - **Por qué está hecho así**: [`docs/decisiones/`](../decisiones/)
-> - **Los pasos de Richi** de cada entrega: [`docs/pasos-antes-de-m8.md`](../pasos-antes-de-m8.md)
+> - **Los pasos de Richi** de cada entrega: [`docs/historia/pasos/pasos-antes-de-m8.md`](pasos/pasos-antes-de-m8.md)
 
 ---
 
@@ -39,10 +39,10 @@ _Producción leída el 27-sep por la noche, en solo lectura (`bd:comprobar` y `b
 | **Sitio**        | `estook.com`, `/app/`, `/carta/<local>` y `/admin/`. Se publica solo al fusionar (la #77, el 27-sep)                                                                                                                                                                                                                             |
 | **Pruebas**      | Con R2: **1.450** unitarias y de base y la batería de pantalla (apartado 14)                                                                                                                                                                                                                                                     |
 | **Entrar**       | App: Ricardo (`ikatz`) y las cuentas de abajo. Admin: `estookapp@gmail.com` y Santi, los dos con segundo factor                                                                                                                                                                                                                  |
-| **Dirección**    | **Evolución 1.2**: el sistema operativo del local, que **también cobra** con **Estook TPV** (la Fase 4). La visión de Richi del 27-sep, punto por punto: [`docs/la-evolucion-punto-por-punto.md`](../la-evolucion-punto-por-punto.md)                                                                                            |
+| **Dirección**    | **Evolución 1.2**: el sistema operativo del local, que **también cobra** con **Estook TPV** (la Fase 4). La visión de Richi del 27-sep, punto por punto: [`docs/historia/modulos/la-evolucion-punto-por-punto.md`](modulos/la-evolucion-punto-por-punto.md)                                                                      |
 
 > **M8 no empieza hasta que las veinte mejoras y el panel de administración estén al
-> 100 %** (Richi, 16-sep). Los planes: [`docs/mejoras-antes-de-m8.md`](../mejoras-antes-de-m8.md)
+> 100 %** (Richi, 16-sep). Los planes: [`docs/historia/modulos/mejoras-antes-de-m8.md`](modulos/mejoras-antes-de-m8.md)
 > y [`docs/panel-de-administracion.md`](../panel-de-administracion.md).
 
 ### El orden, y dónde estamos en él
@@ -74,7 +74,7 @@ Para que nadie dé por hecho lo que solo está escrito:
 
 - **De las veinte mejoras, catorce en producción**, más el QR de la 20 y la nota en
   Google de la 19: la 1 a la 10, la 12, la 13, la 16 y la 17. Las demás, con su plan en
-  [`docs/mejoras-antes-de-m8.md`](../mejoras-antes-de-m8.md).
+  [`docs/historia/modulos/mejoras-antes-de-m8.md`](modulos/mejoras-antes-de-m8.md).
 - **Nadie ha pagado de verdad.** En modo prueba, **uno**: Pizzeriacazzo (de Santi), el
   26-sep a las 20:59, plan Pro, cobrado al momento porque no tenía oferta (0042). Para
   cobrar de verdad hace falta la clave real y la cuenta de Stripe activada con los datos
@@ -119,9 +119,9 @@ latiendo** (25-sep) · **los siete puntos del repaso y las tres respuestas de A2
 **la #77 fusionada, la `0051` aplicada, la API desplegada y comprobada** (27-sep) · **la visión del 27-sep y la aclaración del cobro** · **la demo de Verifacti, empezada**.
 
 **Ahora, en este orden** (los pasos, uno a uno, en
-[`docs/pasos-antes-de-m8.md`](../pasos-antes-de-m8.md)):
+[`docs/historia/pasos/pasos-antes-de-m8.md`](pasos/pasos-antes-de-m8.md)):
 
-1. **Los documentos** (apartado 15): leer [`docs/la-evolucion-punto-por-punto.md`](../la-evolucion-punto-por-punto.md)
+1. **Los documentos** (apartado 15): leer [`docs/historia/modulos/la-evolucion-punto-por-punto.md`](modulos/la-evolucion-punto-por-punto.md)
    y el capítulo 10 del Anexo, y fusionar su pull request. **Sin migración ni despliegue.**
 2. **Contestar lo del chat** (abajo, el 1): hace falta antes de empezar H.
 3. **Mirar R2**: Negocio → Informes (Tu día, Tu semana, Tu mes), Negocio → Reseñas, y
@@ -190,7 +190,7 @@ a un cliente es desactivar.
    datáfono, el cierre— está en el capítulo 10 del Anexo (0054). Lo preparado —dos vistas apagadas en Servicio— está marcado `M20C`. **El
    terminal es del local, no de una persona** (Anexo 3.4): pieza aparte,
    `aparato_del_local`. Lo demás, en
-   [`docs/lo-que-el-tpv-toca-de-lo-construido.md`](../lo-que-el-tpv-toca-de-lo-construido.md).
+   [`docs/historia/modulos/lo-que-el-tpv-toca-de-lo-construido.md`](modulos/lo-que-el-tpv-toca-de-lo-construido.md).
 6. **Estook no toca el dinero del local** —el efectivo va al cajón y la tarjeta la cobra
    el datáfono, también cuando esté conectado— **ni calcula huellas**: eso lo hace Verifacti. La cuota de Estook la cobra
    Stripe, y la tarjeta tampoco pasa por Estook (0048).
@@ -650,7 +650,7 @@ Tablón leída desde otra cuenta.
 
 ### L · El lector (#73)
 
-**En producción desde el 26-sep** (#73), adelantada y **sin migración** (el plan, punto por punto, en [`docs/mejoras-antes-de-m8.md`](../mejoras-antes-de-m8.md)):
+**En producción desde el 26-sep** (#73), adelantada y **sin migración** (el plan, punto por punto, en [`docs/historia/modulos/mejoras-antes-de-m8.md`](modulos/mejoras-antes-de-m8.md)):
 **«Escanear»** a la derecha de «Añadir producto» (abre la ficha, o el alta con el código
 puesto y el nombre que propone **Open Food Facts**); **los lectores de mano**, reconocidos
 solos; **el inventario** suma uno por lectura; **recibir** marca la línea; pita y vibra
@@ -773,17 +773,17 @@ Richi.
 visión en veintidós puntos; **casi toda ya estaba escrita**, y se comprobó frase a frase.
 Lo que cambió:
 
-| Qué                        | Cómo queda                                                                                                       |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **El cobro**               | **Se queda**: Estook cobra con Verifacti. Richi aclaró que «no es un TPV más» quería decir «es el mejor»         |
-| **Estook TPV**             | Un nombre, no otra aplicación: los modos Sala y Cocina. **Capítulo 10 del Anexo**: cómo se ve y cómo se usa      |
-| **El cajón y la caja**     | Se abre solo con efectivo; sin venta, con motivo y rastro; informes X y Z; arqueo ciego; la tarjeta cuadrada     |
-| **El datáfono**            | El del banco, para todos; **conectado** después de M20C (Stripe Terminal, Viva.com o SumUp: lo elige Richi)      |
-| **Uber Eats**              | Comprobado otra vez: un aviso mal descrito, la autorización del restaurante y **una sola aplicación por tienda** |
-| **Los pedidos de reparto** | Con Estook TPV, **en la misma cocina** y sin pasar por el cobro; lo agotado se agota en la plataforma            |
-| **Dos contradicciones**    | **Canarias sí factura** (el Plan y la Auditoría decían que no) y la impresión de Enlace es M19a                  |
-| **Lo borrado**             | `docs/antiguos/` (una copia decía que Estook no cobra) y los pasos ya hechos de M4, M5, M6 y M6½. Siguen en git  |
-| **El punto por punto**     | [`docs/la-evolucion-punto-por-punto.md`](../la-evolucion-punto-por-punto.md): cada punto, qué hay y qué falta    |
+| Qué                        | Cómo queda                                                                                                                          |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **El cobro**               | **Se queda**: Estook cobra con Verifacti. Richi aclaró que «no es un TPV más» quería decir «es el mejor»                            |
+| **Estook TPV**             | Un nombre, no otra aplicación: los modos Sala y Cocina. **Capítulo 10 del Anexo**: cómo se ve y cómo se usa                         |
+| **El cajón y la caja**     | Se abre solo con efectivo; sin venta, con motivo y rastro; informes X y Z; arqueo ciego; la tarjeta cuadrada                        |
+| **El datáfono**            | El del banco, para todos; **conectado** después de M20C (Stripe Terminal, Viva.com o SumUp: lo elige Richi)                         |
+| **Uber Eats**              | Comprobado otra vez: un aviso mal descrito, la autorización del restaurante y **una sola aplicación por tienda**                    |
+| **Los pedidos de reparto** | Con Estook TPV, **en la misma cocina** y sin pasar por el cobro; lo agotado se agota en la plataforma                               |
+| **Dos contradicciones**    | **Canarias sí factura** (el Plan y la Auditoría decían que no) y la impresión de Enlace es M19a                                     |
+| **Lo borrado**             | `docs/antiguos/` (una copia decía que Estook no cobra) y los pasos ya hechos de M4, M5, M6 y M6½. Siguen en git                     |
+| **El punto por punto**     | [`docs/historia/modulos/la-evolucion-punto-por-punto.md`](modulos/la-evolucion-punto-por-punto.md): cada punto, qué hay y qué falta |
 
 **Comprobado:** el formato de todo el repositorio, las dos pruebas que leen los documentos
 (la tabla B5 del Plan, que no se ha tocado, y el lanzador), que ningún enlace apunta a un

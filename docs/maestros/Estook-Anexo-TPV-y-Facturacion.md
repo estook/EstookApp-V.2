@@ -30,13 +30,13 @@ Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (có
 | ¿Un «modo formación»?                      | **No existe en producción.** Se practica en el local de ejemplo (4.12)                                                                                                                                                                          |
 | ¿Partidas en cocina?                       | **No.** A cocina llega el ticket entero de la mesa, y marcha el camarero ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md))                                                                                                         |
 | ¿Dónde se monta lo de vender?              | **En Estook TPV**: el plano, la botonera, los aparatos, la caja y el PIN. En Estook no se añade nada más ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md), 11.1)                                                                         |
+| ¿En qué planes entra?                      | **En Pro y en Cadena.** Con Esencial, el botón de Estook TPV en Ajustes sale con candado y explica qué gana con Pro (Richi, 28-oct; [la maqueta](../maquetas/estook-tpv-en-ajustes.html))                                                       |
 
 ## Lo que sigue pendiente de Richi, y no frena nada hasta la Fase 4
 
-1. **En qué planes entra Estook TPV.** Propuesta: en Pro y en Cadena; en Esencial no, porque Esencial es gestión a mano. Con el precio de Verifacti delante.
-2. **El soporte en horario de servicio**: horario, canal y quién. Se decide antes de vender el primer TPV.
-3. **Si el camarero cobra de fábrica.** Propuesta: sí, y el gerente lo apaga por local.
-4. **Qué datáfono conectado va primero** (10.7), con sus precios y comisiones delante.
+1. **El soporte en horario de servicio**: horario, canal y quién. Se decide antes de vender el primer TPV.
+2. **Si el camarero cobra de fábrica.** Propuesta: sí, y el gerente lo apaga por local.
+3. **Qué datáfono conectado va primero** (10.7), con sus precios y comisiones delante.
 
 ---
 

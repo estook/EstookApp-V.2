@@ -109,7 +109,7 @@ ponerla.
 
 **Los PDF (0068)** los hace Cloudflare Browser Run. La clave de los PDF es **una aparte**, con un solo permiso («Browser Rendering - Edit»): si se escapa, solo sirve para imprimir páginas, no para tocar la cuenta. No es la misma que `CLOUDFLARE_API_TOKEN`, la de publicar la web en la mudanza, que va en GitHub. Sin las dos de aquí, pedir un PDF dice que todavía no están encendidos y todo lo demás funciona.
 
-**Entrar con Google (0042)** usa el cliente de OAuth «Estook»: el identificador es público (lo enseña la pantalla de entrar) y **el secreto solo lo tiene la API**, que canjea el código. Sin los dos, el botón de Google no sale. Las direcciones de vuelta son `https://estook.com/app/` y `https://www.estook.com/app/`, y están escritas también en el código (`VUELTAS_DE_GOOGLE`). Sin `RESEND_API_KEY`, crear cuenta con correo dice que se abre pronto. Los pasos, en [`docs/pasos-antes-de-m8.md`](../docs/pasos-antes-de-m8.md), «E1».
+**Entrar con Google (0042)** usa el cliente de OAuth «Estook»: el identificador es público (lo enseña la pantalla de entrar) y **el secreto solo lo tiene la API**, que canjea el código. Sin los dos, el botón de Google no sale. Las direcciones de vuelta son `https://estook.com/app/` y `https://www.estook.com/app/`, y están escritas también en el código (`VUELTAS_DE_GOOGLE`). Sin `RESEND_API_KEY`, crear cuenta con correo dice que se abre pronto. Los pasos, en [`docs/historia/pasos/pasos-antes-de-m8.md`](../docs/historia/pasos/pasos-antes-de-m8.md), «E1».
 
 > **Dos cosas que parecen una, y costaron un día.** Tener el dominio **verificado** en
 > Resend y **enviar desde ese dominio** no es lo mismo, y se puede tener lo primero y
@@ -137,13 +137,13 @@ Business Profile añadido, y su propia vuelta; se decide al construirlo (E3).
 aprobación. Su secreto **pasó por un chat**, así que al construir la conexión se crea
 otro y se borra ese. **No va en el login de Supabase** (Authentication → Providers →
 Google): Estook no usa ese login (0010), y ese interruptor tiene que quedar apagado.
-Los pasos, en [`docs/pasos-antes-de-m8.md`](../docs/pasos-antes-de-m8.md), al final.
+Los pasos, en [`docs/historia/pasos/pasos-antes-de-m8.md`](../docs/historia/pasos/pasos-antes-de-m8.md), al final.
 
 **Places ya está construido y probado.** Al poner la clave en los secretos de
 Supabase se enciende sin desplegar otra vez: la API la lee al arrancar cada función.
 Lleva **tope por local**: 40 fichas y 400 búsquedas al mes, contadas antes de llamar
 (0040). Los pasos para sacarla, con la cuota diaria y el aviso de presupuesto, en
-[`pasos-para-cerrar-m7.md`](../docs/pasos-para-cerrar-m7.md), paso 6.
+[`pasos-para-cerrar-m7.md`](../docs/historia/pasos/pasos-para-cerrar-m7.md), paso 6.
 
 `GOOGLE_MAPS_KEY` la lee la API desde M7 (0040). El paso 4 del alta se sigue
 escribiendo a mano: la búsqueda en Google vive en Ajustes hasta que esté conectada

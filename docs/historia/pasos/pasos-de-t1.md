@@ -12,7 +12,7 @@
 >
 > **T1 está en producción**, y Richi vinculó y entró en IKATZ el 24-oct. Lo que vio al probarla
 > (el PIN de quien crea el restaurante, y lo olvidado) está en
-> [`pasos-del-pin-y-la-contrasena.md`](pasos-del-pin-y-la-contrasena.md).
+> [`pasos-del-pin-y-la-contrasena.md`](../../pasos-del-pin-y-la-contrasena.md).
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de
 antes, en [`pasos-de-m20a.md`](pasos-de-m20a.md).
@@ -21,7 +21,7 @@ antes, en [`pasos-de-m20a.md`](pasos-de-m20a.md).
 
 ## Lo que te toca ahora · fusionar, migrar y desplegar
 
-Lo hecho y por qué, en la [0108](decisiones/0108-t1-la-puerta.md) (mira sobre todo la sección 4,
+Lo hecho y por qué, en la [0108](../../decisiones/0108-t1-la-puerta.md) (mira sobre todo la sección 4,
 «Lo que decidí al construirlo»). **Con migración (0083) y con la API.** Hazlo **en este orden y
 seguido**: entre fusionar y desplegar, `estook.com/tpv/` ya es el nuevo y la API todavía no sabe
 vincular aparatos, así que dirá que no llega a Estook hasta que despliegues.

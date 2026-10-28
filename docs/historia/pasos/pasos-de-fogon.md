@@ -17,7 +17,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## Lo que te toca ahora · Fogón 1 entero
 
-Fogón ya lee, revisa y prepara ([0098](decisiones/0098-fogon-1-entero.md)): **la foto del albarán** al recibir, **la foto del Z** al cerrar la caja, **la merma dicha o por foto**, **«Revisar mis datos»** (y cada lunes de madrugada, solo), **«Ajustar con Fogón»** en un pedido, **«Hacerlo con Fogón»** en el horario y **responder una reseña**. Y sabe tu nombre y tu puesto. **Con migración (la 0075) y con la API.**
+Fogón ya lee, revisa y prepara ([0098](../../decisiones/0098-fogon-1-entero.md)): **la foto del albarán** al recibir, **la foto del Z** al cerrar la caja, **la merma dicha o por foto**, **«Revisar mis datos»** (y cada lunes de madrugada, solo), **«Ajustar con Fogón»** en un pedido, **«Hacerlo con Fogón»** en el horario y **responder una reseña**. Y sabe tu nombre y tu puesto. **Con migración (la 0075) y con la API.**
 
 1. **En GitHub**: abre el pull request **«Fogón 1 entero…»** y, con las **tres comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno: `git checkout main`, `git pull` y `.\estook.cmd bd:migrar`. **Qué tiene que decir:** «1 migracion(es) aplicadas · 75 en total».
@@ -29,7 +29,7 @@ Fogón ya lee, revisa y prepara ([0098](decisiones/0098-fogon-1-entero.md)): **l
    - **Horario → Montarlo**, la semana que viene (vacía) → **Hacerlo con Fogón**: marca los días fuertes y a quién quieres, y mira lo que propone. **Ponerlo en el borrador** solo si te gusta.
    - **Fogón (el «+» o `Ctrl+J`) → Revisar mis datos → Revisar ahora**.
    - **Negocio → Reseñas**: pega una reseña de Google y **Escribir la respuesta**.
-5. **Dime** lo que no te cuadre, sobre todo **las reglas del horario** (punto 2 de la [0098](decisiones/0098-fogon-1-entero.md)).
+5. **Dime** lo que no te cuadre, sobre todo **las reglas del horario** (punto 2 de la [0098](../../decisiones/0098-fogon-1-entero.md)).
 
 ## Hecho · la #119 y la #120 (fusionadas el 19-oct)
 

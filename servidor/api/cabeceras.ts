@@ -66,7 +66,7 @@ export function tokenDeLaCabecera(valor: string | undefined): string | null {
  * **La primera que tenga forma de dirección, no la primera a secas** (auditoría del
  * 20-oct). Con `X-Forwarded-For: x`, el proxy añade detrás la de verdad, y leyendo
  * solo la primera salía nula: sin dirección, el tope de crear cuenta no contaba nada.
- * Una dirección inventada con buena forma sigue pasando (`docs/auditoria-del-20-oct.md`).
+ * Una dirección inventada con buena forma sigue pasando (`docs/auditorias/auditoria-del-20-oct.md`).
  */
 export const CABECERA_DIRECCION = 'x-forwarded-for';
 

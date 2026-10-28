@@ -11,7 +11,7 @@ ninguna copia**: el plan gratuito de Supabase no las hace.
 > ninguna copia.** El flujo está en el repositorio y no hace nada mientras falten sus
 > secretos: cada lunes deja un aviso. **No cuesta dinero ni necesita Supabase Pro**, así
 > que se puede encender cualquier día: son los pasos 2 y 3 de «La mudanza» en
-> [`pasos-antes-de-m8.md`](pasos-antes-de-m8.md).
+> [`pasos-antes-de-m8.md`](historia/pasos/pasos-antes-de-m8.md).
 
 ## Qué se copia, y dónde queda
 

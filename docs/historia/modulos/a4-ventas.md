@@ -1,8 +1,8 @@
 # A4 · Ventas · el plan
 
-**Escrito el 8 de octubre de 2026**, con A3 en producción, y **contestado por Richi ese mismo día** ([0077](decisiones/0077-a4-las-ventas.md)). Construido en la misma entrega, con la migración `0059`.
+**Escrito el 8 de octubre de 2026**, con A3 en producción, y **contestado por Richi ese mismo día** ([0077](../../decisiones/0077-a4-las-ventas.md)). Construido en la misma entrega, con la migración `0059`.
 
-De dónde sale: el capítulo 4 de [`panel-de-administracion.md`](panel-de-administracion.md), la [decisión 0041](decisiones/0041-el-panel-de-administracion.md) y lo que dejaron A2 (los clientes) y A3 (los vendedores).
+De dónde sale: el capítulo 4 de [`panel-de-administracion.md`](../../panel-de-administracion.md), la [decisión 0041](../../decisiones/0041-el-panel-de-administracion.md) y lo que dejaron A2 (los clientes) y A3 (los vendedores).
 
 ## Qué es A4, en llano
 
@@ -44,14 +44,14 @@ Arriba, el periodo —7 días, este mes, este trimestre o este año—, y cada c
 
 ## Lo que ya estaba decidido, y no se volvió a preguntar
 
-| Qué                                                                                                          | Dónde                                                 |
-| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| **La pérdida de clientes**: los que se dan de baja en el mes entre los que pagaban al empezarlo              | Admin, 4                                              |
-| **La cuota perdida, aparte**: perder un Esencial no es perder un Pro                                         | Admin, 4                                              |
-| **Conversión y retención son dos cifras**, cada una con su definición                                        | Admin, 0                                              |
-| **Los clientes de ejemplo no cuentan nunca**                                                                 | Admin, 4                                              |
-| **Lo calcula el servidor**, con las fotos de cada noche: abrir el tablero no cuenta nada de los restaurantes | [0041](decisiones/0041-el-panel-de-administracion.md) |
-| **«Pagando» dice lo mismo** en Ventas, en Clientes y en Vendedores: la misma cuenta                          | A3 ([0076](decisiones/0076-a3-los-vendedores.md))     |
+| Qué                                                                                                          | Dónde                                                       |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| **La pérdida de clientes**: los que se dan de baja en el mes entre los que pagaban al empezarlo              | Admin, 4                                                    |
+| **La cuota perdida, aparte**: perder un Esencial no es perder un Pro                                         | Admin, 4                                                    |
+| **Conversión y retención son dos cifras**, cada una con su definición                                        | Admin, 0                                                    |
+| **Los clientes de ejemplo no cuentan nunca**                                                                 | Admin, 4                                                    |
+| **Lo calcula el servidor**, con las fotos de cada noche: abrir el tablero no cuenta nada de los restaurantes | [0041](../../decisiones/0041-el-panel-de-administracion.md) |
+| **«Pagando» dice lo mismo** en Ventas, en Clientes y en Vendedores: la misma cuenta                          | A3 ([0076](../../decisiones/0076-a3-los-vendedores.md))     |
 
 ## Lo que decido yo, para que lo sepas
 
@@ -69,7 +69,7 @@ Si alguna no te cuadra, dímelo y se cambia.
 10. **En el móvil**, las cifras de dos en dos y las gráficas una debajo de otra.
 11. **Una gráfica sin datos no se dibuja vacía**: dice desde cuándo empieza a contar.
 
-Y lo que decidí al construirlo, en la [0077](decisiones/0077-a4-las-ventas.md).
+Y lo que decidí al construirlo, en la [0077](../../decisiones/0077-a4-las-ventas.md).
 
 ## Lo que cuesta · cero
 
@@ -77,7 +77,7 @@ Y lo que decidí al construirlo, en la [0077](decisiones/0077-a4-las-ventas.md).
 
 ## Lo que no entra
 
-- **Lo que nos cuesta cada cliente y el margen**: con M26 (Roles 4.5 a 4.7), con lo medido en [`coste-por-local.md`](coste-por-local.md).
+- **Lo que nos cuesta cada cliente y el margen**: con M26 (Roles 4.5 a 4.7), con lo medido en [`coste-por-local.md`](../../coste-por-local.md).
 - **Metas** («30 pagando el 31 de diciembre»): si las quieres, se añaden después; son pequeñas.
 - **Previsiones**: con tan pocos clientes, adivinar no sirve.
 - **Exportar el tablero**: la lista de Clientes ya se exporta.

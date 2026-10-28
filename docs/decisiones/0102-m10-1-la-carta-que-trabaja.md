@@ -2,7 +2,7 @@
 
 **Fecha:** 20 de octubre de 2026
 **Estado:** construida en la rama `m10-la-carta-que-trabaja` (migración **0078**). Cambia la API y la app.
-**Sigue:** la [0086](0086-las-respuestas-de-m9.md) (lo adelantado de M10) y la [0101](0101-la-auditoria-del-20-oct.md). El plan entero de M10, con las cinco preguntas de M10 · 2, en [`m10-la-carta-menus-y-analisis.md`](../m10-la-carta-menus-y-analisis.md).
+**Sigue:** la [0086](0086-las-respuestas-de-m9.md) (lo adelantado de M10) y la [0101](0101-la-auditoria-del-20-oct.md). El plan entero de M10, con las cinco preguntas de M10 · 2, en [`m10-la-carta-menus-y-analisis.md`](../historia/modulos/m10-la-carta-menus-y-analisis.md).
 
 Richi, el 20-oct: que la cuenta que entra revise lo que hizo la otra (Fogón, escandallos, fichas y la auditoría), y si está bien, **siga con el módulo que toca**, que es M10, el último antes de Estook TPV. Lo revisado está bien: `main` con 2.183 pruebas en verde, GitHub en verde y la API desplegada (96 consultas y 211 comandos, 77 migraciones). M10 se parte en dos: **lo que ya estaba decidido por escrito se construye ahora** (M10 · 1), y **lo que no, se pregunta** (M10 · 2).
 
@@ -36,7 +36,7 @@ Las operaciones nuevas: **consultas** `los_agotados` y `el_equilibrio_de_la_cart
 
 ## 3 · Lo que queda para M10 · 2 (las preguntas)
 
-Cinco piezas del Plan que no están decididas: **el análisis de lo que deja cada plato** (ahora con los cierres o con el TPV), **los menús**, **el menú del día de Fogón**, **el orden como se imprime** (con M11 y M12 o ahora) y **la comparación con la zona**. Explicadas en llano, con ejemplos y una recomendación cada una, en [el plan](../m10-la-carta-menus-y-analisis.md).
+Cinco piezas del Plan que no están decididas: **el análisis de lo que deja cada plato** (ahora con los cierres o con el TPV), **los menús**, **el menú del día de Fogón**, **el orden como se imprime** (con M11 y M12 o ahora) y **la comparación con la zona**. Explicadas en llano, con ejemplos y una recomendación cada una, en [el plan](../historia/modulos/m10-la-carta-menus-y-analisis.md).
 
 ## 4 · Lo que no hace todavía, y cuándo
 

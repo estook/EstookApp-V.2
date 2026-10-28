@@ -3,7 +3,7 @@
 **Fecha:** 30 de septiembre de 2026
 **Estado:** decidido por Richi. H1 se construye con esto; H2, después.
 **Completa:** la [0067](0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md), que dejó las seis preguntas.
-**Cambia:** Roles (1.3: el horario publicado lo ve todo el equipo), [`docs/h-horarios.md`](../h-horarios.md), [`coste-por-local.md`](../coste-por-local.md), [`config/claves.md`](../../config/claves.md) y la lista de encargados de [`docs/legal/`](../legal/cumplimiento.md).
+**Cambia:** Roles (1.3: el horario publicado lo ve todo el equipo), [`docs/historia/modulos/h-horarios.md`](../historia/modulos/h-horarios.md), [`coste-por-local.md`](../coste-por-local.md), [`config/claves.md`](../../config/claves.md) y la lista de encargados de [`docs/legal/`](../legal/cumplimiento.md).
 
 ## Lo que contestó Richi
 

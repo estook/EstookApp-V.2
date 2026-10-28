@@ -3,7 +3,7 @@
 **Fecha:** 25 de octubre de 2026
 **Estado:** construida, en su pull request (`t3-2-monta-tus-bebidas`, después de la #138), con la
 migración 0089.
-**Sigue:** la [0113](0113-t3-2-1-las-opciones.md), la [0106](0106-lo-que-dijo-richi-de-m20a.md) (19 a 23) y las maquetas 1 a 3 de T3 · 2
+**Sigue:** la [0113](0113-t3-2-1-las-opciones.md), la [0106](0106-estook-tpv-la-sala-y-la-cocina.md) (19 a 23) y las maquetas 1 a 3 de T3 · 2
 ([`docs/maquetas/t3-2-lo-de-cada-producto.html`](../maquetas/t3-2-lo-de-cada-producto.html)), aprobadas
 por Richi el 25-oct y auditadas.
 **Cambia:** el plan (T3 · 2 entregada), el Anexo 7.2 y ESTADO.

@@ -8,7 +8,7 @@
 ## De dónde sale
 
 Son las mejoras 6, 8, 9 y 17, y el QR definitivo de la 20, del plan de las mejoras
-(`docs/mejoras-antes-de-m8.md`). Antes de programar se le preguntó a Richi con una
+(`docs/historia/modulos/mejoras-antes-de-m8.md`). Antes de programar se le preguntó a Richi con una
 recomendación delante, y contestó el 25 de septiembre:
 
 1. El botón de acciones: **un solo botón redondo «+»**, «pero que Fogón IA destaque

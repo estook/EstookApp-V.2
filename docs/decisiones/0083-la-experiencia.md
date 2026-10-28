@@ -4,7 +4,7 @@
 **Estado:** construido el 14-oct, en su pull request. **Con migración** (`0064_la_foto_de_cada_uno`: dos columnas en `estook.persona`) y **con despliegue de la API**: 81 consultas y **174 comandos** (llegan `poner_foto_de_persona` y `quitar_foto_de_persona`; `cambiar_mi_clave` pide el PIN). Sin secretos nuevos y sin cubos nuevos: la foto va en el de las fotos de producto, bajo `personas/`.
 **Cambia:** la tabla B5 del [Plan](../maestros/Estook-Plan-de-Desarrollo.md) (Almacén: Movimientos fuera de la barra; Movimientos: Inventario primero; Compras: tres vistas; y la navegación del ordenador, a la izquierda), el catálogo de widgets del Manifiesto 6 (un tamaño por widget, el periodo dentro) y la paleta oscura de B1 (grafito).
 
-Lo pidió Richi el 13-oct con siete capturas: «siento que es algo lioso todo y que no parece una app verdaderamente profesional». El plan, punto por punto, en [`la-experiencia.md`](../la-experiencia.md); lo que se encontró, en la [auditoría del 14-oct](../auditorias/auditoria-2026-10-14-la-experiencia.md).
+Lo pidió Richi el 13-oct con siete capturas: «siento que es algo lioso todo y que no parece una app verdaderamente profesional». El plan, punto por punto, en [`la-experiencia.md`](../historia/modulos/la-experiencia.md); lo que se encontró, en la [auditoría del 14-oct](../auditorias/auditoria-2026-10-14-la-experiencia.md).
 
 ## Lo que pidió Richi, y lo que se hace
 

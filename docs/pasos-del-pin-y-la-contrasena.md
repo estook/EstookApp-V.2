@@ -11,7 +11,7 @@
 > | La API           | En producción con T1: 109 consultas y 261 comandos; esta entrega la deja en **109 y 265** |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de
-antes, en [`pasos-de-t1.md`](pasos-de-t1.md).
+antes, en [`pasos-de-t1.md`](historia/pasos/pasos-de-t1.md).
 
 ---
 

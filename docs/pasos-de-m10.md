@@ -19,7 +19,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 
 ## Lo que te toca ahora · M10 · 2
 
-Lo hecho y por qué, en la [0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md); el plan de M10, en [`m10-la-carta-menus-y-analisis.md`](m10-la-carta-menus-y-analisis.md). **Con migración (0079) y con la API.**
+Lo hecho y por qué, en la [0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md); el plan de M10, en [`m10-la-carta-menus-y-analisis.md`](historia/modulos/m10-la-carta-menus-y-analisis.md). **Con migración (0079) y con la API.**
 
 1. **En GitHub**: abre el pull request **#127 «M10 · 2 · Los menús y «Analiza mi zona»»** y, con las **tres comprobaciones en verde**, **Merge pull request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno: `git checkout main`, `git pull` y `.\estook.cmd bd:migrar`. Tiene que decir que aplica **la 0079** y que hay **79 en total**.

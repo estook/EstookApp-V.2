@@ -15,7 +15,7 @@ renumeraron**: Estook TPV son seis piezas con números salteados.
 
 ```
 HECHO         M0 … M10 · M16a · La jornada
-ESTOOK TPV    M20 · Ventas y consumo → M19a · Estook Link → M20A · Sala y cocina
+ESTOOK TPV    M20 · Ventas y consumo → M19a · la caja para Windows → M20A · Sala y cocina
               → M20B · Facturación → M20C · Cobro y caja
 DESPUÉS       M11 · Documentos → M12 · Carta con QR → M13 · Equipo → M14 · Calendario
               → M15 · Fichajes → M16b · APPCC → M17 · Cuaderno → M18 · Conector (Revo)
@@ -65,7 +65,7 @@ se tira; y el recuento cuadra la diferencia**. Con eso:
 ## 4 · Cuándo se hace: con el cobro
 
 **Contestado el 22-oct** ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)): **B, justo antes de cobrar**. Lo siguiente es
-**M20A · 1 · la sala y la cocina en pantalla**; después **M19a · Estook Link** (el papel y sin internet),
+**M20A · 1 · la sala y la cocina en pantalla**; después **M19a · la caja para Windows** (el papel y sin internet, [0119](decisiones/0119-t5-la-caja-para-windows.md)),
 **M20A · 2**, **M20B** y **M20C**, y **M20 va con M20C**, cuando nazca la primera venta de verdad. Las
 pantallas que se aprobaron antes, con todo lo que hacen la sala y la cocina, en la 0106.
 

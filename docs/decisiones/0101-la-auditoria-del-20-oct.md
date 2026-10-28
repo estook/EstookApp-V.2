@@ -4,7 +4,7 @@
 **Estado:** construida en la rama `la-auditoria-del-20-oct`. **Sin migración**; cambia la API y la app.
 **Sigue:** la [0100](0100-el-repaso-del-20-oct.md).
 
-Richi pidió una auditoría entera de Estook App: buscar fallos de seguridad, de permisos, de cálculo y de pantalla, arreglar lo seguro y demostrar con pruebas lo que funciona y lo que no. Y, aparte, el fallo intermitente de «Opciones de la conversación» en las pruebas del chat. El informe completo, con lo mirado, la evidencia y lo pendiente, está en [`docs/auditoria-del-20-oct.md`](../auditoria-del-20-oct.md).
+Richi pidió una auditoría entera de Estook App: buscar fallos de seguridad, de permisos, de cálculo y de pantalla, arreglar lo seguro y demostrar con pruebas lo que funciona y lo que no. Y, aparte, el fallo intermitente de «Opciones de la conversación» en las pruebas del chat. El informe completo, con lo mirado, la evidencia y lo pendiente, está en [`docs/auditorias/auditoria-del-20-oct.md`](../auditorias/auditoria-del-20-oct.md).
 
 ## 1 · Lo que pasaba
 

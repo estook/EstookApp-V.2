@@ -1,6 +1,6 @@
 # M8 · Inventario, mermas y desviación · el plan
 
-**Escrito el 8 de octubre de 2026**, con A4 en producción y «antes de M8» cerrado (leído en la base ese día a las 21:40, en solo lectura: 59 migraciones, 101 tablas, la API con 74 y 163). **Contestado por Richi ese mismo día —las cuatro, A—** ([0078](decisiones/0078-las-respuestas-de-m8.md)), y **la primera entrega, en producción** con la migración `0060` (lo que cambió al construirla, al final de la 0078). **La segunda, construida el 9-oct** con la `0061`: lo que decidí al construirla, en la [0079](decisiones/0079-lo-gastado-y-la-desviacion.md).
+**Escrito el 8 de octubre de 2026**, con A4 en producción y «antes de M8» cerrado (leído en la base ese día a las 21:40, en solo lectura: 59 migraciones, 101 tablas, la API con 74 y 163). **Contestado por Richi ese mismo día —las cuatro, A—** ([0078](../../decisiones/0078-las-respuestas-de-m8.md)), y **la primera entrega, en producción** con la migración `0060` (lo que cambió al construirla, al final de la 0078). **La segunda, construida el 9-oct** con la `0061`: lo que decidí al construirla, en la [0079](../../decisiones/0079-lo-gastado-y-la-desviacion.md).
 
 | Pregunta                                        | Queda así                                                                                                                 |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -9,7 +9,7 @@
 | **3 · El mínimo, calculado**                    | **A**: Estook lo propone, se acepta y lo rehace cada lunes; cambiarlo a mano lo apaga                                     |
 | **4 · La merma con foto**                       | **A**: si quieres, nunca obligatoria. En la segunda entrega                                                               |
 
-De dónde sale: M8 en la parte D del [Plan](maestros/Estook-Plan-de-Desarrollo.md), «Inventario y Mermas» en el capítulo 12 del [Manifiesto](maestros/Estook-Manifiesto.md), y los hallazgos 2, 3 y 4 de la [Auditoría de flujos](maestros/Estook-Auditoria-de-Flujos.md).
+De dónde sale: M8 en la parte D del [Plan](../../maestros/Estook-Plan-de-Desarrollo.md), «Inventario y Mermas» en el capítulo 12 del [Manifiesto](../../maestros/Estook-Manifiesto.md), y los hallazgos 2, 3 y 4 de la [Auditoría de flujos](../../maestros/Estook-Auditoria-de-Flujos.md).
 
 ## Qué es M8, en llano
 
@@ -52,7 +52,7 @@ Comprobado en producción el 8-oct:
 
 ## Lo que decido yo, para que lo sepas
 
-Si alguna no te cuadra, dímelo y se cambia. **Tres se precisaron al construir** —la 1 (sin elegir el día ni salir en «Hoy»), la 2 (el valor, vista de Productos) y la 10 (lo que sobra no crea lote)—: en la [0078](decisiones/0078-las-respuestas-de-m8.md).
+Si alguna no te cuadra, dímelo y se cambia. **Tres se precisaron al construir** —la 1 (sin elegir el día ni salir en «Hoy»), la 2 (el valor, vista de Productos) y la 10 (lo que sobra no crea lote)—: en la [0078](../../decisiones/0078-las-respuestas-de-m8.md).
 
 1. **«Toca contar», los lunes** (se cambia el día en Ajustes): en «Hoy» del Panel y en la campana de quien cierra inventarios. **Elige por lo que se gasta**, no por lo que hay: un producto caro que no se mueve no se escapa. Mientras no hay datos, por lo que vale en cámara.
 2. **Dónde vive**: «Toca contar», «Inventario» y «Desviación», en Movimientos, donde ya está hacer inventario; el valor del almacén y el food cost, en el Resumen. Almacén ya tiene cinco destinos, que es el tope.
@@ -62,7 +62,7 @@ Si alguna no te cuadra, dímelo y se cambia. **Tres se precisaron al construir**
 6. **El food cost real, sin IVA**, por mes natural y entre dos inventarios. Si faltan días de caja, sale con «faltan 3 días de caja» y **no se da como exacto**.
 7. **El dinero solo lo ve quien ve precios de compra.** Quien cierra inventarios sin ese permiso ve cantidades; un camarero, nada.
 8. **La desviación nunca señala a nadie.** Dice qué producto, cuánto y la causa probable; quién contó o quién recibió está en el libro, no en el informe.
-9. **Un aviso en la campana al cerrar un inventario** solo si lo que falta pasa del 3 % de lo gastado. Lo de menos se ve, pero no avisa. _(17-oct: con M20 este 3 % y el 2 % de «cuadra» se sustituyen por [cómo detecta Estook lo que se escapa](como-detecta-estook-lo-que-se-escapa.md), 0093.)_
+9. **Un aviso en la campana al cerrar un inventario** solo si lo que falta pasa del 3 % de lo gastado. Lo de menos se ve, pero no avisa. _(17-oct: con M20 este 3 % y el 2 % de «cuadra» se sustituyen por [cómo detecta Estook lo que se escapa](../../como-detecta-estook-lo-que-se-escapa.md), 0093.)_
 10. **Si en un lote sobra o falta al contar**, se ajusta también por FEFO: lo que falta, del que antes caduca; lo que sobra, a un lote sin fecha.
 11. **La merma por voz**: dictar con el micrófono del teclado del móvil ya funciona hoy. Que Estook entienda «tira dos kilos de merluza, caducada» es Fogón (M22).
 12. **Se entrega en dos veces**: primero contar, el valor, los lotes y el mínimo; después lo gastado, el food cost, la desviación y la foto. Cada una con su pull request.

@@ -1,37 +1,37 @@
 # H · Horarios · el plan
 
-**Escrito el 30 de septiembre de 2026** ([decisión 0067](decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)), **con las respuestas de Richi del mismo día** ([0068](decisiones/0068-las-respuestas-de-h.md)). Dice qué es H, qué está decidido, qué lleva cada una de sus dos entregas y con qué se hacen los PDF.
+**Escrito el 30 de septiembre de 2026** ([decisión 0067](../../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)), **con las respuestas de Richi del mismo día** ([0068](../../decisiones/0068-las-respuestas-de-h.md)). Dice qué es H, qué está decidido, qué lleva cada una de sus dos entregas y con qué se hacen los PDF.
 
 ## Qué es H, en llano
 
 Hoy Estook sabe **a qué hora entra normalmente cada persona** y **cuándo ha fichado**. No sabe **quién trabaja el jueves que viene**. H trae eso, el horario de cada semana, y cuatro cosas que van con él:
 
-| Pieza                      | Qué es                                                                                                                                               |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **El cuadrante**           | La semana del local: quién trabaja cada día y de qué hora a qué hora. Se monta en borrador, se publica, y cada uno recibe lo suyo                    |
-| **Lo que cuesta**          | Mientras se monta, arriba: lo que cuesta la semana, qué parte de las ventas previstas es, y quién se pasa de sus horas                               |
-| **Los PDF**                | El horario para la pared y el de cada persona, con el logo y el color del local. Y los informes (Tu día, Tu semana, Tu mes), que lo esperaban        |
-| **La persona sin correo**  | Un extra o un friegaplatos se dan de alta con su nombre y un PIN, sin correo ([0057](decisiones/0057-quien-es-quien-en-el-tpv.md))                   |
-| **Los fichajes, en regla** | Lo que pedirá el registro horario digital cuando se publique: correcciones que no borran, pausas y exportación ([0062](decisiones/0062-lo-legal.md)) |
+| Pieza                      | Qué es                                                                                                                                                     |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **El cuadrante**           | La semana del local: quién trabaja cada día y de qué hora a qué hora. Se monta en borrador, se publica, y cada uno recibe lo suyo                          |
+| **Lo que cuesta**          | Mientras se monta, arriba: lo que cuesta la semana, qué parte de las ventas previstas es, y quién se pasa de sus horas                                     |
+| **Los PDF**                | El horario para la pared y el de cada persona, con el logo y el color del local. Y los informes (Tu día, Tu semana, Tu mes), que lo esperaban              |
+| **La persona sin correo**  | Un extra o un friegaplatos se dan de alta con su nombre y un PIN, sin correo ([0057](../../decisiones/0057-quien-es-quien-en-el-tpv.md))                   |
+| **Los fichajes, en regla** | Lo que pedirá el registro horario digital cuando se publique: correcciones que no borran, pausas y exportación ([0062](../../decisiones/0062-lo-legal.md)) |
 
 ## Lo que ya está decidido, y no se vuelve a preguntar
 
-| Qué                                                                                                                      | Dónde se decidió                                                    |
-| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| Horarios es un destino de **Equipo**: Resumen · Personas · **Horarios** · Fichajes                                       | Plan B5                                                             |
-| Cuadrante por semana, filtro por persona, historial de semanas, PDF con logo y color, compartir                          | Richi, repaso de M7 (11-sep)                                        |
-| **Lo montan y lo publican** el jefe de sala y el jefe de cocina (los dos, el de los dos), el gerente y quien está encima | Migración `0010`                                                    |
-| **Borrador y publicado**: hasta publicar, el equipo no lo ve                                                             | Manifiesto 15                                                       |
-| Al publicar, a cada uno **su aviso, en la campana y por correo con su PDF**. Al cambiar, solo al afectado, y dice qué    | [0066](decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md) |
-| **El chat no hace falta** para H                                                                                         | 0066 y 0067                                                         |
-| Coste de la semana, % sobre ventas previstas, horas extra en ámbar y rojo **antes de publicar**, descanso de 12 horas    | [Mejora 18](mejoras-antes-de-m8.md)                                 |
-| **Los euros solo los ve quien tiene ese permiso.** Quien monta el cuadrante sin él ve horas, no dinero                   | Migración `0027`                                                    |
-| Persona sin correo: nombre y PIN; **entra solo en los aparatos del local**, nunca desde un móvil propio                  | [0057](decisiones/0057-quien-es-quien-en-el-tpv.md)                 |
-| Una corrección de un fichaje **es un registro nuevo**; el original se sigue viendo y al trabajador le llega un aviso     | [0062](decisiones/0062-lo-legal.md)                                 |
-| Exportación de los fichajes para la Inspección, con su fecha                                                             | 0062                                                                |
-| La ubicación se pide al fichar y **nunca bloquea**. Nada de huella ni de cara                                            | [0025](decisiones/0025-fichar-pide-donde-y-no-bloquea.md)           |
-| **El PDF nunca se hace en el navegador del usuario**                                                                     | Regla 7 del Plan                                                    |
-| Que **Fogón proponga** el horario espera a Fogón (M22)                                                                   | Plan M14                                                            |
+| Qué                                                                                                                      | Dónde se decidió                                                          |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| Horarios es un destino de **Equipo**: Resumen · Personas · **Horarios** · Fichajes                                       | Plan B5                                                                   |
+| Cuadrante por semana, filtro por persona, historial de semanas, PDF con logo y color, compartir                          | Richi, repaso de M7 (11-sep)                                              |
+| **Lo montan y lo publican** el jefe de sala y el jefe de cocina (los dos, el de los dos), el gerente y quien está encima | Migración `0010`                                                          |
+| **Borrador y publicado**: hasta publicar, el equipo no lo ve                                                             | Manifiesto 15                                                             |
+| Al publicar, a cada uno **su aviso, en la campana y por correo con su PDF**. Al cambiar, solo al afectado, y dice qué    | [0066](../../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md) |
+| **El chat no hace falta** para H                                                                                         | 0066 y 0067                                                               |
+| Coste de la semana, % sobre ventas previstas, horas extra en ámbar y rojo **antes de publicar**, descanso de 12 horas    | [Mejora 18](mejoras-antes-de-m8.md)                                       |
+| **Los euros solo los ve quien tiene ese permiso.** Quien monta el cuadrante sin él ve horas, no dinero                   | Migración `0027`                                                          |
+| Persona sin correo: nombre y PIN; **entra solo en los aparatos del local**, nunca desde un móvil propio                  | [0057](../../decisiones/0057-quien-es-quien-en-el-tpv.md)                 |
+| Una corrección de un fichaje **es un registro nuevo**; el original se sigue viendo y al trabajador le llega un aviso     | [0062](../../decisiones/0062-lo-legal.md)                                 |
+| Exportación de los fichajes para la Inspección, con su fecha                                                             | 0062                                                                      |
+| La ubicación se pide al fichar y **nunca bloquea**. Nada de huella ni de cara                                            | [0025](../../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)           |
+| **El PDF nunca se hace en el navegador del usuario**                                                                     | Regla 7 del Plan                                                          |
+| Que **Fogón proponga** el horario espera a Fogón (M22)                                                                   | Plan M14                                                                  |
 
 ## Lo que decido yo, para que lo sepas
 
@@ -39,12 +39,12 @@ Son cosas pequeñas o que tienen una respuesta clara. Si alguna no te cuadra, d�
 
 1. **La semana va de lunes a domingo.**
 2. **Turnos partidos**: una persona puede tener dos o más tramos en un día.
-3. **Para no empezar de cero**: «Copiar la semana anterior» y «Rellenar con el horario de siempre». (Desde el 9-oct solo la primera: el horario de siempre se quitó, [0081](decisiones/0081-un-solo-horario-y-las-incidencias.md).)
+3. **Para no empezar de cero**: «Copiar la semana anterior» y «Rellenar con el horario de siempre». (Desde el 9-oct solo la primera: el horario de siempre se quitó, [0081](../../decisiones/0081-un-solo-horario-y-las-incidencias.md).)
 4. **Los avisos avisan, no impiden.** Menos de 12 horas entre dos turnos, más de 9 horas en un día, una semana sin día y medio seguido de descanso, o pasarse de las horas de contrato: salen en ámbar o en rojo, y se puede publicar igual. Quien manda es quien lleva el local.
 5. **Ámbar desde el 90 %** de las horas de contrato; **rojo** al pasarlas. Quien no tiene horas de contrato puestas se compara con 40.
 6. **Las ventas previstas** de un día son la media de ese mismo día de la semana en las cuatro últimas semanas. Con menos de dos semanas de cajas, dice «todavía no se sabe», no un cero.
 7. **Una hora extra cuesta lo mismo que una normal** mientras nadie diga otra cosa. Quien no tiene sueldo puesto no suma, y arriba se dice cuántas personas faltan.
-8. **Cuando hay cuadrante publicado, manda el cuadrante**: «entras en 5 minutos» y «llegar tarde» se miden contra él. Sin cuadrante, contra el horario de siempre, como hoy. (Desde el 9-oct, **solo contra lo publicado**: [0081](decisiones/0081-un-solo-horario-y-las-incidencias.md).)
+8. **Cuando hay cuadrante publicado, manda el cuadrante**: «entras en 5 minutos» y «llegar tarde» se miden contra él. Sin cuadrante, contra el horario de siempre, como hoy. (Desde el 9-oct, **solo contra lo publicado**: [0081](../../decisiones/0081-un-solo-horario-y-las-incidencias.md).)
 9. **Quien no tiene correo** ve sus próximos turnos al teclear su PIN en el aparato del local, y su horario se le puede imprimir.
 10. **Si alguien sin correo da un día su correo**, se le añade y sigue siendo la misma persona. Si ese correo ya es de otra persona de Estook, **no se unen**: se avisa y no se toca nada. Unir dos personas en una, con toda su historia, llega con M13.
 11. **La exportación para la Inspección** es un PDF y una hoja de cálculo del periodo que se elija, con cada fichaje, cada corrección con su motivo, las pausas, y la fecha y una huella del fichero para que se vea si alguien lo ha tocado. Cuando se publique el Real Decreto, se ajusta a lo que pida.
@@ -91,7 +91,7 @@ Son cosas pequeñas o que tienen una respuesta clara. Si alguna no te cuadra, d�
 
 ### El problema, en llano
 
-Para hacer un PDF bonito hace falta un programa que «imprima» la página, y el mejor es un navegador (Chromium). **En el servidor de Estook no cabe uno**: las funciones de Supabase tienen poca memoria y poco tiempo. Hay dos salidas, y la [0061](decisiones/0061-el-orden-y-la-infraestructura.md) pedía probar las dos antes de elegir.
+Para hacer un PDF bonito hace falta un programa que «imprima» la página, y el mejor es un navegador (Chromium). **En el servidor de Estook no cabe uno**: las funciones de Supabase tienen poca memoria y poco tiempo. Hay dos salidas, y la [0061](../../decisiones/0061-el-orden-y-la-infraestructura.md) pedía probar las dos antes de elegir.
 
 ### Las dos salidas, probadas con el mismo horario
 
@@ -137,16 +137,16 @@ el PDF llega al momento, para verlo, guardarlo o compartirlo
 
 ### Lo que trae consigo, y hay que dejar escrito
 
-- **Cloudflare pasa a ser un encargado más** de datos: por ahí pasan, un momento, los nombres y las horas del horario. Se añade a la lista del [contrato de encargado](legal/contrato-de-encargado.md) y al [registro de actividades](legal/registro-de-actividades.md), y se comprueba su garantía como la de los demás, en la mudanza.
-- **Dos secretos nuevos** en Supabase, que pones tú y no pasan por el chat: `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_PDF_TOKEN` ([`config/claves.md`](../config/claves.md)). Los pasos, en [`pasos-antes-de-m8.md`](pasos-antes-de-m8.md).
-- **El coste**, en [`coste-por-local.md`](coste-por-local.md): cero mientras quepa en el gratuito.
+- **Cloudflare pasa a ser un encargado más** de datos: por ahí pasan, un momento, los nombres y las horas del horario. Se añade a la lista del [contrato de encargado](../../legal/contrato-de-encargado.md) y al [registro de actividades](../../legal/registro-de-actividades.md), y se comprueba su garantía como la de los demás, en la mudanza.
+- **Dos secretos nuevos** en Supabase, que pones tú y no pasan por el chat: `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_PDF_TOKEN` ([`config/claves.md`](../../../config/claves.md)). Los pasos, en [`pasos-antes-de-m8.md`](../pasos/pasos-antes-de-m8.md).
+- **El coste**, en [`coste-por-local.md`](../../coste-por-local.md): cero mientras quepa en el gratuito.
 
-**Y «todo en Cloudflare»: no todo.** En la mudanza, **la web** (estook.com, la app, la carta y el admin) pasa de GitHub Pages a Cloudflare Pages, y los PDF ya estarán allí. **La base de datos, la API y los ficheros se quedan en Supabase**, que es donde están bien ([0061](decisiones/0061-el-orden-y-la-infraestructura.md)).
+**Y «todo en Cloudflare»: no todo.** En la mudanza, **la web** (estook.com, la app, la carta y el admin) pasa de GitHub Pages a Cloudflare Pages, y los PDF ya estarán allí. **La base de datos, la API y los ficheros se quedan en Supabase**, que es donde están bien ([0061](../../decisiones/0061-el-orden-y-la-infraestructura.md)).
 
 ## Cómo va
 
 - **H1, en producción desde el 30-sep** (#83, migración `0052`), con los PDF de Cloudflare encendidos por Richi.
-- **H2, hecha el 1-oct** (migración `0053`, [decisión 0069](decisiones/0069-el-horario.md)), en su pull request: toda su columna. Con ella, **H está entera**.
+- **H2, hecha el 1-oct** (migración `0053`, [decisión 0069](../../decisiones/0069-el-horario.md)), en su pull request: toda su columna. Con ella, **H está entera**.
 
 ## Cómo se comprobará que H está terminado
 

@@ -4,7 +4,7 @@
 **Estado:** construida en la rama `m10-2-los-menus` (migración **0079**). Cambia la API y la app.
 **Sigue:** la [0103](0103-las-respuestas-de-m10-2.md) (las respuestas de Richi) y la
 [0102](0102-m10-1-la-carta-que-trabaja.md) (M10 · 1). El plan, en
-[`m10-la-carta-menus-y-analisis.md`](../m10-la-carta-menus-y-analisis.md).
+[`m10-la-carta-menus-y-analisis.md`](../historia/modulos/m10-la-carta-menus-y-analisis.md).
 
 Richi contestó el 21-oct las dos preguntas que quedaban: **A1** —el menú del día cambia cada
 día: la pantalla es la semana y un día sin tocar repite el anterior— y **B1 con «gastando

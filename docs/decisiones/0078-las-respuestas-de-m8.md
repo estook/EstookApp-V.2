@@ -2,7 +2,7 @@
 
 **Fecha:** 8 de octubre de 2026
 **Estado:** decidido por Richi. **La primera entrega, en producción** (migración `0060`; lo que decidí al construirla, al final). **La segunda, construida el 9-oct** con la `0061`: [0079](0079-lo-gastado-y-la-desviacion.md).
-**Cambia:** M8 y M9 en el [Plan](../maestros/Estook-Plan-de-Desarrollo.md), y sus vistas (B5): Productos gana «Valor». El plan, en [`m8-inventario-mermas-y-desviacion.md`](../m8-inventario-mermas-y-desviacion.md).
+**Cambia:** M8 y M9 en el [Plan](../maestros/Estook-Plan-de-Desarrollo.md), y sus vistas (B5): Productos gana «Valor». El plan, en [`m8-inventario-mermas-y-desviacion.md`](../historia/modulos/m8-inventario-mermas-y-desviacion.md).
 
 ## Lo que contestó Richi
 

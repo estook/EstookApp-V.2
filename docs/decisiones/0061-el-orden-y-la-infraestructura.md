@@ -58,7 +58,7 @@ Así queda:
 | **Con el TPV en marcha**              | La recuperación a un punto exacto en el tiempo (un añadido de Pro): con tickets, perder un día no vale                                                                                                                                                        |
 
 La copia necesita dos secretos en GitHub, y los pone Richi (sus pasos, en
-`docs/pasos-antes-de-m8.md`): **`URL_DE_LA_COPIA`**, la misma dirección de la base que
+`docs/historia/pasos/pasos-antes-de-m8.md`): **`URL_DE_LA_COPIA`**, la misma dirección de la base que
 ya tiene en su ordenador, y **`CLAVE_DE_LA_COPIA`**, una contraseña larga que guarda
 también en su gestor de contraseñas, porque sin ella la copia no se puede abrir.
 Opcional, **`CLAVE_DE_SERVICIO_COPIA`**, para los ficheros.

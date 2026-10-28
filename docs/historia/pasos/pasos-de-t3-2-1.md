@@ -22,7 +22,7 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
 - **Lo que se vende a peso** (el jamón, el pescado del día) pide lo que pesa, y **el precio de un plato
   se cambia desde el TPV**: es el de tu carta.
 
-Lo que se decidió, en la [0113](decisiones/0113-t3-2-1-las-opciones.md). Lo siguiente, T3 · 2 · 2: «Monta
+Lo que se decidió, en la [0113](../../decisiones/0113-t3-2-1-las-opciones.md). Lo siguiente, T3 · 2 · 2: «Monta
 tus bebidas», con las copas y los cafés.
 
 ## Lo que te toca · fusionar, migrar y desplegar

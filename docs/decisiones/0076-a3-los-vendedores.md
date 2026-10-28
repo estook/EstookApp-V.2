@@ -2,7 +2,7 @@
 
 **Fecha:** 7 de octubre de 2026
 **Estado:** decidido por Richi y **construido el 7-oct**, con la migración `0058` (lo que decidí al construirlo, al final).
-**Cambia:** el capítulo 3 de [`panel-de-administracion.md`](../panel-de-administracion.md) y lo de vendedores de la [0041](0041-el-panel-de-administracion.md): **sin asignaciones, sin panel del vendedor, sin comisiones ni liquidaciones**, y sin el nivel Vendedor del admin. El plan, en [`a3-vendedores.md`](../a3-vendedores.md).
+**Cambia:** el capítulo 3 de [`panel-de-administracion.md`](../panel-de-administracion.md) y lo de vendedores de la [0041](0041-el-panel-de-administracion.md): **sin asignaciones, sin panel del vendedor, sin comisiones ni liquidaciones**, y sin el nivel Vendedor del admin. El plan, en [`a3-vendedores.md`](../historia/modulos/a3-vendedores.md).
 
 ## Lo que dijo Richi
 

@@ -2,14 +2,14 @@
 
 > ## Cómo está
 >
-> **En su pull request, sin fusionar** (27 de octubre de 2026). **Sin migración y sin tocar la API**:
-> solo fusionar, y se publica solo.
+> **En producción** desde el 28 de octubre de 2026: Richi fusionó la #149 y se publicó sola. **Te
+> quedan los pasos 3 a 5**: quitar lo instalado y volver a ponerlo.
 >
-> | Qué              | Cómo está                                                               |
-> | ---------------- | ----------------------------------------------------------------------- |
-> | Pull request     | **«Estook TPV, su propia app» (#149)**, rama `estook-tpv-su-propia-app` |
-> | La base de datos | **93 de 93**, no cambia                                                 |
-> | La API           | **115 consultas y 312 comandos**, no cambia                             |
+> | Qué              | Cómo está                                                   |
+> | ---------------- | ----------------------------------------------------------- |
+> | Pull request     | **«Estook TPV, su propia app» (#149)**, fusionada el 28-oct |
+> | La base de datos | **93 de 93**, no cambia                                     |
+> | La API           | **115 consultas y 312 comandos**, no cambia                 |
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 

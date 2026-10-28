@@ -1,7 +1,7 @@
 # 0067 · Pro a 99 € desde ya, el chat se adelanta, y H empieza por su plan
 
 **Fecha:** 30 de septiembre de 2026
-**Estado:** decididos por Richi los puntos 1 y 2. El punto 3 deja **seis preguntas que esperan su sí o su no**, en [`docs/h-horarios.md`](../h-horarios.md).
+**Estado:** decididos por Richi los puntos 1 y 2. El punto 3 deja **seis preguntas que esperan su sí o su no**, en [`docs/historia/modulos/h-horarios.md`](../historia/modulos/h-horarios.md).
 **Cierra:** las dos recomendaciones que la [0066](0066-sin-asesor-por-ahora-verifacti-y-el-chat.md) dejó esperando.
 **Cambia:** el Manifiesto (23, 32 y 33), el Plan (D y M23), el [mapa](../MAPA-de-modulos.md), [`coste-por-local.md`](../coste-por-local.md) y los planes del código (`packages/dominio`).
 
@@ -51,7 +51,7 @@ Todos con el IVA dentro, como siempre.
 
 ## 3 · H · Horarios empieza por su plan
 
-Antes de escribir código, [`docs/h-horarios.md`](../h-horarios.md) deja escrito:
+Antes de escribir código, [`docs/historia/modulos/h-horarios.md`](../historia/modulos/h-horarios.md) deja escrito:
 
 - **lo que ya está decidido** de Horarios, recogido de las decisiones 0010, 0025, 0027, 0057, 0061 y 0062 y de lo que Richi pidió en M7;
 - **lo que decide la IA sin preguntar**, para que Richi lo sepa;
@@ -62,7 +62,7 @@ Antes de escribir código, [`docs/h-horarios.md`](../h-horarios.md) deja escrito
 
 **Plantillas en HTML y un Chromium de alquiler que las convierte: Cloudflare Browser Run.** Gratis mientras se construye; unos 4,50 € al mes cuando se venda.
 
-Se probaron las dos salidas que pedía la [0061](0061-el-orden-y-la-infraestructura.md) con el mismo horario de ejemplo. Los números y el porqué, en [`h-horarios.md`](../h-horarios.md). En corto: la librería sin navegador es más rápida y no necesita a nadie, pero cada documento se dibuja a mano, medida a medida; con HTML la plantilla es la misma que la vista previa de la pantalla, y las cartas y los carteles de M11 salen con la misma pieza.
+Se probaron las dos salidas que pedía la [0061](0061-el-orden-y-la-infraestructura.md) con el mismo horario de ejemplo. Los números y el porqué, en [`h-horarios.md`](../historia/modulos/h-horarios.md). En corto: la librería sin navegador es más rápida y no necesita a nadie, pero cada documento se dibuja a mano, medida a medida; con HTML la plantilla es la misma que la vista previa de la pantalla, y las cartas y los carteles de M11 salen con la misma pieza.
 
 **Sigue en pie la regla 7: el PDF nunca se hace en el navegador del usuario.**
 

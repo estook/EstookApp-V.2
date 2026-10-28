@@ -1,0 +1,606 @@
+<title>Estook TPV en Ajustes</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Maqueta: cuatro pantallas de Ajustes de Estook, cada una con su porqué; los colores, los de la app (packages/ui/estilos/fichas.css). */
+  :root {
+    --fondo: #f1efea;
+    --superficie: #ffffff;
+    --borde: #e0dcd4;
+    --texto: #111c1f;
+    --suave: #5a6568;
+    --charcoal: #111c1f;
+    --sobre-charcoal: #f1efea;
+    --naranja: #ff7a00;
+    --naranja-suave: #fff1e5;
+    --bien: #187648;
+    --bloqueado: #e9e5de;
+    --sobre-bloqueado: #5a6568;
+    --pagina: #e7e3dc;
+    --letra: Montserrat, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --fondo: #0f1719;
+      --superficie: #18252a;
+      --borde: #2c4047;
+      --texto: #f1efea;
+      --suave: #9fb0b3;
+      --charcoal: #22343a;
+      --sobre-charcoal: #f1efea;
+      --naranja-suave: #3a2410;
+      --bien: #4ec98a;
+      --bloqueado: #1c2a2f;
+      --sobre-bloqueado: #9fb0b3;
+      --pagina: #0b1113;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --fondo: #0f1719;
+    --superficie: #18252a;
+    --borde: #2c4047;
+    --texto: #f1efea;
+    --suave: #9fb0b3;
+    --charcoal: #22343a;
+    --sobre-charcoal: #f1efea;
+    --naranja-suave: #3a2410;
+    --bien: #4ec98a;
+    --bloqueado: #1c2a2f;
+    --sobre-bloqueado: #9fb0b3;
+    --pagina: #0b1113;
+    color-scheme: dark;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--pagina);
+    color: var(--texto);
+    font-family: var(--letra);
+    line-height: 1.45;
+    padding-block: 28px 64px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .hoja-de-trabajo {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    gap: 44px;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  .intro {
+    color: var(--suave);
+    max-width: 68ch;
+    margin: 0;
+  }
+  .rotulo {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--naranja);
+    margin: 0 0 4px;
+  }
+  .titulo {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+  .porque {
+    color: var(--suave);
+    max-width: 72ch;
+    margin: 0 0 14px;
+  }
+  .lado-a-lado {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 820px) {
+    .lado-a-lado {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* ── El marco de una pantalla ── */
+  .pantalla {
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .barra {
+    background: var(--charcoal);
+    color: var(--sobre-charcoal);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .barra .punto {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--naranja);
+  }
+  .ordenador {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    min-height: 380px;
+  }
+  @media (max-width: 640px) {
+    .ordenador {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .ordenador .derecha {
+      display: none;
+    }
+  }
+  .izquierda {
+    border-right: 1px solid var(--borde);
+    padding: 14px;
+    display: grid;
+    gap: 6px;
+    align-content: start;
+  }
+  .derecha {
+    padding: 20px 22px;
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+  .buscador {
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    border-radius: 10px;
+    padding: 9px 12px;
+    color: var(--suave);
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .seccion {
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .seccion small {
+    display: block;
+    font-weight: 400;
+    color: var(--suave);
+    font-size: 12px;
+  }
+  .seccion.elegida {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+  }
+
+  /* ── El botón de Estook TPV: lo único con color propio en Ajustes ── */
+  .boton-tpv {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: var(--charcoal);
+    color: var(--sobre-charcoal);
+    border: 2px solid var(--naranja);
+    font-weight: 800;
+    font-size: 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  .boton-tpv .icono {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--naranja);
+    color: #111c1f;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    flex: none;
+  }
+  .boton-tpv small {
+    display: block;
+    font-weight: 500;
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  .boton-tpv .flecha {
+    margin-left: auto;
+    color: var(--naranja);
+    font-size: 18px;
+  }
+  .boton-tpv.bloqueado {
+    background: var(--bloqueado);
+    color: var(--texto);
+    border: 2px dashed var(--borde);
+  }
+  .boton-tpv.bloqueado .icono {
+    background: var(--borde);
+    color: var(--sobre-bloqueado);
+  }
+  .chapa {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    border-radius: 999px;
+    padding: 2px 8px;
+    background: var(--naranja);
+    color: #111c1f;
+    margin-left: 6px;
+    vertical-align: 2px;
+  }
+
+  /* ── Lo que sale al tocarlo ── */
+  .hoja {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 18px;
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+  }
+  .hoja h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    text-wrap: balance;
+  }
+  .hoja p {
+    margin: 0;
+    color: var(--suave);
+  }
+  .accion {
+    display: block;
+    text-align: center;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 800;
+    font-size: 15px;
+    border: 1px solid var(--borde);
+    color: var(--texto);
+    background: var(--superficie);
+  }
+  .accion.principal {
+    background: var(--naranja);
+    border-color: var(--naranja);
+    color: #111c1f;
+  }
+  .accion small {
+    display: block;
+    font-weight: 500;
+    font-size: 12px;
+    color: inherit;
+    opacity: 0.8;
+  }
+  ul.lleva {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+  }
+  ul.lleva li {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 8px;
+  }
+  ul.lleva li::before {
+    content: '✓';
+    color: var(--bien);
+    font-weight: 800;
+  }
+  .precio {
+    background: var(--naranja-suave);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .precio strong {
+    font-size: 16px;
+  }
+  .nota {
+    font-size: 12px;
+    color: var(--suave);
+  }
+
+  /* ── El móvil ── */
+  .movil {
+    max-width: 340px;
+    margin: 0 auto;
+    border-radius: 28px;
+  }
+  .movil .cuerpo {
+    padding: 14px;
+    display: grid;
+    gap: 6px;
+  }
+  .movil .seccion {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* ── Las preguntas ── */
+  .preguntas {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 20px 22px;
+    display: grid;
+    gap: 18px;
+  }
+  .pregunta h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 800;
+  }
+  .pregunta p {
+    margin: 0 0 8px;
+    max-width: 72ch;
+    color: var(--suave);
+  }
+  .opciones {
+    display: grid;
+    gap: 6px;
+  }
+  .opcion {
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 14px;
+  }
+  .opcion.recomendada {
+    border-color: var(--naranja);
+    background: var(--naranja-suave);
+  }
+  .opcion b {
+    margin-right: 4px;
+  }
+</style>
+
+<main class="hoja-de-trabajo">
+  <header>
+    <p class="rotulo">Maqueta · 28 de octubre de 2026</p>
+    <h1>Estook TPV en Ajustes</h1>
+    <p class="intro">
+      Un botón en Ajustes de Estook, con su propio color, que lleva a Estook TPV. Con Pro se abre;
+      con Esencial sale con candado y explica qué gana el local pasando a Pro. Lo ven el gerente y
+      dirección, que son quienes ya vinculan los aparatos del local.
+    </p>
+  </header>
+
+  <!-- 1 · Pro, en el ordenador -->
+  <section>
+    <p class="rotulo">1 · Con Pro, en el ordenador</p>
+    <p class="titulo">Arriba del todo, el único botón con color</p>
+    <p class="porque">
+      Ajustes es todo blanco y gris. Estook TPV va arriba, en oscuro con el borde naranja, para que
+      se encuentre sin buscarlo y no se confunda con un ajuste más. Al tocarlo sale la hoja de la
+      derecha.
+    </p>
+    <div class="lado-a-lado">
+      <div class="pantalla">
+        <div class="barra"><span class="punto"></span>Ajustes</div>
+        <div class="ordenador">
+          <div class="izquierda">
+            <div class="boton-tpv">
+              <span class="icono">🧾</span>
+              <span>Estook TPV<small>La sala, la cocina y la caja</small></span>
+              <span class="flecha">›</span>
+            </div>
+            <div class="buscador">Buscar en Ajustes</div>
+            <div class="seccion">Este aparato<small>Letra, tema y modo cocina</small></div>
+            <div class="seccion">
+              Mi cuenta<small>Contraseña, PIN, doble factor e idioma</small>
+            </div>
+            <div class="seccion">Avisos<small>Qué te llega a la campana y al correo</small></div>
+            <div class="seccion elegida">
+              Tu local<small>Marca, dónde está, fichar, objetivos, carta, menús y precios</small>
+            </div>
+            <div class="seccion">Conexiones<small>Cómo entran tus ventas</small></div>
+            <div class="seccion">
+              Suscripción<small>Plan, tarjeta, facturas y renovación</small>
+            </div>
+          </div>
+          <div class="derecha">
+            <p class="nota">Tu local, como siempre.</p>
+          </div>
+        </div>
+      </div>
+      <div class="hoja">
+        <h3>Estook TPV</h3>
+        <p>Tómale nota a la sala, manda a cocina y cobra.</p>
+        <span class="accion principal">Abrir Estook TPV<small>En este navegador</small></span>
+        <span class="accion"
+          >Descargar para Windows<small
+            >Para el PC de la caja: imprime los tickets y abre el cajón</small
+          ></span
+        >
+        <p class="nota">
+          Los móviles y tablets de la sala lo abren en estook.com/tpv y lo instalan desde ahí.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · Pro, en el móvil -->
+  <section>
+    <p class="rotulo">2 · Con Pro, en el móvil</p>
+    <p class="titulo">El mismo botón, encima de la lista</p>
+    <p class="porque">
+      En el móvil no se ofrece el programa de Windows: no sirve ahí. Al tocarlo, abre Estook TPV
+      directamente, sin hoja intermedia.
+    </p>
+    <div class="pantalla movil">
+      <div class="barra"><span class="punto"></span>Ajustes</div>
+      <div class="cuerpo">
+        <div class="boton-tpv">
+          <span class="icono">🧾</span>
+          <span>Estook TPV<small>La sala, la cocina y la caja</small></span>
+          <span class="flecha">›</span>
+        </div>
+        <div class="seccion"><span>Este aparato</span><span>›</span></div>
+        <div class="seccion"><span>Mi cuenta</span><span>›</span></div>
+        <div class="seccion"><span>Avisos</span><span>›</span></div>
+        <div class="seccion"><span>Tu local</span><span>›</span></div>
+        <div class="seccion"><span>Conexiones</span><span>›</span></div>
+        <div class="seccion"><span>Suscripción</span><span>›</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · Esencial, con candado -->
+  <section>
+    <p class="rotulo">3 · Con Esencial</p>
+    <p class="titulo">Con candado, y al tocarlo explica qué gana</p>
+    <p class="porque">
+      En el mismo sitio, en gris y con «PRO». Al tocarlo no abre nada: cuenta en pocas líneas qué es
+      Estook TPV y lleva a cambiar de plan. Si quien lo toca no lleva la suscripción, en vez del
+      botón dice quién puede cambiarla.
+    </p>
+    <div class="lado-a-lado">
+      <div class="pantalla">
+        <div class="barra"><span class="punto"></span>Ajustes</div>
+        <div class="ordenador">
+          <div class="izquierda">
+            <div class="boton-tpv bloqueado">
+              <span class="icono">🔒</span>
+              <span
+                >Estook TPV <span class="chapa">PRO</span><small>Cobra con nuestro TPV</small></span
+              >
+              <span class="flecha">›</span>
+            </div>
+            <div class="buscador">Buscar en Ajustes</div>
+            <div class="seccion">Este aparato<small>Letra, tema y modo cocina</small></div>
+            <div class="seccion">
+              Mi cuenta<small>Contraseña, PIN, doble factor e idioma</small>
+            </div>
+            <div class="seccion">Avisos<small>Qué te llega a la campana y al correo</small></div>
+            <div class="seccion">
+              Tu local<small>Marca, dónde está, fichar, objetivos, carta, menús y precios</small>
+            </div>
+            <div class="seccion">Conexiones<small>Cómo entran tus ventas</small></div>
+            <div class="seccion elegida">
+              Suscripción<small>Plan, tarjeta, facturas y renovación</small>
+            </div>
+          </div>
+          <div class="derecha">
+            <p class="nota">Tu suscripción, como siempre.</p>
+          </div>
+        </div>
+      </div>
+      <div class="hoja">
+        <h3>Actualiza a Pro para cobrar con nuestro TPV</h3>
+        <p>Estook TPV es la caja de tu local, hecha con la misma Estook que ya usas.</p>
+        <ul class="lleva">
+          <li>Los camareros toman nota en su móvil y la mesa va sola a cocina.</li>
+          <li>La cocina y la barra, en pantalla, en papel o en las dos.</li>
+          <li>Cobras, abres el cajón y cierras la caja sin apuntar nada.</li>
+          <li>Lo vendido baja solo del almacén: el food cost, de verdad.</li>
+        </ul>
+        <div class="precio">
+          <strong>Pro · 99 €</strong> al mes por local, IVA incluido. Hoy pagas 49 €.
+        </div>
+        <span class="accion principal">Pasar a Pro</span>
+        <span class="accion">Ahora no</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Si un local baja de Pro a Esencial -->
+  <section>
+    <p class="rotulo">4 · Si un local baja de Pro a Esencial</p>
+    <p class="titulo">Los aparatos no se borran: esperan</p>
+    <p class="porque">
+      Si el local tenía aparatos vinculados y baja a Esencial (o pone la cuenta en pausa), cada
+      aparato enseña esto en vez de la sala. No se borra nada: al volver a Pro, siguen como estaban.
+    </p>
+    <div class="pantalla movil" style="--fondo: #0f1719; --texto: #f1efea; --suave: #9fb0b3">
+      <div class="barra"><span class="punto"></span>Estook TPV</div>
+      <div class="cuerpo" style="padding: 22px; gap: 12px; color: var(--texto)">
+        <p style="font-weight: 800; font-size: 18px; margin: 0">Este local está en Esencial</p>
+        <p style="margin: 0; color: var(--suave)">
+          Estook TPV es de Pro. El aparato sigue vinculado y no se ha borrado nada: en cuanto el
+          local vuelva a Pro, entra como siempre.
+        </p>
+        <p style="margin: 0; color: var(--suave)">
+          Lo cambia quien lleva la suscripción, en Estook › Ajustes › Suscripción.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Las preguntas -->
+  <section>
+    <p class="rotulo">Lo que necesito que me digas</p>
+    <div class="preguntas">
+      <div class="pregunta">
+        <h3>1 · El cobro todavía no está hecho. ¿Qué dice el candado hasta entonces?</h3>
+        <p>
+          Cobrar, el cajón al cobrar y bajar lo vendido del almacén llegan con T6 y T7. Hoy Estook
+          TPV hace la sala, la cocina, la barra y la comanda en papel. Si el candado promete cobrar
+          antes de que se pueda, un cliente paga Pro y no lo encuentra.
+        </p>
+        <div class="opciones">
+          <div class="opcion recomendada">
+            <b>A (la que recomiendo).</b> El botón sale ya. Las dos últimas líneas llevan «muy
+            pronto» hasta que el cobro esté hecho, y se quita solo ese día.
+          </div>
+          <div class="opcion">
+            <b>B.</b> El botón sale ya con lo que hay hoy (sala, cocina y barra) y el título
+            «Actualiza a Pro para usar nuestro TPV». Con T7 pasa a decir «cobrar».
+          </div>
+          <div class="opcion"><b>C.</b> El candado no sale hasta T7.</div>
+        </div>
+      </div>
+      <div class="pregunta">
+        <h3>2 · ¿Esencial no puede usar nada de Estook TPV, o solo no puede cobrar?</h3>
+        <p>
+          Hoy la API no mira el plan: un local en Esencial puede vincular aparatos y usar la sala y
+          la cocina. Si el candado solo está en el botón, cualquiera entra por estook.com/tpv.
+        </p>
+        <div class="opciones">
+          <div class="opcion recomendada">
+            <b>A (la que recomiendo).</b> Estook TPV entero es de Pro, y lo cierra también la API.
+            Es lo más claro para vender, y lo que hacen Square y Toast: el TPV es el plan.
+          </div>
+          <div class="opcion">
+            <b>B.</b> En Esencial se usan la sala y la cocina; solo cobrar es de Pro.
+          </div>
+        </div>
+      </div>
+      <div class="pregunta">
+        <h3>3 · Lo que doy por hecho, por si no estás de acuerdo</h3>
+        <p>
+          Cadena lleva Estook TPV (es «todo lo de Pro en cada local»). Pausa, no. Durante los 7 días
+          de prueba, quien eligió Pro lo tiene. IKATZ, como cuenta de la casa, lo tiene todo. Y la
+          pantalla de elegir plan dirá «Estook TPV incluido» en Pro, que hoy no lo dice.
+        </p>
+      </div>
+    </div>
+  </section>
+</main>

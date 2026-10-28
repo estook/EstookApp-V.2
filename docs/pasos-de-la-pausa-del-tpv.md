@@ -7,7 +7,7 @@
 >
 > | Qué              | Cómo está                                               |
 > | ---------------- | ------------------------------------------------------- |
-> | Pull request     | **«La pausa del TPV»**, rama `la-pausa-del-tpv`         |
+> | Pull request     | **«La pausa del TPV» (#153)**, rama `la-pausa-del-tpv`  |
 > | La base de datos | Trae **la 0095**: hay que migrar (quedarán **95**)      |
 > | La API           | Cambia: **115 consultas y 313 comandos** al desplegarla |
 
@@ -31,7 +31,7 @@ Lo decidido, en la [0121](decisiones/0121-la-pausa-del-tpv.md).
 
 **En este orden.** La API nueva necesita la 0095.
 
-1. **En GitHub**: fusiona **«La pausa del TPV»** con las comprobaciones **en verde**: **Merge pull
+1. **En GitHub**: fusiona **«La pausa del TPV» (#153)** con las comprobaciones **en verde**: **Merge pull
    request** → **Confirm merge**.
 2. **En PowerShell**, en la carpeta del proyecto, uno por uno:
 

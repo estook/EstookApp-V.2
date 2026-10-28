@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 28 de octubre de 2026 · **En producción todo hasta la #152**: 94 migraciones y la API con 115 consultas y 312 comandos, comprobado el 28-oct; **la caja para Windows 1.0.0**, publicada y probada por Richi. **En su pull request, la pausa del TPV** ([0121](docs/decisiones/0121-la-pausa-del-tpv.md), migración 0095, API 115/313)
+Última actualización: 28 de octubre de 2026 · **En producción todo hasta la #152**: 94 migraciones y la API con 115 consultas y 312 comandos, comprobado el 28-oct; **la caja para Windows 1.0.0**, publicada y probada por Richi. **En su pull request (#153), la pausa del TPV** ([0121](docs/decisiones/0121-la-pausa-del-tpv.md), migración 0095, API 115/313)
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** Todo hasta la **#152** está en producción (28-oct); Richi publicó y probó la caja para Windows (sin impresora). **En su pull request, rama `la-pausa-del-tpv`**: los 8 puntos de Richi del 28-oct ([0121](docs/decisiones/0121-la-pausa-del-tpv.md)) y el mapa (M15) corregido. **Esperan a Richi**: las tres preguntas de la caja (0121, punto 5) y qué ve mal en la barra de arriba de Estook (la app). Después, **T5 · 2 · Sin internet**.
+- **Nada a medias.** Todo hasta la **#152** está en producción (28-oct); Richi publicó y probó la caja para Windows (sin impresora). **En su pull request (#153), rama `la-pausa-del-tpv`**: los 8 puntos de Richi del 28-oct ([0121](docs/decisiones/0121-la-pausa-del-tpv.md)) y el mapa (M15) corregido. **Esperan a Richi**: las tres preguntas de la caja (0121, punto 5) y qué ve mal en la barra de arriba de Estook (la app). Después, **T5 · 2 · Sin internet**.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -120,7 +120,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 
 **Ahora:**
 
-1. **Fusionar «La pausa del TPV», migrar (0095) y desplegar la API**, y probarlo en IKATZ ([sus pasos](docs/pasos-de-la-pausa-del-tpv.md)). Y **contestar las tres preguntas de la caja** ([0121](docs/decisiones/0121-la-pausa-del-tpv.md), punto 5) y **qué ves mal en la barra de arriba de Estook**.
+1. **Fusionar «La pausa del TPV» (#153), migrar (0095) y desplegar la API**, y probarlo en IKATZ ([sus pasos](docs/pasos-de-la-pausa-del-tpv.md)). Y **contestar las tres preguntas de la caja** ([0121](docs/decisiones/0121-la-pausa-del-tpv.md), punto 5) y **qué ves mal en la barra de arriba de Estook**.
 2. **Probar la caja para Windows en el restaurante de tu amigo** ([sus pasos](docs/pasos-de-t5-1.md)): el PC de la caja, su Epson por cable de red, la cocina en las dos y un Android pidiendo; y **el botón de Estook TPV en Ajustes** ([sus pasos](docs/pasos-de-estook-tpv-es-de-pro.md)).
 3. **Probar en IKATZ la entrada nueva y T4 · 2** ([la entrada](docs/pasos-de-la-entrada-del-tpv.md), [T4 · 2](docs/pasos-de-t4-2.md)): la sala primero, el engranaje, mantener pulsado, la barra, la alergia y el ✓ con su hora.
 4. **Probar en IKATZ T4 · 1 y «Cada aparato a lo suyo»**: fichar en la caja y un comandero sin fichar ([sus pasos](docs/pasos-de-cada-aparato-a-lo-suyo.md)), y vincular una tablet como pantalla de cocina, pedir, tachar, marchar y llamar ([sus pasos](docs/pasos-de-t4-1.md)).

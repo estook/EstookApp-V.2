@@ -1,9 +1,16 @@
+import { createServer as crearWeb } from 'node:http';
 import { createServer, type Server } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
 import { laComandaEnPapel, type PapelCompuesto } from '@estook/dominio';
 import { enLaPagina858 } from '@estook/impresion';
 import { comoEstaLaImpresora, laDireccion, mandarALaImpresora, suNombre } from './la-impresora.ts';
-import { lasQueContestan, lasQueSeProbaran, lasRedesDelPc } from './buscar.ts';
+import {
+  elNombreDeSuWeb,
+  lasQueContestan,
+  lasQueSeProbaran,
+  lasRedesDelPc,
+  losNombres,
+} from './buscar.ts';
 import {
   LaColaEnMarcha,
   unaVuelta,
@@ -322,5 +329,59 @@ describe('buscar impresoras', () => {
       esperaMs: 300,
     });
     expect(encontradas).toEqual([`127.0.0.1:${String(puerto)}`]);
+  });
+
+  it('a lo que el local no ha elegido no se le manda ni un byte: el 9100 de una de oficina imprime', async () => {
+    // Una impresora de oficina: todo lo que le llega por el 9100 lo imprime.
+    const impreso: Buffer[] = [];
+    const deOficina = createServer((conexion) => {
+      conexion.on('data', (datos: Buffer) => {
+        impreso.push(datos);
+      });
+    });
+    abiertas.push(deOficina);
+    await new Promise<void>((r) => {
+      deOficina.listen(0, '127.0.0.1', () => {
+        r();
+      });
+    });
+    const sitio = deOficina.address();
+    if (sitio === null || typeof sitio === 'string') throw new Error('sin puerto');
+    const suya = await unaImpresora();
+
+    const encontradas = await lasQueContestan(['127.0.0.1'], { puerto: sitio.port, esperaMs: 300 });
+    const nombres = await losNombres([...encontradas, suya.direccion], new Set([suya.direccion]), {
+      porEscPos: (direccion) => suNombre(direccion, 500),
+      porSuWeb: () => Promise.resolve(null),
+    });
+    await new Promise((r) => setTimeout(r, 100));
+    expect(impreso).toEqual([]);
+    // La que ya es del local, sí: es de tickets y contesta su nombre.
+    expect(nombres).toEqual([
+      { direccion: `127.0.0.1:${String(sitio.port)}`, modelo: null },
+      { direccion: suya.direccion, modelo: 'Epson TM-T20III' },
+    ]);
+  });
+
+  it('el nombre de una desconocida se lee de su página web, que solo se mira', async () => {
+    const web = crearWeb((_peticion, respuesta) => {
+      respuesta.end('<html><head><title>EPSON  TM-T88VI</title></head></html>');
+    });
+    await new Promise<void>((r) => {
+      web.listen(0, '127.0.0.1', () => {
+        r();
+      });
+    });
+    const sitio = web.address();
+    if (sitio === null || typeof sitio === 'string') throw new Error('sin puerto');
+    try {
+      expect(await elNombreDeSuWeb('127.0.0.1', sitio.port, 500)).toBe('Epson TM-T88VI');
+    } finally {
+      await new Promise((r) => {
+        web.close(r);
+      });
+    }
+    // Sin web, o sin contestar a tiempo: sin nombre, y se la llama por lo que imprime.
+    expect(await elNombreDeSuWeb('127.0.0.1', sitio.port, 300)).toBeNull();
   });
 });

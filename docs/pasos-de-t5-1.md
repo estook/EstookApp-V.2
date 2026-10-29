@@ -74,43 +74,12 @@ el cajón al cobrar llegan con T6 y T7**; **sin internet, con T5 · 2**.
 
 ## Probarlo en el restaurante de tu amigo
 
-Primero crea su cuenta de prueba (su demo), y en su PC de la caja vincula Estook TPV como siempre.
-
-1. **Antes de nada, mira el cable de la impresora.** ¿Va **del PC a la impresora directo**, o **los dos
-   al router**? Lo bueno es **los dos al router, por cable**. Si va directo, dímelo: hay que darle al PC
-   una dirección fija y te lo explico.
-2. **En la caja del navegador**, en ese PC: sale arriba la franja **«Descarga la caja para Windows»**.
-   Toca **Descargar** y abre el fichero.
-   - **Qué debe salir:** la pantalla azul **«Windows protegió su PC»** (es porque aún no está firmado).
-     Toca **«Más información»** y **«Ejecutar de todas formas»**. Se instala sola y se abre.
-3. **En la caja del navegador**: ⚙ › **Aparatos** › la caja › **«Pasar a la app»**. Sale un código.
-4. **En el programa**: dice **«Pasa aquí tu caja»**. Escribe el código.
-   - **Qué debe salir:** el PIN, y al entrar, la sala de siempre. La caja del navegador dice «Este
-     aparato ya no está vinculado»: es lo correcto, ya no hacen falta dos.
-5. **En el programa**: ⚙ › **Impresoras y cajón** › **Buscar impresoras**.
-   - **Qué debe salir:** la Epson, con su modelo. Toca **Imprimir prueba**: sale un papel que dice «Si
-     lees esto, sale bien», con tildes y eñes. Toca **«Sí, ha salido»**, ponle nombre (Cocina o Caja),
-     qué imprime, y si tiene el cajón enchufado. **Darla de alta.**
-   - **Si no sale:** que esté encendida, con papel y con el cable de red; y si va directa al PC, el
-     punto 1.
-6. **Si tiene el cajón**: en la misma impresora, **«Abrir el cajón»**, con su motivo.
-   - **Qué debe salir:** el cajón se abre.
-7. **Abajo, «Lo de la cocina y la barra sale en…»**: la cocina, **Las dos** (como quiere tu amigo).
-8. **Pide desde un móvil Android** (vinculado como comandero) una mesa con algo de cocina en el 1.º y
-   en el 2.º, y **Mandar**.
-   - **Qué debe salir:** **en menos de 6 segundos**, la comanda en papel: la mesa enorme, «1.º · YA» y
-     «2.º · EN ESPERA». Y en la pantalla de cocina, como siempre.
-9. **Marcha el 2.º** desde el móvil.
-   - **Qué debe salir:** otro papel, **«¡MARCHA EL 2.º!»**.
-10. **En las opciones de la mesa**: **«🧾 Imprimir la cuenta»**.
-    - **Qué debe salir:** la precuenta, con el total y «Documento no válido como factura».
-11. **Quita el papel de la impresora** y manda algo.
-    - **Qué debe salir:** arriba de la sala, en rojo, **«Sin papel en Cocina»**, y la caja suena. Pon el
-      papel: lo que esperaba sale solo, una vez.
+En [`pasos-en-el-local-del-amigo.md`](pasos-en-el-local-del-amigo.md), al día con su local (29-oct):
+su TPV por wifi, la caja por cable y la cocina por wifi, **sin tocar nada suyo**.
 
 ## Lo que no está todavía, para que no lo busques
 
 - **El ticket del cobro y el cajón al cobrar en efectivo**: con T6 y T7.
-- **Seguir sin internet**: con T5 · 2.
+- **Que la cocina reciba sin internet**: con T5 · 2 · 2 (cada aparato ya sigue solo, T5 · 2 · 1).
 - **Las impresoras por USB**: en una entrega siguiente, cuando un local la tenga (por red sí).
 - **La firma del programa**: antes de vender, con la sociedad.

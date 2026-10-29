@@ -430,13 +430,18 @@ aceptando lo hecho sin internet. Las pruebas: `la-puerta.prueba.ts` (sin interne
   Android y la pantalla de cocina le mandan y le leen por el wifi (con el permiso de red local de
   Chrome); ella **comprueba los PIN de todos**, imprime, reparte y **guarda en su disco** lo que
   falta por subir. **Los iPhone y los iPad** guardan lo suyo, como en T5 · 2 · 1.
-- **Ajustes del TPV › Aparatos dice quién llega a la caja** sin internet, y avisa si la caja va por
-  wifi.
+- **Ajustes del TPV › Aparatos dice quién llega a la caja** sin internet, y si la caja va por wifi o
+  por cable: **valen las dos** (Richi, 29-oct); por wifi no se avisa en el servicio.
+- **Un Android con datos le dice al camarero que se conecte al wifi del local** (Richi, 29-oct): sin
+  él, sin internet no llega a la caja.
+- **La pantalla de cocina, mejor una tablet Android**; un iPad vale, y sin internet la cocina tira
+  del papel.
 - **Fichar sin internet en la caja**, con el PIN que comprueba ella.
 - **Con el router de internet desenchufado**, una comanda tomada en un Android sale en la pantalla
   de cocina y en la impresora **en menos de 2 segundos**, y al volver está en la nube **una sola
   vez** (M19a, Anexo 3.7 y 6.8).
-- **Antes de empezarla**, las tres preguntas del local del amigo de Richi (0122, punto 4).
+- **Contestado por Richi el 29-oct** (0122, punto 5). La caja escuchará en la red del local: el
+  instalador deja abierto el cortafuegos de Windows **solo para redes privadas**.
 
 ### T6 y T7
 

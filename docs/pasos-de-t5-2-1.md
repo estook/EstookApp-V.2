@@ -2,8 +2,7 @@
 
 > ## Cómo está
 >
-> **En su pull request**, sin fusionar: hasta que lo fusiones y despliegues la API, en
-> estook.com no se ve nada de esto.
+> **Fusionada y con la API desplegada** (29-oct). Te queda probarlo en IKATZ con el iPhone (abajo).
 >
 > | Qué              | Cómo está                                                                                    |
 > | ---------------- | -------------------------------------------------------------------------------------------- |

@@ -15,7 +15,13 @@ import { esPapelCompuesto } from '@estook/dominio';
 import { aEscPos, IMPRESORA_DE_58_MM, IMPRESORA_DE_80_MM } from '@estook/impresion';
 import type { ImpresoraEncontrada, LoQueNecesitaLaCaja } from '@estook/impresion';
 import { comoEstaLaImpresora, mandarALaImpresora, suNombre } from './la-impresora.ts';
-import { lasQueContestan, lasQueSeProbaran, lasRedesDelPc } from './buscar.ts';
+import {
+  elNombreDeSuWeb,
+  lasQueContestan,
+  lasQueSeProbaran,
+  lasRedesDelPc,
+  losNombres,
+} from './buscar.ts';
 import { LaColaEnMarcha, type LaColaQueDaLaApi, type LoQueSeApunta } from './la-cola.ts';
 
 /**
@@ -110,13 +116,16 @@ function desconectar(): void {
 
 async function buscarImpresoras(): Promise<ImpresoraEncontrada[]> {
   const encontradas = await lasQueContestan(lasQueSeProbaran(lasRedesDelPc()));
-  return Promise.all(
-    encontradas.map(async (direccion) => ({
-      direccion,
-      modelo: await suNombre(direccion),
-      yaDadaDeAlta: lasSuyas.find((s) => s.direccion === direccion)?.id ?? null,
-    })),
-  );
+  // A lo que el local no ha elegido no se le manda nada: el 9100 de una de oficina imprime.
+  const conNombre = await losNombres(encontradas, new Set(lasSuyas.map((s) => s.direccion)), {
+    porEscPos: (direccion) => suNombre(direccion),
+    porSuWeb: (host) => elNombreDeSuWeb(host),
+  });
+  return conNombre.map(({ direccion, modelo }) => ({
+    direccion,
+    modelo,
+    yaDadaDeAlta: lasSuyas.find((s) => s.direccion === direccion)?.id ?? null,
+  }));
 }
 
 function crearLaVentana(): void {

@@ -1,0 +1,1177 @@
+<title>T5 · 2 · 2 · La caja de centro</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Courier+Prime:wght@400;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Un solo aspecto, el de Estook TPV (Anexo 11.12): oscuro, denso y de mucho contraste.
+     Cada sección: qué es, la pantalla dibujada y, plegado, el porqué. Los papeles, a 80 mm. */
+  :root {
+    color-scheme: dark;
+    --fondo-pagina: #0b1113;
+    --fondo: #0f1719;
+    --barra: #111c1f;
+    --tarjeta: #18252a;
+    --marcado: #22343a;
+    --borde: #2c4047;
+    --texto: #f1efea;
+    --suave: #9fb0b3;
+    --naranja: #ff7a00;
+    --sobre-naranja: #1a0d00;
+    --verde: #4ec98a;
+    --ambar: #f0ae4e;
+    --azul: #6fb7e8;
+    --rojo: #f0796c;
+    --papel: #fbfaf6;
+    --tinta: #141414;
+    --letra: Montserrat, system-ui, 'Segoe UI', sans-serif;
+    --letra-papel: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--fondo-pagina);
+    color: var(--texto);
+    font-family: var(--letra);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-block: 28px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .hoja-entera {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 52px;
+  }
+  h1 {
+    font-size: clamp(24px, 4vw, 34px);
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h2 {
+    font-size: 21px;
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  p {
+    margin: 0;
+  }
+  .rotulo {
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--naranja);
+  }
+  .seccion {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .lead {
+    color: var(--suave);
+    max-width: 68ch;
+  }
+  .lead b,
+  .porque b {
+    color: var(--texto);
+  }
+  details.porque {
+    color: var(--suave);
+    max-width: 78ch;
+  }
+  details.porque summary {
+    cursor: pointer;
+    color: var(--azul);
+    font-weight: 700;
+    font-size: 14px;
+    width: fit-content;
+  }
+  details.porque > div {
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  :focus-visible {
+    outline: 3px solid var(--naranja);
+    outline-offset: 2px;
+  }
+
+  /* ── El resumen de arriba ── */
+  .indice {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .indice a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 14px 16px;
+    color: var(--texto);
+    text-decoration: none;
+  }
+  .indice a b {
+    font-size: 16px;
+  }
+  .indice a span {
+    color: var(--suave);
+    font-size: 13px;
+  }
+  .indice a.tuyo {
+    border-color: var(--naranja);
+  }
+
+  /* ── Las pantallas ── */
+  .pantalla {
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .ventana {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    background: #070b0c;
+    color: var(--suave);
+    font-size: 12px;
+  }
+  .ventana .puntos {
+    margin-left: auto;
+    letter-spacing: 6px;
+  }
+  .cab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--barra);
+    border-bottom: 1px solid var(--marcado);
+    flex-wrap: wrap;
+  }
+  .logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--naranja);
+    color: var(--sobre-naranja);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 19px;
+    flex-shrink: 0;
+  }
+  .local b {
+    display: block;
+    font-size: 15px;
+  }
+  .local span {
+    font-size: 12px;
+    color: var(--suave);
+  }
+  .grupo {
+    display: flex;
+    gap: 2px;
+    background: var(--fondo);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .grupo span {
+    border-radius: 999px;
+    padding: 8px 13px;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .grupo .si {
+    background: var(--marcado);
+  }
+  .derecha {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-weight: 700;
+    font-size: 13px;
+    border: 1px solid var(--borde);
+    background: var(--tarjeta);
+    white-space: nowrap;
+  }
+  .chip i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .b-naranja {
+    background: var(--naranja);
+    color: var(--sobre-naranja);
+    border-color: var(--naranja);
+  }
+  .franja {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+  .franja .boton {
+    margin-left: auto;
+  }
+  .franja.tranquila {
+    background: #16302a;
+    color: #bfeed6;
+  }
+  .franja.ambar {
+    background: #3a2c0c;
+    color: #ffd99a;
+  }
+  .franja.roja {
+    background: #3a1714;
+    color: #ffc2bb;
+  }
+  .franja.azul {
+    background: #13293a;
+    color: #c4e4fa;
+  }
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 14px;
+    border: 1px solid var(--borde);
+    background: var(--tarjeta);
+    color: var(--texto);
+    white-space: nowrap;
+  }
+  .boton.principal {
+    background: var(--naranja);
+    border-color: var(--naranja);
+    color: var(--sobre-naranja);
+  }
+  .plano {
+    position: relative;
+    height: 230px;
+    background:
+      radial-gradient(circle at 1px 1px, #1d2c31 1px, transparent 0) 0 0 / 22px 22px,
+      var(--fondo);
+  }
+  .m {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    border: 2px solid #4a5c61;
+    font-weight: 800;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .m small {
+    display: block;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--suave);
+  }
+  .m.comiendo {
+    background: #1f6b4a;
+    border-color: #1f6b4a;
+  }
+  .m.comiendo small,
+  .m.marchar small {
+    color: #d6f1e4;
+  }
+  .m.marchar {
+    background: #2c6e9b;
+    border-color: #2c6e9b;
+  }
+  .m.redonda {
+    border-radius: 50%;
+  }
+  .pie {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 14px;
+    font-size: 12px;
+    color: var(--suave);
+    border-top: 1px solid var(--marcado);
+    flex-wrap: wrap;
+  }
+
+  /* ── Listas de ajustes ── */
+  .lista {
+    display: flex;
+    flex-direction: column;
+  }
+  .fila {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--marcado);
+    flex-wrap: wrap;
+  }
+  .fila:last-child {
+    border-bottom: 0;
+  }
+  .ico {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+  .que {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+  .que b {
+    display: block;
+  }
+  .que span {
+    font-size: 13px;
+    color: var(--suave);
+  }
+  .estado {
+    font-weight: 700;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .estado i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+  }
+  .c-verde {
+    color: var(--verde);
+  }
+  .c-ambar {
+    color: var(--ambar);
+  }
+  .c-rojo {
+    color: var(--rojo);
+  }
+  .c-azul {
+    color: var(--azul);
+  }
+  .f-verde {
+    background: #173a2c;
+  }
+  .f-ambar {
+    background: #3a2c0c;
+  }
+  .f-naranja {
+    background: #3d2209;
+  }
+  .f-azul {
+    background: #13293a;
+  }
+  .f-gris {
+    background: var(--marcado);
+  }
+  .elegir {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .elegir span {
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .elegir .si {
+    border-color: var(--naranja);
+    color: var(--naranja);
+    background: #2a1a0a;
+  }
+  .subtitulo-lista {
+    padding: 12px 16px 6px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--suave);
+    background: var(--barra);
+  }
+
+  /* ── Rejillas ── */
+  .dos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .tres {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .rotulo-pantalla {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--suave);
+    margin-bottom: 8px;
+  }
+
+  /* ── El papel de 80 mm ── */
+  .papeles {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .papel-y-rotulo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(100%, 300px);
+  }
+  .papel {
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: var(--letra-papel);
+    font-size: 14px;
+    line-height: 1.35;
+    padding: 16px 16px 22px;
+    width: 100%;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    /* el corte de la impresora, en dientes */
+    -webkit-mask:
+      linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 8px
+        repeat-x;
+    mask:
+      linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 8px
+        repeat-x;
+  }
+  .papel .grande {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .papel .centro {
+    text-align: center;
+  }
+  .papel .raya {
+    border-top: 2px dashed var(--tinta);
+    margin: 8px 0;
+  }
+  .papel .linea {
+    display: flex;
+    gap: 8px;
+  }
+  .papel .linea b {
+    min-width: 2ch;
+  }
+  .papel .linea .precio {
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .papel .negativo {
+    background: var(--tinta);
+    color: var(--papel);
+    font-weight: 700;
+    padding: 3px 6px;
+    display: inline-block;
+  }
+  .papel .nota {
+    padding-left: 3ch;
+  }
+  .papel .espera {
+    opacity: 0.85;
+  }
+  .papel .tachado {
+    text-decoration: line-through;
+  }
+  .papel.gris {
+    opacity: 0.55;
+  }
+  .papel .qr {
+    width: 84px;
+    height: 84px;
+    margin: 8px auto 0;
+    background: conic-gradient(
+        var(--tinta) 25%,
+        transparent 0 50%,
+        var(--tinta) 0 75%,
+        transparent 0
+      )
+      0 0 / 14px 14px;
+    border: 6px solid var(--tinta);
+  }
+  .rotulo-papel {
+    font-size: 13px;
+    color: var(--suave);
+  }
+  .rotulo-papel b {
+    color: var(--texto);
+  }
+
+  /* ── El camino de una comanda ── */
+  .caminos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
+    gap: 16px;
+  }
+  .camino {
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .camino h3 {
+    margin: 0;
+    font-size: 16px;
+  }
+  .pasos {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .pasos div {
+    flex: 1 1 110px;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .pasos div b {
+    display: block;
+    font-size: 14px;
+  }
+  .pasos div span {
+    color: var(--suave);
+  }
+  .pasos .flecha {
+    flex: 0 0 auto;
+    background: none;
+    border: 0;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    color: var(--naranja);
+    font-weight: 800;
+  }
+  .pasos .centro-local {
+    border-color: var(--naranja);
+  }
+
+  /* ── Tablas ── */
+  .tabla {
+    overflow-x: auto;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 640px;
+    font-size: 14px;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--marcado);
+    vertical-align: top;
+  }
+  th {
+    background: var(--barra);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--suave);
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  td.ok {
+    color: #bfeed6;
+  }
+  td.casi {
+    color: #ffd99a;
+  }
+  td.no {
+    color: #ffc2bb;
+  }
+
+  /* ── Lo que no cuadra, mejoras y preguntas ── */
+  .tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 14px;
+  }
+  .tarjeta {
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .tarjeta b.t {
+    font-size: 15px;
+  }
+  .tarjeta p {
+    color: var(--suave);
+    font-size: 14px;
+  }
+  .tarjeta p strong {
+    color: var(--texto);
+  }
+  .tarjeta .hago {
+    color: #bfeed6;
+    font-size: 14px;
+  }
+  .pregunta {
+    background: var(--tarjeta);
+    border: 1px solid var(--naranja);
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .pregunta h3 {
+    margin: 0;
+    font-size: 18px;
+    text-wrap: balance;
+  }
+  .pregunta .de {
+    font-size: 13px;
+    color: var(--suave);
+  }
+  .pregunta .texto {
+    color: var(--suave);
+    max-width: 80ch;
+  }
+  .pregunta .texto b {
+    color: var(--texto);
+  }
+  .opciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 10px;
+  }
+  .opcion {
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: var(--fondo);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    min-width: 0;
+  }
+  .opcion b {
+    font-size: 15px;
+  }
+  .opcion span {
+    color: var(--suave);
+  }
+  .opcion.recomendada {
+    border-color: var(--verde);
+  }
+  .opcion.recomendada b::after {
+    content: '  · la que recomiendo';
+    color: var(--verde);
+    font-size: 13px;
+  }
+  .decides {
+    font-weight: 800;
+    color: var(--naranja);
+  }
+  .partes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 14px;
+  }
+  .parte {
+    border-radius: 16px;
+    padding: 16px;
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .parte ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--suave);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .parte .cuando {
+    font-size: 13px;
+    color: var(--verde);
+    font-weight: 700;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .indice a,
+    .boton {
+      transition: transform 0.15s ease;
+    }
+    .indice a:hover {
+      transform: translateY(-2px);
+    }
+  }
+</style>
+
+<style>
+  /* Lo que añade T5 · 2: el teclado del PIN, la hoja de «por subir» y el aviso de Chrome. */
+  .teclado {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-width: 260px;
+    margin: 0 auto;
+  }
+  .teclado span {
+    display: grid;
+    place-items: center;
+    height: 50px;
+    border-radius: 12px;
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    font-weight: 800;
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+  .puntos {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  .puntos i {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--suave);
+  }
+  .puntos i.lleno {
+    background: var(--texto);
+    border-color: var(--texto);
+  }
+  .dentro {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+  .dentro .centro {
+    text-align: center;
+  }
+  .aviso-pin {
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+    text-align: center;
+  }
+  .hora {
+    font-variant-numeric: tabular-nums;
+    color: var(--suave);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .chrome {
+    background: #f4f6f8;
+    color: #1f1f1f;
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-family: Roboto, system-ui, sans-serif;
+    font-size: 14px;
+    max-width: 340px;
+    margin: 0 auto;
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.45);
+  }
+  .chrome .botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .chrome .botones span {
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-weight: 600;
+    color: #0b57d0;
+  }
+  .chrome .botones span.si {
+    background: #0b57d0;
+    color: #fff;
+  }
+  .sombra {
+    padding: 22px 14px;
+    background: rgb(0 0 0 / 0.35);
+  }
+  .tarjeta-cocina {
+    border: 2px solid var(--borde);
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--tarjeta);
+    min-width: 0;
+  }
+  .tarjeta-cocina b {
+    font-size: 18px;
+  }
+  .cocina-columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 10px;
+    padding: 12px;
+  }
+</style>
+
+<style>
+  /* Lo que añade T5 · 2 · 2: el aviso de Windows y los pasos. */
+  .windows {
+    background: #f3f3f3;
+    color: #1b1b1b;
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 13.5px;
+    max-width: 420px;
+    margin: 0 auto;
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.45);
+  }
+  .windows .casilla {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .windows .casilla i {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #5c5c5c;
+    border-radius: 3px;
+    display: grid;
+    place-items: center;
+    font-style: normal;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .windows .casilla i.si {
+    background: #005fb8;
+    border-color: #005fb8;
+    color: #fff;
+  }
+  .windows .botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .windows .botones span {
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid #c8c8c8;
+    background: #fbfbfb;
+  }
+  .windows .botones span.si {
+    background: #005fb8;
+    border-color: #005fb8;
+    color: #fff;
+  }
+  .pasos {
+    margin: 0;
+    padding-left: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+</style>
+
+<div class="hoja-entera">
+  <header class="seccion">
+    <p class="rotulo">Estook TPV · T5 · 2 · 2 · 29 de octubre · maqueta para aprobar</p>
+    <h1>La caja de centro: lo poco que faltaba dibujar</h1>
+    <p class="lead">
+      Las pantallas grandes ya las aprobaste el 29-oct (<a
+        href="https://claude.ai/artifact/6zeuHkJtKYVZgX6Fkdjo5u"
+        style="color: var(--azul)"
+        >maquetas de T5 · 2</a
+      >): el permiso de Chrome, <b>Aparatos con quién llega a la caja</b> y la cocina con y sin la
+      caja. Aquí van <b>los cuatro avisos nuevos</b> que salen de tus respuestas y de probar en un
+      local de verdad. Nada de esto está programado todavía.
+    </p>
+    <nav class="indice" aria-label="Lo que hay en esta página">
+      <a href="#datos"><b>1 · Con datos móviles</b><span>El camarero que no está en el wifi</span></a>
+      <a href="#windows"
+        ><b>2 · Windows pregunta una vez</b><span>Dejar que la caja escuche en el wifi</span></a
+      >
+      <a href="#publica"
+        ><b>3 · El wifi como «red pública»</b><span>Cuando Windows no deja llegar a nadie</span></a
+      >
+      <a href="#permiso"><b>4 · «Cómo darlo»</b><span>Si alguien tocó «Bloquear» en Chrome</span></a>
+    </nav>
+  </header>
+
+  <!-- ═══ 1 · CON DATOS ═══ -->
+  <section class="seccion" id="datos">
+    <p class="rotulo">1 · Con datos móviles</p>
+    <h2>Un Android con datos se lo dice al camarero, sin pararle</h2>
+    <p class="lead">
+      Con datos móviles el camarero trabaja igual mientras hay internet, pero <b>si se va, no llega
+      a la caja</b>. Se le dice arriba, en una línea, y se quita sola al conectarse al wifi. En
+      Aparatos, la caja lo ve.
+    </p>
+    <div class="dos">
+      <div>
+        <p class="rotulo-pantalla">En el móvil del camarero, en la sala</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>IKATZ</b><span>▣ Móvil de Ana</span></div>
+          </div>
+          <div class="franja azul">
+            Vas con datos. Conéctate al wifi del local para que la cocina reciba si se va internet
+          </div>
+          <div class="pie"><span>Se quita sola al entrar en el wifi</span></div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">En la caja: Ajustes del TPV › Aparatos</p>
+        <div class="pantalla">
+          <div class="lista">
+            <div class="fila">
+              <span class="ico f-gris">📱</span>
+              <div class="que"><b>Móvil de Ana</b><span>Android · comandero · con datos</span></div>
+              <span class="estado c-ambar"
+                ><i style="background: var(--ambar)"></i>No llegaría a la caja</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>¿Por qué no se puede cerrar?</summary>
+      <div>
+        <p>
+          Porque el día que se vaya internet ya es tarde. Es una línea fina arriba, sin botones, y
+          no tapa nada de la sala. Un iPhone no la ve: con datos o con wifi, guarda lo suyo igual.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ 2 · WINDOWS PREGUNTA ═══ -->
+  <section class="seccion" id="windows">
+    <p class="rotulo">2 · Windows pregunta una vez</p>
+    <h2>La primera vez que la caja hace de centro, Windows pide permiso</h2>
+    <p class="lead">
+      Para que los móviles y la cocina lleguen a la caja, <b>la caja escucha en el wifi del
+      local</b>. Windows lo pregunta una sola vez con su propio aviso. Antes, Estook TPV dice qué
+      contestar.
+    </p>
+    <div class="dos">
+      <div>
+        <p class="rotulo-pantalla">En la caja, al estrenar la versión con centro</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>IKATZ</b><span>▣ Caja 1</span></div>
+          </div>
+          <div class="franja azul">
+            Windows va a preguntar si Estook TPV puede usar la red. Deja marcado «Redes privadas» y
+            toca «Permitir acceso»
+          </div>
+          <div class="sombra">
+            <div class="windows" role="img" aria-label="El aviso de Windows">
+              <b>Alerta de seguridad de Windows</b>
+              <span
+                >El Firewall de Windows Defender bloqueó algunas características de esta
+                aplicación.</span
+              >
+              <span>Permitir que Estook TPV se comunique en estas redes:</span>
+              <span class="casilla"
+                ><i class="si">✓</i>Redes privadas, como las domésticas o del trabajo</span
+              >
+              <span class="casilla"
+                ><i></i>Redes públicas, como las de aeropuertos y cafeterías</span
+              >
+              <div class="botones"><span class="si">Permitir acceso</span><span>Cancelar</span></div>
+            </div>
+          </div>
+          <div class="pie"><span>El aviso es de Windows: Estook no lo puede cambiar</span></div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">Si se tocó «Cancelar»: Aparatos</p>
+        <div class="pantalla">
+          <div class="lista">
+            <div class="fila">
+              <span class="ico f-naranja">▣</span>
+              <div class="que">
+                <b>Caja 1</b><span>Este · Windows no la deja escuchar en el wifi</span>
+              </div>
+              <span class="boton">Cómo arreglarlo</span>
+            </div>
+          </div>
+          <div class="pie">
+            <span>Dice dónde se cambia en Windows, en tres pasos como los de abajo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>¿Por qué solo redes privadas?</summary>
+      <div>
+        <p>
+          Porque la caja solo tiene que hablar con los aparatos del local. Si el portátil de la caja
+          se lleva a una cafetería, ahí no escucha a nadie. Aun así, la caja solo contesta a los
+          aparatos vinculados a ese local, y lo que viaja por el wifi va cifrado.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ 3 · RED PÚBLICA ═══ -->
+  <section class="seccion" id="publica">
+    <p class="rotulo">3 · El wifi como «red pública»</p>
+    <h2>Si Windows tiene el wifi del local como público, nadie llega a la caja</h2>
+    <p class="lead">
+      Windows suele marcar <b>pública</b> un wifi nuevo, y entonces no deja entrar a nadie aunque se
+      haya contestado bien el aviso de antes. La caja lo ve y lo dice en Aparatos, con los pasos.
+    </p>
+    <div class="dos">
+      <div>
+        <p class="rotulo-pantalla">En la caja: Ajustes del TPV › Aparatos</p>
+        <div class="pantalla">
+          <div class="franja ambar">
+            Windows tiene «Wifi Bar Pepe» como red pública: los móviles y la cocina no llegan a la
+            caja <span class="boton">Cómo cambiarlo</span>
+          </div>
+          <div class="lista">
+            <div class="fila">
+              <span class="ico f-verde">🍳</span>
+              <div class="que"><b>Cocina</b><span>Tablet Android · pantalla de cocina</span></div>
+              <span class="estado c-ambar"
+                ><i style="background: var(--ambar)"></i>No llega a la caja</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">Al tocar «Cómo cambiarlo»</p>
+        <div class="pantalla">
+          <div class="dentro">
+            <b>Ponlo como red privada (un minuto)</b>
+            <ol class="pasos">
+              <li>
+                Abajo a la derecha, toca el icono del wifi y luego <b>›</b> junto a «Wifi Bar Pepe».
+              </li>
+              <li>Toca <b>Propiedades</b>.</li>
+              <li>En «Tipo de perfil de red», elige <b>Red privada</b>.</li>
+            </ol>
+            <span class="hora">Al volver aquí, Aparatos se actualiza solo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 4 · CÓMO DARLO ═══ -->
+  <section class="seccion" id="permiso">
+    <p class="rotulo">4 · «Cómo darlo»</p>
+    <h2>Si alguien tocó «Bloquear» en Chrome, se le explica cómo arreglarlo</h2>
+    <p class="lead">
+      El botón «Cómo darlo» de Aparatos ya estaba aprobado. Esto es lo que enseña, también <b>en el
+      propio Android</b>, porque Chrome no deja que una web vuelva a preguntar.
+    </p>
+    <div class="dos">
+      <div>
+        <p class="rotulo-pantalla">En el Android bloqueado, arriba</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>IKATZ</b><span>▣ Tablet terraza</span></div>
+          </div>
+          <div class="franja ambar">
+            Chrome no deja hablar con la caja: sin internet, la cocina no recibiría
+            <span class="boton">Cómo arreglarlo</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">Al tocar «Cómo arreglarlo»</p>
+        <div class="pantalla">
+          <div class="dentro">
+            <b>Dale el permiso de red local</b>
+            <ol class="pasos">
+              <li>
+                En Chrome, toca <b>⋮</b> › <b>Configuración</b> › <b>Configuración de sitios</b>.
+              </li>
+              <li>Toca <b>Red local</b> y luego <b>estook.com</b>.</li>
+              <li>Elige <b>Permitir</b> y vuelve a Estook TPV.</li>
+            </ol>
+            <span class="hora"
+              >Los nombres exactos de Chrome los compruebo en un Android de verdad al construirlo</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

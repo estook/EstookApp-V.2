@@ -5,11 +5,11 @@
 > **En su pull request**, sin fusionar: hasta que lo fusiones y despliegues la API, en
 > estook.com no se ve nada de esto.
 >
-> | Qué              | Cómo está                                                                               |
-> | ---------------- | --------------------------------------------------------------------------------------- |
-> | Pull request     | **«T5 · 2 · 1 · Cada aparato aguanta solo»**, rama `t5-2-1-cada-aparato-aguanta-solo`   |
-> | La base de datos | **Sin migración**: no hay que migrar (siguen **96**)                                    |
-> | La API           | Cambia por dentro (sigue con **115 consultas y 313 comandos**): **hay que desplegarla** |
+> | Qué              | Cómo está                                                                                    |
+> | ---------------- | -------------------------------------------------------------------------------------------- |
+> | Pull request     | **«T5 · 2 · 1 · Cada aparato aguanta solo» (#156)**, rama `t5-2-1-cada-aparato-aguanta-solo` |
+> | La base de datos | **Sin migración**: no hay que migrar (siguen **96**)                                         |
+> | La API           | Cambia por dentro (sigue con **115 consultas y 313 comandos**): **hay que desplegarla**      |
 
 ---
 

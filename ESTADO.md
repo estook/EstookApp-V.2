@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 29 de octubre de 2026 · **En producción todo hasta la #155**: 96 migraciones y la API con 115 consultas y 313 comandos, comprobado el 29-oct; **la caja para Windows 1.0.0**, publicada y probada por Richi. **En su pull request, T5 · 2 · 1 · Cada aparato aguanta solo** ([0122](docs/decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md); sin migración, hay que desplegar la API)
+Última actualización: 29 de octubre de 2026 · **En producción todo hasta la #155**: 96 migraciones y la API con 115 consultas y 313 comandos, comprobado el 29-oct; **la caja para Windows 1.0.0**, publicada y probada por Richi. **En su pull request (#156), T5 · 2 · 1 · Cada aparato aguanta solo** ([0122](docs/decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md); sin migración, hay que desplegar la API)
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **Nada a medias.** Todo hasta la **#155** está en producción (comprobado el 29-oct: 96 migraciones, API 115/313), con la pausa del TPV y lo de la caja cerrado ([0121](docs/decisiones/0121-la-pausa-del-tpv.md)). **En su pull request, rama `t5-2-1-cada-aparato-aguanta-solo`**: sin internet se sigue en cada aparato y al volver sube una vez ([0122](docs/decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)). Después, **T5 · 2 · 2 · La caja de centro**, con tres preguntas antes.
+- **Nada a medias.** Todo hasta la **#155** está en producción (comprobado el 29-oct: 96 migraciones, API 115/313), con la pausa del TPV y lo de la caja cerrado ([0121](docs/decisiones/0121-la-pausa-del-tpv.md)). **En su pull request (#156), rama `t5-2-1-cada-aparato-aguanta-solo`**: sin internet se sigue en cada aparato y al volver sube una vez ([0122](docs/decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)). Después, **T5 · 2 · 2 · La caja de centro**, con tres preguntas antes.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).

@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react';
 import type { ClienteApi } from '@estook/cliente-api';
 import type { PermisosResueltos } from '@estook/permisos';
 import type { ElAparatoPorDentro, YoEnElTpv } from '../datos/tipos.ts';
+import type { ConQueSeSube } from '../sinInternet/laCola.ts';
 
 /**
  * Quién está dentro de Estook TPV (T1 · 0107): **quien tecleó su PIN en este aparato**,
@@ -26,6 +27,11 @@ export interface SesionDeLaSala {
   readonly bloquear: () => void;
   /** Volver a leer lo de quien está (al fichar, al pasar mesas). */
   readonly refrescar: () => void;
+  /**
+   * **Sin internet** (T5 · 2 · 1), con qué sube lo que haga: su turno, o, si entró sin
+   * internet, su entrada guardada, que sube delante.
+   */
+  readonly seSubeCon: ConQueSeSube;
 }
 
 export const ContextoDeSesion = createContext<SesionDeLaSala | null>(null);

@@ -11,12 +11,7 @@ import {
   leerLaLlave,
 } from '../datos/cliente.ts';
 import { laCajaParaWindows } from '../datos/laCajaParaWindows.ts';
-import type {
-  AparatoVinculado,
-  DentroDelTpv,
-  ElAparatoPorDentro,
-  YoEnElTpv,
-} from '../datos/tipos.ts';
+import type { AparatoVinculado, Dentro, ElAparatoPorDentro, YoEnElTpv } from '../datos/tipos.ts';
 import { DONDE, FalloDeLaSala } from '../ganchos/usarLaSala.ts';
 import { irA } from '../navegar.ts';
 import { ContextoDeSesion, type SesionDeLaSala } from '../sesion/Sesion.tsx';
@@ -25,6 +20,10 @@ import { LaPantallaDeCocina } from '../cocina/LaPantallaDeCocina.tsx';
 import { usarElBloqueo } from '../ganchos/usarElBloqueo.ts';
 import { Vincular } from './Vincular.tsx';
 import { YaNoEstaVinculado } from './YaNoEstaVinculado.tsx';
+import { borrarLasCopias, guardarLaCopia, leerLaCopia } from '../sinInternet/laCopia.ts';
+import { anadirALaCola, laCola, loQueEspera, vaciarLaCola } from '../sinInternet/laCola.ts';
+import { guardarSuYo, olvidarATodos } from '../sinInternet/quienEntroHoy.ts';
+import { usarSubirLoGuardado } from '../ganchos/usarSubirLoGuardado.ts';
 
 /**
  * La puerta de Estook TPV (T1 · La puerta, decisión 0107; Anexo 11.3 y 11.4).
@@ -52,6 +51,10 @@ export function LaPuerta({ children }: { readonly children: ReactNode }) {
   const alDesvincular = useCallback((local: string | null) => {
     // En la caja para Windows (0119), el programa deja de imprimir la cola de esta caja.
     laCajaParaWindows()?.desconectar();
+    // Nada del local se queda en un aparato que ya no es suyo (T5 · 2 · 1).
+    borrarLasCopias();
+    olvidarATodos();
+    vaciarLaCola();
     guardarLaLlave(null);
     setLlave(null);
     setDesvinculado({ local });
@@ -113,7 +116,12 @@ function ConLlave({
   readonly children: ReactNode;
 }) {
   const cliente = useMemo(() => crearClienteDelTpv({ token: () => null }), []);
-  const [dentro, setDentro] = useState<DentroDelTpv | null>(null);
+  const [dentro, setDentro] = useState<Dentro | null>(null);
+  // **Lo guardado sin internet sube solo** al volver (T5 · 2 · 1). Si sube la entrada de quien
+  // está dentro sin turno, pasa a su turno de verdad sin volver a teclear.
+  const subirAhora = usarSubirLoGuardado(llave, (entradaId, real) => {
+    setDentro((ahora) => (ahora?.sinInternet === entradaId ? real : ahora));
+  });
 
   // **Dentro de la caja para Windows** (T5 · 1, 0119): el programa imprime la cola de esta
   // caja con su llave, también bloqueada. Si no es una caja, la API se lo dice y no hace nada.
@@ -129,8 +137,17 @@ function ConLlave({
         llave,
         version: laVersion(),
       });
-      if (!respuesta.ok) throw new FalloDeLaSala(respuesta.error);
-      return respuesta.datos;
+      if (respuesta.ok) {
+        guardarLaCopia('aparato', respuesta.datos);
+        return respuesta.datos;
+      }
+      // **Sin internet, el aparato abre con lo que sabía de sí mismo** (T5 · 2 · 1).
+      const guardado =
+        respuesta.error.codigo === 'sin_conexion'
+          ? leerLaCopia<ElAparatoPorDentro>('aparato')
+          : undefined;
+      if (guardado !== undefined) return guardado;
+      throw new FalloDeLaSala(respuesta.error);
     },
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,
@@ -229,6 +246,7 @@ function ConLlave({
       <ElPin
         llave={llave}
         aparato={aparato}
+        antesDeEntrar={subirAhora}
         alDesvincularse={() => {
           alDesvincular(local.current);
         }}
@@ -257,42 +275,71 @@ function ConTurno({
 }: {
   readonly llave: string;
   readonly aparato: ElAparatoPorDentro;
-  readonly dentro: DentroDelTpv;
+  readonly dentro: Dentro;
   readonly alSalir: () => void;
   readonly children: ReactNode;
 }) {
   const cache = useQueryClient();
   const salir = useRef(alSalir);
   salir.current = alSalir;
+  const sinTurno = dentro.sinInternet;
+  const seSubeCon = useMemo(
+    () => (sinTurno === undefined ? { turno: dentro.turno } : { entrada: sinTurno }),
+    [sinTurno, dentro.turno],
+  );
   const cliente = useMemo(
     () =>
       crearClienteDelTpv({
-        token: () => tokenDelAparato(dentro.turno, llave),
+        token: () => (sinTurno === undefined ? tokenDelAparato(dentro.turno, llave) : null),
         // El turno ya no vale (lo acabó otro aparato, o lo desvincularon): al PIN, y el
-        // latido dirá si sigue vinculado.
+        // latido dirá si sigue vinculado. **Quien entró sin internet no tiene turno todavía**:
+        // no se le echa por eso; su turno llega al subir su entrada.
         alCaducar: () => {
-          salir.current();
+          if (sinTurno === undefined) salir.current();
         },
       }),
-    [dentro.turno, llave],
+    [dentro.turno, sinTurno, llave],
   );
 
   const yo = useQuery({
-    queryKey: ['yo_en_el_tpv', dentro.turno],
+    queryKey: ['yo_en_el_tpv', sinTurno ?? dentro.turno],
     queryFn: async () => {
       const respuesta = await cliente.consultar<YoEnElTpv>('yo_en_el_tpv');
       if (!respuesta.ok) throw new FalloDeLaSala(respuesta.error);
       return respuesta.datos;
     },
+    // Sin internet, lo que se sabía de él al entrar con internet (`quienEntroHoy.ts`).
+    enabled: sinTurno === undefined,
+    ...(dentro.yo === undefined ? {} : { initialData: dentro.yo }),
   });
+  useEffect(() => {
+    if (sinTurno === undefined && yo.data !== undefined) guardarSuYo(yo.data);
+  }, [sinTurno, yo.data]);
 
   const bloquear = useCallback(() => {
+    // **Bloqueado sin internet**, el turno se cierra al subir, detrás de lo suyo (T5 · 2 · 1).
+    const guardarElBloqueo = () => {
+      anadirALaCola({
+        id: crypto.randomUUID(),
+        nombre: 'bloquear',
+        entrada: {},
+        hechoEn: Date.now(),
+        quien: { id: dentro.persona.id, nombre: dentro.persona.nombre },
+        con: seSubeCon,
+        que: `${dentro.persona.nombre} · bloquea`,
+      });
+    };
+    if (sinTurno !== undefined || loQueEspera(laCola()).length > 0) guardarElBloqueo();
+    else {
+      void cliente.ejecutar('bloquear', {}).then((respuesta) => {
+        if (!respuesta.ok && respuesta.error.codigo === 'sin_conexion') guardarElBloqueo();
+      });
+    }
     // Lo de quien estaba no se le enseña al siguiente: se vacía lo leído.
-    void cliente.ejecutar('bloquear', {});
     cache.removeQueries({ queryKey: ['sala'] });
     cache.removeQueries({ queryKey: ['yo_en_el_tpv'] });
     salir.current();
-  }, [cliente, cache]);
+  }, [cliente, cache, sinTurno, seSubeCon, dentro.persona]);
 
   usarElBloqueo(minutosDelBloqueo(aparato.funcion, aparato.esPersonal, aparato.bloqueo), bloquear);
 
@@ -315,8 +362,9 @@ function ConTurno({
             refrescar: () => {
               void yo.refetch();
             },
+            seSubeCon,
           },
-    [datos, cliente, aparato, bloquear, yo],
+    [datos, cliente, aparato, bloquear, yo, seSubeCon],
   );
 
   if (valor === null) {

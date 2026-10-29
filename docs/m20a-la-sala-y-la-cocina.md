@@ -19,7 +19,7 @@
 > #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
 > ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092, #144), **en producción**.
 > **La entrada nueva** ([0118](decisiones/0118-la-entrada-del-tpv.md), sin migración), con sus
-> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en producción (#148); después, **la pausa del TPV** ([0121](decisiones/0121-la-pausa-del-tpv.md)) y **T5 · 2 · Sin internet**.
+> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en producción (#148); después, **la pausa del TPV** ([0121](decisiones/0121-la-pausa-del-tpv.md)) y **T5 · 2 · Sin internet**, en dos: **T5 · 2 · 1 · Cada aparato aguanta solo** ([0122](decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)), en su pull request, y **T5 · 2 · 2 · La caja de centro**.
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -392,18 +392,51 @@ vincular con el código y con el correo, sin otra caja, y quién ficha), `la-sal
 (lo de llevar, todo junto y programado), `laCocina.prueba.ts`, `texto.prueba.ts`, `impresion.prueba.ts`,
 y las de pantalla de la sala y la botonera, que ya no esperan que la página marque el pase.
 
-### T5 · 2 · Sin internet, terminado cuando
+### T5 · 2 · Sin internet, en dos (29-oct)
 
-- **Cada aparato guarda** el plano, la botonera, las mesas abiertas y quién puede entrar, y **entra
-  con el PIN sin internet** (el PIN, comprobado por la caja; sin ella, quien ya entró ese día).
-- **La caja hace de centro**: los Android y la pantalla de cocina le mandan y le leen por el wifi
-  del local (con el permiso de red local de Chrome), ella imprime y reparte, y **guarda en su disco**
-  lo que falta por subir. **Los iPhone y los iPad** guardan lo suyo con la franja ámbar.
-- **Las franjas** de 10.9: «Sin internet. Todo sigue funcionando en el local · 7 por subir», la ámbar
-  donde la cocina no recibe, y «Conexión recuperada · 12 cosas subidas, ninguna repetida».
+Las pantallas que faltaban se dibujaron y **Richi las aprobó el 29-oct**
+([`docs/maquetas/t5-2-sin-internet.html`](maquetas/t5-2-sin-internet.html) =
+[las maquetas](https://claude.ai/artifact/6zeuHkJtKYVZgX6Fkdjo5u)); lo demás ya estaba aprobado en
+las de T5. Se entrega en dos: primero **cada aparato aguanta solo**, que sirve también en el
+iPhone; después **la caja de centro**.
+
+### T5 · 2 · 1 · Cada aparato aguanta solo, terminado cuando
+
+- **Cada aparato guarda** lo último que leyó (él mismo, el plano, la botonera y las mesas que abrió)
+  y **abre sin internet** con ello.
+- **Sin internet se abre la mesa, se pide, se manda y se marcha**, guardado en el aparato con su
+  clave y en su orden; la mesa abierta sin internet sale en el plano, y lo mandado, aparte y en
+  ámbar.
+- **Entra con el PIN sin internet quien ya entró ese día en ese aparato**; su PIN sube cifrado y lo
+  da por bueno Estook al volver.
+- **La franja ámbar** con lo que falta por subir y **«Ver»**; al volver, **«Conexión recuperada · 12
+  cosas subidas, ninguna repetida»**, una vez.
+- **En IKATZ, con el iPhone en modo avión**, se pide en dos mesas, la franja dice cuántas cosas
+  faltan, y al quitar el modo avión llegan a cocina **una vez y en orden**.
+
+### T5 · 2 · 1 · Cada aparato aguanta solo, entregada (29-oct-2026)
+
+En su pull request ([0122](decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md), sin migración, la
+API sin órdenes nuevas; [sus pasos](pasos-de-t5-2-1.md)): **lo guardado** en `apps/tpv/src/sinInternet/`
+(`laCopia.ts`, `quienEntroHoy.ts`, `laCola.ts`, `loGuardado.ts`, `subir.ts`, `laConexion.ts` y la
+franja), **la subida** en `ganchos/usarSubirLoGuardado.ts`, y en la API, **entrar con el PIN
+cifrado** (`entrar_con_pin` con `pin_cifrado`) y **abrir, pedir, mandar, marchar y bloquear**
+aceptando lo hecho sin internet. Las pruebas: `la-puerta.prueba.ts` (sin internet),
+`subir.prueba.ts`, `loGuardado.prueba.ts` y `sin-internet.spec.ts`, con el navegador sin red.
+
+### T5 · 2 · 2 · La caja de centro, terminado cuando
+
+- **La caja hace de centro**: escucha en el wifi del local, solo a los aparatos vinculados; los
+  Android y la pantalla de cocina le mandan y le leen por el wifi (con el permiso de red local de
+  Chrome); ella **comprueba los PIN de todos**, imprime, reparte y **guarda en su disco** lo que
+  falta por subir. **Los iPhone y los iPad** guardan lo suyo, como en T5 · 2 · 1.
+- **Ajustes del TPV › Aparatos dice quién llega a la caja** sin internet, y avisa si la caja va por
+  wifi.
+- **Fichar sin internet en la caja**, con el PIN que comprueba ella.
 - **Con el router de internet desenchufado**, una comanda tomada en un Android sale en la pantalla
   de cocina y en la impresora **en menos de 2 segundos**, y al volver está en la nube **una sola
   vez** (M19a, Anexo 3.7 y 6.8).
+- **Antes de empezarla**, las tres preguntas del local del amigo de Richi (0122, punto 4).
 
 ### T6 y T7
 

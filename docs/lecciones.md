@@ -991,3 +991,9 @@
      del reloj, macizo**: la barra de Estook era translúcida y emborronaba lo de debajo, y con el
      difuminado que iOS 26 pone bajo el reloj salía un velo blanco (Richi, 28-oct; en Safari no se
      ve, porque allí la barra del navegador tapa esa franja).
+241. **Sin red, TanStack Query no pregunta: espera.** Con lo de fábrica (`networkMode: 'online'`),
+     si el navegador dice que no hay red, una lectura se queda en pausa sin dar ni datos ni error,
+     y la mesa abierta sin internet se quedaba en «No llegamos a la mesa» aunque supiera qué
+     enseñar. En Estook TPV las lecturas van con `networkMode: 'always'`: cada una sabe qué hacer
+     sin internet. Y para probarlo en este ordenador, Estook TPV se sirve **construido**
+     (`vite preview`): hay que construirlo otra vez, con `VITE_API_URL`, o se prueba el de ayer.

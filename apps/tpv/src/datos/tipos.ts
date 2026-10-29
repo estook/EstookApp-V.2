@@ -337,6 +337,11 @@ export interface ElAparatoPorDentro {
   }[];
   readonly temaAlSegundo: string | null;
   readonly hayMesas: boolean;
+  /**
+   * Con la que se cifra el PIN tecleado sin internet (T5 · 2 · 1). La da el latido; una API
+   * de antes no la dice, y entonces sin internet solo sigue quien está dentro.
+   */
+  readonly clavePublica?: string | null;
 }
 
 export interface AparatoVinculado {
@@ -355,6 +360,16 @@ export interface DentroDelTpv {
   /** Desde la entrada nueva (26-oct), todos caen en la sala: la pantalla ya no lo mira. */
   readonly caeEn: 'inicio' | 'mesas';
 }
+
+/**
+ * Quien está dentro. **Sin internet** (T5 · 2 · 1), quien volvió a entrar con su PIN no tiene
+ * turno todavía: lleva su entrada guardada (que sube delante de lo suyo) y lo que se sabía de
+ * él al entrar con internet. Al subir, pasa a su turno de verdad.
+ */
+export type Dentro = DentroDelTpv & {
+  readonly sinInternet?: string;
+  readonly yo?: YoEnElTpv;
+};
 
 export interface ElFichaje {
   /** Una API de antes del 28-oct no lo dice. */

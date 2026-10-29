@@ -58,6 +58,14 @@ export function AbrirMesa({
           }
         : { cuenta_id: cuentaId, mesa_id: mesa.id, personas: elNumero, por_pases: porPases },
       cuentaId,
+      {
+        que:
+          mesa === null
+            ? `${tipo === 'barra' ? 'Barra' : 'Para llevar'} · abierta`
+            : `Mesa ${mesa.nombre} · abierta`,
+        cuentaId,
+        respuesta: { cuentaId },
+      },
     );
     setAbriendo(false);
     if (hecho.ok) {

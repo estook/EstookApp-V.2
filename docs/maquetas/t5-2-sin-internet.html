@@ -1,0 +1,1285 @@
+<title>T5 · 2 · Sin internet</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Courier+Prime:wght@400;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Un solo aspecto, el de Estook TPV (Anexo 11.12): oscuro, denso y de mucho contraste.
+     Cada sección: qué es, la pantalla dibujada y, plegado, el porqué. Los papeles, a 80 mm. */
+  :root {
+    color-scheme: dark;
+    --fondo-pagina: #0b1113;
+    --fondo: #0f1719;
+    --barra: #111c1f;
+    --tarjeta: #18252a;
+    --marcado: #22343a;
+    --borde: #2c4047;
+    --texto: #f1efea;
+    --suave: #9fb0b3;
+    --naranja: #ff7a00;
+    --sobre-naranja: #1a0d00;
+    --verde: #4ec98a;
+    --ambar: #f0ae4e;
+    --azul: #6fb7e8;
+    --rojo: #f0796c;
+    --papel: #fbfaf6;
+    --tinta: #141414;
+    --letra: Montserrat, system-ui, 'Segoe UI', sans-serif;
+    --letra-papel: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--fondo-pagina);
+    color: var(--texto);
+    font-family: var(--letra);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-block: 28px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .hoja-entera {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 52px;
+  }
+  h1 {
+    font-size: clamp(24px, 4vw, 34px);
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h2 {
+    font-size: 21px;
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  p {
+    margin: 0;
+  }
+  .rotulo {
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--naranja);
+  }
+  .seccion {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .lead {
+    color: var(--suave);
+    max-width: 68ch;
+  }
+  .lead b,
+  .porque b {
+    color: var(--texto);
+  }
+  details.porque {
+    color: var(--suave);
+    max-width: 78ch;
+  }
+  details.porque summary {
+    cursor: pointer;
+    color: var(--azul);
+    font-weight: 700;
+    font-size: 14px;
+    width: fit-content;
+  }
+  details.porque > div {
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  :focus-visible {
+    outline: 3px solid var(--naranja);
+    outline-offset: 2px;
+  }
+
+  /* ── El resumen de arriba ── */
+  .indice {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .indice a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 14px 16px;
+    color: var(--texto);
+    text-decoration: none;
+  }
+  .indice a b {
+    font-size: 16px;
+  }
+  .indice a span {
+    color: var(--suave);
+    font-size: 13px;
+  }
+  .indice a.tuyo {
+    border-color: var(--naranja);
+  }
+
+  /* ── Las pantallas ── */
+  .pantalla {
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .ventana {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    background: #070b0c;
+    color: var(--suave);
+    font-size: 12px;
+  }
+  .ventana .puntos {
+    margin-left: auto;
+    letter-spacing: 6px;
+  }
+  .cab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--barra);
+    border-bottom: 1px solid var(--marcado);
+    flex-wrap: wrap;
+  }
+  .logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--naranja);
+    color: var(--sobre-naranja);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 19px;
+    flex-shrink: 0;
+  }
+  .local b {
+    display: block;
+    font-size: 15px;
+  }
+  .local span {
+    font-size: 12px;
+    color: var(--suave);
+  }
+  .grupo {
+    display: flex;
+    gap: 2px;
+    background: var(--fondo);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .grupo span {
+    border-radius: 999px;
+    padding: 8px 13px;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .grupo .si {
+    background: var(--marcado);
+  }
+  .derecha {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-weight: 700;
+    font-size: 13px;
+    border: 1px solid var(--borde);
+    background: var(--tarjeta);
+    white-space: nowrap;
+  }
+  .chip i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .b-naranja {
+    background: var(--naranja);
+    color: var(--sobre-naranja);
+    border-color: var(--naranja);
+  }
+  .franja {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+  .franja .boton {
+    margin-left: auto;
+  }
+  .franja.tranquila {
+    background: #16302a;
+    color: #bfeed6;
+  }
+  .franja.ambar {
+    background: #3a2c0c;
+    color: #ffd99a;
+  }
+  .franja.roja {
+    background: #3a1714;
+    color: #ffc2bb;
+  }
+  .franja.azul {
+    background: #13293a;
+    color: #c4e4fa;
+  }
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 14px;
+    border: 1px solid var(--borde);
+    background: var(--tarjeta);
+    color: var(--texto);
+    white-space: nowrap;
+  }
+  .boton.principal {
+    background: var(--naranja);
+    border-color: var(--naranja);
+    color: var(--sobre-naranja);
+  }
+  .plano {
+    position: relative;
+    height: 230px;
+    background:
+      radial-gradient(circle at 1px 1px, #1d2c31 1px, transparent 0) 0 0 / 22px 22px,
+      var(--fondo);
+  }
+  .m {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    border: 2px solid #4a5c61;
+    font-weight: 800;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .m small {
+    display: block;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--suave);
+  }
+  .m.comiendo {
+    background: #1f6b4a;
+    border-color: #1f6b4a;
+  }
+  .m.comiendo small,
+  .m.marchar small {
+    color: #d6f1e4;
+  }
+  .m.marchar {
+    background: #2c6e9b;
+    border-color: #2c6e9b;
+  }
+  .m.redonda {
+    border-radius: 50%;
+  }
+  .pie {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 14px;
+    font-size: 12px;
+    color: var(--suave);
+    border-top: 1px solid var(--marcado);
+    flex-wrap: wrap;
+  }
+
+  /* ── Listas de ajustes ── */
+  .lista {
+    display: flex;
+    flex-direction: column;
+  }
+  .fila {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--marcado);
+    flex-wrap: wrap;
+  }
+  .fila:last-child {
+    border-bottom: 0;
+  }
+  .ico {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+  .que {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+  .que b {
+    display: block;
+  }
+  .que span {
+    font-size: 13px;
+    color: var(--suave);
+  }
+  .estado {
+    font-weight: 700;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .estado i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+  }
+  .c-verde {
+    color: var(--verde);
+  }
+  .c-ambar {
+    color: var(--ambar);
+  }
+  .c-rojo {
+    color: var(--rojo);
+  }
+  .c-azul {
+    color: var(--azul);
+  }
+  .f-verde {
+    background: #173a2c;
+  }
+  .f-ambar {
+    background: #3a2c0c;
+  }
+  .f-naranja {
+    background: #3d2209;
+  }
+  .f-azul {
+    background: #13293a;
+  }
+  .f-gris {
+    background: var(--marcado);
+  }
+  .elegir {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .elegir span {
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .elegir .si {
+    border-color: var(--naranja);
+    color: var(--naranja);
+    background: #2a1a0a;
+  }
+  .subtitulo-lista {
+    padding: 12px 16px 6px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--suave);
+    background: var(--barra);
+  }
+
+  /* ── Rejillas ── */
+  .dos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .tres {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .rotulo-pantalla {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--suave);
+    margin-bottom: 8px;
+  }
+
+  /* ── El papel de 80 mm ── */
+  .papeles {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .papel-y-rotulo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(100%, 300px);
+  }
+  .papel {
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: var(--letra-papel);
+    font-size: 14px;
+    line-height: 1.35;
+    padding: 16px 16px 22px;
+    width: 100%;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    /* el corte de la impresora, en dientes */
+    -webkit-mask:
+      linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 8px
+        repeat-x;
+    mask:
+      linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 8px
+        repeat-x;
+  }
+  .papel .grande {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .papel .centro {
+    text-align: center;
+  }
+  .papel .raya {
+    border-top: 2px dashed var(--tinta);
+    margin: 8px 0;
+  }
+  .papel .linea {
+    display: flex;
+    gap: 8px;
+  }
+  .papel .linea b {
+    min-width: 2ch;
+  }
+  .papel .linea .precio {
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .papel .negativo {
+    background: var(--tinta);
+    color: var(--papel);
+    font-weight: 700;
+    padding: 3px 6px;
+    display: inline-block;
+  }
+  .papel .nota {
+    padding-left: 3ch;
+  }
+  .papel .espera {
+    opacity: 0.85;
+  }
+  .papel .tachado {
+    text-decoration: line-through;
+  }
+  .papel.gris {
+    opacity: 0.55;
+  }
+  .papel .qr {
+    width: 84px;
+    height: 84px;
+    margin: 8px auto 0;
+    background: conic-gradient(
+        var(--tinta) 25%,
+        transparent 0 50%,
+        var(--tinta) 0 75%,
+        transparent 0
+      )
+      0 0 / 14px 14px;
+    border: 6px solid var(--tinta);
+  }
+  .rotulo-papel {
+    font-size: 13px;
+    color: var(--suave);
+  }
+  .rotulo-papel b {
+    color: var(--texto);
+  }
+
+  /* ── El camino de una comanda ── */
+  .caminos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
+    gap: 16px;
+  }
+  .camino {
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .camino h3 {
+    margin: 0;
+    font-size: 16px;
+  }
+  .pasos {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .pasos div {
+    flex: 1 1 110px;
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .pasos div b {
+    display: block;
+    font-size: 14px;
+  }
+  .pasos div span {
+    color: var(--suave);
+  }
+  .pasos .flecha {
+    flex: 0 0 auto;
+    background: none;
+    border: 0;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    color: var(--naranja);
+    font-weight: 800;
+  }
+  .pasos .centro-local {
+    border-color: var(--naranja);
+  }
+
+  /* ── Tablas ── */
+  .tabla {
+    overflow-x: auto;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 640px;
+    font-size: 14px;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--marcado);
+    vertical-align: top;
+  }
+  th {
+    background: var(--barra);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--suave);
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  td.ok {
+    color: #bfeed6;
+  }
+  td.casi {
+    color: #ffd99a;
+  }
+  td.no {
+    color: #ffc2bb;
+  }
+
+  /* ── Lo que no cuadra, mejoras y preguntas ── */
+  .tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 14px;
+  }
+  .tarjeta {
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .tarjeta b.t {
+    font-size: 15px;
+  }
+  .tarjeta p {
+    color: var(--suave);
+    font-size: 14px;
+  }
+  .tarjeta p strong {
+    color: var(--texto);
+  }
+  .tarjeta .hago {
+    color: #bfeed6;
+    font-size: 14px;
+  }
+  .pregunta {
+    background: var(--tarjeta);
+    border: 1px solid var(--naranja);
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .pregunta h3 {
+    margin: 0;
+    font-size: 18px;
+    text-wrap: balance;
+  }
+  .pregunta .de {
+    font-size: 13px;
+    color: var(--suave);
+  }
+  .pregunta .texto {
+    color: var(--suave);
+    max-width: 80ch;
+  }
+  .pregunta .texto b {
+    color: var(--texto);
+  }
+  .opciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 10px;
+  }
+  .opcion {
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: var(--fondo);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    min-width: 0;
+  }
+  .opcion b {
+    font-size: 15px;
+  }
+  .opcion span {
+    color: var(--suave);
+  }
+  .opcion.recomendada {
+    border-color: var(--verde);
+  }
+  .opcion.recomendada b::after {
+    content: '  · la que recomiendo';
+    color: var(--verde);
+    font-size: 13px;
+  }
+  .decides {
+    font-weight: 800;
+    color: var(--naranja);
+  }
+  .partes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 14px;
+  }
+  .parte {
+    border-radius: 16px;
+    padding: 16px;
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .parte ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--suave);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .parte .cuando {
+    font-size: 13px;
+    color: var(--verde);
+    font-weight: 700;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .indice a,
+    .boton {
+      transition: transform 0.15s ease;
+    }
+    .indice a:hover {
+      transform: translateY(-2px);
+    }
+  }
+</style>
+
+<style>
+  /* Lo que añade T5 · 2: el teclado del PIN, la hoja de «por subir» y el aviso de Chrome. */
+  .teclado {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-width: 260px;
+    margin: 0 auto;
+  }
+  .teclado span {
+    display: grid;
+    place-items: center;
+    height: 50px;
+    border-radius: 12px;
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    font-weight: 800;
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+  .puntos {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  .puntos i {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--suave);
+  }
+  .puntos i.lleno {
+    background: var(--texto);
+    border-color: var(--texto);
+  }
+  .dentro {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+  .dentro .centro {
+    text-align: center;
+  }
+  .aviso-pin {
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+    text-align: center;
+  }
+  .hora {
+    font-variant-numeric: tabular-nums;
+    color: var(--suave);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .chrome {
+    background: #f4f6f8;
+    color: #1f1f1f;
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-family: Roboto, system-ui, sans-serif;
+    font-size: 14px;
+    max-width: 340px;
+    margin: 0 auto;
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.45);
+  }
+  .chrome .botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .chrome .botones span {
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-weight: 600;
+    color: #0b57d0;
+  }
+  .chrome .botones span.si {
+    background: #0b57d0;
+    color: #fff;
+  }
+  .sombra {
+    padding: 22px 14px;
+    background: rgb(0 0 0 / 0.35);
+  }
+  .tarjeta-cocina {
+    border: 2px solid var(--borde);
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--tarjeta);
+    min-width: 0;
+  }
+  .tarjeta-cocina b {
+    font-size: 18px;
+  }
+  .cocina-columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 10px;
+    padding: 12px;
+  }
+</style>
+
+<div class="hoja-entera">
+  <!-- ═══ ARRIBA ═══ -->
+  <header class="seccion">
+    <p class="rotulo">Estook TPV · T5 · 2 · 29 de octubre · maquetas para aprobar</p>
+    <h1>Sin internet: el servicio no se para</h1>
+    <p class="lead">
+      Lo grande ya lo diste por bueno el 27-oct: <b>la caja hace de centro</b>, las franjas de cada
+      aparato y lo que funciona sin internet (<a
+        href="https://claude.ai/artifact/1jLKT6tsU8iMDQ8dBsfz7S"
+        style="color: var(--azul)"
+        >maquetas de T5, sección 4</a
+      >). Aquí van <b>las pantallas que faltaban</b> para poder construirlo sin inventar nada. Nada
+      de esto está programado todavía.
+    </p>
+    <nav class="indice" aria-label="Lo que hay en esta página">
+      <a href="#pin"
+        ><b>1 · Entrar sin internet</b><span>Quién entra con su PIN y quién no</span></a
+      >
+      <a href="#por-subir"
+        ><b>2 · Lo que falta por subir</b><span>Qué hay pendiente y cómo sube al volver</span></a
+      >
+      <a href="#centro"
+        ><b>3 · La caja de centro</b><span>El permiso del Android y quién llega a la caja</span></a
+      >
+      <a href="#cocina"><b>4 · La pantalla de cocina</b><span>Con la caja y sin ella</span></a>
+      <a href="#partes" class="tuyo"
+        ><b>5 · Cómo la entrego</b><span>En dos partes, y cuándo se da por buena</span></a
+      >
+    </nav>
+  </header>
+
+  <!-- ═══ 1 · EL PIN ═══ -->
+  <section class="seccion" id="pin">
+    <p class="rotulo">1 · Entrar sin internet</p>
+    <h2>Con la caja, entra todo el mundo; sin ella, quien ya entró hoy en ese aparato</h2>
+    <p class="lead">
+      El PIN lo comprueba la nube. Sin internet <b>lo comprueba la caja para Windows</b>, que guarda
+      los del local cifrados. Si tampoco llega a la caja (un iPhone, o la caja apagada),
+      <b>solo entra quien ya entró hoy en ese aparato</b>: guardar los PIN de todos en un móvil no
+      es seguro.
+    </p>
+    <div class="tres">
+      <div>
+        <p class="rotulo-pantalla">Un Android, sin internet y con la caja</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>IKATZ</b><span>▣ Móvil de Lucía</span></div>
+            <div class="derecha">
+              <span class="chip"><i style="background: var(--verde)"></i>Por la caja</span>
+            </div>
+          </div>
+          <div class="dentro">
+            <p class="centro"><b>Tu PIN</b></p>
+            <div class="puntos" aria-hidden="true">
+              <i class="lleno"></i><i class="lleno"></i><i></i><i></i><i></i><i></i>
+            </div>
+            <div class="teclado" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span
+              ><span>7</span><span>8</span><span>9</span><span></span><span>0</span><span>⌫</span>
+            </div>
+          </div>
+          <div class="pie"><span>Sin internet: el PIN lo mira la caja</span></div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">Un iPhone sin internet: entra quien ya entró hoy</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>IKATZ</b><span>▣ Comandero terraza</span></div>
+            <div class="derecha">
+              <span class="chip"><i style="background: var(--ambar)"></i>Sin conexión</span>
+            </div>
+          </div>
+          <div class="dentro">
+            <p class="centro"><b>Hola, Marcos</b></p>
+            <p class="centro" style="color: var(--suave)">
+              Entraste hoy aquí a las 19:02. Sigues con tus mesas.
+            </p>
+          </div>
+          <div class="franja ambar">Sin conexión. Se guarda aquí: la cocina aún no lo recibe</div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">Y alguien que no entró hoy en ese aparato</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>IKATZ</b><span>▣ Comandero terraza</span></div>
+            <div class="derecha">
+              <span class="chip"><i style="background: var(--ambar)"></i>Sin conexión</span>
+            </div>
+          </div>
+          <div class="dentro">
+            <p class="aviso-pin" style="background: #3a2c0c; color: #ffd99a">
+              <b>Sin conexión no se puede comprobar ese PIN.</b><br />Aquí solo entra quien ya entró
+              hoy en este aparato. Usa la caja o espera a que vuelva.
+            </p>
+            <div class="puntos" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="pie"><span>No dice si el PIN era de alguien</span></div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>¿Por qué no se guardan los PIN en cada móvil?</summary>
+      <div>
+        <p>
+          Un PIN de 6 cifras guardado en un móvil se adivina probando el millón de combinaciones en
+          un ordenador, sin que nadie se entere. En la caja, que está en el local y por cable, no
+          sale de ahí. Toast y Square hacen lo mismo: sin conexión, solo sigue quien ya estaba.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ 2 · POR SUBIR ═══ -->
+  <section class="seccion" id="por-subir">
+    <p class="rotulo">2 · Lo que falta por subir</p>
+    <h2>Se toca la franja y se ve qué espera; al volver, sube solo, en orden y una vez</h2>
+    <p class="lead">
+      Cada cosa que se hace sin internet nace con su nombre en el aparato, así que
+      <b>subirla dos veces no la duplica</b>. A una mesa se le <b>añade</b>, nunca se le borra lo
+      que hizo otro. Nadie tiene que hacer nada al volver.
+    </p>
+    <div class="dos">
+      <div>
+        <p class="rotulo-pantalla">Al tocar «7 por subir»</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="local">
+              <b>Por subir</b><span>7 cosas · la más antigua, de las 21:38</span>
+            </div>
+            <div class="derecha">
+              <span class="chip"><i style="background: var(--ambar)"></i>Sin internet</span>
+            </div>
+          </div>
+          <div class="lista">
+            <div class="fila">
+              <span class="ico f-verde">🍳</span>
+              <div class="que"><b>Mesa 4 · 3 platos mandados</b><span>Lucía</span></div>
+              <span class="estado c-verde"><i style="background: var(--verde)"></i>En cocina</span>
+              <span class="hora">21:38</span>
+            </div>
+            <div class="fila">
+              <span class="ico f-verde">⏩</span>
+              <div class="que"><b>Mesa 4 · marchar el 2.º</b><span>Lucía</span></div>
+              <span class="estado c-verde"><i style="background: var(--verde)"></i>En cocina</span>
+              <span class="hora">21:51</span>
+            </div>
+            <div class="fila">
+              <span class="ico f-ambar">🍷</span>
+              <div class="que"><b>Mesa 7 · 2 cañas, 1 vermut</b><span>Marcos · iPhone</span></div>
+              <span class="estado c-ambar"
+                ><i style="background: var(--ambar)"></i>En su móvil</span
+              >
+              <span class="hora">21:53</span>
+            </div>
+            <div class="fila">
+              <span class="ico f-gris">⏱</span>
+              <div class="que"><b>Ana · empieza la pausa</b><span>Fichado en la caja</span></div>
+              <span class="estado c-verde"><i style="background: var(--verde)"></i>Apuntado</span>
+              <span class="hora">21:55</span>
+            </div>
+          </div>
+          <div class="pie">
+            <span>«En cocina»: ya lo tiene la cocina; solo falta la nube</span
+            ><span>Sube solo al volver</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">Al volver internet, una vez</p>
+        <div class="pantalla">
+          <div class="franja azul">Conexión recuperada · 12 cosas subidas, ninguna repetida</div>
+        </div>
+        <p class="rotulo-pantalla" style="margin-top: 16px">
+          Y si algo no se puede hacer al subir (lo raro)
+        </p>
+        <div class="pantalla">
+          <div class="franja ambar">
+            Conexión recuperada · 11 subidas · 1 hay que mirarla
+            <span class="boton">Verla</span>
+          </div>
+          <div class="lista">
+            <div class="fila">
+              <span class="ico f-ambar">!</span>
+              <div class="que">
+                <b>Quitar la croqueta de la mesa 4</b
+                ><span
+                  >La cocina ya la había hecho. Sigue en la cuenta: si no la cobras, quítala con un
+                  encargado.</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>¿Qué no se hace sin internet?</summary>
+      <div>
+        <p>
+          Lo que cambia la carta o la plantilla (precios, productos, dar de alta a alguien) espera a
+          que vuelva, porque lo tendrían que saber todos los aparatos a la vez. Cobrar llega con T7,
+          con su justificante sin internet y el ticket al volver.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ 3 · LA CAJA DE CENTRO ═══ -->
+  <section class="seccion" id="centro">
+    <p class="rotulo">3 · La caja de centro</p>
+    <h2>Los Android piden un permiso una vez, y en Aparatos se ve quién llega a la caja</h2>
+    <p class="lead">
+      Para hablar con la caja por el wifi, Chrome pide permiso la primera vez. Antes, Estook TPV
+      explica por qué en una línea. <b>Desde la caja se ve, aparato a aparato, quién la alcanza</b>,
+      para saberlo antes de que falte internet y no en mitad del servicio.
+    </p>
+    <div class="dos">
+      <div>
+        <p class="rotulo-pantalla">En un Android, una vez (con internet)</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="logo">E</div>
+            <div class="local"><b>IKATZ</b><span>▣ Móvil de Lucía</span></div>
+          </div>
+          <div class="franja azul">
+            Para que la cocina reciba aunque se vaya internet, deja que Estook TPV hable con la caja
+            <span class="boton b-naranja">Seguir</span>
+          </div>
+          <div class="sombra">
+            <div class="chrome" role="img" aria-label="El aviso de Chrome">
+              <b>estook.com quiere</b>
+              <span>Buscar dispositivos de tu red local y conectarse a ellos</span>
+              <div class="botones"><span>Bloquear</span><span class="si">Permitir</span></div>
+            </div>
+          </div>
+          <div class="pie"><span>El aviso es de Chrome: Estook no lo puede cambiar</span></div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">En la caja: Ajustes del TPV › Aparatos</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="local"><b>Aparatos</b><span>4 de 5 siguen sin internet</span></div>
+          </div>
+          <div class="lista">
+            <div class="fila">
+              <span class="ico f-naranja">▣</span>
+              <div class="que">
+                <b>Caja 1</b><span>Este · la caja para Windows · por cable</span>
+              </div>
+              <span class="estado c-verde"
+                ><i style="background: var(--verde)"></i>Es el centro</span
+              >
+            </div>
+            <div class="fila">
+              <span class="ico f-verde">🍳</span>
+              <div class="que"><b>Cocina</b><span>Tablet Android · pantalla de cocina</span></div>
+              <span class="estado c-verde"
+                ><i style="background: var(--verde)"></i>Llega a la caja</span
+              >
+            </div>
+            <div class="fila">
+              <span class="ico f-gris">📱</span>
+              <div class="que"><b>Móvil de Lucía</b><span>Android · comandero</span></div>
+              <span class="estado c-verde"
+                ><i style="background: var(--verde)"></i>Llega a la caja</span
+              >
+            </div>
+            <div class="fila">
+              <span class="ico f-gris">📱</span>
+              <div class="que"><b>Móvil de Marcos</b><span>iPhone · comandero</span></div>
+              <span class="estado c-ambar"
+                ><i style="background: var(--ambar)"></i>Guarda lo suyo</span
+              >
+            </div>
+            <div class="fila">
+              <span class="ico f-gris">📱</span>
+              <div class="que">
+                <b>Tablet terraza</b><span>Android · sin el permiso de Chrome</span>
+              </div>
+              <span class="boton">Cómo darlo</span>
+            </div>
+          </div>
+          <div class="pie">
+            <span>El iPhone no deja que una web hable con la caja: sube lo suyo al volver</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pantalla">
+      <div class="franja ambar">
+        Esta caja va por wifi. Si el wifi falla, se queda sola: mejor un cable al router
+      </div>
+    </div>
+    <details class="porque">
+      <summary>¿Cómo lo hacen los demás?</summary>
+      <div>
+        <p>
+          <b>Toast</b> pide un aparato de centro por cable y enseña en su panel qué terminales lo
+          alcanzan. <b>Square</b> no tiene centro: cada aparato guarda lo suyo. Estook hace lo de
+          Toast con la caja que el local ya tiene, sin comprar nada.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═══ 4 · COCINA ═══ -->
+  <section class="seccion" id="cocina">
+    <p class="rotulo">4 · La pantalla de cocina</p>
+    <h2>Con la caja, como siempre; sin ella, lo dice arriba y no esconde lo que ya tenía</h2>
+    <div class="dos">
+      <div>
+        <p class="rotulo-pantalla">Sin internet, con la caja</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="local"><b>Cocina</b><span>En marcha · 3</span></div>
+            <div class="derecha">
+              <span class="chip"><i style="background: var(--verde)"></i>Por la caja</span>
+            </div>
+          </div>
+          <div class="cocina-columnas">
+            <div class="tarjeta-cocina">
+              <b>Mesa 4</b><span>1.º · 2 croquetas · 1 ensalada</span
+              ><span class="hora">hace 3 min</span>
+            </div>
+            <div class="tarjeta-cocina">
+              <b>Mesa 2</b><span>1.º · 1 tortilla</span><span class="hora">hace 1 min</span>
+            </div>
+            <div class="tarjeta-cocina" style="border-color: var(--naranja)">
+              <b>Mesa 7</b><span>NUEVO · 2 chuletones</span><span class="hora">ahora</span>
+            </div>
+          </div>
+          <div class="pie"><span>Sin internet. Todo sigue funcionando en el local</span></div>
+        </div>
+      </div>
+      <div>
+        <p class="rotulo-pantalla">Sin internet y sin la caja (apagada, o la cocina es un iPad)</p>
+        <div class="pantalla">
+          <div class="cab">
+            <div class="local"><b>Cocina</b><span>En marcha · 2</span></div>
+            <div class="derecha">
+              <span class="chip"><i style="background: var(--rojo)"></i>Sin conexión</span>
+            </div>
+          </div>
+          <div class="franja roja">
+            Lo nuevo no llega a esta pantalla. Lo de antes sigue aquí y se puede tachar
+          </div>
+          <div class="cocina-columnas">
+            <div class="tarjeta-cocina">
+              <b>Mesa 4</b><span>1.º · 2 croquetas · 1 ensalada</span
+              ><span class="hora">hace 9 min</span>
+            </div>
+            <div class="tarjeta-cocina">
+              <b>Mesa 2</b><span>1.º · 1 tortilla</span><span class="hora">hace 7 min</span>
+            </div>
+          </div>
+          <div class="pie"><span>Lo tachado se guarda y sube al volver</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 5 · CÓMO LA ENTREGO ═══ -->
+  <section class="seccion" id="partes">
+    <p class="rotulo">5 · Cómo la entrego</p>
+    <h2>En dos partes: primero cada aparato solo, después la caja de centro</h2>
+    <p class="lead">
+      La primera sirve en cualquier aparato, también en el iPhone, y se prueba en IKATZ con el modo
+      avión. La segunda necesita el PC de la caja y un Android en el mismo wifi.
+    </p>
+    <div class="partes">
+      <div class="parte">
+        <b>T5 · 2 · 1 · Cada aparato aguanta solo</b>
+        <ul>
+          <li>Guarda el plano, la botonera, las mesas abiertas y quién entró hoy</li>
+          <li>Sin internet se pide, se manda, se marcha y se ficha; se guarda en el aparato</li>
+          <li>La franja ámbar, «Por subir» con lo que espera, y «Conexión recuperada»</li>
+          <li>Al volver sube solo, en orden y una vez</li>
+        </ul>
+        <span class="cuando"
+          >Terminada cuando: en IKATZ, con el iPhone en modo avión se pide en dos mesas, la franja
+          dice «2 por subir», y al quitar el modo avión llegan a cocina una vez y en orden.</span
+        >
+      </div>
+      <div class="parte">
+        <b>T5 · 2 · 2 · La caja de centro</b>
+        <ul>
+          <li>La caja escucha en el wifi del local, solo a los aparatos vinculados</li>
+          <li>Los Android y la pantalla de cocina le mandan y le leen sin internet</li>
+          <li>Ella comprueba los PIN, imprime, reparte y guarda lo que falta por subir</li>
+          <li>Aparatos dice quién llega a la caja; el aviso si la caja va por wifi</li>
+        </ul>
+        <span class="cuando"
+          >Terminada cuando: con el router de internet desenchufado, una comanda tomada en un
+          Android sale en la pantalla de cocina y en la impresora en menos de 2 segundos, y al
+          volver está en la nube una sola vez.</span
+        >
+      </div>
+    </div>
+  </section>
+</div>

@@ -3,12 +3,19 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { CosaEnElPlano } from './dibujo.tsx';
 import { Aviso, Boton, Cargando, EstadoVacio, ErrorEnCristiano } from '@estook/ui';
 import { LaBarraDeArriba } from '../inicio/LaBarraDeArriba.tsx';
-import { FalloDeLaSala, usarAcciones, usarAlSegundo, usarElPlano } from '../ganchos/usarLaSala.ts';
+import {
+  FalloDeLaSala,
+  usarAcciones,
+  usarAlSegundo,
+  usarElPlano,
+  usarLaCarta,
+} from '../ganchos/usarLaSala.ts';
 import type { CuentaEnElPlano, ElPlano as ElPlanoDeLaApi, MesaDelPlano } from '../datos/tipos.ts';
 import { elPase } from '../logica/laCuenta.ts';
 import { irA, irALaMesa } from '../navegar.ts';
 import { AbrirMesa } from './AbrirMesa.tsx';
 import { LaCocinaLlama } from './LaCocinaLlama.tsx';
+import { LaFranjaSinInternet } from '../sinInternet/LaFranjaSinInternet.tsx';
 import { DescargaLaCajaParaWindows, LasImpresorasAvisan } from './LasImpresorasAvisan.tsx';
 import { OpcionesDeLaMesa } from '../mesa/OpcionesDeLaMesa.tsx';
 import { MesaEnElPlano, TarjetaSinMesa } from './MesaEnElPlano.tsx';
@@ -63,6 +70,9 @@ function porSuNombre(a: { readonly nombre: string }, b: { readonly nombre: strin
 export function ElPlano() {
   const conectado = usarAlSegundo();
   const plano = usarElPlano(conectado);
+  // La botonera se lee ya desde el plano, y se guarda: **sin internet se pide igual** aunque
+  // aún no se hubiera abierto ninguna mesa en este aparato (T5 · 2 · 1).
+  usarLaCarta();
   const ejecutar = usarAcciones();
   const { aparato } = usarSesion();
   const [zonaElegida, setZonaElegida] = useState<string | null>(null);
@@ -118,7 +128,11 @@ export function ElPlano() {
 
   async function marchar(cuentaId: string, pase: number) {
     setFallo(null);
-    const hecho = await ejecutar('marchar', { cuenta_id: cuentaId, pase });
+    const hecho = await ejecutar('marchar', { cuenta_id: cuentaId, pase }, undefined, {
+      que: `${laCuenta(cuentaId)?.titulo ?? 'Una mesa'} · marchar el ${pase}.º`,
+      cuentaId,
+      respuesta: { pase },
+    });
     if (!hecho.ok) setFallo(hecho.error);
   }
 
@@ -185,6 +199,7 @@ export function ElPlano() {
         </div>
       </LaBarraDeArriba>
 
+      <LaFranjaSinInternet />
       <LaCocinaLlama
         cuentas={[
           ...datos.zonas.flatMap((z) =>

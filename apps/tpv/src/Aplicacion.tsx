@@ -88,7 +88,12 @@ export function Aplicacion() {
   const cache = useMemo(
     () =>
       new QueryClient({
-        defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true } },
+        defaultOptions: {
+          // **Leer siempre, también sin red** (T5 · 2 · 1): sin internet, cada lectura sabe
+          // qué hacer (lo último guardado en el aparato). Con lo de fábrica, TanStack las
+          // dejaría en pausa y la mesa no abriría nunca.
+          queries: { retry: 1, refetchOnWindowFocus: true, networkMode: 'always' },
+        },
       }),
     [],
   );

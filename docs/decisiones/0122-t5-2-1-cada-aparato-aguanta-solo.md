@@ -77,7 +77,26 @@ aparato aguanta solo** (esta), que sirve también en el iPhone; después **la ca
 - **Fichar sin internet en la caja**: con la caja de centro, que comprueba el PIN de cualquiera.
 - **Cobrar sin internet**, con su justificante: con el cobro (T7).
 
-## 5 · Las pruebas
+## 5 · Lo que contestó Richi para T5 · 2 · 2 (29-oct)
+
+1. **Los camareros, en el wifi del local**: «que se conecten a la misma red wifi sería lo óptimo».
+   Estook TPV, en un Android con datos, le dirá al camarero que se conecte al wifi del local
+   (Chrome dice si va por wifi o por datos).
+2. **La pantalla de cocina, Android o iPad**: Richi no veía por qué un iPad tendría que hablar con
+   la caja. Es para **recibir las comandas sin internet**: sin internet, lo pedido llega a la
+   cocina a través de la caja, y Safari no deja que una web hable con otro aparato del wifi.
+   **Se recomienda una tablet Android** para la cocina; **un iPad sigue valiendo**, y sin internet
+   la cocina tira del papel, que lo imprime la caja.
+3. **La caja por cable o por wifi: las dos**. Se prepara para las dos; por wifi no se avisa en el
+   servicio, solo se dice en Aparatos que por cable va más estable.
+4. **El local del amigo** (para probar, no es una pregunta): su TPV va por wifi, la impresora de la
+   caja por cable y las de cocina, por wifi. Richi: «tiene que estar pulido, si no le jodo el
+   ecosistema que ya tiene». Antes de ir, **buscar impresoras deja de mandar nada a lo que no se
+   ha elegido** (una impresora de oficina imprimiría la pregunta del modelo; lección 242), y los
+   pasos para probar sin tocar nada suyo están en
+   [`pasos-en-el-local-del-amigo.md`](../pasos-en-el-local-del-amigo.md).
+
+## 6 · Las pruebas
 
 - **Contra la base** (`la-puerta.prueba.ts`): el latido da la clave pública; lo hecho sin
   internet sube con su turno y repetido no hace nada dos veces; bloquear sube detrás; la entrada

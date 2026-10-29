@@ -1,3 +1,4 @@
+import { get } from 'node:http';
 import { Socket } from 'node:net';
 import { networkInterfaces, type NetworkInterfaceInfo } from 'node:os';
 import { PUERTO_DE_SIEMPRE } from './la-impresora.ts';
@@ -9,6 +10,12 @@ import { PUERTO_DE_SIEMPRE } from './la-impresora.ts';
  *
  * Y una más: **192.168.192.168**, donde se pone una Epson cuando no hay router que le dé
  * dirección (el cable directo del PC a la impresora).
+ *
+ * **A lo que no se ha elegido no se le manda ni un byte** (29-oct, antes de probar en el local
+ * del amigo de Richi): en el 9100 también escuchan las impresoras de oficina, y lo que les llega
+ * por ahí lo imprimen. Buscar solo llama a la puerta y cuelga; el nombre de una desconocida se
+ * lee **de su página web**, que solo se mira. Preguntarle por ESC/POS (`GS I`), solo a las que el
+ * local ya dio de alta.
  */
 
 export const LA_DE_EPSON_SIN_ROUTER = '192.168.192.168';
@@ -95,4 +102,66 @@ export async function lasQueContestan(
   await Promise.all(Array.from({ length: Math.max(1, aLaVez) }, () => trabajar()));
   const orden = new Map(candidatas.map((c, i) => [`${c}:${String(puerto)}`, i]));
   return encontradas.sort((a, b) => (orden.get(a) ?? 0) - (orden.get(b) ?? 0));
+}
+
+/**
+ * **El nombre que dice su página web** (el `<title>`): las Epson dicen «EPSON TM-T20III», y una de
+ * oficina, la suya. Solo se lee: una petición a la web no imprime nada. Nulo si no tiene web o no
+ * contesta a tiempo.
+ */
+export function elNombreDeSuWeb(host: string, puerto = 80, esperaMs = 800): Promise<string | null> {
+  return new Promise((resolver) => {
+    let leido = '';
+    const peticion = get({ host, port: puerto, path: '/', timeout: esperaMs }, (respuesta) => {
+      respuesta.setEncoding('latin1');
+      respuesta.on('data', (trozo: string) => {
+        leido += trozo;
+        if (leido.length > 16_384) peticion.destroy();
+      });
+      respuesta.on('end', () => {
+        resolver(elTitulo(leido));
+      });
+      respuesta.on('error', () => {
+        resolver(elTitulo(leido));
+      });
+    });
+    peticion.on('timeout', () => {
+      peticion.destroy();
+    });
+    peticion.on('error', () => {
+      resolver(elTitulo(leido));
+    });
+    peticion.on('close', () => {
+      resolver(elTitulo(leido));
+    });
+  });
+}
+
+function elTitulo(html: string): string | null {
+  const titulo = /<title[^>]*>([^<]{1,80})<\/title>/i.exec(html)?.[1]?.replace(/\s+/g, ' ').trim();
+  if (titulo === undefined || titulo === '') return null;
+  // «EPSON TM-T20III» → «Epson TM-T20III», como lo dice la propia impresora por ESC/POS.
+  return titulo.replace(/^EPSON\b/, 'Epson');
+}
+
+/**
+ * **El nombre de cada una**, sin molestar a nadie: a las que el local ya dio de alta (que son de
+ * tickets) se les pregunta por ESC/POS; a las demás, solo su página web.
+ */
+export async function losNombres(
+  encontradas: readonly string[],
+  yaDadas: ReadonlySet<string>,
+  como: {
+    readonly porEscPos: (direccion: string) => Promise<string | null>;
+    readonly porSuWeb: (host: string) => Promise<string | null>;
+  },
+): Promise<{ readonly direccion: string; readonly modelo: string | null }[]> {
+  return Promise.all(
+    encontradas.map(async (direccion) => ({
+      direccion,
+      modelo: yaDadas.has(direccion)
+        ? await como.porEscPos(direccion)
+        : await como.porSuWeb(direccion.split(':')[0] ?? direccion),
+    })),
+  );
 }

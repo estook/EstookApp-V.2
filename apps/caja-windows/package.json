@@ -1,6 +1,6 @@
 {
   "name": "@estook/caja-windows",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "La caja para Windows: Estook TPV en un programa, que imprime, abre el cajón y será el centro del local sin internet (0119)",

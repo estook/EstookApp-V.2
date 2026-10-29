@@ -997,3 +997,9 @@
      enseñar. En Estook TPV las lecturas van con `networkMode: 'always'`: cada una sabe qué hacer
      sin internet. Y para probarlo en este ordenador, Estook TPV se sirve **construido**
      (`vite preview`): hay que construirlo otra vez, con `VITE_API_URL`, o se prueba el de ayer.
+242. **Lo que busca en la red de otro no le manda nada.** «Buscar impresoras» le preguntaba el modelo
+     (`GS I`) a todo lo que contestaba en el puerto 9100, y en el 9100 también escuchan las
+     impresoras de oficina, que imprimen lo que les llega. En el local de un cliente eso es una hoja
+     con basura en su impresora. Ahora buscar solo llama a la puerta, el nombre se lee de la página
+     web del aparato, y por ESC/POS solo se pregunta a las que el local ya dio de alta (29-oct, antes
+     de probar en el local del amigo de Richi).

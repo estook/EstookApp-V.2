@@ -19,7 +19,7 @@
 
 ## Antes de ir
 
-1. **Que esté fusionado** el pull request **«Antes del local del amigo»** y **publicada la caja
+1. **Que esté fusionado** el pull request **«Antes del local del amigo» (#157)** y **publicada la caja
    1.0.1**:
    - **En GitHub**: **Actions** → **La caja para Windows** → **Run workflow**, rama `main`, y en la
      casilla escribe **`publicar`**. Espera al círculo verde (unos 10 minutos).

@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { tokenDelAparato } from '@estook/dominio';
 import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
+import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
 import { elFallo, entrarFichando, losDatos, montarLaApi, type ApiDePrueba } from './despachador.ts';
 
@@ -738,6 +739,174 @@ describe('volver a vincular (28-oct): el mismo aparato, sin duplicarlo', () => {
         }),
       ).personaId,
     ).toBe(saraId);
+  });
+});
+
+// ── Sin internet (T5 · 2 · 1) ─────────────────────────────────────────────────
+
+/** Lo que hace el aparato con lo tecleado sin internet: el PIN, cifrado con su pública (0070). */
+async function cifrar(publica: string, pin: string): Promise<string> {
+  const llave = await crypto.subtle.importKey(
+    'spki',
+    new Uint8Array(Buffer.from(publica, 'base64url')),
+    { name: 'RSA-OAEP', hash: 'SHA-256' },
+    false,
+    ['encrypt'],
+  );
+  const numero = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('hex');
+  const cifrado = await crypto.subtle.encrypt(
+    { name: 'RSA-OAEP' },
+    llave,
+    new TextEncoder().encode(JSON.stringify({ pin, n: numero })),
+  );
+  return Buffer.from(new Uint8Array(cifrado)).toString('base64url');
+}
+
+const MINUTO = 60_000;
+
+describe('sin internet (T5 · 2 · 1): lo guardado sube una vez, a nombre de quien lo hizo', () => {
+  it('la caja y el comandero reciben en su latido la pública con la que cifrar el PIN', async () => {
+    const latido = losDatos<{ clavePublica: string | null }>(
+      await api.ejecutar(null, 'latir_el_aparato', { llave: llaveDeLaTablet }),
+    );
+    expect(latido.clavePublica).toMatch(/^[A-Za-z0-9_-]{300,}$/);
+    const otra = losDatos<{ clavePublica: string | null }>(
+      await api.ejecutar(null, 'latir_el_aparato', { llave: llaveDeLaTablet }),
+    );
+    expect(otra.clavePublica).toBe(latido.clavePublica);
+  });
+
+  it('lo que Sara hizo sin internet sube con su turno: la mesa, lo pedido y lo mandado, una vez', async () => {
+    const sara = await entrarEn(llaveDeLaTablet, SARA);
+    const cuenta = crypto.randomUUID();
+    const linea = crypto.randomUUID();
+    const plato = losDatos<{ paginas: { platos: { id: string }[] }[] }>(
+      await api.consultar(sara.token, 'la_carta_de_la_sala'),
+    ).paginas.flatMap((p) => p.platos)[0]?.id;
+    // Lo que guardó la tablet, en orden y con su clave, como lo sube al volver.
+    const guardado: [string, unknown, string, number][] = [
+      ['abrir_mesa', { cuenta_id: cuenta, tipo: 'barra' }, crypto.randomUUID(), 9 * MINUTO],
+      [
+        'pedir',
+        { cuenta_id: cuenta, platos: [{ id: linea, plato_id: plato, cantidad: 2 }] },
+        crypto.randomUUID(),
+        8 * MINUTO,
+      ],
+      ['mandar_a_cocina', { cuenta_id: cuenta }, crypto.randomUUID(), 8 * MINUTO],
+    ];
+    for (const [nombre, entrada, clave, hace] of guardado) {
+      losDatos(await api.ejecutar(sara.token, nombre, entrada, clave, { hechoHaceMs: hace }));
+    }
+    // Se perdió la respuesta y la tablet lo vuelve a subir entero: nada se hace dos veces.
+    for (const [nombre, entrada, clave, hace] of guardado) {
+      losDatos(await api.ejecutar(sara.token, nombre, entrada, clave, { hechoHaceMs: hace + 1 }));
+    }
+    const mesa = losDatos<{ platos: { cantidad: number; estado: string }[] }>(
+      await api.consultar(sara.token, 'la_mesa', { cuenta_id: cuenta }),
+    );
+    expect(mesa.platos).toHaveLength(1);
+    expect(mesa.platos[0]?.cantidad).toBe(2);
+    expect(mesa.platos[0]?.estado).not.toBe('sin_mandar');
+
+    // Y lo que no se puede hacer sin internet no se acepta diciendo «hecho hace».
+    expect(
+      elFallo(
+        await api.ejecutar(
+          sara.token,
+          'sacar_codigo_para_vincular',
+          { funcion: 'comandero' },
+          undefined,
+          {
+            hechoHaceMs: MINUTO,
+          },
+        ),
+      ),
+    ).toBe('faltan_datos');
+
+    // Bloqueada sin internet: el turno se cierra al subir, detrás de lo suyo.
+    losDatos(
+      await api.ejecutar(sara.token, 'bloquear', {}, undefined, { hechoHaceMs: 5 * MINUTO }),
+    );
+    expect(elFallo(await api.consultar(sara.token, 'yo_en_el_tpv'))).toBe('sin_sesion');
+  });
+
+  it('quien entró sin internet sube con su PIN cifrado, desde la hora en que entró, y sin echar a nadie', async () => {
+    const { clavePublica } = losDatos<{ clavePublica: string }>(
+      await api.ejecutar(null, 'latir_el_aparato', { llave: llaveDeLaTablet }),
+    );
+    // Sara está dentro ahora, con internet; Rosa entró sin él hace veinte minutos.
+    const sara = await entrarEn(llaveDeLaTablet, SARA);
+    const cifrado = await cifrar(clavePublica, base.pinDe(ROSA, 'bar-centro'));
+    const rosa = losDatos<Dentro>(
+      await api.ejecutar(
+        null,
+        'entrar_con_pin',
+        { llave: llaveDeLaTablet, pin_cifrado: cifrado },
+        crypto.randomUUID(),
+        { hechoHaceMs: 20 * MINUTO },
+      ),
+    );
+    expect(rosa.persona.nombre).toMatch(/^Rosa/);
+    const turnoDeRosa = tokenDelAparato(rosa.turno, llaveDeLaTablet);
+    expect(
+      losDatos<{ persona: { id: string } }>(await api.consultar(turnoDeRosa, 'yo_en_el_tpv')),
+    ).toBeTruthy();
+    // Sara sigue dentro: subir lo de Rosa no la echa.
+    expect(losDatos(await api.consultar(sara.token, 'yo_en_el_tpv'))).toBeTruthy();
+    const { rows } = await base.bd.query<{ desde: Date }>(
+      'select desde from estook.turno_del_operador where huella = $1',
+      [await huellaDeToken(rosa.turno)],
+    );
+    const desde = new Date(rows[0]?.desde ?? 0).getTime();
+    expect((reloj.getTime() - desde) / MINUTO).toBeCloseTo(20, 0);
+
+    // El mismo cifrado otra vez no abre otro turno.
+    expect(
+      elFallo(
+        await api.ejecutar(
+          null,
+          'entrar_con_pin',
+          { llave: llaveDeLaTablet, pin_cifrado: cifrado },
+          crypto.randomUUID(),
+          { hechoHaceMs: 21 * MINUTO },
+        ),
+      ),
+    ).toBe('ya_hecho');
+  });
+
+  it('lo tecleado sin internet no vale sin decir cuándo, ni pasado un servicio, ni con otro PIN', async () => {
+    const { clavePublica } = losDatos<{ clavePublica: string }>(
+      await api.ejecutar(null, 'latir_el_aparato', { llave: llaveDeLaTablet }),
+    );
+    const pinDeRosa = base.pinDe(ROSA, 'bar-centro');
+    const entrar = async (entrada: Record<string, unknown>, hechoHaceMs?: number) =>
+      elFallo(
+        await api.ejecutar(
+          null,
+          'entrar_con_pin',
+          { llave: llaveDeLaTablet, ...entrada },
+          crypto.randomUUID(),
+          hechoHaceMs === undefined ? undefined : { hechoHaceMs },
+        ),
+      );
+    expect(await entrar({ pin_cifrado: await cifrar(clavePublica, pinDeRosa) })).toBe(
+      'hecho_hace_demasiado',
+    );
+    expect(
+      await entrar({ pin_cifrado: await cifrar(clavePublica, pinDeRosa) }, 17 * 60 * MINUTO),
+    ).toBe('hecho_hace_demasiado');
+    expect(await entrar({ pin_cifrado: await cifrar(clavePublica, '000000') }, MINUTO)).toBe(
+      'pin_desconocido',
+    );
+    // Un PIN tal cual se teclea ahora: no llega diciendo «hecho hace».
+    expect(await entrar({ pin: pinDeRosa }, MINUTO)).toBe('faltan_datos');
+    // Y uno de otro aparato no se puede leer con la llave de este.
+    const { clavePublica: deLaCaja } = losDatos<{ clavePublica: string }>(
+      await api.ejecutar(null, 'latir_el_aparato', { llave: llaveDeLaCaja }),
+    );
+    expect(await entrar({ pin_cifrado: await cifrar(deLaCaja, pinDeRosa) }, MINUTO)).toBe(
+      'pin_desconocido',
+    );
   });
 });
 

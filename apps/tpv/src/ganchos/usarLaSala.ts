@@ -1,9 +1,33 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { escucharAlSegundo, haySegundo } from '@estook/cliente-api/al-segundo';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import type { ElPlano, LaCartaDeLaSala, LaMesa } from '../datos/tipos.ts';
+import {
+  guardarLaCopia,
+  guardarLaMesa,
+  leerLaCopia,
+  leerLaMesa,
+  type LoQueSeGuarda,
+} from '../sinInternet/laCopia.ts';
+import {
+  anadirALaCola,
+  escucharLaCola,
+  laCola,
+  loQueEspera,
+  type LineaGuardada,
+} from '../sinInternet/laCola.ts';
+import { estamosSinInternet } from '../sinInternet/laConexion.ts';
+import { elPlanoConLoGuardado, laMesaGuardada } from '../sinInternet/loGuardado.ts';
 
 /**
  * Lo que la sala lee de la API y cómo se mantiene al día (0106).
@@ -75,10 +99,34 @@ async function leer<T>(
   cliente: ReturnType<typeof usarSesion>['cliente'],
   nombre: string,
   parametros: Record<string, string> = {},
+  sinInternet?: { readonly guardar: (datos: T) => void; readonly loGuardado: () => T | undefined },
 ): Promise<T> {
   const respuesta = await cliente.consultar<T>(nombre, parametros);
-  if (!respuesta.ok) throw new FalloDeLaSala(respuesta.error);
-  return respuesta.datos;
+  if (respuesta.ok) {
+    sinInternet?.guardar(respuesta.datos);
+    return respuesta.datos;
+  }
+  // **Sin internet, lo último que leyó el aparato** (T5 · 2 · 1): abre igual.
+  if (respuesta.error.codigo === 'sin_conexion') {
+    const guardado = sinInternet?.loGuardado();
+    if (guardado !== undefined) return guardado;
+  }
+  throw new FalloDeLaSala(respuesta.error);
+}
+
+/** Lo de leer con su copia en el aparato (`laCopia.ts`). */
+function conCopia<T>(que: LoQueSeGuarda) {
+  return {
+    guardar: (datos: T) => {
+      guardarLaCopia(que, datos);
+    },
+    loGuardado: () => leerLaCopia<T>(que),
+  };
+}
+
+/** Lo que espera a subir, al momento: la sala lo enseña aunque Estook aún no lo sepa. */
+export function usarLaCola() {
+  return useSyncExternalStore(escucharLaCola, laCola);
 }
 
 /** El fallo de la API, con lo que hay que decirle a la persona. */
@@ -88,20 +136,55 @@ export class FalloDeLaSala extends Error {
   }
 }
 
+/** El plano, **con las mesas abiertas sin internet** (T5 · 2 · 1). */
 export function usarElPlano(conectado: boolean) {
   const { cliente } = usarSesion();
-  return useQuery({
+  const cola = usarLaCola();
+  const leido = useQuery({
     queryKey: ['sala', 'el_plano'],
-    queryFn: () => leer<ElPlano>(cliente, 'el_plano'),
+    queryFn: () => leer<ElPlano>(cliente, 'el_plano', {}, conCopia<ElPlano>('el_plano')),
     refetchInterval: cadaCuanto(conectado),
   });
+  const data = useMemo(
+    () =>
+      leido.data === undefined ? undefined : elPlanoConLoGuardado(leido.data, cola, Date.now()),
+    [leido.data, cola],
+  );
+  return { ...leido, data };
 }
 
+/**
+ * Una mesa. Sin internet, la que guardó el aparato al abrirla; y **la que se abrió sin
+ * internet**, como la ve quien la abrió, hasta que Estook la conozca.
+ */
 export function usarLaMesa(cuentaId: string, conectado: boolean) {
   const { cliente } = usarSesion();
   return useQuery({
     queryKey: ['sala', 'la_mesa', cuentaId],
-    queryFn: () => leer<LaMesa>(cliente, 'la_mesa', { cuenta_id: cuentaId }),
+    queryFn: async () => {
+      try {
+        return await leer<LaMesa>(
+          cliente,
+          'la_mesa',
+          { cuenta_id: cuentaId },
+          {
+            guardar: (datos) => {
+              guardarLaMesa(cuentaId, datos);
+            },
+            loGuardado: () => leerLaMesa<LaMesa>(cuentaId),
+          },
+        );
+      } catch (fallo) {
+        const guardada = laMesaGuardada(
+          cuentaId,
+          laCola(),
+          leerLaCopia<ElPlano>('el_plano'),
+          Date.now(),
+        );
+        if (guardada !== undefined) return guardada;
+        throw fallo;
+      }
+    },
     refetchInterval: cadaCuanto(conectado),
   });
 }
@@ -129,7 +212,13 @@ export function usarLasImpresoras(conectado: boolean, tomaNota = true) {
   const { cliente } = usarSesion();
   return useQuery({
     queryKey: ['sala', 'como_estan_las_impresoras'],
-    queryFn: () => leer<ComoEstanLasImpresoras>(cliente, 'como_estan_las_impresoras'),
+    queryFn: () =>
+      leer<ComoEstanLasImpresoras>(
+        cliente,
+        'como_estan_las_impresoras',
+        {},
+        conCopia<ComoEstanLasImpresoras>('impresoras'),
+      ),
     refetchInterval: cadaCuanto(conectado),
     enabled: tomaNota,
   });
@@ -140,7 +229,13 @@ export function usarLaCarta() {
   const { cliente } = usarSesion();
   return useQuery({
     queryKey: ['carta_de_la_sala'],
-    queryFn: () => leer<LaCartaDeLaSala>(cliente, 'la_carta_de_la_sala'),
+    queryFn: () =>
+      leer<LaCartaDeLaSala>(
+        cliente,
+        'la_carta_de_la_sala',
+        {},
+        conCopia<LaCartaDeLaSala>('la_carta'),
+      ),
     staleTime: 60_000,
     refetchInterval: 120_000,
   });
@@ -154,24 +249,72 @@ export type Resultado<T> =
     };
 
 /**
+ * **Lo que se puede hacer sin internet** (T5 · 2 · 1), y cómo se enseña mientras espera: lo
+ * que se dice en «Por subir», la mesa, lo pedido, y lo que contesta en vez de Estook (lo que
+ * esperaría quien lo pide). Lo que no lo trae, sin internet, dice que no hay conexión.
+ */
+export interface ComoSeGuarda<T> {
+  readonly que: string;
+  readonly cuentaId?: string;
+  readonly lineas?: readonly LineaGuardada[];
+  readonly respuesta: T;
+}
+
+/** Lo que contesta un comando guardado sin internet, para que la pantalla lo diga. */
+export interface Guardado {
+  readonly guardado: true;
+}
+
+/**
  * Los comandos de la sala. Cada uno, al acabar bien, vuelve a leer la sala: lo que se
  * ve después es lo que dice la API, no lo que la pantalla supone.
+ *
+ * **Sin internet** (T5 · 2 · 1), lo que se puede hacer se guarda en el aparato con su clave y
+ * sube al volver. **Mientras quede algo por subir, lo nuevo va detrás**: mandar una mesa que
+ * Estook aún no sabe que se abrió no puede adelantarse a abrirla.
  */
 export function usarAcciones() {
-  const { cliente } = usarSesion();
+  const { cliente, yo, seSubeCon } = usarSesion();
   const cache = useQueryClient();
   return useCallback(
-    async <T>(nombre: string, entrada: unknown, clave?: string): Promise<Resultado<T>> => {
-      const respuesta = await cliente.ejecutar<T>(
-        nombre,
-        entrada,
-        clave === undefined ? {} : { claveDeIdempotencia: clave },
-      );
+    async <T>(
+      nombre: string,
+      entrada: unknown,
+      clave?: string,
+      sinInternet?: ComoSeGuarda<T>,
+    ): Promise<Resultado<T>> => {
+      const laClave = clave ?? crypto.randomUUID();
+      const guardar = (): Resultado<T> | null => {
+        if (sinInternet === undefined) return null;
+        anadirALaCola({
+          id: laClave,
+          nombre,
+          entrada,
+          hechoEn: Date.now(),
+          quien: { id: yo.personaId, nombre: yo.nombre },
+          con: seSubeCon,
+          que: sinInternet.que,
+          ...(sinInternet.cuentaId === undefined ? {} : { cuentaId: sinInternet.cuentaId }),
+          ...(sinInternet.lineas === undefined ? {} : { lineas: sinInternet.lineas }),
+        });
+        return { ok: true, datos: sinInternet.respuesta };
+      };
+      if (estamosSinInternet() || loQueEspera(laCola()).length > 0) {
+        const guardado = guardar();
+        if (guardado !== null) return guardado;
+      }
+      const respuesta = await cliente.ejecutar<T>(nombre, entrada, {
+        claveDeIdempotencia: laClave,
+      });
+      if (!respuesta.ok && respuesta.error.codigo === 'sin_conexion') {
+        const guardado = guardar();
+        if (guardado !== null) return guardado;
+      }
       if (respuesta.ok) await cache.invalidateQueries({ queryKey: ['sala'] });
       return respuesta.ok
         ? { ok: true, datos: respuesta.datos }
         : { ok: false, error: respuesta.error };
     },
-    [cliente, cache],
+    [cliente, cache, yo, seSubeCon],
   );
 }

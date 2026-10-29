@@ -6,7 +6,8 @@
   "description": "Cliente tipado contra la API. Unica via de salida a red del navegador.",
   "exports": {
     ".": "./src/index.ts",
-    "./al-segundo": "./src/al-segundo.ts"
+    "./al-segundo": "./src/al-segundo.ts",
+    "./pin-cifrado": "./src/pin-cifrado.ts"
   },
   "scripts": {
     "tipos": "tsc --noEmit"

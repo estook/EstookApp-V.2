@@ -9,6 +9,7 @@ import {
   horaDeCorte,
   inicialesDe,
   jornadaDe,
+  laHoraDeLoHecho,
   type AjustesDelBloqueo,
   type FuncionDelAparato,
 } from '@estook/dominio';
@@ -27,7 +28,9 @@ import { ponerPinNuevo } from '../pines.ts';
 import { cerrarLaSesion } from './salir.ts';
 import {
   comoEsta,
+  elPinCifrado,
   ficharEnElAparato,
+  laClavePublicaDe,
   quienEsElPin,
   type ElAparato,
   type QuienFichaAqui,
@@ -232,6 +235,11 @@ export interface ElAparatoPorDentro {
   readonly temaAlSegundo: string | null;
   /** Sin mesas dibujadas, tras el bloqueo se cae en el inicio. */
   readonly hayMesas: boolean;
+  /**
+   * **Para entrar sin internet** (T5 · 2 · 1): con ella cifra el aparato el PIN que se teclea
+   * sin conexión, y Estook lo comprueba al volver (0070). Solo la caja y el comandero.
+   */
+  readonly clavePublica: string | null;
 }
 
 async function elAparatoPorDentro(
@@ -274,6 +282,8 @@ async function elAparatoPorDentro(
     })),
     temaAlSegundo: aparato.temaAlSegundo,
     hayMesas: mesas[0]?.hay === true,
+    // La pone el latido, que es lo primero que hace el aparato al encenderse.
+    clavePublica: null,
   };
 }
 
@@ -928,7 +938,16 @@ export const latirElAparato = comando<
          where id = ${aparato.terminalId}::uuid
       `,
     );
-    return elAparatoPorDentro(contexto, { ...aparato, temaAlSegundo: tema }, entrada.llave);
+    const dentro = await elAparatoPorDentro(
+      contexto,
+      { ...aparato, temaAlSegundo: tema },
+      entrada.llave,
+    );
+    const conPin = aparato.funcion === 'caja' || aparato.funcion === 'comandero';
+    return {
+      ...dentro,
+      clavePublica: conPin ? await laClavePublicaDe(contexto, aparato.terminalId) : null,
+    };
   },
 });
 
@@ -937,11 +956,22 @@ export const latirElAparato = comando<
 export const entradaEntrarConPin = z
   .object({
     llave,
-    pin: z.string().trim().min(1).max(12),
+    pin: z.string().trim().min(1).max(12).optional(),
+    /**
+     * **Lo que se tecleó sin internet** (T5 · 2 · 1): el PIN cifrado con la pública del
+     * aparato (0070), que llega al volver con lo que esa persona hizo mientras.
+     */
+    pin_cifrado: z.string().trim().min(20).max(2000).optional(),
     /** «Fichar la entrada y entrar», en un local donde solo entra quien ha fichado. */
     fichar_la_entrada: z.boolean().optional(),
   })
-  .strict();
+  .strict()
+  .refine((e) => (e.pin === undefined) !== (e.pin_cifrado === undefined), {
+    message: 'El PIN, o el PIN cifrado: uno de los dos.',
+  });
+
+/** Lo tecleado sin internet sube con su turno, que no pasa de un servicio largo. */
+const SIN_INTERNET_COMO_MUCHO_MS = 16 * 60 * 60 * 1000;
 
 export interface DentroDelTpv {
   /** **Solo en la memoria del aparato**: al recargar, se bloquea (Anexo 3.4). */
@@ -957,6 +987,9 @@ export const entrarConPin = comando<z.infer<typeof entradaEntrarConPin>, DentroD
   sinSesion: true,
   // Devuelve el turno: no se recuerda.
   conSecreto: true,
+  // **Sin internet** (T5 · 2 · 1): quien ya entró hoy en el aparato entra con su PIN, que se
+  // guarda cifrado y llega aquí al volver, delante de lo que hizo.
+  sinConexion: true,
 
   async ejecutar(contexto, entrada) {
     const aparato = await elAparatoDeLaLlave(contexto, entrada.llave);
@@ -965,8 +998,16 @@ export const entrarConPin = comando<z.infer<typeof entradaEntrarConPin>, DentroD
         porque: 'En este aparato no se entra con el PIN: es para fichar o una pantalla.',
       });
     }
+    if (entrada.pin_cifrado !== undefined) {
+      return entrarConLoTecleadoSinInternet(contexto, aparato, entrada.pin_cifrado);
+    }
+    if (contexto.hechoHaceMs !== undefined && contexto.hechoHaceMs !== null) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Sin internet, el PIN se guarda cifrado: un PIN tal cual se teclea ahora.',
+      });
+    }
     // Los fallos se cuentan aquí, por persona y por aparato (0018, 0068).
-    const personaId = await quienEsElPin(contexto, aparato, entrada.pin);
+    const personaId = await quienEsElPin(contexto, aparato, entrada.pin ?? '');
 
     // **El móvil de Sara solo lo abre Sara** (Anexo 11.3).
     if (aparato.duenoId !== null && aparato.duenoId !== personaId) {
@@ -1044,6 +1085,68 @@ export const entrarConPin = comando<z.infer<typeof entradaEntrarConPin>, DentroD
     };
   },
 });
+
+/**
+ * **Quien entró sin internet** (T5 · 2 · 1), al volver: su PIN, cifrado en el aparato con su
+ * pública, se comprueba ahora con los frenos de siempre, y se le abre un turno **desde la hora
+ * en que entró**, para subir lo que hizo. Tres diferencias con entrar ahora:
+ *
+ *   · **No echa a quien está dentro**: el aparato ya va por otra cosa; este turno es para
+ *     subir, y el aparato lo cierra al acabar (o se queda con él, si esa persona sigue).
+ *   · **No mira si ha fichado**: entró cuando entró, y ahora puede haberse ido.
+ *   · **Un cifrado vale una vez** (0070): repetirlo no abre otro turno.
+ */
+async function entrarConLoTecleadoSinInternet(
+  contexto: Contexto,
+  aparato: AparatoDelTpv,
+  cifrado: string,
+): Promise<DentroDelTpv> {
+  const hace = contexto.hechoHaceMs ?? null;
+  if (hace === null || hace > SIN_INTERNET_COMO_MUCHO_MS) {
+    throw new FalloDeAplicacion('hecho_hace_demasiado', {
+      porque: 'Lo tecleado sin internet sube el mismo día: pasado un servicio, ya no vale.',
+    });
+  }
+  const leido = await elPinCifrado(contexto, aparato.terminalId, cifrado);
+  if (leido === null) throw new FalloDeAplicacion('pin_desconocido');
+  if (!leido.nuevo) {
+    throw new FalloDeAplicacion('ya_hecho', { porque: 'Esta entrada sin internet ya se subió.' });
+  }
+  const personaId = await quienEsElPin(contexto, aparato, leido.pin);
+  if (aparato.duenoId !== null && aparato.duenoId !== personaId) {
+    throw new FalloDeAplicacion('aparato_de_otra_persona', {
+      porque: `Este móvil es de ${aparato.nombreDelDueno ?? 'otra persona'}: solo entra su PIN.`,
+    });
+  }
+
+  const desde = laHoraDeLoHecho(contexto.ahora, hace);
+  const turno = tokenNuevo();
+  await enNombreDelSistema(
+    contexto,
+    async () => contexto.sql`
+      insert into estook.turno_del_operador (terminal_id, persona_id, local_id, huella, desde)
+      values (${aparato.terminalId}::uuid, ${personaId}::uuid, ${aparato.localId}::uuid,
+              ${await huellaDeToken(turno)}, ${desde.toISOString()}::timestamptz)
+    `,
+  );
+  await apuntar(contexto, aparato.organizacionId, 'entrar', aparato.terminalId, aparato.localId, {
+    aparato: aparato.nombre,
+    sinInternet: true,
+    desde: desde.toISOString(),
+  });
+
+  const filas = await contexto.sql<{ nombre: string }[]>`
+    select nombre from estook.persona where id = ${personaId}::uuid
+  `;
+  const nombre = filas[0]?.nombre ?? '';
+  const estado = await comoEsta(contexto, personaId, aparato.localId);
+  return {
+    turno,
+    persona: { id: personaId, nombre, iniciales: inicialesDe(nombre) },
+    fichaje: estado.estado,
+    caeEn: 'mesas',
+  };
+}
 
 // ═══ Quién está, bloquear y fichar ════════════════════════════════════════════
 
@@ -1138,6 +1241,8 @@ export const bloquear = comando<Record<string, never>, { bloqueado: true }>({
   entrada: z.object({}).strict(),
   enElTpv: 'solo',
   sinRecordar: true,
+  // Bloqueado sin internet, se cierra el turno al volver, detrás de lo que hizo (T5 · 2 · 1).
+  sinConexion: true,
 
   async ejecutar(contexto) {
     await acabarElTurno(contexto, 'bloqueo');

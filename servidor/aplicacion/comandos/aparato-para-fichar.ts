@@ -212,28 +212,66 @@ export const prepararElAparatoSinConexion = comando<{ llave: string }, { clavePu
 
   async ejecutar(contexto, entrada) {
     const aparato = await elAparato(contexto, entrada.llave);
-    const ya = await suClavePublica(contexto, aparato.terminalId);
-    if (ya !== null) return { clavePublica: ya };
-
-    const { publica, privada } = await llavesDelAparato();
-    return enNombreDelSistema(contexto, async () => {
-      // Dos a la vez: se queda la primera, y la segunda devuelve esa.
-      const puestas = await contexto.sql<{ id: string }[]>`
-        update estook.terminal set clave_publica = ${publica}
-         where id = ${aparato.terminalId} and clave_publica is null
-        returning id::text as id
-      `;
-      if (puestas.length === 0) {
-        return { clavePublica: (await suClavePublica(contexto, aparato.terminalId)) ?? publica };
-      }
-      await contexto.sql`
-        insert into estook.clave_del_terminal (terminal_id, privada)
-        values (${aparato.terminalId}, ${privada})
-      `;
-      return { clavePublica: publica };
-    });
+    return { clavePublica: await laClavePublicaDe(contexto, aparato.terminalId) };
   },
 });
+
+/**
+ * La pública de un aparato, **haciéndosela si aún no la tiene**. La usan el aparato para
+ * fichar (0070) y, desde T5 · 2, la caja y el comandero de Estook TPV, que la reciben en
+ * su latido para entrar sin internet.
+ */
+export async function laClavePublicaDe(contexto: Contexto, terminalId: string): Promise<string> {
+  const ya = await suClavePublica(contexto, terminalId);
+  if (ya !== null) return ya;
+
+  const { publica, privada } = await llavesDelAparato();
+  return enNombreDelSistema(contexto, async () => {
+    // Dos a la vez: se queda la primera, y la segunda devuelve esa.
+    const puestas = await contexto.sql<{ id: string }[]>`
+      update estook.terminal set clave_publica = ${publica}
+       where id = ${terminalId} and clave_publica is null
+      returning id::text as id
+    `;
+    if (puestas.length === 0) return (await suClavePublica(contexto, terminalId)) ?? publica;
+    await contexto.sql`
+      insert into estook.clave_del_terminal (terminal_id, privada)
+      values (${terminalId}, ${privada})
+    `;
+    return publica;
+  });
+}
+
+/**
+ * **Lo que tecleó alguien sin conexión** (0070): el PIN que cifró el aparato con su pública.
+ * Nulo si no se puede leer (no es de este aparato). `nuevo` es falso si ese cifrado ya se
+ * usó: **un cifrado vale una vez**, y repetirlo no hace nada dos veces.
+ */
+export async function elPinCifrado(
+  contexto: Contexto,
+  terminalId: string,
+  cifrado: string,
+): Promise<{ readonly pin: string; readonly numero: string; readonly nuevo: boolean } | null> {
+  const privada = await enNombreDelSistema(contexto, async () => {
+    const filas = await contexto.sql<{ privada: string }[]>`
+      select privada from estook.clave_del_terminal where terminal_id = ${terminalId}
+    `;
+    return filas[0]?.privada ?? null;
+  });
+  const leido = privada === null ? null : await descifrarElPin(privada, cifrado);
+  if (leido === null) return null;
+  const nuevo = await enNombreDelSistema(
+    contexto,
+    () =>
+      contexto.sql<{ numero: string }[]>`
+      insert into estook.cifrado_usado (terminal_id, numero)
+      values (${terminalId}, ${leido.numero})
+      on conflict do nothing
+      returning numero
+    `,
+  );
+  return { pin: leido.pin, numero: leido.numero, nuevo: nuevo.length > 0 };
+}
 
 export type EstadoEnElAparato = 'fuera' | 'dentro' | 'en_pausa';
 
@@ -481,30 +519,13 @@ async function loQueSeFichoSinConexion(
   cifrado: string,
   que: 'entrada' | 'pausa' | 'vuelta' | 'salida',
 ): Promise<FichajeSinConexion> {
-  const privada = await enNombreDelSistema(contexto, async () => {
-    const filas = await contexto.sql<{ privada: string }[]>`
-      select privada from estook.clave_del_terminal where terminal_id = ${aparato.terminalId}
-    `;
-    return filas[0]?.privada ?? null;
-  });
-  const leido = privada === null ? null : await descifrarElPin(privada, cifrado);
+  const leido = await elPinCifrado(contexto, aparato.terminalId, cifrado);
   if (leido === null) {
     // No se puede leer: no es de este aparato. Nadie puede saber de quién era.
     throw new FalloDeAplicacion('pin_desconocido');
   }
-
   // **Un cifrado vale una vez.** Si ya se usó, esto ya se apuntó (se perdió la respuesta).
-  const nuevo = await enNombreDelSistema(
-    contexto,
-    () =>
-      contexto.sql<{ numero: string }[]>`
-      insert into estook.cifrado_usado (terminal_id, numero)
-      values (${aparato.terminalId}, ${leido.numero})
-      on conflict do nothing
-      returning numero
-    `,
-  );
-  if (nuevo.length === 0) return { apuntado: true };
+  if (!leido.nuevo) return { apuntado: true };
 
   let personaId: string;
   try {

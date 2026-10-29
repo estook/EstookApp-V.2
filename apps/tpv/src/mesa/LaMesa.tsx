@@ -7,9 +7,13 @@ import {
   usarAlSegundo,
   usarElPlano,
   usarLaCarta,
+  usarLaCola,
   usarLaMesa,
   usarLasImpresoras,
 } from '../ganchos/usarLaSala.ts';
+import { lineasGuardadas, marchadoSinInternet } from '../sinInternet/loGuardado.ts';
+import type { LineaGuardada } from '../sinInternet/laCola.ts';
+import { LaFranjaSinInternet } from '../sinInternet/LaFranjaSinInternet.tsx';
 import type { CuentaEnElPlano } from '../datos/tipos.ts';
 import {
   comoPedido,
@@ -58,6 +62,9 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
         ];
   const carta = usarLaCarta();
   const ejecutar = usarAcciones();
+  // **Lo mandado sin internet** (T5 · 2 · 1): se ve aparte hasta que llega a Estook.
+  const cola = usarLaCola();
+  const loGuardado = lineasGuardadas(cuentaId, cola);
   const [borrador, setBorradorEnMemoria] = useState<Borrador>(() => leerBorrador(cuentaId));
   const [mandando, setMandando] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
@@ -137,12 +144,20 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   const guardadas = datos.platos.filter((p) => p.estado === 'sin_mandar').length;
   const porMandar = borrador.length + guardadas;
   const grupos = losGruposDeLaCuenta(datos, borrador);
-  const total = datos.totalCentimos + loQueVale(borrador);
+  const total =
+    datos.totalCentimos +
+    loQueVale(borrador) +
+    loGuardado.reduce((suma, l) => suma + l.precioCentimos * l.cantidad, 0);
   const pestana = marcada ?? laPestanaDeFabrica(datos);
   const lasPestanas = datos.porPases ? (
     <LosPasesEnPestanas mesa={datos} marcada={pestana} alMarcar={setMarcada} />
   ) : null;
-  const siguiente = datos.loSiguiente;
+  // Lo marchado sin internet no se vuelve a ofrecer: ya va camino de la cocina.
+  const siguiente =
+    datos.loSiguiente.que === 'marchar' &&
+    marchadoSinInternet(cuentaId, datos.loSiguiente.pase, cola)
+      ? ({ que: 'pedir' } as const)
+      : datos.loSiguiente;
   const enElPlano: CuentaEnElPlano | undefined = [
     ...(plano.data?.zonas.flatMap((z) =>
       z.mesas.flatMap((m) => (m.cuenta === null ? [] : [m.cuenta])),
@@ -150,11 +165,26 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
     ...(plano.data?.sinMesa ?? []),
   ].find((c) => c.cuentaId === cuentaId);
 
+  const titulo = datos.titulo;
+
   async function mandar(): Promise<boolean> {
     setMandando(true);
     setFallo(null);
     if (borrador.length > 0) {
-      const pedido = await ejecutar('pedir', { cuenta_id: cuentaId, platos: comoPedido(borrador) });
+      const lineas = borrador
+        .filter((l) => l.parteDe === null)
+        .map((l) => ({ nombre: l.nombre, cantidad: l.cantidad, precioCentimos: l.precioCentimos }));
+      const pedido = await ejecutar(
+        'pedir',
+        { cuenta_id: cuentaId, platos: comoPedido(borrador) },
+        undefined,
+        {
+          que: `${titulo} · ${platosPedidos(lineas)}`,
+          cuentaId,
+          lineas,
+          respuesta: { pedidos: borrador.length, yaEstaban: 0 },
+        },
+      );
       if (!pedido.ok) {
         setMandando(false);
         setFallo(pedido.error);
@@ -168,13 +198,22 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
       talCual?: number;
       salen: number[];
       esperan: number[];
-    }>('mandar_a_cocina', { cuenta_id: cuentaId });
+      guardado?: true;
+    }>('mandar_a_cocina', { cuenta_id: cuentaId }, undefined, {
+      que: `${titulo} · mandar a cocina`,
+      cuentaId,
+      respuesta: { aCocina: 0, aLaBarra: 0, salen: [], esperan: [], guardado: true },
+    });
     setMandando(false);
     if (!mandado.ok) {
       setFallo(mandado.error);
       return false;
     }
-    setHecho(loQueSeMando(mandado.datos));
+    setHecho(
+      mandado.datos.guardado === true
+        ? 'Guardado en este aparato: la cocina lo recibe al volver internet'
+        : loQueSeMando(mandado.datos),
+    );
     setCuentaEnElMovil(false);
     return true;
   }
@@ -182,10 +221,21 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   async function marchar(pase: number) {
     setMandando(true);
     setFallo(null);
-    const marchado = await ejecutar('marchar', { cuenta_id: cuentaId, pase });
+    const marchado = await ejecutar<{ pase: number; guardado?: true }>(
+      'marchar',
+      { cuenta_id: cuentaId, pase },
+      undefined,
+      {
+        que: `${titulo} · marchar el ${elPase(pase)}`,
+        cuentaId,
+        respuesta: { pase, guardado: true },
+      },
+    );
     setMandando(false);
-    if (marchado.ok) setHecho(`Marchado el ${elPase(pase)}: la cocina ya lo tiene`);
-    else setFallo(marchado.error);
+    if (!marchado.ok) setFallo(marchado.error);
+    else if (marchado.datos.guardado === true) {
+      setHecho(`Guardado: el ${elPase(pase)} se marcha al volver internet`);
+    } else setHecho(`Marchado el ${elPase(pase)}: la cocina ya lo tiene`);
   }
 
   const elBoton =
@@ -274,8 +324,12 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
           opcionesListas={enElPlano !== undefined}
         />
         {lasPestanas}
-        <div className="flex-1 overflow-y-auto px-e4">{laCuenta}</div>
+        <div className="flex-1 overflow-y-auto px-e4">
+          <LoGuardado lineas={loGuardado} />
+          {laCuenta}
+        </div>
         <div className="flex flex-col gap-e3 border-t border-borde p-e4">
+          <LaFranjaSinInternet enLaMesa />
           <Avisos hecho={hecho} fallo={fallo} />
           <div className="flex items-baseline justify-between">
             <span className="text-texto-suave">Total</span>
@@ -313,6 +367,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
           alMarcar={setMarcada}
         />
         <div className="flex flex-col gap-e2 border-t border-borde bg-superficie p-e3 md:hidden">
+          <LaFranjaSinInternet enLaMesa />
           <Avisos hecho={hecho} fallo={fallo} />
           <div className="flex items-center gap-e2">
             <button
@@ -339,6 +394,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
           }}
           pie={elBoton ?? undefined}
         >
+          <LoGuardado lineas={loGuardado} />
           {laCuenta}
           <div className="mt-e4 flex items-baseline justify-between">
             <span className="text-texto-suave">Total</span>
@@ -392,6 +448,38 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
         </Hoja>
       )}
     </div>
+  );
+}
+
+/** «2 Croquetas, 1 Ensalada» → «3 platos pedidos». */
+function platosPedidos(lineas: readonly LineaGuardada[]): string {
+  const cuantos = lineas.reduce((suma, l) => suma + l.cantidad, 0);
+  return cuantos === 1 ? '1 plato pedido' : `${cuantos} platos pedidos`;
+}
+
+/**
+ * **Lo mandado sin internet** (T5 · 2 · 1): aparte y en ámbar, porque la cocina aún no lo
+ * tiene. Al subir, desaparece de aquí y sale en la cuenta como todo lo demás.
+ */
+function LoGuardado({ lineas }: { readonly lineas: readonly LineaGuardada[] }) {
+  if (lineas.length === 0) return null;
+  return (
+    <section
+      aria-label="Guardado en este aparato"
+      className="my-e3 flex flex-col gap-e2 rounded-grande border-2 border-atencion bg-atencion-suave p-e3 text-atencion"
+    >
+      <span className="font-bold">Guardado aquí · la cocina aún no lo recibe</span>
+      <ul className="flex flex-col gap-e1 text-texto">
+        {lineas.map((l, i) => (
+          <li key={`${l.nombre}-${String(i)}`} className="flex justify-between gap-e3">
+            <span>
+              {l.cantidad} {l.nombre}
+            </span>
+            <span className="tabular-nums">{eurosConSimbolo(l.precioCentimos * l.cantidad)}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

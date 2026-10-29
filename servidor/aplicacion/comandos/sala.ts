@@ -142,6 +142,9 @@ export const abrirMesa = comando<EntradaAbrirMesa, { cuentaId: string; yaEstaba:
   entrada: entradaAbrirMesa,
   exige: 'accion.tomar_nota',
   enElTpv: 'solo',
+  // **Sin internet** se guarda en el aparato y sube al volver, una vez (T5 · 2 · 1). Lo
+  // que hace lleva la hora a la que llega: es cuando la cocina lo recibe.
+  sinConexion: true,
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -255,6 +258,9 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
   entrada: entradaPedir,
   exige: 'accion.tomar_nota',
   enElTpv: 'solo',
+  // **Sin internet** se guarda en el aparato y sube al volver, una vez (T5 · 2 · 1). Lo
+  // que hace lleva la hora a la que llega: es cuando la cocina lo recibe.
+  sinConexion: true,
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -726,6 +732,9 @@ export const mandarACocina = comando<{ cuenta_id: string }, SalidaMandar>({
   entrada: z.object({ cuenta_id: id }).strict(),
   exige: 'accion.tomar_nota',
   enElTpv: 'solo',
+  // **Sin internet** se guarda en el aparato y sube al volver, una vez (T5 · 2 · 1). Lo
+  // que hace lleva la hora a la que llega: es cuando la cocina lo recibe.
+  sinConexion: true,
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -798,6 +807,9 @@ export const marchar = comando<{ cuenta_id: string; pase: number }, { pase: numb
   entrada: z.object({ cuenta_id: id, pase: z.number().int().min(1).max(9) }).strict(),
   exige: 'accion.tomar_nota',
   enElTpv: 'solo',
+  // **Sin internet** se guarda en el aparato y sube al volver, una vez (T5 · 2 · 1). Lo
+  // que hace lleva la hora a la que llega: es cuando la cocina lo recibe.
+  sinConexion: true,
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);

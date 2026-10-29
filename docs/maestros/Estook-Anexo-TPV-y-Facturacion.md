@@ -319,7 +319,7 @@ Documento **no fiscal**:
 La versión 1.1 prometía que la cocina seguía imprimiendo sin internet con una cola que vivía en la nube, y eso no podía funcionar: sin internet, la tablet no llega a la cola. Queda así ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md), y el detalle en la [Arquitectura](Estook-Arquitectura.md), capítulo 7):
 
 - **Con la caja para Windows en el local**, los terminales le mandan la comanda **por la red del local**, sin pasar por internet. La caja la reparte a las pantallas de cocina, la imprime y la guarda para subirla al volver. **La sala y la cocina siguen hablándose** como si nada.
-- **Sin la caja para Windows**, la comanda **se guarda en el aparato y sube al recuperar la señal**, y la sala ve en grande que **la cocina no la está recibiendo**: si el camarero cree que la cocina lo tiene y no es así, el servicio se rompe.
+- **Sin la caja para Windows**, la comanda **se guarda en el aparato y sube al recuperar la señal**, y la sala ve en grande que **la cocina no la está recibiendo**: si el camarero cree que la cocina lo tiene y no es así, el servicio se rompe. **Desde T5 · 2 · 1** ([0122](../decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)): el aparato abre con lo último que leyó; sin internet se abre la mesa, se pide, se manda y se marcha, guardado con su clave y en su orden; lo mandado se ve aparte, en ámbar; entra con su PIN quien ya entró ese día en ese aparato (su PIN sube cifrado y lo da por bueno Estook); y al volver sube solo, una vez. Lo de la sala lleva la hora a la que llega a la cocina.
 - **Cada comanda nace con su identificador en el aparato**: subirla dos veces no crea dos, y a una cuenta se le **añaden** líneas, nunca se sobreescriben.
 - Es la razón de fondo para recomendar la caja para Windows en cualquier local con cocina. **Desde un iPhone o un iPad no se le puede hablar sin internet**: Safari no deja que una web hable con un aparato del wifi (27-oct); esos aparatos guardan lo suyo y lo suben al volver.
 
@@ -1180,14 +1180,14 @@ Y tres cosas que un TPV sin almacén no puede hacer:
 
 Arriba del TPV, siempre con icono y texto, nunca solo con color:
 
-| Estado                        | Qué pasa                                                                                | Qué ve la sala                                                                        |
-| ----------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Todo bien                     | —                                                                                       | Nada                                                                                  |
-| **Hacienda no responde**      | Se emite normal y el envío espera (4.10)                                                | Nada. Al gerente, un aviso si pasa de una hora                                        |
-| **Sin conexión, con la caja** | Se toma nota, **la cocina recibe**, se imprime y se cobra con justificante (3.6 y 4.11) | Una franja discreta: «Sin internet. Todo sigue funcionando en el local»               |
-| **Sin conexión, sin la caja** | Se toma nota y se cobra con justificante; la cocina no recibe                           | Una franja ámbar: «Sin conexión. Se sigue trabajando; **la cocina aún no lo recibe**» |
+| Estado                        | Qué pasa                                                                                | Qué ve la sala                                                                                            |
+| ----------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Todo bien                     | —                                                                                       | Nada                                                                                                      |
+| **Hacienda no responde**      | Se emite normal y el envío espera (4.10)                                                | Nada. Al gerente, un aviso si pasa de una hora                                                            |
+| **Sin conexión, con la caja** | Se toma nota, **la cocina recibe**, se imprime y se cobra con justificante (3.6 y 4.11) | Una franja discreta: «Sin internet. Todo sigue funcionando en el local»                                   |
+| **Sin conexión, sin la caja** | Se toma nota y se cobra con justificante; la cocina no recibe                           | Una franja ámbar: «Sin conexión. Se guarda aquí: **la cocina aún no lo recibe** · 3 por subir», con «Ver» |
 
-Y al volver, **una vez**: «Conexión recuperada · 3 tickets emitidos».
+Y al volver, **una vez**: «Conexión recuperada · 12 cosas subidas, ninguna repetida» (T5 · 2 · 1, [0122](../decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)); con el cobro (T7), también los tickets emitidos. Lo que Estook no acepte al subir se queda en «Por subir» con el porqué.
 
 ## 10.10 Por qué es mejor, dicho en concreto
 

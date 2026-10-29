@@ -1,4 +1,5 @@
-import { crearCliente, type ClienteApi } from '@estook/cliente-api';
+import { crearCliente, type ClienteApi, type Respuesta } from '@estook/cliente-api';
+import { marcarLaConexion } from '../sinInternet/laConexion.ts';
 
 /**
  * El cliente de la API de Estook TPV (T1 · La puerta, 0107).
@@ -61,14 +62,27 @@ export function laDelQuiosco(): string | null {
   }
 }
 
+/**
+ * El cliente de siempre, que además **dice si llegamos a Estook** con cada respuesta (T5 · 2 ·
+ * 1): de eso salen la franja de «sin conexión» y cuándo subir lo guardado.
+ */
 export function crearClienteDelTpv(opciones: {
   readonly token: () => string | null;
   readonly alCaducar?: () => void;
 }): ClienteApi {
-  return crearCliente({
+  const cliente = crearCliente({
     base: DIRECCION_DE_LA_API,
     token: opciones.token,
     juntar: true,
     ...(opciones.alCaducar === undefined ? {} : { alCaducarLaSesion: opciones.alCaducar }),
   });
+  const mirar = <T>(respuesta: Respuesta<T>): Respuesta<T> => {
+    marcarLaConexion(respuesta.ok || respuesta.error.codigo !== 'sin_conexion');
+    return respuesta;
+  };
+  return {
+    consultar: async (nombre, parametros) => mirar(await cliente.consultar(nombre, parametros)),
+    ejecutar: async (nombre, entrada, opcionesDeLlamada) =>
+      mirar(await cliente.ejecutar(nombre, entrada, opcionesDeLlamada)),
+  };
 }

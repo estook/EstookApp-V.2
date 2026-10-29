@@ -293,7 +293,12 @@ de alta a alguien, el datáfono conectado y los pedidos de reparto.
   definitivo, y subirlo dos veces no crea dos.
 - **La cola del aparato**, con el estado de cada cosa: pendiente, subiendo, subida o con
   error. **La pantalla dice cuántas cosas faltan por subir**: guardar sin decir que no se
-  ha mandado es peor que no guardar.
+  ha mandado es peor que no guardar. Construida en T5 · 2 · 1
+  ([0122](../decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)): **mientras quede algo, lo
+  nuevo va detrás**, y antes de entrar alguien con su PIN se sube lo guardado.
+- **Quien entra sin internet**, en un aparato sin la caja: solo quien ya entró ese día en él. Se
+  comprueba con una huella lenta guardada al entrar con internet, y su PIN viaja **cifrado** con
+  la pública del aparato (0070): lo da por bueno Estook al volver, y abre su turno desde esa hora.
 - **La idempotencia de la API**, que ya existe.
 - **Reglas de conflicto sencillas:** a una cuenta se le **añaden** líneas, nunca se
   sobreescriben; los cambios de estado llevan versión; una mesa tiene un camarero.

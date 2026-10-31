@@ -6,7 +6,7 @@
 >
 > | Qué              | Cómo está                                                                                  |
 > | ---------------- | ------------------------------------------------------------------------------------------ |
-> | Pull request     | **«T5 · 2 · 2 · La caja de centro»**, rama `t5-2-2-la-caja-de-centro`                      |
+> | Pull request     | **«T5 · 2 · 2 · La caja de centro» (#158)**, rama `t5-2-2-la-caja-de-centro`               |
 > | La base de datos | **Migración 0097**: hay que migrar (pasan a **97**)                                        |
 > | La API           | Cambia por dentro (sigue con **115 consultas y 313 comandos**): **hay que desplegarla**    |
 > | La caja          | **1.1.0**: hay que publicarla. **Lleva dentro lo de la 1.0.1**: no hace falta publicar esa |
@@ -33,7 +33,7 @@ Lo decidido, en la [0123](decisiones/0123-t5-2-2-la-caja-de-centro.md).
 
 **En este orden.** Si algo falla, no sigas y pásame lo que dice la pantalla.
 
-1. **En GitHub**: fusiona **«T5 · 2 · 2 · La caja de centro»** con las comprobaciones **en verde**:
+1. **En GitHub**: fusiona **«T5 · 2 · 2 · La caja de centro» (#158)** con las comprobaciones **en verde**:
    **Merge pull request** → **Confirm merge**.
 2. **En tu ordenador**, en PowerShell, uno por uno:
 

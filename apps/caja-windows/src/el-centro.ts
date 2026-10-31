@@ -348,7 +348,7 @@ export class ElCentro {
         if (comanda === null || impresora === undefined) continue;
         const salio = await this.manos
           .imprimir(impresora.direccion, impresora.anchoMm, laComandaEnPapel(comanda))
-          .catch(() => ({ salio: false }) as ComoSalio);
+          .catch((): ComoSalio => ({ salio: false, porque: 'No responde' }));
         if (!salio.salio && falta.intentos + 1 < INTENTOS_COMO_MUCHO) {
           quedan.push({ ...falta, intentos: falta.intentos + 1 });
         }

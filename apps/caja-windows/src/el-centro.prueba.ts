@@ -93,7 +93,7 @@ function unasManos(): Mentira {
       imprimir: (direccion, _ancho, papel) => {
         if (!m.saleBien) return Promise.resolve({ salio: false, porque: 'No responde' });
         m.impreso.push({ direccion, papel });
-        return Promise.resolve({ salio: true });
+        return Promise.resolve({ salio: true, porque: null });
       },
       guardar: (texto) => {
         m.disco = texto;

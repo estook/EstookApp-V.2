@@ -443,6 +443,29 @@ aceptando lo hecho sin internet. Las pruebas: `la-puerta.prueba.ts` (sin interne
 - **Contestado por Richi el 29-oct** (0122, punto 5). La caja escuchará en la red del local: el
   instalador deja abierto el cortafuegos de Windows **solo para redes privadas**.
 
+### T5 · 2 · 2 · 1 · La comanda llega por la caja, entregada (31-oct-2026)
+
+En dos, como T5 · 2 · 1: **primero que la comanda llegue**, después los PIN y Aparatos. En su pull
+request ([0123](decisiones/0123-t5-2-2-la-caja-de-centro.md), migración **0097**, la API sin órdenes
+nuevas, la caja **1.1.0**; [sus pasos](pasos-de-t5-2-2.md); maquetas de los cuatro avisos,
+[`t5-2-2-la-caja-de-centro.html`](maquetas/t5-2-2-la-caja-de-centro.html), aprobadas el 31-oct):
+**el centro** en `apps/caja-windows/src/el-centro.ts` (escucha en el 47100, sobres cerrados, imprime
+una vez y guarda en el disco); **lo que viaja** en `packages/dominio/src/centro.ts` y
+`centro-cifrado.ts`; **el comandero** en `apps/tpv/src/sinInternet/laCaja.ts` y `paraLaCaja.ts`;
+**la cocina** en `apps/tpv/src/cocina/porLaCaja.ts` y `losTachados.ts`; **la franja** del permiso de
+Chrome y los datos móviles en `LaFranjaDeLaCaja.tsx`; y en la API, el latido con `centro` y
+`llega_al_centro`, `elCentro` en la cola de la caja y la cabecera `x-por-la-caja`.
+
+### T5 · 2 · 2 · 2 · Los PIN y Aparatos, terminado cuando
+
+- **Entra con su PIN sin internet cualquiera del local en un aparato que llegue a la caja**: la caja
+  comprueba los PIN de todos (Toast no deja entrar sin internet).
+- **Fichar sin internet en la caja**, con el PIN que comprueba ella.
+- **Ajustes del TPV › Aparatos dice quién llega a la caja** (lo dice ya cada latido,
+  `llega_al_centro_en`) y si la caja va por wifi o por cable.
+- **Los avisos de Windows** de la maqueta de los avisos (secciones 2 y 3): el cortafuegos y el wifi
+  como «red pública».
+
 ### T6 y T7
 
 Su «Terminado cuando» es el del Plan para cada módulo (M20B y M20C) con las pruebas del capítulo 8,

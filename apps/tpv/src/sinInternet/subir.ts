@@ -24,6 +24,8 @@ export type Mandar = (
   entrada: unknown,
   clave: string,
   haceMs: number,
+  /** Ya llegó a la cocina por la caja de centro (0123): Estook no lo vuelve a imprimir. */
+  porLaCaja: boolean,
 ) => Promise<Respuesta>;
 
 export interface AlSubir {
@@ -67,6 +69,7 @@ export async function subirLaCola(
       cosa.entrada,
       cosa.id,
       Math.max(0, ahora() - cosa.hechoEn),
+      cosa.enLaCaja === true,
     );
     if (respuesta.ok) {
       if (cosa.nombre === 'entrar_con_pin') {

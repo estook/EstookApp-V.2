@@ -24,6 +24,9 @@ import { borrarLasCopias, guardarLaCopia, leerLaCopia } from '../sinInternet/laC
 import { anadirALaCola, laCola, loQueEspera, vaciarLaCola } from '../sinInternet/laCola.ts';
 import { guardarSuYo, olvidarATodos } from '../sinInternet/quienEntroHoy.ts';
 import { usarSubirLoGuardado } from '../ganchos/usarSubirLoGuardado.ts';
+import { usarLaCajaDeCentro } from '../ganchos/usarLaCajaDeCentro.ts';
+import { olvidarLosTachados } from '../cocina/losTachados.ts';
+import { llegamosALaCaja } from '../sinInternet/laCaja.ts';
 
 /**
  * La puerta de Estook TPV (T1 · La puerta, decisión 0107; Anexo 11.3 y 11.4).
@@ -55,6 +58,7 @@ export function LaPuerta({ children }: { readonly children: ReactNode }) {
     borrarLasCopias();
     olvidarATodos();
     vaciarLaCola();
+    olvidarLosTachados();
     guardarLaLlave(null);
     setLlave(null);
     setDesvinculado({ local });
@@ -133,9 +137,17 @@ function ConLlave({
   const latido = useQuery({
     queryKey: ['latido', llave],
     queryFn: async () => {
+      // **La caja de centro** (0123): la caja dice dónde escucha; los demás, si llegan a ella.
+      const centro = await laCajaParaWindows()
+        ?.elCentro?.()
+        .catch(() => null);
       const respuesta = await cliente.ejecutar<ElAparatoPorDentro>('latir_el_aparato', {
         llave,
         version: laVersion(),
+        ...(centro?.escucha === true && centro.direcciones.length > 0
+          ? { centro: centro.direcciones }
+          : {}),
+        ...(llegamosALaCaja() === true ? { llega_al_centro: true } : {}),
       });
       if (respuesta.ok) {
         guardarLaCopia('aparato', respuesta.datos);
@@ -160,6 +172,7 @@ function ConLlave({
 
   const aparato = latido.data;
   if (aparato !== undefined) local.current = aparato.local.nombre;
+  usarLaCajaDeCentro(aparato);
   const retirado =
     latido.error instanceof FalloDeLaSala && latido.error.error.codigo === 'aparato_retirado';
 

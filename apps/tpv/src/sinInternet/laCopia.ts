@@ -14,7 +14,7 @@ const MESAS = `${PREFIJO}mesas`;
 const UNA_MESA_DURA_MS = 16 * 60 * 60 * 1000;
 const MESAS_COMO_MUCHO = 80;
 
-export type LoQueSeGuarda = 'aparato' | 'el_plano' | 'la_carta' | 'impresoras';
+export type LoQueSeGuarda = 'aparato' | 'el_plano' | 'la_carta' | 'impresoras' | 'la_cocina';
 
 export function guardarLaCopia(que: LoQueSeGuarda, datos: unknown): void {
   try {

@@ -46,7 +46,11 @@ export interface LoQueSabeElCentro {
 
 /** Lo que el centro le pide al programa: imprimir, guardar en el disco y la hora. */
 export interface ManosDelCentro {
-  readonly imprimir: (direccion: string, anchoMm: 58 | 80, papel: PapelCompuesto) => Promise<ComoSalio>;
+  readonly imprimir: (
+    direccion: string,
+    anchoMm: 58 | 80,
+    papel: PapelCompuesto,
+  ) => Promise<ComoSalio>;
   readonly guardar: (texto: string) => void;
   readonly leer: () => string | null;
   readonly ahora: () => number;
@@ -129,22 +133,22 @@ export class ElCentro {
     const servidor = createServer((peticion, respuesta) => {
       void this.atender(peticion, respuesta);
     });
-    await new Promise<void>((resolver) => {
+    const escucha = await new Promise<boolean>((resolver) => {
       servidor.once('error', (fallo: NodeJS.ErrnoException) => {
         this.porque =
           fallo.code === 'EADDRINUSE'
             ? 'Otro programa usa el puerto de la caja. Cierra la otra caja abierta en este PC.'
             : 'Windows no deja a la caja escuchar en el wifi.';
-        this.servidor = null;
-        resolver();
+        resolver(false);
       });
       servidor.listen(puerto, host, () => {
         this.porque = null;
-        this.servidor = servidor;
-        resolver();
+        resolver(true);
       });
     });
-    if (this.servidor !== null && this.reloj === null) {
+    if (!escucha) return;
+    this.servidor = servidor;
+    if (this.reloj === null) {
       this.reloj = setInterval(() => {
         void this.imprimirLoQueFalta();
       }, REINTENTAR_CADA_MS);
@@ -167,7 +171,8 @@ export class ElCentro {
   comoEsta(): ComoEstaElCentro {
     return {
       escucha: this.servidor !== null,
-      direcciones: this.servidor === null ? [] : lasDireccionesDelCentro(this.elPuerto() ?? undefined),
+      direcciones:
+        this.servidor === null ? [] : lasDireccionesDelCentro(this.elPuerto() ?? undefined),
       porque: this.porque,
       porImprimir: this.guardado.porImprimir.length,
     };
@@ -225,7 +230,11 @@ export class ElCentro {
           peticion,
           respuesta,
           200,
-          JSON.stringify({ estook: 'caja', version: this.version, lista: this.guardado.sabe !== null }),
+          JSON.stringify({
+            estook: 'caja',
+            version: this.version,
+            lista: this.guardado.sabe !== null,
+          }),
         );
         return;
       }
@@ -277,7 +286,8 @@ export class ElCentro {
   }
 
   private async hacer(cuerpo: unknown): Promise<unknown> {
-    const pide = typeof cuerpo === 'object' && cuerpo !== null ? (cuerpo as Record<string, unknown>) : {};
+    const pide =
+      typeof cuerpo === 'object' && cuerpo !== null ? (cuerpo as Record<string, unknown>) : {};
     if (pide['que'] === 'hola') return { ok: true };
     if (pide['que'] === 'la_cocina') return { ok: true, llegado: this.loLlegado() };
     if (pide['que'] === 'pasar' && esLoQueSePasaPorLaCaja(pide['lo'])) {
@@ -296,7 +306,10 @@ export class ElCentro {
     lo: Parameters<typeof laComandaPorLaCaja>[0],
   ): Promise<{ readonly enPapel: number; readonly repetido: boolean }> {
     if (this.guardado.llegado.some((l) => l.id === lo.id)) return { enPapel: 0, repetido: true };
-    const llegado: LoQueTieneLaCaja = { ...lo, llegoEn: new Date(this.manos.ahora()).toISOString() };
+    const llegado: LoQueTieneLaCaja = {
+      ...lo,
+      llegoEn: new Date(this.manos.ahora()).toISOString(),
+    };
     const sitios = (['cocina', 'barra'] as const).filter(
       (s) => this.saleEnPapel(s) && laComandaPorLaCaja(lo, s) !== null,
     );
@@ -329,7 +342,9 @@ export class ElCentro {
       for (const falta of this.guardado.porImprimir) {
         const lo = this.guardado.llegado.find((l) => l.id === falta.id);
         const comanda = lo === undefined ? null : laComandaPorLaCaja(lo, falta.sitio);
-        const impresora = this.guardado.sabe?.impresoras.find((i) => i.imprime.includes(falta.sitio));
+        const impresora = this.guardado.sabe?.impresoras.find((i) =>
+          i.imprime.includes(falta.sitio),
+        );
         if (comanda === null || impresora === undefined) continue;
         const salio = await this.manos
           .imprimir(impresora.direccion, impresora.anchoMm, laComandaEnPapel(comanda))

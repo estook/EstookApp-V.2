@@ -83,6 +83,9 @@ Estook hace lo de Toast **con la caja que el local ya tiene**, sin comprar un ap
     propia, como la cola (`las_impresoras_del_centro`, en la 0097).
 11. **Lo que no sale en la impresora se vuelve a intentar cada 10 segundos**, sin parar nada, y se
     deja tras un servicio entero.
+12. **La política de seguridad de Estook TPV abre el puerto de la caja**, `http://*:47100`, y nada
+    más: sin eso el navegador bloqueaba en silencio lo que va a la caja (lección 243). Las demás apps
+    no hablan con el wifi del local.
 
 ## 5 · Lo que no entra, y dónde va
 
@@ -112,6 +115,11 @@ Y lo que ya estaba fuera: **cobrar sin internet**, con su justificante, en T7.
   dirección y una de internet no vale; el comandero recibe la dirección y la clave correcta, y un
   comandero no puede hacerse pasar por el centro; la cola da a la caja sus aparatos e impresoras;
   y lo subido «por la caja» no deja otro papel y lleva la hora a la que llegó a cocina.
+- **De pantalla** (`la-caja-de-centro.spec.ts`, con un navegador de verdad y la caja del programa
+  escuchando en el 127.0.0.1): Estook deja de contestar pero el wifi sigue; se abre la mesa, se
+  piden dos croquetas y se manda: «la cocina ya lo tiene, por la caja», la franja «Todo sigue
+  funcionando en el local», la caja tiene la mesa con sus croquetas, y al volver sube una vez. Y la
+  política de seguridad, que deja hablar con la caja (`politica-de-seguridad.prueba.ts`).
 - **Lo que no se puede probar aquí**: el programa de Windows con el wifi de verdad, el permiso de
   Chrome en un Android de verdad y una impresora de verdad. Se prueba en el local del amigo, con el
   router de internet desenchufado ([los pasos](../pasos-de-t5-2-2.md)).

@@ -1003,3 +1003,10 @@
      con basura en su impresora. Ahora buscar solo llama a la puerta, el nombre se lee de la página
      web del aparato, y por ESC/POS solo se pregunta a las que el local ya dio de alta (29-oct, antes
      de probar en el local del amigo de Richi).
+243. **La política de seguridad bloquea en silencio lo que no está en `connect-src`.** Estook TPV
+     solo podía hablar con la API de Estook: lo que el comandero le manda a la caja de centro por el
+     wifi (`http://192.168.…:47100`) el navegador lo habría parado sin un error a la vista, y la
+     cocina no habría recibido nada sin internet. Se vio al escribir la prueba de pantalla, no en las
+     de unidad. Antes de que una web hable con un sitio nuevo, mirar `politica-de-seguridad.ts`; y
+     para la caja se abre solo ese puerto, solo en Estook TPV (`politica-de-seguridad.prueba.ts`,
+     31-oct).

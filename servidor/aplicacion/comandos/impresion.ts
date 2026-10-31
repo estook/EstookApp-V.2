@@ -576,9 +576,7 @@ async function loQueSabeElCentro(
       `,
       loDelLocalParaImprimir(contexto, localId),
       contexto.sql<{ direccion: string; ancho_mm: number; imprime: string[] }[]>`
-        select direccion, ancho_mm, imprime from estook.impresora
-         where local_id = ${localId}::uuid and terminal_id = ${cajaId}::uuid and retirada_en is null
-         order by creada_en
+        select direccion, ancho_mm, imprime from estook.las_impresoras_del_centro(${cajaId}::uuid)
       `,
     ]);
     return {

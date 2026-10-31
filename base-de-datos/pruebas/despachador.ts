@@ -55,7 +55,7 @@ export interface ApiDePrueba {
     entrada: unknown,
     clave?: string,
     /** Lo hecho sin conexión (0070): cuántos milisegundos hace, como lo manda el móvil. */
-    opciones?: { readonly hechoHaceMs?: number | null },
+    opciones?: { readonly hechoHaceMs?: number | null; readonly porLaCaja?: boolean },
   ): Promise<Resultado>;
   /** Como `ejecutar`, llegando desde una dirección: para los límites por dirección. */
   ejecutarDesde(

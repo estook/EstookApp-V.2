@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { tokenDelAparato } from '@estook/dominio';
+import { laClaveConLaCaja, tokenDelAparato } from '@estook/dominio';
 import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
@@ -763,6 +763,38 @@ async function cifrar(publica: string, pin: string): Promise<string> {
 }
 
 const MINUTO = 60_000;
+
+describe('la caja de centro (T5 · 2 · 2, 0123): la caja dice dónde escucha y los demás lo saben', () => {
+  interface ConCentro {
+    terminalId: string;
+    elCentro: { direcciones: string[]; clave: string } | null;
+  }
+  const latir = async (llave: string, mas: Record<string, unknown> = {}) =>
+    api.ejecutar(null, 'latir_el_aparato', { llave, ...mas });
+
+  it('la caja dice su dirección del wifi; el comandero la recibe con su clave, y dice si llega', async () => {
+    // Una dirección de internet no es la de un local.
+    expect(elFallo(await latir(llaveDeLaCaja, { centro: ['8.8.8.8:47100'] }))).toBe('faltan_datos');
+    losDatos(await latir(llaveDeLaCaja, { centro: ['192.168.1.20:47100'] }));
+
+    const enLaTablet = losDatos<ConCentro>(await latir(llaveDeLaTablet, { llega_al_centro: true }));
+    expect(enLaTablet.elCentro?.direcciones).toEqual(['192.168.1.20:47100']);
+    // La clave sale de la huella de la llave de la caja: la caja la calcula sin preguntar.
+    expect(enLaTablet.elCentro?.clave).toBe(
+      await laClaveConLaCaja(await huellaDeToken(llaveDeLaCaja), enLaTablet.terminalId),
+    );
+    const { rows } = await base.bd.query<{ llega: Date | null }>(
+      `select llega_al_centro_en as llega from estook.terminal where id = $1`,
+      [enLaTablet.terminalId],
+    );
+    expect(rows[0]?.llega).not.toBeNull();
+
+    // Un comandero no puede hacerse pasar por el centro.
+    losDatos(await latir(llaveDeLaTablet, { centro: ['192.168.1.99:47100'] }));
+    const otraVez = losDatos<ConCentro>(await latir(llaveDeLaTablet));
+    expect(otraVez.elCentro?.direcciones).toEqual(['192.168.1.20:47100']);
+  });
+});
 
 describe('sin internet (T5 · 2 · 1): lo guardado sube una vez, a nombre de quien lo hizo', () => {
   it('la caja y el comandero reciben en su latido la pública con la que cifrar el PIN', async () => {

@@ -311,7 +311,14 @@ de alta a alguien, el datáfono conectado y los pedidos de reparto.
   sale ella, cifrado. Los terminales aprenden su dirección de la nube mientras hay
   conexión, y el navegador le habla con el permiso de **acceso a la red local** de Chrome
   y Edge. **Safari (iPhone y iPad) no deja**: esos aparatos guardan lo suyo y lo suben al
-  volver. La caja va **por cable** al router.
+  volver. La caja va **por cable o por wifi** (Richi, 29-oct); por cable, más estable.
+  **Construida en T5 · 2 · 2** ([0123](../decisiones/0123-t5-2-2-la-caja-de-centro.md)): escucha
+  en el puerto 47100 y dice su dirección en el latido (0097); **cada mensaje va en un sobre
+  cerrado** (AES-GCM) con la clave de ese aparato, que sale de la huella de la llave de la caja
+  y su id, sin secretos nuevos; el comandero arma lo que va a la cocina con las reglas de
+  Estook, y la caja solo guarda, imprime y reparte; **cada comandero sube lo suyo** al volver,
+  diciendo que pasó por la caja, y Estook no lo vuelve a imprimir. Los PIN de todos y fichar en
+  la caja, en su segunda parte.
 
 ## Lo fiscal sin conexión
 

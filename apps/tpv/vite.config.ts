@@ -63,6 +63,9 @@ export default defineConfig(({ mode }) => {
         // La sala y la cocina se avisan al segundo por Supabase Realtime (0106).
         direccionDeSupabase: variables['VITE_SUPABASE_URL'] ?? '',
         enDesarrollo: mode !== 'production',
+        // Sin internet, la cocina recibe por la caja de centro (0123): su puerto en el wifi,
+        // `PUERTO_DEL_CENTRO` del dominio (lo vigila politica-de-seguridad.prueba.ts).
+        puertoDeLaCaja: 47100,
       }),
       // Instalable (0115): abre sin señal, con su caché, que no es la de Estook.
       elTrabajadorDeServicio({ cache: 'estook-tpv', dePublic: DE_PUBLIC_DEL_TPV }),

@@ -444,6 +444,62 @@ describe('el cajón', () => {
   });
 });
 
+describe('la caja de centro (T5 · 2 · 2, 0123)', () => {
+  interface ConCentro {
+    elCentro: {
+      caja: string;
+      aparatos: string[];
+      cocinaSaleEn: string;
+      barraSaleEn: string;
+      impresoras: { direccion: string; anchoMm: number; imprime: string[] }[];
+    };
+  }
+
+  it('la cola le da a la caja lo que necesita sin internet: los aparatos del local y a qué impresora va cada cosa', async () => {
+    const { elCentro } = losDatos<ConCentro>(
+      await api.ejecutar(null, 'la_cola_de_la_caja', { llave: llaveDeLaCaja }),
+    );
+    expect(elCentro.aparatos).toHaveLength(2);
+    expect(elCentro.aparatos).not.toContain(elCentro.caja);
+    expect(elCentro.cocinaSaleEn).toBe('las_dos');
+    expect(elCentro.impresoras.find((i) => i.imprime.includes('cocina'))?.direccion).toBe(
+      DIRECCION,
+    );
+  });
+
+  it('lo mandado sin internet que ya imprimió la caja sube sin otro papel, con la hora a la que llegó a cocina', async () => {
+    const cuenta = await abrirYPedir([{ id: crypto.randomUUID(), plato: 'Croquetas', pase: 1 }]);
+    const antes = Date.now();
+    losDatos(
+      await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: cuenta }, crypto.randomUUID(), {
+        hechoHaceMs: 10 * 60_000,
+        porLaCaja: true,
+      }),
+    );
+    expect((await laCola()).trabajos).toEqual([]);
+    const { rows } = await base.bd.query<{ mandada_en: Date }>(
+      `select mandada_en from estook.linea_de_cuenta where cuenta_id = $1`,
+      [cuenta],
+    );
+    const llego = new Date(rows[0]?.mandada_en ?? 0).getTime();
+    expect(antes - llego).toBeGreaterThan(9 * 60_000);
+    expect(antes - llego).toBeLessThan(11 * 60_000);
+  });
+
+  it('lo mandado sin internet que no pasó por la caja sí sale en papel al subir', async () => {
+    await imprimirlo((await laCola()).trabajos);
+    const cuenta = await abrirYPedir([{ id: crypto.randomUUID(), plato: 'Croquetas', pase: 1 }]);
+    losDatos(
+      await api.ejecutar(sara, 'mandar_a_cocina', { cuenta_id: cuenta }, crypto.randomUUID(), {
+        hechoHaceMs: 60_000,
+      }),
+    );
+    const cola = (await laCola()).trabajos;
+    expect(cola).toHaveLength(1);
+    await imprimirlo(cola);
+  });
+});
+
 describe('«Pasar a la app»', () => {
   it('la misma caja con otra llave: la de antes deja de valer, y sus impresoras siguen', async () => {
     const { codigo } = losDatos<{ codigo: string }>(

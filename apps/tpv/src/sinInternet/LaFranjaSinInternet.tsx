@@ -1,7 +1,15 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Boton, Hoja } from '@estook/ui';
 import { laHora } from '../logica/texto.ts';
-import { escucharLaCola, laCola, loQueEspera, quitarDeLaCola, seEnsena } from './laCola.ts';
+import {
+  escucharLaCola,
+  laCola,
+  loQueEspera,
+  loQueFaltaPasar,
+  quitarDeLaCola,
+  seEnsena,
+} from './laCola.ts';
+import { escucharLaCaja, llegamosALaCaja } from './laCaja.ts';
 import {
   avisarDeLaVuelta,
   escucharLaConexion,
@@ -16,6 +24,8 @@ import {
  *     3 por subir», y «Ver» abre lo que espera
  *   · al volver, una vez, en azul: «Conexión recuperada · 12 cosas subidas, ninguna repetida»
  *   · lo que Estook no aceptó al subir, en ámbar, hasta que alguien lo mira
+ *   · **con la caja de centro** (T5 · 2 · 2, 0123), sin internet pero llegando a la caja y con
+ *     todo lo de la cocina ya en ella: «Sin internet. Todo sigue funcionando en el local»
  */
 const LA_VUELTA_SE_VE_MS = 8_000;
 
@@ -32,6 +42,7 @@ export function LaFranjaSinInternet({
   const cola = useSyncExternalStore(escucharLaCola, laCola);
   const sinInternet = useSyncExternalStore(escucharLaConexion, estamosSinInternet);
   const vuelta = useSyncExternalStore(escucharLaConexion, laVuelta);
+  const llega = useSyncExternalStore(escucharLaCaja, llegamosALaCaja);
   const [viendo, setViendo] = useState(false);
 
   useEffect(() => {
@@ -48,8 +59,16 @@ export function LaFranjaSinInternet({
   const esperan = loQueEspera(visibles).length;
   const fallidas = visibles.length - esperan;
 
-  let franja: { readonly tono: 'ambar' | 'azul'; readonly texto: string } | null = null;
-  if (sinInternet) {
+  const porLaCaja = llega === true && loQueFaltaPasar(cola).length === 0;
+
+  let franja: { readonly tono: 'ambar' | 'azul' | 'tranquila'; readonly texto: string } | null =
+    null;
+  if (sinInternet && porLaCaja) {
+    franja = {
+      tono: 'tranquila',
+      texto: `Sin internet. Todo sigue funcionando en el local${esperan > 0 ? ` · ${String(esperan)} por subir` : ''}`,
+    };
+  } else if (sinInternet) {
     franja = {
       tono: 'ambar',
       texto: `Sin conexión. Se guarda aquí: la cocina aún no lo recibe${esperan > 0 ? ` · ${String(esperan)} por subir` : ''}`,
@@ -77,7 +96,9 @@ export function LaFranjaSinInternet({
             className={`flex flex-wrap items-center gap-e3 rounded-grande py-e2 pl-e4 pr-e2 font-bold ${
               franja.tono === 'ambar'
                 ? 'bg-atencion-suave text-atencion'
-                : 'bg-info-suave text-info'
+                : franja.tono === 'tranquila'
+                  ? 'border border-borde bg-superficie text-texto'
+                  : 'bg-info-suave text-info'
             }`}
           >
             <span className="flex-1">{franja.texto}</span>
@@ -111,7 +132,10 @@ export function LaFranjaSinInternet({
                 <span className="flex min-w-[12rem] flex-1 flex-col">
                   <span className="font-bold">{cosa.que}</span>
                   <span className="text-secundario text-texto-suave">
-                    {cosa.fallo ?? cosa.quien.nombre}
+                    {cosa.fallo ??
+                      (cosa.enLaCaja === true
+                        ? `${cosa.quien.nombre} · en cocina`
+                        : cosa.quien.nombre)}
                   </span>
                 </span>
                 <span className="text-secundario tabular-nums text-texto-suave">

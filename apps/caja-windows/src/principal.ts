@@ -1,9 +1,11 @@
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   BrowserWindow,
   Menu,
   app,
   ipcMain,
+  safeStorage,
   shell,
   type IpcMainEvent,
   type IpcMainInvokeEvent,
@@ -11,7 +13,7 @@ import {
 import electronUpdater from 'electron-updater';
 import { crearCliente } from '@estook/cliente-api';
 import { escucharAlSegundo, type Escucha } from '@estook/cliente-api/al-segundo';
-import { esPapelCompuesto } from '@estook/dominio';
+import { esPapelCompuesto, laHuellaDeLaLlave } from '@estook/dominio';
 import { aEscPos, IMPRESORA_DE_58_MM, IMPRESORA_DE_80_MM } from '@estook/impresion';
 import type { ImpresoraEncontrada, LoQueNecesitaLaCaja } from '@estook/impresion';
 import { comoEstaLaImpresora, mandarALaImpresora, suNombre } from './la-impresora.ts';
@@ -23,6 +25,7 @@ import {
   losNombres,
 } from './buscar.ts';
 import { LaColaEnMarcha, type LaColaQueDaLaApi, type LoQueSeApunta } from './la-cola.ts';
+import { ElCentro } from './el-centro.ts';
 
 /**
  * **La caja para Windows** (T5 · 1, decisión 0119): Estook TPV tal cual, en una ventana, y lo que
@@ -33,6 +36,8 @@ import { LaColaEnMarcha, type LaColaQueDaLaApi, type LoQueSeApunta } from './la-
  *   · la web no toca nada del sistema: solo el puente (`puente.ts`), y solo desde su dirección
  *   · con la llave de la caja, **imprime su cola** también con la caja bloqueada
  *   · se actualiza solo, y lo nuevo **se pone al cerrar el programa**, nunca en mitad del servicio
+ *   · **hace de centro sin internet** (T5 · 2 · 2, 0123): los comanderos y la pantalla de cocina
+ *     le hablan por el wifi del local, y ella imprime y reparte (`el-centro.ts`)
  */
 
 const LA_WEB = process.env['ESTOOK_TPV'] ?? 'https://estook.com/tpv/';
@@ -44,6 +49,30 @@ let escucha: Escucha | null = null;
 let conLaLlave: string | null = null;
 /** Lo que la cola sabe de sus impresoras: para decir cuáles ya están dadas de alta. */
 let lasSuyas: readonly { readonly id: string; readonly direccion: string }[] = [];
+let centro: ElCentro | null = null;
+let laHuella: string | null = null;
+
+/**
+ * **Lo del centro, en el disco**, cifrado con la cuenta de Windows (DPAPI) cuando se puede: los
+ * aparatos del local y lo llegado sin internet, para seguir si se cierra el programa sin red.
+ */
+function elFicheroDelCentro(): string {
+  return join(app.getPath('userData'), 'centro.dat');
+}
+
+function guardarElCentro(texto: string): void {
+  const cifrado = safeStorage.isEncryptionAvailable();
+  const datos = cifrado ? safeStorage.encryptString(texto) : Buffer.from(texto, 'utf8');
+  writeFileSync(elFicheroDelCentro(), Buffer.concat([Buffer.from(cifrado ? 'C' : 'T'), datos]));
+}
+
+function leerElCentro(): string | null {
+  const fichero = elFicheroDelCentro();
+  if (!existsSync(fichero)) return null;
+  const leido = readFileSync(fichero);
+  const datos = leido.subarray(1);
+  return leido[0] === 'C'.charCodeAt(0) ? safeStorage.decryptString(datos) : datos.toString('utf8');
+}
 
 /** Solo la web de Estook TPV habla con el programa; un enlace que se abra no. */
 function esDeEstook(evento: IpcMainEvent | IpcMainInvokeEvent): boolean {
@@ -61,6 +90,10 @@ function conectar(datos: LoQueNecesitaLaCaja): void {
   }
   desconectar();
   conLaLlave = datos.llave;
+  void laHuellaDeLaLlave(datos.llave).then((huella) => {
+    if (conLaLlave === datos.llave) laHuella = huella;
+  });
+  void centro?.empezar();
   const cliente = crearCliente({ base: datos.api, token: () => null });
   cola = new LaColaEnMarcha(
     {
@@ -75,6 +108,7 @@ function conectar(datos: LoQueNecesitaLaCaja): void {
             respuesta.error.codigo === 'aparato_retirado'
           ) {
             desconectar();
+            centro?.olvidar();
           }
           throw new Error(respuesta.error.codigo);
         }
@@ -89,6 +123,9 @@ function conectar(datos: LoQueNecesitaLaCaja): void {
     60_000,
     (vuelta) => {
       lasSuyas = vuelta.impresoras;
+      // Con internet, lo que el centro necesitará cuando falte: se guarda en el disco.
+      const sabe = vuelta.elCentro;
+      if (sabe !== undefined && laHuella !== null) centro?.saber(laHuella, sabe);
       // El toque al segundo, con el tema que dio la API: así se entera al momento.
       if (escucha === null && vuelta.temaAlSegundo !== null) {
         escucha = escucharAlSegundo(
@@ -191,8 +228,16 @@ if (!app.requestSingleInstanceLock()) {
         }
       });
       ipcMain.on('caja:desconectar', (evento) => {
-        if (esDeEstook(evento)) desconectar();
+        if (esDeEstook(evento)) {
+          desconectar();
+          centro?.olvidar();
+        }
       });
+      ipcMain.handle('caja:el-centro', (evento) =>
+        esDeEstook(evento) && centro !== null
+          ? centro.comoEsta()
+          : { escucha: false, direcciones: [], porque: null, porImprimir: 0 },
+      );
       ipcMain.handle('caja:buscar', async (evento) =>
         esDeEstook(evento) ? buscarImpresoras() : [],
       );
@@ -225,6 +270,19 @@ if (!app.requestSingleInstanceLock()) {
           app.setLoginItemSettings({ openAtLogin: si });
       });
 
+      // **El centro** (0123): escucha desde que la caja sabe de qué local es, aunque sea sin red.
+      centro = new ElCentro([SU_ORIGEN], app.getVersion(), {
+        imprimir: (direccion, anchoMm, papel) =>
+          mandarALaImpresora(
+            direccion,
+            aEscPos(papel, anchoMm === 58 ? IMPRESORA_DE_58_MM : IMPRESORA_DE_80_MM),
+          ),
+        guardar: guardarElCentro,
+        leer: leerElCentro,
+        ahora: () => Date.now(),
+      });
+      if (centro.loLlegado().length > 0 || leerElCentro() !== null) void centro.empezar();
+
       crearLaVentana();
 
       // **Las actualizaciones**: se descargan solas y se ponen al cerrar el programa (Anexo 10.12).
@@ -244,6 +302,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.on('window-all-closed', () => {
     desconectar();
+    centro?.parar();
     app.quit();
   });
 }

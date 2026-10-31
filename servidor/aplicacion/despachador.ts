@@ -134,8 +134,11 @@ export interface Despachador {
     nombre: string,
     entrada: unknown,
     claveDeIdempotencia: string,
-    /** Lo hecho sin conexión (0070): cuántos milisegundos hace, según el móvil. */
-    opciones?: { readonly hechoHaceMs?: number | null },
+    /**
+     * Lo hecho sin conexión (0070): cuántos milisegundos hace, según el móvil; y si ya llegó
+     * a la cocina por la caja de centro (0123).
+     */
+    opciones?: { readonly hechoHaceMs?: number | null; readonly porLaCaja?: boolean },
   ): Promise<Resultado>;
   /**
    * Un aviso de Stripe, tal como llega: el cuerpo sin tocar (la firma es del cuerpo
@@ -414,6 +417,8 @@ export function crearDespachador(puertos: Puertos): Despachador {
         if (!seAceptaLoHecho(hechoHaceMs))
           return { estado: 'fallo', codigo: 'hecho_hace_demasiado' };
       }
+      // **Por la caja** (0123): solo lo hecho sin conexión puede haber pasado por ella.
+      const porLaCaja = opciones.porLaCaja === true && hechoHaceMs !== null;
 
       const validada = elComando.entrada.safeParse(entrada);
       if (!validada.success) {
@@ -426,8 +431,18 @@ export function crearDespachador(puertos: Puertos): Despachador {
 
       const resultado = await conFallosTraducidos(async () =>
         puertos.enTransaccion(quien, async (laDeVerdad): Promise<Resultado> => {
+          // Lo que llegó a la cocina por la caja lleva la hora a la que llegó, no la de subir.
           const contexto: Contexto =
-            hechoHaceMs === null ? laDeVerdad : { ...laDeVerdad, hechoHaceMs };
+            hechoHaceMs === null
+              ? laDeVerdad
+              : porLaCaja
+                ? {
+                    ...laDeVerdad,
+                    hechoHaceMs,
+                    porLaCaja: true,
+                    ahora: new Date(laDeVerdad.ahora.getTime() - hechoHaceMs),
+                  }
+                : { ...laDeVerdad, hechoHaceMs };
           const cerrada = porQueNoPasa(elComando, contexto.sesion);
           if (cerrada) return { estado: 'fallo', codigo: cerrada };
 

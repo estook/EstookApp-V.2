@@ -342,6 +342,11 @@ export interface ElAparatoPorDentro {
    * de antes no la dice, y entonces sin internet solo sigue quien está dentro.
    */
   readonly clavePublica?: string | null;
+  /**
+   * **La caja de centro** (T5 · 2 · 2, 0123): dónde escucha la caja del local en el wifi y la
+   * clave de este aparato con ella. Una API de antes no lo dice.
+   */
+  readonly elCentro?: { readonly direcciones: readonly string[]; readonly clave: string } | null;
 }
 
 export interface AparatoVinculado {

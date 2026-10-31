@@ -9,6 +9,7 @@ import {
   escucharLaCola,
   laCola,
   loQueEspera,
+  loQueFaltaPasar,
   pasarAlTurno,
   quitarDeLaCola,
   seEnsena,
@@ -19,6 +20,7 @@ import {
   estamosSinInternet,
 } from '../sinInternet/laConexion.ts';
 import { subirLaCola, type Mandar } from '../sinInternet/subir.ts';
+import { escucharLaCaja, hayCaja, pasarLoQueFalta } from '../sinInternet/laCaja.ts';
 
 /**
  * **Subir lo guardado** (T5 · 2 · 1): en cuanto Estook contesta otra vez, y cada quince segundos
@@ -38,7 +40,7 @@ export function subirLoGuardado(
   if (enMarcha !== null) return enMarcha;
   if (loQueEspera(laCola()).length === 0) return Promise.resolve();
   const clientes = new Map<string | null, ClienteApi>();
-  const mandar: Mandar = (turno, nombre, entrada, clave, haceMs) => {
+  const mandar: Mandar = (turno, nombre, entrada, clave, haceMs, porLaCaja) => {
     let cliente = clientes.get(turno);
     if (cliente === undefined) {
       cliente = crearClienteDelTpv({
@@ -46,7 +48,11 @@ export function subirLoGuardado(
       });
       clientes.set(turno, cliente);
     }
-    return cliente.ejecutar(nombre, entrada, { claveDeIdempotencia: clave, hechoHaceMs: haceMs });
+    return cliente.ejecutar(nombre, entrada, {
+      claveDeIdempotencia: clave,
+      hechoHaceMs: haceMs,
+      ...(porLaCaja ? { porLaCaja: true } : {}),
+    });
   };
   enMarcha = (async () => {
     try {
@@ -78,6 +84,7 @@ export function subirLoGuardado(
 }
 
 const CADA = 15_000;
+const CADA_A_LA_CAJA = 5_000;
 
 export function usarSubirLoGuardado(
   llave: string,
@@ -101,6 +108,21 @@ export function usarSubirLoGuardado(
   useEffect(() => {
     if (!sinInternet && esperan > 0) void subir();
   }, [sinInternet, esperan, subir]);
+
+  // **Lo que aún no tiene la caja de centro** (0123): se le vuelve a pasar cada poco, sin
+  // internet, para que la cocina lo reciba en cuanto se llegue a ella.
+  const conCaja = useSyncExternalStore(escucharLaCaja, hayCaja);
+  const faltanEnLaCaja = loQueFaltaPasar(cola).length;
+  useEffect(() => {
+    if (!conCaja || faltanEnLaCaja === 0) return undefined;
+    void pasarLoQueFalta();
+    const reloj = window.setInterval(() => {
+      void pasarLoQueFalta();
+    }, CADA_A_LA_CAJA);
+    return () => {
+      window.clearInterval(reloj);
+    };
+  }, [conCaja, faltanEnLaCaja]);
 
   useEffect(() => {
     if (esperan === 0) return undefined;

@@ -222,6 +222,8 @@ export async function alPapelSinPararElServicio(
   lo: LoQueSaleEnLaComanda,
 ): Promise<void> {
   if (lo.lineaIds.length === 0) return;
+  // Sin internet ya lo imprimió la caja de centro (0123): otra vez sería la comanda dos veces.
+  if (contexto.porLaCaja === true) return;
   try {
     await enUnPuntoDeGuardado(contexto, (aparte) =>
       laComandaALaCola(aparte, localId, cuentaId, lo),

@@ -6,9 +6,11 @@ import {
   LIMITES_DEL_BLOQUEO,
   dondeCae,
   esCodigoConForma,
+  esDireccionDelLocal,
   horaDeCorte,
   inicialesDe,
   jornadaDe,
+  laClaveConLaCaja,
   laHoraDeLoHecho,
   type AjustesDelBloqueo,
   type FuncionDelAparato,
@@ -24,6 +26,7 @@ import {
 } from '../contrato.ts';
 import { enNombreDelSistema, queLleveEstookTpv } from '../pago.ts';
 import { leerPermisos } from '../consultas/quien-soy.ts';
+import { comoLista } from '../listas.ts';
 import { ponerPinNuevo } from '../pines.ts';
 import { cerrarLaSesion } from './salir.ts';
 import {
@@ -240,6 +243,50 @@ export interface ElAparatoPorDentro {
    * sin conexión, y Estook lo comprueba al volver (0070). Solo la caja y el comandero.
    */
   readonly clavePublica: string | null;
+  /**
+   * **La caja de centro** (T5 · 2 · 2, 0123): dónde escucha la caja del local en el wifi y la
+   * clave para hablarle, para que sin internet la cocina siga recibiendo. Nula si el local no
+   * tiene la caja para Windows encendida, o si es una pantalla de fichar.
+   */
+  readonly elCentro?: ElCentroParaElAparato | null;
+}
+
+export interface ElCentroParaElAparato {
+  /** «192.168.1.20:47100»: la primera que conteste. */
+  readonly direcciones: readonly string[];
+  readonly clave: string;
+}
+
+/** La caja deja de ser el centro si lleva un día sin decir dónde escucha. */
+const EL_CENTRO_SE_OLVIDA_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Dónde escucha la caja del local, y la clave de este aparato con ella (0123): de la huella de
+ * la llave de la caja, que solo tienen Estook y la caja. Sale en el latido, con internet.
+ */
+async function elCentroPara(
+  contexto: Contexto,
+  aparato: AparatoDelTpv,
+): Promise<ElCentroParaElAparato | null> {
+  if (aparato.funcion === 'fichar') return null;
+  const filas = await enNombreDelSistema(
+    contexto,
+    () =>
+      contexto.sql<{ huella: string; centro_en: string[] }[]>`
+      select huella, centro_en from estook.terminal
+       where local_id = ${aparato.localId}::uuid and funcion = 'caja' and retirado_en is null
+         and centro_en is not null
+         and centro_visto_en > ${new Date(contexto.ahora.getTime() - EL_CENTRO_SE_OLVIDA_MS).toISOString()}::timestamptz
+       order by centro_visto_en desc
+       limit 1
+    `,
+  );
+  const caja = filas[0];
+  if (caja === undefined) return null;
+  return {
+    direcciones: caja.centro_en.filter(esDireccionDelLocal),
+    clave: await laClaveConLaCaja(caja.huella, aparato.terminalId),
+  };
 }
 
 async function elAparatoPorDentro(
@@ -915,12 +962,20 @@ export const vincularConCodigo = comando<
 
 // ═══ El latido ════════════════════════════════════════════════════════════════
 
-export const latirElAparato = comando<
-  { llave: string; version?: string | undefined },
-  ElAparatoPorDentro
->({
+export const entradaLatir = z
+  .object({
+    llave,
+    version,
+    /** Solo la caja (0123): dónde escucha en la red del local. */
+    centro: z.array(z.string().refine(esDireccionDelLocal)).min(1).max(4).optional(),
+    /** Si este aparato llega a la caja por el wifi del local (0123). */
+    llega_al_centro: z.boolean().optional(),
+  })
+  .strict();
+
+export const latirElAparato = comando<z.infer<typeof entradaLatir>, ElAparatoPorDentro>({
   nombre: 'latir_el_aparato',
-  entrada: z.object({ llave, version }).strict(),
+  entrada: entradaLatir,
   sinSesion: true,
   // Uno por minuto y aparato, todo el día: repetirlo ya es lo mismo (`sinRecordar`).
   sinRecordar: true,
@@ -928,13 +983,21 @@ export const latirElAparato = comando<
   async ejecutar(contexto, entrada) {
     const aparato = await elAparatoDeLaLlave(contexto, entrada.llave);
     const tema = aparato.temaAlSegundo ?? tokenNuevo();
+    const centro = aparato.funcion === 'caja' ? (entrada.centro ?? null) : null;
+    const ahora = contexto.ahora.toISOString();
     await enNombreDelSistema(
       contexto,
       () => contexto.sql`
         update estook.terminal
            set ultimo_latido_en = ${contexto.ahora.toISOString()}::timestamptz,
                version_de_la_app = coalesce(${entrada.version ?? null}, version_de_la_app),
-               tema_al_segundo = ${tema}
+               tema_al_segundo = ${tema},
+               centro_en = case when funcion = 'caja' and ${centro !== null}
+                                then ${comoLista(centro ?? [])}::text::text[] else centro_en end,
+               centro_visto_en = case when funcion = 'caja' and ${centro !== null}
+                                      then ${ahora}::timestamptz else centro_visto_en end,
+               llega_al_centro_en = case when ${entrada.llega_al_centro === true}
+                                         then ${ahora}::timestamptz else llega_al_centro_en end
          where id = ${aparato.terminalId}::uuid
       `,
     );
@@ -947,6 +1010,7 @@ export const latirElAparato = comando<
     return {
       ...dentro,
       clavePublica: conPin ? await laClavePublicaDe(contexto, aparato.terminalId) : null,
+      elCentro: await elCentroPara(contexto, aparato),
     };
   },
 });

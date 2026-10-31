@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
+import type { LoQueSePasaPorLaCaja } from '@estook/dominio';
 import { escucharAlSegundo, haySegundo } from '@estook/cliente-api/al-segundo';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import type { ElPlano, LaCartaDeLaSala, LaMesa } from '../datos/tipos.ts';
@@ -27,6 +28,7 @@ import {
   type LineaGuardada,
 } from '../sinInternet/laCola.ts';
 import { estamosSinInternet } from '../sinInternet/laConexion.ts';
+import { hayCaja, pasarLoQueFalta } from '../sinInternet/laCaja.ts';
 import { elPlanoConLoGuardado, laMesaGuardada } from '../sinInternet/loGuardado.ts';
 
 /**
@@ -258,11 +260,18 @@ export interface ComoSeGuarda<T> {
   readonly cuentaId?: string;
   readonly lineas?: readonly LineaGuardada[];
   readonly respuesta: T;
+  /**
+   * **Lo que la cocina tiene que ver** (T5 · 2 · 2, 0123), armado con la clave de lo hecho: se
+   * le pasa a la caja de centro, que lo imprime y se lo da a la pantalla de cocina.
+   */
+  readonly paraLaCaja?: (clave: string) => LoQueSePasaPorLaCaja | null;
 }
 
 /** Lo que contesta un comando guardado sin internet, para que la pantalla lo diga. */
 export interface Guardado {
   readonly guardado: true;
+  /** La caja de centro ya lo tiene: la cocina lo ha recibido (0123). */
+  readonly porLaCaja?: true;
 }
 
 /**
@@ -284,8 +293,9 @@ export function usarAcciones() {
       sinInternet?: ComoSeGuarda<T>,
     ): Promise<Resultado<T>> => {
       const laClave = clave ?? crypto.randomUUID();
-      const guardar = (): Resultado<T> | null => {
+      const guardar = async (): Promise<Resultado<T> | null> => {
         if (sinInternet === undefined) return null;
+        const paraLaCaja = sinInternet.paraLaCaja?.(laClave) ?? null;
         anadirALaCola({
           id: laClave,
           nombre,
@@ -296,18 +306,27 @@ export function usarAcciones() {
           que: sinInternet.que,
           ...(sinInternet.cuentaId === undefined ? {} : { cuentaId: sinInternet.cuentaId }),
           ...(sinInternet.lineas === undefined ? {} : { lineas: sinInternet.lineas }),
+          ...(paraLaCaja === null ? {} : { paraLaCaja }),
         });
-        return { ok: true, datos: sinInternet.respuesta };
+        // Con la caja de centro, la cocina lo recibe ya: se espera a saberlo para decirlo.
+        if (paraLaCaja !== null && hayCaja()) await pasarLoQueFalta();
+        const enLaCaja = laCola().some((c) => c.id === laClave && c.enLaCaja === true);
+        return {
+          ok: true,
+          datos: (enLaCaja
+            ? { ...(sinInternet.respuesta as object), porLaCaja: true }
+            : sinInternet.respuesta) as T,
+        };
       };
       if (estamosSinInternet() || loQueEspera(laCola()).length > 0) {
-        const guardado = guardar();
+        const guardado = await guardar();
         if (guardado !== null) return guardado;
       }
       const respuesta = await cliente.ejecutar<T>(nombre, entrada, {
         claveDeIdempotencia: laClave,
       });
       if (!respuesta.ok && respuesta.error.codigo === 'sin_conexion') {
-        const guardado = guardar();
+        const guardado = await guardar();
         if (guardado !== null) return guardado;
       }
       if (respuesta.ok) await cache.invalidateQueries({ queryKey: ['sala'] });

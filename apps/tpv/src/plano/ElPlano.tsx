@@ -16,6 +16,7 @@ import { irA, irALaMesa } from '../navegar.ts';
 import { AbrirMesa } from './AbrirMesa.tsx';
 import { LaCocinaLlama } from './LaCocinaLlama.tsx';
 import { LaFranjaSinInternet } from '../sinInternet/LaFranjaSinInternet.tsx';
+import { LaFranjaDeLaCaja } from '../sinInternet/LaFranjaDeLaCaja.tsx';
 import { DescargaLaCajaParaWindows, LasImpresorasAvisan } from './LasImpresorasAvisan.tsx';
 import { OpcionesDeLaMesa } from '../mesa/OpcionesDeLaMesa.tsx';
 import { MesaEnElPlano, TarjetaSinMesa } from './MesaEnElPlano.tsx';
@@ -200,6 +201,7 @@ export function ElPlano() {
       </LaBarraDeArriba>
 
       <LaFranjaSinInternet />
+      <LaFranjaDeLaCaja />
       <LaCocinaLlama
         cuentas={[
           ...datos.zonas.flatMap((z) =>

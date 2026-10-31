@@ -99,6 +99,12 @@ export interface Contexto {
    */
   readonly hechoHaceMs?: number | null;
   /**
+   * **Ya llegó a la cocina por la caja de centro** (T5 · 2 · 2, 0123): sin internet, la caja
+   * lo imprimió y lo enseñó a la pantalla de cocina. No se vuelve a mandar al papel, y `ahora`
+   * es la hora a la que llegó a la cocina. Solo con `hechoHaceMs`.
+   */
+  readonly porLaCaja?: boolean;
+  /**
    * Desde qué dirección llega la petición, tal como la ve la API, o nulo (0041).
    *
    * **Solo para la auditoría del admin.** No decide nada: una dirección se puede

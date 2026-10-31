@@ -11,6 +11,8 @@
  * Sobrevive a recargar el aparato, y se borra al desvincularlo.
  */
 
+import type { LoQueSePasaPorLaCaja } from '@estook/dominio';
+
 const DONDE = 'estook.tpv.por-subir';
 
 /** Con qué se sube: el turno vivo de quien lo hizo, o su entrada sin internet. */
@@ -38,6 +40,13 @@ export interface CosaPorSubir {
   readonly lineas?: readonly LineaGuardada[];
   /** Lo que no se pudo hacer al subir, dicho para quien lo mira. Sin poner, aún espera. */
   readonly fallo?: string;
+  /**
+   * **Lo que la cocina tiene que ver**, para pasárselo a la caja de centro (T5 · 2 · 2, 0123):
+   * lo mandado y lo marchado sin internet.
+   */
+  readonly paraLaCaja?: LoQueSePasaPorLaCaja;
+  /** La caja ya lo tiene: la cocina lo ha recibido. Al subir, Estook no lo vuelve a imprimir. */
+  readonly enLaCaja?: true;
 }
 
 type Escucha = () => void;
@@ -97,6 +106,28 @@ export function pasarAlTurno(entradaId: string, turno: string): void {
       'entrada' in c.con && c.con.entrada === entradaId ? { ...c, con: { turno } } : c,
     ),
   );
+}
+
+/** La caja de centro lo recibió: ya está en cocina, aunque Estook aún no lo sepa. */
+export function marcarEnLaCaja(id: string): void {
+  if (!leer().some((c) => c.id === id && c.enLaCaja !== true)) return;
+  escribir(leer().map((c) => (c.id === id ? { ...c, enLaCaja: true as const } : c)));
+}
+
+/** Lo que aún no ha llegado a la caja, en su orden. */
+export function loQueFaltaPasar(cola: readonly CosaPorSubir[]): readonly CosaPorSubir[] {
+  return loQueEspera(cola).filter((c) => c.paraLaCaja !== undefined && c.enLaCaja !== true);
+}
+
+/**
+ * Si la cocina ya tiene lo de esta mesa: todo lo mandado o marchado sin internet pasó por la caja.
+ * Falso si no se ha mandado nada.
+ */
+export function laCocinaLoTiene(cuentaId: string, cola: readonly CosaPorSubir[]): boolean {
+  const deLaMesa = loQueEspera(cola).filter(
+    (c) => c.cuentaId === cuentaId && c.paraLaCaja !== undefined,
+  );
+  return deLaMesa.length > 0 && deLaMesa.every((c) => c.enLaCaja === true);
 }
 
 export function apuntarElFallo(id: string, fallo: string): void {

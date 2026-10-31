@@ -64,6 +64,25 @@ describe('subir lo guardado', () => {
     expect(a.subidas).toEqual(['abrir', 'pedir', 'mandar']);
   });
 
+  it('lo que ya llegó a la cocina por la caja sube diciéndolo, para que no se imprima otra vez', async () => {
+    const porLaCaja: [string, boolean][] = [];
+    const mandar: Mandar = (_turno, _nombre, _entrada, clave, _haceMs, porCaja) => {
+      porLaCaja.push([clave, porCaja]);
+      return Promise.resolve(bien());
+    };
+    const cola = [
+      cosa('pedir', 'pedir', { turno: 'T-lucia' }),
+      cosa('mandar', 'mandar_a_cocina', { turno: 'T-lucia' }, LUCIA, { enLaCaja: true }),
+      cosa('marchar', 'marchar', { turno: 'T-lucia' }),
+    ];
+    await subirLaCola(cola, mandar, () => 61_000, apuntes().al);
+    expect(porLaCaja).toEqual([
+      ['pedir', false],
+      ['mandar', true],
+      ['marchar', false],
+    ]);
+  });
+
   it('la entrada sin internet sube delante, sin turno, y lo de esa persona sube con el suyo', async () => {
     const llamadas: [string | null, string][] = [];
     const mandar: Mandar = (turno, nombre) => {

@@ -18,6 +18,7 @@ import {
 } from '../impresion.ts';
 import { tocarElServicio } from '../al-segundo.ts';
 import { elAparatoDeLaLlave, soloEnLaCaja } from './aparatos.ts';
+import { enNombreDelSistema } from '../pago.ts';
 
 /**
  * **Imprimir y el cajón** (T5 · 1, decisión 0119; Anexo 6, 10.6 y 11.13).
@@ -537,6 +538,59 @@ export interface LaColaDeLaCaja {
     readonly nombre: string;
     readonly direccion: string;
   }[];
+  /**
+   * **Para hacer de centro sin internet** (T5 · 2 · 2, 0123): los aparatos del local a los que
+   * contesta, a qué impresora va cada cosa y si la cocina y la barra trabajan en papel. La caja
+   * lo guarda en su disco con internet para tenerlo cuando falte.
+   */
+  readonly elCentro?: LoQueSabeElCentro;
+}
+
+const ancho = (mm: number): 58 | 80 => (mm === 58 ? 58 : 80);
+
+export interface LoQueSabeElCentro {
+  /** La propia caja: su pantalla también le habla, por dentro. */
+  readonly caja: string;
+  readonly aparatos: readonly string[];
+  readonly cocinaSaleEn: DondeSale;
+  readonly barraSaleEn: DondeSale;
+  readonly impresoras: readonly {
+    readonly direccion: string;
+    readonly anchoMm: 58 | 80;
+    readonly imprime: readonly string[];
+  }[];
+}
+
+/** Lo que la caja necesita saber para hacer de centro sin internet (0123). */
+async function loQueSabeElCentro(
+  contexto: Contexto,
+  cajaId: string,
+  localId: string,
+): Promise<LoQueSabeElCentro> {
+  return enNombreDelSistema(contexto, async () => {
+    const [aparatos, local, impresoras] = await Promise.all([
+      contexto.sql<{ id: string }[]>`
+        select id::text as id from estook.terminal
+         where local_id = ${localId}::uuid and retirado_en is null and id <> ${cajaId}::uuid
+           and funcion <> 'fichar'
+      `,
+      loDelLocalParaImprimir(contexto, localId),
+      contexto.sql<{ direccion: string; ancho_mm: number; imprime: string[] }[]>`
+        select direccion, ancho_mm, imprime from estook.las_impresoras_del_centro(${cajaId}::uuid)
+      `,
+    ]);
+    return {
+      caja: cajaId,
+      aparatos: aparatos.map((a) => a.id),
+      cocinaSaleEn: local?.cocinaSaleEn ?? 'pantalla',
+      barraSaleEn: local?.barraSaleEn ?? 'pantalla',
+      impresoras: impresoras.map((i) => ({
+        direccion: i.direccion,
+        anchoMm: ancho(i.ancho_mm),
+        imprime: i.imprime,
+      })),
+    };
+  });
 }
 
 async function laCajaDeLaLlave(contexto: Contexto, laLlave: string) {
@@ -547,8 +601,6 @@ async function laCajaDeLaLlave(contexto: Contexto, laLlave: string) {
   return aparato;
 }
 
-const ancho = (mm: number): 58 | 80 => (mm === 58 ? 58 : 80);
-
 export const laColaDeLaCaja = comando<{ llave: string }, LaColaDeLaCaja>({
   nombre: 'la_cola_de_la_caja',
   entrada: z.object({ llave }).strict(),
@@ -557,7 +609,7 @@ export const laColaDeLaCaja = comando<{ llave: string }, LaColaDeLaCaja>({
 
   async ejecutar(contexto, entrada) {
     const caja = await laCajaDeLaLlave(contexto, entrada.llave);
-    const [filas, impresoras] = await Promise.all([
+    const [filas, impresoras, elCentro] = await Promise.all([
       contexto.sql<
         {
           trabajo_id: string;
@@ -582,10 +634,12 @@ export const laColaDeLaCaja = comando<{ llave: string }, LaColaDeLaCaja>({
         select impresora_id::text as id, impresora as nombre, direccion
           from estook.las_impresoras_de_la_caja(${caja.terminalId}::uuid)
       `,
+      loQueSabeElCentro(contexto, caja.terminalId, caja.localId),
     ]);
     return {
       temaAlSegundo: caja.temaAlSegundo,
       impresoras,
+      elCentro,
       trabajos: filas.flatMap((f) => {
         // Lo que no es un papel que se sabe imprimir no se manda: se queda y se ve que no sale.
         if (!esPapelCompuesto(f.papel)) return [];

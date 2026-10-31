@@ -18,6 +18,15 @@ import {
 import { alCambiarSiSuena, despertar, puedeSonar, tocar } from './sonidos.ts';
 import { usarPantallaEncendida, usarReloj } from '../ganchos/usarLaPantallaDeCocina.ts';
 import { losNombres } from '../logica/texto.ts';
+import { guardarLaCopia, leerLaCopia } from '../sinInternet/laCopia.ts';
+import { hayCaja, loQueTieneLaCaja } from '../sinInternet/laCaja.ts';
+import { conLoTachado, laCocinaConLoDeLaCaja } from './porLaCaja.ts';
+import {
+  escucharLosTachados,
+  losTachados,
+  subirLosTachados,
+  tacharSinInternet,
+} from './losTachados.ts';
 
 /**
  * **La pantalla de cocina** (T4 · 1, decisión 0116; Anexo 3.2; maquetas de T4 1, 1b y 2).
@@ -34,7 +43,14 @@ import { losNombres } from '../logica/texto.ts';
  * **La pantalla de barra es esta misma** (T4 · 2, 0117), con lo que prepara la barra: sin
  * pases, todo en marcha al llegar. Y en las dos, **la alergia de la mesa en rojo**: la franja
  * arriba y «LLEVA GLUTEN» en el plato. No se confirma nada: se ve.
+ *
+ * **Sin internet** (T5 · 2 · 2, 0123): lo de antes sigue a la vista y se puede tachar; con la
+ * caja de centro, lo nuevo le llega por ella. Lo tachado sube al volver.
  */
+
+/** De dónde sale lo que se ve: de Estook, por la caja sin internet, o solo lo de antes. */
+type DeDonde = 'estook' | 'por_la_caja' | 'sin_caja';
+const POR_LA_CAJA_CADA = 1_500;
 
 const DONDE = {
   direccion: (import.meta.env['VITE_SUPABASE_URL'] as string | undefined) ?? '',
@@ -64,6 +80,8 @@ export function LaPantallaDeCocina({
   const suena = useSyncExternalStore(alCambiarSiSuena, puedeSonar, () => false);
   const ahora = usarReloj(30_000);
   const antes = useRef<LaPantallaDeCocina | undefined>(undefined);
+  const [deDonde, setDeDonde] = useState<DeDonde>('estook');
+  const tachados = useSyncExternalStore(escucharLosTachados, losTachados);
   usarPantallaEncendida();
 
   const clave = useMemo(() => ['pantalla_de_cocina', llave], [llave]);
@@ -73,10 +91,21 @@ export function LaPantallaDeCocina({
       const respuesta = await cliente.ejecutar<LaPantallaDeCocina>('la_pantalla_de_cocina', {
         llave,
       });
-      if (!respuesta.ok) throw new FalloDeLaSala(respuesta.error);
-      return respuesta.datos;
+      if (respuesta.ok) {
+        setDeDonde('estook');
+        guardarLaCopia('la_cocina', respuesta.datos);
+        return respuesta.datos;
+      }
+      if (respuesta.error.codigo !== 'sin_conexion') throw new FalloDeLaSala(respuesta.error);
+      // **Sin internet**: lo de antes, y lo que haya llegado a la caja encima (0123).
+      const loDeAntes = leerLaCopia<LaPantallaDeCocina>('la_cocina');
+      const llegado = hayCaja() ? await loQueTieneLaCaja() : null;
+      if (loDeAntes === undefined) throw new FalloDeLaSala(respuesta.error);
+      setDeDonde(llegado === null ? 'sin_caja' : 'por_la_caja');
+      return llegado === null ? loDeAntes : laCocinaConLoDeLaCaja(loDeAntes, llegado, Date.now());
     },
-    refetchInterval: conectado ? POR_SI_ACASO : CADA_POCO,
+    refetchInterval:
+      deDonde === 'por_la_caja' ? POR_LA_CAJA_CADA : conectado ? POR_SI_ACASO : CADA_POCO,
     refetchOnWindowFocus: true,
   });
 
@@ -97,8 +126,24 @@ export function LaPantallaDeCocina({
     };
   }, [tema, cache, clave]);
 
+  // **Al volver internet**, lo tachado sin él sube, y se vuelve a leer lo de Estook.
+  const hayTachados = tachados.length > 0;
+  useEffect(() => {
+    if (deDonde !== 'estook' || !hayTachados) return;
+    void subirLosTachados((orden, lineaId) =>
+      cliente.ejecutar(orden, { llave, linea_id: lineaId }),
+    ).then(() => cache.invalidateQueries({ queryKey: clave }));
+  }, [deDonde, hayTachados, cliente, llave, cache, clave]);
+
   // Suena con lo nuevo, comparado con lo de la vez anterior.
-  const lo = datos.data;
+  const leido = datos.data;
+  const lo = useMemo(
+    () =>
+      leido === undefined || deDonde === 'estook'
+        ? leido
+        : conLoTachado(leido, tachados, Date.now()),
+    [leido, deDonde, tachados],
+  );
   useEffect(() => {
     if (lo === undefined) return;
     const sonido = loQueSuena(antes.current, lo);
@@ -117,11 +162,16 @@ export function LaPantallaDeCocina({
   );
   const alTocarElPlato = useCallback(
     (lineaId: string, salio: boolean) => {
+      // Sin internet se tacha aquí y sube al volver (0123).
+      if (deDonde !== 'estook') {
+        tacharSinInternet(lineaId, !salio);
+        return;
+      }
       void hacer(salio ? 'destachar_en_la_pantalla' : 'tachar_en_la_pantalla', {
         linea_id: lineaId,
       });
     },
-    [hacer],
+    [hacer, deDonde],
   );
 
   // **El teclado de cocina**: la tecla de cada tarjeta tacha su siguiente plato. Lo programado
@@ -199,6 +249,11 @@ export function LaPantallaDeCocina({
           ))}
         </div>
         <div className="flex-1" />
+        {deDonde !== 'estook' && (
+          <span className="rounded-redondo border border-borde px-e3 py-e1 text-secundario font-bold">
+            {deDonde === 'por_la_caja' ? 'Por la caja' : 'Sin conexión'}
+          </span>
+        )}
         <span className="rounded-redondo bg-charcoal px-e3 py-e1 text-secundario font-bold">
           {aparato.nombre} · {lo.aparato.local}
         </span>
@@ -213,6 +268,17 @@ export function LaPantallaDeCocina({
         >
           🔇 Toca la pantalla para que suene
         </button>
+      )}
+      {/* Sin internet (0123): con la caja todo sigue; sin ella, lo de antes sigue aquí. */}
+      {deDonde === 'por_la_caja' && (
+        <p role="status" className="border-b border-borde bg-superficie px-e4 py-e2 font-bold">
+          Sin internet. Todo sigue funcionando en el local
+        </p>
+      )}
+      {deDonde === 'sin_caja' && (
+        <p role="status" className="bg-atencion-suave px-e4 py-e2 font-bold text-atencion">
+          Lo nuevo no llega a esta pantalla. Lo de antes sigue aquí y se puede tachar
+        </p>
       )}
       {fallo !== null && (
         <p role="alert" className="bg-mal-suave px-e4 py-e2 font-bold text-mal">

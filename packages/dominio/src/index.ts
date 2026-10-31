@@ -1218,3 +1218,25 @@ export type {
   QueSaleEnLaComanda,
   TamanoDeLetra,
 } from './impresion.ts';
+
+// ── T5 · 2 · 2 · La caja de centro (0123): lo que viaja del comandero a la caja ──
+export {
+  LO_DEL_CENTRO_DURA_MS,
+  PUERTO_DEL_CENTRO,
+  esDireccionDelLocal,
+  esLoQueSePasaPorLaCaja,
+  laComandaPorLaCaja,
+} from './centro.ts';
+export type {
+  LoQueSePasaPorLaCaja,
+  LoQueTieneLaCaja,
+  MesaPorLaCaja,
+  PlatoPorLaCaja,
+} from './centro.ts';
+export {
+  abrirElSobre,
+  cerrarElSobre,
+  deQuienEsElSobre,
+  laClaveConLaCaja,
+  laHuellaDeLaLlave,
+} from './centro-cifrado.ts';

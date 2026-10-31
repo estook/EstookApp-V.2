@@ -6,6 +6,7 @@ import {
   type ComoEstaElPapel,
   type ComoSalio,
 } from '@estook/impresion';
+import type { LoQueSabeElCentro } from './el-centro.ts';
 
 /**
  * **La cola de la caja** (T5 · 1, decisión 0119; Anexo 6.5): lo que hace el programa con su
@@ -46,6 +47,8 @@ export interface LaColaQueDaLaApi {
     readonly nombre: string;
     readonly direccion: string;
   }[];
+  /** Lo que necesita el centro para cuando falte internet (T5 · 2 · 2, 0123). */
+  readonly elCentro?: LoQueSabeElCentro;
 }
 
 export type EstadoDeLaImpresora = 'lista' | 'poco_papel' | 'sin_papel' | 'no_responde';
@@ -83,6 +86,7 @@ export interface ComoFueLaVuelta {
     readonly nombre: string;
     readonly direccion: string;
   }[];
+  readonly elCentro?: LoQueSabeElCentro;
 }
 
 /** **Una vuelta**: lee la cola, imprime en orden y lo apunta. */
@@ -149,6 +153,7 @@ export async function unaVuelta(fuera: LoDeFuera): Promise<ComoFueLaVuelta> {
     fallidos: apuntados.filter((a) => !a.salio).length,
     temaAlSegundo: cola.temaAlSegundo,
     impresoras: cola.impresoras,
+    ...(cola.elCentro === undefined ? {} : { elCentro: cola.elCentro }),
   };
 }
 

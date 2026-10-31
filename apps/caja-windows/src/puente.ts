@@ -22,6 +22,7 @@ const puente: PuenteDeLaCaja = {
   ponerArrancaConWindows: async (si) => {
     await ipcRenderer.invoke('caja:poner-arranca-con-windows', si);
   },
+  elCentro: () => ipcRenderer.invoke('caja:el-centro'),
 };
 
 contextBridge.exposeInMainWorld('estookCaja', puente);

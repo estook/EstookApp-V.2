@@ -37,6 +37,18 @@ export function hechoHace(valor: string | undefined): number | null {
   return Number(valor.trim());
 }
 
+/**
+ * **Lo que ya llegó a la cocina por la caja** (T5 · 2 · 2, 0123): sin internet, la caja de
+ * centro lo imprimió y lo enseñó a la pantalla de cocina. Al subirlo, Estook no lo vuelve a
+ * mandar al papel, y lleva la hora a la que llegó a la cocina. Solo con «hecho hace».
+ */
+export const CABECERA_POR_LA_CAJA = 'x-por-la-caja';
+
+/** Si la cabecera dice que pasó por la caja. */
+export function porLaCaja(valor: string | undefined): boolean {
+  return valor?.trim() === '1';
+}
+
 /** Se pone en la respuesta cuando el comando ya se habia hecho antes. */
 export const CABECERA_REPETIDA = 'x-repetida';
 

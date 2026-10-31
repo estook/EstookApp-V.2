@@ -13,9 +13,11 @@ import {
   CABECERA_DIRECCION,
   CABECERA_HECHO_HACE,
   CABECERA_IDEMPOTENCIA,
+  CABECERA_POR_LA_CAJA,
   CABECERA_REPETIDA,
   direccionDeLaPeticion,
   hechoHace,
+  porLaCaja,
   tokenDeLaCabecera,
 } from './cabeceras.ts';
 import { cuerpoDeError, respuestaConDatos, respuestaDeError } from './respuestas.ts';
@@ -127,6 +129,7 @@ function cabecerasDeCors(origen: string): Record<string, string> {
       CABECERA_IDEMPOTENCIA,
       CABECERA_CORRELACION,
       CABECERA_HECHO_HACE,
+      CABECERA_POR_LA_CAJA,
       // La región en que se pide que corra la función (0090).
       'x-region',
     ].join(', '),
@@ -337,7 +340,10 @@ export function crearApi(despachador: Despachador) {
       c.req.param('nombre'),
       cuerpo,
       c.req.header(CABECERA_IDEMPOTENCIA) ?? '',
-      { hechoHaceMs: hechoHace(c.req.header(CABECERA_HECHO_HACE)) },
+      {
+        hechoHaceMs: hechoHace(c.req.header(CABECERA_HECHO_HACE)),
+        porLaCaja: porLaCaja(c.req.header(CABECERA_POR_LA_CAJA)),
+      },
     );
 
     return traducir(resultado, correlacionId);

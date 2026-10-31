@@ -56,6 +56,20 @@ export interface PuenteDeLaCaja {
   comoVa(): Promise<ComoVaLaCaja>;
   arrancaConWindows(): Promise<boolean>;
   ponerArrancaConWindows(si: boolean): Promise<void>;
+  /**
+   * **La caja de centro** (T5 · 2 · 2, 0123): si escucha en el wifi del local y dónde, para
+   * decirlo en el latido. Una caja de antes de la 1.1.0 no lo tiene.
+   */
+  elCentro?(): Promise<ComoEstaElCentro>;
+}
+
+export interface ComoEstaElCentro {
+  readonly escucha: boolean;
+  /** «192.168.1.20:47100». */
+  readonly direcciones: readonly string[];
+  /** Por qué no escucha, dicho para quien lo lee. */
+  readonly porque: string | null;
+  readonly porImprimir: number;
 }
 
 /** El nombre con el que el programa lo deja en la ventana. */

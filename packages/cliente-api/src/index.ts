@@ -121,6 +121,11 @@ export interface OpcionesDeUnComando {
    * servidor con el suyo; de este solo cuenta la diferencia.
    */
   readonly hechoHaceMs?: number;
+  /**
+   * **Ya llegó a la cocina por la caja de centro** (T5 · 2 · 2, 0123): Estook no lo vuelve a
+   * mandar al papel. Solo con `hechoHaceMs`.
+   */
+  readonly porLaCaja?: boolean;
 }
 
 export interface ClienteApi {
@@ -134,6 +139,9 @@ export interface ClienteApi {
 
 /** La cabecera de lo hecho sin conexión: la lee `servidor/api/cabeceras.ts`. */
 export const CABECERA_HECHO_HACE = 'x-hecho-hace';
+
+/** La cabecera de lo que ya llegó a la cocina por la caja: la lee `servidor/api/cabeceras.ts`. */
+export const CABECERA_POR_LA_CAJA = 'x-por-la-caja';
 
 /** Donde la API dice en qué región está su base (0090). La misma en `servidor/api`. */
 export const CABECERA_REGION_DE_LA_BASE = 'x-estook-region';
@@ -348,6 +356,9 @@ export function crearCliente(opciones: OpcionesDelCliente): ClienteApi {
         ...(hace === undefined
           ? {}
           : { [CABECERA_HECHO_HACE]: String(Math.max(0, Math.trunc(hace))) }),
+        ...(hace !== undefined && opcionesDeLlamada.porLaCaja === true
+          ? { [CABECERA_POR_LA_CAJA]: '1' }
+          : {}),
       });
     },
   };

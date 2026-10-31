@@ -149,7 +149,9 @@ test('sin internet, lo mandado llega a la caja de centro por el wifi, y al volve
     // ── Vuelve internet: sube solo, una vez ──
     await page.unroute(`${API}/**`);
     await expect(
-      page.getByText(/^Conexión recuperada · \d+ cosas? subidas?, ninguna repetida$/),
+      page
+        .getByText(/^Conexión recuperada · \d+ cosas? subidas?, ninguna repetida$/)
+        .locator('visible=true'),
     ).toBeVisible({ timeout: 45_000 });
     await expect.poll(() => guardado('estook.tpv.por-subir'), { timeout: 15_000 }).toBe('');
   } finally {

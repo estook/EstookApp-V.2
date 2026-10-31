@@ -47,7 +47,10 @@ export async function laHuellaDeLaLlave(llave: string): Promise<string> {
 }
 
 /** La clave que comparten un aparato y la caja: HMAC de su id con la huella de la caja. */
-export async function laClaveConLaCaja(huellaDeLaCaja: string, terminalId: string): Promise<string> {
+export async function laClaveConLaCaja(
+  huellaDeLaCaja: string,
+  terminalId: string,
+): Promise<string> {
   const llave = await crypto.subtle.importKey(
     'raw',
     utf8(huellaDeLaCaja),
@@ -125,7 +128,11 @@ export function deQuienEsElSobre(texto: string): string | null {
 export async function abrirElSobre(
   clave: string,
   texto: string,
-): Promise<{ readonly terminalId: string; readonly numero: string; readonly cuerpo: unknown } | null> {
+): Promise<{
+  readonly terminalId: string;
+  readonly numero: string;
+  readonly cuerpo: unknown;
+} | null> {
   const sobre = leerElSobre(texto);
   if (sobre === null) return null;
   try {

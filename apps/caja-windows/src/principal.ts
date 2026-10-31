@@ -71,9 +71,7 @@ function leerElCentro(): string | null {
   if (!existsSync(fichero)) return null;
   const leido = readFileSync(fichero);
   const datos = leido.subarray(1);
-  return leido[0] === 'C'.charCodeAt(0)
-    ? safeStorage.decryptString(datos)
-    : datos.toString('utf8');
+  return leido[0] === 'C'.charCodeAt(0) ? safeStorage.decryptString(datos) : datos.toString('utf8');
 }
 
 /** Solo la web de Estook TPV habla con el programa; un enlace que se abra no. */

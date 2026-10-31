@@ -601,7 +601,6 @@ async function laCajaDeLaLlave(contexto: Contexto, laLlave: string) {
   return aparato;
 }
 
-
 export const laColaDeLaCaja = comando<{ llave: string }, LaColaDeLaCaja>({
   nombre: 'la_cola_de_la_caja',
   entrada: z.object({ llave }).strict(),

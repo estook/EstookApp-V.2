@@ -69,6 +69,13 @@ export interface OpcionesDeLaPolitica {
    */
   readonly direccionDeSupabase?: string | undefined;
   readonly enDesarrollo: boolean;
+  /**
+   * **Solo Estook TPV** (T5 · 2 · 2, 0123): sin internet, el comandero y la pantalla de cocina
+   * le hablan a la caja de centro en `http://<su dirección del wifi>:47100`. Una política no sabe
+   * de rangos de direcciones, así que se abre **ese puerto en http** y nada más; lo que viaja va
+   * en sobres cerrados, y el navegador pide además su permiso de red local.
+   */
+  readonly puertoDeLaCaja?: number | undefined;
 }
 
 /** El origen de una direccion, o nulo si no se puede leer. */
@@ -85,6 +92,7 @@ export function politicaDeSeguridad({
   direccionDeLaApi,
   direccionDeSupabase,
   enDesarrollo,
+  puertoDeLaCaja,
 }: OpcionesDeLaPolitica): string {
   const origen = origenDe(direccionDeLaApi);
   const supabase = origenDe(direccionDeSupabase);
@@ -100,6 +108,8 @@ export function politicaDeSeguridad({
   if (supabase !== null && supabase.startsWith('https://')) {
     conecta.push(supabase.replace(/^https:/, 'wss:'));
   }
+  // La caja de centro (0123), en el wifi del local.
+  if (puertoDeLaCaja !== undefined) conecta.push(`http://*:${String(puertoDeLaCaja)}`);
 
   return [
     "default-src 'self'",
@@ -130,6 +140,7 @@ export function laPoliticaDeSeguridad({
   direccionDeLaApi,
   direccionDeSupabase,
   enDesarrollo,
+  puertoDeLaCaja,
 }: OpcionesDeLaPolitica): ComplementoDeVite {
   return {
     name: 'estook-politica-de-seguridad',
@@ -139,7 +150,12 @@ export function laPoliticaDeSeguridad({
           tag: 'meta',
           attrs: {
             'http-equiv': 'Content-Security-Policy',
-            content: politicaDeSeguridad({ direccionDeLaApi, direccionDeSupabase, enDesarrollo }),
+            content: politicaDeSeguridad({
+              direccionDeLaApi,
+              direccionDeSupabase,
+              enDesarrollo,
+              puertoDeLaCaja,
+            }),
           },
           injectTo: 'head-prepend',
         },

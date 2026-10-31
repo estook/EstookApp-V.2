@@ -150,7 +150,10 @@ describe('la caja de centro', () => {
 
   it('lo mandado sin internet sale en la impresora de cocina, una vez, y lo de la barra no', async () => {
     const { hablar, m } = await unCentro();
-    const primera = await hablar({ que: 'pasar', lo: loMandado('aaaaaaaa-0000-4000-8000-000000000001') });
+    const primera = await hablar({
+      que: 'pasar',
+      lo: loMandado('aaaaaaaa-0000-4000-8000-000000000001'),
+    });
     expect(primera.cuerpo).toEqual({ ok: true, enPapel: 1, repetido: false });
     expect(m.impreso).toHaveLength(1);
     expect(m.impreso[0]?.direccion).toBe(LA_IMPRESORA);
@@ -160,7 +163,10 @@ describe('la caja de centro', () => {
     expect(textos).not.toContain('Caña');
 
     // El comandero no oyó la respuesta y lo vuelve a mandar: no sale otra vez.
-    const otraVez = await hablar({ que: 'pasar', lo: loMandado('aaaaaaaa-0000-4000-8000-000000000001') });
+    const otraVez = await hablar({
+      que: 'pasar',
+      lo: loMandado('aaaaaaaa-0000-4000-8000-000000000001'),
+    });
     expect(otraVez.cuerpo).toEqual({ ok: true, enPapel: 0, repetido: true });
     expect(m.impreso).toHaveLength(1);
   });
@@ -176,7 +182,11 @@ describe('la caja de centro', () => {
 
   it('no contesta a un aparato de otro local, ni a un sobre repetido, ni a uno tocado', async () => {
     const { hablar, huella, donde } = await unCentro();
-    const deOtro = await hablar({ que: 'hola' }, OTRO_LOCAL, await laClaveConLaCaja(huella, OTRO_LOCAL));
+    const deOtro = await hablar(
+      { que: 'hola' },
+      OTRO_LOCAL,
+      await laClaveConLaCaja(huella, OTRO_LOCAL),
+    );
     expect(deOtro.estado).toBe(401);
 
     const bueno = await hablar({ que: 'hola' });
@@ -185,7 +195,11 @@ describe('la caja de centro', () => {
     expect(repetido.status).toBe(401);
 
     // Con la clave de otro aparato, diciendo ser el comandero: no se abre.
-    const conOtraClave = await hablar({ que: 'hola' }, COMANDERO, await laClaveConLaCaja(huella, CAJA));
+    const conOtraClave = await hablar(
+      { que: 'hola' },
+      COMANDERO,
+      await laClaveConLaCaja(huella, CAJA),
+    );
     expect(conOtraClave.estado).toBe(401);
   });
 

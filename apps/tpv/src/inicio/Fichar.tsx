@@ -20,7 +20,7 @@ import { LaBarraDeArriba } from './LaBarraDeArriba.tsx';
  * salida cierra también su sesión.
  */
 export function Fichar() {
-  const { yo, refrescar } = usarSesion();
+  const { yo, refrescar, aparato } = usarSesion();
   const llave = leerLaLlave();
   const [esLoMio, setEsLoMio] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -50,6 +50,7 @@ export function Fichar() {
     <FicharEnLaCaja
       key={vuelta}
       llave={llave}
+      clavePublica={aparato.clavePublica ?? null}
       cabecera={<LaBarraDeArriba titulo="Fichar" />}
       aviso={aviso}
       alSerQuienEstaDentro={(fichaje) => {

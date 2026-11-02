@@ -463,6 +463,9 @@ describe('las puertas se cierran solas', () => {
         // solo la de una caja. Lee lo suyo con la dirección de sus impresoras y dice cómo salió.
         'la_cola_de_la_caja',
         'apuntar_lo_impreso',
+        // 0124 · la caja de centro recoge con su llave, y solo si ya hace de centro, las huellas
+        // de los PIN de su local, para comprobarlos sin internet. Nunca un PIN.
+        'los_pin_del_centro',
         // 0109 · recuperar el acceso, que se pide precisamente sin haber entrado: el
         // enlace al correo (diez por hora desde una dirección, y no dice si un correo
         // existe) y lo que se hace con él, que vale por su token, de un uso.
@@ -763,6 +766,9 @@ describe('los secretos no se guardan para repetirlos', () => {
         'abrir_el_chat',
         // 0109 · el PIN nuevo que da el enlace del correo, una sola vez.
         'pin_con_enlace',
+        // 0124 · las huellas de los PIN del local, para la caja de centro: no se guardan en
+        // ninguna tabla para repetirlas.
+        'los_pin_del_centro',
       ].sort(),
     );
   });

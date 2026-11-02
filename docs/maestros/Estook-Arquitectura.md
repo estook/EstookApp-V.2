@@ -317,8 +317,14 @@ de alta a alguien, el datáfono conectado y los pedidos de reparto.
   cerrado** (AES-GCM) con la clave de ese aparato, que sale de la huella de la llave de la caja
   y su id, sin secretos nuevos; el comandero arma lo que va a la cocina con las reglas de
   Estook, y la caja solo guarda, imprime y reparte; **cada comandero sube lo suyo** al volver,
-  diciendo que pasó por la caja, y Estook no lo vuelve a imprimir. Los PIN de todos y fichar en
-  la caja, en su segunda parte.
+  diciendo que pasó por la caja, y Estook no lo vuelve a imprimir. **Los PIN, en T5 · 2 · 2 · 2**
+  ([0124](../decisiones/0124-t5-2-2-2-los-pin-y-aparatos.md)): la caja recoge con internet las
+  huellas de los PIN del local (las de Estook, `los_pin_del_centro`, solo para una caja que ya
+  hace de centro) y las guarda cifradas con la cuenta de Windows; sin internet comprueba el PIN de
+  cualquiera, con los mismos frenos, y deja fichar en ella; lo que vale lo dice Estook al volver,
+  con el PIN cifrado de cada aparato (0070). Cada aparato dice en su latido qué es y cómo llega a
+  la caja (0098), y la caja lee sin ser administrador lo que dice Windows (la red pública y el
+  cortafuegos).
 
 ## Lo fiscal sin conexión
 

@@ -25,7 +25,10 @@ import {
   losNombres,
 } from './buscar.ts';
 import { LaColaEnMarcha, type LaColaQueDaLaApi, type LoQueSeApunta } from './la-cola.ts';
-import { ElCentro } from './el-centro.ts';
+import { ElCentro, SOLO_POR_DENTRO } from './el-centro.ts';
+import { abrirEnWindows, mirarLoQueDiceWindows } from './windows.ts';
+import type { LosPinDelCentro } from '@estook/dominio';
+import type { LoQueDiceWindows } from '@estook/impresion';
 
 /**
  * **La caja para Windows** (T5 · 1, decisión 0119): Estook TPV tal cual, en una ventana, y lo que
@@ -37,10 +40,16 @@ import { ElCentro } from './el-centro.ts';
  *   · con la llave de la caja, **imprime su cola** también con la caja bloqueada
  *   · se actualiza solo, y lo nuevo **se pone al cerrar el programa**, nunca en mitad del servicio
  *   · **hace de centro sin internet** (T5 · 2 · 2, 0123): los comanderos y la pantalla de cocina
- *     le hablan por el wifi del local, y ella imprime y reparte (`el-centro.ts`)
+ *     le hablan por el wifi del local, y ella imprime y reparte (`el-centro.ts`); y comprueba
+ *     el PIN de cualquiera y deja fichar (T5 · 2 · 2 · 2, 0124)
+ *   · **mira lo que dice Windows** (0124): si la red del local es pública y si el cortafuegos la
+ *     deja escuchar, para decirlo en Aparatos con los pasos (`windows.ts`)
  */
 
 const LA_WEB = process.env['ESTOOK_TPV'] ?? 'https://estook.com/tpv/';
+/** Cada cuánto se recogen los PIN del local y lo fichado (0124). */
+const LAS_PERSONAS_CADA_MS = 2 * 60_000;
+const WINDOWS_CADA_MS = 5 * 60_000;
 const SU_ORIGEN = new URL(LA_WEB).origin;
 
 let ventana: BrowserWindow | null = null;
@@ -51,6 +60,39 @@ let conLaLlave: string | null = null;
 let lasSuyas: readonly { readonly id: string; readonly direccion: string }[] = [];
 let centro: ElCentro | null = null;
 let laHuella: string | null = null;
+/** Lo que dijo Windows la última vez, y cuándo (0124). */
+let loDeWindows: { readonly dice: LoQueDiceWindows; readonly en: number } | null = null;
+let mirandoWindows: Promise<LoQueDiceWindows> | null = null;
+let relojDeLasPersonas: ReturnType<typeof setInterval> | null = null;
+
+/** Lo que dice Windows; si se miró hace poco, lo de entonces (tarda un par de segundos). */
+function loQueDiceWindows(hace = 20_000): Promise<LoQueDiceWindows> {
+  if (loDeWindows !== null && Date.now() - loDeWindows.en < hace) {
+    return Promise.resolve(loDeWindows.dice);
+  }
+  mirandoWindows ??= mirarLoQueDiceWindows(process.execPath)
+    .then((dice) => {
+      loDeWindows = { dice, en: Date.now() };
+      return dice;
+    })
+    .finally(() => {
+      mirandoWindows = null;
+    });
+  return mirandoWindows;
+}
+
+/**
+ * **Empezar a escuchar** (0124): si Windows aún no ha preguntado por la caja, solo por dentro,
+ * hasta que la pantalla diga qué contestar (`escucharEnLaRed`). Si ya preguntó, en la red.
+ */
+async function empezarElCentro(): Promise<void> {
+  if (centro === null) return;
+  const dice = await loQueDiceWindows();
+  await centro.empezar(
+    undefined,
+    dice.cortafuegos === 'sin_preguntar' ? SOLO_POR_DENTRO : undefined,
+  );
+}
 
 /**
  * **Lo del centro, en el disco**, cifrado con la cuenta de Windows (DPAPI) cuando se puede: los
@@ -93,8 +135,20 @@ function conectar(datos: LoQueNecesitaLaCaja): void {
   void laHuellaDeLaLlave(datos.llave).then((huella) => {
     if (conLaLlave === datos.llave) laHuella = huella;
   });
-  void centro?.empezar();
+  void empezarElCentro();
   const cliente = crearCliente({ base: datos.api, token: () => null });
+  // **Los PIN del local** (0124): con internet, cada poco, para comprobarlos cuando falte. La
+  // API solo los da a una caja que ya dijo dónde escucha: hasta entonces contesta que no.
+  const recogerLasPersonas = async () => {
+    const respuesta = await cliente.ejecutar<LosPinDelCentro>('los_pin_del_centro', {
+      llave: datos.llave,
+    });
+    if (respuesta.ok && conLaLlave === datos.llave) centro?.saberLasPersonas(respuesta.datos);
+  };
+  void recogerLasPersonas();
+  relojDeLasPersonas = setInterval(() => {
+    void recogerLasPersonas();
+  }, LAS_PERSONAS_CADA_MS);
   cola = new LaColaEnMarcha(
     {
       leerLaCola: async () => {
@@ -143,6 +197,8 @@ function conectar(datos: LoQueNecesitaLaCaja): void {
 }
 
 function desconectar(): void {
+  if (relojDeLasPersonas !== null) clearInterval(relojDeLasPersonas);
+  relojDeLasPersonas = null;
   cola?.parar();
   escucha?.parar();
   cola = null;
@@ -233,11 +289,27 @@ if (!app.requestSingleInstanceLock()) {
           centro?.olvidar();
         }
       });
-      ipcMain.handle('caja:el-centro', (evento) =>
+      ipcMain.handle('caja:el-centro', async (evento) =>
         esDeEstook(evento) && centro !== null
-          ? centro.comoEsta()
+          ? { ...centro.comoEsta(), windows: await loQueDiceWindows() }
           : { escucha: false, direcciones: [], porque: null, porImprimir: 0 },
       );
+      // **Los avisos de Windows** (0124): la pantalla ya dijo qué contestar; ahora pregunta.
+      ipcMain.handle('caja:escuchar-en-la-red', async (evento) => {
+        if (!esDeEstook(evento) || centro === null) return;
+        await centro.abrirALaRed();
+        // Lo que contestó se ve en un rato: se vuelve a mirar sin esperar a lo de siempre.
+        for (const espera of [10_000, 30_000, 90_000]) {
+          setTimeout(() => {
+            void loQueDiceWindows(0);
+          }, espera);
+        }
+      });
+      ipcMain.handle('caja:abrir-en-windows', async (evento, que: unknown) => {
+        if (!esDeEstook(evento) || (que !== 'cortafuegos' && que !== 'red')) return;
+        const dice = await loQueDiceWindows();
+        abrirEnWindows(que, dice.red?.por ?? null, (direccion) => shell.openExternal(direccion));
+      });
       ipcMain.handle('caja:buscar', async (evento) =>
         esDeEstook(evento) ? buscarImpresoras() : [],
       );
@@ -256,11 +328,11 @@ if (!app.requestSingleInstanceLock()) {
           );
         },
       );
-      ipcMain.handle('caja:como-va', (evento) => {
+      ipcMain.handle('caja:como-va', async (evento) => {
         const va = cola?.comoVa() ?? { conectada: false, porSalir: 0 };
-        return esDeEstook(evento)
-          ? { ...va, porCable: null }
-          : { conectada: false, porSalir: 0, porCable: null };
+        if (!esDeEstook(evento)) return { conectada: false, porSalir: 0, porCable: null };
+        const red = (await loQueDiceWindows()).red;
+        return { ...va, porCable: red === null ? null : red.por === 'cable' };
       });
       ipcMain.handle('caja:arranca-con-windows', (evento) =>
         esDeEstook(evento) ? app.getLoginItemSettings().openAtLogin : false,
@@ -281,7 +353,11 @@ if (!app.requestSingleInstanceLock()) {
         leer: leerElCentro,
         ahora: () => Date.now(),
       });
-      if (centro.loLlegado().length > 0 || leerElCentro() !== null) void centro.empezar();
+      if (centro.loLlegado().length > 0 || leerElCentro() !== null) void empezarElCentro();
+      // Lo que dice Windows cambia poco: se mira cada pocos minutos, sin parar nada.
+      setInterval(() => {
+        void loQueDiceWindows(0);
+      }, WINDOWS_CADA_MS);
 
       crearLaVentana();
 

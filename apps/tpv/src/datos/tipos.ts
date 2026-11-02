@@ -4,12 +4,14 @@
  */
 
 import type {
+  CaminoAlCentro,
   CaminoDeLaBotonera,
   ColorDeLaBotonera,
   CosaDeLaSala,
   FormaDeMesa,
   PaseDeLaBotonera,
   QuienLoPrepara,
+  SistemaDelAparato,
   UnidadDeUso,
 } from '@estook/dominio';
 
@@ -411,6 +413,14 @@ export interface UnAparato {
   readonly vistoEn: string | null;
   readonly version: string | null;
   readonly vale: boolean;
+  /**
+   * **Quién llega a la caja** (T5 · 2 · 2 · 2, 0124): qué es y cómo llega, según su latido; una
+   * API de antes no lo dice.
+   */
+  readonly sistema?: SistemaDelAparato | null;
+  readonly camino?: CaminoAlCentro | null;
+  readonly esElCentro?: boolean;
+  readonly centroPor?: 'wifi' | 'cable' | null;
 }
 
 export interface LosAparatos {

@@ -5,14 +5,18 @@ import {
   PUERTO_DEL_CENTRO,
   abrirElSobre,
   cerrarElSobre,
+  deQuienEsElPin,
   deQuienEsElSobre,
   esDireccionDelLocal,
   esLoQueSePasaPorLaCaja,
   laClaveConLaCaja,
   laComandaEnPapel,
   laComandaPorLaCaja,
+  type EstadoDelFichajeEnLaCaja,
   type LoQueTieneLaCaja,
+  type LosPinDelCentro,
   type PapelCompuesto,
+  type PersonaDelCentro,
 } from '@estook/dominio';
 import type { ComoSalio } from '@estook/impresion';
 
@@ -30,6 +34,10 @@ import type { ComoSalio } from '@estook/impresion';
  *     su disco, lo imprime si la cocina o la barra van en papel, y se lo da a la pantalla de
  *     cocina. Subirlo a Estook lo hace cada comandero al volver internet, con su clave: una vez.
  *   · Lo que no sale en la impresora se vuelve a intentar cada poco, sin parar nada.
+ *   · **Comprueba el PIN de cualquiera del local** (T5 · 2 · 2 · 2, 0124): con internet guarda
+ *     las huellas de los PIN (las de Estook, nunca un PIN), y sin él dice de quién es un PIN a
+ *     un comandero que quiere entrar, y deja fichar en la propia caja. Diez fallos seguidos
+ *     desde un aparato lo paran cinco minutos, como en Estook.
  */
 
 export interface LoQueSabeElCentro {
@@ -67,7 +75,30 @@ interface LoGuardado {
   readonly sabe: LoQueSabeElCentro | null;
   readonly llegado: readonly LoQueTieneLaCaja[];
   readonly porImprimir: readonly PorImprimir[];
+  /** Quién es cada persona del local, con la huella de su PIN (0124). */
+  readonly personas: LosPinDelCentro | null;
 }
+
+export type QueSeFicha = 'entrada' | 'pausa' | 'vuelta' | 'salida';
+
+/** Lo que pasa a ser cada uno al fichar, y desde qué estado se puede. */
+const AL_FICHAR: Readonly<
+  Record<
+    QueSeFicha,
+    {
+      readonly desde: readonly EstadoDelFichajeEnLaCaja[];
+      readonly queda: EstadoDelFichajeEnLaCaja;
+    }
+  >
+> = {
+  entrada: { desde: ['fuera'], queda: 'dentro' },
+  pausa: { desde: ['dentro'], queda: 'en_pausa' },
+  vuelta: { desde: ['en_pausa'], queda: 'dentro' },
+  salida: { desde: ['dentro', 'en_pausa'], queda: 'fuera' },
+};
+
+const esQueSeFicha = (v: unknown): v is QueSeFicha =>
+  v === 'entrada' || v === 'pausa' || v === 'vuelta' || v === 'salida';
 
 export interface ComoEstaElCentro {
   readonly escucha: boolean;
@@ -75,7 +106,12 @@ export interface ComoEstaElCentro {
   /** Por qué no escucha, dicho para quien lo lee. */
   readonly porque: string | null;
   readonly porImprimir: number;
+  /** Escucha solo en el propio PC (0124): aún no se ha avisado de lo que preguntará Windows. */
+  readonly soloPorDentro: boolean;
 }
+
+/** Solo en el propio PC: Windows no pregunta nada, y la pantalla de la caja ya le habla. */
+export const SOLO_POR_DENTRO = '127.0.0.1';
 
 /** Lo que se lee de un aparato, como mucho: una mesa grande con notas cabe de sobra. */
 const CUERPO_COMO_MUCHO = 256 * 1024;
@@ -83,6 +119,9 @@ const REINTENTAR_CADA_MS = 10_000;
 /** Un papel que no sale en un servicio entero se deja: ya lo habrán resuelto a mano. */
 const INTENTOS_COMO_MUCHO = 360;
 const NUMEROS_QUE_SE_RECUERDAN = 5000;
+/** Como en Estook (0068): diez PIN fallados seguidos en un aparato lo paran cinco minutos. */
+const FALLOS_COMO_MUCHO = 10;
+const PARADO_MS = 5 * 60 * 1000;
 
 /** Las direcciones de este PC en la red del local, con el puerto del centro. */
 export function lasDireccionesDelCentro(puerto = PUERTO_DEL_CENTRO): string[] {
@@ -105,6 +144,9 @@ export class ElCentro {
   private readonly numeros = new Set<string>();
   private reloj: ReturnType<typeof setInterval> | null = null;
   private imprimiendo = false;
+  private host: string | null = null;
+  private empezando: Promise<void> | null = null;
+  private readonly fallos = new Map<string, { readonly veces: number; readonly hasta: number }>();
 
   constructor(
     private readonly origenes: readonly string[],
@@ -121,14 +163,40 @@ export class ElCentro {
     this.guardar();
   }
 
-  /** Al desvincular la caja: nada del local se queda en el disco. */
-  olvidar(): void {
-    this.claves.clear();
-    this.guardado = { huella: null, sabe: null, llegado: [], porImprimir: [] };
+  /**
+   * Con internet, quién es cada persona del local: se guarda para comprobar sus PIN cuando
+   * falte (0124). Lo que dice Estook manda sobre lo fichado aquí sin internet, que ya subió.
+   */
+  saberLasPersonas(personas: LosPinDelCentro): void {
+    this.guardado = { ...this.guardado, personas };
     this.guardar();
   }
 
-  async empezar(puerto = PUERTO_DEL_CENTRO, host = '0.0.0.0'): Promise<void> {
+  /** Si ya sabe quién es cada uno: sin eso, sin internet no comprueba ningún PIN. */
+  conoceLasPersonas(): boolean {
+    return (this.guardado.personas?.personas.length ?? 0) > 0;
+  }
+
+  /** Al desvincular la caja: nada del local se queda en el disco. */
+  olvidar(): void {
+    this.claves.clear();
+    this.fallos.clear();
+    this.guardado = { huella: null, sabe: null, llegado: [], porImprimir: [], personas: null };
+    this.guardar();
+  }
+
+  /**
+   * Empezar a escuchar. **Dos a la vez son una** (0124): al arrancar lo piden el programa y la
+   * pantalla casi juntos, y el segundo daría «puerto ocupado» por el primero.
+   */
+  empezar(puerto = PUERTO_DEL_CENTRO, host = '0.0.0.0'): Promise<void> {
+    this.empezando ??= this.escuchar(puerto, host).finally(() => {
+      this.empezando = null;
+    });
+    return this.empezando;
+  }
+
+  private async escuchar(puerto: number, host: string): Promise<void> {
     if (this.servidor !== null) return;
     const servidor = createServer((peticion, respuesta) => {
       void this.atender(peticion, respuesta);
@@ -148,6 +216,7 @@ export class ElCentro {
     });
     if (!escucha) return;
     this.servidor = servidor;
+    this.host = host;
     if (this.reloj === null) {
       this.reloj = setInterval(() => {
         void this.imprimirLoQueFalta();
@@ -160,6 +229,20 @@ export class ElCentro {
     this.reloj = null;
     this.servidor?.close();
     this.servidor = null;
+    this.host = null;
+  }
+
+  /**
+   * **De escuchar solo por dentro a escuchar en la red del local** (0124): la pantalla ya dijo
+   * qué contestar a Windows, y es ahora cuando Windows pregunta. En el mismo puerto.
+   */
+  async abrirALaRed(host = '0.0.0.0'): Promise<void> {
+    if (this.host !== SOLO_POR_DENTRO) return;
+    const puerto = this.elPuerto() ?? PUERTO_DEL_CENTRO;
+    this.parar();
+    await this.empezar(puerto, host);
+    // Si la red no la deja, sigue al menos por dentro: su propia pantalla le habla.
+    if (this.servidor === null) await this.empezar(puerto, SOLO_POR_DENTRO);
   }
 
   /** El puerto en el que escucha de verdad (en las pruebas, uno libre). */
@@ -169,12 +252,17 @@ export class ElCentro {
   }
 
   comoEsta(): ComoEstaElCentro {
+    const soloPorDentro = this.servidor !== null && this.host === SOLO_POR_DENTRO;
     return {
       escucha: this.servidor !== null,
+      // Solo por dentro no se dice dónde está: desde fuera no llegaría nadie.
       direcciones:
-        this.servidor === null ? [] : lasDireccionesDelCentro(this.elPuerto() ?? undefined),
+        this.servidor === null || soloPorDentro
+          ? []
+          : lasDireccionesDelCentro(this.elPuerto() ?? undefined),
       porque: this.porque,
       porImprimir: this.guardado.porImprimir.length,
+      soloPorDentro,
     };
   }
 
@@ -273,7 +361,7 @@ export class ElCentro {
     const abierto = await abrirElSobre(clave, texto);
     if (abierto === null || this.numeros.has(abierto.numero)) return null;
     this.recordarElNumero(abierto.numero);
-    const hecho = await this.hacer(abierto.cuerpo);
+    const hecho = await this.hacer(abierto.cuerpo, terminalId, terminalId === sabe.caja);
     return cerrarElSobre(clave, terminalId, hecho);
   }
 
@@ -285,7 +373,7 @@ export class ElCentro {
     }
   }
 
-  private async hacer(cuerpo: unknown): Promise<unknown> {
+  private async hacer(cuerpo: unknown, terminalId: string, esLaCaja: boolean): Promise<unknown> {
     const pide =
       typeof cuerpo === 'object' && cuerpo !== null ? (cuerpo as Record<string, unknown>) : {};
     if (pide['que'] === 'hola') return { ok: true };
@@ -293,7 +381,108 @@ export class ElCentro {
     if (pide['que'] === 'pasar' && esLoQueSePasaPorLaCaja(pide['lo'])) {
       return { ok: true, ...(await this.recibir(pide['lo'])) };
     }
+    if (pide['que'] === 'pin' && typeof pide['pin'] === 'string') {
+      return this.quienEs(pide['pin'], terminalId);
+    }
+    // **Se ficha en la caja** (0115): un comandero no ficha, tampoco por aquí.
+    if (
+      pide['que'] === 'fichar' &&
+      esLaCaja &&
+      typeof pide['pin'] === 'string' &&
+      esQueSeFicha(pide['accion'])
+    ) {
+      return this.fichar(pide['pin'], pide['accion'], terminalId);
+    }
     return { ok: false };
+  }
+
+  // ── El PIN de cualquiera ───────────────────────────────────────────────────
+
+  /** De quién es el PIN, contando los fallos de ese aparato; o por qué no se puede decir. */
+  private async laPersonaDelPin(
+    pin: string,
+    terminalId: string,
+  ): Promise<{ readonly persona: PersonaDelCentro } | { readonly porque: string }> {
+    const ahora = this.manos.ahora();
+    const fallos = this.fallos.get(terminalId);
+    if (fallos !== undefined && fallos.hasta > ahora) return { porque: 'aparato_parado' };
+    const personas = this.guardado.personas?.personas ?? [];
+    if (personas.length === 0) return { porque: 'sin_personas' };
+    const persona = await deQuienEsElPin(pin, personas);
+    if (persona === null) {
+      const veces = (fallos?.veces ?? 0) + 1;
+      const parado = veces >= FALLOS_COMO_MUCHO;
+      this.fallos.set(terminalId, {
+        veces: parado ? 0 : veces,
+        hasta: parado ? ahora + PARADO_MS : 0,
+      });
+      return { porque: 'pin_desconocido' };
+    }
+    this.fallos.delete(terminalId);
+    if (persona.paradoHasta !== null && Date.parse(persona.paradoHasta) > ahora) {
+      return { porque: 'demasiados_intentos' };
+    }
+    return { persona };
+  }
+
+  /** Lo que el aparato necesita para dejar entrar (o fichar) a esa persona sin internet. */
+  private loDeLaPersona(persona: PersonaDelCentro) {
+    const personas = this.guardado.personas?.personas ?? [];
+    return {
+      persona: { id: persona.id, nombre: persona.nombre, iniciales: persona.iniciales },
+      permisos: persona.permisos,
+      fichaje: persona.fichaje,
+      desde: persona.desde,
+      pausasEnUso: this.guardado.personas?.pausasEnUso ?? false,
+      // A quién se le pueden pasar las mesas: quien toma nota y está fichado.
+      companeros: personas
+        .filter(
+          (p) =>
+            p.id !== persona.id &&
+            p.fichaje !== 'fuera' &&
+            p.permisos['accion.tomar_nota'] === 'ver_y_editar',
+        )
+        .map((p) => ({ id: p.id, nombre: p.nombre })),
+    };
+  }
+
+  private async quienEs(pin: string, terminalId: string): Promise<unknown> {
+    const dicho = await this.laPersonaDelPin(pin, terminalId);
+    if ('porque' in dicho) return { ok: false, porque: dicho.porque };
+    return { ok: true, ...this.loDeLaPersona(dicho.persona) };
+  }
+
+  /**
+   * **Fichar sin internet en la caja**, con el PIN que comprueba ella. Lo apunta en lo que sabe
+   * de esa persona (así entra en un comandero) y la caja lo sube al volver con el PIN cifrado:
+   * lo que valga lo dice Estook entonces.
+   */
+  private async fichar(pin: string, accion: QueSeFicha, terminalId: string): Promise<unknown> {
+    const dicho = await this.laPersonaDelPin(pin, terminalId);
+    if ('porque' in dicho) return { ok: false, porque: dicho.porque };
+    const { persona } = dicho;
+    // Como en Estook: ficha quien tiene en su puesto el permiso de fichar en este local.
+    if (persona.permisos['accion.fichar'] !== 'ver_y_editar')
+      return { ok: false, porque: 'sin_permiso' };
+    const regla = AL_FICHAR[accion];
+    const sinPausas = accion === 'pausa' && this.guardado.personas?.pausasEnUso !== true;
+    if (!regla.desde.includes(persona.fichaje) || sinPausas) {
+      return { ok: false, porque: 'no_toca', ...this.loDeLaPersona(persona) };
+    }
+    const desde = regla.queda === 'fuera' ? null : new Date(this.manos.ahora()).toISOString();
+    const fichada: PersonaDelCentro = { ...persona, fichaje: regla.queda, desde };
+    const lista = this.guardado.personas;
+    if (lista !== null) {
+      this.guardado = {
+        ...this.guardado,
+        personas: {
+          ...lista,
+          personas: lista.personas.map((p) => (p.id === persona.id ? fichada : p)),
+        },
+      };
+      this.guardar();
+    }
+    return { ok: true, ...this.loDeLaPersona(fichada) };
   }
 
   // ── Lo que llega ───────────────────────────────────────────────────────────
@@ -363,7 +552,13 @@ export class ElCentro {
   // ── El disco ───────────────────────────────────────────────────────────────
 
   private leerLoGuardado(): LoGuardado {
-    const vacio: LoGuardado = { huella: null, sabe: null, llegado: [], porImprimir: [] };
+    const vacio: LoGuardado = {
+      huella: null,
+      sabe: null,
+      llegado: [],
+      porImprimir: [],
+      personas: null,
+    };
     try {
       const texto = this.manos.leer();
       if (texto === null) return vacio;
@@ -373,6 +568,7 @@ export class ElCentro {
         sabe: leido.sabe ?? null,
         llegado: Array.isArray(leido.llegado) ? leido.llegado : [],
         porImprimir: Array.isArray(leido.porImprimir) ? leido.porImprimir : [],
+        personas: Array.isArray(leido.personas?.personas) ? leido.personas : null,
       };
     } catch {
       return vacio;

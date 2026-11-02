@@ -133,16 +133,23 @@ export function LaFranjaSinInternet({
                   <span className="font-bold">{cosa.que}</span>
                   <span className="text-secundario text-texto-suave">
                     {cosa.fallo ??
-                      (cosa.enLaCaja === true
-                        ? `${cosa.quien.nombre} · en cocina`
-                        : cosa.quien.nombre)}
+                      (cosa.nombre === 'fichar_en_la_caja'
+                        ? 'Fichado en la caja'
+                        : cosa.enLaCaja === true
+                          ? `${cosa.quien.nombre} · en cocina`
+                          : cosa.quien.nombre)}
                   </span>
                 </span>
                 <span className="text-secundario tabular-nums text-texto-suave">
                   {laHora(new Date(cosa.hechoEn).toISOString())}
                 </span>
                 {cosa.fallo === undefined ? (
-                  <span className="text-secundario font-bold text-atencion">En este aparato</span>
+                  // Lo fichado ya lo comprobó la caja (0124): solo falta que lo sepa Estook.
+                  cosa.nombre === 'fichar_en_la_caja' ? (
+                    <span className="text-secundario font-bold text-bien">Apuntado</span>
+                  ) : (
+                    <span className="text-secundario font-bold text-atencion">En este aparato</span>
+                  )
                 ) : (
                   <Boton
                     tono="secundario"

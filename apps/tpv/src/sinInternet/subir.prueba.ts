@@ -180,4 +180,26 @@ describe('subir lo guardado', () => {
     });
     expect(llamadas).toEqual(['bloquear']);
   });
+
+  it('lo fichado en la caja sin internet sube sin turno de nadie, con su PIN cifrado (0124)', async () => {
+    const llamadas: unknown[] = [];
+    const mandar: Mandar = (turno, nombre, _entrada, _clave, haceMs) => {
+      llamadas.push([turno, nombre, haceMs]);
+      return Promise.resolve(bien({ apuntado: true }));
+    };
+    const a = apuntes();
+    const cola = [
+      cosa('ficha-ana', 'fichar_en_la_caja', { sinTurno: true }, MARCOS, { hechoEn: 1_000 }),
+      cosa('pedir', 'pedir', { turno: 'T-lucia' }),
+    ];
+    expect(await subirLaCola(cola, mandar, () => 31_000, a.al)).toEqual({
+      subidas: 2,
+      fallidas: 0,
+      sinRed: false,
+    });
+    expect(llamadas).toEqual([
+      [null, 'fichar_en_la_caja', 30_000],
+      ['T-lucia', 'pedir', 30_000],
+    ]);
+  });
 });

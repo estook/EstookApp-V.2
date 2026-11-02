@@ -2,9 +2,13 @@ import {
   PUERTO_DEL_CENTRO,
   abrirElSobre,
   cerrarElSobre,
+  elSistemaDe,
   esDireccionDelLocal,
+  type CaminoAlCentro,
+  type EstadoDelFichajeEnLaCaja,
   type LoQueSePasaPorLaCaja,
   type LoQueTieneLaCaja,
+  type SistemaDelAparato,
 } from '@estook/dominio';
 import { laCajaParaWindows } from '../datos/laCajaParaWindows.ts';
 import { laCola, loQueFaltaPasar, marcarEnLaCaja } from './laCola.ts';
@@ -143,6 +147,109 @@ export async function loQueTieneLaCaja(): Promise<readonly LoQueTieneLaCaja[] | 
   const dice = await hablar({ que: 'la_cocina' });
   if (dice?.['ok'] !== true || !Array.isArray(dice['llegado'])) return null;
   return dice['llegado'] as LoQueTieneLaCaja[];
+}
+
+// ── El PIN de cualquiera, y fichar (T5 · 2 · 2 · 2, 0124) ────────────────────
+
+/** Quién es, para la caja: lo que necesita el aparato para dejarle entrar o fichar sin internet. */
+export interface QuienEsParaLaCaja {
+  readonly persona: { readonly id: string; readonly nombre: string; readonly iniciales: string };
+  readonly permisos: Readonly<Record<string, 'ver' | 'ver_y_editar'>>;
+  readonly fichaje: EstadoDelFichajeEnLaCaja;
+  readonly desde: string | null;
+  readonly pausasEnUso: boolean;
+  readonly companeros: readonly { readonly id: string; readonly nombre: string }[];
+}
+
+/**
+ * Lo que contesta la caja a un PIN:
+ *
+ *   · `no_llega`             no se llega a la caja (o el local no tiene)
+ *   · `sin_personas`         la caja aún no sabe quién es cada uno (no ha tenido internet)
+ *   · `pin_desconocido`      el PIN no es de nadie del local
+ *   · `aparato_parado`       diez fallos seguidos desde este aparato: cinco minutos parado
+ *   · `demasiados_intentos`  ese PIN está parado en Estook por fallarlo
+ *   · `no_toca`              al fichar: eso no toca ahora (entrar estando dentro)
+ */
+export type LoQueDiceLaCaja =
+  | ({ readonly ok: true } & QuienEsParaLaCaja)
+  | {
+      readonly ok: false;
+      readonly porque:
+        | 'no_llega'
+        | 'sin_personas'
+        | 'pin_desconocido'
+        | 'aparato_parado'
+        | 'demasiados_intentos'
+        | 'no_toca'
+        | 'sin_permiso';
+      readonly quien?: QuienEsParaLaCaja;
+    };
+
+const LO_QUE_PUEDE_DECIR = new Set([
+  'sin_personas',
+  'pin_desconocido',
+  'aparato_parado',
+  'demasiados_intentos',
+  'no_toca',
+  'sin_permiso',
+]);
+
+function comoLoDice(dice: Record<string, unknown> | null): LoQueDiceLaCaja {
+  if (dice === null) return { ok: false, porque: 'no_llega' };
+  const tieneQuien =
+    typeof dice['persona'] === 'object' &&
+    dice['persona'] !== null &&
+    Array.isArray(dice['companeros']);
+  const quien = tieneQuien ? (dice as unknown as QuienEsParaLaCaja) : undefined;
+  if (dice['ok'] === true && quien !== undefined) return { ok: true, ...quien };
+  const porque = dice['porque'];
+  return {
+    ok: false,
+    porque:
+      typeof porque === 'string' && LO_QUE_PUEDE_DECIR.has(porque)
+        ? (porque as Exclude<LoQueDiceLaCaja, { ok: true }>['porque'])
+        : 'pin_desconocido',
+    ...(quien === undefined ? {} : { quien }),
+  };
+}
+
+/** **Entrar sin internet con el PIN de cualquiera**: lo comprueba la caja. */
+export async function elPinPorLaCaja(pin: string): Promise<LoQueDiceLaCaja> {
+  if (laCaja === null) return { ok: false, porque: 'no_llega' };
+  return comoLoDice(await hablar({ que: 'pin', pin }));
+}
+
+/** **Fichar sin internet**, en la propia caja: la caja comprueba el PIN y lo apunta. */
+export async function ficharPorLaCaja(
+  pin: string,
+  accion: 'entrada' | 'pausa' | 'vuelta' | 'salida',
+): Promise<LoQueDiceLaCaja> {
+  if (laCaja === null) return { ok: false, porque: 'no_llega' };
+  return comoLoDice(await hablar({ que: 'fichar', pin, accion }));
+}
+
+// ── Cómo llega este aparato, para Aparatos ───────────────────────────────────
+
+/** Qué es este aparato, para «Android · comandero». */
+export function esteSistema(): SistemaDelAparato {
+  if (typeof navigator === 'undefined') return 'otro';
+  return elSistemaDe(navigator.userAgent, navigator.maxTouchPoints);
+}
+
+/**
+ * **Cómo llega este aparato a la caja**, para su latido (maquetas de T5 · 2, sección 3, y de la
+ * caja de centro, sección 1). Nulo si no hay caja que alcanzar, o si aún no se ha probado: lo que
+ * no se sabe no se dice. La propia caja no lo dice: es el centro.
+ */
+export async function elCaminoAlCentro(): Promise<CaminoAlCentro | null> {
+  if (laCaja === null || laCajaParaWindows() !== null) return null;
+  if (esteSistema() === 'ios') return 'guarda_lo_suyo';
+  const permiso = await elPermisoDeChrome();
+  if (permiso === 'bloqueado') return 'bloqueado';
+  if (permiso === 'por_pedir') return 'sin_permiso';
+  if (vaConDatos()) return 'con_datos';
+  return llega === null ? null : llega ? 'llega' : 'no_llega';
 }
 
 // ── El permiso de Chrome ─────────────────────────────────────────────────────

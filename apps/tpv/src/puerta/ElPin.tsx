@@ -1,17 +1,34 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
-import { cifrarElPin } from '@estook/cliente-api/pin-cifrado';
 import { CIFRAS_DEL_PIN, tokenDelAparato } from '@estook/dominio';
 import { ErrorEnCristiano } from '@estook/ui';
 import { crearClienteDelTpv } from '../datos/cliente.ts';
 import type { Dentro, DentroDelTpv, ElAparatoPorDentro } from '../datos/tipos.ts';
-import { anadirALaCola } from '../sinInternet/laCola.ts';
 import { escucharLaConexion, estamosSinInternet } from '../sinInternet/laConexion.ts';
-import { apuntarQuienEntro, quienEsSinInternet } from '../sinInternet/quienEntroHoy.ts';
+import {
+  apuntarQuienEntro,
+  guardarSuYo,
+  quienEsSinInternet,
+} from '../sinInternet/quienEntroHoy.ts';
+import {
+  elPinPorLaCaja,
+  escucharLaCaja,
+  ficharPorLaCaja,
+  hayCaja,
+  llegamosALaCaja,
+  type QuienEsParaLaCaja,
+} from '../sinInternet/laCaja.ts';
+import {
+  elYoQueDaLaCaja,
+  guardarElFichaje,
+  guardarLaEntrada,
+  porQueNoEntra,
+} from '../sinInternet/porLaCaja.ts';
 import { Puntos, Teclado } from './Teclado.tsx';
 import { cifraDeLaTecla } from './teclas.ts';
 import { OlvideMiPin } from './OlvideMiPin.tsx';
 import { FicharEnLaCaja } from './FicharEnLaCaja.tsx';
+import { ElAvisoDeWindows } from '../sinInternet/ElAvisoDeWindows.tsx';
 
 /**
  * **Teclea tu PIN, y ya está** (maquetas 3 y 22; Anexo 11.4): sin buscar antes la cara.
@@ -29,7 +46,10 @@ import { FicharEnLaCaja } from './FicharEnLaCaja.tsx';
  *
  * **Sin internet** (T5 · 2 · 1), entra quien ya entró hoy en este aparato: su PIN se comprueba
  * aquí con lo que se guardó al entrar, y se guarda cifrado para que Estook lo dé por bueno al
- * volver, delante de lo que haga. A los demás, que no se puede comprobar su PIN.
+ * volver, delante de lo que haga. **Y si el aparato llega a la caja** (T5 · 2 · 2 · 2, 0124),
+ * entra cualquiera del local: el PIN lo mira la caja (maqueta de T5 · 2, sección 1). En la caja,
+ * quien no ha fichado ficha ahí mismo; en un comandero, se le dice que fiche en la caja. A los
+ * demás, que no se puede comprobar su PIN, sin decir nunca de quién era.
  */
 export function ElPin({
   llave,
@@ -60,13 +80,20 @@ export function ElPin({
     readonly dentro: DentroDelTpv | null;
     /** En un comandero no se ficha: se dice dónde, y nada más. */
     readonly enLaCaja: boolean;
+    /** Sin internet, lo que dijo la caja de esta persona (0124). */
+    readonly porLaCaja?: QuienEsParaLaCaja;
   } | null>(null);
   const [olvidado, setOlvidado] = useState(false);
   const [fichando, setFichando] = useState(false);
   const [hecho, setHecho] = useState<string | null>(null);
-  /** Sin internet, un PIN que no se puede comprobar aquí. */
-  const [noSePuedeSinInternet, setNoSePuedeSinInternet] = useState(false);
+  /** Sin internet, un PIN que no se puede comprobar aquí: lo que se le dice. */
+  const [noSePuedeSinInternet, setNoSePuedeSinInternet] = useState<{
+    readonly titulo: string;
+    readonly frase: string;
+  } | null>(null);
   const sinInternet = useSyncExternalStore(escucharLaConexion, estamosSinInternet);
+  useSyncExternalStore(escucharLaCaja, llegamosALaCaja);
+  const porLaCaja = sinInternet && hayCaja() && llegamosALaCaja() !== false;
   const enLaCaja = aparato.funcion === 'caja';
   // El reloj de la pantalla **solo se pinta**: la hora de lo que se hace la pone el servidor.
   const [reloj, setReloj] = useState(() => Date.now());
@@ -80,47 +107,104 @@ export function ElPin({
     };
   }, []);
 
-  /** Sin internet: si es de quien entró hoy aquí, entra, y su PIN cifrado sube al volver. */
-  const entrarSinInternet = useCallback(
-    async (elPin: string) => {
-      const quien = await quienEsSinInternet(elPin);
-      const clave = aparato.clavePublica ?? null;
-      if (
-        quien?.yo === null ||
-        quien === null ||
-        clave === null ||
-        (aparato.dueno !== null && aparato.dueno.id !== quien.persona.id)
-      ) {
-        setNoSePuedeSinInternet(true);
-        return;
-      }
-      const id = crypto.randomUUID();
-      anadirALaCola({
-        id,
-        nombre: 'entrar_con_pin',
-        entrada: { llave, pin_cifrado: await cifrarElPin(clave, elPin) },
-        hechoEn: Date.now(),
-        quien: { id: quien.persona.id, nombre: quien.persona.nombre },
-        con: { entrada: id },
-        que: `${quien.persona.nombre} · entra sin internet`,
-      });
-      alEntrar({
+  /** Por la caja: entra con lo que dijo ella, y su PIN cifrado sube al volver (0124). */
+  const entrarPorLaCaja = useCallback(
+    async (elPin: string, quien: QuienEsParaLaCaja, clave: string) => {
+      const yo = elYoQueDaLaCaja(aparato, quien);
+      const id = await guardarLaEntrada(llave, clave, elPin, quien.persona);
+      const dentro: DentroDelTpv = {
         turno: '',
         persona: quien.persona,
         fichaje: quien.fichaje,
         caeEn: 'mesas',
-        sinInternet: id,
-        yo: quien.yo,
+      };
+      // Y queda como quien entró hoy aquí: si luego no llega a la caja, vuelve a entrar igual.
+      void apuntarQuienEntro(elPin, dentro).then(() => {
+        guardarSuYo(yo);
       });
+      alEntrar({ ...dentro, sinInternet: id, yo });
     },
     [aparato, llave, alEntrar],
+  );
+
+  /**
+   * Sin internet: quien entró hoy aquí entra con lo guardado; si no, se pregunta a la caja. Su
+   * PIN cifrado sube al volver, delante de lo que haga.
+   */
+  const entrarSinInternet = useCallback(
+    async (elPin: string) => {
+      const clave = aparato.clavePublica ?? null;
+      const esDeOtro = (id: string) => aparato.dueno !== null && aparato.dueno.id !== id;
+      if (clave === null) {
+        setNoSePuedeSinInternet(porQueNoEntra('sin_caja'));
+        return;
+      }
+      const quien = await quienEsSinInternet(elPin);
+      if (quien !== null && quien.yo !== null && !esDeOtro(quien.persona.id)) {
+        const id = await guardarLaEntrada(llave, clave, elPin, quien.persona);
+        alEntrar({
+          turno: '',
+          persona: quien.persona,
+          fichaje: quien.fichaje,
+          caeEn: 'mesas',
+          sinInternet: id,
+          yo: quien.yo,
+        });
+        return;
+      }
+      if (!hayCaja()) {
+        setNoSePuedeSinInternet(porQueNoEntra('sin_caja'));
+        return;
+      }
+      const dice = await elPinPorLaCaja(elPin);
+      if (!dice.ok) {
+        setNoSePuedeSinInternet(porQueNoEntra(dice.porque));
+        return;
+      }
+      if (esDeOtro(dice.persona.id)) {
+        setNoSePuedeSinInternet({
+          titulo: `Este móvil es de ${aparato.dueno?.nombre ?? 'otra persona'}.`,
+          frase: 'Solo entra su PIN.',
+        });
+        return;
+      }
+      if (dice.fichaje === 'fuera') {
+        setSinFichar({
+          pin: elPin,
+          nombre: dice.persona.nombre,
+          dentro: null,
+          enLaCaja,
+          porLaCaja: dice,
+        });
+        return;
+      }
+      await entrarPorLaCaja(elPin, dice, clave);
+    },
+    [aparato, llave, alEntrar, enLaCaja, entrarPorLaCaja],
+  );
+
+  /** En la caja, sin internet: «Fichar la entrada y entrar», con la caja comprobando el PIN. */
+  const ficharYEntrarPorLaCaja = useCallback(
+    async (elPin: string) => {
+      const clave = aparato.clavePublica ?? null;
+      if (clave === null) return;
+      const fichado = await ficharPorLaCaja(elPin, 'entrada');
+      if (!fichado.ok) {
+        setSinFichar(null);
+        setNoSePuedeSinInternet(porQueNoEntra(fichado.porque));
+        return;
+      }
+      await guardarElFichaje(llave, clave, elPin, fichado.persona, 'entrada');
+      await entrarPorLaCaja(elPin, fichado, clave);
+    },
+    [aparato, llave, entrarPorLaCaja],
   );
 
   const entrar = useCallback(
     async (elPin: string, ficharLaEntrada: boolean) => {
       setOcupado(true);
       setError(null);
-      setNoSePuedeSinInternet(false);
+      setNoSePuedeSinInternet(null);
       await antesDeEntrar();
       const respuesta = await cliente.ejecutar<DentroDelTpv>('entrar_con_pin', {
         llave,
@@ -215,6 +299,7 @@ export function ElPin({
     return (
       <FicharEnLaCaja
         llave={llave}
+        clavePublica={aparato.clavePublica ?? null}
         alAcabar={(loHecho) => {
           setFichando(false);
           setHecho(loHecho);
@@ -275,6 +360,12 @@ export function ElPin({
             disabled={ocupado}
             onClick={() => {
               void (async () => {
+                if (sinFichar.porLaCaja !== undefined) {
+                  setOcupado(true);
+                  await ficharYEntrarPorLaCaja(sinFichar.pin);
+                  setOcupado(false);
+                  return;
+                }
                 if (sinFichar.dentro === null) {
                   await entrar(sinFichar.pin, true);
                   return;
@@ -296,12 +387,16 @@ export function ElPin({
           >
             {ocupado ? 'Fichando…' : 'Fichar la entrada y entrar'}
           </button>
-          {sinFichar.dentro !== null && (
+          {(sinFichar.dentro !== null ||
+            (sinFichar.porLaCaja !== undefined && !aparato.bloqueo.soloEntraQuienFicha)) && (
             <button
               type="button"
               disabled={ocupado}
               onClick={() => {
                 if (sinFichar.dentro !== null) alEntrar(sinFichar.dentro);
+                else if (sinFichar.porLaCaja !== undefined && aparato.clavePublica != null) {
+                  void entrarPorLaCaja(sinFichar.pin, sinFichar.porLaCaja, aparato.clavePublica);
+                }
               }}
               className="min-h-toque rounded-grande border-2 border-borde text-cuerpo font-bold"
             >
@@ -333,6 +428,7 @@ export function ElPin({
   return (
     <main className="flex min-h-pantalla flex-col bg-fondo text-texto md:flex-row">
       <section className="flex flex-col gap-e4 p-e5 md:flex-1 md:p-e7">
+        {enLaCaja && <ElAvisoDeWindows enLaPuerta />}
         <div className="flex flex-col gap-e1">
           <span className="text-[4rem] font-bold leading-none tabular-nums max-md:text-cifra">
             {hora}
@@ -413,20 +509,26 @@ export function ElPin({
         ) : (
           <span className="text-pantalla font-bold">Teclea tu PIN</span>
         )}
+        {porLaCaja && (
+          <span className="rounded-redondo bg-info-suave px-e3 py-e1 text-secundario font-bold text-info">
+            Por la caja
+          </span>
+        )}
         <Puntos tecleadas={pin.length} de={CIFRAS_DEL_PIN} />
         {error !== null && <ErrorEnCristiano error={error} />}
-        {noSePuedeSinInternet ? (
+        {noSePuedeSinInternet !== null ? (
           <p
             role="alert"
             className="rounded-grande bg-atencion-suave p-e3 text-center text-atencion"
           >
-            <b>Sin conexión no se puede comprobar ese PIN.</b> Aquí solo entra quien ya entró hoy en
-            este aparato. Usa la caja o espera a que vuelva.
+            <b>{noSePuedeSinInternet.titulo}</b> {noSePuedeSinInternet.frase}
           </p>
         ) : (
           sinInternet && (
             <p role="status" className="text-center text-secundario font-semibold text-atencion">
-              Sin conexión: entra quien ya entró hoy en este aparato.
+              {porLaCaja
+                ? 'Sin internet: el PIN lo mira la caja'
+                : 'Sin conexión: entra quien ya entró hoy en este aparato.'}
             </p>
           )
         )}

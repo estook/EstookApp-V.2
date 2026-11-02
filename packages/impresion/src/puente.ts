@@ -61,6 +61,34 @@ export interface PuenteDeLaCaja {
    * decirlo en el latido. Una caja de antes de la 1.1.0 no lo tiene.
    */
   elCentro?(): Promise<ComoEstaElCentro>;
+  /**
+   * **Los avisos de Windows** (T5 · 2 · 2 · 2, 0124): la primera vez, la caja escucha solo por
+   * dentro hasta que la pantalla ha dicho qué contestar a Windows; esto la pone a escuchar en la
+   * red del local, y Windows pregunta. Una caja de antes de la 1.2.0 no lo tiene.
+   */
+  escucharEnLaRed?(): Promise<void>;
+  /** Abre en Windows lo que hay que cambiar: el cortafuegos, o esa red. */
+  abrirEnWindows?(que: 'cortafuegos' | 'red'): Promise<void>;
+}
+
+/**
+ * **Lo que dice Windows de la red del local** (0124): por dónde va la caja, si Windows tiene esa
+ * red como pública, y si el cortafuegos la deja escuchar.
+ */
+export interface LoQueDiceWindows {
+  readonly red: {
+    /** Como lo llama Windows: el nombre del wifi, o «Red 2» si es por cable. */
+    readonly nombre: string;
+    readonly por: 'wifi' | 'cable';
+    readonly publica: boolean;
+  } | null;
+  /**
+   *   · `deja`           Windows la deja escuchar en esta red
+   *   · `no_deja`        se tocó «Cancelar», o se dejó solo para otro tipo de red
+   *   · `sin_preguntar`  Windows aún no ha preguntado
+   *   · `no_se_sabe`     no se ha podido mirar
+   */
+  readonly cortafuegos: 'deja' | 'no_deja' | 'sin_preguntar' | 'no_se_sabe';
 }
 
 export interface ComoEstaElCentro {
@@ -70,6 +98,10 @@ export interface ComoEstaElCentro {
   /** Por qué no escucha, dicho para quien lo lee. */
   readonly porque: string | null;
   readonly porImprimir: number;
+  /** Lo que dice Windows (0124). Una caja de antes de la 1.2.0 no lo dice. */
+  readonly windows?: LoQueDiceWindows;
+  /** Escucha solo en el propio PC: espera a que la pantalla avise antes de que Windows pregunte. */
+  readonly soloPorDentro?: boolean;
 }
 
 /** El nombre con el que el programa lo deja en la ventana. */

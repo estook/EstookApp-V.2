@@ -26,7 +26,7 @@ import { guardarSuYo, olvidarATodos } from '../sinInternet/quienEntroHoy.ts';
 import { usarSubirLoGuardado } from '../ganchos/usarSubirLoGuardado.ts';
 import { usarLaCajaDeCentro } from '../ganchos/usarLaCajaDeCentro.ts';
 import { olvidarLosTachados } from '../cocina/losTachados.ts';
-import { llegamosALaCaja } from '../sinInternet/laCaja.ts';
+import { elCaminoAlCentro, esteSistema, llegamosALaCaja } from '../sinInternet/laCaja.ts';
 
 /**
  * La puerta de Estook TPV (T1 · La puerta, decisión 0107; Anexo 11.3 y 11.4).
@@ -141,13 +141,19 @@ function ConLlave({
       const centro = await laCajaParaWindows()
         ?.elCentro?.()
         .catch(() => null);
+      // **Para Aparatos** (0124): qué es este aparato y cómo llega a la caja; la caja, si va por
+      // wifi o por cable.
+      const camino = await elCaminoAlCentro();
+      const por = centro?.windows?.red?.por;
       const respuesta = await cliente.ejecutar<ElAparatoPorDentro>('latir_el_aparato', {
         llave,
         version: laVersion(),
+        sistema: esteSistema(),
         ...(centro?.escucha === true && centro.direcciones.length > 0
-          ? { centro: centro.direcciones }
+          ? { centro: centro.direcciones, ...(por === undefined ? {} : { centro_por: por }) }
           : {}),
         ...(llegamosALaCaja() === true ? { llega_al_centro: true } : {}),
+        ...(camino === null ? {} : { camino_al_centro: camino }),
       });
       if (respuesta.ok) {
         guardarLaCopia('aparato', respuesta.datos);

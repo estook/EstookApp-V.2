@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   BLOQUEO_DE_FABRICA,
+  CAMINOS_AL_CENTRO,
   CODIGO_PARA_VINCULAR,
   FUNCIONES_QUE_SE_ELIGEN,
   LIMITES_DEL_BLOQUEO,
@@ -12,9 +13,14 @@ import {
   jornadaDe,
   laClaveConLaCaja,
   laHoraDeLoHecho,
+  SISTEMAS_DEL_APARATO,
   type AjustesDelBloqueo,
+  type CaminoAlCentro,
   type FuncionDelAparato,
+  type LosPinDelCentro,
+  type SistemaDelAparato,
 } from '@estook/dominio';
+import { esPermiso } from '@estook/permisos';
 import type { PermisosResueltos } from '@estook/permisos';
 import { huellaDeToken, pinNuevo, tokenNuevo } from '../../dominio/secretos.ts';
 import {
@@ -34,8 +40,10 @@ import {
   elPinCifrado,
   ficharEnElAparato,
   laClavePublicaDe,
+  loQueSeFichoSinConexion,
   quienEsElPin,
   type ElAparato,
+  type FichajeSinConexion,
   type QuienFichaAqui,
 } from './aparato-para-fichar.ts';
 import { pasarAOtroCamarero } from './sala.ts';
@@ -970,6 +978,12 @@ export const entradaLatir = z
     centro: z.array(z.string().refine(esDireccionDelLocal)).min(1).max(4).optional(),
     /** Si este aparato llega a la caja por el wifi del local (0123). */
     llega_al_centro: z.boolean().optional(),
+    /** Qué es el aparato, para Aparatos (0124). */
+    sistema: z.enum(SISTEMAS_DEL_APARATO).optional(),
+    /** Cómo llega a la caja de centro, según él mismo (0124). Sin poner, no se sabe. */
+    camino_al_centro: z.enum(CAMINOS_AL_CENTRO).optional(),
+    /** Solo la caja de centro (0124): si va por wifi o por cable al router. */
+    centro_por: z.enum(['wifi', 'cable']).optional(),
   })
   .strict();
 
@@ -997,7 +1011,11 @@ export const latirElAparato = comando<z.infer<typeof entradaLatir>, ElAparatoPor
                centro_visto_en = case when funcion = 'caja' and ${centro !== null}
                                       then ${ahora}::timestamptz else centro_visto_en end,
                llega_al_centro_en = case when ${entrada.llega_al_centro === true}
-                                         then ${ahora}::timestamptz else llega_al_centro_en end
+                                         then ${ahora}::timestamptz else llega_al_centro_en end,
+               sistema = coalesce(${entrada.sistema ?? null}, sistema),
+               camino_al_centro = ${aparato.funcion === 'caja' ? null : (entrada.camino_al_centro ?? null)},
+               centro_por = case when funcion = 'caja' and ${centro !== null}
+                                 then ${entrada.centro_por ?? null} else centro_por end
          where id = ${aparato.terminalId}::uuid
       `,
     );
@@ -1399,21 +1417,53 @@ export const quienFichaEnLaCaja = comando<{ llave: string; pin: string }, QuienF
 export const entradaFicharEnLaCaja = z
   .object({
     llave,
-    pin: z.string().trim().min(1).max(12),
+    pin: z.string().trim().min(1).max(12).optional(),
+    /**
+     * **Fichado sin internet** (T5 · 2 · 2 · 2, 0124): la caja de centro comprobó el PIN al
+     * momento, y llega aquí cifrado con la pública de la caja (0070), con cuánto hace.
+     */
+    pin_cifrado: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{300,400}$/, 'No tiene la forma de un PIN cifrado.')
+      .optional(),
     que: z.enum(['entrada', 'pausa', 'vuelta', 'salida']),
   })
-  .strict();
+  .strict()
+  .refine((e) => (e.pin === undefined) !== (e.pin_cifrado === undefined), {
+    message: 'El PIN, o el PIN cifrado: uno de los dos.',
+  });
 
-export const ficharEnLaCaja = comando<z.infer<typeof entradaFicharEnLaCaja>, QuienFichaAqui>({
+export const ficharEnLaCaja = comando<
+  z.infer<typeof entradaFicharEnLaCaja>,
+  QuienFichaAqui | FichajeSinConexion
+>({
   nombre: 'fichar_en_la_caja',
   entrada: entradaFicharEnLaCaja,
   sinSesion: true,
   // Repetirlo dice «ya estás fichado» o «no estás fichado»: el estado protege.
   sinRecordar: true,
+  // Sin internet ficha la caja de centro, y sube al volver con el PIN cifrado (0124).
+  sinConexion: true,
 
   async ejecutar(contexto, entrada) {
     const aparato = await laCajaQueFicha(contexto, entrada.llave);
-    const personaId = await quienEsElPin(contexto, aparato, entrada.pin);
+    // **Lo fichado sin internet**, como en el aparato de fichar (0070): un cifrado vale una
+    // vez, se apunta a la hora en que se hizo, y lo que no se pueda apuntar le llega a quien
+    // lleva el equipo. Lo de las mesas abiertas ya no se puede mirar: se fichó cuando se fichó.
+    if (entrada.pin_cifrado !== undefined) {
+      if (contexto.hechoHaceMs === undefined || contexto.hechoHaceMs === null) {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: 'Un PIN cifrado es de algo que se fichó sin internet, y eso dice cuánto hace.',
+        });
+      }
+      return loQueSeFichoSinConexion(contexto, aparato, entrada.pin_cifrado, entrada.que);
+    }
+    if (contexto.hechoHaceMs !== undefined && contexto.hechoHaceMs !== null) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Sin internet, el PIN se guarda cifrado: un PIN tal cual se teclea ahora.',
+      });
+    }
+    const personaId = await quienEsElPin(contexto, aparato, entrada.pin ?? '');
     // Quien se va con mesas abiertas las pasa antes, dentro, a quien se quede.
     if (entrada.que === 'salida') {
       const abiertas = await contexto.sql<{ cuantas: number }[]>`
@@ -1433,6 +1483,81 @@ export const ficharEnLaCaja = comando<z.infer<typeof entradaFicharEnLaCaja>, Qui
   },
 });
 
+// ═══ Los PIN del local, para la caja de centro ════════════════════════════════
+
+/**
+ * **Los PIN y Aparatos** (T5 · 2 · 2 · 2, decisión 0124; Anexo 3.4): con internet, la caja para
+ * Windows recoge quién es cada persona del local —la huella de su PIN, lo que puede hacer y si
+ * está fichada— para comprobar sin internet el PIN de cualquiera y dejarle fichar o entrar. Lo
+ * guarda en su disco cifrado con la cuenta de Windows.
+ *
+ * **Solo a una caja que ya hace de centro** (ha dicho en su latido dónde escucha): una caja en
+ * un navegador no lo recibe. Las huellas son las de Estook, nunca el PIN; y la función que las
+ * lee mira la caja otra vez (`los_pin_del_centro`, en la 0098).
+ */
+export const losPinDelCentro = comando<{ llave: string }, LosPinDelCentro>({
+  nombre: 'los_pin_del_centro',
+  entrada: z.object({ llave }).strict(),
+  sinSesion: true,
+  // Lleva las huellas de los PIN: no se guarda en ninguna tabla, se pide otra vez.
+  conSecreto: true,
+
+  async ejecutar(contexto, entrada) {
+    const caja = await elAparatoDeLaLlave(contexto, entrada.llave);
+    if (caja.funcion !== 'caja') {
+      throw new FalloDeAplicacion('sin_permiso', { porque: 'Hace de centro la caja.' });
+    }
+    return enNombreDelSistema(contexto, async () => {
+      // Lo fichado lo da la función, que lo ve: los fichajes son de su dueño.
+      const pines = await contexto.sql<
+        {
+          persona_id: string;
+          nombre: string;
+          apellidos: string | null;
+          huella: string;
+          bloqueado_hasta: Date | null;
+          dentro_desde: Date | null;
+          pausa_desde: Date | null;
+        }[]
+      >`select persona_id::text as persona_id, nombre, apellidos, huella, bloqueado_hasta,
+               dentro_desde, pausa_desde
+          from estook.los_pin_del_centro(${caja.terminalId}::uuid)`;
+      const niveles = await contexto.sql<{ persona_id: string; codigo: string; nivel: string }[]>`
+        select x.persona_id::text as persona_id, p.codigo,
+               estook.nivel_de_permiso(x.persona_id, ${caja.localId}::uuid, p.codigo)::text as nivel
+          from unnest(${comoLista(pines.map((p) => p.persona_id))}::text::uuid[]) as x(persona_id)
+         cross join estook.permiso p
+      `;
+      const permisos = new Map<string, Record<string, 'ver' | 'ver_y_editar'>>();
+      for (const n of niveles) {
+        // Los de `sin_acceso` no se envían: lo que no está, no se tiene.
+        if (n.nivel === 'sin_acceso' || !esPermiso(n.codigo)) continue;
+        permisos.set(n.persona_id, {
+          ...(permisos.get(n.persona_id) ?? {}),
+          [n.codigo]: n.nivel as 'ver' | 'ver_y_editar',
+        });
+      }
+      return {
+        pausasEnUso: caja.pausasEnUso,
+        personas: pines.map((p) => {
+          const pausa = p.pausa_desde === null ? null : new Date(p.pausa_desde).toISOString();
+          const dentro = p.dentro_desde === null ? null : new Date(p.dentro_desde).toISOString();
+          return {
+            id: p.persona_id,
+            nombre: p.apellidos === null ? p.nombre : `${p.nombre} ${p.apellidos.charAt(0)}.`,
+            iniciales: inicialesDe(p.nombre),
+            huella: p.huella,
+            paradoHasta: p.bloqueado_hasta === null ? null : p.bloqueado_hasta.toISOString(),
+            permisos: permisos.get(p.persona_id) ?? {},
+            fichaje: pausa !== null ? 'en_pausa' : dentro !== null ? 'dentro' : 'fuera',
+            desde: pausa ?? dentro,
+          };
+        }),
+      };
+    });
+  },
+});
+
 // ═══ Ajustes del TPV › Aparatos ═══════════════════════════════════════════════
 
 export interface UnAparato {
@@ -1447,6 +1572,14 @@ export interface UnAparato {
   readonly version: string | null;
   /** El móvil de alguien que ya no toma nota en el local ya no vale. */
   readonly vale: boolean;
+  /** Qué es, según su latido (0124); nulo si una versión de antes no lo dice. */
+  readonly sistema: SistemaDelAparato | null;
+  /** Cómo llega a la caja de centro, según su último latido (0124). */
+  readonly camino: CaminoAlCentro | null;
+  /** La caja que hace de centro en el local (la de `elCentroPara`). */
+  readonly esElCentro: boolean;
+  /** Solo el centro: si va por wifi o por cable. */
+  readonly centroPor: 'wifi' | 'cable' | null;
 }
 
 export interface LosAparatos {
@@ -1481,8 +1614,20 @@ export const losAparatos = consulta<Record<string, never>, LosAparatos>({
           version: string | null;
           en_linea: boolean;
           vale: boolean;
+          sistema: SistemaDelAparato | null;
+          camino: CaminoAlCentro | null;
+          es_el_centro: boolean;
+          centro_por: 'wifi' | 'cable' | null;
         }[]
       >`
+        with el_centro as (
+          select id from estook.terminal
+           where local_id = ${aparato.localId}::uuid and funcion = 'caja' and retirado_en is null
+             and centro_en is not null
+             and centro_visto_en > ${new Date(contexto.ahora.getTime() - EL_CENTRO_SE_OLVIDA_MS).toISOString()}::timestamptz
+           order by centro_visto_en desc
+           limit 1
+        )
         select t.id::text as id, t.nombre, t.funcion,
                t.persona_id::text as dueno_id, d.nombre as dueno,
                t.cajon_id::text as cajon_id, c.nombre as cajon,
@@ -1491,7 +1636,10 @@ export const losAparatos = consulta<Record<string, never>, LosAparatos>({
                coalesce(t.ultimo_latido_en > ${hace2}::timestamptz, false) as en_linea,
                (t.persona_id is null
                 or (d.activa and estook.nivel_de_permiso(t.persona_id, t.local_id, 'accion.tomar_nota') <> 'sin_acceso')
-               ) as vale
+               ) as vale,
+               t.sistema, t.camino_al_centro as camino,
+               exists (select 1 from el_centro e where e.id = t.id) as es_el_centro,
+               t.centro_por
           from estook.terminal t
           left join estook.persona d on d.id = t.persona_id
           left join estook.cajon c on c.id = t.cajon_id
@@ -1518,6 +1666,10 @@ export const losAparatos = consulta<Record<string, never>, LosAparatos>({
         vistoEn: f.latido === null ? null : new Date(f.latido).toISOString(),
         version: f.version,
         vale: f.vale,
+        sistema: f.sistema,
+        camino: f.camino,
+        esElCentro: f.es_el_centro,
+        centroPor: f.es_el_centro ? f.centro_por : null,
       })),
       cajones,
       personas,

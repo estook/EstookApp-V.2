@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { CODIGO_PARA_VINCULAR, NOMBRE_DE_LA_FUNCION } from '@estook/dominio';
-import { Cargando, ErrorEnCristiano } from '@estook/ui';
+import { Boton, Cargando, ErrorEnCristiano } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { FalloDeLaSala } from '../ganchos/usarLaSala.ts';
 import { irA } from '../navegar.ts';
@@ -10,6 +10,20 @@ import { ElegirQueSera } from '../puerta/ElegirQueSera.tsx';
 import { IconoEnSuColor } from '../iconos.tsx';
 import { COMO_SE_VE_LA_FUNCION } from '../logica/comoSeVeElAparato.ts';
 import { DONDE_SE_DESCARGA, laCajaParaWindows } from '../datos/laCajaParaWindows.ts';
+import {
+  ComoDarlo,
+  ElCortafuegos,
+  LaRedPublica,
+  LoQueConvieneSaber,
+} from './QuienLlegaALaCaja.tsx';
+import {
+  comoSeDice,
+  cuantosSiguen,
+  elEstado,
+  hayCentro,
+  windowsNoLaDeja,
+} from '../logica/quienLlegaALaCaja.ts';
+import { usarLoDeEstaCaja } from '../ganchos/usarLoDeEstaCaja.ts';
 import type {
   CodigoParaVincular,
   QueSera,
@@ -50,10 +64,30 @@ export function LosAparatos({ resto }: { readonly resto: string }) {
     return <ElAparato aparato={uno} esEste={uno.id === datos.este} datos={datos} />;
   }
 
+  return <LaLista datos={datos} />;
+}
+
+/**
+ * La lista, y **quién llega a la caja** si el local tiene caja de centro (0124): a la derecha,
+ * si llega o qué le pasa, en vez de «En línea»; quien no está en línea lo dice en su línea.
+ */
+function LaLista({ datos }: { readonly datos: LosAparatosDeLaApi }) {
+  const conCentro = hayCentro(datos.aparatos);
+  const estaCaja = usarLoDeEstaCaja();
+  const [comoDarlo, setComoDarlo] = useState<UnAparato | null>(null);
+  const [cortafuegos, setCortafuegos] = useState(false);
+
   return (
     <div className="flex max-w-[48rem] flex-col gap-e4">
       <div className="flex flex-wrap items-center gap-e3">
-        <h1 className="flex-1 text-cifra-media font-bold">Aparatos</h1>
+        <div className="flex flex-1 flex-col">
+          <h1 className="text-cifra-media font-bold">Aparatos</h1>
+          {conCentro && (
+            <span className="text-secundario text-texto-tenue">
+              {cuantosSiguen(datos.aparatos)}
+            </span>
+          )}
+        </div>
         <button
           type="button"
           onClick={() => {
@@ -64,39 +98,105 @@ export function LosAparatos({ resto }: { readonly resto: string }) {
           Añadir aparato
         </button>
       </div>
+      <LaRedPublica caja={estaCaja} />
       <ul className="flex flex-col gap-e3">
-        {datos.aparatos.map((a) => (
-          <li key={a.id}>
-            <button
-              type="button"
-              onClick={() => {
-                irA(`ajustes/aparatos/${a.id}`);
-              }}
-              className={[
-                'flex w-full items-center gap-e4 rounded-mayor bg-superficie p-e4 text-left',
-                a.id === datos.este ? 'border-2 border-borde-fuerte' : '',
-              ].join(' ')}
-            >
-              <IconoEnSuColor
-                dibujo={COMO_SE_VE_LA_FUNCION[a.funcion].dibujo}
-                tono={COMO_SE_VE_LA_FUNCION[a.funcion].tono}
-              />
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-seccion font-bold">
-                  {a.nombre}
-                  {a.id === datos.este ? ' · este aparato' : ''}
-                </span>
-                <span className="truncate text-secundario text-texto-tenue">{loQueEs(a)}</span>
-              </span>
-              <span
-                className={`text-secundario font-bold ${a.enLinea ? 'text-bien' : 'text-texto-tenue'}`}
+        {datos.aparatos.map((a) => {
+          const esEste = a.id === datos.este;
+          const sinEscuchar = esEste && windowsNoLaDeja(estaCaja);
+          const estado = conCentro && a.vale ? elEstado(a) : null;
+          const enSuLinea = conCentro && a.funcion !== 'fichar' && (sinEscuchar || estado !== null);
+          const linea = sinEscuchar
+            ? 'Este · Windows no la deja escuchar en el wifi'
+            : enSuLinea
+              ? comoSeDice(a, esEste, loQueEs(a))
+              : loQueEs(a);
+          const visto = a.vale ? (a.enLinea ? 'En línea' : vistoHace(a.vistoEn)) : 'Ya no vale';
+          return (
+            <li key={a.id} className="flex items-center gap-e2">
+              <button
+                type="button"
+                onClick={() => {
+                  irA(`ajustes/aparatos/${a.id}`);
+                }}
+                className={[
+                  'flex min-w-0 flex-1 items-center gap-e4 rounded-mayor bg-superficie p-e4 text-left',
+                  esEste ? 'border-2 border-borde-fuerte' : '',
+                ].join(' ')}
               >
-                {a.vale ? (a.enLinea ? 'En línea' : vistoHace(a.vistoEn)) : 'Ya no vale'}
-              </span>
-            </button>
-          </li>
-        ))}
+                <IconoEnSuColor
+                  dibujo={COMO_SE_VE_LA_FUNCION[a.funcion].dibujo}
+                  tono={COMO_SE_VE_LA_FUNCION[a.funcion].tono}
+                />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-seccion font-bold">
+                    {a.nombre}
+                    {esEste ? ' · este aparato' : ''}
+                  </span>
+                  <span
+                    className={`truncate text-secundario ${sinEscuchar ? 'font-bold text-atencion' : 'text-texto-tenue'}`}
+                  >
+                    {linea}
+                    {enSuLinea && !a.enLinea && a.vale ? ` · ${visto.toLowerCase()}` : ''}
+                  </span>
+                </span>
+                {!sinEscuchar && (estado === null || typeof estado === 'object') && (
+                  <span
+                    className={`text-secundario font-bold ${
+                      estado === null
+                        ? a.enLinea
+                          ? 'text-bien'
+                          : 'text-texto-tenue'
+                        : estado.tono === 'bien'
+                          ? 'text-bien'
+                          : estado.tono === 'atencion'
+                            ? 'text-atencion'
+                            : 'text-texto-tenue'
+                    }`}
+                  >
+                    {estado === null ? visto : estado.texto}
+                  </span>
+                )}
+              </button>
+              {sinEscuchar && (
+                <Boton
+                  tono="secundario"
+                  onClick={() => {
+                    setCortafuegos(true);
+                  }}
+                >
+                  Cómo arreglarlo
+                </Boton>
+              )}
+              {!sinEscuchar && estado === 'como_darlo' && (
+                <Boton
+                  tono="secundario"
+                  onClick={() => {
+                    setComoDarlo(a);
+                  }}
+                >
+                  Cómo darlo
+                </Boton>
+              )}
+            </li>
+          );
+        })}
       </ul>
+      {conCentro && <LoQueConvieneSaber aparatos={datos.aparatos} este={datos.este} />}
+      {comoDarlo !== null && (
+        <ComoDarlo
+          aparato={comoDarlo}
+          alCerrar={() => {
+            setComoDarlo(null);
+          }}
+        />
+      )}
+      {cortafuegos && (
+        <ElCortafuegos
+          alCerrar={() => {
+            setCortafuegos(false);
+          }}
+        />
+      )}
     </div>
   );
 }

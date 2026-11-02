@@ -56,15 +56,22 @@ export async function subirLaCola(
   let fallidas = 0;
 
   for (const cosa of loQueEspera(cola)) {
-    const turno = 'turno' in cosa.con ? cosa.con.turno : turnos.get(cosa.con.entrada);
-    if (cosa.nombre !== 'entrar_con_pin' && turno === undefined) {
+    // Lo fichado en la caja sin internet lleva su PIN cifrado: no sube con el turno de nadie.
+    const sinTurno = cosa.nombre === 'entrar_con_pin' || 'sinTurno' in cosa.con;
+    const turno =
+      'turno' in cosa.con
+        ? cosa.con.turno
+        : 'entrada' in cosa.con
+          ? turnos.get(cosa.con.entrada)
+          : undefined;
+    if (!sinTurno && turno === undefined) {
       // Su entrada no subió: sin ella no se sabe quién lo hizo, y nadie lo firma por otro.
       al.fallo(cosa.id, SIN_SU_ENTRADA);
       fallidas += 1;
       continue;
     }
     const respuesta = await mandar(
-      cosa.nombre === 'entrar_con_pin' ? null : (turno ?? null),
+      sinTurno ? null : (turno ?? null),
       cosa.nombre,
       cosa.entrada,
       cosa.id,

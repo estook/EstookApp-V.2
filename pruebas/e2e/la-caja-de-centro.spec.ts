@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { laHuellaDeLaLlave } from '../../packages/dominio/src/centro-cifrado.ts';
 import { PUERTO_DEL_CENTRO } from '../../packages/dominio/src/centro.ts';
+import type { LosPinDelCentro } from '../../packages/dominio/src/centro-pin.ts';
 import { ElCentro } from '../../apps/caja-windows/src/el-centro.ts';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
@@ -15,7 +16,9 @@ import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
  *   · sin Estook, se abre la mesa, se piden dos croquetas y se manda: «la cocina ya lo tiene,
  *     por la caja», y arriba «Todo sigue funcionando en el local»
  *   · la caja lo tiene, con la mesa y las croquetas, para la impresora y la pantalla de cocina
- *   · vuelve internet: sube una vez
+ *   · **T5 · 2 · 2 · 2** (0124): se bloquea, y entra con su PIN quien no había entrado hoy en
+ *     el aparato, porque lo mira la caja; y como no había fichado, ficha ahí mismo sin internet
+ *   · vuelve internet: sube una vez, y lo fichado ya está en Estook
  *
  * Y de paso, que la política de seguridad de Estook TPV deja hablar con la caja (lección 243).
  */
@@ -100,6 +103,16 @@ test('sin internet, lo mandado llega a la caja de centro por el wifi, y al volve
       data: { llave, centro: [`127.0.0.1:${String(PUERTO_DEL_CENTRO)}`] },
     });
     expect(latido.ok()).toBe(true);
+    // Y con internet recoge los PIN del local (T5 · 2 · 2 · 2), como hace el programa.
+    const losPin = async () => {
+      const respuesta = await request.post(`${API}/v1/comandos/los_pin_del_centro`, {
+        headers: { 'x-idempotencia': `pines-${unico(info)}-${String(Date.now())}` },
+        data: { llave },
+      });
+      expect(respuesta.ok()).toBe(true);
+      return ((await respuesta.json()) as { datos: LosPinDelCentro }).datos;
+    };
+    centro.saberLasPersonas(await losPin());
 
     // ── Con internet: Estook TPV aprende dónde está la caja ──
     await abrirSinQueSeCaiga(page, TPV);
@@ -146,6 +159,24 @@ test('sin internet, lo mandado llega a la caja de centro por el wifi, y al volve
       ['Croquetas', 2, 1],
     ]);
 
+    // ── T5 · 2 · 2 · 2: sin internet, el PIN lo mira la caja, y en la caja se ficha ──
+    await page.getByRole('button', { name: 'Volver al plano' }).first().click();
+    await page.getByRole('button', { name: /: bloquear$/ }).click();
+    // Como quien no ha entrado hoy en este aparato: sin la caja, no entraría.
+    await page.evaluate(() => {
+      window.localStorage.removeItem('estook.tpv.quien-entro-hoy');
+    });
+    await expect(page.getByText('Sin internet: el PIN lo mira la caja')).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText('Por la caja', { exact: true })).toBeVisible();
+    await page.keyboard.type(pin);
+    // Entró sin fichar con internet: la caja lo sabe, y ofrece fichar sin internet.
+    await page.getByRole('button', { name: 'Fichar la entrada y entrar' }).click({
+      timeout: 15_000,
+    });
+    await expect(page.getByRole('button', { name: /^Mesa 1:/ })).toBeVisible({ timeout: 15_000 });
+
     // ── Vuelve internet: sube solo, una vez ──
     await page.unroute(`${API}/**`);
     await expect(
@@ -154,6 +185,17 @@ test('sin internet, lo mandado llega a la caja de centro por el wifi, y al volve
         .locator('visible=true'),
     ).toBeVisible({ timeout: 45_000 });
     await expect.poll(() => guardado('estook.tpv.por-subir'), { timeout: 15_000 }).toBe('');
+    // Lo fichado en la caja sin internet ya está en Estook.
+    expect((await losPin()).personas.map((p) => p.fichaje)).toEqual(['dentro']);
+
+    // ── Ajustes del TPV › Aparatos dice quién llega a la caja ──
+    await page.evaluate(() => {
+      window.location.hash = '/ajustes/aparatos';
+    });
+    await expect(page.getByText('1 de 1 siguen sin internet')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('Este · la caja para Windows')).toBeVisible();
+    await expect(page.getByText('Es el centro', { exact: true })).toBeVisible();
+    await page.screenshot({ path: info.outputPath('aparatos.png') });
   } finally {
     centro.parar();
   }

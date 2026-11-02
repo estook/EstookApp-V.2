@@ -21,6 +21,7 @@ import { DescargaLaCajaParaWindows, LasImpresorasAvisan } from './LasImpresorasA
 import { OpcionesDeLaMesa } from '../mesa/OpcionesDeLaMesa.tsx';
 import { MesaEnElPlano, TarjetaSinMesa } from './MesaEnElPlano.tsx';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
+import { ElAvisoDeWindows } from '../sinInternet/ElAvisoDeWindows.tsx';
 
 /**
  * **Las mesas en servicio** (T2 · La sala, maqueta 8; Anexo 11.8): las salas en pestañas,
@@ -202,6 +203,7 @@ export function ElPlano() {
 
       <LaFranjaSinInternet />
       <LaFranjaDeLaCaja />
+      <ElAvisoDeWindows />
       <LaCocinaLlama
         cuentas={[
           ...datos.zonas.flatMap((z) =>

@@ -466,6 +466,18 @@ Chrome y los datos móviles en `LaFranjaDeLaCaja.tsx`; y en la API, el latido co
 - **Los avisos de Windows** de la maqueta de los avisos (secciones 2 y 3): el cortafuegos y el wifi
   como «red pública».
 
+### T5 · 2 · 2 · 2 · Los PIN y Aparatos, entregada (2-nov-2026)
+
+En su pull request ([0124](decisiones/0124-t5-2-2-2-los-pin-y-aparatos.md), migración **0098**, la
+API con **un comando nuevo**, `los_pin_del_centro`, la caja **1.2.0**; [sus pasos](pasos-de-t5-2-2.md),
+los de las dos partes; sin pantallas nuevas): **los PIN en la caja** en
+`packages/dominio/src/centro-pin.ts` y `apps/caja-windows/src/el-centro.ts` (`pin` y `fichar`);
+**lo que dice Windows** en `apps/caja-windows/src/windows.ts`; **entrar y fichar por la caja** en
+`apps/tpv/src/sinInternet/porLaCaja.ts`, `ElPin.tsx` y `FicharEnLaCaja.tsx`; **Aparatos** en
+`apps/tpv/src/ajustes/QuienLlegaALaCaja.tsx` y `logica/quienLlegaALaCaja.ts`; **el aviso de antes
+de que pregunte Windows** en `sinInternet/ElAvisoDeWindows.tsx`; y en la API, `fichar_en_la_caja`
+con `pin_cifrado`, y el latido y `los_aparatos` con qué es cada aparato y cómo llega.
+
 ### T6 y T7
 
 Su «Terminado cuando» es el del Plan para cada módulo (M20B y M20C) con las pruebas del capítulo 8,

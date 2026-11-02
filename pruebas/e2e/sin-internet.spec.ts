@@ -107,7 +107,10 @@ test('sin internet se sigue: abrir la mesa, pedir, mandar, bloquear y entrar; al
   await page.getByRole('button', { name: 'Ver', exact: true }).locator('visible=true').click();
   await expect(page.getByRole('heading', { name: 'Por subir · 3 cosas' })).toBeVisible();
   await expect(page.getByText('Mesa 1 · 2 platos pedidos')).toBeVisible();
-  await page.getByRole('button', { name: 'Cerrar' }).first().click();
+  // Con «Esc», no tocando fuera: en el ordenador, el centro del fondo queda debajo de la hoja,
+  // y según lo que tarde en subir, el toque lo recibe ella (salía «flaky» a veces).
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('heading', { name: 'Por subir · 3 cosas' })).toBeHidden();
 
   // En el plano, la mesa 1 ocupada aunque Estook aún no lo sepa.
   await page.getByRole('button', { name: 'Volver al plano' }).first().click();

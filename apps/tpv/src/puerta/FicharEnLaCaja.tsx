@@ -4,6 +4,8 @@ import { CIFRAS_DEL_PIN } from '@estook/dominio';
 import { ErrorEnCristiano } from '@estook/ui';
 import { crearClienteDelTpv } from '../datos/cliente.ts';
 import type { ElFichaje } from '../datos/tipos.ts';
+import { elPinPorLaCaja, ficharPorLaCaja, hayCaja } from '../sinInternet/laCaja.ts';
+import { guardarElFichaje, porQueNoEntra } from '../sinInternet/porLaCaja.ts';
 import { Puntos, Teclado } from './Teclado.tsx';
 import { cifraDeLaTecla } from './teclas.ts';
 
@@ -21,6 +23,11 @@ import { cifraDeLaTecla } from './teclas.ts';
  *
  * **Una salida por error no rompe nada**: si vuelve y ficha la entrada el mismo día, es otro
  * tramo de la misma jornada (la jornada partida de siempre, desde M4).
+ *
+ * **Sin internet, ficha igual** (T5 · 2 · 2 · 2, decisión 0124; Toast no deja): el PIN lo
+ * comprueba la caja de centro, que dice al momento quién es, y lo fichado sube al volver con
+ * el PIN cifrado, a la hora en que se fichó. Lo que Estook no pueda apuntar le llega a quien
+ * lleva el equipo, como en el aparato de fichar (0070).
  */
 
 type Que = 'entrada' | 'pausa' | 'vuelta' | 'salida';
@@ -34,12 +41,15 @@ const LO_QUE_SE_HIZO: Readonly<Record<Que, string>> = {
 
 export function FicharEnLaCaja({
   llave,
+  clavePublica,
   alAcabar,
   cabecera,
   alSerQuienEstaDentro,
   aviso,
 }: {
   readonly llave: string;
+  /** La pública de la caja, con la que se cifra el PIN fichado sin internet (0070, 0124). */
+  readonly clavePublica: string | null;
   /** Con lo que se fichó, para decirlo en la pantalla del PIN; nulo si se volvió sin fichar. */
   readonly alAcabar: (hecho: string | null) => void;
   /** Con la caja abierta, la barra de arriba. */
@@ -56,18 +66,53 @@ export function FicharEnLaCaja({
   const [pin, setPin] = useState('');
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
-  const [quien, setQuien] = useState<{ readonly pin: string; readonly fichaje: ElFichaje } | null>(
+  const [quien, setQuien] = useState<{
+    readonly pin: string;
+    readonly fichaje: ElFichaje;
+    /** Sin internet: lo dijo la caja de centro (0124). */
+    readonly porLaCaja?: true;
+  } | null>(null);
+  /** Sin internet, lo que no se pudo hacer, dicho para quien lo lee. */
+  const [sinRed, setSinRed] = useState<{ readonly titulo: string; readonly frase: string } | null>(
     null,
   );
+
+  /** Sin internet: quién es lo dice la caja de centro. */
+  const mirarPorLaCaja = useCallback(async (elPin: string) => {
+    const dice = await elPinPorLaCaja(elPin);
+    if (!dice.ok) {
+      setSinRed(porQueNoEntra(dice.porque === 'no_llega' && !hayCaja() ? 'sin_caja' : dice.porque));
+      return;
+    }
+    setQuien({
+      pin: elPin,
+      porLaCaja: true,
+      fichaje: {
+        personaId: dice.persona.id,
+        nombre: dice.persona.nombre,
+        estado: dice.fichaje,
+        desde: dice.desde,
+        minutosDeHoy: 0,
+        pausasEnUso: dice.pausasEnUso,
+      },
+    });
+  }, []);
 
   const mirar = useCallback(
     async (elPin: string) => {
       setOcupado(true);
       setError(null);
+      setSinRed(null);
       const respuesta = await cliente.ejecutar<ElFichaje>('quien_ficha_en_la_caja', {
         llave,
         pin: elPin,
       });
+      if (!respuesta.ok && respuesta.error.codigo === 'sin_conexion') {
+        await mirarPorLaCaja(elPin);
+        setOcupado(false);
+        setPin('');
+        return;
+      }
       setOcupado(false);
       setPin('');
       if (!respuesta.ok) {
@@ -77,7 +122,24 @@ export function FicharEnLaCaja({
       if (alSerQuienEstaDentro?.(respuesta.datos) === true) return;
       setQuien({ pin: elPin, fichaje: respuesta.datos });
     },
-    [cliente, llave, alSerQuienEstaDentro],
+    [cliente, llave, alSerQuienEstaDentro, mirarPorLaCaja],
+  );
+
+  /** Sin internet: ficha la caja de centro, y sube al volver con el PIN cifrado. */
+  const ficharPorLaCajaYGuardar = useCallback(
+    async (elPin: string, nombre: string, que: Que) => {
+      const dice = clavePublica === null ? null : await ficharPorLaCaja(elPin, que);
+      if (dice === null || clavePublica === null || !dice.ok) {
+        setQuien(null);
+        setSinRed(porQueNoEntra(dice === null || dice.ok ? 'no_llega' : dice.porque));
+        return;
+      }
+      await guardarElFichaje(llave, clavePublica, elPin, dice.persona, que);
+      const desde = que === 'entrada' || que === 'pausa' ? dice.desde : null;
+      const hora = desde === null ? '' : ` a las ${laHora(desde)}`;
+      alAcabar(`✓ ${nombre} · ${LO_QUE_SE_HIZO[que]}${hora} · sube al volver internet`);
+    },
+    [clavePublica, llave, alAcabar],
   );
 
   const fichar = useCallback(
@@ -85,11 +147,22 @@ export function FicharEnLaCaja({
       if (quien === null) return;
       setOcupado(true);
       setError(null);
+      if (quien.porLaCaja === true) {
+        await ficharPorLaCajaYGuardar(quien.pin, quien.fichaje.nombre, que);
+        setOcupado(false);
+        return;
+      }
       const respuesta = await cliente.ejecutar<ElFichaje>('fichar_en_la_caja', {
         llave,
         pin: quien.pin,
         que,
       });
+      if (!respuesta.ok && respuesta.error.codigo === 'sin_conexion') {
+        // Se fue justo ahora: lo hace la caja, con el mismo PIN.
+        await ficharPorLaCajaYGuardar(quien.pin, quien.fichaje.nombre, que);
+        setOcupado(false);
+        return;
+      }
       setOcupado(false);
       if (!respuesta.ok) {
         setError(respuesta.error);
@@ -103,7 +176,7 @@ export function FicharEnLaCaja({
           : ` a las ${new Date(desde).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
       alAcabar(`✓ ${quien.fichaje.nombre} · ${LO_QUE_SE_HIZO[que]}${hora}`);
     },
-    [cliente, llave, quien, alAcabar],
+    [cliente, llave, quien, alAcabar, ficharPorLaCajaYGuardar],
   );
 
   const teclear = useCallback(
@@ -157,6 +230,14 @@ export function FicharEnLaCaja({
             <span className="text-pantalla font-bold">Fichar · teclea tu PIN</span>
             <Puntos tecleadas={pin.length} de={CIFRAS_DEL_PIN} />
             {error !== null && <ErrorEnCristiano error={error} />}
+            {sinRed !== null && (
+              <p
+                role="alert"
+                className="rounded-grande bg-atencion-suave p-e3 text-center text-atencion"
+              >
+                <b>{sinRed.titulo}</b> {sinRed.frase}
+              </p>
+            )}
             <Teclado alTeclear={teclear} alBorrar={borrar} ocupado={ocupado} />
           </>
         ) : (
@@ -172,6 +253,11 @@ export function FicharEnLaCaja({
                     : '¿Fichar la entrada?'}
               </span>
             </span>
+            {quien.porLaCaja === true && (
+              <p role="status" className="text-secundario font-semibold text-atencion">
+                Sin internet: lo apunta la caja y sube al volver.
+              </p>
+            )}
             {error !== null && <ErrorEnCristiano error={error} />}
             {quien.fichaje.estado === 'fuera' && (
               <button

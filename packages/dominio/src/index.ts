@@ -1240,3 +1240,19 @@ export {
   laClaveConLaCaja,
   laHuellaDeLaLlave,
 } from './centro-cifrado.ts';
+
+// ── T5 · 2 · 2 · 2 · Los PIN y Aparatos (0124): el PIN de cualquiera en la caja, y quién llega ──
+export {
+  CAMINOS_AL_CENTRO,
+  SISTEMAS_DEL_APARATO,
+  deQuienEsElPin,
+  elSistemaDe,
+  sigueSinInternet,
+} from './centro-pin.ts';
+export type {
+  CaminoAlCentro,
+  EstadoDelFichajeEnLaCaja,
+  LosPinDelCentro,
+  PersonaDelCentro,
+  SistemaDelAparato,
+} from './centro-pin.ts';

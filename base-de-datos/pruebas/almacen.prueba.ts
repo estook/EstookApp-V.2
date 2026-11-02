@@ -746,6 +746,10 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // **Y la 0097 (T5 · 2 · 2 · La caja de centro) añade una**: `las_impresoras_del_centro`, las
     // de la caja con su dirección, su ancho y lo que imprimen, para imprimir sin internet; la
     // dirección sigue sin llegar a la pantalla. Son setenta y ocho.
+    //
+    // **Y la 0098 (T5 · 2 · 2 · 2 · Los PIN y Aparatos) añade una**: `los_pin_del_centro`, las
+    // huellas de los PIN del local, solo para una caja que ya hace de centro, para comprobarlos
+    // sin internet. Son setenta y nueve.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -805,6 +809,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'locales_visibles',
       'los_clientes',
       'los_nombres_de_la_sala',
+      // 0098 (0124): los PIN del local, para la caja de centro sin internet.
+      'los_pin_del_centro',
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',
       'organizaciones_visibles',

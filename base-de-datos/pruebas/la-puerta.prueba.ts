@@ -1,5 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { laClaveConLaCaja, tokenDelAparato } from '@estook/dominio';
+import {
+  deQuienEsElPin,
+  laClaveConLaCaja,
+  tokenDelAparato,
+  type PersonaDelCentro,
+} from '@estook/dominio';
 import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
 import { huellaDeToken } from '../../servidor/dominio/secretos.ts';
 import { levantarBase, type BaseDePrueba } from './entorno.ts';
@@ -56,6 +61,14 @@ interface Aparato {
   local: { id: string; nombre: string };
   temaAlSegundo: string | null;
   fichados: { nombre: string }[];
+}
+
+interface UnAparato {
+  id: string;
+  sistema: string | null;
+  camino: string | null;
+  esElCentro: boolean;
+  centroPor: string | null;
 }
 
 interface Dentro {
@@ -939,6 +952,153 @@ describe('sin internet (T5 · 2 · 1): lo guardado sube una vez, a nombre de qui
     expect(await entrar({ pin_cifrado: await cifrar(deLaCaja, pinDeRosa) }, MINUTO)).toBe(
       'pin_desconocido',
     );
+  });
+});
+
+describe('los PIN y Aparatos (T5 · 2 · 2 · 2, 0124): la caja comprueba el PIN de cualquiera', () => {
+  interface LosPin {
+    pausasEnUso: boolean;
+    personas: (PersonaDelCentro & Record<string, unknown>)[];
+  }
+  const latir = async (llave: string, mas: Record<string, unknown> = {}) =>
+    api.ejecutar(null, 'latir_el_aparato', { llave, ...mas });
+  const losPin = async (llave: string) => api.ejecutar(null, 'los_pin_del_centro', { llave });
+
+  it('solo la caja que hace de centro recibe los PIN del local, y la huella de Rosa se comprueba con su PIN', async () => {
+    losDatos(await latir(llaveDeLaCaja, { centro: ['192.168.1.20:47100'] }));
+    expect(elFallo(await losPin(llaveDeLaTablet))).toBe('sin_permiso');
+
+    const lista = losDatos<LosPin>(await losPin(llaveDeLaCaja));
+    const rosaId = await base.personaPorCorreo(ROSA);
+    const rosa = await deQuienEsElPin(base.pinDe(ROSA, 'bar-centro'), lista.personas);
+    expect(rosa?.id).toBe(rosaId);
+    expect(await deQuienEsElPin('000000', lista.personas)).toBeNull();
+    // Lo que puede hacer cada uno va con él; lo que no, no viaja.
+    const sara = lista.personas.find((p) => p.id === saraId);
+    expect(sara?.permisos['accion.tomar_nota']).toBe('ver_y_editar');
+    expect(Object.values(sara?.permisos ?? {})).not.toContain('sin_acceso');
+    expect(['fuera', 'dentro', 'en_pausa']).toContain(sara?.fichaje);
+    // Nunca un PIN: solo su huella.
+    expect(JSON.stringify(lista)).not.toContain(`"${base.pinDe(ROSA, 'bar-centro')}"`);
+
+    // Una caja que no ha dicho dónde escucha (en un navegador) no los recibe.
+    const cajaId = await base.bd.query<{ id: string }>(
+      `select id from estook.terminal where huella = $1`,
+      [await huellaDeToken(llaveDeLaCaja)],
+    );
+    await base.bd.query(`update estook.terminal set centro_en = null where id = $1`, [
+      cajaId.rows[0]?.id,
+    ]);
+    expect(elFallo(await losPin(llaveDeLaCaja))).toBe('sin_permiso');
+    losDatos(await latir(llaveDeLaCaja, { centro: ['192.168.1.20:47100'] }));
+  });
+
+  it('Aparatos dice qué es cada uno, cómo llega a la caja y si la caja va por cable', async () => {
+    losDatos(await latir(llaveDeLaCaja, { centro: ['192.168.1.20:47100'], centro_por: 'cable' }));
+    expect(elFallo(await latir(llaveDeLaTablet, { camino_al_centro: 'por_arte_de_magia' }))).toBe(
+      'faltan_datos',
+    );
+    losDatos(await latir(llaveDeLaTablet, { sistema: 'android', camino_al_centro: 'con_datos' }));
+
+    const rosa = await entrarEn(llaveDeLaCaja, ROSA);
+    const aparatos = async () =>
+      losDatos<{ aparatos: (UnAparato & { funcion: string })[] }>(
+        await api.consultar(rosa.token, 'los_aparatos'),
+      ).aparatos;
+    const antes = await aparatos();
+    expect(antes.find((a) => a.id === tablet)).toMatchObject({
+      sistema: 'android',
+      camino: 'con_datos',
+      esElCentro: false,
+      centroPor: null,
+    });
+    expect(antes.find((a) => a.funcion === 'caja' && a.esElCentro)).toMatchObject({
+      centroPor: 'cable',
+    });
+
+    // Un latido que no sabe cómo llega lo deja sin saber; lo que es, se queda.
+    losDatos(await latir(llaveDeLaTablet));
+    expect((await aparatos()).find((a) => a.id === tablet)).toMatchObject({
+      sistema: 'android',
+      camino: null,
+    });
+  });
+
+  it('se ficha sin internet en la caja: sube con el PIN cifrado, a la hora en que se fichó, una vez', async () => {
+    const pinDeMarcos = base.pinDe(MARCOS, 'bar-centro');
+    const marcosId = await base.personaPorCorreo(MARCOS);
+    const { clavePublica } = losDatos<{ clavePublica: string }>(
+      await latir(llaveDeLaCaja, { centro: ['192.168.1.20:47100'] }),
+    );
+    const comoEsta = async () =>
+      losDatos<{ estado: string }>(
+        await api.ejecutar(null, 'quien_ficha_en_la_caja', {
+          llave: llaveDeLaCaja,
+          pin: pinDeMarcos,
+        }),
+      ).estado;
+    if ((await comoEsta()) !== 'fuera') {
+      losDatos(
+        await api.ejecutar(null, 'fichar_en_la_caja', {
+          llave: llaveDeLaCaja,
+          pin: pinDeMarcos,
+          que: 'salida',
+        }),
+      );
+    }
+    const fichar = async (cifrado: string, hechoHaceMs?: number) =>
+      api.ejecutar(
+        null,
+        'fichar_en_la_caja',
+        { llave: llaveDeLaCaja, pin_cifrado: cifrado, que: 'entrada' },
+        crypto.randomUUID(),
+        hechoHaceMs === undefined ? undefined : { hechoHaceMs },
+      );
+
+    const cifrado = await cifrar(clavePublica, pinDeMarcos);
+    // Un PIN cifrado es de algo hecho sin internet: dice cuánto hace.
+    expect(elFallo(await fichar(cifrado))).toBe('faltan_datos');
+    expect(losDatos(await fichar(cifrado, 10 * MINUTO))).toEqual({ apuntado: true });
+    expect(await comoEsta()).toBe('dentro');
+    const { rows } = await base.bd.query<{ entro_en: Date }>(
+      `select entro_en from estook.fichaje where persona_id = $1 and salio_en is null`,
+      [marcosId],
+    );
+    expect(rows).toHaveLength(1);
+    expect((reloj.getTime() - new Date(rows[0]?.entro_en ?? 0).getTime()) / MINUTO).toBeCloseTo(
+      10,
+      0,
+    );
+    // Y la caja, la próxima vez que recoja los PIN, ya lo sabe.
+    const marcos = losDatos<LosPin>(await losPin(llaveDeLaCaja)).personas.find(
+      (p) => p.id === marcosId,
+    );
+    expect(marcos?.fichaje).toBe('dentro');
+
+    // La respuesta se perdió y se manda otra vez: no ficha dos veces.
+    expect(losDatos(await fichar(cifrado, 11 * MINUTO))).toEqual({ apuntado: true });
+    // Otra entrada estando dentro no se apunta: le llega a quien lleva el equipo.
+    expect(losDatos(await fichar(await cifrar(clavePublica, pinDeMarcos), 5 * MINUTO))).toEqual({
+      apuntado: false,
+      porque: 'ya_estaba',
+    });
+    const otraVez = await base.bd.query<{ n: number }>(
+      `select count(*)::int as n from estook.fichaje where persona_id = $1 and salio_en is null`,
+      [marcosId],
+    );
+    expect(otraVez.rows[0]?.n).toBe(1);
+    // Un PIN tal cual no llega diciendo «hecho hace».
+    expect(
+      elFallo(
+        await api.ejecutar(
+          null,
+          'fichar_en_la_caja',
+          { llave: llaveDeLaCaja, pin: pinDeMarcos, que: 'salida' },
+          crypto.randomUUID(),
+          { hechoHaceMs: MINUTO },
+        ),
+      ),
+    ).toBe('faltan_datos');
   });
 });
 

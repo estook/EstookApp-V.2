@@ -1010,3 +1010,14 @@
      de unidad. Antes de que una web hable con un sitio nuevo, mirar `politica-de-seguridad.ts`; y
      para la caja se abre solo ese puerto, solo en Estook TPV (`politica-de-seguridad.prueba.ts`,
      31-oct).
+244. **En nombre del sistema no se ven los fichajes, y una prueba que solo mira la forma no lo
+     ve.** La caja de centro recogía si cada persona estaba fichada leyendo `estook.fichaje` en
+     nombre del sistema, y la seguridad de filas se la escondía: todos salían «fuera». La prueba
+     contra la base solo miraba que el valor fuera uno de los tres posibles, y pasaba. Lo cazó la de
+     pantalla: lo fichado sin internet subía, y la caja seguía diciendo «fuera». Lo que no es de
+     quien llama se lee con una función de la base (`los_pin_del_centro`, 0098), y la prueba mira el
+     dato que importa: después de fichar, «dentro» (2-nov).
+245. **En el ordenador, «Cerrar» `.first()` de una hoja es el fondo, y su centro queda debajo de la
+     hoja.** La prueba de T5 · 2 · 1 tocaba ahí, y según lo que tardara en subir la hoja, el toque se
+     lo llevaba ella: a veces pasaba, a veces no. Una hoja se cierra en las pruebas con «Esc», y se
+     comprueba que se ha ido (`sin-internet.spec.ts`, 2-nov).

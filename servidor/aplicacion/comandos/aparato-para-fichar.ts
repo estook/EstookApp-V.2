@@ -513,7 +513,7 @@ export async function ficharEnElAparato(
  * no se puede apuntar —un PIN que no es de nadie, o entrar estando ya dentro—, no se
  * pierde en silencio: le llega a quien lleva el equipo, que lo apunta a mano.
  */
-async function loQueSeFichoSinConexion(
+export async function loQueSeFichoSinConexion(
   contexto: Contexto,
   aparato: ElAparato,
   cifrado: string,

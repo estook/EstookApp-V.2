@@ -15,8 +15,12 @@ import type { LoQueSePasaPorLaCaja } from '@estook/dominio';
 
 const DONDE = 'estook.tpv.por-subir';
 
-/** Con qué se sube: el turno vivo de quien lo hizo, o su entrada sin internet. */
-export type ConQueSeSube = { readonly turno: string } | { readonly entrada: string };
+/**
+ * Con qué se sube: el turno vivo de quien lo hizo, o su entrada sin internet; o **sin turno**,
+ * lo fichado en la caja sin internet, que lleva su PIN cifrado (0124).
+ */
+export type ConQueSeSube =
+  { readonly turno: string } | { readonly entrada: string } | { readonly sinTurno: true };
 
 /** Lo que se enseña de un plato guardado, en la mesa y en «Por subir». */
 export interface LineaGuardada {

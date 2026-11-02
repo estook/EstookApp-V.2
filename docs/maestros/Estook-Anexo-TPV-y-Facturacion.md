@@ -419,18 +419,18 @@ Cinco pasos, uno por pantalla, y **hasta el último el botón de cobrar sale blo
 
 _Los motivos de rectificativa se comprobaron el 20 de septiembre de 2026 contra la [FAQ de procedimientos de facturación de la AEAT](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/procedimientos-facturacion.html)._
 
-| Clave          | Qué es                                                                          | Cuándo en Estook                                                                  |
-| -------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| F2             | Factura simplificada                                                            | **El ticket de cada cobro.** El caso normal                                       |
-| F1             | Factura completa, con destinatario identificado                                 | Evento, catering, venta a empresa                                                 |
-| F3             | Factura que sustituye a simplificadas ya declaradas                             | **El canje:** el cliente pide factura de su ticket                                |
-| R5             | Rectificativa de **factura simplificada**                                       | **Devolución o error sobre un ticket.** Es la de hostelería                       |
-| R1             | Rectificativa por error fundado en derecho y art. 80.Uno, Dos y Seis de la LIVA | Error sobre una **factura completa**: importe, destinatario o descuento posterior |
-| R2             | Rectificativa del art. 80.Tres de la LIVA                                       | Concurso de acreedores. **No se da en un restaurante**                            |
-| R3             | Rectificativa del art. 80.Cuatro de la LIVA                                     | Créditos incobrables. **No se da en un restaurante**                              |
-| R4             | Resto de causas del art. 80 de la LIVA                                          | Lo que no encaje en las anteriores **[VERIFICAR con el asesor cuándo]**           |
-| F1 en negativo | Abono por devolución total                                                      | Puede ir en la serie original                                                     |
-| Anulación      | Registro propio, no es una factura                                              | Solo si el documento **nunca debió existir**                                      |
+| Clave          | Qué es                                                                          | Cuándo en Estook                                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F2             | Factura simplificada                                                            | **El ticket de cada cobro.** El caso normal                                                                                                                |
+| F1             | Factura completa, con destinatario identificado                                 | Evento, catering, venta a empresa                                                                                                                          |
+| F3             | Factura que sustituye a simplificadas ya declaradas                             | **El canje:** el cliente pide factura de su ticket                                                                                                         |
+| R5             | Rectificativa de **factura simplificada**                                       | **Devolución o error sobre un ticket.** Es la de hostelería                                                                                                |
+| R1             | Rectificativa por error fundado en derecho y art. 80.Uno, Dos y Seis de la LIVA | Sobre una **factura completa**: un importe mal, una devolución o un descuento posterior                                                                    |
+| R2             | Rectificativa del art. 80.Tres de la LIVA                                       | Concurso de acreedores. **No se da en un restaurante**                                                                                                     |
+| R3             | Rectificativa del art. 80.Cuatro de la LIVA                                     | Créditos incobrables. **No se da en un restaurante**                                                                                                       |
+| R4             | Resto de causas del art. 80 de la LIVA                                          | **Un dato que no es un importe**, como el NIF o el domicilio del cliente de una factura, por sustitución (AEAT, mirado el 2-nov-2026; lo investigado, A20) |
+| F1 en negativo | Abono por devolución total                                                      | Puede ir en la serie original                                                                                                                              |
+| Anulación      | Registro propio, no es una factura                                              | Solo si el documento **nunca debió existir**                                                                                                               |
 
 **Y un segundo dato que va con toda rectificativa, y que se olvida:** además de la clave R, VeriFactu pide la **naturaleza de la rectificación**, que es `S` si **sustituye** al documento anterior o `I` si va **por diferencias**. Son dos formas distintas de contar lo mismo y la AEAT las trata distinto. **[VERIFICAR con el asesor cuál se usa en una devolución de hostelería]**, y **[VERIFICAR el nombre exacto del campo]** en la referencia de la API del proveedor antes de escribirlo: aquí no se inventa ningún nombre.
 
@@ -639,7 +639,7 @@ Lo que importa aquí: **el ticket se emite antes de imprimirse.** Si la impresor
 
 ## 5.3 Factura a petición del cliente
 
-Desde el ticket, en un toque: nombre o razón social, NIF y domicilio. Se emite la F3 referenciando al ticket.
+Desde el ticket, en un toque: nombre o razón social, NIF y domicilio. Se emite la F3 referenciando al ticket. **También la pide el cliente solo**, con el QR «Pide tu factura» del ticket, que va siempre después del tributario, y **una F3 puede sustituir a varios tickets** del mismo cliente ([0125](../decisiones/0125-t6-la-facturacion-las-tres-respuestas.md)). Si el cliente es de fuera, con su pasaporte o su número de IVA y su país.
 
 - El importe **tiene que coincidir** con el del ticket.
 - El ticket queda **canjeado** y no se puede canjear dos veces.

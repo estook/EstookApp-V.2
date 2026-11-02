@@ -987,14 +987,16 @@
 
 <main class="hoja-entera">
   <header class="seccion">
-    <p class="rotulo">Maqueta · 2 de noviembre de 2026 · por aprobar</p>
+    <p class="rotulo">
+      Maqueta · 2 de noviembre de 2026 · aprobada, con la A en las tres respuestas
+    </p>
     <h1>T6 · La facturación</h1>
     <p class="lead">
       Lo nuevo de T6, pantalla a pantalla: <b>el alta de facturación</b> en Ajustes,
       <b>los tickets y facturas</b> en Servicio › Ventas,
-      <b>lo que se hace con un documento</b> (factura, devolver, anular), <b>el papel</b> y
-      <b>la declaración responsable</b>. Cobrar es T7: aquí no hay botón de cobrar. Los nombres y
-      los NIF son de ejemplo.
+      <b>lo que se hace con un documento</b> (factura, devolver, corregir, anular),
+      <b>el papel</b> y <b>la declaración responsable</b>. Cobrar es T7: aquí no hay botón de
+      cobrar. Los nombres y los NIF son de ejemplo.
     </p>
     <div class="franja-pruebas">
       <span class="marca">EN PRUEBAS</span>
@@ -1027,7 +1029,7 @@
         ><b>7 · La declaración responsable</b><span>En Estook y en Estook TPV</span></a
       >
       <a href="#preguntas" class="pregunta"
-        ><b>8 · Tres preguntas para ti</b><span>Y dos pantallas que dependen de ellas</span></a
+        ><b>8 · Tus tres respuestas</b><span>La A en las tres, y cómo quedan</span></a
       >
     </nav>
   </header>
@@ -1118,6 +1120,25 @@
               </p>
               <span class="boton">Leerla</span>
             </div>
+          </div>
+
+          <div class="tarjeta">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+                flex-wrap: wrap;
+                align-items: center;
+              "
+            >
+              <b>«Pide tu factura» en el ticket</b>
+              <div class="eleccion"><span class="marcada">Encendida</span><span>Apagada</span></div>
+            </div>
+            <p class="suave pequena">
+              Un QR abajo del ticket, después del de Hacienda: el cliente pide su factura en su
+              móvil y le llega al correo. Nadie del equipo teclea nada.
+            </p>
           </div>
 
           <div class="tarjeta" style="background: var(--apagado)">
@@ -1675,6 +1696,10 @@
           <div class="tarjeta" style="gap: 2px">
             <span class="suave pequena">Importe, el del ticket</span>
             <span class="total-grande">47,50 €</span>
+            <span class="pequena">+ Añadir otro ticket del mismo cliente</span>
+          </div>
+          <div class="eleccion">
+            <span class="marcada">Con NIF o DNI</span><span>De fuera de España</span>
           </div>
           <div class="campo">
             <label for="nif-cliente">NIF del cliente</label>
@@ -1698,7 +1723,7 @@
           <span class="boton principal">Hacer la factura</span>
           <p class="ayuda">
             El ticket queda canjeado y no se puede canjear dos veces. No mueve la caja ni el
-            almacén.
+            almacén. De fuera: su pasaporte o su número de IVA, y su país.
           </p>
         </div>
       </div>
@@ -1739,6 +1764,32 @@
         </div>
       </div>
 
+      <!-- Corregir los datos del cliente -->
+      <div class="pantalla">
+        <div class="barra">
+          <span class="logo"></span>Corregir los datos del cliente
+          <span class="donde">· de F-IKA-2026-000005</span>
+        </div>
+        <div class="cuerpo estrecho">
+          <p class="pequena suave">
+            Para cuando el cliente dice que su domicilio o su NIF estaban mal. El importe no cambia.
+          </p>
+          <div class="campo">
+            <label for="dir-antes">Domicilio en la factura</label>
+            <div class="caja-texto leido" id="dir-antes">Polígono Ugaldeguren 4, Zamudio</div>
+          </div>
+          <div class="campo">
+            <label for="dir-bien">Domicilio correcto</label>
+            <div class="caja-texto" id="dir-bien">Polígono Ugaldeguren III, 4, 48170 Zamudio</div>
+          </div>
+          <span class="boton principal">Hacer la factura corregida</span>
+          <p class="ayuda">
+            Sale una rectificativa (R4) en su serie, que sustituye a la anterior. La anterior se
+            queda donde estaba, marcada «Corregida».
+          </p>
+        </div>
+      </div>
+
       <!-- Anular -->
       <div class="pantalla">
         <div class="barra">
@@ -1770,6 +1821,11 @@
           <b>La factura de un ticket es un canje</b> (F3): el ticket no se anula, sigue en su sitio
           y queda marcado. El NIF del cliente se comprueba antes de emitir, porque Hacienda la
           rechazaría (Anexo 5.3).
+        </p>
+        <p>
+          <b>Un dato mal del cliente es R4, no R1</b>: es lo que dice la AEAT para un dato que no es
+          un importe (lo investigado, A20). <b>Varios tickets en una factura</b> es una sola F3 que
+          dice cuáles sustituye; cada ticket, una vez (A19).
         </p>
         <p>
           <b>La devolución va por diferencias</b>: lo devuelto, en negativo. Sirve para devolver un
@@ -2078,8 +2134,8 @@
 
   <!-- ═════════════ 8 · Las preguntas ═════════════ -->
   <section class="seccion" id="preguntas">
-    <p class="rotulo">8 · Tres preguntas para ti</p>
-    <h2>Lo que no está escrito y decides tú</h2>
+    <p class="rotulo">8 · Tus tres respuestas</p>
+    <h2>Contestaste la A en las tres, el 2-nov, y así quedan mirando la ley</h2>
     <div class="preguntas">
       <div class="pregunta-caja">
         <h3>1 · ¿Facturas a mano desde Estook, para eventos y comidas de empresa?</h3>
@@ -2100,7 +2156,9 @@
         </p>
         <div class="opciones">
           <div class="opcion recomendada">
-            <b>A · Sí, en T6 · 2.</b> Además es la forma de probar la facturación entera antes de
+            <b>A · Sí, en T6 · 2.</b> <b>Con lo que pide la ley:</b> el domicilio del cliente
+            siempre, el aviso del plazo si es una empresa (antes del día 16 del mes siguiente) y la
+            señal facturada al cobrarla. Además es la forma de probar la facturación entera antes de
             que exista el cobro. Square y Holded la tienen. <b>Recomendada.</b>
           </div>
           <div class="opcion">
@@ -2108,10 +2166,10 @@
             gestoría usa otra serie, se apunta en el paso 3.
           </div>
         </div>
-        <p class="lo-que-decides">Lo que decides: A o B.</p>
+        <p class="lo-que-decides">Contestaste: A.</p>
         <div class="pantalla" style="max-width: 460px">
           <div class="barra">
-            <span class="logo"></span>Hacer una factura <span class="donde">· si dices A</span>
+            <span class="logo"></span>Hacer una factura <span class="donde">· la A</span>
           </div>
           <div class="cuerpo estrecho">
             <div class="campo">
@@ -2119,6 +2177,14 @@
               <div class="caja-texto bien" id="mano-cliente">
                 B87654321 · Construcciones Ejemplo Norte
               </div>
+              <span class="ayuda bien"
+                >✓ En Hacienda: CONSTRUCCIONES EJEMPLO NORTE SL · domicilio de la última vez</span
+              >
+            </div>
+            <div class="campo">
+              <label for="mano-fecha">Fecha de la comida</label>
+              <div class="caja-texto" id="mano-fecha">14-nov-2026</div>
+              <span class="ayuda">Es una empresa: la factura, antes del 16-dic.</span>
             </div>
             <div class="lineas-devolver">
               <div>
@@ -2133,7 +2199,20 @@
             <div class="fila" style="display: flex; justify-content: space-between">
               <span class="suave">Total</span><b class="total-grande">1.200,00 €</b>
             </div>
+            <div class="fila" style="display: flex; justify-content: space-between; gap: 8px">
+              <span class="suave">Menos la señal (F-IKA-2026-000006, 3-nov)</span><b>−300,00</b>
+            </div>
+            <div class="fila" style="display: flex; justify-content: space-between">
+              <span class="suave">Queda por cobrar</span><b>900,00 €</b>
+            </div>
+            <div class="eleccion">
+              <span>Cobrada</span><span class="marcada">Pendiente · vence el 15-dic</span>
+            </div>
             <span class="boton principal">Hacer la factura</span>
+            <p class="ayuda">
+              La señal se factura el día que se cobra, y esta la descuenta sola. El IVA de cada
+              concepto lo confirma el asesor.
+            </p>
           </div>
         </div>
       </div>
@@ -2158,17 +2237,22 @@
         <div class="opciones">
           <div class="opcion recomendada">
             <b>A · Sí.</b> La página se hace en T6 · 2 y el QR sale en el ticket con el cobro (T7).
+            <b>Y no enseña nada a quien no debe:</b> un código que no se adivina, solo con el ticket
+            ya registrado, el importe fijo, una vez, y el local la puede apagar.
             <b>Recomendada:</b> ahorra trabajo al equipo en lo peor del servicio.
           </div>
           <div class="opcion">
             <b>B · No.</b> La factura la pide el cliente al camarero, como hoy en todos los TPV.
           </div>
         </div>
-        <p class="lo-que-decides">Lo que decides: A o B.</p>
+        <p class="lo-que-decides">Contestaste: A.</p>
         <div class="movil" aria-label="La página del cliente">
-          <p class="rotulo">estook.com/factura · si dices A</p>
+          <p class="rotulo">estook.com/factura · la A</p>
           <h3>Tu factura de IKATZ</h3>
           <p class="pequena suave">Ticket T-IKA-2026-000037 · 47,50 € · 2-nov-2026</p>
+          <div class="eleccion">
+            <span class="marcada">Empresa</span><span>Particular</span><span>De fuera</span>
+          </div>
           <div class="campo">
             <label for="cli-nif">Tu NIF</label>
             <div class="caja-texto bien" id="cli-nif">B87654321</div>
@@ -2184,7 +2268,12 @@
           </div>
           <span class="boton principal">Quiero la factura</span>
           <p class="ayuda">
-            Si ya se pidió, dice «Este ticket ya tiene factura» y la manda otra vez al mismo correo.
+            Tus datos los trata IKATZ, que es quien te factura; Estook solo la hace. Se piden solo
+            los que una factura exige.
+          </p>
+          <p class="ayuda">
+            Si ya se pidió, dice «Este ticket ya tiene factura» y la manda otra vez al mismo correo,
+            sin enseñar los datos.
           </p>
         </div>
       </div>
@@ -2203,14 +2292,15 @@
         <div class="opciones">
           <div class="opcion recomendada">
             <b>A · La empresa de pruebas de Verifacti</b> en T6, y tu NIF antes del primer cliente.
-            Gratis y sin firmar nada. <b>Recomendada.</b>
+            <b>Y lo de pruebas no se mezcla nunca con lo real:</b> numera aparte y, al pasar a real,
+            las series empiezan en 1. Gratis y sin firmar nada. <b>Recomendada.</b>
           </div>
           <div class="opcion">
             <b>B · Tu NIF ya</b>: pruebas el paso 5 de verdad. Si eres autónomo, la firma por correo
             cuesta 2,90 € + IVA; si es una sociedad, con tu certificado.
           </div>
         </div>
-        <p class="lo-que-decides">Lo que decides: A o B.</p>
+        <p class="lo-que-decides">Contestaste: A.</p>
       </div>
     </div>
   </section>

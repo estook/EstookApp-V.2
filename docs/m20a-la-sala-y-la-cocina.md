@@ -19,7 +19,7 @@
 > #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
 > ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092, #144), **en producción**.
 > **La entrada nueva** ([0118](decisiones/0118-la-entrada-del-tpv.md), sin migración), con sus
-> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en producción (#148); después, **la pausa del TPV** ([0121](decisiones/0121-la-pausa-del-tpv.md)) y **T5 · 2 · Sin internet**, en dos: **T5 · 2 · 1 · Cada aparato aguanta solo** ([0122](decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)) y **T5 · 2 · 2 · La caja de centro** ([0123](decisiones/0123-t5-2-2-la-caja-de-centro.md), [0124](decisiones/0124-t5-2-2-2-los-pin-y-aparatos.md)), **en producción** (la caja 1.2.0, publicada el 2-nov). **T6 · La facturación**: su «Terminado cuando», escrito el 2-nov, y sus maquetas, **por aprobar**.
+> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en producción (#148); después, **la pausa del TPV** ([0121](decisiones/0121-la-pausa-del-tpv.md)) y **T5 · 2 · Sin internet**, en dos: **T5 · 2 · 1 · Cada aparato aguanta solo** ([0122](decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)) y **T5 · 2 · 2 · La caja de centro** ([0123](decisiones/0123-t5-2-2-la-caja-de-centro.md), [0124](decisiones/0124-t5-2-2-2-los-pin-y-aparatos.md)), **en producción** (la caja 1.2.0, publicada el 2-nov). **T6 · La facturación**: su «Terminado cuando», escrito el 2-nov, y sus maquetas, **aprobadas** con las tres respuestas de Richi ([0125](decisiones/0125-t6-la-facturacion-las-tres-respuestas.md)).
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -482,7 +482,8 @@ con `pin_cifrado`, y el latido y `los_aparatos` con qué es cada aparato y cómo
 
 Es M20B (Plan) con el capítulo 4 del Anexo y sus pruebas del capítulo 8. Las pantallas nuevas, en
 [`docs/maquetas/t6-la-facturacion.html`](maquetas/t6-la-facturacion.html) =
-[las maquetas](https://claude.ai/artifact/6vBMCXXQKZKFMPTcMXknxS), **por aprobar**. Se entrega
+[las maquetas](https://claude.ai/artifact/6vBMCXXQKZKFMPTcMXknxS), **aprobadas por Richi el 2-nov**
+con la A en sus tres preguntas. Se entrega
 en dos, como T5 · 2: **T6 · 1 · El alta**, porque sin ella nadie emite, y **T6 · 2 · Emitir**.
 
 **Todo en pruebas hasta que estén las once condiciones** del capítulo 9 del Anexo (la primera, la
@@ -516,6 +517,10 @@ vista; y donde se cobra, **qué falta**, en vez de un error.
 - **La declaración responsable de Estook**, en Ajustes › Facturación y en los Ajustes del TPV, con su
   PDF; **la versión que declara es la que viaja en cada registro**, y una prueba lo mira. Hasta que la
   redacte el asesor, sale marcada como **borrador**.
+- **La empresa de pruebas de Verifacti** (0125): solo el admin la elige, para una cuenta de prueba;
+  el alta salta el alta del NIF y la firma, y Ajustes › Facturación dice arriba que es la de pruebas.
+- **Pruebas y real, aparte**: cada documento y cada serie llevan su entorno; **«Pasar a real»
+  empieza las series en 1** y no arrastra nada de pruebas.
 - **En IKATZ**, Richi hace el alta en pruebas; y un local de prueba en Bizkaia se para con su motivo.
 
 ### T6 · 2 · Emitir, terminado cuando
@@ -525,9 +530,10 @@ vista; y donde se cobra, **qué falta**, en vez de un error.
   añade**; un trabajo termina cada pocos minutos lo que se quedó a medias; **los avisos de Verifacti**
   se aceptan con su firma comprobada y una sola vez; y **lo pendiente de más de una hora** se pregunta
   solo.
-- **Los documentos**: el ticket (F2), la factura completa (F1), **el canje** de un ticket por factura
-  (F3), **la devolución** de un ticket (R5) y de una factura (R1), y **anular**, solo quien puede y con
-  motivo; R2 y R3 no se programan. **Por encima de 3.000 €, factura completa.** La devolución va **por
+- **Los documentos**: el ticket (F2), la factura completa (F1), **el canje** de uno o varios tickets
+  por factura (F3), **la devolución** de un ticket (R5) y de una factura (R1), **corregir los datos
+  del cliente** de una factura (R4), y **anular**, solo quien puede y con motivo; R2 y R3 no se
+  programan. **Por encima de 3.000 €, factura completa.** La devolución va **por
   diferencias** (lo devuelto, en negativo), que sirve también para devolver un solo plato, y queda fácil
   de cambiar si el asesor dice otra cosa (A5). **El justificante** sin conexión, emitido al volver con
   la incidencia y en su orden.
@@ -547,9 +553,45 @@ vista; y donde se cobra, **qué falta**, en vez de un error.
   móvil; lo canjea por una factura y la devuelve; y un rechazo hecho a propósito llega a «Lo que falla»
   y se corrige con otro documento.
 
-**Pendiente de Richi** (2-nov, en las maquetas): **la factura a mano** desde Estook, para un evento o
-una comida de empresa; **«Pide tu factura»**, un segundo QR en el ticket con el que el cliente la pide
-solo; y **con qué NIF se prueba**. Lo que conteste se escribe aquí antes de construir.
+**Contestado por Richi el 2-nov: la A en las tres**, con las maquetas aprobadas, y «que sigan la
+ley y no den problemas a futuro». Lo mirado en la ley para cada una, en
+[`lo-investigado.md`](legal/lo-investigado.md) (A18 a A23), y lo decidido, en la
+[0125](decisiones/0125-t6-la-facturacion-las-tres-respuestas.md). Lo que suma a T6 · 2:
+
+- **La factura a mano** (1, A): en Tickets y facturas, **«Hacer una factura»**. El cliente con su
+  **NIF comprobado al escribirlo** y **su domicilio**, que la factura completa exige (RD 1619/2012,
+  art. 6.1); **si es de fuera, su pasaporte o su número de IVA y su país**. Platos de la carta o
+  conceptos libres, **cada uno con su IVA**; **la fecha de la operación** si fue antes, y **si el
+  cliente es una empresa, el aviso del plazo**: antes del día 16 del mes siguiente (art. 11). **Cobrada
+  o pendiente**, con su vencimiento. Sale F1, con su QR y en A4. Cuenta en las ventas; no mueve la
+  caja (T7) ni el almacén. **Los clientes se guardan** para la vez siguiente.
+- **La señal de un evento**: lo cobrado por adelantado **se factura al cobrarlo** (Ley del IVA, art.
+  75.Dos), con «Factura de la señal»; **la factura final la descuenta sola** y dice cuál era.
+- **Corregir los datos del cliente** de una factura (un NIF o un domicilio mal): **R4 por
+  sustitución**, en la serie R, que es lo que dice la AEAT para un dato que no es un importe. **Un
+  importe mal o una devolución, R1.** R2 y R3, nunca.
+- **Varios tickets en una factura** (la comida de empresa de cada día del mes): una F3 que sustituye
+  a varios, **cada ticket una sola vez**.
+- **«Pide tu factura»** (2, A): **la página en T6 · 2 y el QR en el ticket con T7**, abajo y más
+  pequeño, **siempre después del tributario** (Orden HAC/1177/2024, art. 21). Un código **que no se
+  puede adivinar**, de un solo ticket; **solo cuando el ticket está registrado** (con justificante,
+  «en cuanto se emita»); **el importe es el del ticket** y no se toca; empresa o autónomo con su NIF
+  comprobado, un particular con su DNI o NIE, alguien de fuera con su pasaporte; el domicilio,
+  siempre; **el aviso de privacidad** (el responsable es el restaurante, Estook solo la hace, y se
+  piden solo los datos que la factura exige); **una vez**: después la página solo dice «Este ticket
+  ya tiene factura» y la reenvía **al mismo correo**, sin enseñar los datos de nadie; un límite de
+  intentos; y **el local la apaga** en Ajustes › Facturación (encendida de fábrica). En la lista sale
+  «Pedida por el cliente».
+- **Con qué NIF se prueba** (3, A): **la empresa de pruebas de Verifacti** en IKATZ, que solo el
+  admin puede elegir y que dice arriba que lo es; sin el alta del NIF ni la firma, que no hacen falta.
+  El prefijo que añade Verifacti al número **no se programa** (Anexo 4.3). **Antes del primer
+  cliente**, el alta entera con el NIF de Richi, en pruebas y firma incluida.
+- **Pruebas y real no se mezclan nunca**: cada documento lleva su entorno, **numera aparte**, y lo de
+  pruebas no cuenta en las ventas ni en Negocio. **Al pasar a real, las series empiezan en 1.**
+
+**Y un aviso para T7**: mientras un local esté en pruebas, **no cobra a clientes de verdad con Estook
+TPV**: un papel «PRUEBA · SIN VALIDEZ» no es el ticket que la ley le obliga a dar. El local del amigo
+de Richi sigue cobrando con su TPV hasta pasar a real.
 
 ### T7 · Cobrar, la caja y las ventas
 

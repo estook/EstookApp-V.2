@@ -19,7 +19,7 @@
 > #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
 > ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092, #144), **en producción**.
 > **La entrada nueva** ([0118](decisiones/0118-la-entrada-del-tpv.md), sin migración), con sus
-> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en producción (#148); después, **la pausa del TPV** ([0121](decisiones/0121-la-pausa-del-tpv.md)) y **T5 · 2 · Sin internet**, en dos: **T5 · 2 · 1 · Cada aparato aguanta solo** ([0122](decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)), en su pull request, y **T5 · 2 · 2 · La caja de centro**.
+> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en producción (#148); después, **la pausa del TPV** ([0121](decisiones/0121-la-pausa-del-tpv.md)) y **T5 · 2 · Sin internet**, en dos: **T5 · 2 · 1 · Cada aparato aguanta solo** ([0122](decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)) y **T5 · 2 · 2 · La caja de centro** ([0123](decisiones/0123-t5-2-2-la-caja-de-centro.md), [0124](decisiones/0124-t5-2-2-2-los-pin-y-aparatos.md)), **en producción** (la caja 1.2.0, publicada el 2-nov). **T6 · La facturación**: su «Terminado cuando», escrito el 2-nov, y sus maquetas, **por aprobar**.
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -478,11 +478,83 @@ los de las dos partes; sin pantallas nuevas): **los PIN en la caja** en
 de que pregunte Windows** en `sinInternet/ElAvisoDeWindows.tsx`; y en la API, `fichar_en_la_caja`
 con `pin_cifrado`, y el latido y `los_aparatos` con qué es cada aparato y cómo llega.
 
-### T6 y T7
+### T6 · La facturación, en dos (2-nov)
 
-Su «Terminado cuando» es el del Plan para cada módulo (M20B y M20C) con las pruebas del capítulo 8,
-10.12 y 11.15 que les tocan. Se escribe aquí entero **antes de empezar cada una**, con lo que se haya
-aprendido en las anteriores.
+Es M20B (Plan) con el capítulo 4 del Anexo y sus pruebas del capítulo 8. Las pantallas nuevas, en
+[`docs/maquetas/t6-la-facturacion.html`](maquetas/t6-la-facturacion.html) =
+[las maquetas](https://claude.ai/artifact/6vBMCXXQKZKFMPTcMXknxS), **por aprobar**. Se entrega
+en dos, como T5 · 2: **T6 · 1 · El alta**, porque sin ella nadie emite, y **T6 · 2 · Emitir**.
+
+**Todo en pruebas hasta que estén las once condiciones** del capítulo 9 del Anexo (la primera, la
+revisión escrita de un asesor): se emite contra el entorno de pruebas de Verifacti, cada papel lleva
+**«PRUEBA · SIN VALIDEZ»** y nada llega a Hacienda de verdad. **Pasar a real** es un interruptor del
+admin, por empresa, que no se deja tocar mientras falte una de las once.
+
+**Lo que no hacen los demás** (mirado el 2-nov en Square, Last.app y Qamarero, que solo «activan» y
+mandan): el NIF se comprueba contra Hacienda **al escribirlo** (Last.app solo avisa de que tiene que
+coincidir); **lo que falla se dice en llano y con su botón**; **la historia de cada documento**, a la
+vista; y donde se cobra, **qué falta**, en vez de un error.
+
+### T6 · 1 · El alta, terminado cuando
+
+- **Ajustes › Facturación**, en Estook (Anexo 11.1), solo para el titular o su representante (Roles
+  1.12): una línea que dice cómo está («En pruebas», «Te falta la autorización», «Lista») y **el alta
+  en cinco pasos, uno por pantalla**, que se puede dejar y retomar (Anexo 4.3).
+- **El NIF se comprueba contra Hacienda al escribirlo**, con el nombre que tiene allí; si no coincide,
+  se dice antes de seguir.
+- **El territorio sale del local, no se pregunta**; se preguntan el SII y si el domicilio es foral.
+  **Foral, SII, Ceuta y Melilla se paran**, cada uno con su motivo verdadero y si es para siempre o un
+  «todavía no»; **Canarias sigue, con IGIC** (Anexo 1.4).
+- **Una empresa con dos locales** se elige en el segundo, sin escribir nada; cada local, sus series.
+- **Las series se proponen** (`T-`, `F-` y `R-` con el local y el año), no pasan de 60 caracteres con
+  el número, y se pregunta si el local ya hace facturas con otro programa, para no chocar.
+- **El alta del NIF en Verifacti se hace sola**, y **su clave vive en el servidor** (Vault): nunca en
+  el navegador, en un registro ni en un error.
+- **La autorización ante Hacienda**: un autónomo, con el enlace que le llega al correo (2,90 € + IVA
+  cada intento: si hay uno en curso, se recupera); una sociedad, con el PDF ya relleno, firmado con su
+  certificado y subido. Sus seis estados a la vista, y quién firmó y cuándo.
+- **La declaración responsable de Estook**, en Ajustes › Facturación y en los Ajustes del TPV, con su
+  PDF; **la versión que declara es la que viaja en cada registro**, y una prueba lo mira. Hasta que la
+  redacte el asesor, sale marcada como **borrador**.
+- **En IKATZ**, Richi hace el alta en pruebas; y un local de prueba en Bizkaia se para con su motivo.
+
+### T6 · 2 · Emitir, terminado cuando
+
+- **El motor del Anexo 4.9**: el número se da al preparar, con el candado de su serie; a Verifacti se
+  le llama fuera de la transacción, con la clave del documento; **el estado se lee de lo que se le
+  añade**; un trabajo termina cada pocos minutos lo que se quedó a medias; **los avisos de Verifacti**
+  se aceptan con su firma comprobada y una sola vez; y **lo pendiente de más de una hora** se pregunta
+  solo.
+- **Los documentos**: el ticket (F2), la factura completa (F1), **el canje** de un ticket por factura
+  (F3), **la devolución** de un ticket (R5) y de una factura (R1), y **anular**, solo quien puede y con
+  motivo; R2 y R3 no se programan. **Por encima de 3.000 €, factura completa.** La devolución va **por
+  diferencias** (lo devuelto, en negativo), que sirve también para devolver un solo plato, y queda fácil
+  de cambiar si el asesor dice otra cosa (A5). **El justificante** sin conexión, emitido al volver con
+  la incidencia y en su orden.
+- **Un rechazo por los datos**: lo que hace Verifacti con el mismo número se mira en su entorno de
+  pruebas y se escribe con su fecha (A4, Anexo 4.4); hasta entonces, el número queda usado.
+- **Servicio › Ventas › Tickets y facturas**: los documentos con su estado ante Hacienda, **lo que
+  falla arriba**, en llano y con su botón; **cada documento como se imprimió y su historia**
+  (preparado, enviado, registrado, lo que dijo Hacienda); y desde él, **Hacer factura**, **Devolver** y
+  **Anular**. El original no se toca nunca.
+- **El papel**: el ticket a 80 y a 58 mm con **el QR tributario primero**, de 30 a 40 mm, «QR
+  tributario:» encima y «VERI\*FACTU» debajo; el justificante, que dice que no es una factura; y la
+  factura en A4, en PDF. En pruebas, «PRUEBA · SIN VALIDEZ» en todos.
+- **Las pruebas del capítulo 8 que no necesitan cobrar** (1 a 11, 13, 15 a 17 y 19 a 22), en verde
+  contra el entorno de pruebas y cada una vista fallar con el arreglo quitado; **la 12, la 14 y la 18,
+  sin la caja ni el almacén**, que llegan con T7 como la 23 a la 26.
+- **En IKATZ, en pruebas**: Richi imprime **un ticket de prueba** en la caja y su QR se abre en el
+  móvil; lo canjea por una factura y la devuelve; y un rechazo hecho a propósito llega a «Lo que falla»
+  y se corrige con otro documento.
+
+**Pendiente de Richi** (2-nov, en las maquetas): **la factura a mano** desde Estook, para un evento o
+una comida de empresa; **«Pide tu factura»**, un segundo QR en el ticket con el que el cliente la pide
+solo; y **con qué NIF se prueba**. Lo que conteste se escribe aquí antes de construir.
+
+### T7 · Cobrar, la caja y las ventas
+
+Su «Terminado cuando» es el del Plan para M20C con las pruebas del capítulo 8, 10.12 y 11.15 que le
+tocan. Se escribe aquí entero **antes de empezar**, con lo aprendido en T6.
 
 **Lo que T7 ya tiene que cumplir** (Richi, 28-oct; 0121, puntos 4, 5 y 7; Anexo 11.4 y 11.6):
 

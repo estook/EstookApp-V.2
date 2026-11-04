@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **En la rama `t6-la-facturacion`, con su pull request: T6 · 1 · El alta de facturación**, entera ([0126](docs/decisiones/0126-t6-1-el-alta-de-facturacion.md), [0127](docs/decisiones/0127-con-verifactu-sin-envio-o-fuera.md), migración **0099**, API **119/331**). Falta que Richi fusione, migre, despliegue y pruebe ([sus pasos](docs/pasos-de-t6-1.md)). Lo siguiente es T6 · 2 · Emitir, en otra rama.
+- **T6 · 1 · El alta de facturación, en la #160** (rama `t6-la-facturacion`, GitHub en verde), entera ([0126](docs/decisiones/0126-t6-1-el-alta-de-facturacion.md), [0127](docs/decisiones/0127-con-verifactu-sin-envio-o-fuera.md), migración **0099**, API **119/331**). Falta que Richi fusione, migre, despliegue y pruebe ([sus pasos](docs/pasos-de-t6-1.md)). Lo siguiente es T6 · 2 · Emitir, en otra rama.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).

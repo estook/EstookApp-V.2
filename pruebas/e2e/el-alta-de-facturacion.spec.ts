@@ -33,7 +33,7 @@ test('el gerente hace el alta en cinco pasos, con el NIF comprobado al escribirl
 }) => {
   test.setTimeout(120_000);
   await abrirLaFacturacion(page);
-  await expect(page.getByText('En pruebas')).toBeVisible();
+  await expect(page.getByText('En pruebas', { exact: true })).toBeVisible();
 
   const empresa = page.getByText('IKATZ RESTAURACION SL · B12345674');
   const seguir = page.getByRole('button', { name: 'Seguir' });

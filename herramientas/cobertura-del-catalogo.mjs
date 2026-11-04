@@ -57,6 +57,8 @@ const LA_DEUDA = {
     'La firma en línea es de una persona (autónomo), y Bar Centro es una sociedad en la prueba de pantalla. Contra la base, con Elena: el enlace, recuperarlo sin pagar otra y solo el titular.',
   'comando:mirar_la_autorizacion':
     'Se mira quien no es el titular o mientras espera la firma en línea: los dos, contra la base. En la pantalla, Bar Centro firma con su certificado y queda lista al momento.',
+  'comando:elegir_la_modalidad':
+    'Hoy solo se puede elegir VERI*FACTU, que es la de fábrica: en la pantalla elegirla no cambia nada, y sin envío lo rechaza la base (0127). Contra la base: sin envío, «todavía no»; fuera, solo con el SII.',
   'comando:admin_marcar_condicion':
     'Las once condiciones son de todo Estook: marcarlas en una prueba de pantalla cambiaría «Pasar a real» a las demás que corren a la vez. Contra la base, con su nota obligatoria.',
   'comando:admin_guardar_el_productor':

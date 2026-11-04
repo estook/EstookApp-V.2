@@ -435,6 +435,20 @@ export const ERRORES = {
     409,
   ),
 
+  sin_envio_todavia_no: error(
+    'sin_envio_todavia_no',
+    'Facturar sin envío todavía no se puede elegir.',
+    'El proveedor de Estook no lo hace y lo está construyendo Estook. Mientras, se factura con VERI*FACTU, que es la recomendada.',
+    409,
+  ),
+
+  fuera_solo_con_el_sii: error(
+    'fuera_solo_con_el_sii',
+    'Fuera de VERI*FACTU va solo una empresa en el SII.',
+    'Se cambia en el paso 2, contestando si tu empresa lleva los libros por el SII.',
+    409,
+  ),
+
   firma_sin_cobrar: error(
     'firma_sin_cobrar',
     'Verifacti no ha podido cobrar la firma a Estook.',

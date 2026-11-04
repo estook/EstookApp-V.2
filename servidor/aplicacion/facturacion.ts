@@ -6,6 +6,7 @@ import {
   type CodigoDeError,
   type EstadoDeLaAutorizacion,
   type HaciendaForal,
+  type ModalidadDeFacturacion,
   type TerritorioDelLocal,
   type TipoDeSerie,
 } from '@estook/dominio';
@@ -44,6 +45,8 @@ const LO_QUE_DICE_LA_BASE: Readonly<Record<string, CodigoDeError>> = {
   series_repetidas: 'series_repetidas',
   serie_de_otro_local: 'serie_de_otro_local',
   solo_el_titular: 'solo_el_titular',
+  sin_envio_todavia_no: 'sin_envio_todavia_no',
+  fuera_solo_con_el_sii: 'fuera_solo_con_el_sii',
   solo_admin_total: 'sin_permiso',
   solo_admin: 'sin_permiso',
   no_es_de_la_casa: 'no_es_de_la_casa',
@@ -117,6 +120,8 @@ export interface LaEmpresa {
   readonly foral: HaciendaForal | 'no' | null;
   readonly dePruebas: boolean;
   readonly entorno: 'pruebas' | 'real';
+  /** Cómo factura (0127): con VERI*FACTU, sin envío o fuera, por el SII. */
+  readonly modalidad: ModalidadDeFacturacion;
   readonly enVerifacti: boolean;
   readonly titular: { readonly id: string; readonly nombre: string } | null;
   readonly representanteNombre: string | null;
@@ -170,6 +175,7 @@ interface FilaDeLaEmpresa {
   foral: string | null;
   de_pruebas: boolean;
   entorno: 'pruebas' | 'real';
+  modalidad: ModalidadDeFacturacion;
   en_verifacti_en: Date | null;
   titular_id: string | null;
   titular_nombre: string | null;
@@ -205,6 +211,7 @@ export async function loDelLocal(contexto: Contexto, localId: string): Promise<L
     const [e] = await contexto.sql<FilaDeLaEmpresa[]>`
       select e.id, e.nif, e.nombre, e.nombre_comercial, e.persona, e.calle, e.numero,
              e.codigo_postal, e.municipio, e.provincia, e.en_sii, e.foral, e.de_pruebas, e.entorno,
+             e.modalidad,
              e.en_verifacti_en, e.titular_id,
              nullif(btrim(coalesce(p.nombre, '') || ' ' || coalesce(p.apellidos, '')), '') as titular_nombre,
              e.representante_nombre, e.representante_nif, e.autorizacion, e.autorizacion_forma,
@@ -230,6 +237,7 @@ export async function loDelLocal(contexto: Contexto, localId: string): Promise<L
         foral: e.foral as LaEmpresa['foral'],
         dePruebas: e.de_pruebas,
         entorno: e.entorno,
+        modalidad: e.modalidad,
         enVerifacti: e.en_verifacti_en !== null,
         titular:
           e.titular_id === null ? null : { id: e.titular_id, nombre: e.titular_nombre ?? '' },
@@ -276,6 +284,7 @@ export async function loDelLocal(contexto: Contexto, localId: string): Promise<L
             enVerifacti: empresa.enVerifacti,
             autorizacion: empresa.autorizacion.estado,
             dePruebas: empresa.dePruebas,
+            modalidad: empresa.modalidad,
           },
     seriesPuestas: Object.values(series).filter((s) => s !== null).length,
     otroProgramaContestado: local.facturacion_otro_programa !== null,
@@ -308,6 +317,21 @@ export function exigirElPaso(lo: LoDelLocal, paso: 2 | 3 | 4 | 5): void {
   if (llega < paso) {
     throw new FalloDeAplicacion('faltan_datos', {
       porque: `Antes de este paso falta: ${lo.como.estado === 'en_marcha' ? enMinuscula(lo.como.falta) : 'lo anterior'}.`,
+    });
+  }
+}
+
+/**
+ * Lo de Verifacti (su alta y la autorización) **solo con VERI*FACTU**: fuera de VERI*FACTU, por el
+ * SII, no hace falta, y sin envío no pasa por Verifacti (0127).
+ */
+export function soloConVerifactu(lo: LoDelLocal): void {
+  if (lo.empresa !== null && lo.empresa.modalidad !== 'verifactu') {
+    throw new FalloDeAplicacion('faltan_datos', {
+      porque:
+        lo.empresa.modalidad === 'fuera_sii'
+          ? 'No hace falta: tu empresa está en el SII y factura fuera de VERI*FACTU.'
+          : 'Sin envío no pasa por Verifacti.',
     });
   }
 }

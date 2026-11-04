@@ -8,6 +8,7 @@ base pasa a **153 tablas**, todas con seguridad por filas.
 y las maquetas de T6 ([`t6-la-facturacion.html`](../maquetas/t6-la-facturacion.html), secciones
 1, 2 y 7), aprobadas el 2-nov.
 **Cambia:** el Anexo (4.2, 4.3, 4.14 y 7), Roles (1.12), el plan de M20A, `config/claves.md` y ESTADO.
+**Cambiada por la [0127](0127-con-verifactu-sin-envio-o-fuera.md)**, el mismo día: **el SII ya no para el alta**, sino que la empresa factura fuera de VERI\*FACTU; y cada empresa elige cómo factura. La API queda con **119 consultas y 331 comandos**.
 
 ## 1 · Lo que pidió Richi
 

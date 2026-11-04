@@ -2,6 +2,7 @@ import type {
   ComoVaLaFacturacion,
   EstadoDeLaAutorizacion,
   HaciendaForal,
+  ModalidadDeFacturacion,
   NifEnHacienda,
   TerritorioDelLocal,
   TipoDeSerie,
@@ -35,6 +36,7 @@ export interface MiFacturacion {
     readonly foral: HaciendaForal | 'no' | null;
     readonly dePruebas: boolean;
     readonly entorno: 'pruebas' | 'real';
+    readonly modalidad: ModalidadDeFacturacion;
     readonly enVerifacti: boolean;
     readonly titular: { readonly id: string; readonly nombre: string } | null;
     readonly autorizacion: {

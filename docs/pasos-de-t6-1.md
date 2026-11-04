@@ -6,7 +6,7 @@
 > | ---------------- | -------------------------------------------------------------------------------- |
 > | El pull request  | **«T6 · 1 · El alta de facturación»**, abierto, para fusionar                    |
 > | La base de datos | **Migración 0099**: falta migrarla. Tiene que quedar **99 de 99**                |
-> | La API           | Falta desplegarla. Tiene que quedar con **119 consultas y 330 comandos**         |
+> | La API           | Falta desplegarla. Tiene que quedar con **119 consultas y 331 comandos**         |
 > | La caja          | **No hay caja nueva**: nada que publicar                                         |
 > | Verifacti        | Tu clave de la cuenta, puesta en Supabase el 4-nov (`VERIFACTI_CLAVE_DE_CUENTA`) |
 >
@@ -20,6 +20,10 @@
   cinco pasos** (la empresa, dónde tributa, las series, el alta en Verifacti y la autorización ante
   Hacienda). Se puede dejar a medias y seguir otro día.
 - **El NIF se mira en Hacienda al escribirlo**, y se guarda con el nombre que tiene Hacienda.
+- **Cómo factura cada empresa** ([0127](decisiones/0127-con-verifactu-sin-envio-o-fuera.md)): **con
+  VERI\*FACTU** (la recomendada), **sin envío** (se ve explicada, y llega con T6 · 3) o **fuera, por el
+  SII** (sale sola si la empresa lleva el SII, y ya no se para el alta). En el paso 2 y en **Ajustes
+  del TPV › Facturación**, cada una con su «i».
 - **La declaración responsable de Estook**, en Ajustes › Facturación y en los Ajustes de Estook TPV.
   Sale como **borrador** hasta que la escriba un asesor y se firme.
 - **En el admin, Facturación**: probar la conexión con Verifacti, las once condiciones, quién produce
@@ -85,7 +89,14 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
    Verifacti y «Sin rellenar» en quién produce Estook (todavía no tienes sociedad). Abajo,
    **Descargarla en PDF**.
 
-### 4 · En Estook TPV, la declaración
+### 4 · En Estook TPV, cómo factura
+
+1. En la caja, entra con tu PIN → **⚙ Ajustes** → **Facturación**.
+   - **Tiene que** decir el nombre de la empresa de pruebas, «En pruebas» y, debajo, **Cómo factura**:
+     «Con VERI\*FACTU» marcada y «Recomendada», y «Sin envío» sin poder elegirse, con «Todavía no…».
+   - Toca **Qué es** en cada una: **tiene que** abrir su explicación.
+
+### 5 · En Estook TPV, la declaración
 
 1. En la caja (Windows o el navegador), entra con tu PIN → **⚙ Ajustes** → **Declaración
    responsable**.

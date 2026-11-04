@@ -12,6 +12,7 @@ drop function estook.poner_pide_tu_factura(uuid, boolean);
 drop function estook.apuntar_la_autorizacion(uuid, text, boolean, text, text, timestamptz, text);
 drop function estook.apuntar_el_alta_en_verifacti(uuid);
 drop function facturacion.poner_las_series(uuid, text, text, text, boolean);
+drop function estook.elegir_la_modalidad(uuid, text);
 drop function estook.contestar_donde_tributa(uuid, boolean, text);
 drop function estook.usar_la_empresa(uuid, uuid);
 drop function estook.guardar_la_empresa(uuid, uuid, text, text, text, text, text, text, text, text, text, uuid, text, text);

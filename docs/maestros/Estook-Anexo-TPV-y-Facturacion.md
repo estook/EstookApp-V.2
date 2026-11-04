@@ -73,11 +73,17 @@ Las dos últimas las fijó el Real Decreto-ley 15/2025, que retrasó un año las
 
 Y una que no se aplazó: **el software de doble uso** —el que permite borrar o alterar ventas— está prohibido desde la Ley Antifraude, con multas de hasta 50.000 € para quien lo use. Es la razón de fondo del principio 17 del Manifiesto.
 
-## 1.3 Modalidad: solo VERI*FACTU
+## 1.3 Modalidad: VERI*FACTU, sin envío o fuera, por el SII
 
-Estook opera **únicamente en modalidad VERI\*FACTU**: cada registro se envía a la AEAT al emitir.
+_Cambiado el 4-nov-2026 a petición de Richi ([0127](../decisiones/0127-con-verifactu-sin-envio-o-fuera.md)); antes decía «solo VERI\*FACTU»._
 
-La otra modalidad, «no verificable», obliga a firmar cada registro con certificado, **conservar los registros** todo el periodo de prescripción y mantener un registro de eventos. Además, la AEAT ha dicho que quien la elija tiene más probabilidad de inspección y que es una opción temporal. No se implementa.
+Cada empresa factura de una de tres formas, que elige en el alta y en Ajustes del TPV, cada una con su «i»:
+
+- **Con VERI\*FACTU, la recomendada y la de fábrica**: cada registro se envía a la AEAT al emitir, por Verifacti. No hay que conservar los registros, porque los tiene Hacienda. **Quien la elige se queda en ella al menos hasta el fin del año natural** (preguntas frecuentes de la AEAT).
+- **Sin envío, la modalidad «NO VERI\*FACTU»**: los registros se generan igual, encadenados, pero **firmados en el momento con un certificado electrónico cualificado**. Se comprueba la cadena antes de cada uno, se lleva **un registro de eventos** (que vigila también la hora del sistema) y todo se conserva sin poder cambiarlo. A la AEAT se le mandan **solo si los pide**, tal cual se hicieron, por su servicio web. **Verifacti no la hace**: la construye Estook en **T6 · 3**. Hasta entonces, se ve y no se elige. La AEAT ha dicho que revisará más a quien la use y que es temporal.
+- **Fuera de VERI\*FACTU, por el SII**: quien lleva los libros por el SII queda fuera del reglamento (1.4). Estook emite tickets y facturas según el RD 1619/2012, sin QR tributario ni registros, y la empresa los informa por su SII. Sale sola al contestar el SII.
+
+**Mientras «sin envío» no exista, Estook declara que funciona solo como VERI\*FACTU** (4.14). Cuando llegue será un programa «dual»: el registro de eventos tiene que estar en el código, y la declaración se cambia y se vuelve a firmar.
 
 ## 1.4 Quién queda fuera, y por qué
 
@@ -89,7 +95,7 @@ _Comprobado el 20 de septiembre de 2026 contra la [FAQ de ámbitos de aplicació
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Domicilio fiscal en **País Vasco** | **Fuera del reglamento**, por normativa foral en la imposición directa. Allí rige TicketBAI                                                                                 | **No se activa todavía**, y la pantalla dice que es otro sistema, no un fallo. **Se puede abrir más adelante con el mismo proveedor**: su API admite las haciendas de Álava, Gipuzkoa y Bizkaia con el mismo modelo de autorización (comprobado el 30-sep-2026, [0066](../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)) |
 | Domicilio fiscal en **Navarra**    | **Fuera del reglamento**, régimen foral propio                                                                                                                              | **No se activa.** El proveedor no la ofrece                                                                                                                                                                                                                                                                                             |
-| Acogido al **SII**                 | **Fuera del reglamento**: no se aplica a quien lleva los libros registro por el SII. Son ámbitos excluyentes                                                                | **No se activa.** Estook no hace SII                                                                                                                                                                                                                                                                                                    |
+| Acogido al **SII**                 | **Fuera del reglamento**: no se aplica a quien lleva los libros registro por el SII. Son ámbitos excluyentes                                                                | **Factura fuera de VERI\*FACTU** ([0127](../decisiones/0127-con-verifactu-sin-envio-o-fuera.md)): tickets y facturas del RD 1619/2012, sin enviar nada. Estook no hace el SII: lo informa la empresa con su programa de siempre                                                                                                         |
 | **Canarias · IGIC**                | **Dentro.** La AEAT dice que los domiciliados en Canarias «se encuentran comprendidos dentro del ámbito subjetivo», y que las referencias al IVA valen también para el IGIC | **Se activa.** El esquema ya distingue IGIC desde la migración `0012` y el motor fiscal ya agrupa por régimen. Lo único que falta son sus reglas, y las confirma el asesor igual que las del IVA                                                                                                                                        |
 | **Ceuta y Melilla · IPSI**         | **Dentro**, con el IPSI en lugar del IVA                                                                                                                                    | **Todavía no**, y la pantalla dice «todavía no», no «no se puede». El tipo del IPSI depende de la categoría del establecimiento y del epígrafe del IAE: es una dimensión más de reglas para dos ciudades de 85.000 habitantes. Se abre cuando haya un cliente que lo pida                                                               |
 
@@ -583,20 +589,20 @@ Una sección fija en **Ajustes › Facturación › Declaración responsable**, 
 
 **Qué lleva, comprobado el 20 de septiembre de 2026 en el [artículo 15 de la Orden HAC/1177/2024](https://www.boe.es/buscar/act.php?id=BOE-A-2024-22138)** —capítulo IV, que tiene ese único artículo—:
 
-| Dato                                                           | De dónde sale en Estook                                            |
-| -------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Nombre del sistema informático                                 | Constante del código                                               |
-| **Código identificador único** del sistema                     | Constante del código                                               |
-| **Identificador completo de la versión**                       | La versión desplegada, **la misma que viaja en cada registro**     |
-| Componentes de hardware y software, con sus funcionalidades    | Redactado, e incluye a **Verifacti como componente externo** (1.5) |
-| Si funciona **exclusivamente** como VERI\*FACTU                | **Sí**, y así se declara (1.3)                                     |
-| Si permite **varios obligados tributarios**                    | **Sí**: un mismo despliegue sirve a muchos restaurantes            |
-| Tipos de firma utilizados                                      | Los del proveedor, que es quien firma                              |
-| Nombre o razón social del productor                            | **Los datos del titular de Estook**                                |
-| NIF del productor                                              | Ídem                                                               |
-| Dirección postal completa de contacto                          | Ídem                                                               |
-| Declaración de cumplimiento de la normativa                    | La redacta el asesor                                               |
-| **Fecha y lugar** de suscripción, con día, mes y año completos | Se fija al firmarla                                                |
+| Dato                                                           | De dónde sale en Estook                                                                |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Nombre del sistema informático                                 | Constante del código                                                                   |
+| **Código identificador único** del sistema                     | Constante del código                                                                   |
+| **Identificador completo de la versión**                       | La versión desplegada, **la misma que viaja en cada registro**                         |
+| Componentes de hardware y software, con sus funcionalidades    | Redactado, e incluye a **Verifacti como componente externo** (1.5)                     |
+| Si funciona **exclusivamente** como VERI\*FACTU                | **Sí** mientras «sin envío» no exista; con T6 · 3, **no**, y se declara de nuevo (1.3) |
+| Si permite **varios obligados tributarios**                    | **Sí**: un mismo despliegue sirve a muchos restaurantes                                |
+| Tipos de firma utilizados                                      | Los del proveedor, que es quien firma                                                  |
+| Nombre o razón social del productor                            | **Los datos del titular de Estook**                                                    |
+| NIF del productor                                              | Ídem                                                                                   |
+| Dirección postal completa de contacto                          | Ídem                                                                                   |
+| Declaración de cumplimiento de la normativa                    | La redacta el asesor                                                                   |
+| **Fecha y lugar** de suscripción, con día, mes y año completos | Se fija al firmarla                                                                    |
 
 **Y tres reglas que van con esto:**
 

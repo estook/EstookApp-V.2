@@ -73,6 +73,11 @@ create table estook.empresa (
   titular_id                 uuid         references estook.persona (id),
   representante_nombre       text,
   representante_nif          text,
+  -- Cómo factura (0127): con VERI*FACTU (la recomendada), sin envío (la modalidad «NO
+  -- VERI*FACTU», que llega con T6 · 3) o fuera, por el SII. Desde cuándo, y quién la eligió.
+  modalidad                  text         not null default 'verifactu',
+  modalidad_desde            timestamptz  not null default now(),
+  modalidad_por              uuid         references estook.persona (id),
   -- «Pasar a real» lo hace el admin, con las once condiciones (abajo).
   entorno                    text         not null default 'pruebas',
   real_desde                 timestamptz,
@@ -102,6 +107,9 @@ create table estook.empresa (
     foral is null or foral in ('no', 'alava', 'gipuzkoa', 'bizkaia', 'navarra')
   ),
   constraint empresa_entorno_conocido check (entorno in ('pruebas', 'real')),
+  constraint empresa_modalidad_conocida check (modalidad in ('verifactu', 'sin_envio', 'fuera_sii')),
+  -- Fuera de VERI*FACTU va solo quien lleva el SII, y quien lo lleva va fuera (RD 1007/2023).
+  constraint empresa_fuera_solo_con_el_sii check ((modalidad = 'fuera_sii') = (en_sii is true)),
   constraint empresa_real_con_quien check (
     (entorno = 'pruebas' and real_desde is null) or (entorno = 'real' and real_desde is not null)
   ),
@@ -120,6 +128,8 @@ comment on column estook.empresa.foral is
   'Si el domicilio fiscal es foral, y cuál: no, alava, gipuzkoa, bizkaia o navarra. Nulo sin contestar (Anexo 1.4).';
 comment on column estook.empresa.de_pruebas is
   'La empresa de pruebas de Verifacti, que elige el admin para una cuenta de la casa (0125): sin alta del NIF ni firma, que ya vienen hechas.';
+comment on column estook.empresa.modalidad is
+  'Cómo factura (0127): verifactu (cada registro a Hacienda al momento, la recomendada), sin_envio (la modalidad NO VERI*FACTU: registros firmados y guardados, a Hacienda si los pide; llega con T6 · 3) o fuera_sii (empresas en el SII, fuera del reglamento).';
 comment on column estook.empresa.titular_id is
   'Quién da la autorización ante Hacienda desde Estook: el titular o su representante legal (Roles 1.12). Nadie más la empieza.';
 
@@ -403,8 +413,20 @@ begin
   if la_empresa is null then
     raise exception 'falta_la_empresa' using errcode = 'P0001';
   end if;
+  -- Con el SII, fuera de VERI*FACTU; sin él, la que tenía (o VERI*FACTU si venía de fuera).
   update estook.empresa
-     set en_sii = p_en_sii, foral = p_foral, cambiada_en = now()
+     set en_sii = p_en_sii, foral = p_foral,
+         modalidad = case
+           when p_en_sii then 'fuera_sii'
+           when modalidad = 'fuera_sii' then 'verifactu'
+           else modalidad end,
+         modalidad_desde = case
+           when (p_en_sii and modalidad <> 'fuera_sii') or (not p_en_sii and modalidad = 'fuera_sii')
+             then now() else modalidad_desde end,
+         modalidad_por = case
+           when (p_en_sii and modalidad <> 'fuera_sii') or (not p_en_sii and modalidad = 'fuera_sii')
+             then estook.persona_actual() else modalidad_por end,
+         cambiada_en = now()
    where id = la_empresa and not de_pruebas;
   perform estook.apuntar_lo_del_alta(
     p_local, 'contestar', 'empresa', la_empresa,
@@ -415,6 +437,53 @@ $$;
 
 revoke all on function estook.contestar_donde_tributa(uuid, boolean, text) from public;
 grant execute on function estook.contestar_donde_tributa(uuid, boolean, text) to estook_api;
+
+-- Cómo factura (0127), entre VERI*FACTU y sin envío; fuera, solo con el SII (paso 2). **Sin envío
+-- todavía no se puede elegir**: Verifacti no la hace y la construye Estook (T6 · 3). Y quien
+-- factura **de verdad** con VERI*FACTU se queda en ella hasta el fin del año natural (AEAT).
+create function estook.elegir_la_modalidad(p_local uuid, p_modalidad text)
+returns void
+language plpgsql
+volatile
+security definer
+set search_path = estook, pg_catalog, pg_temp
+as $$
+declare
+  la_empresa estook.empresa;
+begin
+  perform estook.la_organizacion_del_alta(p_local);
+  select e.* into la_empresa
+    from estook.empresa e join estook.local l on l.empresa_id = e.id
+   where l.id = p_local
+   for update of e;
+  if la_empresa.id is null then
+    raise exception 'falta_la_empresa' using errcode = 'P0001';
+  end if;
+  if la_empresa.de_pruebas then
+    raise exception 'empresa_de_pruebas' using errcode = 'P0001';
+  end if;
+  if p_modalidad not in ('verifactu', 'sin_envio') or la_empresa.modalidad = 'fuera_sii' then
+    raise exception 'fuera_solo_con_el_sii' using errcode = 'P0001';
+  end if;
+  if p_modalidad = 'sin_envio' then
+    raise exception 'sin_envio_todavia_no' using errcode = 'P0001';
+  end if;
+  if la_empresa.modalidad = p_modalidad then
+    return;
+  end if;
+  update estook.empresa
+     set modalidad = p_modalidad, modalidad_desde = now(), modalidad_por = estook.persona_actual(),
+         cambiada_en = now()
+   where id = la_empresa.id;
+  perform estook.apuntar_lo_del_alta(
+    p_local, 'elegir', 'modalidad', la_empresa.id,
+    jsonb_build_object('de', la_empresa.modalidad, 'a', p_modalidad)
+  );
+end;
+$$;
+
+revoke all on function estook.elegir_la_modalidad(uuid, text) from public;
+grant execute on function estook.elegir_la_modalidad(uuid, text) to estook_api;
 
 -- Paso 3 · las series. **Sin chocar**: los tres prefijos distintos, y ninguno en uso por otro
 -- local de la misma empresa, que numera en la misma cadena (Anexo 4.1). Solo se apunta lo que
@@ -702,11 +771,11 @@ begin
   if la_empresa is null then
     insert into estook.empresa (
       organizacion_id, nif, nombre, persona, calle, numero, codigo_postal, municipio, provincia,
-      en_sii, foral, de_pruebas, comprobada_en, en_verifacti_en, autorizacion,
+      en_sii, foral, modalidad, de_pruebas, comprobada_en, en_verifacti_en, autorizacion,
       autorizacion_correcta_en, autorizacion_mirada_en, creada_por
     ) values (
       la_organizacion, p_nif, p_nombre, 'juridica', p_calle, 's/n', p_codigo_postal, p_municipio,
-      p_provincia, false, 'no', true, now(), now(), p_autorizacion,
+      p_provincia, false, 'no', 'verifactu', true, now(), now(), p_autorizacion,
       case when p_autorizacion = 'correcta' then now() end, now(), estook.persona_actual()
     )
     returning id into la_empresa;
@@ -739,8 +808,10 @@ begin
   end if;
   if not exists (
     select 1 from estook.empresa e
-     where e.id = p_empresa and not e.de_pruebas and e.autorizacion = 'correcta'
-       and e.en_verifacti_en is not null
+     where e.id = p_empresa and not e.de_pruebas
+       and (e.modalidad = 'fuera_sii'
+            or (e.modalidad = 'verifactu' and e.autorizacion = 'correcta'
+                and e.en_verifacti_en is not null))
   ) then
     raise exception 'empresa_sin_terminar' using errcode = 'P0001';
   end if;
@@ -790,6 +861,7 @@ returns table (
   persona         text,
   de_pruebas      boolean,
   entorno         text,
+  modalidad       text,
   en_verifacti    boolean,
   autorizacion    text,
   locales         integer,
@@ -807,7 +879,8 @@ begin
   return query
     select e.id, o.nombre, e.nombre,
            case when e.persona = 'fisica' then '•••••' || right(e.nif, 4) else e.nif end,
-           e.persona, e.de_pruebas, e.entorno, e.en_verifacti_en is not null, e.autorizacion,
+           e.persona, e.de_pruebas, e.entorno, e.modalidad, e.en_verifacti_en is not null,
+           e.autorizacion,
            (select count(*)::integer from estook.local l where l.empresa_id = e.id),
            e.creada_en
       from estook.empresa e join estook.organizacion o on o.id = e.organizacion_id

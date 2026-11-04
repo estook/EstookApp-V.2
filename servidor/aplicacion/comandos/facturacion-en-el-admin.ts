@@ -7,7 +7,7 @@ import {
   VerifactiNoContesta,
 } from '../../facturacion/verifacti.ts';
 import { anotarEnElAdmin } from '../admin.ts';
-import { comando, consulta, FalloDeAplicacion } from '../contrato.ts';
+import { comando, consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { enLaBase, laVerifacti, loQueNoHizoVerifacti } from '../facturacion.ts';
 
 /**
@@ -47,6 +47,7 @@ export interface LaFacturacionEnElAdmin {
     readonly persona: string;
     readonly dePruebas: boolean;
     readonly entorno: string;
+    readonly modalidad: string;
     readonly enVerifacti: boolean;
     readonly autorizacion: string;
     readonly locales: number;
@@ -92,6 +93,7 @@ export const laFacturacionEnElAdmin = consulta<Record<string, never>, LaFacturac
         persona: string;
         de_pruebas: boolean;
         entorno: string;
+        modalidad: string;
         en_verifacti: boolean;
         autorizacion: string;
         locales: number;
@@ -130,6 +132,7 @@ export const laFacturacionEnElAdmin = consulta<Record<string, never>, LaFacturac
         persona: e.persona,
         dePruebas: e.de_pruebas,
         entorno: e.entorno,
+        modalidad: e.modalidad,
         enVerifacti: e.en_verifacti,
         autorizacion: e.autorizacion,
         locales: e.locales,
@@ -378,44 +381,30 @@ export const pasarAReal = comando<{ empresa_id: string }, { readonly entorno: 'r
     `;
     if ((faltan?.cuantas ?? 0) > 0) throw new FalloDeAplicacion('faltan_condiciones');
     const [empresa] = await contexto.sql<
-      { de_pruebas: boolean; en_verifacti: boolean; autorizacion: string; entorno: string }[]
+      {
+        de_pruebas: boolean;
+        en_verifacti: boolean;
+        autorizacion: string;
+        entorno: string;
+        modalidad: string;
+      }[]
     >`
-      select de_pruebas, en_verifacti, autorizacion, entorno
+      select de_pruebas, en_verifacti, autorizacion, entorno, modalidad
         from plataforma.las_empresas() where empresa_id = ${entrada.empresa_id}::uuid
     `;
     if (empresa === undefined) throw new FalloDeAplicacion('no_existe');
-    if (empresa.de_pruebas || !empresa.en_verifacti || empresa.autorizacion !== 'correcta') {
+    const conVerifactu = empresa.modalidad === 'verifactu';
+    if (
+      empresa.de_pruebas ||
+      empresa.modalidad === 'sin_envio' ||
+      (conVerifactu && (!empresa.en_verifacti || empresa.autorizacion !== 'correcta'))
+    ) {
       throw new FalloDeAplicacion('empresa_sin_terminar');
     }
     // Con todo comprobado, el NIF se da de alta en producción (se cobra): la autorización
-    // ya vale, porque Verifacti la pide una vez por NIF para los dos entornos.
-    const verifacti = laVerifacti(contexto);
-    const [d] = await contexto.sql<
-      {
-        nif: string;
-        nombre: string;
-        direccion: string;
-        codigo_postal: string;
-        municipio: string;
-        provincia: string;
-        organizacion: string;
-      }[]
-    >`select * from plataforma.la_empresa_para_real(${entrada.empresa_id}::uuid)`;
-    if (d === undefined) throw new FalloDeAplicacion('no_existe');
-    try {
-      await verifacti.darDeAlta({
-        nif: d.nif,
-        nombre: d.nombre,
-        direccion: d.direccion,
-        cp: d.codigo_postal,
-        poblacion: d.municipio,
-        provincia: d.provincia,
-        entorno: 'prod',
-        etiqueta: d.organizacion.slice(0, 120),
-      });
-    } catch (fallo) {
-      return loQueNoHizoVerifacti(contexto, fallo, 'dar de alta un NIF en producción');
-    }
+    // ya vale, porque Verifacti la pide una vez por NIF para los dos entornos. Fuera de
+    // VERI*FACTU, por el SII, no hay nada que dar de alta (0127).
+    if (conVerifactu) await darDeAltaEnProduccion(contexto, entrada.empresa_id);
     await enLaBase(() => contexto.sql`select plataforma.pasar_a_real(${entrada.empresa_id}::uuid)`);
     await anotarEnElAdmin(contexto, {
       accion: 'pasar_a_real',
@@ -427,3 +416,34 @@ export const pasarAReal = comando<{ empresa_id: string }, { readonly entorno: 'r
     return { entorno: 'real' };
   },
 });
+
+/** El NIF, en el Verifacti de producción, al pasar a real con VERI*FACTU. */
+async function darDeAltaEnProduccion(contexto: Contexto, empresaId: string): Promise<void> {
+  const verifacti = laVerifacti(contexto);
+  const [d] = await contexto.sql<
+    {
+      nif: string;
+      nombre: string;
+      direccion: string;
+      codigo_postal: string;
+      municipio: string;
+      provincia: string;
+      organizacion: string;
+    }[]
+  >`select * from plataforma.la_empresa_para_real(${empresaId}::uuid)`;
+  if (d === undefined) throw new FalloDeAplicacion('no_existe');
+  try {
+    await verifacti.darDeAlta({
+      nif: d.nif,
+      nombre: d.nombre,
+      direccion: d.direccion,
+      cp: d.codigo_postal,
+      poblacion: d.municipio,
+      provincia: d.provincia,
+      entorno: 'prod',
+      etiqueta: d.organizacion.slice(0, 120),
+    });
+  } catch (fallo) {
+    return loQueNoHizoVerifacti(contexto, fallo, 'dar de alta un NIF en producción');
+  }
+}

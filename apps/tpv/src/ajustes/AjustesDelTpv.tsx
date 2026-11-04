@@ -14,6 +14,7 @@ import { CocinaYBarra } from './CocinaYBarra.tsx';
 import { ImpresorasYCajon } from './ImpresorasYCajon.tsx';
 import { Productos } from '../productos/Productos.tsx';
 import { LaDeclaracion } from './LaDeclaracion.tsx';
+import { ComoFacturaEnUnaLinea, LaFacturacion } from './LaFacturacion.tsx';
 
 /**
  * **Ajustes del TPV**, detrás del engranaje (la entrada nueva, maqueta 2; Anexo 11.13): todo lo
@@ -42,6 +43,7 @@ const DE_AQUI_DENTRO: readonly string[] = [
   'aparatos',
   'impresoras',
   'pin',
+  'facturacion',
   'declaracion',
 ];
 
@@ -49,6 +51,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
   const ajusta = puedeEditar(permisos, 'accion.ajustes_del_tpv');
   const vincula = puedeEditar(permisos, 'accion.vincular_aparatos');
   const agota = puedeEditar(permisos, 'accion.marcar_agotado');
+  const factura = puedeEditar(permisos, 'accion.alta_de_facturacion');
   return [
     ...(agota
       ? [
@@ -123,6 +126,19 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             tono: 'gris',
             grupo: 'Seguridad',
             ir: 'ajustes/pin',
+          } as const,
+        ]
+      : []),
+    // Cómo factura el local (0127): quien hace el alta, como en Estook.
+    ...(factura
+      ? [
+          {
+            id: 'facturacion',
+            nombre: 'Facturación',
+            dibujo: 'documento',
+            tono: 'naranja',
+            grupo: 'Hacienda',
+            ir: 'ajustes/facturacion',
           } as const,
         ]
       : []),
@@ -242,6 +258,8 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
             <CocinaYBarra />
           ) : elegido === 'impresoras' ? (
             <ImpresorasYCajon />
+          ) : elegido === 'facturacion' ? (
+            <LaFacturacion />
           ) : elegido === 'declaracion' ? (
             <LaDeclaracion />
           ) : (
@@ -281,6 +299,7 @@ function ComoEsta({ id }: { readonly id: string }) {
   if (id === 'cocina') return <LaCocina />;
   if (id === 'aparatos') return <LosAparatosDelLocal />;
   if (id === 'impresoras') return <LasImpresorasDelLocal />;
+  if (id === 'facturacion') return <ComoFacturaEnUnaLinea />;
   if (id === 'declaracion') return <>Lo que Estook declara a Hacienda</>;
   return <ElBloqueo />;
 }

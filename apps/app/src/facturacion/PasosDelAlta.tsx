@@ -7,9 +7,10 @@ import {
   primerNumero,
   provinciaDelCodigoPostal,
   sePuedeEmpezarOtra,
+  type ModalidadDeFacturacion,
   type TipoDeSerie,
 } from '@estook/dominio';
-import { Aviso, Boton, Botones, Campo, ErrorEnCristiano, Selector } from '@estook/ui';
+import { Aviso, Boton, Botones, Campo, ComoFactura, ErrorEnCristiano, Selector } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarUnPasoDelAlta } from '../ganchos/usarLaFacturacion.ts';
@@ -338,6 +339,10 @@ export function PasoDeDondeTributa({
     e?.enSii === null || e === null ? 'no' : e.enSii ? 'si' : 'no',
   );
   const [foral, setForal] = useState<string | null>(e?.foral ?? propuesta ?? 'no');
+  // Cómo factura (0127): con el SII va fuera; si no, la elegida (VERI*FACTU de fábrica).
+  const [modalidad, setModalidad] = useState<ModalidadDeFacturacion>(
+    e === null || e.modalidad === 'fuera_sii' ? 'verifactu' : e.modalidad,
+  );
 
   return (
     <div className="flex flex-col gap-e5">
@@ -369,6 +374,12 @@ export function PasoDeDondeTributa({
         elegida={foral}
         alElegir={setForal}
       />
+      <ComoFactura
+        elegida={sii === 'si' ? 'fuera_sii' : modalidad}
+        enSii={sii === 'si'}
+        alElegir={setModalidad}
+        ocupado={haciendo}
+      />
       {propuesta !== null && foral === propuesta && (
         <p className="text-secundario text-texto-suave">
           Lo hemos marcado por el código postal de tu empresa. Cámbialo si no es así.
@@ -381,12 +392,20 @@ export function PasoDeDondeTributa({
             cargando={haciendo}
             textoCargando="Guardando"
             onClick={() => {
-              void hacer('contestar_donde_tributa', {
-                en_sii: sii === 'si',
-                foral: foral ?? 'no',
-              }).then((r) => {
-                if (r !== null) alAcabar();
-              });
+              void (async () => {
+                const contestado = await hacer('contestar_donde_tributa', {
+                  en_sii: sii === 'si',
+                  foral: foral ?? 'no',
+                });
+                if (contestado === null) return;
+                // Con el SII, la base ya la ha puesto fuera; sin él, la elegida si ha cambiado.
+                const antes = e?.modalidad === 'fuera_sii' ? 'verifactu' : e?.modalidad;
+                if (sii !== 'si' && modalidad !== antes) {
+                  const elegida = await hacer('elegir_la_modalidad', { modalidad });
+                  if (elegida === null) return;
+                }
+                alAcabar();
+              })();
             }}
           >
             Guardar

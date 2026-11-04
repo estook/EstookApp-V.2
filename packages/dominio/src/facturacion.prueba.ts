@@ -3,10 +3,13 @@ import {
   comoEsElNif,
   comoVaLaFacturacion,
   foralDelCodigoPostal,
+  LAS_MODALIDADES,
   laAutorizacionDe,
+  laModalidadQueToca,
   laParada,
   leerElResultado,
   normalizarNif,
+  porQueNoSePuedeCambiar,
   prefijoValido,
   primerNumero,
   provinciaDelCodigoPostal,
@@ -85,7 +88,7 @@ describe('dónde está y cuándo se para (Anexo 1.4)', () => {
     expect(foralDelCodigoPostal('28040')).toBeNull();
   });
 
-  it('el País Vasco es un «todavía no», Navarra y el SII no dependen de Estook', () => {
+  it('el País Vasco es un «todavía no», Navarra no depende de Estook y el SII ya no para', () => {
     const base = { territorio: 'peninsula_y_baleares' as const, enSii: false };
     expect(laParada({ ...base, foral: 'bizkaia' })).toMatchObject({
       motivo: 'pais_vasco',
@@ -95,7 +98,7 @@ describe('dónde está y cuándo se para (Anexo 1.4)', () => {
       motivo: 'navarra',
       todaviaNo: false,
     });
-    expect(laParada({ ...base, enSii: true, foral: null })).toMatchObject({ motivo: 'sii' });
+    expect(laParada({ ...base, enSii: true, foral: null })).toBeNull();
     expect(laParada({ ...base, foral: null })).toBeNull();
   });
 
@@ -140,6 +143,7 @@ describe('en qué paso va el alta', () => {
     enVerifacti: true,
     autorizacion: 'correcta',
     dePruebas: false,
+    modalidad: 'verifactu',
   } as const;
   const lista: LoQueSeSabeDeLaFacturacion = {
     territorio: 'peninsula_y_baleares',
@@ -190,5 +194,81 @@ describe('en qué paso va el alta', () => {
     expect(laAutorizacionDe('Caducado')).toBe('caducada');
     expect(laAutorizacionDe('Cancelado')).toBe('cancelada');
     expect(laAutorizacionDe('Inexistente')).toBe('sin_empezar');
+  });
+});
+
+describe('cómo factura (0127)', () => {
+  const empresa = {
+    comprobada: true,
+    enSii: false,
+    foral: false,
+    enVerifacti: true,
+    autorizacion: 'correcta',
+    dePruebas: false,
+    modalidad: 'verifactu',
+  } as const;
+  const lista: LoQueSeSabeDeLaFacturacion = {
+    territorio: 'peninsula_y_baleares',
+    empresa,
+    seriesPuestas: 3,
+    otroProgramaContestado: true,
+  };
+
+  it('con el SII, fuera de VERI*FACTU; sin él, la elegida', () => {
+    expect(laModalidadQueToca(true, 'verifactu')).toBe('fuera_sii');
+    expect(laModalidadQueToca(false, 'fuera_sii')).toBe('verifactu');
+    expect(laModalidadQueToca(false, 'sin_envio')).toBe('sin_envio');
+    expect(laModalidadQueToca(null, 'verifactu')).toBe('verifactu');
+  });
+
+  it('fuera por el SII, el alta acaba en las series: ni Verifacti ni autorización', () => {
+    const fuera = {
+      ...empresa,
+      enSii: true,
+      modalidad: 'fuera_sii',
+      enVerifacti: false,
+      autorizacion: 'sin_empezar',
+    } as const;
+    expect(comoVaLaFacturacion({ ...lista, empresa: fuera })).toEqual({ estado: 'lista' });
+    expect(comoVaLaFacturacion({ ...lista, empresa: fuera, seriesPuestas: 1 })).toMatchObject({
+      paso: 3,
+    });
+  });
+
+  it('sin envío espera a que exista, y lo dice', () => {
+    const sin = { ...empresa, modalidad: 'sin_envio' } as const;
+    expect(comoVaLaFacturacion({ ...lista, empresa: sin })).toMatchObject({
+      estado: 'en_marcha',
+      paso: 4,
+    });
+    expect(LAS_MODALIDADES.sin_envio.todaviaNo).not.toBeNull();
+    expect(LAS_MODALIDADES.verifactu.todaviaNo).toBeNull();
+  });
+
+  it('con VERI*FACTU de verdad, hasta el 31 de diciembre; a VERI*FACTU, cuando se quiera', () => {
+    const base = {
+      de: 'verifactu',
+      a: 'sin_envio',
+      enReal: true,
+      verifactuDesde: new Date('2027-03-01T10:00:00Z'),
+    } as const;
+    expect(porQueNoSePuedeCambiar({ ...base, ahora: new Date('2027-11-30T10:00:00Z') })).toMatch(
+      /31 de diciembre de 2027/,
+    );
+    expect(porQueNoSePuedeCambiar({ ...base, ahora: new Date('2028-01-02T10:00:00Z') })).toBeNull();
+    expect(
+      porQueNoSePuedeCambiar({ ...base, enReal: false, ahora: new Date('2027-11-30T10:00:00Z') }),
+    ).toBeNull();
+    expect(
+      porQueNoSePuedeCambiar({
+        ...base,
+        de: 'sin_envio',
+        a: 'verifactu',
+        ahora: new Date('2027-11-30T10:00:00Z'),
+      }),
+    ).toBeNull();
+    expect(
+      porQueNoSePuedeCambiar({ ...base, a: 'fuera_sii', ahora: new Date('2027-11-30T10:00:00Z') }),
+    ).not.toBeNull();
   });
 });

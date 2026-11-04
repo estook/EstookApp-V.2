@@ -756,7 +756,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // «Pide tu factura»—, la que mira el permiso en ese local y `lleva_la_facturacion`, que dice
     // quién ve la empresa mirando todos los locales de su organización. **La empresa y las series
     // no se escriben de ninguna otra forma** (0126): la API no tiene escritura en ellas. Son
-    // ochenta y siete.
+    // ochenta y siete. Y `elegir_la_modalidad` (0127), cómo factura: ochenta y ocho.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -799,6 +799,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'el_plan_de',
       'el_plato_entra_en_la_botonera',
       'el_uso_de',
+      'elegir_la_modalidad',
       'es_admin_o_el_sistema',
       'es_la_pantalla_del_local',
       'es_una_caja_viva',

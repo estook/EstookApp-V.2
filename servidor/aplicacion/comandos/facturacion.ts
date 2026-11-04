@@ -29,6 +29,7 @@ import {
   laVerifacti,
   loDelLocal,
   loQueNoHizoVerifacti,
+  soloConVerifactu,
   type LoDelLocal,
 } from '../facturacion.ts';
 
@@ -48,6 +49,7 @@ import {
  *   el_modelo_para_firmar       paso 5, una sociedad: el PDF ya relleno, para su certificado
  *   mandar_el_modelo_firmado    paso 5, una sociedad: el PDF firmado
  *   mirar_la_autorizacion       cómo está la autorización ante Hacienda
+ *   elegir_la_modalidad         con VERI*FACTU o sin envío (0127); también desde Estook TPV
  *   poner_pide_tu_factura       el QR del ticket para pedir factura (0125)
  *
  * ── En la app y en Estook TPV ─────────────────────────────────────────────────────
@@ -84,6 +86,8 @@ export const miFacturacion = consulta<Record<string, never>, MiFacturacion>({
   nombre: 'mi_facturacion',
   entrada: z.object({}).strict(),
   exige: EXIGE,
+  // También en los Ajustes de Estook TPV, que enseñan cómo factura el local (0127).
+  enElTpv: 'tambien',
 
   async ejecutar(contexto) {
     const localId = elLocalDeLaSesion(contexto);
@@ -351,6 +355,7 @@ export const darDeAltaEnVerifacti = comando<Record<string, never>, { readonly he
     const localId = elLocalDeLaSesion(contexto);
     const lo = await loDelLocal(contexto, localId);
     exigirElPaso(lo, 4);
+    soloConVerifactu(lo);
     const empresa = lo.empresa;
     if (empresa === null) throw new FalloDeAplicacion('falta_la_empresa');
     if (!empresa.enVerifacti) {
@@ -446,6 +451,7 @@ export const firmarEnLinea = comando<z.infer<typeof entradaDeLaFirmaEnLinea>, La
     const localId = elLocalDeLaSesion(contexto);
     const lo = await loDelLocal(contexto, localId);
     exigirElPaso(lo, 5);
+    soloConVerifactu(lo);
     const empresa = soloElTitular(contexto, lo);
     if (empresa.persona !== 'fisica') {
       throw new FalloDeAplicacion('faltan_datos', {
@@ -539,6 +545,7 @@ export const elModeloParaFirmar = comando<z.infer<typeof entradaDelRepresentante
     const localId = elLocalDeLaSesion(contexto);
     const lo = await loDelLocal(contexto, localId);
     exigirElPaso(lo, 5);
+    soloConVerifactu(lo);
     const empresa = soloElTitular(contexto, lo);
     if (empresa.persona !== 'juridica') {
       throw new FalloDeAplicacion('faltan_datos', {
@@ -595,6 +602,7 @@ export const mandarElModeloFirmado = comando<{ base64: string; firmante: string 
     const localId = elLocalDeLaSesion(contexto);
     const lo = await loDelLocal(contexto, localId);
     exigirElPaso(lo, 5);
+    soloConVerifactu(lo);
     const empresa = soloElTitular(contexto, lo);
     let bytes: Uint8Array;
     try {
@@ -661,6 +669,31 @@ export const mirarLaAutorizacion = comando<Record<string, never>, LaAutorizacion
       caduca: dice.caduca,
       error: dice.error,
     };
+  },
+});
+
+// ── Cómo factura (0127) ─────────────────────────────────────────────────────────────
+
+/**
+ * Con VERI*FACTU o sin envío. **Sin envío todavía no se puede elegir** (lo dice la base), y fuera
+ * de VERI*FACTU va solo con el SII, en el paso 2. También desde los Ajustes de Estook TPV, con el
+ * mismo permiso.
+ */
+export const elegirLaModalidad = comando<
+  { modalidad: 'verifactu' | 'sin_envio' },
+  { readonly modalidad: 'verifactu' | 'sin_envio' }
+>({
+  nombre: 'elegir_la_modalidad',
+  entrada: z.object({ modalidad: z.enum(['verifactu', 'sin_envio']) }).strict(),
+  exige: EXIGE,
+  enElTpv: 'tambien',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeLaSesion(contexto);
+    await enLaBase(
+      () => contexto.sql`select estook.elegir_la_modalidad(${localId}::uuid, ${entrada.modalidad})`,
+    );
+    return { modalidad: entrada.modalidad };
   },
 });
 

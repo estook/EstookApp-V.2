@@ -58,6 +58,7 @@ interface MiFacturacion {
     nombre: string;
     provincia: string;
     enVerifacti: boolean;
+    modalidad: string;
     autorizacion: { estado: string; firmante: string | null };
   } | null;
   series: Record<string, string | null>;
@@ -240,15 +241,37 @@ describe('paso 2 · dónde tributa: el territorio no se pregunta, y lo foral par
     ).toBe('alta_parada');
   });
 
-  it('con el SII, tampoco; y sin ninguno de los dos, sigue', async () => {
+  it('con el SII no para: va fuera de VERI*FACTU (0127); sin él, vuelve a VERI*FACTU', async () => {
     const sii = losDatos<{ como: Como }>(
       await api.ejecutar(rosa, 'contestar_donde_tributa', { en_sii: true, foral: 'no' }),
     );
-    expect(sii.como.parada?.motivo).toBe('sii');
+    expect(sii.como).toMatchObject({ estado: 'en_marcha', paso: 3 });
+    expect((await mia(rosa)).empresa?.modalidad).toBe('fuera_sii');
+    // Fuera no se elige: va con el SII.
+    expect(
+      elFallo(await api.ejecutar(rosa, 'elegir_la_modalidad', { modalidad: 'verifactu' })),
+    ).toBe('fuera_solo_con_el_sii');
     const sigue = losDatos<{ como: Como }>(
       await api.ejecutar(rosa, 'contestar_donde_tributa', { en_sii: false, foral: 'no' }),
     );
     expect(sigue.como).toMatchObject({ estado: 'en_marcha', paso: 3 });
+    expect((await mia(rosa)).empresa?.modalidad).toBe('verifactu');
+  });
+
+  it('sin envío todavía no se puede elegir, y lo dice; VERI*FACTU, sí', async () => {
+    expect(
+      elFallo(await api.ejecutar(rosa, 'elegir_la_modalidad', { modalidad: 'sin_envio' })),
+    ).toBe('sin_envio_todavia_no');
+    losDatos(await api.ejecutar(rosa, 'elegir_la_modalidad', { modalidad: 'verifactu' }));
+    expect((await mia(rosa)).empresa?.modalidad).toBe('verifactu');
+    // Y fuera sin el SII no se puede ni a mano en la base.
+    await expect(
+      base.bd.query(
+        `update estook.empresa set modalidad = 'fuera_sii'
+          where id = (select empresa_id from estook.local where id = $1)`,
+        [barCentro],
+      ),
+    ).rejects.toThrow(/empresa_fuera_solo_con_el_sii/);
   });
 });
 
@@ -533,6 +556,41 @@ describe('una persona (autónomo) en la cadena: firma en línea, y solo el titul
     expect(mira.estado).toBe('correcta');
     expect((await mia(vera)).como).toEqual({ estado: 'lista' });
     expect((await mia(elena)).como).toEqual({ estado: 'lista' });
+  });
+});
+
+describe('una empresa en el SII factura fuera de VERI*FACTU (0127)', () => {
+  it('Elena da de alta Bar Playa con el SII: series y lista, sin Verifacti ni firma', async () => {
+    const barPlaya = await base.localPorCodigo('bar-playa');
+    await aLocal(elena, barPlaya);
+    losDatos(
+      await api.ejecutar(elena, 'guardar_la_empresa', {
+        empresa_id: null,
+        nif: 'B84935048',
+        nombre: 'Ejemplo Norte',
+        calle: 'Paseo',
+        numero: '2',
+        codigo_postal: '15002',
+        municipio: 'A Coruña',
+        titular_id: elenaId,
+      }),
+    );
+    losDatos(await api.ejecutar(elena, 'contestar_donde_tributa', { en_sii: true, foral: 'no' }));
+    const altas = verifacti.llamadas.filter((l) => l.startsWith('alta')).length;
+    losDatos(
+      await api.ejecutar(elena, 'poner_las_series', {
+        ticket: 'T-PLA',
+        factura: 'F-PLA',
+        rectificativa: 'R-PLA',
+        otro_programa: false,
+      }),
+    );
+    const lo = await mia(elena);
+    expect(lo.como).toEqual({ estado: 'lista' });
+    expect(lo.empresa?.modalidad).toBe('fuera_sii');
+    // Ni alta en Verifacti ni autorización: no hace falta, y no se llama a nadie.
+    expect(elFallo(await api.ejecutar(elena, 'dar_de_alta_en_verifacti', {}))).toBe('faltan_datos');
+    expect(verifacti.llamadas.filter((l) => l.startsWith('alta')).length).toBe(altas);
   });
 });
 

@@ -987,6 +987,9 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         // La declaración responsable de Estook (0126): legible desde todo el programa.
         'la_declaracion_responsable',
         'la_declaracion_responsable_en_pdf',
+        // Cómo factura el local (0127): también en los Ajustes del TPV, con el permiso del alta.
+        'mi_facturacion',
+        'elegir_la_modalidad',
       ].sort(),
     );
     const solo = operaciones.filter((o) => o.enElTpv === 'solo').map((o) => o.nombre);

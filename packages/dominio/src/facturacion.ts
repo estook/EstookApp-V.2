@@ -208,7 +208,7 @@ export function foralDelCodigoPostal(codigo: string): HaciendaForal | null {
 
 // ── Cuándo se para el alta, con su motivo verdadero (Anexo 1.4, 0043) ─────────────
 
-export type MotivoDeParada = 'pais_vasco' | 'navarra' | 'sii' | 'ceuta_o_melilla';
+export type MotivoDeParada = 'pais_vasco' | 'navarra' | 'ceuta_o_melilla';
 
 export interface Parada {
   readonly motivo: MotivoDeParada;
@@ -238,13 +238,6 @@ export const PARADAS: Readonly<Record<MotivoDeParada, Parada>> = {
       'Con el domicilio fiscal en Navarra no se usa VERI*FACTU: tiene su régimen foral propio, y el proveedor de Estook no lo ofrece. No es un fallo tuyo.',
     todaviaNo: false,
   },
-  sii: {
-    motivo: 'sii',
-    titulo: 'Con el SII no hace falta',
-    porque:
-      'Quien lleva los libros por el SII queda fuera de VERI*FACTU: la ley los separa. Tu facturación sigue como la llevas, y Estook no te pide nada más.',
-    todaviaNo: false,
-  },
   ceuta_o_melilla: {
     motivo: 'ceuta_o_melilla',
     titulo: 'Todavía no, en Ceuta y Melilla',
@@ -256,18 +249,118 @@ export const PARADAS: Readonly<Record<MotivoDeParada, Parada>> = {
 
 export type TerritorioDelLocal = 'peninsula_y_baleares' | 'canarias' | 'ceuta' | 'melilla';
 
-/** La parada que toca, o nula si el alta sigue. El SII manda: excluye todo lo demás. */
+/**
+ * La parada que toca, o nula si el alta sigue. **El SII ya no para** (0127): quien lo lleva queda
+ * fuera de VERI*FACTU por ley, y factura con Estook sin enviar nada (`fuera_sii`).
+ */
 export function laParada(datos: {
   readonly territorio: TerritorioDelLocal;
   readonly enSii: boolean | null;
   readonly foral: HaciendaForal | null;
 }): Parada | null {
-  if (datos.enSii === true) return PARADAS.sii;
+  if (datos.enSii === true) return null;
   if (datos.foral === 'navarra') return PARADAS.navarra;
   if (datos.foral !== null) return PARADAS.pais_vasco;
   if (datos.territorio === 'ceuta' || datos.territorio === 'melilla')
     return PARADAS.ceuta_o_melilla;
   return null;
+}
+
+// ── Cómo factura: con VERI*FACTU, sin envío o fuera, por el SII (0127) ──────────────
+
+/**
+ * Las tres formas de facturar que admite la ley (RD 1007/2023 y preguntas frecuentes de la AEAT,
+ * mirado el 4-nov-2026):
+ *
+ *   · `verifactu`  cada registro va a Hacienda al momento. **La recomendada**, y la de siempre.
+ *   · `sin_envio`  la modalidad «NO VERI*FACTU»: los registros se hacen igual, encadenados, pero
+ *                  **firmados con un certificado** y guardados en Estook, con su registro de
+ *                  eventos, y se mandan a Hacienda **si los pide**. Verifacti no la hace: la
+ *                  construye Estook (T6 · 3). Hasta entonces, «todavía no».
+ *   · `fuera_sii`  quien lleva los libros por el SII **queda fuera** del reglamento: factura como
+ *                  siempre (RD 1619/2012) y lo informa por su SII. Sale sola al contestar el SII.
+ */
+export type ModalidadDeFacturacion = 'verifactu' | 'sin_envio' | 'fuera_sii';
+
+export interface LaModalidad {
+  readonly modalidad: ModalidadDeFacturacion;
+  readonly nombre: string;
+  /** En una línea, debajo del nombre. */
+  readonly corto: string;
+  /** Lo de la «i»: qué es, en llano, y para quién. */
+  readonly queEs: readonly string[];
+  /** Si se puede elegir ya; si no, por qué. */
+  readonly todaviaNo: string | null;
+}
+
+export const LAS_MODALIDADES: Readonly<Record<ModalidadDeFacturacion, LaModalidad>> = {
+  verifactu: {
+    modalidad: 'verifactu',
+    nombre: 'Con VERI*FACTU',
+    corto: 'Recomendada. Cada ticket llega a Hacienda al momento.',
+    queEs: [
+      'Cada ticket y cada factura se manda a Hacienda en cuanto se hace, por Verifacti. Tu cliente puede comprobarlo con el QR.',
+      'No tienes que guardar nada más: Hacienda ya lo tiene. Y Hacienda ha dicho que revisará menos a quien la use.',
+      'Si la eliges, se queda hasta el 31 de diciembre: la ley no deja pasar a «sin envío» antes de fin de año.',
+    ],
+    todaviaNo: null,
+  },
+  sin_envio: {
+    modalidad: 'sin_envio',
+    nombre: 'Sin envío (NO VERI*FACTU)',
+    corto: 'Tickets y facturas igual, pero no se mandan a Hacienda.',
+    queEs: [
+      'La ley la permite: cada ticket deja su registro, encadenado y firmado con un certificado, y se guarda en Estook. A Hacienda se le manda solo si lo pide.',
+      'Pide más que la otra: un certificado electrónico, un registro de lo que pasa en el programa y guardarlo todo. Hacienda ha dicho que revisará más a quien la elija y que es temporal.',
+      'Se puede pasar a VERI*FACTU cuando quieras; volver a esta, solo a partir del 1 de enero.',
+    ],
+    todaviaNo:
+      'Todavía no: el proveedor de Estook no la hace, y la construye Estook. Llegará después de emitir con VERI*FACTU, revisada por el asesor.',
+  },
+  fuera_sii: {
+    modalidad: 'fuera_sii',
+    nombre: 'Fuera de VERI*FACTU, por el SII',
+    corto: 'Para empresas en el SII: tickets y facturas sin enviar nada.',
+    queEs: [
+      'Quien lleva los libros por el SII queda fuera de VERI*FACTU: la ley los separa.',
+      'Estook hace tus tickets y facturas como pide el Reglamento de facturación, sin el QR de Hacienda, y tú los informas por tu SII, como ahora.',
+      'Sale sola al contestar que tu empresa está en el SII.',
+    ],
+    todaviaNo: null,
+  },
+};
+
+/** La que toca por lo contestado: con el SII, fuera; sin él, la elegida (o VERI*FACTU). */
+export function laModalidadQueToca(
+  enSii: boolean | null,
+  elegida: ModalidadDeFacturacion,
+): ModalidadDeFacturacion {
+  if (enSii === true) return 'fuera_sii';
+  return elegida === 'fuera_sii' ? 'verifactu' : elegida;
+}
+
+/**
+ * Si se puede cambiar de forma de facturar (preguntas frecuentes de la AEAT, «Sistemas
+ * VERI*FACTU», mirado el 4-nov-2026): **quien elige VERI*FACTU se queda en ella al menos hasta el
+ * fin del año natural**; a VERI*FACTU se pasa cuando se quiera. En pruebas nada cuenta. Nulo si
+ * se puede; si no, por qué.
+ */
+export function porQueNoSePuedeCambiar(datos: {
+  readonly de: ModalidadDeFacturacion;
+  readonly a: ModalidadDeFacturacion;
+  readonly enReal: boolean;
+  /** Desde cuándo factura de verdad con VERI*FACTU. */
+  readonly verifactuDesde: Date | null;
+  readonly ahora: Date;
+}): string | null {
+  if (datos.a === 'fuera_sii' || datos.de === 'fuera_sii') {
+    return 'Fuera de VERI*FACTU va solo con el SII: se cambia contestando si tu empresa está en el SII.';
+  }
+  if (datos.de !== 'verifactu' || datos.a !== 'sin_envio' || !datos.enReal) return null;
+  if (datos.verifactuDesde === null) return null;
+  return datos.ahora.getUTCFullYear() > datos.verifactuDesde.getUTCFullYear()
+    ? null
+    : `Con VERI*FACTU te quedas hasta el 31 de diciembre de ${String(datos.verifactuDesde.getUTCFullYear())}: lo pide la ley.`;
 }
 
 // ── Las series ─────────────────────────────────────────────────────────────────
@@ -395,6 +488,8 @@ export interface LoQueSeSabeDeLaFacturacion {
     readonly enVerifacti: boolean;
     readonly autorizacion: EstadoDeLaAutorizacion;
     readonly dePruebas: boolean;
+    /** Cómo factura (0127). Con el SII, `fuera_sii`. */
+    readonly modalidad: ModalidadDeFacturacion;
   } | null;
   readonly seriesPuestas: number;
   readonly otroProgramaContestado: boolean;
@@ -430,6 +525,11 @@ export function comoVaLaFacturacion(datos: LoQueSeSabeDeLaFacturacion): ComoVaLa
   }
   if (datos.seriesPuestas < TIPOS_DE_SERIE.length || !datos.otroProgramaContestado) {
     return { estado: 'en_marcha', paso: 3, falta: 'Las series de tus tickets y facturas' };
+  }
+  // Fuera de VERI*FACTU, por el SII, no hay alta en Verifacti ni autorización: ya está.
+  if (e.modalidad === 'fuera_sii') return { estado: 'lista' };
+  if (e.modalidad === 'sin_envio') {
+    return { estado: 'en_marcha', paso: 4, falta: 'Facturar sin envío, que todavía no está' };
   }
   if (!e.enVerifacti) {
     return { estado: 'en_marcha', paso: 4, falta: 'El alta en Verifacti, que se hace sola' };

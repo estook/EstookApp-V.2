@@ -526,7 +526,7 @@ vista; y donde se cobra, **qué falta**, en vez de un error.
 ### T6 · 1 · El alta, entregada (4-nov-2026)
 
 En su pull request ([0126](decisiones/0126-t6-1-el-alta-de-facturacion.md), migración **0099**, la
-API pasa a **119 consultas y 330 comandos**, 153 tablas). Todo lo de arriba, con **tres cosas que
+API pasa a **119 consultas y 331 comandos** con la 0127, 153 tablas). Todo lo de arriba, con **tres cosas que
 cambian lo escrito**, por lo que dice Verifacti en su documentación (leída entera el 4-nov):
 
 - **Ajustes › Facturación la ven el gerente, la dirección y el administrador de cuenta**, como dice
@@ -542,6 +542,12 @@ Lo comprueban `el-alta-de-facturacion.prueba.ts`, contra la base y un Verifacti 
 pasos, quién puede, las paradas, que las series solo se insertan, la firma que se recupera sin pagar
 otra, el admin y pasar a real), y la prueba de pantalla del mismo nombre. «Imprimir un ticket de
 prueba», que dibujaba la maqueta en Ajustes, va con T6 · 2: necesita emitir.
+
+**Y cómo factura cada empresa** ([0127](decisiones/0127-con-verifactu-sin-envio-o-fuera.md), 4-nov, a
+petición de Richi): **con VERI\*FACTU** (la recomendada y la de fábrica), **sin envío** (la modalidad
+«NO VERI\*FACTU», que se ve y no se elige hasta T6 · 3) o **fuera, por el SII**, que sale sola al
+contestar el SII y deja el alta lista sin Verifacti ni autorización. **El SII deja de parar el alta.**
+Se elige en el paso 2 y en **Ajustes del TPV › Facturación**, cada una con su «i».
 
 ### T6 · 2 · Emitir, terminado cuando
 
@@ -612,6 +618,35 @@ ley y no den problemas a futuro». Lo mirado en la ley para cada una, en
 **Y un aviso para T7**: mientras un local esté en pruebas, **no cobra a clientes de verdad con Estook
 TPV**: un papel «PRUEBA · SIN VALIDEZ» no es el ticket que la ley le obliga a dar. El local del amigo
 de Richi sigue cobrando con su TPV hasta pasar a real.
+
+**Y con cada forma de facturar** (0127): con VERI\*FACTU, como arriba; **fuera, por el SII**, el
+mismo ticket y la misma factura del RD 1619/2012, **sin QR tributario, sin leyenda y sin registro**,
+numerados igual en sus series, y nada va a Verifacti.
+
+### T6 · 3 · Sin envío (NO VERI\*FACTU), terminado cuando
+
+Va después de T6 · 2, porque comparte su motor. Pedido por Richi el 4-nov
+([0127](decisiones/0127-con-verifactu-sin-envio-o-fuera.md)). **Verifacti no la hace**: la construye
+Estook, y la revisa el asesor antes de poder elegirla.
+
+- **El registro de cada ticket y factura, hecho por Estook**: con los datos y la huella que pide la
+  Orden HAC/1177/2024, **encadenado** al anterior de la misma empresa, y **comprobando la cadena antes
+  de cada uno nuevo**. Si algo no cuadra, se apunta el evento, se avisa, y **la facturación no se para**.
+- **Firmado en el momento** con un certificado electrónico cualificado. **El registro no existe hasta
+  que está firmado.**
+- **El registro de eventos**: el programa vigila que la hora no se aparte más de un minuto de la
+  oficial, y apunta los arranques y las anomalías, encadenado y firmado como manda la Orden.
+- **Guardado sin poder cambiarse** (solo inserción, como todo lo fiscal), tanto como manda la ley, y
+  **exportable entero**.
+- **Contestar a un requerimiento de Hacienda**: los registros del periodo pedido, tal cual se hicieron,
+  por el servicio web de la AEAT, con su respuesta guardada.
+- **El papel**: el QR tributario, sin la leyenda «VERI\*FACTU».
+- **La regla del año natural**: con VERI\*FACTU de verdad, a «sin envío» solo desde el 1 de enero
+  (`porQueNoSePuedeCambiar`, ya escrita y probada).
+- **La declaración responsable**, cambiada a «no solo VERI\*FACTU», con el asesor, y firmada otra vez.
+- **Pendiente de Richi y del asesor** antes de construirla: **con qué certificado se firma**. Puede ser
+  el de cada empresa, guardado cifrado en Estook, o uno de Estook con la representación de cada
+  empresa.
 
 ### T7 · Cobrar, la caja y las ventas
 

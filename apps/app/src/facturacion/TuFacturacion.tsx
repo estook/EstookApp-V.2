@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { enMinuscula, type PasoDeFacturacion } from '@estook/dominio';
+import { LAS_MODALIDADES, enMinuscula, type PasoDeFacturacion } from '@estook/dominio';
 import {
   Aviso,
   Boton,
@@ -70,9 +70,9 @@ function estaHecho(lo: MiFacturacion, paso: PasoDeFacturacion): boolean {
         lo.otroPrograma !== null
       );
     case 4:
-      return e.enVerifacti;
+      return e.modalidad === 'fuera_sii' || e.enVerifacti;
     case 5:
-      return e.autorizacion.estado === 'correcta';
+      return e.modalidad === 'fuera_sii' || e.autorizacion.estado === 'correcta';
   }
 }
 
@@ -94,9 +94,12 @@ function detalleDelPaso(lo: MiFacturacion, paso: PasoDeFacturacion): string {
         ? 'Tickets, facturas y correcciones'
         : `${lo.series.ticket} · ${lo.series.factura ?? '—'} · ${lo.series.rectificativa ?? '—'}`;
     case 4:
+      if (e?.modalidad === 'fuera_sii') return 'No hace falta: tu empresa está en el SII';
+      if (e?.modalidad === 'sin_envio') return 'Sin envío no pasa por Verifacti';
       return e?.enVerifacti === true ? 'Hecha' : 'Se hace sola';
     case 5:
       if (e === null) return 'La firma el titular';
+      if (e.modalidad === 'fuera_sii') return 'No hace falta: tu empresa está en el SII';
       if (e.autorizacion.estado === 'correcta') {
         return e.autorizacion.firmante === null
           ? 'Firmada'
@@ -196,7 +199,7 @@ export function TuFacturacion() {
           <p className="text-secundario text-texto-suave">
             {e === null
               ? `Para que ${lo.nombreDelLocal} haga tickets y facturas con Estook TPV.`
-              : `${e.nombre} · NIF ${e.nif} · ${lo.territorio === 'canarias' ? 'IGIC' : 'IVA'}`}
+              : `${e.nombre} · NIF ${e.nif} · ${lo.territorio === 'canarias' ? 'IGIC' : 'IVA'} · ${LAS_MODALIDADES[e.modalidad].nombre}`}
           </p>
 
           {e?.dePruebas === true && (
@@ -240,7 +243,8 @@ export function TuFacturacion() {
                 !parado &&
                 (hecho || ahora) &&
                 !(paso === 2 && e?.dePruebas === true) &&
-                !(paso === 4 && e?.enVerifacti === true);
+                !(paso === 4 && e?.enVerifacti === true) &&
+                !(paso >= 4 && e !== null && e.modalidad !== 'verifactu');
               return (
                 <li
                   key={paso}

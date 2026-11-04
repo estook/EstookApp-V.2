@@ -1021,3 +1021,14 @@
      hoja.** La prueba de T5 · 2 · 1 tocaba ahí, y según lo que tardara en subir la hoja, el toque se
      lo llevaba ella: a veces pasaba, a veces no. Una hoja se cierra en las pruebas con «Esc», y se
      comprueba que se ha ido (`sin-internet.spec.ts`, 2-nov).
+246. **Nunca se pasa a `prettier --write` la lista de lo que avisa `pnpm formato`.** Esa lista mira
+     todo el repositorio, también `.claude/` y sus `worktrees`, que no son de nadie y no se tocan sin
+     preguntar. El 4-nov se reformatearon así `.claude/launch.json`, dos guiones de `.claude/` y unos
+     ficheros de cobertura de los worktrees (solo espacios y comillas; los de cobertura los rehacen las
+     pruebas). **Se formatea solo lo que se ha tocado, nombrado a mano.**
+247. **Una documentación «sin campos» puede llevar la especificación entera dentro de la página.** La
+     de NIF de Verifacti no enseñaba los campos de `POST /nifs`; estaban en el JSON que la página
+     carga (OpenAPI dentro de lo que manda Next.js). Y **sus preguntas frecuentes cambiaron dos cosas
+     del Anexo**: en los registros va su identificación como sistema, no la nuestra, y la clave de
+     cada NIF se le pide a ella (0126, 4-nov). Antes de escribir una llamada se lee todo lo que
+     publica el proveedor, también lo que no está en la tabla.

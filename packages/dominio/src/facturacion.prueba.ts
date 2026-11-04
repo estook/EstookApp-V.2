@@ -112,7 +112,7 @@ describe('dónde está y cuándo se para (Anexo 1.4)', () => {
 describe('las series (Anexo 4.4)', () => {
   it('se proponen con las siglas del local', () => {
     expect(siglasDelLocal('Ikatz')).toBe('IKA');
-    expect(siglasDelLocal('El Fogón de Ana')).toBe('FA'.padEnd(3, 'X'));
+    expect(siglasDelLocal('El Fogón de Ana')).toBe('FA');
     expect(siglasDelLocal('Bar Pepe Centro')).toBe('BPC');
     expect(seriesPropuestas('Ikatz')).toEqual({
       ticket: 'T-IKA',

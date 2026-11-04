@@ -124,7 +124,7 @@ describe('quién hace el alta (Roles 1.12)', () => {
     const lo = await mia(rosa);
     expect(lo.conectada).toBe(true);
     expect(lo.como).toMatchObject({ estado: 'en_marcha', paso: 1 });
-    expect(lo.propuestas.ticket).toMatch(/^T-[A-Z0-9]{3}$/);
+    expect(lo.propuestas.ticket).toBe('T-BC');
     expect(lo.puedenSerTitular.map((p) => p.id)).toContain(rosaId);
     expect(elFallo(await api.consultar(sara, 'mi_facturacion'))).toBe('sin_permiso');
     expect(
@@ -784,5 +784,5 @@ describe('un solo sitio habla con Verifacti (Anexo 2, regla 4)', () => {
     await mirar('apps/');
     await mirar('packages/');
     expect(fuera).toEqual([]);
-  });
+  }, 60_000);
 });

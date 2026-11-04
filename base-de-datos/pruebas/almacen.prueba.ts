@@ -750,6 +750,13 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // **Y la 0098 (T5 · 2 · 2 · 2 · Los PIN y Aparatos) añade una**: `los_pin_del_centro`, las
     // huellas de los PIN del local, solo para una caja que ya hace de centro, para comprobarlos
     // sin internet. Son setenta y nueve.
+    //
+    // **Y la 0099 (T6 · 1 · El alta de facturación) añade ocho, a propósito**: un paso del alta
+    // cada una —guardar la empresa, usarla, dónde tributa, el alta en Verifacti, la autorización,
+    // «Pide tu factura»—, la que mira el permiso en ese local y `lleva_la_facturacion`, que dice
+    // quién ve la empresa mirando todos los locales de su organización. **La empresa y las series
+    // no se escriben de ninguna otra forma** (0126): la API no tiene escritura en ellas. Son
+    // ochenta y siete.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -770,6 +777,9 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'anotar_intento_en_terminal',
       'aparato_por_llave',
       'apuntar_como_esta_la_impresora',
+      // 0099 (0126): los pasos del alta de facturación.
+      'apuntar_el_alta_en_verifacti',
+      'apuntar_la_autorizacion',
       'apuntar_lo_impreso',
       'cambiar_la_suscripcion',
       'cambiar_lo_del_tpv_del_local',
@@ -779,6 +789,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'como_esta_fogon',
       'como_esta_la_jornada',
       'como_le_suena',
+      'contestar_donde_tributa',
       'crear_cuenta_con_negocio',
       'credencial_para_entrar',
       'cuentas_con_fogon',
@@ -793,16 +804,19 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'es_una_caja_viva',
       'esta_en_linea',
       'fichados_en_el_aparato',
+      'guardar_la_empresa',
       'han_fichado_la_salida',
       'horas_de_contrato',
       'la_carta_publica',
       'la_cocina_del_local',
       'la_cola_de_la_caja',
+      'la_organizacion_del_alta',
       'la_pantalla_apunta_en',
       'las_cuentas',
       'las_impresoras_de_la_caja',
       // 0097 (0123): lo que imprime la caja de centro sin internet.
       'las_impresoras_del_centro',
+      'lleva_la_facturacion',
       'lo_gastado_en_fogon',
       'lo_que_hacen_los_clientes',
       'locales_revisados_de_noche',
@@ -823,6 +837,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'pines_para_entrar',
       'poner_credencial',
       'poner_de_la_casa',
+      'poner_pide_tu_factura',
       'puede_ver_el_canal',
       'quien_lleva_el_servicio',
       'quien_recibe',
@@ -840,6 +855,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'turnos_de',
       'un_cliente',
       'unir_identidad',
+      'usar_la_empresa',
       'visto_por_ultima_vez',
       'zonas_que_ve',
     ]);

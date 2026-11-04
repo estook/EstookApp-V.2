@@ -1265,6 +1265,7 @@ export {
   TIPOS_DE_SERIE,
   comoEsElNif,
   comoVaLaFacturacion,
+  enMinuscula,
   foralDelCodigoPostal,
   laAutorizacionDe,
   laParada,

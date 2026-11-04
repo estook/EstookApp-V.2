@@ -302,7 +302,7 @@ export function primerNumero(prefijo: string, ano: number): string {
   return `${serieDelAno(prefijo, ano)}000001`;
 }
 
-/** «Ikatz» → «IKA»; «El Fogón de Ana» → «EFA»: tres letras del nombre del local. */
+/** «Ikatz» → «IKA»; «El Fogón de Ana» → «FA»; «Bar Centro» → «BC»: las siglas del local. */
 export function siglasDelLocal(nombre: string): string {
   const limpio = nombre
     .normalize('NFD')
@@ -314,12 +314,12 @@ export function siglasDelLocal(nombre: string): string {
     .split(/\s+/)
     .filter((p) => p !== '' && !['DE', 'DEL', 'LA', 'EL', 'LOS', 'LAS', 'Y'].includes(p));
   if (palabras.length === 0) return 'LOC';
-  if (palabras.length === 1) return (palabras[0] ?? 'LOC').slice(0, 3).padEnd(3, 'X');
+  // Una palabra, sus tres primeras letras; varias, sus iniciales: «BC» vale, sin rellenar.
+  if (palabras.length === 1) return (palabras[0] ?? 'LOC').slice(0, 3);
   return palabras
     .slice(0, 3)
     .map((p) => p[0] ?? '')
-    .join('')
-    .padEnd(3, 'X');
+    .join('');
 }
 
 /** Las tres series que se proponen: `T-`, `F-` y `R-` con las siglas del local (Anexo 4.4). */
@@ -373,6 +373,11 @@ export function sePuedeEmpezarOtra(estado: EstadoDeLaAutorizacion): boolean {
     estado === 'caducada' ||
     estado === 'cancelada'
   );
+}
+
+/** «Las series de…» → «las series de…»: solo la primera letra, que «Hacienda» sigue en mayúscula. */
+export function enMinuscula(frase: string): string {
+  return frase.charAt(0).toLowerCase() + frase.slice(1);
 }
 
 // ── En qué paso va el alta ─────────────────────────────────────────────────────────

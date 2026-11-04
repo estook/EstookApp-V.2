@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { PasoDeFacturacion } from '@estook/dominio';
+import { enMinuscula, type PasoDeFacturacion } from '@estook/dominio';
 import {
   Aviso,
   Boton,
@@ -48,6 +48,32 @@ const PASOS: readonly { readonly paso: PasoDeFacturacion; readonly titulo: strin
 
 function enQuePaso(lo: MiFacturacion): number {
   return lo.como.estado === 'lista' ? 6 : lo.como.paso;
+}
+
+/**
+ * Si un paso está hecho, **por lo suyo** y no por dónde va el alta: con la empresa de pruebas, el
+ * alta en Verifacti y la autorización vienen hechas aunque falten las series.
+ */
+function estaHecho(lo: MiFacturacion, paso: PasoDeFacturacion): boolean {
+  const e = lo.empresa;
+  if (e === null) return false;
+  switch (paso) {
+    case 1:
+      return true;
+    case 2:
+      return e.dePruebas || (e.enSii !== null && e.foral !== null && lo.como.estado !== 'parada');
+    case 3:
+      return (
+        lo.series.ticket !== null &&
+        lo.series.factura !== null &&
+        lo.series.rectificativa !== null &&
+        lo.otroPrograma !== null
+      );
+    case 4:
+      return e.enVerifacti;
+    case 5:
+      return e.autorizacion.estado === 'correcta';
+  }
 }
 
 /** Lo que se lee debajo de cada paso: lo guardado, o lo que falta. */
@@ -201,13 +227,13 @@ export function TuFacturacion() {
             </Aviso>
           ) : (
             lo.como.estado === 'en_marcha' && (
-              <p className="text-cuerpo font-medium">Te falta: {lo.como.falta.toLowerCase()}</p>
+              <p className="text-cuerpo font-medium">Te falta: {enMinuscula(lo.como.falta)}</p>
             )
           )}
 
           <ol className="flex flex-col">
             {PASOS.map(({ paso, titulo }) => {
-              const hecho = llega > paso;
+              const hecho = estaHecho(lo, paso);
               const ahora = llega === paso && lo.como.estado !== 'lista';
               const parado = lo.como.estado === 'parada' && paso >= 3;
               const puedeAbrir =

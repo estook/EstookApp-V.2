@@ -246,7 +246,8 @@ revoke all on function estook.la_organizacion_del_alta(uuid) from public;
 grant execute on function estook.la_organizacion_del_alta(uuid) to estook_api;
 
 -- Cada paso deja su rastro en la auditoría, que solo crece (0006): quién, qué y cuándo. Es lo que
--- se pregunta cuando algo no cuadra con Hacienda.
+-- se pregunta cuando algo no cuadra con Hacienda. **Sin privilegio propio**: solo la llaman las
+-- funciones del alta, que ya lo tienen; la API no la puede llamar para apuntar lo que quiera.
 create function estook.apuntar_lo_del_alta(
   p_local      uuid,
   p_accion     text,
@@ -257,7 +258,6 @@ create function estook.apuntar_lo_del_alta(
 returns void
 language sql
 volatile
-security definer
 set search_path = estook, pg_catalog, pg_temp
 as $$
   insert into estook.auditoria (
@@ -619,6 +619,14 @@ insert into plataforma.condicion_para_facturar (numero, texto) values
   (10, 'El soporte en horario de servicio funcionando, y el latido de cada terminal a la vista de soporte'),
   (11, 'La publicación en Cloudflare Pages, con el repositorio privado');
 
+alter table plataforma.condicion_para_facturar enable row level security;
+
+create policy condicion_la_lee_el_admin on plataforma.condicion_para_facturar
+  for select using (plataforma.nivel_de(estook.persona_actual()) is not null);
+create policy condicion_la_marca_el_admin_total on plataforma.condicion_para_facturar
+  for update using (plataforma.nivel_de(estook.persona_actual()) = 'total')
+  with check (plataforma.nivel_de(estook.persona_actual()) = 'total');
+
 revoke all on plataforma.condicion_para_facturar from public;
 grant select, update (cumplida_en, cumplida_por, nota) on plataforma.condicion_para_facturar to estook_api;
 
@@ -641,6 +649,15 @@ comment on table plataforma.productor is
   'Quién produce Estook, para su declaración responsable (0126): nombre, NIF, dirección y, al firmarla, fecha y lugar. Sin el texto del asesor y la firma, es un borrador.';
 
 insert into plataforma.productor (unica) values (true);
+
+alter table plataforma.productor enable row level security;
+
+-- La lee cualquiera que use el programa: la declaración tiene que estar a mano de todos (Orden
+-- HAC/1177/2024, art. 15). La cambia solo el admin total.
+create policy productor_lo_lee_cualquiera on plataforma.productor for select using (true);
+create policy productor_lo_cambia_el_admin_total on plataforma.productor
+  for update using (plataforma.nivel_de(estook.persona_actual()) = 'total')
+  with check (plataforma.nivel_de(estook.persona_actual()) = 'total');
 
 revoke all on plataforma.productor from public;
 grant select, update on plataforma.productor to estook_api;

@@ -19,7 +19,7 @@
 > #141), **en producción**; y **T4 · 2 · La barra y la alergia de la mesa**
 > ([0117](decisiones/0117-t4-2-la-barra-y-la-alergia.md), migración 0092, #144), **en producción**.
 > **La entrada nueva** ([0118](decisiones/0118-la-entrada-del-tpv.md), sin migración), con sus
-> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en producción (#148); después, **la pausa del TPV** ([0121](decisiones/0121-la-pausa-del-tpv.md)) y **T5 · 2 · Sin internet**, en dos: **T5 · 2 · 1 · Cada aparato aguanta solo** ([0122](decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)) y **T5 · 2 · 2 · La caja de centro** ([0123](decisiones/0123-t5-2-2-la-caja-de-centro.md), [0124](decisiones/0124-t5-2-2-2-los-pin-y-aparatos.md)), **en producción** (la caja 1.2.0, publicada el 2-nov). **T6 · La facturación**: su «Terminado cuando», escrito el 2-nov, y sus maquetas, **aprobadas** con las tres respuestas de Richi ([0125](decisiones/0125-t6-la-facturacion-las-tres-respuestas.md)).
+> maquetas dadas por buenas el 26-oct, fusionada (#145). **T5 · La caja para Windows**, en dos ([0119](decisiones/0119-t5-la-caja-para-windows.md)): **T5 · 1 · Imprimir y el cajón**, en producción (#148); después, **la pausa del TPV** ([0121](decisiones/0121-la-pausa-del-tpv.md)) y **T5 · 2 · Sin internet**, en dos: **T5 · 2 · 1 · Cada aparato aguanta solo** ([0122](decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)) y **T5 · 2 · 2 · La caja de centro** ([0123](decisiones/0123-t5-2-2-la-caja-de-centro.md), [0124](decisiones/0124-t5-2-2-2-los-pin-y-aparatos.md)), **en producción** (la caja 1.2.0, publicada el 2-nov). **T6 · La facturación**: su «Terminado cuando», escrito el 2-nov, y sus maquetas, **aprobadas** con las tres respuestas de Richi ([0125](decisiones/0125-t6-la-facturacion-las-tres-respuestas.md)); **T6 · 1 · El alta**, construida el 4-nov ([0126](decisiones/0126-t6-1-el-alta-de-facturacion.md), migración 0099), por fusionar.
 
 ## Cómo se trabaja cada entrega, para que no haya nada inventado
 
@@ -522,6 +522,26 @@ vista; y donde se cobra, **qué falta**, en vez de un error.
 - **Pruebas y real, aparte**: cada documento y cada serie llevan su entorno; **«Pasar a real»
   empieza las series en 1** y no arrastra nada de pruebas.
 - **En IKATZ**, Richi hace el alta en pruebas; y un local de prueba en Bizkaia se para con su motivo.
+
+### T6 · 1 · El alta, entregada (4-nov-2026)
+
+En su pull request ([0126](decisiones/0126-t6-1-el-alta-de-facturacion.md), migración **0099**, la
+API pasa a **119 consultas y 330 comandos**, 153 tablas). Todo lo de arriba, con **tres cosas que
+cambian lo escrito**, por lo que dice Verifacti en su documentación (leída entera el 4-nov):
+
+- **Ajustes › Facturación la ven el gerente, la dirección y el administrador de cuenta**, como dice
+  Roles 1.12 (arriba decía «solo el titular»). **La autorización ante Hacienda, solo el titular**, y
+  lo mira también la base.
+- **En los registros va la identificación de Verifacti, no la de Estook**: la declaración pone a
+  Verifacti como componente externo con la versión que da su API, y la prueba mira que la de Estook
+  salga de un solo sitio (arriba decía que la versión de Estook viajaba en cada registro).
+- **La clave de cada NIF no se guarda en Estook**, ni en Vault: se le pide a Verifacti con la de la
+  cuenta. **Y las series no llevan entorno**: emitir (T6 · 2) numera aparte pruebas y real.
+
+Lo comprueban `el-alta-de-facturacion.prueba.ts`, contra la base y un Verifacti de mentira (los cinco
+pasos, quién puede, las paradas, que las series solo se insertan, la firma que se recupera sin pagar
+otra, el admin y pasar a real), y la prueba de pantalla del mismo nombre. «Imprimir un ticket de
+prueba», que dibujaba la maqueta en Ajustes, va con T6 · 2: necesita emitir.
 
 ### T6 · 2 · Emitir, terminado cuando
 

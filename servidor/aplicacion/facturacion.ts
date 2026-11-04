@@ -1,5 +1,6 @@
 import {
   comoVaLaFacturacion,
+  enMinuscula,
   seriesPropuestas,
   type ComoVaLaFacturacion,
   type CodigoDeError,
@@ -306,7 +307,7 @@ export function exigirElPaso(lo: LoDelLocal, paso: 2 | 3 | 4 | 5): void {
   const llega = lo.como.estado === 'lista' ? 6 : lo.como.paso;
   if (llega < paso) {
     throw new FalloDeAplicacion('faltan_datos', {
-      porque: `Antes de este paso falta: ${lo.como.estado === 'en_marcha' ? lo.como.falta.toLowerCase() : 'lo anterior'}.`,
+      porque: `Antes de este paso falta: ${lo.como.estado === 'en_marcha' ? enMinuscula(lo.como.falta) : 'lo anterior'}.`,
     });
   }
 }

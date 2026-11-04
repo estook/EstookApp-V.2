@@ -387,7 +387,7 @@ interface ProveedorFacturacion {
 
 `servidor/facturacion/` es el único sitio que importa el cliente de Verifacti. **Nunca se llama al endpoint de eliminación permanente de un NIF:** borra sus registros de forma irreversible y va justo contra lo que este módulo promete. Dar de baja a un cliente es **desactivar**, que es reversible.
 
-**Las claves viven en el servidor**, en Supabase Vault, una por NIF y entorno. No aparecen en el cliente, ni en los registros de la aplicación, ni en un mensaje de error.
+**Las claves viven en el servidor.** La de la cuenta (`vfn_…`, para la API de NIF) está en los secretos de Supabase como `VERIFACTI_CLAVE_DE_CUENTA`. **La de cada NIF y entorno no se guarda en Estook**: se le pide a Verifacti con la de la cuenta cuando hace falta y se recuerda una hora como mucho ([0126](../decisiones/0126-t6-1-el-alta-de-facturacion.md); antes decía Vault). Ninguna aparece en el cliente, en los registros de la aplicación ni en un mensaje de error.
 
 ## 4.3 Alta de facturación de un local
 
@@ -396,7 +396,7 @@ Cinco pasos, uno por pantalla, y **hasta el último el botón de cobrar sale blo
 1. **La empresa fiscal** ([0060](../decisiones/0060-la-empresa-fiscal.md)): razón social o nombre y apellidos, NIF, domicilio fiscal completo y **quién es su titular o representante legal**. Es lo que sale impreso en cada ticket. **Si la empresa ya existe** —otro local suyo ya cobra con Estook—, se elige y no se vuelve a escribir nada.
 2. **Régimen:** **no se pregunta el territorio**, que ya lo dijo el alta del local (M5) y vive en `local.territorio`; se enseña y se pide confirmarlo, porque el impuesto lo decide dónde se vende. Lo que sí se pregunta, **de la empresa**, es **si está acogida al SII** y **si su domicilio fiscal es foral**. Con eso, **IVA peninsular o balear e IGIC canario siguen adelante**; foral, SII, Ceuta y Melilla paran el módulo, cada uno con su explicación y diciendo si es definitivo o un «todavía no» (1.4 y [0043](../decisiones/0043-hasta-donde-llega-la-facturacion.md)).
 3. **Series:** prefijo propio, comprobando que no choca con otro sistema que el local ya use. Propuesta: `T-{LOCAL}-{AÑO}-` para tickets, `F-{LOCAL}-{AÑO}-` para facturas y `R-{LOCAL}-{AÑO}-` para rectificativas. **Serie más número no pasan de 60 caracteres.**
-4. **Alta del NIF en Verifacti**, por su API de gestión de NIF, y guardado de la clave en Vault. **El NIF se comprueba contra la AEAT al escribirlo** (su API lo ofrece), no al final: un NIF mal escrito se descubre en el paso 1, no en el 4.
+4. **Alta del NIF en Verifacti**, por su API de gestión de NIF (`POST /nifs`), en su entorno de pruebas hasta pasar a real; su clave no se guarda (4.2). **El NIF se comprueba contra la AEAT al escribirlo** (su API lo ofrece), no al final: un NIF mal escrito se descubre en el paso 1, no en el 4.
 5. **Autorización ante Hacienda:** se firma el modelo de representación que permite que los registros se envíen en nombre del negocio. **Un modelo por NIF**, y hay dos formas (comprobado el 30-sep-2026):
    - **En línea, sin certificado**, solo si el titular es **una persona física** (un autónomo): recibe un enlace por correo y se identifica con su DNI o su pasaporte. El nombre tiene que coincidir con el de la AEAT. **Cuesta 2,90 € + IVA por cada intento**, se complete o no, así que el enlace no se vuelve a pedir: se recupera el que está en curso.
    - **Con certificado electrónico**, que es la única para **una sociedad**: se descarga el PDF ya relleno, lo firma su representante y se sube.
@@ -579,7 +579,7 @@ Al volver la conexion: se emiten en ese orden
 
 ## 4.14 La declaración responsable
 
-Una sección fija en **Ajustes › Legal › Declaración responsable del sistema de facturación**. La Orden exige que esté **dentro del propio sistema informático, de forma legible e individualizada, y accesible por el usuario de forma rápida, fácil e intuitiva**; y además que se pueda **entregar en papel o en un formato electrónico gratuito y de uso extendido** (un PDF del servidor, regla 7).
+Una sección fija en **Ajustes › Facturación › Declaración responsable**, y otra en los **Ajustes de Estook TPV**, que la ve cualquiera que esté en la caja ([0126](../decisiones/0126-t6-1-el-alta-de-facturacion.md)). La Orden exige que esté **dentro del propio sistema informático, de forma legible e individualizada, y accesible por el usuario de forma rápida, fácil e intuitiva**; y además que se pueda **entregar en papel o en un formato electrónico gratuito y de uso extendido** (un PDF del servidor, regla 7).
 
 **Qué lleva, comprobado el 20 de septiembre de 2026 en el [artículo 15 de la Orden HAC/1177/2024](https://www.boe.es/buscar/act.php?id=BOE-A-2024-22138)** —capítulo IV, que tiene ese único artículo—:
 
@@ -601,7 +601,8 @@ Una sección fija en **Ajustes › Legal › Declaración responsable del sistem
 **Y tres reglas que van con esto:**
 
 - El texto lo redacta el asesor sobre la plantilla del proveedor; **la app solo lo muestra**, no lo compone.
-- El **identificador y la versión del sistema** que viajan en cada registro tienen que coincidir **exactamente** con lo declarado. Si no coinciden, la declaración no vale. Por eso la versión sale de un solo sitio y hay una prueba que lo comprueba.
+- **Con Verifacti, en cada registro va la identificación de Verifacti como sistema**, no la de Estook: lo dicen sus preguntas frecuentes (mirado el 4-nov-2026; corrige lo que decía aquí). Por eso la declaración de Estook lo pone como componente externo **con la versión que da su API en ese momento** (`GET /verifactu/declaracion`), y la versión de Estook sale de un solo sitio (`servidor/facturacion/sistema.ts`), que una prueba compara con lo que se enseña ([0126](../decisiones/0126-t6-1-el-alta-de-facturacion.md)).
+- **Los datos del productor no van en el código**, que es público: se escriben en el admin. Hasta tener el texto del asesor, la fecha y el lugar, la declaración sale como **borrador** y lo dice.
 - Si cambia la parte fiscal del software, se revisa con el asesor si hay que volver a firmarla.
 
 ---
@@ -837,7 +838,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 - `codigo_para_vincular` — local, **función, nombre y de quién** del aparato que se va a vincular, quién lo creó, **huella del código** (nunca el código), caduca en (10 minutos), intentos fallidos (muere a los 5), usado en y por qué aparato (11.3)
 - `turno_del_operador` — terminal, persona, desde, hasta, por qué acabó (bloqueo, otro operador, salir)
 - `aprobacion` — qué operación y sobre qué, **quién la pidió** y **quién la aprobó**, motivo, terminal, cuándo, **usada**; caduca a los dos minutos y sirve una vez
-- `empresa` — la empresa fiscal ([0060](../decisiones/0060-la-empresa-fiscal.md)): organización, razón social, NIF, nombre comercial, domicilio fiscal, SII, foral, **titular** (una persona), representación ante Hacienda con quién firmó y cuándo, estado del alta. Y `local.empresa_id`
+- `empresa` — la empresa fiscal ([0060](../decisiones/0060-la-empresa-fiscal.md)), construida en T6 · 1 ([0126](../decisiones/0126-t6-1-el-alta-de-facturacion.md), migración 0099): organización, NIF y nombre **como los tiene Hacienda**, si es persona o sociedad, nombre comercial, domicilio fiscal, SII, foral (y cuál), **titular** (una persona que puede hacer el alta), si es **la de pruebas** de Verifacti, su **entorno** (pruebas o real, y quién la pasó), su alta en Verifacti y **la autorización** con sus seis estados, la forma, quién firmó, cuándo empezó, caduca y quedó correcta. Y en el local, `empresa_id`, si ya factura con otro programa y «Pide tu factura»
 
 ## 7.2 Sala
 
@@ -885,7 +886,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 
 ## 7.6 Facturación (esquema `facturacion`, solo inserción)
 
-- `serie` — empresa, local, tipo, prefijo, ejercicio, último número
+- `serie` — local, empresa, tipo y **prefijo**, solo de inserción: la de ahora es la última de su local y su tipo (T6 · 1). **El ejercicio y el número los pone emitir** (T6 · 2), y pruebas y real numeran aparte
 - `documento` — empresa, serie, número, tipo, fecha de expedición, fecha de operación, destinatario si lo hay, base, cuota, total, **copia congelada de las líneas y del desglose**, **copia de los datos de la empresa del momento**, `sustituye_a` (F3), `rectifica_a` (R), referencia al cobro, y su identificador, que es **la clave de idempotencia** ante el proveedor ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)). **Nace preparado y no cambia nunca más**
 - `registro` — documento, lo que devolvió el proveedor al registrarlo (`uuid`, **QR**, **huella**), y cada estado ante la AEAT que llegue después, **una fila por novedad**
 - `envio` — documento, **cada intento**: cuándo, qué se mandó, qué contestó, código

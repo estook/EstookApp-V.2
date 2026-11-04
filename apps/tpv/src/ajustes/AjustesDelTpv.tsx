@@ -13,6 +13,7 @@ import { PinYBloqueo } from './PinYBloqueo.tsx';
 import { CocinaYBarra } from './CocinaYBarra.tsx';
 import { ImpresorasYCajon } from './ImpresorasYCajon.tsx';
 import { Productos } from '../productos/Productos.tsx';
+import { LaDeclaracion } from './LaDeclaracion.tsx';
 
 /**
  * **Ajustes del TPV**, detrás del engranaje (la entrada nueva, maqueta 2; Anexo 11.13): todo lo
@@ -29,13 +30,20 @@ interface Apartado {
   readonly nombre: string;
   readonly dibujo: Dibujo;
   readonly tono: Tono;
-  readonly grupo: 'Hoy' | 'Lo que se vende' | 'Lo que se conecta' | 'Seguridad';
+  readonly grupo: 'Hoy' | 'Lo que se vende' | 'Lo que se conecta' | 'Seguridad' | 'Hacienda';
   /** A dónde lleva: la sala y los agotados son pantallas enteras. */
   readonly ir: string;
 }
 
-const GRUPOS = ['Hoy', 'Lo que se vende', 'Lo que se conecta', 'Seguridad'] as const;
-const DE_AQUI_DENTRO: readonly string[] = ['productos', 'cocina', 'aparatos', 'impresoras', 'pin'];
+const GRUPOS = ['Hoy', 'Lo que se vende', 'Lo que se conecta', 'Seguridad', 'Hacienda'] as const;
+const DE_AQUI_DENTRO: readonly string[] = [
+  'productos',
+  'cocina',
+  'aparatos',
+  'impresoras',
+  'pin',
+  'declaracion',
+];
 
 function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
   const ajusta = puedeEditar(permisos, 'accion.ajustes_del_tpv');
@@ -118,6 +126,16 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
           } as const,
         ]
       : []),
+    // La declaración responsable (0126), **para todos los de la caja**: la ley la pide a mano de
+    // quien usa el programa, no solo de quien lo ajusta.
+    {
+      id: 'declaracion',
+      nombre: 'Declaración responsable',
+      dibujo: 'documento',
+      tono: 'gris',
+      grupo: 'Hacienda',
+      ir: 'ajustes/declaracion',
+    } as const,
   ];
 }
 
@@ -224,6 +242,8 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
             <CocinaYBarra />
           ) : elegido === 'impresoras' ? (
             <ImpresorasYCajon />
+          ) : elegido === 'declaracion' ? (
+            <LaDeclaracion />
           ) : (
             <LosAparatos resto={resto} />
           )}
@@ -261,6 +281,7 @@ function ComoEsta({ id }: { readonly id: string }) {
   if (id === 'cocina') return <LaCocina />;
   if (id === 'aparatos') return <LosAparatosDelLocal />;
   if (id === 'impresoras') return <LasImpresorasDelLocal />;
+  if (id === 'declaracion') return <>Lo que Estook declara a Hacienda</>;
   return <ElBloqueo />;
 }
 

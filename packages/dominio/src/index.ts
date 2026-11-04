@@ -1256,3 +1256,39 @@ export type {
   PersonaDelCentro,
   SistemaDelAparato,
 } from './centro-pin.ts';
+
+// ── T6 · 1 · El alta de facturación (0126): el NIF, la provincia, las paradas y el paso ──
+export {
+  FORMA_DEL_PREFIJO,
+  LA_AUTORIZACION_EN_LLANO,
+  PARADAS,
+  TIPOS_DE_SERIE,
+  comoEsElNif,
+  comoVaLaFacturacion,
+  foralDelCodigoPostal,
+  laAutorizacionDe,
+  laParada,
+  leerElResultado,
+  normalizarNif,
+  prefijoValido,
+  primerNumero,
+  provinciaDelCodigoPostal,
+  sePuedeEmpezarOtra,
+  serieDelAno,
+  seriesPropuestas,
+  siglasDelLocal,
+} from './facturacion.ts';
+export type {
+  ComoEsElNif,
+  ComoVaLaFacturacion,
+  EstadoDeLaAutorizacion,
+  HaciendaForal,
+  LoQueSeSabeDeLaFacturacion,
+  MotivoDeParada,
+  NifEnHacienda,
+  Parada,
+  PasoDeFacturacion,
+  PersonaDelNif,
+  TerritorioDelLocal,
+  TipoDeSerie,
+} from './facturacion.ts';

@@ -79,6 +79,9 @@ export const PERMISOS_DE_ACCION = [
   // T5 · 1 (Roles 1.12, 0119): abrir el cajón sin una venta, con motivo; el jefe de sala y el
   // gerente. Queda quién y cuándo.
   'accion.abrir_el_cajon',
+  // T6 · 1 (Roles 1.12, 0126): el alta de facturación del local, el gerente, la dirección y el
+  // administrador de cuenta. La autorización ante Hacienda, además, solo su titular.
+  'accion.alta_de_facturacion',
 ] as const;
 
 export const PERMISOS = [...PERMISOS_DE_APP, ...PERMISOS_DE_DATO, ...PERMISOS_DE_ACCION] as const;

@@ -11,6 +11,7 @@ import type { MotorDePdf } from '../infraestructura/pdf.ts';
 import type { Pagos } from '../infraestructura/stripe.ts';
 import type { SesionViva, Sql } from '../infraestructura/postgres.ts';
 import type { ModeloDeFogon } from '../ia/modelo.ts';
+import type { Verifacti } from '../facturacion/verifacti.ts';
 
 /**
  * El contrato de la capa de aplicacion (M2).
@@ -90,6 +91,12 @@ export interface Contexto {
    * Fogón no tenga que saber que existe.
    */
   readonly fogon?: ModeloDeFogon | null;
+  /**
+   * Verifacti, la facturación (T6 · 1, 0126). Nulo sin `VERIFACTI_CLAVE_DE_CUENTA`, y entonces
+   * el alta de facturación **dice que todavía no está conectada** en vez de romperse.
+   * Opcional para que lo que no es la facturación no tenga que saber que existe.
+   */
+  readonly facturacion?: Verifacti | null;
   /**
    * **Lo hecho sin conexión** (0070): cuántos milisegundos hace que se hizo, según el
    * móvil, que lo ha tenido guardado hasta volver la señal. Nulo, o sin poner, si se

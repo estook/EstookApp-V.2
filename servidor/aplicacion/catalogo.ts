@@ -412,6 +412,30 @@ import { quienSoy } from './consultas/quien-soy.ts';
 import { quienTieneAcceso } from './consultas/quien-tiene-acceso.ts';
 import { unLocal } from './consultas/un-local.ts';
 import type { Comando, Consulta } from './contrato.ts';
+import {
+  comprobarUnNif,
+  contestarDondeTributa,
+  darDeAltaEnVerifacti,
+  elModeloParaFirmar,
+  firmarEnLinea,
+  guardarLaEmpresa,
+  laDeclaracionResponsable,
+  laDeclaracionResponsableEnPdf,
+  mandarElModeloFirmado,
+  miFacturacion,
+  mirarLaAutorizacion,
+  ponerLasSeries,
+  ponerPideTuFactura,
+  usarLaEmpresa,
+} from './comandos/facturacion.ts';
+import {
+  guardarElProductor,
+  laFacturacionEnElAdmin,
+  marcarCondicion,
+  pasarAReal,
+  ponerLaEmpresaDePruebas,
+  probarVerifacti,
+} from './comandos/facturacion-en-el-admin.ts';
 import { escribirLosPasosConFogon, preguntarAFogon, rellenarConFogon } from './comandos/fogon.ts';
 import {
   encenderFogon,
@@ -648,6 +672,12 @@ export const catalogo = {
     // Fogón 1 · 3 (0098): la última revisión y lo que sabe del cuadrante. No gastan.
     [laRevisionDeFogon.nombre]: laRevisionDeFogon,
     [loQueSabeFogonDelCuadrante.nombre]: loQueSabeFogonDelCuadrante,
+    // T6 · 1 · El alta de facturación (0126): cómo va, y la declaración responsable de Estook,
+    // en la app y en Estook TPV, también en PDF. Y en el admin, las once condiciones.
+    [miFacturacion.nombre]: miFacturacion,
+    [laDeclaracionResponsable.nombre]: laDeclaracionResponsable,
+    [laDeclaracionResponsableEnPdf.nombre]: laDeclaracionResponsableEnPdf,
+    [laFacturacionEnElAdmin.nombre]: laFacturacionEnElAdmin,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -1121,5 +1151,26 @@ export const catalogo = {
     [hacerElCuadranteConFogon.nombre]: hacerElCuadranteConFogon,
     [ponerElCuadranteDeFogon.nombre]: ponerElCuadranteDeFogon,
     [responderResenaConFogon.nombre]: responderResenaConFogon,
+
+    // ── T6 · 1 · El alta de facturación (0126) ───────────────────────────────
+    //
+    // Los cinco pasos de Ajustes › Facturación, «Pide tu factura», y en el admin la empresa de
+    // pruebas, las once condiciones, el productor y pasar a real.
+    [comprobarUnNif.nombre]: comprobarUnNif,
+    [guardarLaEmpresa.nombre]: guardarLaEmpresa,
+    [usarLaEmpresa.nombre]: usarLaEmpresa,
+    [contestarDondeTributa.nombre]: contestarDondeTributa,
+    [ponerLasSeries.nombre]: ponerLasSeries,
+    [darDeAltaEnVerifacti.nombre]: darDeAltaEnVerifacti,
+    [firmarEnLinea.nombre]: firmarEnLinea,
+    [elModeloParaFirmar.nombre]: elModeloParaFirmar,
+    [mandarElModeloFirmado.nombre]: mandarElModeloFirmado,
+    [mirarLaAutorizacion.nombre]: mirarLaAutorizacion,
+    [ponerPideTuFactura.nombre]: ponerPideTuFactura,
+    [probarVerifacti.nombre]: probarVerifacti,
+    [marcarCondicion.nombre]: marcarCondicion,
+    [guardarElProductor.nombre]: guardarElProductor,
+    [ponerLaEmpresaDePruebas.nombre]: ponerLaEmpresaDePruebas,
+    [pasarAReal.nombre]: pasarAReal,
   } as Record<string, Comando<never, unknown>>,
 };

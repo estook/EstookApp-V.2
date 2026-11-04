@@ -53,6 +53,7 @@ import { pdfDeMentira } from '../../servidor/infraestructura/pdf.ts';
 import { movilDeMentira } from '../../servidor/infraestructura/movil.ts';
 import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
 import { modeloDeMentira } from '../../servidor/ia/modelo.ts';
+import { verifactiDeMentira } from '../../servidor/facturacion/verifacti-de-mentira.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import { resolverLaSesion } from '../../servidor/infraestructura/quien-llama.ts';
 import { sembrarAcceso } from '../semillas/acceso.ts';
@@ -183,6 +184,9 @@ const alSegundo = alSegundoDeMentira();
 // 0097 · Fogón, de mentira: contesta sin llamar a ningún modelo y no gasta nada.
 const fogon = modeloDeMentira();
 
+// 0126 · Verifacti, de mentira: Hacienda conoce unos pocos NIF y la firma espera a firmarse.
+const facturacion = verifactiDeMentira();
+
 /**
  * El Stripe de mentira (0048): guarda en memoria y avisa firmado, por el mismo
  * camino que Stripe. Su página de pago es `/api/pruebas/stripe/pagar`, más abajo.
@@ -238,6 +242,7 @@ async function unaTransaccion(quien, hacer) {
       movil,
       alSegundo,
       fogon,
+      facturacion,
       correlacionId: quien.correlacionId,
       desde: quien.desde ?? null,
       ahora: new Date(Date.now()),

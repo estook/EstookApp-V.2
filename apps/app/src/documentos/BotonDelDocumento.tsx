@@ -34,6 +34,15 @@ function deBase64(base64: string, tipo: string): Blob {
   return new Blob([bytes], { type: tipo });
 }
 
+/** Un documento que ha llegado del servidor, bajado como fichero (el modelo para firmar, 0126). */
+export function bajarElDocumento(documento: UnDocumento): File {
+  const fichero = new File([deBase64(documento.base64, documento.tipo)], documento.nombre, {
+    type: documento.tipo,
+  });
+  descargar(fichero);
+  return fichero;
+}
+
 function descargar(fichero: File): void {
   const enlace = document.createElement('a');
   enlace.href = URL.createObjectURL(fichero);

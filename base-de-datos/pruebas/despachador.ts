@@ -16,6 +16,7 @@ import type { MotorDePdf } from '../../servidor/infraestructura/pdf.ts';
 import type { MovilSaliente } from '../../servidor/infraestructura/movil.ts';
 import type { AlSegundo } from '../../servidor/infraestructura/al-segundo.ts';
 import type { ModeloDeFogon } from '../../servidor/ia/modelo.ts';
+import type { Verifacti } from '../../servidor/facturacion/verifacti.ts';
 import {
   comoPostgres,
   elSqlDePglite,
@@ -94,6 +95,8 @@ export function montarLaApi(
     readonly alSegundo?: AlSegundo | null;
     /** El modelo de Fogón (0097): sin decir nada, no hay (como en la API sin clave). */
     readonly fogon?: ModeloDeFogon | null;
+    /** Verifacti (0126): sin decir nada, no hay (como en la API sin su clave). */
+    readonly facturacion?: Verifacti | null;
     /** La hora que ve la API, para probar lo que depende de los días que pasan. */
     readonly ahora?: () => Date;
   } = {},
@@ -149,6 +152,7 @@ export function montarLaApi(
             movil: opciones.movil ?? null,
             alSegundo: opciones.alSegundo ?? null,
             fogon: opciones.fogon ?? null,
+            facturacion: opciones.facturacion ?? null,
             correlacionId: quien.correlacionId,
             desde: quien.desde ?? null,
             ahora: opciones.ahora?.() ?? new Date(Date.now()),

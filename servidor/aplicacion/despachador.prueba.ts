@@ -554,6 +554,14 @@ describe('las puertas se cierran solas', () => {
         'admin_encender_fogon',
         'admin_encender_fogon_del_cliente',
         'admin_probar_fogon',
+        // T6 · 1 (0126) · la facturación: las once condiciones, el productor, la empresa de
+        // pruebas, pasar a real y probar la clave de Verifacti.
+        'admin_facturacion',
+        'admin_probar_verifacti',
+        'admin_marcar_condicion',
+        'admin_guardar_el_productor',
+        'admin_poner_la_empresa_de_pruebas',
+        'admin_pasar_a_real',
       ].sort(),
     );
 
@@ -769,6 +777,10 @@ describe('los secretos no se guardan para repetirlos', () => {
         // 0124 · las huellas de los PIN del local, para la caja de centro: no se guardan en
         // ninguna tabla para repetirlas.
         'los_pin_del_centro',
+        // 0126 · el enlace para firmar la autorización ante Hacienda en nombre de la empresa:
+        // es del titular, y no se guarda para repetirlo.
+        'firmar_en_linea',
+        'mirar_la_autorizacion',
       ].sort(),
     );
   });
@@ -804,10 +816,15 @@ describe('los secretos no se guardan para repetirlos', () => {
     //
     // T5 · 1 (0119) · la cola de la caja, cada vez que oye el toque y una vez por minuto, y
     // cómo salió cada papel: lo impreso se queda impreso, así que decirlo dos veces es lo mismo.
+    //
+    // T6 · 1 (0126) · comprobar un NIF en Hacienda y descargar el modelo para firmar: no
+    // cambian nada, y guardar el PDF del modelo en una tabla sería guardarlo para nada.
     expect(sinRecordar).toEqual([
       'apuntar_lo_impreso',
       'bloquear',
+      'comprobar_un_nif',
       'destachar_en_la_pantalla',
+      'el_modelo_para_firmar',
       'fichar_aqui',
       'fichar_en_el_tpv',
       'fichar_en_la_caja',
@@ -967,6 +984,9 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'marcar_agotado',
         'quitar_agotado',
         'los_agotados',
+        // La declaración responsable de Estook (0126): legible desde todo el programa.
+        'la_declaracion_responsable',
+        'la_declaracion_responsable_en_pdf',
       ].sort(),
     );
     const solo = operaciones.filter((o) => o.enElTpv === 'solo').map((o) => o.nombre);

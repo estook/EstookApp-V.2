@@ -2,13 +2,13 @@
 
 > ## Cómo está
 >
-> | Qué              | Cómo está                                                                        |
-> | ---------------- | -------------------------------------------------------------------------------- |
-> | El pull request  | **«T6 · 1 · El alta de facturación»**, abierto, para fusionar                    |
-> | La base de datos | **Migración 0099**: falta migrarla. Tiene que quedar **99 de 99**                |
-> | La API           | Falta desplegarla. Tiene que quedar con **119 consultas y 331 comandos**         |
-> | La caja          | **No hay caja nueva**: nada que publicar                                         |
-> | Verifacti        | Tu clave de la cuenta, puesta en Supabase el 4-nov (`VERIFACTI_CLAVE_DE_CUENTA`) |
+> | Qué              | Cómo está                                                                         |
+> | ---------------- | --------------------------------------------------------------------------------- |
+> | El pull request  | **#160** «T6 · 1 · El alta de facturación, y cómo factura cada empresa», en verde |
+> | La base de datos | **Migración 0099**: falta migrarla. Tiene que quedar **99 de 99**                 |
+> | La API           | Falta desplegarla. Tiene que quedar con **119 consultas y 331 comandos**          |
+> | La caja          | **No hay caja nueva**: nada que publicar                                          |
+> | Verifacti        | Tu clave de la cuenta, puesta en Supabase el 4-nov (`VERIFACTI_CLAVE_DE_CUENTA`)  |
 >
 > **Todo es en pruebas**: nada llega a Hacienda de verdad hasta las once condiciones del Anexo.
 
@@ -35,7 +35,7 @@ Lo decidido, en la [0126](decisiones/0126-t6-1-el-alta-de-facturacion.md).
 
 Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
 
-1. **En GitHub**: abre el pull request **«T6 · 1 · El alta de facturación»** y espera a que las
+1. **En GitHub**: abre el pull request **#160** y espera a que las
    comprobaciones estén **en verde**. Después: **Merge pull request** → **Confirm merge**.
 2. **En tu ordenador**, en PowerShell, uno por uno:
 

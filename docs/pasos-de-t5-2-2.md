@@ -2,13 +2,16 @@
 
 > ## Cómo está
 >
-> | Qué              | Cómo está                                                                                                      |
-> | ---------------- | -------------------------------------------------------------------------------------------------------------- |
-> | La 1.ª parte     | **«T5 · 2 · 2 · La caja de centro» (#158)**: fusionada, migración 0097 y API desplegada (31-oct)               |
-> | La 2.ª parte     | **«T5 · 2 · 2 · 2 · Los PIN y Aparatos» (#159)**, rama `t5-2-2-2-los-pin-y-aparatos`, **sin fusionar**         |
-> | La base de datos | **Migración 0098**: hay que migrar (pasan a **98**)                                                            |
-> | La API           | Gana un comando (**115 consultas y 314 comandos**): **hay que desplegarla**                                    |
-> | La caja          | **1.2.0**: hay que publicarla. **Lleva dentro la 1.1.0 y la 1.0.1**, que nunca se publicaron: no las publiques |
+> | Qué              | Cómo está                                                                                        |
+> | ---------------- | ------------------------------------------------------------------------------------------------ |
+> | La 1.ª parte     | **«T5 · 2 · 2 · La caja de centro» (#158)**: fusionada, migración 0097 y API desplegada (31-oct) |
+> | La 2.ª parte     | **«T5 · 2 · 2 · 2 · Los PIN y Aparatos» (#159)**: fusionada el 2-nov                             |
+> | La base de datos | **Migración 0098**: migrada, **98 de 98** (comprobado el 2-nov)                                  |
+> | La API           | Desplegada el 2-nov, con **115 consultas y 314 comandos** (comprobado)                           |
+> | La caja          | **1.2.0, publicada el 2-nov**. Lleva dentro la 1.1.0 y la 1.0.1: **no publiques ninguna otra**   |
+>
+> **Lo de fusionar, migrar, desplegar y publicar ya está hecho.** Te queda probarlo: en casa primero, y
+> después en el local de tu amigo.
 
 ---
 
@@ -32,9 +35,9 @@
 Lo decidido, en la [0123](decisiones/0123-t5-2-2-la-caja-de-centro.md) y la
 [0124](decisiones/0124-t5-2-2-2-los-pin-y-aparatos.md).
 
-## Lo que te toca · fusionar, migrar, desplegar y publicar
+## Lo que te tocaba · fusionar, migrar, desplegar y publicar (hecho el 2-nov)
 
-**En este orden.** Si algo falla, no sigas y pásame lo que dice la pantalla.
+**Ya está hecho**; se deja escrito por si hay que repetirlo. Si algo falla, no sigas y pásame lo que dice la pantalla.
 
 1. **En GitHub**: fusiona **«T5 · 2 · 2 · 2 · Los PIN y Aparatos» (#159)** con las comprobaciones
    **en verde**: **Merge pull request** → **Confirm merge**.

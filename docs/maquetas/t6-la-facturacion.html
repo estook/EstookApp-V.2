@@ -1,0 +1,2354 @@
+<title>T6 · La facturación</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Courier+Prime:wght@400;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Las pantallas de Estook con su tema claro y oscuro, como la app; el papel siempre blanco; y el
+     trozo de Estook TPV, oscuro como el TPV (Anexo 11.12). Cada sección: qué es, la pantalla y, plegado,
+     el porqué. Los nombres y los NIF son de ejemplo. */
+  :root {
+    --pagina: #e7e3dc;
+    --fondo: #f1efea;
+    --superficie: #ffffff;
+    --borde: #e0dcd4;
+    --texto: #111c1f;
+    --suave: #5a6568;
+    --charcoal: #111c1f;
+    --sobre-charcoal: #f1efea;
+    --naranja: #ff7a00;
+    --sobre-naranja: #111c1f;
+    --naranja-suave: #fff1e5;
+    --bien: #187648;
+    --bien-suave: #e3f3ea;
+    --aviso: #8a5a00;
+    --aviso-suave: #fdf1d8;
+    --mal: #b3261e;
+    --mal-suave: #fbe6e4;
+    --info: #1f5f8b;
+    --info-suave: #e3eff8;
+    --apagado: #e9e5de;
+    --papel: #fbfaf6;
+    --tinta: #141414;
+    --tpv-fondo: #0f1719;
+    --tpv-tarjeta: #18252a;
+    --tpv-borde: #2c4047;
+    --tpv-texto: #f1efea;
+    --tpv-suave: #9fb0b3;
+    --letra: Montserrat, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --letra-papel: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --pagina: #0b1113;
+      --fondo: #0f1719;
+      --superficie: #18252a;
+      --borde: #2c4047;
+      --texto: #f1efea;
+      --suave: #9fb0b3;
+      --charcoal: #22343a;
+      --sobre-charcoal: #f1efea;
+      --naranja-suave: #3a2410;
+      --bien: #4ec98a;
+      --bien-suave: #12301f;
+      --aviso: #f0ae4e;
+      --aviso-suave: #352708;
+      --mal: #f0796c;
+      --mal-suave: #3a1714;
+      --info: #6fb7e8;
+      --info-suave: #10283a;
+      --apagado: #1c2a2f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --pagina: #0b1113;
+    --fondo: #0f1719;
+    --superficie: #18252a;
+    --borde: #2c4047;
+    --texto: #f1efea;
+    --suave: #9fb0b3;
+    --charcoal: #22343a;
+    --sobre-charcoal: #f1efea;
+    --naranja-suave: #3a2410;
+    --bien: #4ec98a;
+    --bien-suave: #12301f;
+    --aviso: #f0ae4e;
+    --aviso-suave: #352708;
+    --mal: #f0796c;
+    --mal-suave: #3a1714;
+    --info: #6fb7e8;
+    --info-suave: #10283a;
+    --apagado: #1c2a2f;
+    color-scheme: dark;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--pagina);
+    color: var(--texto);
+    font-family: var(--letra);
+    font-size: 15px;
+    line-height: 1.45;
+    padding-block: 28px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .hoja-entera {
+    max-width: 1140px;
+    margin: 0 auto;
+    display: grid;
+    gap: 48px;
+  }
+  h1 {
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  p {
+    margin: 0;
+  }
+  .rotulo {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--naranja);
+  }
+  .seccion {
+    display: grid;
+    gap: 12px;
+  }
+  .lead {
+    color: var(--suave);
+    max-width: 70ch;
+  }
+  .lead b {
+    color: var(--texto);
+  }
+  details.porque {
+    color: var(--suave);
+    max-width: 78ch;
+    font-size: 14px;
+  }
+  details.porque summary {
+    cursor: pointer;
+    color: var(--info);
+    font-weight: 700;
+    width: fit-content;
+  }
+  details.porque > div {
+    padding-top: 8px;
+    display: grid;
+    gap: 6px;
+  }
+  details.porque b {
+    color: var(--texto);
+  }
+  :focus-visible {
+    outline: 3px solid var(--naranja);
+    outline-offset: 2px;
+  }
+
+  /* ── Arriba: el aviso de pruebas y el índice ── */
+  .franja-pruebas {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: var(--aviso-suave);
+    border: 1px solid var(--aviso);
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+  .franja-pruebas .marca {
+    flex: none;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    background: var(--aviso);
+    color: var(--superficie);
+    border-radius: 8px;
+    padding: 4px 8px;
+  }
+  .indice {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+  }
+  .indice a {
+    display: grid;
+    gap: 2px;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 12px 14px;
+    color: var(--texto);
+    text-decoration: none;
+  }
+  .indice a span {
+    color: var(--suave);
+    font-size: 13px;
+  }
+  .indice a.pregunta {
+    border-color: var(--naranja);
+  }
+
+  /* ── El marco de una pantalla de Estook ── */
+  .lado-a-lado {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+  .lado-a-lado.ancho-y-estrecho {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  }
+  @media (max-width: 860px) {
+    .lado-a-lado,
+    .lado-a-lado.ancho-y-estrecho {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .pantalla {
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .barra {
+    background: var(--charcoal);
+    color: var(--sobre-charcoal);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 9px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .barra .logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: var(--naranja);
+    flex: none;
+  }
+  .barra .donde {
+    opacity: 0.75;
+    font-weight: 500;
+  }
+  .ordenador {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+  }
+  @media (max-width: 680px) {
+    .ordenador {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .ordenador .menu {
+      display: none;
+    }
+  }
+  .menu {
+    border-right: 1px solid var(--borde);
+    padding: 12px;
+    display: grid;
+    gap: 4px;
+    align-content: start;
+  }
+  .menu .opcion-menu {
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .menu .opcion-menu small {
+    display: block;
+    font-weight: 400;
+    color: var(--suave);
+    font-size: 12px;
+  }
+  .menu .opcion-menu.elegida {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+  }
+  .menu .opcion-menu .nuevo {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--naranja);
+    margin-left: 4px;
+    letter-spacing: 0.04em;
+  }
+  .cuerpo {
+    padding: 18px 20px;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    min-width: 0;
+  }
+  .cuerpo.estrecho {
+    padding: 16px;
+  }
+
+  /* ── Piezas que se repiten ── */
+  .tarjeta {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+  }
+  .suave {
+    color: var(--suave);
+  }
+  .pequena {
+    font-size: 13px;
+  }
+  .chapa {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 3px 9px;
+    white-space: nowrap;
+  }
+  .chapa.bien {
+    background: var(--bien-suave);
+    color: var(--bien);
+  }
+  .chapa.aviso {
+    background: var(--aviso-suave);
+    color: var(--aviso);
+  }
+  .chapa.mal {
+    background: var(--mal-suave);
+    color: var(--mal);
+  }
+  .chapa.info {
+    background: var(--info-suave);
+    color: var(--info);
+  }
+  .chapa.gris {
+    background: var(--apagado);
+    color: var(--suave);
+  }
+  .boton {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    border-radius: 12px;
+    padding: 11px 16px;
+    font-weight: 700;
+    font-size: 14px;
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    color: var(--texto);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .boton.principal {
+    background: var(--naranja);
+    border-color: var(--naranja);
+    color: var(--sobre-naranja);
+  }
+  .boton.peligro {
+    color: var(--mal);
+    border-color: var(--mal);
+  }
+  .boton.apagado {
+    background: var(--apagado);
+    color: var(--suave);
+    border-style: dashed;
+    cursor: not-allowed;
+  }
+  .botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .campo {
+    display: grid;
+    gap: 5px;
+  }
+  .campo label {
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .caja-texto {
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    min-width: 0;
+  }
+  .caja-texto.bien {
+    border-color: var(--bien);
+  }
+  .caja-texto.leido {
+    background: var(--apagado);
+  }
+  .ayuda {
+    font-size: 12px;
+    color: var(--suave);
+  }
+  .ayuda.bien {
+    color: var(--bien);
+    font-weight: 600;
+  }
+  .dos-campos {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 520px) {
+    .dos-campos {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .eleccion {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .eleccion span {
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--superficie);
+  }
+  .eleccion span.marcada {
+    border-color: var(--naranja);
+    background: var(--naranja-suave);
+  }
+  .pasos {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pasos span {
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 4px 10px;
+    background: var(--apagado);
+    color: var(--suave);
+  }
+  .pasos span.hecho {
+    background: var(--bien-suave);
+    color: var(--bien);
+  }
+  .pasos span.ahora {
+    background: var(--naranja);
+    color: var(--sobre-naranja);
+  }
+
+  /* Lo que falta para el alta, en una lista que se tacha */
+  .lista-de-pasos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 2px;
+  }
+  .lista-de-pasos li {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--borde);
+  }
+  .lista-de-pasos li:last-child {
+    border-bottom: 0;
+  }
+  .lista-de-pasos .marca {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 800;
+    background: var(--bien-suave);
+    color: var(--bien);
+  }
+  .lista-de-pasos .marca.falta {
+    background: var(--aviso-suave);
+    color: var(--aviso);
+  }
+  .lista-de-pasos small {
+    display: block;
+    color: var(--suave);
+    font-size: 12px;
+  }
+
+  /* Parar con su motivo */
+  .parada {
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: grid;
+    gap: 6px;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+  }
+  .parada .cuando {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .parada.todavia .cuando {
+    color: var(--info);
+  }
+  .parada.nunca .cuando {
+    color: var(--suave);
+  }
+
+  /* La tabla de documentos */
+  .tabla-envoltorio {
+    overflow-x: auto;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    background: var(--superficie);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 560px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    text-align: left;
+    font-weight: 700;
+    color: var(--suave);
+    font-size: 12px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--borde);
+  }
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--borde);
+    white-space: nowrap;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  td.importe,
+  th.importe {
+    text-align: right;
+  }
+  td .numero {
+    font-weight: 700;
+  }
+  tr.elegida td {
+    background: var(--naranja-suave);
+  }
+  .pestanas {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--borde);
+  }
+  .pestanas span {
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--suave);
+  }
+  .pestanas span.elegida {
+    color: var(--texto);
+    border-bottom: 3px solid var(--naranja);
+  }
+  .filtros {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .filtros span {
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    padding: 4px 10px;
+    background: var(--superficie);
+  }
+  .filtros span.elegida {
+    background: var(--charcoal);
+    color: var(--sobre-charcoal);
+    border-color: var(--charcoal);
+  }
+  .resumen {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  @media (max-width: 520px) {
+    .resumen {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .resumen div {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .resumen b {
+    display: block;
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+  .resumen span {
+    font-size: 12px;
+    color: var(--suave);
+  }
+
+  /* Lo que falla, arriba */
+  .falla {
+    border: 1px solid var(--mal);
+    background: var(--mal-suave);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: grid;
+    gap: 8px;
+  }
+  .falla .que-hacer {
+    background: var(--superficie);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  /* La historia de un documento */
+  .historia {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+  .historia li {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding-bottom: 12px;
+    position: relative;
+    font-size: 14px;
+  }
+  .historia li::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bien);
+    margin-top: 4px;
+  }
+  .historia li::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 18px;
+    bottom: 0;
+    width: 2px;
+    background: var(--borde);
+  }
+  .historia li:last-child::after {
+    display: none;
+  }
+  .historia li.espera::before {
+    background: var(--info);
+  }
+  .historia time {
+    font-size: 12px;
+    color: var(--suave);
+    font-variant-numeric: tabular-nums;
+  }
+  .historia small {
+    display: block;
+    color: var(--suave);
+    font-size: 12px;
+  }
+
+  /* Las líneas para devolver */
+  .lineas-devolver {
+    display: grid;
+    gap: 6px;
+  }
+  .lineas-devolver div {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .lineas-devolver div.marcada {
+    border-color: var(--naranja);
+    background: var(--naranja-suave);
+  }
+  .casilla {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--borde);
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .marcada .casilla {
+    background: var(--naranja);
+    border-color: var(--naranja);
+    color: var(--sobre-naranja);
+  }
+  .total-grande {
+    font-size: 24px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── El papel ── */
+  .papeles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    align-items: flex-start;
+  }
+  .papel {
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: var(--letra-papel);
+    font-size: 12.5px;
+    line-height: 1.35;
+    padding: 14px 14px 22px;
+    border-radius: 3px;
+    box-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.06),
+      0 6px 18px rgba(0, 0, 0, 0.14);
+    width: 300px;
+    max-width: 100%;
+    display: grid;
+    gap: 6px;
+  }
+  .papel.de-58 {
+    width: 220px;
+    font-size: 11px;
+  }
+  .papel .centro {
+    text-align: center;
+  }
+  .papel .gordo {
+    font-weight: 700;
+  }
+  .papel .raya {
+    border-top: 1px dashed var(--tinta);
+    margin: 4px 0;
+  }
+  .papel .fila {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .papel .prueba {
+    border: 2px solid var(--tinta);
+    text-align: center;
+    font-weight: 700;
+    padding: 3px;
+    letter-spacing: 0.04em;
+  }
+  .papel .qr-bloque {
+    display: grid;
+    justify-items: center;
+    gap: 3px;
+    padding: 4px 0;
+  }
+  .papel svg.qr {
+    width: 128px;
+    height: 128px;
+    background: #ffffff;
+  }
+  .papel.de-58 svg.qr {
+    width: 104px;
+    height: 104px;
+  }
+  .papel .no-es {
+    border: 2px dashed var(--tinta);
+    padding: 6px;
+    text-align: center;
+    font-weight: 700;
+  }
+  .papel-pie {
+    font-family: var(--letra);
+    font-size: 12px;
+    color: var(--suave);
+    margin-top: 6px;
+    max-width: 300px;
+  }
+  .a4 {
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: var(--letra);
+    font-size: 11px;
+    width: 380px;
+    max-width: 100%;
+    aspect-ratio: 210 / 297;
+    padding: 22px;
+    border-radius: 3px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+    display: grid;
+    align-content: start;
+    gap: 10px;
+  }
+  .a4 .cabeza {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+  .a4 svg.qr {
+    width: 84px;
+    height: 84px;
+    background: #ffffff;
+  }
+  .a4 .titulo-doc {
+    font-weight: 800;
+    font-size: 15px;
+  }
+  .a4 .partes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+  .a4 .parte {
+    border: 1px solid #d8d4cc;
+    border-radius: 4px;
+    padding: 6px 8px;
+  }
+  .a4 .parte b {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #5a6568;
+  }
+  .a4 table {
+    min-width: 0;
+    font-size: 10.5px;
+  }
+  .a4 th,
+  .a4 td {
+    padding: 4px 4px;
+    border-bottom: 1px solid #e3dfd7;
+    color: var(--tinta);
+  }
+  .a4 .prueba {
+    border: 2px solid var(--tinta);
+    text-align: center;
+    font-weight: 800;
+    padding: 3px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── El trozo de Estook TPV, oscuro ── */
+  .tpv {
+    background: var(--tpv-fondo);
+    color: var(--tpv-texto);
+    border: 1px solid var(--tpv-borde);
+    border-radius: 18px;
+    padding: 16px;
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+  }
+  .tpv .grupo {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--tpv-suave);
+  }
+  .tpv .baldosa {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    background: var(--tpv-tarjeta);
+    border: 1px solid var(--tpv-borde);
+    border-radius: 14px;
+    padding: 12px 14px;
+    min-height: 56px;
+  }
+  .tpv .baldosa .dibujo {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    color: var(--tpv-fondo);
+  }
+  .tpv .baldosa small {
+    display: block;
+    color: var(--tpv-suave);
+    font-size: 12px;
+  }
+  .tpv .flecha {
+    color: var(--tpv-suave);
+  }
+
+  /* ── El móvil del cliente ── */
+  .movil {
+    width: 300px;
+    max-width: 100%;
+    border-radius: 30px;
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    padding: 18px 16px 22px;
+    display: grid;
+    gap: 12px;
+  }
+
+  /* ── Las preguntas ── */
+  .preguntas {
+    display: grid;
+    gap: 18px;
+  }
+  .pregunta-caja {
+    background: var(--superficie);
+    border: 1px solid var(--naranja);
+    border-radius: 18px;
+    padding: 18px 20px;
+    display: grid;
+    gap: 10px;
+  }
+  .pregunta-caja p {
+    max-width: 74ch;
+    color: var(--suave);
+  }
+  .pregunta-caja p b {
+    color: var(--texto);
+  }
+  .opciones {
+    display: grid;
+    gap: 8px;
+  }
+  .opcion {
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  .opcion.recomendada {
+    border-color: var(--naranja);
+    background: var(--naranja-suave);
+  }
+  .opcion b {
+    margin-right: 4px;
+  }
+  .lo-que-decides {
+    font-weight: 800;
+    color: var(--texto);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      transition: none !important;
+    }
+  }
+</style>
+
+<main class="hoja-entera">
+  <header class="seccion">
+    <p class="rotulo">
+      Maqueta · 2 de noviembre de 2026 · aprobada, con la A en las tres respuestas
+    </p>
+    <h1>T6 · La facturación</h1>
+    <p class="lead">
+      Lo nuevo de T6, pantalla a pantalla: <b>el alta de facturación</b> en Ajustes,
+      <b>los tickets y facturas</b> en Servicio › Ventas,
+      <b>lo que se hace con un documento</b> (factura, devolver, corregir, anular),
+      <b>el papel</b> y <b>la declaración responsable</b>. Cobrar es T7: aquí no hay botón de
+      cobrar. Los nombres y los NIF son de ejemplo.
+    </p>
+    <div class="franja-pruebas">
+      <span class="marca">EN PRUEBAS</span>
+      <p>
+        <b>Todo esto funciona en pruebas hasta que estén las once condiciones</b> del Anexo (la
+        primera, la revisión escrita de un asesor). En pruebas se emite de verdad contra Verifacti,
+        pero <b>nada llega a Hacienda</b> y cada papel lleva «PRUEBA · SIN VALIDEZ». Pasar a real lo
+        hace un interruptor del admin que no se deja tocar mientras falte una.
+      </p>
+    </div>
+    <nav class="indice" aria-label="Las pantallas">
+      <a href="#ajustes"><b>1 · Ajustes › Facturación</b><span>Cómo está y qué falta</span></a>
+      <a href="#alta"
+        ><b>2 · El alta, en cinco pasos</b
+        ><span>Empresa, régimen, series, Verifacti y Hacienda</span></a
+      >
+      <a href="#documentos"
+        ><b>3 · Tickets y facturas</b><span>Servicio › Ventas, con lo que falla arriba</span></a
+      >
+      <a href="#un-documento"
+        ><b>4 · Un documento</b><span>Como se imprimió, su historia y qué hacer</span></a
+      >
+      <a href="#corregir"
+        ><b>5 · Factura, devolver y anular</b><span>Siempre con otro documento</span></a
+      >
+      <a href="#papel"
+        ><b>6 · El papel</b><span>Ticket, justificante, factura y devolución</span></a
+      >
+      <a href="#declaracion"
+        ><b>7 · La declaración responsable</b><span>En Estook y en Estook TPV</span></a
+      >
+      <a href="#preguntas" class="pregunta"
+        ><b>8 · Tus tres respuestas</b><span>La A en las tres, y cómo quedan</span></a
+      >
+    </nav>
+  </header>
+
+  <!-- ═════════════ 1 · Ajustes › Facturación ═════════════ -->
+  <section class="seccion" id="ajustes">
+    <p class="rotulo">1 · En Estook, Ajustes › Facturación</p>
+    <h2>Una sección nueva en Ajustes, solo para el titular</h2>
+    <p class="lead">
+      Dice <b>en una línea cómo está</b> y, mientras falte algo, <b>qué falta y quién lo hace</b>.
+      Desde aquí se sigue el alta donde se dejó, se imprime un ticket de prueba y se lee la
+      declaración responsable.
+    </p>
+    <div class="pantalla">
+      <div class="barra">
+        <span class="logo"></span>Estook <span class="donde">· IKATZ · Ajustes</span>
+      </div>
+      <div class="ordenador">
+        <div class="menu">
+          <div class="opcion-menu">Este aparato<small>Letra, tema y modo cocina</small></div>
+          <div class="opcion-menu">Mi cuenta<small>Contraseña, PIN, doble factor</small></div>
+          <div class="opcion-menu">Avisos<small>La campana y el correo</small></div>
+          <div class="opcion-menu">Tu local<small>Logo, dirección, horario</small></div>
+          <div class="opcion-menu">Conexiones<small>Cómo entran tus ventas</small></div>
+          <div class="opcion-menu elegida">
+            Facturación <span class="nuevo">NUEVO</span><small>Tickets, facturas y Hacienda</small>
+          </div>
+          <div class="opcion-menu">Suscripción<small>Plan, tarjeta y renovación</small></div>
+          <div class="opcion-menu">Organización<small>La seguridad del negocio</small></div>
+        </div>
+        <div class="cuerpo">
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+            <h3>Facturación</h3>
+            <span class="chapa aviso">● En pruebas</span>
+          </div>
+          <p class="suave pequena">
+            Ikatz Restauración, S.L. · NIF B12345678 · IVA · solo este local
+          </p>
+
+          <div class="tarjeta">
+            <b>Te falta un paso para poder cobrar con tickets</b>
+            <ul class="lista-de-pasos">
+              <li>
+                <span class="marca">✓</span>
+                <span>La empresa<small>Comprobada en Hacienda al escribir el NIF</small></span>
+                <span class="chapa gris">Cambiar</span>
+              </li>
+              <li>
+                <span class="marca">✓</span>
+                <span>Dónde tributa<small>Península · IVA, lo dice tu local</small></span>
+                <span></span>
+              </li>
+              <li>
+                <span class="marca">✓</span>
+                <span>Las series<small>T-IKA-2026 · F-IKA-2026 · R-IKA-2026</small></span>
+                <span></span>
+              </li>
+              <li>
+                <span class="marca">✓</span>
+                <span>Alta en Verifacti<small>Hecha sola el 2-nov a las 18:04</small></span>
+                <span></span>
+              </li>
+              <li>
+                <span class="marca falta">!</span>
+                <span
+                  >La autorización ante Hacienda<small
+                    >Pendiente: el enlace se mandó a r•••@gmail.com hace 2 días</small
+                  ></span
+                >
+                <span class="boton principal" style="padding: 8px 12px">Seguir</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="dos-campos">
+            <div class="tarjeta">
+              <b>Probar el papel</b>
+              <p class="suave pequena">
+                Sale por la impresora de la caja, con su QR y «PRUEBA · SIN VALIDEZ». No cuenta en
+                ventas.
+              </p>
+              <span class="boton">Imprimir un ticket de prueba</span>
+            </div>
+            <div class="tarjeta">
+              <b>Declaración responsable</b>
+              <p class="suave pequena">
+                Lo que Estook declara a Hacienda como programa de facturación.
+              </p>
+              <span class="boton">Leerla</span>
+            </div>
+          </div>
+
+          <div class="tarjeta">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+                flex-wrap: wrap;
+                align-items: center;
+              "
+            >
+              <b>«Pide tu factura» en el ticket</b>
+              <div class="eleccion"><span class="marcada">Encendida</span><span>Apagada</span></div>
+            </div>
+            <p class="suave pequena">
+              Un QR abajo del ticket, después del de Hacienda: el cliente pide su factura en su
+              móvil y le llega al correo. Nadie del equipo teclea nada.
+            </p>
+          </div>
+
+          <div class="tarjeta" style="background: var(--apagado)">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+                flex-wrap: wrap;
+                align-items: center;
+              "
+            >
+              <b>Pasar a real</b>
+              <span class="boton apagado">Lo hace Estook</span>
+            </div>
+            <p class="suave pequena">
+              Cuando Estook tenga la revisión del asesor y lo demás que pide la ley, lo encendemos
+              nosotros y te avisamos. Lo que hagas en pruebas no pasa a real.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>Por qué así</summary>
+      <div>
+        <p>
+          <b>Está en Estook, no en Estook TPV</b>: los datos fiscales son de gestión (Anexo 11.1) y
+          solo los toca el titular o su representante (Roles 1.12). El TPV solo enseña cómo está.
+        </p>
+        <p>
+          <b>Square</b> lo pone en «Cumplimiento fiscal» con un estado «Inscrito» por punto de
+          venta; aquí va por empresa y dice <b>qué falta y en qué paso</b>, que es lo que Square no
+          explica.
+        </p>
+        <p>
+          <b>El ticket de prueba</b> sirve para ver el QR en la impresora de verdad antes de cobrar
+          (prueba 24 del Anexo) sin crear nada fiscal.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═════════════ 2 · El alta ═════════════ -->
+  <section class="seccion" id="alta">
+    <p class="rotulo">2 · El alta, en cinco pasos</p>
+    <h2>Una pregunta por pantalla, y lo que ya sabe Estook no se pregunta</h2>
+    <p class="lead">
+      Se puede dejar a medias y seguir otro día.
+      <b>El NIF se comprueba contra Hacienda al escribirlo</b>, así que un error sale en el primer
+      paso y no en el último.
+    </p>
+
+    <div class="lado-a-lado">
+      <!-- Paso 1 -->
+      <div class="pantalla">
+        <div class="barra">
+          <span class="logo"></span>Facturación <span class="donde">· paso 1 de 5</span>
+        </div>
+        <div class="cuerpo estrecho">
+          <div class="pasos">
+            <span class="ahora">1 · Empresa</span><span>2 · Dónde</span><span>3 · Series</span
+            ><span>4 · Verifacti</span><span>5 · Hacienda</span>
+          </div>
+          <h3>¿Quién factura?</h3>
+          <p class="suave pequena">Es lo que sale impreso en cada ticket.</p>
+          <div class="tarjeta" style="background: var(--info-suave); border-color: var(--info)">
+            <p class="pequena">
+              <b>Ya tienes una empresa</b> en otro local: Ikatz Restauración, S.L. (IKATZ Centro).
+            </p>
+            <span class="boton">Usar esa</span>
+          </div>
+          <div class="campo">
+            <label for="nif">NIF</label>
+            <div class="caja-texto bien" id="nif">B12345678</div>
+            <span class="ayuda bien">✓ En Hacienda: IKATZ RESTAURACION SL</span>
+          </div>
+          <div class="campo">
+            <label for="razon">Razón social</label>
+            <div class="caja-texto leido" id="razon">Ikatz Restauración, S.L.</div>
+            <span class="ayuda"
+              >Sale de Hacienda. Tiene que ser igual, o rechazan los tickets.</span
+            >
+          </div>
+          <div class="campo">
+            <label for="domicilio">Domicilio fiscal</label>
+            <div class="caja-texto" id="domicilio">Calle Mayor 12, 48001 Bilbao</div>
+          </div>
+          <div class="campo">
+            <label for="titular">Quién la representa</label>
+            <div class="caja-texto" id="titular">Ricardo · administrador</div>
+          </div>
+          <span class="boton principal">Siguiente</span>
+        </div>
+      </div>
+
+      <!-- Paso 2 -->
+      <div class="pantalla">
+        <div class="barra">
+          <span class="logo"></span>Facturación <span class="donde">· paso 2 de 5</span>
+        </div>
+        <div class="cuerpo estrecho">
+          <div class="pasos">
+            <span class="hecho">1 · Empresa</span><span class="ahora">2 · Dónde</span
+            ><span>3 · Series</span><span>4 · Verifacti</span><span>5 · Hacienda</span>
+          </div>
+          <h3>Dónde y cómo tributa</h3>
+          <div class="tarjeta">
+            <p class="pequena suave">Tu local está en</p>
+            <b>Península · se factura con IVA</b>
+            <p class="ayuda">
+              Lo dijiste al dar de alta el local. Si no es así, cámbialo en Tu local.
+            </p>
+          </div>
+          <div class="campo">
+            <label>¿La empresa lleva el SII?</label>
+            <div class="eleccion">
+              <span class="marcada">No</span><span>Sí</span><span>No lo sé</span>
+            </div>
+            <span class="ayuda"
+              >Casi nadie: es para quien factura más de 6 millones al año. Tu gestor lo sabe.</span
+            >
+          </div>
+          <div class="campo">
+            <label>¿El domicilio fiscal está en el País Vasco o en Navarra?</label>
+            <div class="eleccion">
+              <span class="marcada">No</span><span>País Vasco</span><span>Navarra</span>
+            </div>
+          </div>
+          <span class="boton principal">Siguiente</span>
+          <p class="rotulo" style="margin-top: 6px">Si contesta otra cosa, se para con su motivo</p>
+          <div class="parada todavia">
+            <span class="cuando">Todavía no</span>
+            <b>En el País Vasco se factura con TicketBAI</b>
+            <p class="pequena suave">
+              Es otro sistema de Hacienda, no un fallo tuyo. Estook lo abrirá más adelante; te
+              avisamos.
+            </p>
+          </div>
+          <div class="parada nunca">
+            <span class="cuando">No hace falta</span>
+            <b>Con el SII, tus facturas ya llegan a Hacienda</b>
+            <p class="pequena suave">
+              La ley deja fuera de VeriFactu a quien lleva el SII. Estook no hace el SII.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lado-a-lado">
+      <!-- Paso 3 y 4 -->
+      <div class="pantalla">
+        <div class="barra">
+          <span class="logo"></span>Facturación <span class="donde">· pasos 3 y 4 de 5</span>
+        </div>
+        <div class="cuerpo estrecho">
+          <div class="pasos">
+            <span class="hecho">1 · Empresa</span><span class="hecho">2 · Dónde</span
+            ><span class="ahora">3 · Series</span><span>4 · Verifacti</span
+            ><span>5 · Hacienda</span>
+          </div>
+          <h3>Cómo se numeran</h3>
+          <p class="suave pequena">
+            Te las proponemos. Cada una cuenta sola, sin saltarse ninguno.
+          </p>
+          <div class="tarjeta" style="gap: 6px">
+            <div
+              class="fila-serie"
+              style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap"
+            >
+              <span>Tickets</span
+              ><b style="font-variant-numeric: tabular-nums">T-IKA-2026-000001</b>
+            </div>
+            <div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap">
+              <span>Facturas</span
+              ><b style="font-variant-numeric: tabular-nums">F-IKA-2026-000001</b>
+            </div>
+            <div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap">
+              <span>Devoluciones</span
+              ><b style="font-variant-numeric: tabular-nums">R-IKA-2026-000001</b>
+            </div>
+          </div>
+          <div class="campo">
+            <label for="otra">¿Haces facturas con otro programa?</label>
+            <div class="caja-texto" id="otra">No</div>
+            <span class="ayuda"
+              >Si las haces (tu gestoría, por ejemplo), pon cómo empiezan sus números para que no
+              choquen.</span
+            >
+          </div>
+          <span class="boton principal">Siguiente</span>
+          <div class="tarjeta" style="margin-top: 6px">
+            <p class="rotulo">Paso 4, solo</p>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <span class="chapa bien">✓</span>
+              <span
+                ><b>Tu NIF ya está dado de alta en Verifacti</b><br /><span class="suave pequena"
+                  >Es quien manda tus tickets a Hacienda por Estook. No tienes que hacer nada.</span
+                ></span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 5 -->
+      <div class="pantalla">
+        <div class="barra">
+          <span class="logo"></span>Facturación <span class="donde">· paso 5 de 5</span>
+        </div>
+        <div class="cuerpo estrecho">
+          <div class="pasos">
+            <span class="hecho">1 · Empresa</span><span class="hecho">2 · Dónde</span
+            ><span class="hecho">3 · Series</span><span class="hecho">4 · Verifacti</span
+            ><span class="ahora">5 · Hacienda</span>
+          </div>
+          <h3>Autoriza que tus tickets lleguen a Hacienda</h3>
+          <p class="suave pequena">
+            Se firma una vez por empresa. Hasta que Hacienda la dé por buena, no se puede cobrar con
+            tickets.
+          </p>
+          <div class="tarjeta">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                gap: 8px;
+                flex-wrap: wrap;
+                align-items: center;
+              "
+            >
+              <b>Si eres autónomo</b>
+              <span class="chapa aviso">Pendiente</span>
+            </div>
+            <p class="pequena suave">
+              Te llega un enlace al correo y te identificas con tu DNI o pasaporte. Cuesta
+              <b>2,90 € + IVA</b> cada vez que se pide, así que si ya hay uno en curso, se recupera.
+            </p>
+            <p class="pequena">Mandado a <b>r•••@gmail.com</b> el 31-oct.</p>
+            <div class="botones"><span class="boton">Volver a mandar el mismo</span></div>
+          </div>
+          <div class="tarjeta">
+            <b>Si es una sociedad</b>
+            <p class="pequena suave">
+              Se firma con el certificado electrónico de quien la representa (con AutoFirma,
+              gratis).
+            </p>
+            <div class="botones">
+              <span class="boton">1 · Descargar el PDF ya relleno</span
+              ><span class="boton">2 · Subir el firmado</span>
+            </div>
+          </div>
+          <div class="filtros" aria-label="Los estados">
+            <span>Sin mandar</span><span class="elegida">Pendiente</span><span>Correcta</span
+            ><span>Rechazada</span><span>Caducada</span><span>Cancelada</span>
+          </div>
+          <p class="ayuda">Se guarda quién la firmó y cuándo.</p>
+        </div>
+      </div>
+    </div>
+
+    <details class="porque">
+      <summary>Por qué así</summary>
+      <div>
+        <p>
+          <b>Last.app</b> avisa de que el NIF y la razón social tienen que coincidir «exactamente»
+          con Hacienda, o rechazan los envíos. Aquí no se avisa: <b>se comprueba al escribir</b> con
+          la consulta de Verifacti, y la razón social se rellena sola.
+        </p>
+        <p>
+          <b>El territorio no se pregunta</b> porque ya lo dice el local, y preguntarlo dos veces es
+          la forma de acabar con un local canario facturando con IVA (Anexo 1.4). Canarias sigue
+          adelante con IGIC; foral, SII, Ceuta y Melilla se paran con <b>su</b> motivo y si es para
+          siempre o un «todavía no».
+        </p>
+        <p>
+          <b>Square</b> pide descargar el acuerdo y firmarlo con AutoFirma; para un autónomo,
+          Verifacti ofrece el enlace por correo, sin certificado, que es más fácil.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═════════════ 3 · Tickets y facturas ═════════════ -->
+  <section class="seccion" id="documentos">
+    <p class="rotulo">3 · En Estook, Servicio › Ventas › Tickets y facturas</p>
+    <h2>Todos los documentos, con lo que falla arriba</h2>
+    <p class="lead">
+      Lo que el gerente tiene que mirar sale <b>arriba y en llano</b>, con el botón de lo que toca.
+      El resto, una lista con su estado ante Hacienda. Nada se edita: todo se corrige con otro
+      documento.
+    </p>
+    <div class="pantalla">
+      <div class="barra">
+        <span class="logo"></span>Estook <span class="donde">· IKATZ · Servicio › Ventas</span>
+      </div>
+      <div class="cuerpo">
+        <div class="pestanas">
+          <span>Del turno</span><span>Del día</span><span>Por producto</span
+          ><span class="elegida">Tickets y facturas</span>
+        </div>
+
+        <div class="falla">
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+            <span class="chapa mal">Hacienda la rechazó</span>
+            <b>F-IKA-2026-000004 · factura de 85,20 € · Construcciones Ejemplo</b>
+          </div>
+          <p class="pequena">
+            El NIF B87654321 no corresponde a «Construcciones Ejemplo». En Hacienda ese NIF es de
+            <b>Construcciones Ejemplo Norte, S.L.</b>
+          </p>
+          <div class="que-hacer">
+            <b>Qué hacer:</b> corregirla con otro documento, con el nombre bien. La rechazada no se
+            borra: su número queda usado.
+          </div>
+          <div class="botones">
+            <span class="boton principal">Corregir con el nombre bien</span
+            ><span class="boton">Ver la factura</span>
+          </div>
+        </div>
+
+        <div class="resumen">
+          <div><b>38</b><span>documentos hoy</span></div>
+          <div><b>1.426,80 €</b><span>tickets y facturas de hoy</span></div>
+          <div><b>36 de 38</b><span>ya correctos en Hacienda</span></div>
+        </div>
+
+        <div class="filtros">
+          <span class="elegida">Hoy</span><span>Ayer</span><span>Elegir fechas</span><span>·</span
+          ><span>Todos</span><span>Tickets</span><span>Facturas</span><span>Devoluciones</span
+          ><span>Con algo pendiente</span>
+        </div>
+
+        <div class="tabla-envoltorio">
+          <table>
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Número</th>
+                <th>Qué es</th>
+                <th>Dónde</th>
+                <th class="importe">Total</th>
+                <th>Hacienda</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>15:12</td>
+                <td><span class="numero">R-IKA-2026-000002</span></td>
+                <td>Devolución</td>
+                <td>Mesa 2</td>
+                <td class="importe">−19,50 €</td>
+                <td><span class="chapa info">◌ Enviando</span></td>
+              </tr>
+              <tr>
+                <td>14:58</td>
+                <td><span class="numero">F-IKA-2026-000005</span></td>
+                <td>Factura de un ticket</td>
+                <td>Mesa 6</td>
+                <td class="importe">47,50 €</td>
+                <td><span class="chapa bien">✓ Correcto</span></td>
+              </tr>
+              <tr class="elegida">
+                <td>14:31</td>
+                <td><span class="numero">T-IKA-2026-000037</span></td>
+                <td>Ticket</td>
+                <td>Mesa 6</td>
+                <td class="importe">47,50 €</td>
+                <td><span class="chapa gris">Canjeado</span></td>
+              </tr>
+              <tr>
+                <td>14:28</td>
+                <td><span class="numero">T-IKA-2026-000036</span></td>
+                <td>Ticket</td>
+                <td>Barra</td>
+                <td class="importe">3,20 €</td>
+                <td><span class="chapa bien">✓ Correcto</span></td>
+              </tr>
+              <tr>
+                <td>14:20</td>
+                <td><span class="numero">Justificante J-0012</span></td>
+                <td>Sin conexión</td>
+                <td>Terraza 2</td>
+                <td class="importe">22,00 €</td>
+                <td><span class="chapa aviso">Se emite al volver</span></td>
+              </tr>
+              <tr>
+                <td>14:05</td>
+                <td><span class="numero">T-IKA-2026-000035</span></td>
+                <td>Ticket</td>
+                <td>Mesa 2</td>
+                <td class="importe">44,50 €</td>
+                <td><span class="chapa gris">Devuelto en parte</span></td>
+              </tr>
+              <tr>
+                <td>13:40</td>
+                <td><span class="numero">F-IKA-2026-000004</span></td>
+                <td>Factura de un ticket</td>
+                <td>Mesa 3</td>
+                <td class="importe">85,20 €</td>
+                <td><span class="chapa mal">✕ Rechazada</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="ayuda">
+          Hasta T7 aquí solo salen los tickets de prueba y lo que hagas desde aquí.
+        </p>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>Por qué así</summary>
+      <div>
+        <p>
+          <b>Está en Servicio › Ventas</b> porque el Plan (B5) ya pone allí «Tickets y facturas»: lo
+          que no es de hoy se mira en Estook, y el TPV enseña solo las ventas de hoy (11.7).
+        </p>
+        <p>
+          <b>Qamarero</b> avisa de que «un documento generado no equivale a un registro aceptado»,
+          pero no enseña dónde se ve. Aquí cada documento lleva su chapa: <b>Enviando</b>,
+          <b>Correcto</b>, <b>Aceptado con errores</b>, <b>Rechazado</b>,
+          <b>Se emite al volver</b> (justificante), <b>Canjeado</b> (pasó a factura) o
+          <b>Devuelto</b>.
+        </p>
+        <p>
+          <b>Lo que falla arriba</b> traduce lo que dice Hacienda a lo que significa y a qué hacer.
+          Lo ven el gerente y dirección (Anexo 4.10), y también les llega a la campana.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═════════════ 4 · Un documento ═════════════ -->
+  <section class="seccion" id="un-documento">
+    <p class="rotulo">4 · Al tocar un documento</p>
+    <h2>Como se imprimió, su historia y lo que se puede hacer</h2>
+    <div class="pantalla">
+      <div class="barra">
+        <span class="logo"></span>Ticket T-IKA-2026-000037
+        <span class="donde">· Mesa 6 · 14:31</span>
+      </div>
+      <div class="cuerpo">
+        <div class="lado-a-lado ancho-y-estrecho">
+          <div style="display: grid; gap: 14px; min-width: 0">
+            <div class="tarjeta">
+              <b>Su historia</b>
+              <ol class="historia">
+                <li>
+                  <span>Preparado con su número<small>Lo cobró Sara en la caja</small></span
+                  ><time>14:31:02</time>
+                </li>
+                <li>
+                  <span>Mandado a Verifacti<small>A la primera</small></span
+                  ><time>14:31:03</time>
+                </li>
+                <li>
+                  <span>Registrado, con su QR<small>Ya se podía imprimir</small></span
+                  ><time>14:31:03</time>
+                </li>
+                <li><span>Hacienda: correcto</span><time>14:32:10</time></li>
+                <li>
+                  <span
+                    >Canjeado por la factura F-IKA-2026-000005<small
+                      >La pidió el cliente</small
+                    ></span
+                  ><time>14:58:40</time>
+                </li>
+              </ol>
+            </div>
+            <div class="tarjeta">
+              <b>Qué se puede hacer</b>
+              <div class="botones">
+                <span class="boton">Reimprimir</span>
+                <span class="boton">Mandar por correo</span>
+                <span class="boton apagado">Hacer factura · ya tiene</span>
+                <span class="boton">Devolver</span>
+              </div>
+              <p class="ayuda">
+                Reimprimir sale como copia y no crea nada en Hacienda. <b>Anular</b> solo sale en lo
+                que nunca debió existir, para el gerente.
+              </p>
+            </div>
+          </div>
+          <div style="display: grid; justify-items: center">
+            <div class="papel" aria-label="El ticket como se imprimió">
+              <div class="prueba">PRUEBA · SIN VALIDEZ</div>
+              <div class="qr-bloque">
+                <span>QR tributario:</span>
+                <svg
+                  class="qr"
+                  data-semilla="37"
+                  viewBox="0 0 29 29"
+                  role="img"
+                  aria-label="QR tributario"
+                ></svg>
+                <span class="gordo">VERI*FACTU</span>
+              </div>
+              <div class="centro gordo">IKATZ</div>
+              <div class="centro">
+                Ikatz Restauración, S.L.<br />NIF B12345678<br />Calle Mayor 12, 48001 Bilbao
+              </div>
+              <div class="raya"></div>
+              <div class="fila"><span>Factura simplificada</span></div>
+              <div class="fila gordo"><span>T-IKA-2026-000037</span></div>
+              <div class="fila"><span>2-nov-2026 14:31</span><span>Mesa 6 · Sara</span></div>
+              <div class="raya"></div>
+              <div class="fila"><span>2 Croquetas de jamón</span><span>18,00</span></div>
+              <div class="fila"><span>1 Merluza salsa verde</span><span>19,50</span></div>
+              <div class="fila"><span>2 Copa de txakoli</span><span>7,00</span></div>
+              <div class="fila"><span>1 Agua 1,5 l</span><span>3,00</span></div>
+              <div class="raya"></div>
+              <div class="fila gordo"><span>TOTAL</span><span>47,50 €</span></div>
+              <div class="fila"><span>IVA 10 % incluido</span><span>4,32</span></div>
+              <div class="fila"><span>Base</span><span>43,18</span></div>
+              <div class="raya"></div>
+              <div class="centro">¿Quieres factura? Pídela en la barra.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>Por qué así</summary>
+      <div>
+        <p>
+          <b>La historia</b> responde a la pregunta del dueño cuando algo raro pasa: ¿lo tiene
+          Hacienda o no? Se lee de lo que se le ha ido añadiendo al documento, que nunca cambia
+          (Anexo 7.6).
+        </p>
+        <p>
+          <b>El ticket, igual que salió</b>, con el QR primero, «QR tributario:» encima y
+          «VERI*FACTU» debajo (Orden HAC/1177/2024, art. 21). Reimprimir pinta exactamente esto con
+          «COPIA».
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═════════════ 5 · Factura, devolver y anular ═════════════ -->
+  <section class="seccion" id="corregir">
+    <p class="rotulo">5 · Factura, devolver y anular</p>
+    <h2>Siempre con otro documento, nunca tocando el que había</h2>
+    <p class="lead">
+      Las tres se abren desde el documento. En T7 salen también en <b>Ventas de hoy</b> del TPV, con
+      el mismo aspecto.
+    </p>
+    <div class="lado-a-lado" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))">
+      <!-- Hacer factura -->
+      <div class="pantalla">
+        <div class="barra">
+          <span class="logo"></span>Hacer factura <span class="donde">· del ticket 000037</span>
+        </div>
+        <div class="cuerpo estrecho">
+          <div class="tarjeta" style="gap: 2px">
+            <span class="suave pequena">Importe, el del ticket</span>
+            <span class="total-grande">47,50 €</span>
+            <span class="pequena">+ Añadir otro ticket del mismo cliente</span>
+          </div>
+          <div class="eleccion">
+            <span class="marcada">Con NIF o DNI</span><span>De fuera de España</span>
+          </div>
+          <div class="campo">
+            <label for="nif-cliente">NIF del cliente</label>
+            <div class="caja-texto bien" id="nif-cliente">B87654321</div>
+            <span class="ayuda bien">✓ En Hacienda: CONSTRUCCIONES EJEMPLO NORTE SL</span>
+          </div>
+          <div class="campo">
+            <label for="nombre-cliente">Nombre o razón social</label>
+            <div class="caja-texto leido" id="nombre-cliente">
+              Construcciones Ejemplo Norte, S.L.
+            </div>
+          </div>
+          <div class="campo">
+            <label for="dir-cliente">Domicilio</label>
+            <div class="caja-texto" id="dir-cliente">Polígono Ugaldeguren 4, Zamudio</div>
+          </div>
+          <div class="campo">
+            <label for="correo-cliente">Correo, para mandársela (si quiere)</label>
+            <div class="caja-texto" id="correo-cliente">admin@ejemplo.es</div>
+          </div>
+          <span class="boton principal">Hacer la factura</span>
+          <p class="ayuda">
+            El ticket queda canjeado y no se puede canjear dos veces. No mueve la caja ni el
+            almacén. De fuera: su pasaporte o su número de IVA, y su país.
+          </p>
+        </div>
+      </div>
+
+      <!-- Devolver -->
+      <div class="pantalla">
+        <div class="barra">
+          <span class="logo"></span>Devolver <span class="donde">· del ticket 000035</span>
+        </div>
+        <div class="cuerpo estrecho">
+          <p class="pequena">¿Qué se devuelve?</p>
+          <div class="eleccion"><span>Todo</span><span class="marcada">Solo algunos</span></div>
+          <div class="lineas-devolver">
+            <div>
+              <span class="casilla"></span><span>2 Croquetas de jamón</span><span>18,00</span>
+            </div>
+            <div class="marcada">
+              <span class="casilla">✓</span><span>1 Merluza salsa verde</span><span>19,50</span>
+            </div>
+            <div><span class="casilla"></span><span>2 Copa de txakoli</span><span>7,00</span></div>
+          </div>
+          <div class="campo">
+            <label>Por qué</label>
+            <div class="eleccion">
+              <span class="marcada">Mal hecho</span><span>Se cobró de más</span
+              ><span>No lo quiso</span><span>Otro</span>
+            </div>
+          </div>
+          <div class="tarjeta" style="gap: 2px">
+            <span class="suave pequena">Se le devuelve</span>
+            <span class="total-grande">19,50 €</span>
+          </div>
+          <span class="boton principal">Devolver 19,50 €</span>
+          <p class="ayuda">
+            Sale una devolución (R5) en su serie. Con quien la hace y su motivo; si quien está no
+            puede, la aprueba un encargado con su PIN. Sacar el dinero de la caja llega con T7.
+          </p>
+        </div>
+      </div>
+
+      <!-- Corregir los datos del cliente -->
+      <div class="pantalla">
+        <div class="barra">
+          <span class="logo"></span>Corregir los datos del cliente
+          <span class="donde">· de F-IKA-2026-000005</span>
+        </div>
+        <div class="cuerpo estrecho">
+          <p class="pequena suave">
+            Para cuando el cliente dice que su domicilio o su NIF estaban mal. El importe no cambia.
+          </p>
+          <div class="campo">
+            <label for="dir-antes">Domicilio en la factura</label>
+            <div class="caja-texto leido" id="dir-antes">Polígono Ugaldeguren 4, Zamudio</div>
+          </div>
+          <div class="campo">
+            <label for="dir-bien">Domicilio correcto</label>
+            <div class="caja-texto" id="dir-bien">Polígono Ugaldeguren III, 4, 48170 Zamudio</div>
+          </div>
+          <span class="boton principal">Hacer la factura corregida</span>
+          <p class="ayuda">
+            Sale una rectificativa (R4) en su serie, que sustituye a la anterior. La anterior se
+            queda donde estaba, marcada «Corregida».
+          </p>
+        </div>
+      </div>
+
+      <!-- Anular -->
+      <div class="pantalla">
+        <div class="barra">
+          <span class="logo"></span>Anular <span class="donde">· solo el gerente</span>
+        </div>
+        <div class="cuerpo estrecho">
+          <div class="parada" style="border-color: var(--mal)">
+            <b>Anular es solo para lo que nunca debió existir</b>
+            <p class="pequena suave">
+              Por ejemplo, un ticket que salió dos veces por error y el cliente no se llevó.
+              <b>Si el cliente lo tiene, se devuelve</b>, no se anula.
+            </p>
+          </div>
+          <div class="campo">
+            <label for="motivo-anular">Por qué lo anulas</label>
+            <div class="caja-texto" id="motivo-anular">Salió repetido al probar la impresora</div>
+          </div>
+          <span class="boton peligro">Anular T-IKA-2026-000034</span>
+          <p class="ayuda">
+            El número no se vuelve a usar. Queda en la lista como «Anulado», con quién y por qué.
+          </p>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>Por qué así</summary>
+      <div>
+        <p>
+          <b>La factura de un ticket es un canje</b> (F3): el ticket no se anula, sigue en su sitio
+          y queda marcado. El NIF del cliente se comprueba antes de emitir, porque Hacienda la
+          rechazaría (Anexo 5.3).
+        </p>
+        <p>
+          <b>Un dato mal del cliente es R4, no R1</b>: es lo que dice la AEAT para un dato que no es
+          un importe (lo investigado, A20). <b>Varios tickets en una factura</b> es una sola F3 que
+          dice cuáles sustituye; cada ticket, una vez (A19).
+        </p>
+        <p>
+          <b>La devolución va por diferencias</b>: lo devuelto, en negativo. Sirve para devolver un
+          plato o todo. Si el asesor dice otra cosa, se cambia en un sitio (lo investigado, A5).
+        </p>
+        <p>
+          <b>No hay botón de «editar»</b> en ningún sitio: un software que deja cambiar un ticket
+          emitido está prohibido (Anexo 4.12).
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═════════════ 6 · El papel ═════════════ -->
+  <section class="seccion" id="papel">
+    <p class="rotulo">6 · El papel</p>
+    <h2>Lo que se lleva el cliente</h2>
+    <p class="lead">
+      El ticket a 80 y a 58 mm, el justificante cuando no hay conexión, la devolución y la factura
+      en A4.
+      <b>El QR va siempre primero</b>, de 30 a 40 mm impreso.
+    </p>
+    <div class="papeles">
+      <div>
+        <div class="papel de-58" aria-label="Ticket de 58 mm">
+          <div class="qr-bloque">
+            <span>QR tributario:</span>
+            <svg
+              class="qr"
+              data-semilla="36"
+              viewBox="0 0 29 29"
+              role="img"
+              aria-label="QR tributario"
+            ></svg>
+            <span class="gordo">VERI*FACTU</span>
+          </div>
+          <div class="centro gordo">IKATZ</div>
+          <div class="centro">Ikatz Restauración, S.L.<br />NIF B12345678</div>
+          <div class="raya"></div>
+          <div>
+            Factura simplificada<br /><span class="gordo">T-IKA-2026-000036</span><br />2-nov-2026
+            14:28 · Barra
+          </div>
+          <div class="raya"></div>
+          <div class="fila"><span>1 Café con leche</span><span>1,70</span></div>
+          <div class="fila"><span>1 Pintxo tortilla</span><span>1,50</span></div>
+          <div class="raya"></div>
+          <div class="fila gordo"><span>TOTAL</span><span>3,20 €</span></div>
+          <div class="fila"><span>IVA 10 % incl.</span><span>0,29</span></div>
+        </div>
+        <p class="papel-pie">Ticket de 58 mm, real (sin la marca de pruebas).</p>
+      </div>
+
+      <div>
+        <div class="papel" aria-label="Justificante sin conexión">
+          <div class="no-es">JUSTIFICANTE DE VENTA<br />NO ES UNA FACTURA</div>
+          <div class="centro gordo">IKATZ</div>
+          <div class="centro">Ikatz Restauración, S.L.<br />NIF B12345678</div>
+          <div class="raya"></div>
+          <div class="fila"><span>J-0012 · 2-nov-2026 14:20</span></div>
+          <div class="fila"><span>Terraza 2 · Marcos</span></div>
+          <div class="raya"></div>
+          <div class="fila"><span>2 Caña</span><span>5,00</span></div>
+          <div class="fila"><span>1 Rabas</span><span>11,00</span></div>
+          <div class="fila"><span>1 Pimientos de Gernika</span><span>6,00</span></div>
+          <div class="raya"></div>
+          <div class="fila gordo"><span>TOTAL</span><span>22,00 €</span></div>
+          <div class="raya"></div>
+          <div class="centro">
+            No había conexión al cobrar. Tu ticket se emite en cuanto vuelva. Descárgalo en
+          </div>
+          <div class="centro gordo">estook.com/t/K7M-4QX</div>
+        </div>
+        <p class="papel-pie">
+          Justificante: sin número fiscal, sin QR tributario y diciendo que no es una factura (Anexo
+          4.11). El texto lo revisa el asesor.
+        </p>
+      </div>
+
+      <div>
+        <div class="papel" aria-label="Devolución">
+          <div class="prueba">PRUEBA · SIN VALIDEZ</div>
+          <div class="qr-bloque">
+            <span>QR tributario:</span>
+            <svg
+              class="qr"
+              data-semilla="2"
+              viewBox="0 0 29 29"
+              role="img"
+              aria-label="QR tributario"
+            ></svg>
+            <span class="gordo">VERI*FACTU</span>
+          </div>
+          <div class="centro gordo">IKATZ</div>
+          <div class="centro">Ikatz Restauración, S.L.<br />NIF B12345678</div>
+          <div class="raya"></div>
+          <div>
+            Factura rectificativa (devolución)<br /><span class="gordo">R-IKA-2026-000002</span
+            ><br />2-nov-2026 15:12
+          </div>
+          <div>Rectifica: T-IKA-2026-000035<br />Motivo: mal hecho</div>
+          <div class="raya"></div>
+          <div class="fila"><span>1 Merluza salsa verde</span><span>−19,50</span></div>
+          <div class="raya"></div>
+          <div class="fila gordo"><span>TOTAL</span><span>−19,50 €</span></div>
+          <div class="fila"><span>IVA 10 % incluido</span><span>−1,77</span></div>
+        </div>
+        <p class="papel-pie">
+          La devolución de un plato, en su serie R y diciendo qué ticket rectifica.
+        </p>
+      </div>
+
+      <div>
+        <div class="a4" aria-label="Factura en A4">
+          <div class="prueba">PRUEBA · SIN VALIDEZ</div>
+          <div class="cabeza">
+            <div style="display: grid; justify-items: center; gap: 2px; font-size: 9px">
+              <span>QR tributario:</span>
+              <svg
+                class="qr"
+                data-semilla="4"
+                viewBox="0 0 29 29"
+                role="img"
+                aria-label="QR tributario"
+              ></svg>
+              <b>VERI*FACTU</b>
+            </div>
+            <div style="display: grid; gap: 3px; min-width: 0">
+              <span class="titulo-doc">Factura F-IKA-2026-000005</span>
+              <span>Sustituye al ticket T-IKA-2026-000037</span>
+              <span>Fecha: 2-nov-2026 · Operación: 2-nov-2026</span>
+            </div>
+          </div>
+          <div class="partes">
+            <div class="parte">
+              <b>De</b>Ikatz Restauración, S.L.<br />NIF B12345678<br />Calle Mayor 12, 48001 Bilbao
+            </div>
+            <div class="parte">
+              <b>Para</b>Construcciones Ejemplo Norte, S.L.<br />NIF B87654321<br />Pol. Ugaldeguren
+              4, Zamudio
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Concepto</th>
+                <th class="importe">Base</th>
+                <th class="importe">IVA</th>
+                <th class="importe">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2 Croquetas de jamón</td>
+                <td class="importe">16,36</td>
+                <td class="importe">10 %</td>
+                <td class="importe">18,00</td>
+              </tr>
+              <tr>
+                <td>1 Merluza salsa verde</td>
+                <td class="importe">17,73</td>
+                <td class="importe">10 %</td>
+                <td class="importe">19,50</td>
+              </tr>
+              <tr>
+                <td>2 Copa de txakoli</td>
+                <td class="importe">6,36</td>
+                <td class="importe">10 %</td>
+                <td class="importe">7,00</td>
+              </tr>
+              <tr>
+                <td>1 Agua 1,5 l</td>
+                <td class="importe">2,73</td>
+                <td class="importe">10 %</td>
+                <td class="importe">3,00</td>
+              </tr>
+            </tbody>
+          </table>
+          <div
+            style="display: grid; justify-items: end; gap: 2px; font-variant-numeric: tabular-nums"
+          >
+            <span>Base imponible 43,18 €</span>
+            <span>IVA 10 % 4,32 €</span>
+            <b style="font-size: 13px">Total 47,50 €</b>
+          </div>
+        </div>
+        <p class="papel-pie">
+          La factura de ese ticket (F3), en PDF: se descarga y se manda por correo. Base y cuota,
+          sumadas por tipo de IVA.
+        </p>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>Por qué así</summary>
+      <div>
+        <p>
+          <b>El ticket lleva lo que pide la ley</b> y nada más arriba: el QR, quién lo emite con su
+          NIF, el número, la fecha, lo vendido, el tipo de IVA con «incluido» y el total (Anexo
+          4.6).
+        </p>
+        <p>
+          <b>La marca de pruebas</b> va en todo lo que se emite mientras la facturación no pase a
+          real (Anexo 4.12): así nadie confunde un papel de prueba con uno de verdad.
+        </p>
+        <p>
+          <b>El justificante</b> lleva un código para descargar el ticket en el móvil cuando se
+          emita, como recomienda Verifacti si su servicio no responde.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═════════════ 7 · La declaración responsable ═════════════ -->
+  <section class="seccion" id="declaracion">
+    <p class="rotulo">7 · La declaración responsable</p>
+    <h2>Lo que Estook declara a Hacienda, a un toque en los dos sitios</h2>
+    <p class="lead">
+      La ley pide que esté <b>dentro del programa</b>, que se lea fácil y que se pueda dar en papel
+      o en PDF. Va en Ajustes › Facturación y en los Ajustes del TPV.
+    </p>
+    <div class="lado-a-lado ancho-y-estrecho">
+      <div class="pantalla">
+        <div class="barra">
+          <span class="logo"></span>Declaración responsable <span class="donde">· Estook</span>
+        </div>
+        <div class="cuerpo">
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+            <h3>Declaración responsable del sistema de facturación</h3>
+            <span class="chapa aviso">Borrador · falta el asesor</span>
+          </div>
+          <div class="tabla-envoltorio">
+            <table style="min-width: 0">
+              <tbody>
+                <tr>
+                  <td class="suave">Sistema</td>
+                  <td>Estook</td>
+                </tr>
+                <tr>
+                  <td class="suave">Código del sistema</td>
+                  <td>ES</td>
+                </tr>
+                <tr>
+                  <td class="suave">Versión</td>
+                  <td>La que viaja en cada ticket · hoy 2026.11.0</td>
+                </tr>
+                <tr>
+                  <td class="suave">Funciona solo como VERI*FACTU</td>
+                  <td>Sí</td>
+                </tr>
+                <tr>
+                  <td class="suave">Varias empresas</td>
+                  <td>Sí</td>
+                </tr>
+                <tr>
+                  <td class="suave">Componente externo</td>
+                  <td>Verifacti: genera, firma y manda el registro</td>
+                </tr>
+                <tr>
+                  <td class="suave">Quién lo hace</td>
+                  <td>El titular de Estook, con su NIF y dirección</td>
+                </tr>
+                <tr>
+                  <td class="suave">Fecha y lugar</td>
+                  <td>Se ponen al firmarla</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="botones"><span class="boton">Descargar en PDF</span></div>
+        </div>
+      </div>
+      <div class="tpv" aria-label="Ajustes del TPV">
+        <span class="grupo">Ajustes del TPV · abajo del todo</span>
+        <div class="baldosa">
+          <span class="dibujo" style="background: #9fb0b3">§</span>
+          <span>Facturación<small>En pruebas · nada llega a Hacienda</small></span>
+          <span class="flecha">›</span>
+        </div>
+        <div class="baldosa">
+          <span class="dibujo" style="background: #9fb0b3">¶</span>
+          <span>Declaración responsable<small>Leerla o descargarla</small></span>
+          <span class="flecha">›</span>
+        </div>
+        <p style="color: var(--tpv-suave); font-size: 13px">
+          En el TPV solo se mira. El alta se hace en Estook.
+        </p>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>Por qué así</summary>
+      <div>
+        <p>
+          <b>Lleva lo que pide el artículo 15 de la Orden HAC/1177/2024</b>. Lightspeed la publica
+          como un PDF con versión y fecha; Verifacti tiene una para su parte. Estook firma la suya
+          como programa principal.
+        </p>
+        <p>
+          <b>La versión que declara es la misma que viaja en cada registro</b>, y una prueba lo
+          comprueba: si no coinciden, la declaración no vale. El texto de cumplimiento lo redacta el
+          asesor; hasta entonces, «Borrador».
+        </p>
+        <p>Los valores de la tabla son de ejemplo hasta que se firme.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ═════════════ 8 · Las preguntas ═════════════ -->
+  <section class="seccion" id="preguntas">
+    <p class="rotulo">8 · Tus tres respuestas</p>
+    <h2>Contestaste la A en las tres, el 2-nov, y así quedan mirando la ley</h2>
+    <div class="preguntas">
+      <div class="pregunta-caja">
+        <h3>1 · ¿Facturas a mano desde Estook, para eventos y comidas de empresa?</h3>
+        <p>
+          <b>De dónde sale:</b> el Anexo dice que la factura completa (F1) es para «evento,
+          catering, venta a empresa», pero no dice desde dónde se hace. Con lo escrito, solo saldría
+          del cobro del TPV.
+        </p>
+        <p>
+          <b>En la cocina:</b> una empresa reserva el comedor para 30 y te paga por transferencia a
+          los 15 días. Hoy esa factura la haces en Word o con tu gestoría, fuera de Estook, y no
+          cuenta en tus ventas.
+        </p>
+        <p>
+          <b>Qué sería:</b> en Tickets y facturas, «Hacer una factura»: eliges el cliente (con su
+          NIF comprobado), pones platos de tu carta o un concepto libre (con su IVA), y sale con su
+          número, su QR y en PDF. Cuenta en Negocio el día que la haces.
+        </p>
+        <div class="opciones">
+          <div class="opcion recomendada">
+            <b>A · Sí, en T6 · 2.</b> <b>Con lo que pide la ley:</b> el domicilio del cliente
+            siempre, el aviso del plazo si es una empresa (antes del día 16 del mes siguiente) y la
+            señal facturada al cobrarla. Además es la forma de probar la facturación entera antes de
+            que exista el cobro. Square y Holded la tienen. <b>Recomendada.</b>
+          </div>
+          <div class="opcion">
+            <b>B · No.</b> Las facturas fuera del TPV siguen haciéndose fuera de Estook, y si tu
+            gestoría usa otra serie, se apunta en el paso 3.
+          </div>
+        </div>
+        <p class="lo-que-decides">Contestaste: A.</p>
+        <div class="pantalla" style="max-width: 460px">
+          <div class="barra">
+            <span class="logo"></span>Hacer una factura <span class="donde">· la A</span>
+          </div>
+          <div class="cuerpo estrecho">
+            <div class="campo">
+              <label for="mano-cliente">Cliente</label>
+              <div class="caja-texto bien" id="mano-cliente">
+                B87654321 · Construcciones Ejemplo Norte
+              </div>
+              <span class="ayuda bien"
+                >✓ En Hacienda: CONSTRUCCIONES EJEMPLO NORTE SL · domicilio de la última vez</span
+              >
+            </div>
+            <div class="campo">
+              <label for="mano-fecha">Fecha de la comida</label>
+              <div class="caja-texto" id="mano-fecha">14-nov-2026</div>
+              <span class="ayuda">Es una empresa: la factura, antes del 16-dic.</span>
+            </div>
+            <div class="lineas-devolver">
+              <div>
+                <span class="casilla">30</span><span>Menú de grupo · de la carta · 10 %</span
+                ><span>1.050,00</span>
+              </div>
+              <div>
+                <span class="casilla">1</span
+                ><span>Alquiler del comedor · concepto libre · 21 %</span><span>150,00</span>
+              </div>
+            </div>
+            <div class="fila" style="display: flex; justify-content: space-between">
+              <span class="suave">Total</span><b class="total-grande">1.200,00 €</b>
+            </div>
+            <div class="fila" style="display: flex; justify-content: space-between; gap: 8px">
+              <span class="suave">Menos la señal (F-IKA-2026-000006, 3-nov)</span><b>−300,00</b>
+            </div>
+            <div class="fila" style="display: flex; justify-content: space-between">
+              <span class="suave">Queda por cobrar</span><b>900,00 €</b>
+            </div>
+            <div class="eleccion">
+              <span>Cobrada</span><span class="marcada">Pendiente · vence el 15-dic</span>
+            </div>
+            <span class="boton principal">Hacer la factura</span>
+            <p class="ayuda">
+              La señal se factura el día que se cobra, y esta la descuenta sola. El IVA de cada
+              concepto lo confirma el asesor.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pregunta-caja">
+        <h3>2 · ¿Que el cliente pida su factura él solo, con un QR del ticket?</h3>
+        <p>
+          <b>De dónde sale:</b> de mirar a los demás. Qamarero pone un QR en el ticket para pedir
+          factura; ninguno de los grandes lo hace bien. No está en el Anexo.
+        </p>
+        <p>
+          <b>En la cocina:</b> a las 15:30, con la barra llena, alguien pide factura y el camarero
+          deja todo para teclear un NIF y una dirección. Con esto, el cliente escanea el QR del
+          ticket, escribe sus datos en su móvil y le llega la factura al correo. Nadie del equipo
+          hace nada.
+        </p>
+        <p>
+          <b>Qué hay ya:</b> el QR tributario es otro: es el de Hacienda y va primero. Este iría
+          abajo, con «¿Quieres factura? Escanea aquí». Solo sirve para ese ticket, una vez, y el NIF
+          se comprueba en Hacienda antes de emitir.
+        </p>
+        <div class="opciones">
+          <div class="opcion recomendada">
+            <b>A · Sí.</b> La página se hace en T6 · 2 y el QR sale en el ticket con el cobro (T7).
+            <b>Y no enseña nada a quien no debe:</b> un código que no se adivina, solo con el ticket
+            ya registrado, el importe fijo, una vez, y el local la puede apagar.
+            <b>Recomendada:</b> ahorra trabajo al equipo en lo peor del servicio.
+          </div>
+          <div class="opcion">
+            <b>B · No.</b> La factura la pide el cliente al camarero, como hoy en todos los TPV.
+          </div>
+        </div>
+        <p class="lo-que-decides">Contestaste: A.</p>
+        <div class="movil" aria-label="La página del cliente">
+          <p class="rotulo">estook.com/factura · la A</p>
+          <h3>Tu factura de IKATZ</h3>
+          <p class="pequena suave">Ticket T-IKA-2026-000037 · 47,50 € · 2-nov-2026</p>
+          <div class="eleccion">
+            <span class="marcada">Empresa</span><span>Particular</span><span>De fuera</span>
+          </div>
+          <div class="campo">
+            <label for="cli-nif">Tu NIF</label>
+            <div class="caja-texto bien" id="cli-nif">B87654321</div>
+            <span class="ayuda bien">✓ Construcciones Ejemplo Norte, S.L.</span>
+          </div>
+          <div class="campo">
+            <label for="cli-dir">Domicilio</label>
+            <div class="caja-texto" id="cli-dir">Pol. Ugaldeguren 4, Zamudio</div>
+          </div>
+          <div class="campo">
+            <label for="cli-correo">Dónde te la mandamos</label>
+            <div class="caja-texto" id="cli-correo">admin@ejemplo.es</div>
+          </div>
+          <span class="boton principal">Quiero la factura</span>
+          <p class="ayuda">
+            Tus datos los trata IKATZ, que es quien te factura; Estook solo la hace. Se piden solo
+            los que una factura exige.
+          </p>
+          <p class="ayuda">
+            Si ya se pidió, dice «Este ticket ya tiene factura» y la manda otra vez al mismo correo,
+            sin enseñar los datos.
+          </p>
+        </div>
+      </div>
+
+      <div class="pregunta-caja">
+        <h3>3 · ¿Con qué NIF probamos en IKATZ?</h3>
+        <p>
+          <b>De dónde sale:</b> el entorno de pruebas de Hacienda no acepta NIF inventados (Anexo
+          4.3). Para probar hace falta uno de verdad o la empresa de pruebas de Verifacti.
+        </p>
+        <p>
+          <b>Qué cambia:</b> con la empresa de pruebas, el alta se prueba sin el paso 5 (no hay nada
+          que firmar) y el número lleva delante una marca que pone Verifacti. Con tu NIF, haces el
+          alta entera como la hará un cliente, firma incluida.
+        </p>
+        <div class="opciones">
+          <div class="opcion recomendada">
+            <b>A · La empresa de pruebas de Verifacti</b> en T6, y tu NIF antes del primer cliente.
+            <b>Y lo de pruebas no se mezcla nunca con lo real:</b> numera aparte y, al pasar a real,
+            las series empiezan en 1. Gratis y sin firmar nada. <b>Recomendada.</b>
+          </div>
+          <div class="opcion">
+            <b>B · Tu NIF ya</b>: pruebas el paso 5 de verdad. Si eres autónomo, la firma por correo
+            cuesta 2,90 € + IVA; si es una sociedad, con tu certificado.
+          </div>
+        </div>
+        <p class="lo-que-decides">Contestaste: A.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Un QR de dibujo (no se lee): las tres esquinas de verdad y el resto, salpicado a partir de una semilla.
+  (function () {
+    var NS = 'http://www.w3.org/2000/svg';
+    function esquina(x, y) {
+      return (
+        '<rect x="' +
+        x +
+        '" y="' +
+        y +
+        '" width="7" height="7" fill="#141414"/>' +
+        '<rect x="' +
+        (x + 1) +
+        '" y="' +
+        (y + 1) +
+        '" width="5" height="5" fill="#ffffff"/>' +
+        '<rect x="' +
+        (x + 2) +
+        '" y="' +
+        (y + 2) +
+        '" width="3" height="3" fill="#141414"/>'
+      );
+    }
+    function enEsquina(x, y) {
+      return (x < 8 && y < 8) || (x > 20 && y < 8) || (x < 8 && y > 20);
+    }
+    document.querySelectorAll('svg.qr').forEach(function (svg) {
+      var s = Number(svg.getAttribute('data-semilla')) || 1;
+      function azar() {
+        s = (s * 9301 + 49297) % 233280;
+        return s / 233280;
+      }
+      var trozos = ['<rect width="29" height="29" fill="#ffffff"/>'];
+      for (var y = 0; y < 29; y++) {
+        for (var x = 0; x < 29; x++) {
+          if (!enEsquina(x, y) && azar() > 0.52) {
+            trozos.push('<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="#141414"/>');
+          }
+        }
+      }
+      trozos.push(esquina(0, 0), esquina(22, 0), esquina(0, 22));
+      svg.setAttribute('xmlns', NS);
+      svg.innerHTML = trozos.join('');
+    });
+  })();
+</script>

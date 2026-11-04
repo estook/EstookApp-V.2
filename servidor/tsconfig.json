@@ -12,6 +12,7 @@
     "eventos/**/*",
     "trabajos/**/*",
     "conectores/**/*",
-    "ia/**/*"
+    "ia/**/*",
+    "facturacion/**/*"
   ]
 }

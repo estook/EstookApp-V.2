@@ -12,6 +12,7 @@ import {
   IconoReloj,
   IconoBuscar,
   IconoColor,
+  IconoDocumento,
   IconoFlechaAbajo,
   IconoFlechaDerecha,
   IconoFlechaIzquierda,
@@ -66,6 +67,7 @@ import { TuCartaYSuQr } from './TuCartaYSuQr.tsx';
 import { TuCartaSubida } from './TuCartaSubida.tsx';
 import { TusMenus } from './TusMenus.tsx';
 import { TuSuscripcion } from './TuSuscripcion.tsx';
+import { TuFacturacion } from '../facturacion/TuFacturacion.tsx';
 import { TusAvisos } from './TusAvisos.tsx';
 import { BotonDeEstookTpv } from './BotonDeEstookTpv.tsx';
 import type { MiFichaje } from '../equipo/contrato.ts';
@@ -294,6 +296,7 @@ const ICONO: Readonly<Record<IdDeSeccion, Icono>> = {
   avisos: IconoAvisos,
   local: IconoLocal,
   conexiones: IconoAbrirFuera,
+  facturacion: IconoDocumento,
   suscripcion: IconoDinero,
   organizacion: IconoOrganizacion,
 };
@@ -476,6 +479,12 @@ function LaSeccion({
             <ComoEntranTusVentas modo="ajustes" />
           </Ancla>
         </>
+      )}
+
+      {id === 'facturacion' && (
+        <Ancla id="facturacion">
+          <TuFacturacion />
+        </Ancla>
       )}
 
       {id === 'suscripcion' && (

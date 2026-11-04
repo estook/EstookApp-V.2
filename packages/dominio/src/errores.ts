@@ -335,6 +335,148 @@ export const ERRORES = {
     409,
   ),
 
+  // ── El alta de facturación (T6 · 1, 0126) ──────────────────────────────────
+  facturacion_sin_conectar: error(
+    'facturacion_sin_conectar',
+    'La facturación todavía no está conectada.',
+    'Lo demás de Estook funciona igual. En cuanto la conectemos, este paso se hace desde aquí.',
+    503,
+  ),
+
+  verifacti_no_contesta: error(
+    'verifacti_no_contesta',
+    'Verifacti, que lleva tus tickets a Hacienda, no ha contestado ahora.',
+    'No se ha perdido nada de lo que has escrito. Espera un minuto y vuelve a darle.',
+    502,
+    { texto: 'Reintentar', accion: 'reintentar' },
+  ),
+
+  nif_no_vale: error(
+    'nif_no_vale',
+    'Ese NIF no tiene la forma que toca.',
+    'Míralo en una factura tuya o en las escrituras, y escríbelo otra vez.',
+    422,
+  ),
+
+  nif_no_esta_en_hacienda: error(
+    'nif_no_esta_en_hacienda',
+    'Hacienda no tiene ese NIF a ese nombre.',
+    'Comprueba el NIF y el nombre como salen en tus papeles de Hacienda: tienen que coincidir.',
+    422,
+  ),
+
+  nif_de_otra_empresa: error(
+    'nif_de_otra_empresa',
+    'Ese NIF ya es de otra cuenta de Estook.',
+    'Si es tuyo, escríbenos desde Ajustes y lo vemos contigo.',
+    409,
+  ),
+
+  nif_no_se_cambia: error(
+    'nif_no_se_cambia',
+    'El NIF de una empresa ya dada de alta no se cambia.',
+    'Otro NIF es otra empresa: créala aparte y elígela en este local.',
+    409,
+  ),
+
+  titular_sin_permiso: error(
+    'titular_sin_permiso',
+    'Quien autoriza ante Hacienda tiene que poder hacer el alta en este local.',
+    'Elige a alguien con el puesto de gerente o de dirección, o dale ese puesto primero.',
+    422,
+  ),
+
+  solo_el_titular: error(
+    'solo_el_titular',
+    'La autorización ante Hacienda solo la da el titular de la empresa o su representante.',
+    'Pídele que entre en Estook y la haga desde aquí. Nadie más puede, aunque sea gerente.',
+    403,
+  ),
+
+  falta_la_empresa: error(
+    'falta_la_empresa',
+    'Primero van los datos de tu empresa.',
+    'Vuelve al paso 1 y guárdalos: lo demás sale de ahí.',
+    409,
+  ),
+
+  series_repetidas: error(
+    'series_repetidas',
+    'Las tres series tienen que ser distintas.',
+    'Cambia las letras de una: lo normal es T para los tickets, F para las facturas y R para las rectificativas.',
+    422,
+  ),
+
+  serie_no_vale: error(
+    'serie_no_vale',
+    'Una serie lleva letras y números en mayúscula, con guiones en medio, y hasta 20.',
+    'Por ejemplo, T-IKA. El año y el número los pone Estook.',
+    422,
+  ),
+
+  serie_de_otro_local: error(
+    'serie_de_otro_local',
+    'Esa serie ya la usa otro local de la misma empresa.',
+    'Cada local numera la suya: cambia las letras de esta.',
+    409,
+  ),
+
+  alta_parada: error(
+    'alta_parada',
+    'La facturación de este local está parada.',
+    'Arriba se explica por qué y si es para siempre o un «todavía no».',
+    409,
+  ),
+
+  empresa_de_pruebas: error(
+    'empresa_de_pruebas',
+    'La empresa de pruebas la pone Estook y no se cambia aquí.',
+    'Es para probar: sus datos son los que da Verifacti.',
+    409,
+  ),
+
+  sin_envio_todavia_no: error(
+    'sin_envio_todavia_no',
+    'Facturar sin envío todavía no se puede elegir.',
+    'El proveedor de Estook no lo hace y lo está construyendo Estook. Mientras, se factura con VERI*FACTU, que es la recomendada.',
+    409,
+  ),
+
+  fuera_solo_con_el_sii: error(
+    'fuera_solo_con_el_sii',
+    'Fuera de VERI*FACTU va solo una empresa en el SII.',
+    'Se cambia en el paso 2, contestando si tu empresa lleva los libros por el SII.',
+    409,
+  ),
+
+  firma_sin_cobrar: error(
+    'firma_sin_cobrar',
+    'Verifacti no ha podido cobrar la firma a Estook.',
+    'Es cosa nuestra, no tuya: ya lo estamos viendo. Vuelve a intentarlo en un rato.',
+    503,
+  ),
+
+  faltan_condiciones: error(
+    'faltan_condiciones',
+    'Todavía faltan condiciones para pasar a real.',
+    'Márcalas en la lista de las once, con dónde está cada prueba, y vuelve a darle.',
+    409,
+  ),
+
+  empresa_sin_terminar: error(
+    'empresa_sin_terminar',
+    'Esa empresa no tiene el alta terminada.',
+    'Le faltan el alta en Verifacti o la autorización ante Hacienda.',
+    409,
+  ),
+
+  no_es_de_la_casa: error(
+    'no_es_de_la_casa',
+    'La empresa de pruebas solo va en una cuenta de la casa.',
+    'Un cliente de verdad hace el alta con su NIF.',
+    409,
+  ),
+
   // ── Los PDF (0068) ─────────────────────────────────────────────────────────
   pdf_sin_encender: error(
     'pdf_sin_encender',

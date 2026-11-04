@@ -19,7 +19,14 @@ import { sinAcentos } from '@estook/dominio';
  */
 
 export type IdDeSeccion =
-  'aparato' | 'cuenta' | 'avisos' | 'local' | 'conexiones' | 'suscripcion' | 'organizacion';
+  | 'aparato'
+  | 'cuenta'
+  | 'avisos'
+  | 'local'
+  | 'conexiones'
+  | 'facturacion'
+  | 'suscripcion'
+  | 'organizacion';
 
 export interface Seccion {
   readonly id: IdDeSeccion;
@@ -39,6 +46,8 @@ export const SECCIONES: readonly Seccion[] = [
     queHay: 'Marca, dónde está, fichar, objetivos, carta, menús y precios',
   },
   { id: 'conexiones', nombre: 'Conexiones', queHay: 'Cómo entran tus ventas' },
+  // T6 · 1 (0126): el alta de facturación del local, con Hacienda y Verifacti.
+  { id: 'facturacion', nombre: 'Facturación', queHay: 'Tickets, facturas y Hacienda' },
   // La suscripción, a mano de quien la paga (Richi, 25-sep · 0048).
   { id: 'suscripcion', nombre: 'Suscripción', queHay: 'Plan, tarjeta, facturas y renovación' },
   { id: 'organizacion', nombre: 'Organización', queHay: 'La seguridad de todo el negocio' },
@@ -154,6 +163,13 @@ export const AJUSTES: readonly Ajuste[] = [
     palabras: 'google maps reseñas horario ficha valoración ubicación dirección business',
   },
   {
+    id: 'facturacion',
+    seccion: 'facturacion',
+    nombre: 'Facturación: el alta, las series y Hacienda',
+    palabras:
+      'facturación factura facturas ticket tickets hacienda verifactu verifacti nif cif series autorización declaración responsable aeat',
+  },
+  {
     id: 'suscripcion',
     seccion: 'suscripcion',
     nombre: 'Tu suscripción',
@@ -199,11 +215,18 @@ export function seccionesQueVe({
     // «Tu marca» la ve cualquiera con local, igual que antes.
     if (seccion.id === 'local') return tieneLocal;
     if (seccion.id === 'conexiones') return llevaElLocal;
+    // La facturación, quien puede hacer el alta en este local (Roles 1.12, 0126).
+    if (seccion.id === 'facturacion') return llevaLaFacturacion(permisos, tieneLocal);
     // La suscripción, quien lleva la facturación: lo mismo que pide `mi_suscripcion`, y
     // de la organización, que en la vista de cadena no hay local del que sacarlo.
     if (seccion.id === 'suscripcion') return tieneOrganizacion && llevaLaSuscripcion;
     return tieneOrganizacion && puedeEditar(permisos, 'app.ajustes');
   });
+}
+
+/** Si alguien hace el alta de facturación del local (0126): lo que pide `mi_facturacion`. */
+export function llevaLaFacturacion(permisos: PermisosResueltos, tieneLocal: boolean): boolean {
+  return tieneLocal && puedeEditar(permisos, 'accion.alta_de_facturacion');
 }
 
 /** Si alguien ve el ajuste de los precios de compra: lo que pide su tarjeta. */

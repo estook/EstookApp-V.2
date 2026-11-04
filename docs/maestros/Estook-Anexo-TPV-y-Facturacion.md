@@ -73,11 +73,17 @@ Las dos últimas las fijó el Real Decreto-ley 15/2025, que retrasó un año las
 
 Y una que no se aplazó: **el software de doble uso** —el que permite borrar o alterar ventas— está prohibido desde la Ley Antifraude, con multas de hasta 50.000 € para quien lo use. Es la razón de fondo del principio 17 del Manifiesto.
 
-## 1.3 Modalidad: solo VERI*FACTU
+## 1.3 Modalidad: VERI*FACTU, sin envío o fuera, por el SII
 
-Estook opera **únicamente en modalidad VERI\*FACTU**: cada registro se envía a la AEAT al emitir.
+_Cambiado el 4-nov-2026 a petición de Richi ([0127](../decisiones/0127-con-verifactu-sin-envio-o-fuera.md)); antes decía «solo VERI\*FACTU»._
 
-La otra modalidad, «no verificable», obliga a firmar cada registro con certificado, **conservar los registros** todo el periodo de prescripción y mantener un registro de eventos. Además, la AEAT ha dicho que quien la elija tiene más probabilidad de inspección y que es una opción temporal. No se implementa.
+Cada empresa factura de una de tres formas, que elige en el alta y en Ajustes del TPV, cada una con su «i»:
+
+- **Con VERI\*FACTU, la recomendada y la de fábrica**: cada registro se envía a la AEAT al emitir, por Verifacti. No hay que conservar los registros, porque los tiene Hacienda. **Quien la elige se queda en ella al menos hasta el fin del año natural** (preguntas frecuentes de la AEAT).
+- **Sin envío, la modalidad «NO VERI\*FACTU»**: los registros se generan igual, encadenados, pero **firmados en el momento con un certificado electrónico cualificado**. Se comprueba la cadena antes de cada uno, se lleva **un registro de eventos** (que vigila también la hora del sistema) y todo se conserva sin poder cambiarlo. A la AEAT se le mandan **solo si los pide**, tal cual se hicieron, por su servicio web. **Verifacti no la hace**: la construye Estook en **T6 · 3**. Hasta entonces, se ve y no se elige. La AEAT ha dicho que revisará más a quien la use y que es temporal.
+- **Fuera de VERI\*FACTU, por el SII**: quien lleva los libros por el SII queda fuera del reglamento (1.4). Estook emite tickets y facturas según el RD 1619/2012, sin QR tributario ni registros, y la empresa los informa por su SII. Sale sola al contestar el SII.
+
+**Mientras «sin envío» no exista, Estook declara que funciona solo como VERI\*FACTU** (4.14). Cuando llegue será un programa «dual»: el registro de eventos tiene que estar en el código, y la declaración se cambia y se vuelve a firmar.
 
 ## 1.4 Quién queda fuera, y por qué
 
@@ -89,7 +95,7 @@ _Comprobado el 20 de septiembre de 2026 contra la [FAQ de ámbitos de aplicació
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Domicilio fiscal en **País Vasco** | **Fuera del reglamento**, por normativa foral en la imposición directa. Allí rige TicketBAI                                                                                 | **No se activa todavía**, y la pantalla dice que es otro sistema, no un fallo. **Se puede abrir más adelante con el mismo proveedor**: su API admite las haciendas de Álava, Gipuzkoa y Bizkaia con el mismo modelo de autorización (comprobado el 30-sep-2026, [0066](../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)) |
 | Domicilio fiscal en **Navarra**    | **Fuera del reglamento**, régimen foral propio                                                                                                                              | **No se activa.** El proveedor no la ofrece                                                                                                                                                                                                                                                                                             |
-| Acogido al **SII**                 | **Fuera del reglamento**: no se aplica a quien lleva los libros registro por el SII. Son ámbitos excluyentes                                                                | **No se activa.** Estook no hace SII                                                                                                                                                                                                                                                                                                    |
+| Acogido al **SII**                 | **Fuera del reglamento**: no se aplica a quien lleva los libros registro por el SII. Son ámbitos excluyentes                                                                | **Factura fuera de VERI\*FACTU** ([0127](../decisiones/0127-con-verifactu-sin-envio-o-fuera.md)): tickets y facturas del RD 1619/2012, sin enviar nada. Estook no hace el SII: lo informa la empresa con su programa de siempre                                                                                                         |
 | **Canarias · IGIC**                | **Dentro.** La AEAT dice que los domiciliados en Canarias «se encuentran comprendidos dentro del ámbito subjetivo», y que las referencias al IVA valen también para el IGIC | **Se activa.** El esquema ya distingue IGIC desde la migración `0012` y el motor fiscal ya agrupa por régimen. Lo único que falta son sus reglas, y las confirma el asesor igual que las del IVA                                                                                                                                        |
 | **Ceuta y Melilla · IPSI**         | **Dentro**, con el IPSI en lugar del IVA                                                                                                                                    | **Todavía no**, y la pantalla dice «todavía no», no «no se puede». El tipo del IPSI depende de la categoría del establecimiento y del epígrafe del IAE: es una dimensión más de reglas para dos ciudades de 85.000 habitantes. Se abre cuando haya un cliente que lo pida                                                               |
 
@@ -387,7 +393,7 @@ interface ProveedorFacturacion {
 
 `servidor/facturacion/` es el único sitio que importa el cliente de Verifacti. **Nunca se llama al endpoint de eliminación permanente de un NIF:** borra sus registros de forma irreversible y va justo contra lo que este módulo promete. Dar de baja a un cliente es **desactivar**, que es reversible.
 
-**Las claves viven en el servidor**, en Supabase Vault, una por NIF y entorno. No aparecen en el cliente, ni en los registros de la aplicación, ni en un mensaje de error.
+**Las claves viven en el servidor.** La de la cuenta (`vfn_…`, para la API de NIF) está en los secretos de Supabase como `VERIFACTI_CLAVE_DE_CUENTA`. **La de cada NIF y entorno no se guarda en Estook**: se le pide a Verifacti con la de la cuenta cuando hace falta y se recuerda una hora como mucho ([0126](../decisiones/0126-t6-1-el-alta-de-facturacion.md); antes decía Vault). Ninguna aparece en el cliente, en los registros de la aplicación ni en un mensaje de error.
 
 ## 4.3 Alta de facturación de un local
 
@@ -396,7 +402,7 @@ Cinco pasos, uno por pantalla, y **hasta el último el botón de cobrar sale blo
 1. **La empresa fiscal** ([0060](../decisiones/0060-la-empresa-fiscal.md)): razón social o nombre y apellidos, NIF, domicilio fiscal completo y **quién es su titular o representante legal**. Es lo que sale impreso en cada ticket. **Si la empresa ya existe** —otro local suyo ya cobra con Estook—, se elige y no se vuelve a escribir nada.
 2. **Régimen:** **no se pregunta el territorio**, que ya lo dijo el alta del local (M5) y vive en `local.territorio`; se enseña y se pide confirmarlo, porque el impuesto lo decide dónde se vende. Lo que sí se pregunta, **de la empresa**, es **si está acogida al SII** y **si su domicilio fiscal es foral**. Con eso, **IVA peninsular o balear e IGIC canario siguen adelante**; foral, SII, Ceuta y Melilla paran el módulo, cada uno con su explicación y diciendo si es definitivo o un «todavía no» (1.4 y [0043](../decisiones/0043-hasta-donde-llega-la-facturacion.md)).
 3. **Series:** prefijo propio, comprobando que no choca con otro sistema que el local ya use. Propuesta: `T-{LOCAL}-{AÑO}-` para tickets, `F-{LOCAL}-{AÑO}-` para facturas y `R-{LOCAL}-{AÑO}-` para rectificativas. **Serie más número no pasan de 60 caracteres.**
-4. **Alta del NIF en Verifacti**, por su API de gestión de NIF, y guardado de la clave en Vault. **El NIF se comprueba contra la AEAT al escribirlo** (su API lo ofrece), no al final: un NIF mal escrito se descubre en el paso 1, no en el 4.
+4. **Alta del NIF en Verifacti**, por su API de gestión de NIF (`POST /nifs`), en su entorno de pruebas hasta pasar a real; su clave no se guarda (4.2). **El NIF se comprueba contra la AEAT al escribirlo** (su API lo ofrece), no al final: un NIF mal escrito se descubre en el paso 1, no en el 4.
 5. **Autorización ante Hacienda:** se firma el modelo de representación que permite que los registros se envíen en nombre del negocio. **Un modelo por NIF**, y hay dos formas (comprobado el 30-sep-2026):
    - **En línea, sin certificado**, solo si el titular es **una persona física** (un autónomo): recibe un enlace por correo y se identifica con su DNI o su pasaporte. El nombre tiene que coincidir con el de la AEAT. **Cuesta 2,90 € + IVA por cada intento**, se complete o no, así que el enlace no se vuelve a pedir: se recupera el que está en curso.
    - **Con certificado electrónico**, que es la única para **una sociedad**: se descarga el PDF ya relleno, lo firma su representante y se sube.
@@ -419,18 +425,18 @@ Cinco pasos, uno por pantalla, y **hasta el último el botón de cobrar sale blo
 
 _Los motivos de rectificativa se comprobaron el 20 de septiembre de 2026 contra la [FAQ de procedimientos de facturación de la AEAT](https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/procedimientos-facturacion.html)._
 
-| Clave          | Qué es                                                                          | Cuándo en Estook                                                                  |
-| -------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| F2             | Factura simplificada                                                            | **El ticket de cada cobro.** El caso normal                                       |
-| F1             | Factura completa, con destinatario identificado                                 | Evento, catering, venta a empresa                                                 |
-| F3             | Factura que sustituye a simplificadas ya declaradas                             | **El canje:** el cliente pide factura de su ticket                                |
-| R5             | Rectificativa de **factura simplificada**                                       | **Devolución o error sobre un ticket.** Es la de hostelería                       |
-| R1             | Rectificativa por error fundado en derecho y art. 80.Uno, Dos y Seis de la LIVA | Error sobre una **factura completa**: importe, destinatario o descuento posterior |
-| R2             | Rectificativa del art. 80.Tres de la LIVA                                       | Concurso de acreedores. **No se da en un restaurante**                            |
-| R3             | Rectificativa del art. 80.Cuatro de la LIVA                                     | Créditos incobrables. **No se da en un restaurante**                              |
-| R4             | Resto de causas del art. 80 de la LIVA                                          | Lo que no encaje en las anteriores **[VERIFICAR con el asesor cuándo]**           |
-| F1 en negativo | Abono por devolución total                                                      | Puede ir en la serie original                                                     |
-| Anulación      | Registro propio, no es una factura                                              | Solo si el documento **nunca debió existir**                                      |
+| Clave          | Qué es                                                                          | Cuándo en Estook                                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F2             | Factura simplificada                                                            | **El ticket de cada cobro.** El caso normal                                                                                                                |
+| F1             | Factura completa, con destinatario identificado                                 | Evento, catering, venta a empresa                                                                                                                          |
+| F3             | Factura que sustituye a simplificadas ya declaradas                             | **El canje:** el cliente pide factura de su ticket                                                                                                         |
+| R5             | Rectificativa de **factura simplificada**                                       | **Devolución o error sobre un ticket.** Es la de hostelería                                                                                                |
+| R1             | Rectificativa por error fundado en derecho y art. 80.Uno, Dos y Seis de la LIVA | Sobre una **factura completa**: un importe mal, una devolución o un descuento posterior                                                                    |
+| R2             | Rectificativa del art. 80.Tres de la LIVA                                       | Concurso de acreedores. **No se da en un restaurante**                                                                                                     |
+| R3             | Rectificativa del art. 80.Cuatro de la LIVA                                     | Créditos incobrables. **No se da en un restaurante**                                                                                                       |
+| R4             | Resto de causas del art. 80 de la LIVA                                          | **Un dato que no es un importe**, como el NIF o el domicilio del cliente de una factura, por sustitución (AEAT, mirado el 2-nov-2026; lo investigado, A20) |
+| F1 en negativo | Abono por devolución total                                                      | Puede ir en la serie original                                                                                                                              |
+| Anulación      | Registro propio, no es una factura                                              | Solo si el documento **nunca debió existir**                                                                                                               |
 
 **Y un segundo dato que va con toda rectificativa, y que se olvida:** además de la clave R, VeriFactu pide la **naturaleza de la rectificación**, que es `S` si **sustituye** al documento anterior o `I` si va **por diferencias**. Son dos formas distintas de contar lo mismo y la AEAT las trata distinto. **[VERIFICAR con el asesor cuál se usa en una devolución de hostelería]**, y **[VERIFICAR el nombre exacto del campo]** en la referencia de la API del proveedor antes de escribirlo: aquí no se inventa ningún nombre.
 
@@ -579,29 +585,30 @@ Al volver la conexion: se emiten en ese orden
 
 ## 4.14 La declaración responsable
 
-Una sección fija en **Ajustes › Legal › Declaración responsable del sistema de facturación**. La Orden exige que esté **dentro del propio sistema informático, de forma legible e individualizada, y accesible por el usuario de forma rápida, fácil e intuitiva**; y además que se pueda **entregar en papel o en un formato electrónico gratuito y de uso extendido** (un PDF del servidor, regla 7).
+Una sección fija en **Ajustes › Facturación › Declaración responsable**, y otra en los **Ajustes de Estook TPV**, que la ve cualquiera que esté en la caja ([0126](../decisiones/0126-t6-1-el-alta-de-facturacion.md)). La Orden exige que esté **dentro del propio sistema informático, de forma legible e individualizada, y accesible por el usuario de forma rápida, fácil e intuitiva**; y además que se pueda **entregar en papel o en un formato electrónico gratuito y de uso extendido** (un PDF del servidor, regla 7).
 
 **Qué lleva, comprobado el 20 de septiembre de 2026 en el [artículo 15 de la Orden HAC/1177/2024](https://www.boe.es/buscar/act.php?id=BOE-A-2024-22138)** —capítulo IV, que tiene ese único artículo—:
 
-| Dato                                                           | De dónde sale en Estook                                            |
-| -------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Nombre del sistema informático                                 | Constante del código                                               |
-| **Código identificador único** del sistema                     | Constante del código                                               |
-| **Identificador completo de la versión**                       | La versión desplegada, **la misma que viaja en cada registro**     |
-| Componentes de hardware y software, con sus funcionalidades    | Redactado, e incluye a **Verifacti como componente externo** (1.5) |
-| Si funciona **exclusivamente** como VERI\*FACTU                | **Sí**, y así se declara (1.3)                                     |
-| Si permite **varios obligados tributarios**                    | **Sí**: un mismo despliegue sirve a muchos restaurantes            |
-| Tipos de firma utilizados                                      | Los del proveedor, que es quien firma                              |
-| Nombre o razón social del productor                            | **Los datos del titular de Estook**                                |
-| NIF del productor                                              | Ídem                                                               |
-| Dirección postal completa de contacto                          | Ídem                                                               |
-| Declaración de cumplimiento de la normativa                    | La redacta el asesor                                               |
-| **Fecha y lugar** de suscripción, con día, mes y año completos | Se fija al firmarla                                                |
+| Dato                                                           | De dónde sale en Estook                                                                |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Nombre del sistema informático                                 | Constante del código                                                                   |
+| **Código identificador único** del sistema                     | Constante del código                                                                   |
+| **Identificador completo de la versión**                       | La versión desplegada, **la misma que viaja en cada registro**                         |
+| Componentes de hardware y software, con sus funcionalidades    | Redactado, e incluye a **Verifacti como componente externo** (1.5)                     |
+| Si funciona **exclusivamente** como VERI\*FACTU                | **Sí** mientras «sin envío» no exista; con T6 · 3, **no**, y se declara de nuevo (1.3) |
+| Si permite **varios obligados tributarios**                    | **Sí**: un mismo despliegue sirve a muchos restaurantes                                |
+| Tipos de firma utilizados                                      | Los del proveedor, que es quien firma                                                  |
+| Nombre o razón social del productor                            | **Los datos del titular de Estook**                                                    |
+| NIF del productor                                              | Ídem                                                                                   |
+| Dirección postal completa de contacto                          | Ídem                                                                                   |
+| Declaración de cumplimiento de la normativa                    | La redacta el asesor                                                                   |
+| **Fecha y lugar** de suscripción, con día, mes y año completos | Se fija al firmarla                                                                    |
 
 **Y tres reglas que van con esto:**
 
 - El texto lo redacta el asesor sobre la plantilla del proveedor; **la app solo lo muestra**, no lo compone.
-- El **identificador y la versión del sistema** que viajan en cada registro tienen que coincidir **exactamente** con lo declarado. Si no coinciden, la declaración no vale. Por eso la versión sale de un solo sitio y hay una prueba que lo comprueba.
+- **Con Verifacti, en cada registro va la identificación de Verifacti como sistema**, no la de Estook: lo dicen sus preguntas frecuentes (mirado el 4-nov-2026; corrige lo que decía aquí). Por eso la declaración de Estook lo pone como componente externo **con la versión que da su API en ese momento** (`GET /verifactu/declaracion`), y la versión de Estook sale de un solo sitio (`servidor/facturacion/sistema.ts`), que una prueba compara con lo que se enseña ([0126](../decisiones/0126-t6-1-el-alta-de-facturacion.md)).
+- **Los datos del productor no van en el código**, que es público: se escriben en el admin. Hasta tener el texto del asesor, la fecha y el lugar, la declaración sale como **borrador** y lo dice.
 - Si cambia la parte fiscal del software, se revisa con el asesor si hay que volver a firmarla.
 
 ---
@@ -639,7 +646,7 @@ Lo que importa aquí: **el ticket se emite antes de imprimirse.** Si la impresor
 
 ## 5.3 Factura a petición del cliente
 
-Desde el ticket, en un toque: nombre o razón social, NIF y domicilio. Se emite la F3 referenciando al ticket.
+Desde el ticket, en un toque: nombre o razón social, NIF y domicilio. Se emite la F3 referenciando al ticket. **También la pide el cliente solo**, con el QR «Pide tu factura» del ticket, que va siempre después del tributario, y **una F3 puede sustituir a varios tickets** del mismo cliente ([0125](../decisiones/0125-t6-la-facturacion-las-tres-respuestas.md)). Si el cliente es de fuera, con su pasaporte o su número de IVA y su país.
 
 - El importe **tiene que coincidir** con el del ticket.
 - El ticket queda **canjeado** y no se puede canjear dos veces.
@@ -837,7 +844,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 - `codigo_para_vincular` — local, **función, nombre y de quién** del aparato que se va a vincular, quién lo creó, **huella del código** (nunca el código), caduca en (10 minutos), intentos fallidos (muere a los 5), usado en y por qué aparato (11.3)
 - `turno_del_operador` — terminal, persona, desde, hasta, por qué acabó (bloqueo, otro operador, salir)
 - `aprobacion` — qué operación y sobre qué, **quién la pidió** y **quién la aprobó**, motivo, terminal, cuándo, **usada**; caduca a los dos minutos y sirve una vez
-- `empresa` — la empresa fiscal ([0060](../decisiones/0060-la-empresa-fiscal.md)): organización, razón social, NIF, nombre comercial, domicilio fiscal, SII, foral, **titular** (una persona), representación ante Hacienda con quién firmó y cuándo, estado del alta. Y `local.empresa_id`
+- `empresa` — la empresa fiscal ([0060](../decisiones/0060-la-empresa-fiscal.md)), construida en T6 · 1 ([0126](../decisiones/0126-t6-1-el-alta-de-facturacion.md), migración 0099): organización, NIF y nombre **como los tiene Hacienda**, si es persona o sociedad, nombre comercial, domicilio fiscal, SII, foral (y cuál), **titular** (una persona que puede hacer el alta), si es **la de pruebas** de Verifacti, su **entorno** (pruebas o real, y quién la pasó), su alta en Verifacti y **la autorización** con sus seis estados, la forma, quién firmó, cuándo empezó, caduca y quedó correcta. Y en el local, `empresa_id`, si ya factura con otro programa y «Pide tu factura»
 
 ## 7.2 Sala
 
@@ -885,7 +892,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 
 ## 7.6 Facturación (esquema `facturacion`, solo inserción)
 
-- `serie` — empresa, local, tipo, prefijo, ejercicio, último número
+- `serie` — local, empresa, tipo y **prefijo**, solo de inserción: la de ahora es la última de su local y su tipo (T6 · 1). **El ejercicio y el número los pone emitir** (T6 · 2), y pruebas y real numeran aparte
 - `documento` — empresa, serie, número, tipo, fecha de expedición, fecha de operación, destinatario si lo hay, base, cuota, total, **copia congelada de las líneas y del desglose**, **copia de los datos de la empresa del momento**, `sustituye_a` (F3), `rectifica_a` (R), referencia al cobro, y su identificador, que es **la clave de idempotencia** ante el proveedor ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)). **Nace preparado y no cambia nunca más**
 - `registro` — documento, lo que devolvió el proveedor al registrarlo (`uuid`, **QR**, **huella**), y cada estado ante la AEAT que llegue después, **una fila por novedad**
 - `envio` — documento, **cada intento**: cuándo, qué se mandó, qué contestó, código

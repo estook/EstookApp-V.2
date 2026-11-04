@@ -56,6 +56,7 @@ export {
   type PlatoDelMenuEnPapel,
   type SeccionDelMenuEnPapel,
 } from './menu.ts';
+export { documentoDeLaDeclaracion, type DeclaracionResponsable } from './declaracion.ts';
 export { MONTSERRAT_WOFF2_BASE64 } from './letra.ts';
 
 export const PAQUETE = '@estook/documentos' as const;

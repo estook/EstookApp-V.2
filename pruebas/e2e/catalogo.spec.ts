@@ -150,7 +150,7 @@ test.describe('el catálogo', () => {
     await expect(page.getByText('null · no es lo mismo que cero')).toBeVisible();
   });
 
-  test('los cincuenta y un errores del catálogo se pintan, y ninguno enseña su código', async ({
+  test('los setenta y un errores del catálogo se pintan, y ninguno enseña su código', async ({
     page,
   }) => {
     // «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría
@@ -206,6 +206,13 @@ test.describe('el catálogo', () => {
     //
     // Y la 0120 añade `estook_tpv_es_de_pro`: el aparato de un local sin Pro espera, sin
     // borrar nada. Cincuenta y uno, y falló en GitHub, que es para lo que está.
+    //
+    // Y T6 · 1 (0126) añade dieciocho, los del alta de facturación: la facturación sin
+    // conectar y Verifacti que no contesta, los cuatro del NIF, el titular, las tres de las
+    // series, el alta parada, la empresa de pruebas, la firma sin cobrar y los cuatro del admin
+    // (`faltan_condiciones`, `empresa_sin_terminar`, `no_es_de_la_casa` y `falta_la_empresa`).
+    // Sesenta y nueve, y falló en local, como tenía que pasar. Y la 0127 añade dos, los de cómo
+    // factura: `sin_envio_todavia_no` y `fuera_solo_con_el_sii`. Setenta y uno.
     await abrir(page);
     await irA(page, 'Avisos y vacíos');
 
@@ -213,7 +220,7 @@ test.describe('el catálogo', () => {
       has: page.getByRole('heading', { name: 'ErrorEnCristiano' }),
     });
     const avisos = seccion.getByRole('alert');
-    await expect(avisos).toHaveCount(51);
+    await expect(avisos).toHaveCount(71);
 
     const texto = (await seccion.innerText()).toLowerCase();
     for (const codigo of [

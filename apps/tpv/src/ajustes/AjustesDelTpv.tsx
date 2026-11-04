@@ -13,6 +13,8 @@ import { PinYBloqueo } from './PinYBloqueo.tsx';
 import { CocinaYBarra } from './CocinaYBarra.tsx';
 import { ImpresorasYCajon } from './ImpresorasYCajon.tsx';
 import { Productos } from '../productos/Productos.tsx';
+import { LaDeclaracion } from './LaDeclaracion.tsx';
+import { ComoFacturaEnUnaLinea, LaFacturacion } from './LaFacturacion.tsx';
 
 /**
  * **Ajustes del TPV**, detrás del engranaje (la entrada nueva, maqueta 2; Anexo 11.13): todo lo
@@ -29,18 +31,27 @@ interface Apartado {
   readonly nombre: string;
   readonly dibujo: Dibujo;
   readonly tono: Tono;
-  readonly grupo: 'Hoy' | 'Lo que se vende' | 'Lo que se conecta' | 'Seguridad';
+  readonly grupo: 'Hoy' | 'Lo que se vende' | 'Lo que se conecta' | 'Seguridad' | 'Hacienda';
   /** A dónde lleva: la sala y los agotados son pantallas enteras. */
   readonly ir: string;
 }
 
-const GRUPOS = ['Hoy', 'Lo que se vende', 'Lo que se conecta', 'Seguridad'] as const;
-const DE_AQUI_DENTRO: readonly string[] = ['productos', 'cocina', 'aparatos', 'impresoras', 'pin'];
+const GRUPOS = ['Hoy', 'Lo que se vende', 'Lo que se conecta', 'Seguridad', 'Hacienda'] as const;
+const DE_AQUI_DENTRO: readonly string[] = [
+  'productos',
+  'cocina',
+  'aparatos',
+  'impresoras',
+  'pin',
+  'facturacion',
+  'declaracion',
+];
 
 function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
   const ajusta = puedeEditar(permisos, 'accion.ajustes_del_tpv');
   const vincula = puedeEditar(permisos, 'accion.vincular_aparatos');
   const agota = puedeEditar(permisos, 'accion.marcar_agotado');
+  const factura = puedeEditar(permisos, 'accion.alta_de_facturacion');
   return [
     ...(agota
       ? [
@@ -118,6 +129,29 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
           } as const,
         ]
       : []),
+    // Cómo factura el local (0127): quien hace el alta, como en Estook.
+    ...(factura
+      ? [
+          {
+            id: 'facturacion',
+            nombre: 'Facturación',
+            dibujo: 'documento',
+            tono: 'naranja',
+            grupo: 'Hacienda',
+            ir: 'ajustes/facturacion',
+          } as const,
+        ]
+      : []),
+    // La declaración responsable (0126), **para todos los de la caja**: la ley la pide a mano de
+    // quien usa el programa, no solo de quien lo ajusta.
+    {
+      id: 'declaracion',
+      nombre: 'Declaración responsable',
+      dibujo: 'documento',
+      tono: 'gris',
+      grupo: 'Hacienda',
+      ir: 'ajustes/declaracion',
+    } as const,
   ];
 }
 
@@ -224,6 +258,10 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
             <CocinaYBarra />
           ) : elegido === 'impresoras' ? (
             <ImpresorasYCajon />
+          ) : elegido === 'facturacion' ? (
+            <LaFacturacion />
+          ) : elegido === 'declaracion' ? (
+            <LaDeclaracion />
           ) : (
             <LosAparatos resto={resto} />
           )}
@@ -261,6 +299,8 @@ function ComoEsta({ id }: { readonly id: string }) {
   if (id === 'cocina') return <LaCocina />;
   if (id === 'aparatos') return <LosAparatosDelLocal />;
   if (id === 'impresoras') return <LasImpresorasDelLocal />;
+  if (id === 'facturacion') return <ComoFacturaEnUnaLinea />;
+  if (id === 'declaracion') return <>Lo que Estook declara a Hacienda</>;
   return <ElBloqueo />;
 }
 

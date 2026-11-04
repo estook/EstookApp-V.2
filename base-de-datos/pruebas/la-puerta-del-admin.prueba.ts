@@ -73,7 +73,7 @@ describe('el esquema plataforma', () => {
     expect(sinRls.map((f) => f.relname)).toEqual([]);
   });
 
-  it('sus funciones con privilegio son exactamente once, y no las ejecuta cualquiera', async () => {
+  it('sus funciones con privilegio son exactamente dieciséis, y no las ejecuta cualquiera', async () => {
     // Las mismas razones que las de `estook`, contadas aparte: si un día son
     // cuatro, que sea a propósito. La tercera es de la 0042: `oferta_vigente`, que
     // la pantalla de crear cuenta lee antes de que haya sesión. Y la 0049 (A2) añade
@@ -96,18 +96,27 @@ describe('el esquema plataforma', () => {
         where p.pronamespace = 'plataforma'::regnamespace and p.prosecdef
         order by p.proname`,
     );
+    //
+    // **Y la 0099 (T6 · 1, 0126) añade cinco**: las empresas de todos y los locales de la casa
+    // para el admin, la empresa de pruebas, pasar a real y lo que hace falta para dar de alta el
+    // NIF en producción. Las cinco miran ellas mismas que quien llama es admin.
     expect(definer.map((f) => f.proname)).toEqual([
       'apuntar_la_cuota_de_stripe',
       'apuntar_la_llegada',
       'confirmar_cambio_de_correo',
       'contar_la_visita',
       'dar_acceso',
+      'la_empresa_para_real',
+      'las_empresas',
       'lo_que_da_el_codigo',
       'los_correos_de_los_admins',
+      'los_locales_de_la_casa',
       'nivel_de',
       'oferta_vigente',
       'parar_cambio_de_correo',
+      'pasar_a_real',
       'pedir_cambio_de_correo',
+      'poner_la_empresa_de_pruebas',
     ]);
     for (const fila of definer) {
       expect(fila.publico, `${fila.proname} la puede ejecutar cualquiera`).toBe(false);

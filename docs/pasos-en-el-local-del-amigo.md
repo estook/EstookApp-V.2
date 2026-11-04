@@ -19,12 +19,11 @@
 
 ## Antes de ir
 
-1. **Que esté publicada la caja 1.1.0**, la de «T5 · 2 · 2 · La caja de centro» ([sus
-   pasos](pasos-de-t5-2-2.md)), que lleva dentro lo de la 1.0.1 (la #157, ya fusionada):
-   - **En GitHub**: **Actions** → **La caja para Windows** → **Run workflow**, rama `main`, y en la
-     casilla escribe **`publicar`**. Espera al círculo verde (unos 10 minutos).
-   - **Qué debe salir:** en **Releases**, «v1.1.0» con tres ficheros: el `.exe`, su `.blockmap` y
-     `latest.yml`.
+1. **La caja 1.2.0 ya está publicada** (2-nov): lleva dentro la 1.1.0 y la 1.0.1, que nunca se
+   publicaron. **No publiques ninguna otra.**
+   - **Qué debe salir:** en GitHub, **Releases**, «v1.2.0» marcada como **Latest**, con tres
+     ficheros: el `.exe`, su `.blockmap` y `latest.yml`. Si en tu portátil ya tenías la caja
+     instalada, se pone al día sola al abrirla.
 2. **Crea su cuenta de prueba** (la de tu amigo) con su carta, como siempre.
 3. **Lleva tu portátil con Windows.** La prueba se hace en **tu** portátil, no en el PC de su TPV:
    así su caja no se toca.
@@ -72,6 +71,7 @@ de alta. Su TPV suele tenerlas con dirección fija; si es así, no pasará.
 
 ## Lo que aún no está
 
-- **Que la cocina reciba sin internet** (la caja de centro): con la 1.1.0, [sus pasos](pasos-de-t5-2-2.md).
+- **Que la cocina reciba sin internet, los PIN y fichar en la caja** (la caja de centro) ya están,
+  con la 1.2.0: se prueban con [sus pasos](pasos-de-t5-2-2.md), los de la segunda parte.
 - **Cobrar, el ticket y el cajón al cobrar**: T6 y T7.
 - **Impresoras por USB**: cuando un local la tenga.

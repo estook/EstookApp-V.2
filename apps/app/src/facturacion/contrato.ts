@@ -4,6 +4,7 @@ import type {
   HaciendaForal,
   ModalidadDeFacturacion,
   NifEnHacienda,
+  PuestoQueLaLleva,
   TerritorioDelLocal,
   TipoDeSerie,
 } from '@estook/dominio';
@@ -60,7 +61,18 @@ export interface MiFacturacion {
     readonly nif: string;
   }[];
   readonly puedenSerTitular: readonly { readonly id: string; readonly nombre: string }[];
+  /** Quién la lleva en este local (0128): solo le llega a la dirección; a los demás, nulo. */
+  readonly quienLaLleva: readonly QuienLaLlevaLaFacturacion[] | null;
   readonly ano: number;
+}
+
+export interface QuienLaLlevaLaFacturacion {
+  readonly personaId: string;
+  readonly nombre: string;
+  readonly rol: PuestoQueLaLleva;
+  readonly siempre: boolean;
+  readonly laLleva: boolean;
+  readonly esTitular: boolean;
 }
 
 export interface ElNifComprobado {

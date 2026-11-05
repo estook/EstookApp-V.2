@@ -1263,6 +1263,7 @@ export {
   LA_AUTORIZACION_EN_LLANO,
   LAS_MODALIDADES,
   PARADAS,
+  PUESTOS_QUE_LA_LLEVAN,
   TIPOS_DE_SERIE,
   comoEsElNif,
   comoVaLaFacturacion,
@@ -1295,6 +1296,7 @@ export type {
   Parada,
   PasoDeFacturacion,
   PersonaDelNif,
+  PuestoQueLaLleva,
   TerritorioDelLocal,
   TipoDeSerie,
 } from './facturacion.ts';

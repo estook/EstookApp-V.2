@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 5 de noviembre** ([0128](../decisiones/0128-quien-lleva-la-facturacion.md)), sin cambiar de versión: **Roles** (1.12) dice que **la facturación es de la dirección**: de fábrica solo ella la ve y la cambia, y se la da a quien quiera de quien manda en el local (administrador de cuenta, area manager, gerente o gestoría). El gerente y el administrador de cuenta dejan de traerla puesta.
+
 **El 29 de octubre** ([0122](../decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md)), sin cambiar de versión: el **Anexo** dice en 3.6 lo que hace un aparato sin internet desde T5 · 2 · 1 (abre con lo último que leyó, abre la mesa, pide, manda y marcha guardándolo, y entra quien ya entró ese día), y en 10.9 la franja ámbar con «Ver» y «Conexión recuperada · 12 cosas subidas, ninguna repetida»; la **Arquitectura** (capítulo 7), que la cola del aparato ya existe, que lo nuevo va detrás de lo guardado, y cómo se entra sin internet con el PIN cifrado.
 
 **El 28 de octubre, por la noche** ([0121](../decisiones/0121-la-pausa-del-tpv.md), punto 7), sin cambiar de versión: el **Anexo** dice en 11.4 que **el PIN se teclea al entrar, no en cada cobro** (bloquear al acabar cada cobro, apagado de fábrica) y que el PIN de un encargado solo se pide si quien está dentro no puede; y en 11.6, **«Empezar el día» y «Cerrar el día»** como nombres de abrir y cerrar la caja, y **un solo «Abrir el cajón»** (Cambio · Sacar dinero · Meter dinero) en lugar de «Entrada o salida» y «Abrir el cajón sin venta».

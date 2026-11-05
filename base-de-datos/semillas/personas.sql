@@ -136,6 +136,27 @@ on conflict (membresia_id, local_id, permiso) do update
   set nivel = excluded.nivel,
       motivo = excluded.motivo;
 
+-- ── La facturacion, dada a tres gerentes (0128) ───────────────────────────────
+-- De fabrica la facturacion es solo de la direccion (0100), y ella se la da a quien
+-- quiera. Rosa, Pablo y Vera la llevan como si su direccion se la hubiera dado: Bar
+-- Centro y Casa Lola no tienen direccion sembrada, y Vera es la de las capturas.
+
+insert into estook.recorte_de_permiso (membresia_id, local_id, permiso, nivel, motivo)
+select m.id, m.local_id, 'accion.alta_de_facturacion', 'ver_y_editar',
+       'Se la dio la direccion (0100)'
+from estook.membresia m
+join estook.persona p on p.id = m.persona_id
+join estook.local l on l.id = m.local_id
+where (p.correo, l.codigo) in (
+  ('rosa@ejemplo.estook.com',  'bar-centro'),
+  ('pablo@ejemplo.estook.com', 'casa-lola'),
+  ('vera@ejemplo.estook.com',  'bar-ribera')
+)
+  and m.rol = 'gerente'
+on conflict (membresia_id, local_id, permiso) do update
+  set nivel = excluded.nivel,
+      motivo = excluded.motivo;
+
 -- ── Politicas del catalogo maestro de la cadena ───────────────────────────────
 -- «Asi una franquicia bloquea la receta del plato estrella y deja libre la carta
 --  de vinos.» Aqui: las recetas mandan desde arriba, las cartas se sugieren y los

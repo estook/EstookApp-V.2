@@ -761,7 +761,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // **Y la 0100 (0128) añade tres: quién lleva la facturación.** `es_la_direccion_del_local`
     // mira las membresías de quien pregunta, `quien_lleva_la_facturacion` las de los demás (solo
     // para la dirección) y `dar_la_facturacion` escribe el recorte, que la API solo pone así.
-    // Noventa y una.
+    // Noventa y una. **Y la 0102 (0129) añade una**: `quitar_la_empresa`, que suelta la empresa
+    // del local, solo en pruebas. Noventa y dos.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -852,6 +853,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'quien_recibe',
       'quien_trabaja_ahora',
       'quien_ve_el_canal',
+      'quitar_la_empresa',
       'reconocer_dispositivo',
       'registro_pendiente_de',
       'renombrar_desde_el_admin',

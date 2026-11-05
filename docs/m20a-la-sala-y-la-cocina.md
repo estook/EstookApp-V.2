@@ -551,6 +551,20 @@ Se elige en el paso 2 y en **Ajustes del TPV › Facturación**, cada una con su
 
 ### T6 · 2 · Emitir, terminado cuando
 
+**Se entrega en tres** (5-nov, como T6 · 1 y T5 · 2), cada una con su pull request y lo suyo de
+abajo:
+
+1. **T6 · 2 · 1 · El motor y el ticket**: el motor del Anexo 4.9, el ticket (F2) con «Imprimir un
+   ticket de prueba» en Ajustes, el papel a 80 y 58 mm con el QR, el justificante sin conexión, Servicio
+   › Ventas › Tickets y facturas con la historia de cada documento, un rechazo por los datos (A4) y
+   las pruebas del capítulo 8 que le tocan.
+2. **T6 · 2 · 2 · Las facturas y las correcciones**: la factura a mano (F1) en A4, el canje (F3), las
+   devoluciones (R5 y R1), corregir los datos del cliente (R4), anular y la señal de un evento.
+3. **T6 · 2 · 3 · «Pide tu factura»**: la página del cliente, con su límite de intentos y su aviso de
+   privacidad. El QR en el ticket llega con T7.
+
+**Quitar la empresa de un local** (0129), mientras se está en pruebas, ya está en T6 · 1.
+
 - **El motor del Anexo 4.9**: el número se da al preparar, con el candado de su serie; a Verifacti se
   le llama fuera de la transacción, con la clave del documento; **el estado se lee de lo que se le
   añade**; un trabajo termina cada pocos minutos lo que se quedó a medias; **los avisos de Verifacti**

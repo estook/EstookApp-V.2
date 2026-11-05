@@ -150,7 +150,7 @@ test.describe('el catálogo', () => {
     await expect(page.getByText('null · no es lo mismo que cero')).toBeVisible();
   });
 
-  test('los setenta y cuatro errores del catálogo se pintan, y ninguno enseña su código', async ({
+  test('los setenta y cinco errores del catálogo se pintan, y ninguno enseña su código', async ({
     page,
   }) => {
     // «Ningún mensaje enseña un código ni un error de base de datos» (Auditoría
@@ -214,7 +214,8 @@ test.describe('el catálogo', () => {
     // Sesenta y nueve, y falló en local, como tenía que pasar. Y la 0127 añade dos, los de cómo
     // factura: `sin_envio_todavia_no` y `fuera_solo_con_el_sii`. Setenta y uno. Y la 0128
     // añade tres, los de quién la lleva: `solo_la_direccion`, `no_puede_llevarla` y
-    // `es_el_titular`. Setenta y cuatro.
+    // `es_el_titular`. Setenta y cuatro. Y la 0129 añade uno, quitar la empresa en real:
+    // `empresa_en_real`. Setenta y cinco.
     await abrir(page);
     await irA(page, 'Avisos y vacíos');
 
@@ -222,7 +223,7 @@ test.describe('el catálogo', () => {
       has: page.getByRole('heading', { name: 'ErrorEnCristiano' }),
     });
     const avisos = seccion.getByRole('alert');
-    await expect(avisos).toHaveCount(74);
+    await expect(avisos).toHaveCount(75);
 
     const texto = (await seccion.innerText()).toLowerCase();
     for (const codigo of [

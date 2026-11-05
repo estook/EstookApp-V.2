@@ -428,6 +428,7 @@ import {
   mirarLaAutorizacion,
   ponerLasSeries,
   ponerPideTuFactura,
+  quitarLaEmpresa,
   usarLaEmpresa,
 } from './comandos/facturacion.ts';
 import {
@@ -436,6 +437,7 @@ import {
   marcarCondicion,
   pasarAReal,
   ponerLaEmpresaDePruebas,
+  quitarLaEmpresaDePruebas,
   probarVerifacti,
 } from './comandos/facturacion-en-el-admin.ts';
 import { escribirLosPasosConFogon, preguntarAFogon, rellenarConFogon } from './comandos/fogon.ts';
@@ -1171,10 +1173,12 @@ export const catalogo = {
     [elegirLaModalidad.nombre]: elegirLaModalidad,
     [ponerPideTuFactura.nombre]: ponerPideTuFactura,
     [darLaFacturacion.nombre]: darLaFacturacion,
+    [quitarLaEmpresa.nombre]: quitarLaEmpresa,
     [probarVerifacti.nombre]: probarVerifacti,
     [marcarCondicion.nombre]: marcarCondicion,
     [guardarElProductor.nombre]: guardarElProductor,
     [ponerLaEmpresaDePruebas.nombre]: ponerLaEmpresaDePruebas,
+    [quitarLaEmpresaDePruebas.nombre]: quitarLaEmpresaDePruebas,
     [pasarAReal.nombre]: pasarAReal,
   } as Record<string, Comando<never, unknown>>,
 };

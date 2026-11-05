@@ -459,6 +459,21 @@ export function FacturacionEnElAdmin() {
                   >
                     Ponerla en ese local
                   </Boton>
+                  {datos.localesDeLaCasa.some((l) => l.localId === local && l.dePruebas) && (
+                    // Por si se puso donde no era (0129): el local vuelve a quedarse sin empresa.
+                    <Boton
+                      tono="texto"
+                      disabled={!puede}
+                      cargando={haciendo === 'quitar'}
+                      onClick={() => {
+                        void hacer('quitar', 'admin_quitar_la_empresa_de_pruebas', {
+                          local_id: local,
+                        });
+                      }}
+                    >
+                      Quitarla de ese local
+                    </Boton>
+                  )}
                 </div>
               </div>
             </Tarjeta>

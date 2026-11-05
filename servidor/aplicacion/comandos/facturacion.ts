@@ -53,6 +53,7 @@ import {
  *   elegir_la_modalidad         con VERI*FACTU o sin envío (0127); también desde Estook TPV
  *   poner_pide_tu_factura       el QR del ticket para pedir factura (0125)
  *   dar_la_facturacion          la dirección se la da o se la quita a alguien del local (0128)
+ *   quitar_la_empresa           el local se queda sin empresa, en pruebas (0129)
  *
  * ── En la app y en Estook TPV ─────────────────────────────────────────────────────
  *
@@ -663,6 +664,11 @@ export const mandarElModeloFirmado = comando<{ base64: string; firmante: string 
     exigirElPaso(lo, 5);
     soloConVerifactu(lo);
     const empresa = soloElTitular(contexto, lo);
+    if (empresa.persona !== 'juridica') {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Una persona firma en línea, sin certificado: el modelo es para una sociedad.',
+      });
+    }
     let bytes: Uint8Array;
     try {
       const texto = atob(entrada.base64.replace(/^data:[^;]+;base64,/, ''));
@@ -770,6 +776,26 @@ export const ponerPideTuFactura = comando<{ encendido: boolean }, { readonly enc
         contexto.sql`select estook.poner_pide_tu_factura(${localId}::uuid, ${entrada.encendido})`,
     );
     return { encendido: entrada.encendido };
+  },
+});
+
+// ── Quitar la empresa (0129) ──────────────────────────────────────────────────────
+
+/**
+ * **Quitar la empresa del local**, por si se puso la que no era (0129). Solo en pruebas: en real
+ * la empresa es la que firmó sus tickets. El alta vuelve al paso 1; si ningún otro local la usa,
+ * su NIF queda libre, y ponerla otra vez la recupera con su alta y su autorización. **En
+ * Verifacti no se toca nada.**
+ */
+export const quitarLaEmpresa = comando<Record<string, never>, { readonly quitada: true }>({
+  nombre: 'quitar_la_empresa',
+  entrada: z.object({}).strict(),
+  exige: EXIGE,
+
+  async ejecutar(contexto) {
+    const localId = elLocalDeLaSesion(contexto);
+    await enLaBase(() => contexto.sql`select estook.quitar_la_empresa(${localId}::uuid)`);
+    return { quitada: true };
   },
 });
 

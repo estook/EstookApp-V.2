@@ -165,6 +165,19 @@ export function PasoDeLaEmpresa({
             : 'Hacienda no lo tiene a ese nombre. Míralo en tus papeles de Hacienda.'
         : undefined;
 
+  // La de pruebas no se cambia aquí (la pone el admin): solo se ve y se puede quitar (0129).
+  if (e?.dePruebas === true) {
+    return (
+      <div className="flex flex-col gap-e4">
+        <Aviso tono="info" titulo="La empresa de pruebas de Verifacti">
+          {e.nombre} · NIF {e.nif}. Es de Verifacti, para probar: sus datos no se cambian y no se
+          firma nada.
+        </Aviso>
+        <QuitarLaEmpresa lo={lo} alAcabar={alAcabar} />
+      </div>
+    );
+  }
+
   const listo =
     reconocido &&
     nombre.trim() !== '' &&
@@ -312,6 +325,71 @@ export function PasoDeLaEmpresa({
           </Boton>
         </Botones>
       </Pie>
+      <QuitarLaEmpresa lo={lo} alAcabar={alAcabar} />
+    </div>
+  );
+}
+
+/**
+ * **Quitar la empresa de este local** (0129), por si se puso la que no era. Solo en pruebas. Pide
+ * confirmarlo aquí mismo: el alta vuelve al paso 1, y ponerla otra vez la recupera.
+ */
+function QuitarLaEmpresa({
+  lo,
+  alAcabar,
+}: {
+  readonly lo: MiFacturacion;
+  readonly alAcabar: () => void;
+}) {
+  const { hacer, haciendo, error } = usarUnPasoDelAlta();
+  const [seguro, setSeguro] = useState(false);
+  const e = lo.empresa;
+  if (e === null || e.entorno !== 'pruebas') return null;
+
+  return (
+    <div className="flex flex-col gap-e3 border-t border-borde pt-e4">
+      {!seguro ? (
+        <div>
+          <Boton
+            tono="texto"
+            onClick={() => {
+              setSeguro(true);
+            }}
+          >
+            Quitar esta empresa de {lo.nombreDelLocal}
+          </Boton>
+        </div>
+      ) : (
+        <Aviso tono="atencion" titulo={`¿Quitar ${e.nombre} de ${lo.nombreDelLocal}?`}>
+          <span className="block">
+            El local se queda sin empresa y el alta vuelve al paso 1. No se borra nada: si la
+            vuelves a poner, vuelve con su alta y su autorización.
+          </span>
+          <span className="mt-e3 flex flex-wrap gap-e2">
+            <Boton
+              tono="peligro"
+              cargando={haciendo}
+              textoCargando="Quitándola"
+              onClick={() => {
+                void hacer('quitar_la_empresa', {}).then((r) => {
+                  if (r !== null) alAcabar();
+                });
+              }}
+            >
+              Sí, quitarla
+            </Boton>
+            <Boton
+              tono="secundario"
+              onClick={() => {
+                setSeguro(false);
+              }}
+            >
+              No
+            </Boton>
+          </span>
+        </Aviso>
+      )}
+      {error !== null && <ErrorEnCristiano error={error} />}
     </div>
   );
 }

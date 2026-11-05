@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
-import { APP, entrarEnLaApp } from './en-la-app.ts';
+import { APP, consultarEnLaApi, ejecutarEnLaApi, entrarEnLaApp, tokenDe } from './en-la-app.ts';
 import { entrarEnElAdmin } from './entrar-en-el-admin.ts';
 
 /**
@@ -10,6 +10,7 @@ import { entrarEnElAdmin } from './entrar-en-el-admin.ts';
  *
  *   · la gerente a quien se la han dado hace los cinco pasos, y el NIF se mira al escribirlo
  *   · la dirección se la da y se la quita a la gestoría, en «Quién la lleva» (0128)
+ *   · la empresa de pruebas se pone y se quita desde el admin, y el local también la quita (0129)
  *   · «Pide tu factura» se apaga y se enciende
  *   · la declaración responsable se lee y se baja en PDF, y dice que es un borrador
  *   · un camarero no ve la sección
@@ -148,6 +149,50 @@ test('la dirección se la da a la gestoría y se la quita, en «Quién la lleva�
   await expect(gestoria).toBeChecked({ checked: !antes });
   await gestoria.locator('xpath=..').click();
   await expect(gestoria).toBeChecked({ checked: antes });
+});
+
+test('la empresa de pruebas se pone y se quita desde el admin, y el local también la quita (0129)', async ({
+  page,
+  request,
+}, info) => {
+  // Bar Darsena es uno y ninguna otra prueba lo usa: en un solo navegador, para no pisarse.
+  test.skip(info.project.name !== 'escritorio', 'Bar Darsena es uno: se prueba en el escritorio');
+  await entrarEnElAdmin(page);
+  await page.getByRole('button', { name: 'Facturación', exact: true }).click();
+  const enQueLocal = page.getByLabel('En qué local');
+  const darsena = await enQueLocal
+    .locator('option', { hasText: 'Bar Darsena' })
+    .getAttribute('value');
+  expect(darsena).not.toBeNull();
+  await enQueLocal.selectOption(darsena ?? '');
+  const poner = page.getByRole('button', { name: 'Ponerla en ese local' });
+  const quitar = page.getByRole('button', { name: 'Quitarla de ese local' });
+  // Puesta por una vuelta anterior que se cortó: se quita primero.
+  if (await quitar.isVisible()) await quitar.click();
+  await expect(quitar).toHaveCount(0);
+  await poner.click();
+  await expect(quitar).toBeVisible();
+  await quitar.click();
+  await expect(quitar).toHaveCount(0);
+
+  // Puesta otra vez, la quita la dirección desde el local.
+  await poner.click();
+  await expect(quitar).toBeVisible();
+  const deElena = await tokenDe(request, 'elena@ejemplo.estook.com');
+  await ejecutarEnLaApi(request, deElena, 'cambiar_de_contexto', { local_id: darsena });
+  expect(
+    (
+      await consultarEnLaApi<{ empresa: { nif: string } | null }>(
+        request,
+        deElena,
+        'mi_facturacion',
+      )
+    ).empresa?.nif,
+  ).toBe('B75777847');
+  await ejecutarEnLaApi(request, deElena, 'quitar_la_empresa', {});
+  expect(
+    (await consultarEnLaApi<{ empresa: unknown }>(request, deElena, 'mi_facturacion')).empresa,
+  ).toBeNull();
 });
 
 test('un camarero no ve la facturación en Ajustes', async ({ page }) => {

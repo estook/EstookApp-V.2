@@ -48,6 +48,7 @@ const LO_QUE_DICE_LA_BASE: Readonly<Record<string, CodigoDeError>> = {
   solo_la_direccion: 'solo_la_direccion',
   no_puede_llevarla: 'no_puede_llevarla',
   es_el_titular: 'es_el_titular',
+  empresa_en_real: 'empresa_en_real',
   sin_envio_todavia_no: 'sin_envio_todavia_no',
   fuera_solo_con_el_sii: 'fuera_solo_con_el_sii',
   solo_admin_total: 'sin_permiso',

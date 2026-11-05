@@ -25,6 +25,7 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  *   · el alta en Verifacti, que si no contesta no apunta nada
  *   · la autorización: **solo el titular**, una firma en curso se recupera (no se paga otra)
  *   · el segundo local usa la empresa sin escribir nada; otra cuenta no puede usar el NIF
+ *   · quitar la empresa de un local, en pruebas: queda libre y ponerla otra vez la recupera (0102)
  *   · el NIF de la empresa de pruebas no se escribe en el paso 1, y la que ya existía así pasa a
  *     ser la de pruebas (0101)
  *   · el admin: la empresa de pruebas, **que no se firma** (0128), las once condiciones y
@@ -982,6 +983,109 @@ describe('sin la clave de Verifacti', () => {
       await sinClave.consultar(deRosa, 'la_declaracion_responsable'),
     );
     expect(d.verifacti).toBeNull();
+  });
+});
+
+describe('quitar la empresa de un local (0102)', () => {
+  it('en real no se quita: sus tickets los firmó ella', async () => {
+    // IKATZ pasó a real en «el admin».
+    expect(elFallo(await api.ejecutar(rosa, 'quitar_la_empresa', {}))).toBe('empresa_en_real');
+  });
+
+  it('la de pruebas se quita, desde el local o desde el admin, y se vuelve a poner la misma', async () => {
+    const casaLola = await base.localPorCodigo('casa-lola');
+    const pablo = await api.entrar('pablo@ejemplo.estook.com');
+    const antes = await mia(pablo);
+    expect(antes.empresa?.nif).toBe('B75777847');
+    losDatos(await api.ejecutar(pablo, 'quitar_la_empresa', {}));
+    const sin = await mia(pablo);
+    expect(sin.empresa).toBeNull();
+    expect(sin.como).toMatchObject({ estado: 'en_marcha', paso: 1 });
+    // Ponerla otra vez es la misma, no otra.
+    losDatos(
+      await api.ejecutar(admin, 'admin_poner_la_empresa_de_pruebas', { local_id: casaLola }),
+    );
+    expect((await mia(pablo)).empresa?.id).toBe(antes.empresa?.id);
+    // Y desde el admin, por si se puso donde no era.
+    losDatos(
+      await api.ejecutar(admin, 'admin_quitar_la_empresa_de_pruebas', { local_id: casaLola }),
+    );
+    expect((await mia(pablo)).empresa).toBeNull();
+    expect(
+      elFallo(
+        await api.ejecutar(admin, 'admin_quitar_la_empresa_de_pruebas', { local_id: casaLola }),
+      ),
+    ).toBe('no_existe');
+    // Un restaurante no entra en lo del admin.
+    expect(
+      elFallo(
+        await api.ejecutar(pablo, 'admin_quitar_la_empresa_de_pruebas', { local_id: casaLola }),
+      ),
+    ).toBe('sin_permiso');
+  });
+
+  it('si otro local la usa, solo se suelta; con el último, queda quitada', async () => {
+    await aLocal(elena, barPuerto);
+    const deAna = (await mia(elena)).empresa?.id;
+    losDatos(await api.ejecutar(elena, 'quitar_la_empresa', {}));
+    const libre = async () =>
+      (
+        await comoDuena<{ quitada: boolean }>(
+          'select quitada_en is not null as quitada from estook.empresa where id = $1',
+          [deAna],
+        )
+      )[0]?.quitada;
+    // Bar Ribera la sigue usando.
+    expect(await libre()).toBe(false);
+    await aLocal(vera, barRibera);
+    losDatos(await api.ejecutar(vera, 'quitar_la_empresa', {}));
+    expect(await libre()).toBe(true);
+    // Sale en «Ya tienes una empresa», para recuperarla sin escribir nada.
+    expect((await mia(elena)).otrasEmpresas.map((e) => e.id)).toContain(deAna);
+  });
+
+  it('volver a escribir su NIF la recupera, con su alta y su autorización', async () => {
+    const [ana] = await comoDuena<{ id: string }>(
+      "select id from estook.empresa where nif = '12345678Z'",
+    );
+    const vuelta = losDatos<{ empresaId: string }>(
+      await api.ejecutar(elena, 'guardar_la_empresa', {
+        empresa_id: null,
+        nif: '12345678Z',
+        nombre: 'Garcia Lopez Ana',
+        calle: 'Muelle',
+        numero: '3',
+        codigo_postal: '15001',
+        municipio: 'A Coruña',
+        titular_id: elenaId,
+      }),
+    );
+    expect(vuelta.empresaId).toBe(ana?.id);
+    // Con sus series y su firma de antes: lista sin volver a pagar otra firma.
+    expect((await mia(elena)).como).toEqual({ estado: 'lista' });
+    // Y el otro local, eligiéndola.
+    losDatos(await api.ejecutar(vera, 'usar_la_empresa', { empresa_id: ana?.id }));
+    expect((await mia(vera)).como).toEqual({ estado: 'lista' });
+  });
+
+  it('el admin no pone la de pruebas encima de la empresa de un local', async () => {
+    const fallo = await api.ejecutar(admin, 'admin_poner_la_empresa_de_pruebas', {
+      local_id: barCentro,
+    });
+    expect(elFallo(fallo)).toBe('faltan_datos');
+    expect(JSON.stringify(fallo)).toContain('ya tiene su empresa');
+  });
+
+  it('la de pruebas no se elige desde el local: la pone el admin', async () => {
+    const [pruebas] = await comoDuena<{ id: string }>(
+      `select e.id from estook.empresa e join estook.local l on l.organizacion_id = e.organizacion_id
+        where l.id = $1 and e.de_pruebas`,
+      [await base.localPorCodigo('casa-lola')],
+    );
+    const pablo = await api.entrar('pablo@ejemplo.estook.com');
+    expect(elFallo(await api.ejecutar(pablo, 'usar_la_empresa', { empresa_id: pruebas?.id }))).toBe(
+      'empresa_de_pruebas',
+    );
   });
 });
 

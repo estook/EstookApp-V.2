@@ -529,9 +529,9 @@ En su pull request ([0126](decisiones/0126-t6-1-el-alta-de-facturacion.md), migr
 API pasa a **119 consultas y 331 comandos** con la 0127, 153 tablas). Todo lo de arriba, con **tres cosas que
 cambian lo escrito**, por lo que dice Verifacti en su documentación (leída entera el 4-nov):
 
-- **Ajustes › Facturación la ven el gerente, la dirección y el administrador de cuenta**, como dice
-  Roles 1.12 (arriba decía «solo el titular»). **La autorización ante Hacienda, solo el titular**, y
-  lo mira también la base.
+- **Ajustes › Facturación la ve la dirección, y quien ella quiera** (0128, desde el 5-nov; hasta
+  entonces la veían también el gerente y el administrador de cuenta). **La autorización ante
+  Hacienda, solo el titular**, y lo mira también la base.
 - **En los registros va la identificación de Verifacti, no la de Estook**: la declaración pone a
   Verifacti como componente externo con la versión que da su API, y la prueba mira que la de Estook
   salga de un solo sitio (arriba decía que la versión de Estook viajaba en cada registro).

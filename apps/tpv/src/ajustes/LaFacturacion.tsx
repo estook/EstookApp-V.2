@@ -10,8 +10,8 @@ import { usarLaFacturacionDelTpv } from '../ganchos/usarLaFacturacionDelTpv.ts';
 /**
  * **Ajustes del TPV › Facturación** (0127): cómo factura el local —con VERI*FACTU, la recomendada;
  * sin envío, que todavía no está; o fuera, por el SII— con su «i», y cómo va el alta. Para quien
- * hace el alta (gerente, dirección y administrador de cuenta), con el mismo permiso que en Estook.
- * **El alta se hace en Estook**: aquí solo se ve y se elige cómo factura.
+ * lleva la facturación (la dirección, y a quien ella se la dé, 0128), con el mismo permiso que
+ * en Estook. **El alta se hace en Estook**: aquí solo se ve y se elige cómo factura.
  */
 
 export function LaFacturacion() {

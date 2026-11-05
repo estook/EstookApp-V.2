@@ -18,6 +18,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLaDeclaracion } from '../ganchos/usarLaFacturacion.ts';
 import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
 import type { MiFacturacion } from './contrato.ts';
+import { QuienLaLleva } from './QuienLaLleva.tsx';
 import {
   PasoDeDondeTributa,
   PasoDeLaAutorizacion,
@@ -34,8 +35,8 @@ import {
  * hace**, cada uno en su hoja, para dejarlo y seguir otro día. Y lo que va con la facturación:
  * «Pide tu factura», la declaración responsable de Estook y «Pasar a real», que es de Estook.
  *
- * Solo la ven quien puede hacer el alta (gerente, dirección y administrador de cuenta, Roles
- * 1.12). **La autorización ante Hacienda, además, solo su titular.**
+ * Solo la ve quien lleva la facturación: la dirección, y a quien ella se la dé en «Quién la
+ * lleva» (0128). **La autorización ante Hacienda, además, solo su titular.**
  */
 
 const PASOS: readonly { readonly paso: PasoDeFacturacion; readonly titulo: string }[] = [
@@ -72,7 +73,7 @@ function estaHecho(lo: MiFacturacion, paso: PasoDeFacturacion): boolean {
     case 4:
       return e.modalidad === 'fuera_sii' || e.enVerifacti;
     case 5:
-      return e.modalidad === 'fuera_sii' || e.autorizacion.estado === 'correcta';
+      return e.dePruebas || e.modalidad === 'fuera_sii' || e.autorizacion.estado === 'correcta';
   }
 }
 
@@ -99,6 +100,7 @@ function detalleDelPaso(lo: MiFacturacion, paso: PasoDeFacturacion): string {
       return e?.enVerifacti === true ? 'Hecha' : 'Se hace sola';
     case 5:
       if (e === null) return 'La firma el titular';
+      if (e.dePruebas) return 'La empresa de pruebas: no se firma';
       if (e.modalidad === 'fuera_sii') return 'No hace falta: tu empresa está en el SII';
       if (e.autorizacion.estado === 'correcta') {
         return e.autorizacion.firmante === null
@@ -204,7 +206,8 @@ export function TuFacturacion() {
 
           {e?.dePruebas === true && (
             <Aviso tono="info" titulo="La empresa de pruebas de Verifacti">
-              La ha puesto Estook para probar: lo que se emita aquí nunca es de verdad.
+              La ha puesto Estook para probar: lo que se emita aquí nunca es de verdad. Es de
+              Verifacti, así que no se firma: la autorización ante Hacienda es cosa suya.
             </Aviso>
           )}
 
@@ -242,7 +245,7 @@ export function TuFacturacion() {
               const puedeAbrir =
                 !parado &&
                 (hecho || ahora) &&
-                !(paso === 2 && e?.dePruebas === true) &&
+                !((paso === 2 || paso === 5) && e?.dePruebas === true) &&
                 !(paso === 4 && e?.enVerifacti === true) &&
                 !(paso >= 4 && e !== null && e.modalidad !== 'verifactu');
               return (
@@ -286,6 +289,15 @@ export function TuFacturacion() {
           </ol>
         </div>
       </Tarjeta>
+
+      {lo.quienLaLleva !== null && (
+        <QuienLaLleva
+          personas={lo.quienLaLleva}
+          alCambiar={() => {
+            void consulta.refetch();
+          }}
+        />
+      )}
 
       <Tarjeta titulo="«Pide tu factura» en el ticket">
         <div className="flex flex-col gap-e3">

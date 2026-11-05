@@ -1032,3 +1032,9 @@
      del Anexo**: en los registros va su identificación como sistema, no la nuestra, y la clave de
      cada NIF se le pide a ella (0126, 4-nov). Antes de escribir una llamada se lee todo lo que
      publica el proveedor, también lo que no está en la tabla.
+248. **Una pantalla nunca pide firmar en nombre de una empresa que no es del cliente.** La 0126
+     decía que con la empresa de pruebas de Verifacti «la autorización viene hecha», pero el paso 5
+     miraba lo que contestaba Verifacti, y como no decía «correcta», le pidió a Richi firmar la
+     representación de BILBABIT SL con su nombre y su DNI. Hacienda lo rechazó (su certificado era
+     uno de Windows), y por suerte. **Lo que una decisión da por hecho se comprueba en el código y
+     en una prueba**, sobre todo si es firmar, pagar o hablar con Hacienda (0128, 5-nov).

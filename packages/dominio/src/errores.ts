@@ -382,7 +382,7 @@ export const ERRORES = {
   titular_sin_permiso: error(
     'titular_sin_permiso',
     'Quien autoriza ante Hacienda tiene que poder hacer el alta en este local.',
-    'Elige a alguien con el puesto de gerente o de dirección, o dale ese puesto primero.',
+    'Elige a alguien que lleve la facturación. La dirección se la da en «Quién la lleva».',
     422,
   ),
 
@@ -391,6 +391,27 @@ export const ERRORES = {
     'La autorización ante Hacienda solo la da el titular de la empresa o su representante.',
     'Pídele que entre en Estook y la haga desde aquí. Nadie más puede, aunque sea gerente.',
     403,
+  ),
+
+  solo_la_direccion: error(
+    'solo_la_direccion',
+    'Quién lleva la facturación lo decide la dirección.',
+    'Pídeselo a quien creó la cuenta de Estook.',
+    403,
+  ),
+
+  no_puede_llevarla: error(
+    'no_puede_llevarla',
+    'Esa persona no puede llevar la facturación de este local.',
+    'Se le da a quien manda en el local: gerente, area manager, administrador de cuenta o gestoría.',
+    422,
+  ),
+
+  es_el_titular: error(
+    'es_el_titular',
+    'Es quien firma ante Hacienda: no se le puede quitar.',
+    'Cambia antes el titular en el paso 1 y luego se la quitas.',
+    409,
   ),
 
   falta_la_empresa: error(
@@ -430,8 +451,8 @@ export const ERRORES = {
 
   empresa_de_pruebas: error(
     'empresa_de_pruebas',
-    'La empresa de pruebas la pone Estook y no se cambia aquí.',
-    'Es para probar: sus datos son los que da Verifacti.',
+    'La empresa de pruebas es de Verifacti: aquí no se cambia ni se firma.',
+    'Es para probar. Sus datos y su autorización ante Hacienda son cosa de Verifacti, no tuya.',
     409,
   ),
 

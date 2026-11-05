@@ -534,7 +534,8 @@ export function comoVaLaFacturacion(datos: LoQueSeSabeDeLaFacturacion): ComoVaLa
   if (!e.enVerifacti) {
     return { estado: 'en_marcha', paso: 4, falta: 'El alta en Verifacti, que se hace sola' };
   }
-  if (e.autorizacion !== 'correcta') {
+  // La empresa de pruebas no se firma (0128): su autorización es cosa de Verifacti.
+  if (e.autorizacion !== 'correcta' && !e.dePruebas) {
     return {
       estado: 'en_marcha',
       paso: 5,
@@ -546,3 +547,17 @@ export function comoVaLaFacturacion(datos: LoQueSeSabeDeLaFacturacion): ComoVaLa
   }
   return { estado: 'lista' };
 }
+
+/**
+ * **Quién puede llevar la facturación** (0128): de fábrica, solo la dirección; ella se la da a
+ * quien manda en el local. El nombre de cada puesto, como se lee en la tarjeta «Quién la lleva».
+ */
+export const PUESTOS_QUE_LA_LLEVAN = {
+  direccion: 'Dirección',
+  administrador_de_cuenta: 'Administrador de cuenta',
+  area_manager: 'Area manager',
+  gerente: 'Gerente',
+  gestoria: 'Gestoría',
+} as const;
+
+export type PuestoQueLaLleva = keyof typeof PUESTOS_QUE_LA_LLEVAN;

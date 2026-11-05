@@ -17,14 +17,16 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  * **T6 · 1 · El alta de facturación** (decisión 0126; Anexo 4.3; migración 0099), contra la base
  * y con el Verifacti de mentira:
  *
- *   · solo el gerente, la dirección y el administrador de cuenta; un camarero, nada
+ *   · de fábrica, **solo la dirección**; ella se la da a quien manda en el local (0128), y a
+ *     un camarero, nada; la base no deja que nadie más se la dé
  *   · el NIF, con su forma y en Hacienda, **otra vez en el servidor**; el nombre, el de Hacienda
  *   · un paso no se salta, y **el País Vasco, Navarra, el SII y Ceuta paran**, con su motivo
  *   · las series: distintas, sin chocar con otro local de la empresa, y **solo se insertan**
  *   · el alta en Verifacti, que si no contesta no apunta nada
  *   · la autorización: **solo el titular**, una firma en curso se recupera (no se paga otra)
  *   · el segundo local usa la empresa sin escribir nada; otra cuenta no puede usar el NIF
- *   · el admin: la empresa de pruebas, las once condiciones y **pasar a real, que no pasa**
+ *   · el admin: la empresa de pruebas, **que no se firma** (0128), las once condiciones y
+ *     **pasar a real, que no pasa**
  *   · sin la clave de Verifacti, se dice; y la declaración, un borrador con la versión de Verifacti
  */
 let base: BaseDePrueba;
@@ -43,6 +45,7 @@ let barRibera: string;
 let rosaId: string;
 let elenaId: string;
 let veraId: string;
+let pabloId: string;
 
 interface Como {
   estado: 'lista' | 'parada' | 'en_marcha';
@@ -67,6 +70,16 @@ interface MiFacturacion {
   pideTuFactura: boolean;
   otrasEmpresas: { id: string; nombre: string }[];
   puedenSerTitular: { id: string; nombre: string }[];
+  quienLaLleva:
+    | {
+        personaId: string;
+        nombre: string;
+        rol: string;
+        siempre: boolean;
+        laLleva: boolean;
+        esTitular: boolean;
+      }[]
+    | null;
 }
 
 const mia = async (token: string) =>
@@ -102,6 +115,7 @@ beforeAll(async () => {
   rosaId = await base.personaPorCorreo('rosa@ejemplo.estook.com');
   elenaId = await base.personaPorCorreo('elena@ejemplo.estook.com');
   veraId = await base.personaPorCorreo('vera@ejemplo.estook.com');
+  pabloId = await base.personaPorCorreo('pablo@ejemplo.estook.com');
   const entrada = losDatos<{ token: string }>(
     await api.ejecutar(null, 'entrar_en_admin', {
       correo: ADMIN_DE_EJEMPLO,
@@ -120,13 +134,15 @@ afterAll(async () => {
   await base.cerrar();
 });
 
-describe('quién hace el alta (Roles 1.12)', () => {
-  it('el gerente la ve en el paso 1; un camarero no la ve ni la toca', async () => {
+describe('quién hace el alta (Roles 1.12 y 0128)', () => {
+  it('la gerente a quien se la han dado la ve en el paso 1; un camarero no', async () => {
     const lo = await mia(rosa);
     expect(lo.conectada).toBe(true);
     expect(lo.como).toMatchObject({ estado: 'en_marcha', paso: 1 });
     expect(lo.propuestas.ticket).toBe('T-BC');
     expect(lo.puedenSerTitular.map((p) => p.id)).toContain(rosaId);
+    // No es la dirección: no ve a quién se le ha dado.
+    expect(lo.quienLaLleva).toBeNull();
     expect(elFallo(await api.consultar(sara, 'mi_facturacion'))).toBe('sin_permiso');
     expect(
       elFallo(
@@ -440,6 +456,82 @@ describe('paso 5 · la autorización de una sociedad, con su certificado', () =>
   });
 });
 
+describe('quién la lleva (0128): de fábrica, solo la dirección', () => {
+  it('la dirección ve quién manda en el local, y nadie más', async () => {
+    await aLocal(elena, barRibera);
+    const lo = await mia(elena);
+    const nombres = (lo.quienLaLleva ?? []).map((p) => p.nombre);
+    expect(lo.quienLaLleva?.find((p) => p.personaId === elenaId)).toMatchObject({
+      rol: 'direccion',
+      siempre: true,
+      laLleva: true,
+    });
+    // A Vera se la dio (la semilla).
+    expect(lo.quienLaLleva?.find((p) => p.personaId === veraId)).toMatchObject({
+      rol: 'gerente',
+      siempre: false,
+      laLleva: true,
+    });
+    expect(lo.quienLaLleva?.find((p) => p.nombre === 'Asesoria Cuenta Clara')).toMatchObject({
+      rol: 'gestoria',
+      laLleva: false,
+    });
+    expect(nombres).toContain('Asesoria Cuenta Clara');
+    // Ni la sala, ni la cocina, ni el area manager de otra zona.
+    expect(nombres).not.toContain('Nuria Sanmartin');
+    expect(nombres).not.toContain('Luis Amunarriz');
+    expect(nombres).not.toContain('Ignacio Bordas');
+  });
+
+  it('se la quita a la gerente y deja de verla; se la vuelve a dar y la ve', async () => {
+    await aLocal(vera, barRibera);
+    losDatos(
+      await api.ejecutar(elena, 'dar_la_facturacion', { persona_id: veraId, la_lleva: false }),
+    );
+    expect(elFallo(await api.consultar(vera, 'mi_facturacion'))).toBe('sin_permiso');
+    losDatos(
+      await api.ejecutar(elena, 'dar_la_facturacion', { persona_id: veraId, la_lleva: true }),
+    );
+    const suya = await mia(vera);
+    expect(suya.como).toMatchObject({ estado: 'en_marcha', paso: 1 });
+    expect(suya.quienLaLleva).toBeNull();
+    expect(suya.puedenSerTitular.map((p) => p.id)).toContain(veraId);
+    // Y las dos cosas quedan en la auditoría.
+    const rastro = await comoDuena<{ accion: string }>(
+      `select accion from estook.auditoria
+        where entidad = 'quien_la_lleva' and local_id = $1 order by id`,
+      [barRibera],
+    );
+    expect(rastro.map((f) => f.accion)).toEqual(['quitar', 'dar']);
+  });
+
+  it('solo la dirección la da, y solo a quien manda en ese local', async () => {
+    const nuriaId = await base.personaPorCorreo('nuria@ejemplo.estook.com');
+    const asesoriaId = await base.personaPorCorreo('asesoria@ejemplo.estook.com');
+    expect(
+      elFallo(
+        await api.ejecutar(vera, 'dar_la_facturacion', { persona_id: asesoriaId, la_lleva: true }),
+      ),
+    ).toBe('solo_la_direccion');
+    expect(
+      elFallo(
+        await api.ejecutar(elena, 'dar_la_facturacion', { persona_id: nuriaId, la_lleva: true }),
+      ),
+    ).toBe('no_puede_llevarla');
+    // Ni saltándose el servidor: un recorte de la facturación solo lo pone la dirección.
+    await expect(
+      base.comoPersona(veraId, () =>
+        base.bd.query(
+          `insert into estook.recorte_de_permiso (membresia_id, local_id, permiso, nivel)
+           select m.id, $2, 'accion.alta_de_facturacion', 'ver_y_editar'
+             from estook.membresia m where m.persona_id = $1`,
+          [asesoriaId, barRibera],
+        ),
+      ),
+    ).rejects.toThrow(/solo_la_direccion/);
+  });
+});
+
 describe('una persona (autónomo) en la cadena: firma en línea, y solo el titular', () => {
   it('Elena da de alta Bar Puerto con su DNI y es la titular', async () => {
     await aLocal(elena, barPuerto);
@@ -559,6 +651,40 @@ describe('una persona (autónomo) en la cadena: firma en línea, y solo el titul
   });
 });
 
+describe('quitársela (0128)', () => {
+  it('al titular no se le quita; a los demás, sí', async () => {
+    await aLocal(elena, barRibera);
+    const [empresa] = await comoDuena<{ id: string }>(
+      'select empresa_id as id from estook.local where id = $1',
+      [barRibera],
+    );
+    // Vera pasa a ser la titular: la que firma ante Hacienda no se queda sin la facturación.
+    await base.bd.query('update estook.empresa set titular_id = $1 where id = $2', [
+      veraId,
+      empresa?.id,
+    ]);
+    expect(
+      elFallo(
+        await api.ejecutar(elena, 'dar_la_facturacion', { persona_id: veraId, la_lleva: false }),
+      ),
+    ).toBe('es_el_titular');
+    await base.bd.query('update estook.empresa set titular_id = $1 where id = $2', [
+      elenaId,
+      empresa?.id,
+    ]);
+    const lo = await mia(elena);
+    expect(lo.quienLaLleva?.find((p) => p.personaId === elenaId)?.esTitular).toBe(true);
+    losDatos(
+      await api.ejecutar(elena, 'dar_la_facturacion', { persona_id: veraId, la_lleva: false }),
+    );
+    expect(elFallo(await api.consultar(vera, 'mi_facturacion'))).toBe('sin_permiso');
+    // Se deja como estaba para lo demás.
+    losDatos(
+      await api.ejecutar(elena, 'dar_la_facturacion', { persona_id: veraId, la_lleva: true }),
+    );
+  });
+});
+
 describe('una empresa en el SII factura fuera de VERI*FACTU (0127)', () => {
   it('Elena da de alta Bar Playa con el SII: series y lista, sin Verifacti ni firma', async () => {
     const barPlaya = await base.localPorCodigo('bar-playa');
@@ -597,7 +723,6 @@ describe('una empresa en el SII factura fuera de VERI*FACTU (0127)', () => {
 describe('un NIF es una empresa', () => {
   it('otra cuenta no puede dar de alta el mismo NIF', async () => {
     const pablo = await api.entrar('pablo@ejemplo.estook.com');
-    const pabloId = await base.personaPorCorreo('pablo@ejemplo.estook.com');
     expect(
       elFallo(
         await api.ejecutar(pablo, 'guardar_la_empresa', {
@@ -679,6 +804,47 @@ describe('el admin', () => {
       }),
     );
     expect((await mia(pablo)).como).toEqual({ estado: 'lista' });
+  });
+
+  it('la empresa de pruebas no se firma: es de Verifacti (0128)', async () => {
+    const casaLola = await base.localPorCodigo('casa-lola');
+    const pablo = await api.entrar('pablo@ejemplo.estook.com');
+    // Aunque Verifacti no la dé por autorizada, el alta queda lista: no hay nada que firmar.
+    await base.bd.query(
+      `update estook.empresa set autorizacion = 'sin_empezar', autorizacion_correcta_en = null
+        where de_pruebas`,
+    );
+    expect((await mia(pablo)).como).toEqual({ estado: 'lista' });
+    const llamadas = verifacti.llamadas.length;
+    expect(
+      elFallo(
+        await api.ejecutar(pablo, 'el_modelo_para_firmar', {
+          nombre: 'Pablo Ferrer',
+          nif: '12345678Z',
+          calle: 'Mayor',
+          numero: '1',
+          municipio: 'Madrid',
+        }),
+      ),
+    ).toBe('empresa_de_pruebas');
+    expect(
+      elFallo(
+        await api.ejecutar(pablo, 'mandar_el_modelo_firmado', {
+          base64: btoa(`%PDF-1.7 firmado ${'x'.repeat(120)}`),
+          firmante: 'Pablo Ferrer',
+        }),
+      ),
+    ).toBe('empresa_de_pruebas');
+    // Ni se ha llamado a Verifacti, ni la base lo apunta aunque alguien se salte el servidor.
+    expect(verifacti.llamadas.length).toBe(llamadas);
+    await expect(
+      base.comoPersona(pabloId, () =>
+        base.bd.query(
+          `select estook.apuntar_la_autorizacion($1, 'rechazada', true, 'con_certificado', 'X', null, 'Certificado incorrecto')`,
+          [casaLola],
+        ),
+      ),
+    ).rejects.toThrow(/empresa_de_pruebas/);
   });
 
   it('las once condiciones: marcar una pide la prueba, y sin las once nada pasa a real', async () => {

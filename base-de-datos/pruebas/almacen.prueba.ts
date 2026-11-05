@@ -757,6 +757,11 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // quién ve la empresa mirando todos los locales de su organización. **La empresa y las series
     // no se escriben de ninguna otra forma** (0126): la API no tiene escritura en ellas. Son
     // ochenta y siete. Y `elegir_la_modalidad` (0127), cómo factura: ochenta y ocho.
+    //
+    // **Y la 0100 (0128) añade tres: quién lleva la facturación.** `es_la_direccion_del_local`
+    // mira las membresías de quien pregunta, `quien_lleva_la_facturacion` las de los demás (solo
+    // para la dirección) y `dar_la_facturacion` escribe el recorte, que la API solo pone así.
+    // Noventa y una.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -794,6 +799,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'credencial_para_entrar',
       'cuentas_con_fogon',
       'dar_de_alta_persona',
+      'dar_la_facturacion',
       'direccion_libre_para_la_carta',
       // 0094 (0120): el plan, para la API, sin sesión; Estook TPV es de Pro.
       'el_plan_de',
@@ -801,6 +807,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'el_uso_de',
       'elegir_la_modalidad',
       'es_admin_o_el_sistema',
+      'es_la_direccion_del_local',
       'es_la_pantalla_del_local',
       'es_una_caja_viva',
       'esta_en_linea',
@@ -841,6 +848,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'poner_pide_tu_factura',
       'puede_ver_el_canal',
       'quien_lleva_el_servicio',
+      'quien_lleva_la_facturacion',
       'quien_recibe',
       'quien_trabaja_ahora',
       'quien_ve_el_canal',

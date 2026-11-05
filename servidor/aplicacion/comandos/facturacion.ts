@@ -10,6 +10,7 @@ import {
   type EstadoDeLaAutorizacion,
   type HaciendaForal,
   type NifEnHacienda,
+  type PuestoQueLaLleva,
 } from '@estook/dominio';
 import { documentoDeLaDeclaracion, type DeclaracionResponsable } from '@estook/documentos';
 import { VerifactiNoContesta } from '../../facturacion/verifacti.ts';
@@ -51,6 +52,7 @@ import {
  *   mirar_la_autorizacion       cómo está la autorización ante Hacienda
  *   elegir_la_modalidad         con VERI*FACTU o sin envío (0127); también desde Estook TPV
  *   poner_pide_tu_factura       el QR del ticket para pedir factura (0125)
+ *   dar_la_facturacion          la dirección se la da o se la quita a alguien del local (0128)
  *
  * ── En la app y en Estook TPV ─────────────────────────────────────────────────────
  *
@@ -78,8 +80,24 @@ export interface MiFacturacion extends LoDelLocal {
   }[];
   /** Quién puede ser el titular: quien puede hacer el alta en este local. */
   readonly puedenSerTitular: readonly { readonly id: string; readonly nombre: string }[];
+  /**
+   * Quién la lleva en este local (0128): **solo para la dirección**, que es quien la da. A los
+   * demás les llega nulo: no saben ni a quién se le ha dado.
+   */
+  readonly quienLaLleva: readonly QuienLaLleva[] | null;
   /** El año de hoy en el local, para enseñar cómo saldrá el primer número. */
   readonly ano: number;
+}
+
+export interface QuienLaLleva {
+  readonly personaId: string;
+  readonly nombre: string;
+  readonly rol: PuestoQueLaLleva;
+  /** La dirección: la lleva siempre y no se le quita. */
+  readonly siempre: boolean;
+  readonly laLleva: boolean;
+  /** Quien firma ante Hacienda: no se le quita sin cambiar antes el titular. */
+  readonly esTitular: boolean;
 }
 
 export const miFacturacion = consulta<Record<string, never>, MiFacturacion>({
@@ -111,6 +129,34 @@ export const miFacturacion = consulta<Record<string, never>, MiFacturacion>({
          and estook.nivel_de_permiso(p.id, ${localId}::uuid, ${EXIGE}) = 'ver_y_editar'
        order by p.nombre, p.apellidos
     `;
+    const [direccion] = await contexto.sql<{ es: boolean }[]>`
+      select estook.es_la_direccion_del_local(${localId}::uuid) as es
+    `;
+    const quienLaLleva =
+      direccion?.es === true
+        ? (
+            await contexto.sql<
+              {
+                persona_id: string;
+                nombre: string;
+                rol: PuestoQueLaLleva;
+                siempre: boolean;
+                la_lleva: boolean;
+                es_titular: boolean;
+              }[]
+            >`
+              select persona_id, nombre, rol, siempre, la_lleva, es_titular
+                from estook.quien_lleva_la_facturacion(${localId}::uuid)
+            `
+          ).map((f) => ({
+            personaId: f.persona_id,
+            nombre: f.nombre,
+            rol: f.rol,
+            siempre: f.siempre,
+            laLleva: f.la_lleva,
+            esTitular: f.es_titular,
+          }))
+        : null;
     const [ano] = await contexto.sql<{ ano: number }[]>`
       select extract(year from (${contexto.ahora.toISOString()}::timestamptz at time zone l.zona_horaria))::int as ano
         from estook.local l where l.id = ${localId}::uuid
@@ -121,6 +167,7 @@ export const miFacturacion = consulta<Record<string, never>, MiFacturacion>({
       soyElTitular: lo.empresa?.titular?.id === contexto.personaId,
       otrasEmpresas: otras,
       puedenSerTitular: titulares,
+      quienLaLleva,
       ano: ano?.ano ?? contexto.ahora.getUTCFullYear(),
     };
   },
@@ -417,10 +464,15 @@ async function apuntarLaAutorizacion(
   );
 }
 
-/** Lo que solo hace el titular (Roles 1.12): se mira antes de llamar a nadie, y la base otra vez. */
+/**
+ * Lo que solo hace el titular (Roles 1.12): se mira antes de llamar a nadie, y la base otra vez.
+ * **La empresa de pruebas no se firma** (0128): es la de Verifacti, una sociedad que no es
+ * nuestra, y nadie puede firmar en su nombre.
+ */
 function soloElTitular(contexto: Contexto, lo: LoDelLocal): NonNullable<LoDelLocal['empresa']> {
   const empresa = lo.empresa;
   if (empresa === null) throw new FalloDeAplicacion('falta_la_empresa');
+  if (empresa.dePruebas) throw new FalloDeAplicacion('empresa_de_pruebas');
   if (empresa.titular?.id !== contexto.personaId) throw new FalloDeAplicacion('solo_el_titular');
   return empresa;
 }
@@ -711,6 +763,33 @@ export const ponerPideTuFactura = comando<{ encendido: boolean }, { readonly enc
         contexto.sql`select estook.poner_pide_tu_factura(${localId}::uuid, ${entrada.encendido})`,
     );
     return { encendido: entrada.encendido };
+  },
+});
+
+// ── Quién la lleva (0128) ───────────────────────────────────────────────────────────
+
+/**
+ * **La dirección da o quita la facturación** a una persona de este local (0128). De fábrica solo
+ * la lleva la dirección; la base mira que quien la da sea dirección, que quien la recibe mande
+ * en el local, y que al titular no se le quite.
+ */
+export const darLaFacturacion = comando<
+  { persona_id: string; la_lleva: boolean },
+  { readonly laLleva: boolean }
+>({
+  nombre: 'dar_la_facturacion',
+  entrada: z.object({ persona_id: z.string().uuid(), la_lleva: z.boolean() }).strict(),
+  exige: EXIGE,
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeLaSesion(contexto);
+    await enLaBase(
+      () =>
+        contexto.sql`
+          select estook.dar_la_facturacion(${localId}::uuid, ${entrada.persona_id}::uuid, ${entrada.la_lleva})
+        `,
+    );
+    return { laLleva: entrada.la_lleva };
   },
 });
 

@@ -753,6 +753,12 @@ export function PasoDeLaAutorizacion({ lo }: { readonly lo: MiFacturacion }) {
         Una sociedad la firma con el certificado de su representante: descargas el modelo ya
         relleno, lo firmas con AutoFirma y lo subes aquí. Es gratis.
       </p>
+      <Aviso tono="info" titulo="Qué certificado vale">
+        El de representante de la sociedad (de la FNMT o de otra autoridad reconocida) o el DNI
+        electrónico de su administrador. AutoFirma enseña el titular y el emisor de cada
+        certificado: si el emisor no es la FNMT ni otra autoridad (por ejemplo, un código largo,
+        igual que el titular), es uno de Windows o de otro programa y Hacienda lo rechaza.
+      </Aviso>
       {comoEsta}
       <p className="text-cuerpo font-medium">Quién la representa</p>
       <Campo

@@ -8,7 +8,8 @@ import { entrarEnElAdmin } from './entrar-en-el-admin.ts';
  * secciones 1, 2 y 7). La API de pruebas lleva **un Verifacti de mentira**: Hacienda conoce
  * unos pocos NIF, nada sale a internet, y un PDF que empieza como un PDF se da por firmado.
  *
- *   · el gerente hace los cinco pasos, y el NIF se mira en Hacienda al escribirlo
+ *   · la gerente a quien se la han dado hace los cinco pasos, y el NIF se mira al escribirlo
+ *   · la dirección se la da y se la quita a la gestoría, en «Quién la lleva» (0128)
  *   · «Pide tu factura» se apaga y se enciende
  *   · la declaración responsable se lee y se baja en PDF, y dice que es un borrador
  *   · un camarero no ve la sección
@@ -126,6 +127,27 @@ test('la declaración responsable se lee y se baja en PDF, y dice que es un borr
   const bajada = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Descargarla en PDF' }).click();
   expect((await bajada).suggestedFilename()).toMatch(/^declaracion-responsable-estook-.*\.pdf$/);
+});
+
+test('la dirección se la da a la gestoría y se la quita, en «Quién la lleva» (0128)', async ({
+  page,
+}) => {
+  // Bar Muelle: ni Rosa ni Vera (la de las capturas) están en él, y la gestoría sí.
+  await entrarEnLaApp(page, 'elena@ejemplo.estook.com');
+  const muelle = page.getByRole('button', { name: /Bar Muelle/ });
+  if (await muelle.isVisible()) await muelle.click();
+  await abrirSinQueSeCaiga(page, `${APP}#/ajustes/facturacion`);
+  await expect(page.getByRole('heading', { name: 'Quién la lleva' })).toBeVisible();
+  await expect(page.getByText('Siempre', { exact: true })).toBeVisible();
+  const gestoria = page.getByRole('switch', {
+    name: 'Asesoria Cuenta Clara lleva la facturación',
+  });
+  // Se pulsa el interruptor pintado: la casilla de verdad está escondida.
+  const antes = await gestoria.isChecked();
+  await gestoria.locator('xpath=..').click();
+  await expect(gestoria).toBeChecked({ checked: !antes });
+  await gestoria.locator('xpath=..').click();
+  await expect(gestoria).toBeChecked({ checked: antes });
 });
 
 test('un camarero no ve la facturación en Ajustes', async ({ page }) => {

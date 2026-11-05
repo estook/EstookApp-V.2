@@ -31,24 +31,7 @@ export function ponerElTrabajador(): void {
   if (document.readyState === 'complete') poner();
   else window.addEventListener('load', poner, { once: true });
 
-  // ── La versión nueva, sin quedarse en la vieja (repaso del 16-oct) ───────────
-  // La página se sirve guardada para abrir al momento. Si al abrir llega un
-  // trabajador nuevo —se ha publicado otra versión— y todavía no se ha tocado nada,
-  // se recarga una vez con la nueva. Tocando ya, no: se queda con la que tiene, y la
-  // nueva llega la próxima vez que se abra.
-  const habiaTrabajador = navigator.serviceWorker.controller !== null;
-  let tocado = false;
-  const alTocar = () => {
-    tocado = true;
-  };
-  window.addEventListener('pointerdown', alTocar, { once: true, capture: true });
-  window.addEventListener('keydown', alTocar, { once: true, capture: true });
-  const abiertaEn = performance.now();
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (habiaTrabajador && !tocado && performance.now() - abiertaEn < 15_000) {
-      window.location.reload();
-    }
-  });
+  recargarSoloSinMirar();
 
   navigator.serviceWorker.addEventListener('message', (evento: MessageEvent<unknown>) => {
     const datos = evento.data as { tipo?: string; ir?: string } | null;
@@ -56,6 +39,24 @@ export function ponerElTrabajador(): void {
       window.location.hash = datos.ir;
     }
     if (datos?.tipo === 'estook-aviso') for (const oyente of alLlegar) oyente();
+  });
+}
+
+/**
+ * **La versión nueva, sin recargar delante de nadie** (la pausa del 5-nov). Hasta hoy, si al
+ * abrir llegaba una versión nueva y no se había tocado nada en 15 segundos, la página se
+ * recargaba: se entraba, y de repente volvía el logo. Richi: «es un bug y lo hace lento».
+ * Publicamos varias veces al día, así que pasaba a menudo.
+ *
+ * Ahora la que está abierta sigue con la suya, y la nueva entra **la próxima vez que se abra**
+ * (el trabajador nuevo ya ha tomado el mando). Solo se recarga si la página no se está viendo
+ * (abierta de fondo), que entonces no se nota. Si la vieja pide un trozo que ya no existe,
+ * `SiAlgoFalla` recarga sola, como hasta ahora.
+ */
+export function recargarSoloSinMirar(): void {
+  const habiaTrabajador = navigator.serviceWorker.controller !== null;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (habiaTrabajador && document.visibilityState === 'hidden') window.location.reload();
   });
 }
 

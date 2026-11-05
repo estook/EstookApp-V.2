@@ -13,7 +13,13 @@
     -->
     <link rel="manifest" href="./manifest.webmanifest" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!--
+      La barra del reloj, **opaca y negra** (la pausa del 5-nov), como la de Estook: con
+      «black-translucent» la página iba debajo del reloj y el iPhone, desde iOS 26, ponía
+      encima su difuminado (y ese modo tiene un fallo abierto en iOS 26, WebKit 301994).
+      Estook TPV siempre es oscuro.
+    -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="Estook TPV" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="description" content="Estook TPV: la sala y la cocina en el servicio" />

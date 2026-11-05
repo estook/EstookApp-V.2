@@ -1304,6 +1304,60 @@ describe('«todo junto», «marchar todo» y la barra', () => {
   });
 });
 
+// ═══ Pedir y mandar de una vez (la pausa del 5-nov) ═══════════════════════════
+
+describe('pedir y mandar de una vez: la cocina lo tiene con una sola orden', () => {
+  it('lo nuevo se pide y se manda junto, y repetirlo no lo pide dos veces', async () => {
+    const barra = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
+        cuenta_id: barra,
+        tipo: 'barra',
+        nombre: 'Rápido',
+      }),
+    );
+    const platos = [
+      { id: crypto.randomUUID(), plato_id: plato['Ensalada'], pase: 1 },
+      { id: crypto.randomUUID(), plato_id: plato['Entrecot'], pase: 2 },
+    ];
+    const deUnaVez = { cuenta_id: barra, platos };
+    expect(losDatos(await api.ejecutar(saraTpv, 'mandar_a_cocina', deUnaVez))).toEqual({
+      aCocina: 2,
+      aLaBarra: 0,
+      talCual: 0,
+      salen: [1],
+      esperan: [2],
+    });
+    expect(enCocina(await laCocina(), barra)?.[0]).toBe('enMarcha');
+    // La red se cortó y se pulsa otra vez: ni se pide ni se manda dos veces.
+    expect(losDatos(await api.ejecutar(saraTpv, 'mandar_a_cocina', deUnaVez))).toMatchObject({
+      aCocina: 0,
+      salen: [],
+    });
+    expect((await laMesa(barra)).platos).toHaveLength(2);
+  });
+
+  it('si un plato no vale, no entra nada: ni lo pedido ni lo mandado', async () => {
+    const barra = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(saraTpv, 'abrir_mesa', { cuenta_id: barra, tipo: 'barra', nombre: 'Mal' }),
+    );
+    expect(
+      elFallo(
+        await api.ejecutar(saraTpv, 'mandar_a_cocina', {
+          cuenta_id: barra,
+          platos: [
+            { id: crypto.randomUUID(), plato_id: plato['Ensalada'], pase: 1 },
+            { id: crypto.randomUUID(), plato_id: crypto.randomUUID(), pase: 1 },
+          ],
+        }),
+      ),
+    ).toBe('no_existe');
+    expect((await laMesa(barra)).platos).toEqual([]);
+    expect(enCocina(await laCocina(), barra)).toBeNull();
+  });
+});
+
 // ═══ Otro negocio ═════════════════════════════════════════════════════════════
 
 describe('Luis, de otro negocio, no ve ni toca nada', () => {

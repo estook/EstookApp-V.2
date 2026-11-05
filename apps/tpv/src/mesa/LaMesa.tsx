@@ -12,7 +12,8 @@ import {
   usarLasImpresoras,
 } from '../ganchos/usarLaSala.ts';
 import { lineasGuardadas, marchadoSinInternet } from '../sinInternet/loGuardado.ts';
-import { laCocinaLoTiene, type LineaGuardada } from '../sinInternet/laCola.ts';
+import { laCocinaLoTiene, loQueEspera, type LineaGuardada } from '../sinInternet/laCola.ts';
+import { estamosSinInternet } from '../sinInternet/laConexion.ts';
 import {
   laHoraDeAhora,
   laMarchaParaLaCaja,
@@ -178,9 +179,51 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   // Para lo que se arma al mandar sin internet (0123): la mesa tal como se leyó.
   const laMesaLeida = datos;
 
+  /** Lo que dice abajo al mandar, y la cuenta del móvil que se cierra. */
+  function mandado(
+    datos: Parameters<typeof loQueSeMando>[0] & {
+      readonly guardado?: true;
+      readonly porLaCaja?: true;
+    },
+  ): true {
+    setHecho(
+      datos.porLaCaja === true
+        ? 'Sin internet: la cocina ya lo tiene, por la caja'
+        : datos.guardado === true
+          ? 'Guardado en este aparato: la cocina lo recibe al volver internet'
+          : loQueSeMando(datos),
+    );
+    setCuentaEnElMovil(false);
+    return true;
+  }
+
   async function mandar(): Promise<boolean> {
     setMandando(true);
     setFallo(null);
+    // **De una vez, con internet** (la pausa del 5-nov): lo nuevo se pide y se manda en una
+    // sola orden, y solo se espera a releer esta mesa. Antes eran dos órdenes y, entre una y
+    // otra, se releía toda la sala: la cocina esperaba a las dos.
+    if (borrador.length > 0 && !estamosSinInternet() && loQueEspera(cola).length === 0) {
+      const deUnaVez = await ejecutar<Parameters<typeof loQueSeMando>[0]>(
+        'mandar_a_cocina',
+        { cuenta_id: cuentaId, platos: comoPedido(borrador) },
+        undefined,
+        undefined,
+        ['sala', 'la_mesa', cuentaId],
+      );
+      if (deUnaVez.ok) {
+        setBorrador([]);
+        setMandando(false);
+        return mandado(deUnaVez.datos);
+      }
+      if (deUnaVez.error.codigo !== 'sin_conexion') {
+        setMandando(false);
+        setFallo(deUnaVez.error);
+        return false;
+      }
+      // Se cortó justo ahora: como sin internet, por partes, que se guardan en el aparato y
+      // suben al volver. Pedir dos veces lo mismo no lo pide dos veces (cada plato lleva su id).
+    }
     if (borrador.length > 0) {
       const lineas = borrador
         .filter((l) => l.parteDe === null)
@@ -204,7 +247,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
       setBorrador([]);
     }
     const loQueVa = borrador;
-    const mandado = await ejecutar<{
+    const loMandado = await ejecutar<{
       aCocina: number;
       aLaBarra: number;
       talCual?: number;
@@ -227,19 +270,11 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
         ),
     });
     setMandando(false);
-    if (!mandado.ok) {
-      setFallo(mandado.error);
+    if (!loMandado.ok) {
+      setFallo(loMandado.error);
       return false;
     }
-    setHecho(
-      mandado.datos.porLaCaja === true
-        ? 'Sin internet: la cocina ya lo tiene, por la caja'
-        : mandado.datos.guardado === true
-          ? 'Guardado en este aparato: la cocina lo recibe al volver internet'
-          : loQueSeMando(mandado.datos),
-    );
-    setCuentaEnElMovil(false);
-    return true;
+    return mandado(loMandado.datos);
   }
 
   async function marchar(pase: number) {
@@ -259,6 +294,7 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
             aparato: aparato.nombre,
           }),
       },
+      ['sala', 'la_mesa', cuentaId],
     );
     setMandando(false);
     if (!marchado.ok) setFallo(marchado.error);

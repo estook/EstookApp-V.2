@@ -727,9 +727,20 @@ export interface SalidaMandar {
   readonly esperan: readonly number[];
 }
 
-export const mandarACocina = comando<{ cuenta_id: string }, SalidaMandar>({
+/**
+ * **Pedir y mandar de una vez** (la pausa del 5-nov; Richi: «las comandas tardan mucho en
+ * llegar a cocina»). Con `platos`, lo nuevo se pide aquí mismo, en la misma transacción, con
+ * las mismas reglas que `pedir`; antes eran dos órdenes seguidas y la cocina esperaba a las
+ * dos. Sin `platos`, como siempre: lo que ya estaba pedido y sin mandar.
+ */
+export const entradaMandarACocina = z
+  .object({ cuenta_id: id, platos: z.array(unPlato).min(1).max(100).optional() })
+  .strict();
+export type EntradaMandarACocina = z.infer<typeof entradaMandarACocina>;
+
+export const mandarACocina = comando<EntradaMandarACocina, SalidaMandar>({
   nombre: 'mandar_a_cocina',
-  entrada: z.object({ cuenta_id: id }).strict(),
+  entrada: entradaMandarACocina,
   exige: 'accion.tomar_nota',
   enElTpv: 'solo',
   // **Sin internet** se guarda en el aparato y sube al volver, una vez (T5 · 2 · 1). Lo
@@ -738,6 +749,9 @@ export const mandarACocina = comando<{ cuenta_id: string }, SalidaMandar>({
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
+    if (entrada.platos !== undefined) {
+      await pedir.ejecutar(contexto, { cuenta_id: entrada.cuenta_id, platos: entrada.platos });
+    }
     const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
     const antes = await losPlatos(contexto, [cuenta.id]);
     const nuevos = antes.filter((l) => l.mandada_en === null && l.quitada_en === null);

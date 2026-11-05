@@ -34,7 +34,14 @@
     -->
     <link rel="manifest" href="./manifest.webmanifest" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!--
+      La barra del reloj, **opaca** (la pausa del 5-nov). Era «black-translucent»: la página
+      se pintaba debajo del reloj y, desde iOS 26, el iPhone pone encima su difuminado, que
+      Richi veía como un cristal raro (y iOS 26 tiene un fallo abierto con ese modo, WebKit
+      301994). Opaca, la página empieza debajo y no hay nada que difuminar. Clara aquí, que es
+      el tema de fábrica; `tema-al-arrancar.js` la pone negra con el tema oscuro.
+    -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Estook" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="description" content="La aplicacion: el Panel y sus ocho apps" />

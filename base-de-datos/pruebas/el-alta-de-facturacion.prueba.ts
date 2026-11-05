@@ -25,6 +25,8 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  *   · el alta en Verifacti, que si no contesta no apunta nada
  *   · la autorización: **solo el titular**, una firma en curso se recupera (no se paga otra)
  *   · el segundo local usa la empresa sin escribir nada; otra cuenta no puede usar el NIF
+ *   · el NIF de la empresa de pruebas no se escribe en el paso 1, y la que ya existía así pasa a
+ *     ser la de pruebas (0101)
  *   · el admin: la empresa de pruebas, **que no se firma** (0128), las once condiciones y
  *     **pasar a real, que no pasa**
  *   · sin la clave de Verifacti, se dice; y la declaración, un borrador con la versión de Verifacti
@@ -980,6 +982,76 @@ describe('sin la clave de Verifacti', () => {
       await sinClave.consultar(deRosa, 'la_declaracion_responsable'),
     );
     expect(d.verifacti).toBeNull();
+  });
+});
+
+describe('el NIF de la empresa de pruebas (0101)', () => {
+  it('no se escribe en el paso 1: es de Verifacti, no del cliente', async () => {
+    const antes = verifacti.llamadas.length;
+    const fallo = await api.ejecutar(rosa, 'comprobar_un_nif', { nif: 'b75777847' });
+    expect(elFallo(fallo)).toBe('empresa_de_pruebas');
+    expect(JSON.stringify(fallo)).toContain('no es tuya');
+    // Ni se le pregunta a Hacienda por él.
+    expect(verifacti.llamadas.length).toBe(antes);
+  });
+
+  it('ni la base lo guarda en una empresa que no sea la de pruebas', async () => {
+    const [org] = await comoDuena<{ id: string }>(
+      'select organizacion_id as id from estook.local where id = $1',
+      [barCentro],
+    );
+    await expect(
+      base.bd.query(
+        `insert into estook.empresa (organizacion_id, nif, nombre, persona, calle, numero,
+           codigo_postal, municipio, provincia, comprobada_en)
+         values ($1, 'B75777847', 'BILBABIT SL', 'juridica', 'Calle', '1', '48992', 'Getxo',
+           'Bizkaia', now())`,
+        [org?.id],
+      ),
+    ).rejects.toThrow(/empresa_de_pruebas/);
+  });
+
+  it('la que ya existía así, con su firma rechazada, pasa a ser la de pruebas', async () => {
+    const [org] = await comoDuena<{ id: string }>(
+      'select organizacion_id as id from estook.local where id = $1',
+      [barCentro],
+    );
+    // Como la dejó el paso 1 antes de la 0101: una empresa «normal» con ese NIF y una firma
+    // rechazada. La puerta nueva se apaga solo para ponerla.
+    await base.bd.query('alter table estook.empresa disable trigger empresa_el_nif_de_pruebas');
+    const [mal] = await comoDuena<{ id: string }>(
+      `insert into estook.empresa (organizacion_id, nif, nombre, persona, calle, numero,
+         codigo_postal, municipio, provincia, comprobada_en, en_sii, foral, autorizacion,
+         autorizacion_forma, autorizacion_error)
+       values ($1, 'B75777847', 'BILBABIT SL', 'juridica', 'Calle', '1', '48992', 'Getxo',
+         'Bizkaia', now(), false, 'no', 'rechazada', 'con_certificado', 'Certificado incorrecto')
+       returning id`,
+      [org?.id],
+    );
+    await base.bd.query('alter table estook.empresa enable trigger empresa_el_nif_de_pruebas');
+
+    // Lo que hace la 0101 con ella: su primera parte, tal cual.
+    const migracion = await readFile(
+      new URL('../migraciones/0101_el_nif_de_la_empresa_de_pruebas.sql', import.meta.url),
+      'utf8',
+    );
+    await base.bd.exec(migracion.slice(0, migracion.indexOf('-- ═══ 2 ·')));
+
+    const [ahora] = await comoDuena<{
+      de_pruebas: boolean;
+      autorizacion: string;
+      autorizacion_error: string | null;
+      modalidad: string;
+    }>(
+      'select de_pruebas, autorizacion, autorizacion_error, modalidad from estook.empresa where id = $1',
+      [mal?.id],
+    );
+    expect(ahora).toEqual({
+      de_pruebas: true,
+      autorizacion: 'sin_empezar',
+      autorizacion_error: null,
+      modalidad: 'verifactu',
+    });
   });
 });
 

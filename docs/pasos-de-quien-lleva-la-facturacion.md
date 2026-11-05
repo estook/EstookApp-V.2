@@ -1,13 +1,13 @@
-# Pasos de «Quién lleva la facturación»
+# Pasos de «Quién lleva la facturación» y del NIF de pruebas
 
 > ## Cómo está
 >
-> | Qué              | Cómo está                                                                 |
-> | ---------------- | ------------------------------------------------------------------------- |
-> | El pull request  | «T6 · 1: quién lleva la facturación, y la empresa de pruebas no se firma» |
-> | La base de datos | **Migración 0100**: falta migrarla. Tiene que quedar **100 de 100**       |
-> | La API           | Falta desplegarla. Tiene que quedar con **119 consultas y 332 comandos**  |
-> | La caja          | **No hay caja nueva**: nada que publicar                                  |
+> | Qué              | Cómo está                                                               |
+> | ---------------- | ----------------------------------------------------------------------- |
+> | El pull request  | La #161, **en producción**; y «T6 · 1: el NIF de la empresa de pruebas» |
+> | La base de datos | **Migración 0101**: falta migrarla. Tiene que quedar **101 de 101**     |
+> | La API           | Falta desplegarla. Sigue con **119 consultas y 332 comandos**           |
+> | La caja          | **No hay caja nueva**: nada que publicar                                |
 >
 > **Todo sigue en pruebas**: nada llega a Hacienda de verdad.
 
@@ -27,6 +27,14 @@
 - **En el paso 5 de una sociedad**, un aviso dice **qué certificado vale**.
 
 Lo decidido, en la [0128](decisiones/0128-quien-lleva-la-facturacion.md).
+
+## Por qué seguía saliendo después de la #161
+
+**BILBABIT SL estaba dada de alta en el paso 1 con su NIF escrito a mano**, como si fuera tu
+empresa, y no desde el admin. Para Estook era una empresa normal, y por eso te seguía pidiendo
+firmar. Ahora el paso 1 ya no acepta ese NIF, y la migración 0101 convierte la de IKATZ en la
+empresa de pruebas: **no tienes que firmar nada**. No vuelvas a firmar ese modelo: es la
+autorización de una sociedad que no es tuya.
 
 ## Por qué salió «Certificado incorrecto»
 
@@ -60,7 +68,7 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
    .\estook.cmd bd:migrar
    ```
 
-   **Tiene que** decir que aplicó la **0100** y que hay **100 de 100**.
+   **Tiene que** decir que aplicó la **0101** y que hay **101 de 101**.
 
 3. **En GitHub**: **Actions** → **Desplegar la API** → **Run workflow**, rama `main`. Espera al
    círculo verde.
@@ -70,8 +78,12 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
 ### 1 · La empresa de pruebas, lista
 
 1. En **Estook**, entra en IKATZ → **Ajustes** → **Facturación**.
-   - **Tiene que** salir el paso 5 con **✓** y «La empresa de pruebas: no se firma».
+   - **Tiene que** salir el aviso azul «La empresa de pruebas de Verifacti».
+   - **Tiene que** salir el paso 2 con «La empresa de pruebas: no se pregunta» y el paso 5 con
+     **✓** y «La empresa de pruebas: no se firma».
    - **Tiene que** salir arriba, en verde, **«Lista»**.
+2. Si abres el paso 1 y escribes **B75777847**:
+   - **Tiene que** decir que ese NIF es el de la empresa de pruebas de Verifacti, que no es tuya.
 
 ### 2 · Quién la lleva
 

@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 5 de noviembre de 2026 · **En producción todo hasta la #160**: 99 migraciones y la API con 119 consultas y 331 comandos, y **la caja para Windows 1.2.0** (Richi lo está probando el 5-nov). **Ahora, quién lleva la facturación y la empresa de pruebas sin firma**, en la rama `t6-1-quien-ve-la-facturacion` ([0128](docs/decisiones/0128-quien-lleva-la-facturacion.md), migración 0100)
+Última actualización: 5 de noviembre de 2026 · **En producción todo hasta la #160**: 99 migraciones y la API con 119 consultas y 331 comandos, y **la caja para Windows 1.2.0** (Richi lo está probando el 5-nov). **Ahora, el NIF de la empresa de pruebas**, en la rama `t6-1-el-nif-de-pruebas` ([0128](docs/decisiones/0128-quien-lleva-la-facturacion.md), punto 4 bis, migración 0101); quién lleva la facturación (#161, 0100) ya está en producción
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **T6 · 1 · El alta de facturación**, en producción con la #160 (0099, API 119/331). Richi la probó el 5-nov en IKATZ y salieron dos cosas: **quién la ve** y **la firma de la empresa de pruebas**. Las dos, arregladas en la rama `t6-1-quien-ve-la-facturacion` ([0128](docs/decisiones/0128-quien-lleva-la-facturacion.md), migración **0100**, API **119/332**). Falta que Richi fusione, migre, despliegue y pruebe ([sus pasos](docs/pasos-de-quien-lleva-la-facturacion.md)). Lo siguiente es T6 · 2 · Emitir, en otra rama.
+- **T6 · 1 · El alta de facturación**, en producción con la #160 (0099, API 119/331). Lo que salió al probarla (**quién la ve** y **la firma de la empresa de pruebas**), en producción con la #161 ([0128](docs/decisiones/0128-quien-lleva-la-facturacion.md), migración **0100**, API **119/332**). Pero en IKATZ BILBABIT se había dado de alta en el paso 1 con su NIF, como empresa normal, y seguía pidiendo firma: arreglado en la rama `t6-1-el-nif-de-pruebas` (migración **0101**, la API no cambia de número). Falta que Richi fusione, migre, despliegue y pruebe ([sus pasos](docs/pasos-de-quien-lleva-la-facturacion.md)). Lo siguiente es T6 · 2 · Emitir, en otra rama.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -73,7 +73,8 @@ HECHO         T5 · 2 · 1 · Cada aparato aguanta solo (0122, #156) · antes de
 HECHO         T5 · 2 · 2 · 1 · La comanda llega por la caja (0123, #158)
 HECHO         T5 · 2 · 2 · 2 · Los PIN y Aparatos (0124, #159) · la caja 1.2.0
 HECHO         T6 · 1 · El alta de facturación (0126, 0127, 0099, #160)
-AHORA         Quién lleva la facturación (0128, 0100): por fusionar, migrar y desplegar
+HECHO         Quién lleva la facturación (0128, 0100, #161)
+AHORA         El NIF de la empresa de pruebas (0128, 0101): por fusionar, migrar y desplegar
 ESTOOK TPV    → T6 · 2 · Emitir → T6 · 3 · Sin envío (NO VERI*FACTU) → T7 · M20C con M20 (0107)
 DESPUÉS       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b → Fases 5, 6 y 7
 ```
@@ -126,7 +127,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 
 **Ahora:**
 
-1. **Quién lleva la facturación**: fusionar su pull request, migrar la **0100** (100 de 100), desplegar la API y probar en IKATZ que el alta queda lista sin firmar y la tarjeta «Quién la lleva» ([sus pasos](docs/pasos-de-quien-lleva-la-facturacion.md)). **Y contestar, sin prisa, con qué certificado firmaría Estook «sin envío»** (T6 · 3), con el asesor.
+1. **El NIF de la empresa de pruebas**: fusionar su pull request, migrar la **0101** (101 de 101), desplegar la API y probar en IKATZ que el alta queda lista sin firmar, y la tarjeta «Quién la lleva» ([sus pasos](docs/pasos-de-quien-lleva-la-facturacion.md)). **Y contestar, sin prisa, con qué certificado firmaría Estook «sin envío»** (T6 · 3), con el asesor.
 2. **Probar en casa las dos partes de T5 · 2 · 2** con el router sin internet ([sus pasos](docs/pasos-de-t5-2-2.md); tu red de casa sale en Windows como **pública**: el paso 2 lo arregla). Y **probar en IKATZ sin internet** con el iPhone en modo avión ([sus pasos](docs/pasos-de-t5-2-1.md)).
 3. **Probar la caja para Windows en el restaurante de tu amigo** ([sus pasos](docs/pasos-en-el-local-del-amigo.md) y [los de T5 · 2 · 2](docs/pasos-de-t5-2-2.md)): el PC de la caja, su Epson por cable de red, la cocina en las dos y un Android pidiendo; y **el botón de Estook TPV en Ajustes** ([sus pasos](docs/pasos-de-estook-tpv-es-de-pro.md)).
 4. **Probar en IKATZ la entrada nueva y T4 · 2** ([la entrada](docs/pasos-de-la-entrada-del-tpv.md), [T4 · 2](docs/pasos-de-t4-2.md)): la sala primero, el engranaje, mantener pulsado, la barra, la alergia y el ✓ con su hora.

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { inicialesDe } from '@estook/dominio';
+import { IconoCandado } from '@estook/iconos';
 import { puedeEditar } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { irA, irAlPlano } from '../navegar.ts';
@@ -51,7 +52,13 @@ export function LaBarraDeArriba({
           {titulo === undefined ? aparato.nombre : `${aparato.local.nombre} · ${aparato.nombre}`}
         </span>
       </div>
-      {children}
+      {/* En el móvil, lo de cada pantalla baja a su fila (0131): arriba solo quién y dónde,
+          y la barra deja sitio a las mesas, en vez de cuatro filas. */}
+      {children !== undefined && (
+        <div className="order-last flex w-full min-w-0 items-center gap-e2 md:order-none md:w-auto">
+          {children}
+        </div>
+      )}
       <div className="flex-1" />
       {enLaCaja && (
         <button
@@ -89,7 +96,9 @@ export function LaBarraDeArriba({
         <span className="flex size-8 items-center justify-center rounded-redondo bg-charcoal text-etiqueta">
           {inicialesDe(yo.nombre)}
         </span>
-        <span className="max-sm:hidden">{yo.nombre} ·</span> Bloquear
+        {/* En el móvil, el candado; en la tablet y la caja, «Ana · Bloquear». */}
+        <IconoCandado size={18} aria-hidden className="sm:hidden" />
+        <span className="max-sm:hidden">{yo.nombre} · Bloquear</span>
       </button>
     </header>
   );

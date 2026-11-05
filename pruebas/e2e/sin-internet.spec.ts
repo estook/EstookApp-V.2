@@ -135,7 +135,7 @@ test('sin internet se sigue: abrir la mesa, pedir, mandar, bloquear y entrar; al
   await expect(
     page.getByText('Conexión recuperada · 3 cosas subidas, ninguna repetida'),
   ).toBeVisible({ timeout: 45_000 });
-  await expect(page.getByRole('button', { name: /^Mesa 1: Comiendo/ })).toBeVisible({
+  await expect(page.getByRole('button', { name: /^Mesa 1: Esperando/ })).toBeVisible({
     timeout: 15_000,
   });
   expect(await guardado('estook.tpv.por-subir')).toBe('');

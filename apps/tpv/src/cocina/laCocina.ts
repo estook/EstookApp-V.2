@@ -6,17 +6,11 @@ import type { LaPantallaDeCocina, TarjetaDeCocina } from '../datos/tipos.ts';
  * plato tacha el teclado de cocina. Cálculo puro: se prueba sin abrir nada.
  */
 
-export type ColorDelTiempo = 'en_hora' | 'justo' | 'tarde';
-
-/** Verde, ámbar a los `avisoMin` y rojo a los `tardeMin` (Ajustes del TPV › Cocina y barra). */
-export function elColorDelTiempo(
-  minutos: number,
-  ajustes: { readonly avisoMin: number; readonly tardeMin: number },
-): ColorDelTiempo {
-  if (minutos >= ajustes.tardeMin) return 'tarde';
-  if (minutos >= ajustes.avisoMin) return 'justo';
-  return 'en_hora';
-}
+/**
+ * Verde, ámbar a los `avisoMin` y rojo a los `tardeMin` (Ajustes del TPV › Cocina y barra).
+ * Vive en el dominio desde la 0131: el plano de la sala pinta las mesas con la misma.
+ */
+export { elColorDelTiempo, type ColorDelTiempo } from '@estook/dominio';
 
 /** Lo acabado en los últimos 40 minutos se ve entero; lo de antes, plegado (Richi, 25-oct). */
 export const MINUTOS_A_LA_VISTA = 40;

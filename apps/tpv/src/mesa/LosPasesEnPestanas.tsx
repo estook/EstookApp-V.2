@@ -54,7 +54,8 @@ export function LosPasesEnPestanas({
           );
         })}
       </div>
-      <span className="text-etiqueta text-texto-tenue">
+      {/* En el móvil no cabe (0131): la pestaña marcada ya dice a dónde va lo que se toca. */}
+      <span className="text-etiqueta text-texto-tenue max-md:hidden">
         {marcada === 'bebidas'
           ? 'Lo de beber va a la barra al momento; la comida, al pase que toque.'
           : `Lo que toques va al ${elNombreDeLaPestana(marcada).toLowerCase()}. Para otro pase, toca su pestaña.`}

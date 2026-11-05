@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  comoVaLaMesa,
+  desdeCuandoEnCocina,
+  elColorDelTiempo,
+  MINUTOS_PARA_LA_CUENTA,
   elPaseHaSalido,
   elPaseQueTocaMarchar,
   laMesaEnCocina,
@@ -184,6 +188,64 @@ describe('dónde está la mesa en la pantalla de cocina', () => {
   it('un plato nuevo en un pase ya fuera la devuelve a «En marcha»', () => {
     const platos = [plato(1, { salio: true }), plato(1)];
     expect(laMesaEnCocina(platos, [pase(1, { marchado: true })])).toBe('en_marcha');
+  });
+});
+
+describe('cómo va la mesa en el plano (0131)', () => {
+  const base = {
+    loSiguiente: { que: 'cobrar' } as const,
+    enCocina: 'fuera' as const,
+    conComida: true,
+    minutosDesdeLoUltimo: 3,
+    nadieTacha: false,
+  };
+
+  it('lo de siempre sigue igual: sin pedir, sin mandar y toca marchar', () => {
+    expect(comoVaLaMesa({ ...base, loSiguiente: { que: 'pedir' } })).toBe('sin_pedir');
+    expect(comoVaLaMesa({ ...base, loSiguiente: { que: 'mandar' } })).toBe('por_mandar');
+    expect(comoVaLaMesa({ ...base, loSiguiente: { que: 'marchar', pase: 2 } })).toBe(
+      'toca_marchar',
+    );
+  });
+
+  it('con algo en cocina sin salir, «esperando», no «comiendo» (Richi, 5-nov)', () => {
+    expect(comoVaLaMesa({ ...base, enCocina: 'en_marcha' })).toBe('esperando');
+  });
+
+  it('cuando ha salido todo, «comiendo»; y a los 15 minutos de lo último, «para cobrar»', () => {
+    expect(comoVaLaMesa(base)).toBe('comiendo');
+    expect(comoVaLaMesa({ ...base, minutosDesdeLoUltimo: MINUTOS_PARA_LA_CUENTA - 1 })).toBe(
+      'comiendo',
+    );
+    expect(comoVaLaMesa({ ...base, minutosDesdeLoUltimo: MINUTOS_PARA_LA_CUENTA })).toBe(
+      'para_cobrar',
+    );
+  });
+
+  it('una mesa solo de bebida no pide la cuenta sola', () => {
+    expect(comoVaLaMesa({ ...base, conComida: false, minutosDesdeLoUltimo: 90 })).toBe('comiendo');
+  });
+
+  it('con la cocina solo en papel nadie tacha: espera, y nunca pide la cuenta sola', () => {
+    expect(comoVaLaMesa({ ...base, nadieTacha: true, minutosDesdeLoUltimo: 90 })).toBe('esperando');
+  });
+});
+
+describe('desde cuándo cuenta la cocina, igual en su tarjeta y en el plano (0116, 0131)', () => {
+  it('desde lo primero que llegó, y desde la última marcha si hubo más de una', () => {
+    const llega = '2026-11-05T21:00:00Z';
+    const otro = '2026-11-05T21:05:00Z';
+    const marcha2 = '2026-11-05T21:30:00Z';
+    expect(desdeCuandoEnCocina([otro, llega], [llega])).toBe(llega);
+    expect(desdeCuandoEnCocina([otro, llega], [llega, marcha2])).toBe(marcha2);
+    expect(desdeCuandoEnCocina([], [])).toBeNull();
+  });
+
+  it('el color: verde, ámbar a los de aviso y rojo a los de tarde', () => {
+    const ajustes = { avisoMin: 10, tardeMin: 20 };
+    expect(elColorDelTiempo(9, ajustes)).toBe('en_hora');
+    expect(elColorDelTiempo(10, ajustes)).toBe('justo');
+    expect(elColorDelTiempo(20, ajustes)).toBe('tarde');
   });
 });
 

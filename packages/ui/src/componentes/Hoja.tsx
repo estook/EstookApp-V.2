@@ -30,6 +30,16 @@ interface Comunes {
   readonly amplia?: boolean;
 }
 
+interface DeLaHoja extends Comunes {
+  /**
+   * **Del alto de lo que lleva** en el móvil, hasta el 92 % (0131): la mesa del TPV, que se
+   * abre en pleno servicio y no tiene por qué tapar el plano entero.
+   */
+  readonly ajustada?: boolean;
+  /** Lo que va junto al título, antes de la «X»: los iconos de la mesa del TPV (0131). */
+  readonly acciones?: ReactNode;
+}
+
 function useDialogo(abierta: boolean, alCerrar: () => void) {
   const referencia = useRef<HTMLDialogElement>(null);
 
@@ -97,7 +107,16 @@ const DIALOGO =
  * formulario —40rem, lo que se lee sin mover los ojos— y la altura que pida lo
  * de dentro. Fuera de ella, todo cierra, igual que el 8 % de arriba en el movil.
  */
-export function Hoja({ abierta, alCerrar, titulo, children, pie, amplia = false }: Comunes) {
+export function Hoja({
+  abierta,
+  alCerrar,
+  titulo,
+  children,
+  pie,
+  amplia = false,
+  ajustada = false,
+  acciones,
+}: DeLaHoja) {
   const dialogo = useDialogo(abierta, alCerrar);
 
   return (
@@ -124,18 +143,22 @@ export function Hoja({ abierta, alCerrar, titulo, children, pie, amplia = false 
         <button
           type="button"
           aria-label="Cerrar"
-          className="h-[8%] w-full cursor-default md:absolute md:inset-0 md:h-full"
+          className={clases(
+            'w-full cursor-default md:absolute md:inset-0 md:h-full',
+            ajustada ? 'min-h-[8%] flex-1' : 'h-[8%]',
+          )}
           onClick={alCerrar}
         />
         <div
           className={clases(
-            'relative flex h-[92%] flex-col bg-superficie rounded-t-mayor shadow-s3',
+            'relative flex flex-col bg-superficie rounded-t-mayor shadow-s3',
+            ajustada ? 'max-h-[92%]' : 'h-[92%]',
             'md:h-auto md:max-h-[85vh] md:w-full md:rounded-mayor',
             amplia ? 'md:max-w-[58rem]' : 'md:max-w-[40rem]',
             'anima-sube',
           )}
         >
-          <Cabecera titulo={titulo} alCerrar={alCerrar} />
+          <Cabecera titulo={titulo} alCerrar={alCerrar} acciones={acciones} />
           <div className="flex-1 overflow-y-auto px-e4 pb-e4">{children}</div>
           {pie !== undefined && (
             // `pb-[env(safe-area-inset-bottom)]` para que en un iPhone los
@@ -188,13 +211,25 @@ export function PanelLateral({ abierta, alCerrar, titulo, children, pie }: Comun
 function Cabecera({
   titulo,
   alCerrar,
+  acciones,
 }: {
   readonly titulo: string;
   readonly alCerrar: () => void;
+  readonly acciones?: ReactNode;
 }) {
   return (
     <header className="flex shrink-0 items-center justify-between gap-e3 px-e4 py-e3 border-b border-borde">
-      <h2 className="text-pantalla font-semibold">{titulo}</h2>
+      <h2
+        className={clases(
+          'text-pantalla font-semibold',
+          acciones !== undefined && 'min-w-0 flex-1 truncate',
+        )}
+      >
+        {titulo}
+      </h2>
+      {acciones !== undefined && (
+        <div className="flex shrink-0 items-center gap-e2">{acciones}</div>
+      )}
       <button
         type="button"
         onClick={alCerrar}

@@ -20,6 +20,8 @@ import { LaFranjaDeLaCaja } from '../sinInternet/LaFranjaDeLaCaja.tsx';
 import { DescargaLaCajaParaWindows, LasImpresorasAvisan } from './LasImpresorasAvisan.tsx';
 import { OpcionesDeLaMesa } from '../mesa/OpcionesDeLaMesa.tsx';
 import { MesaEnElPlano, TarjetaSinMesa } from './MesaEnElPlano.tsx';
+import { minutosCortos } from '../logica/comoVaLaMesa.ts';
+import { IconoCuenta, IconoPersona } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { ElAvisoDeWindows } from '../sinInternet/ElAvisoDeWindows.tsx';
 
@@ -143,7 +145,7 @@ export function ElPlano() {
       <LaBarraDeArriba>
         <nav
           aria-label="Zonas"
-          className="flex max-w-full gap-e1 overflow-x-auto rounded-redondo bg-fondo p-e1 md:ml-e4"
+          className="flex min-w-0 max-w-full gap-e1 overflow-x-auto rounded-redondo bg-fondo p-e1 md:ml-e4"
         >
           {zonas.length === 0 && datos.puedeDibujar && (
             <BotonDeZona
@@ -175,30 +177,22 @@ export function ElPlano() {
             Barra y llevar{datos.sinMesa.length > 0 ? ` · ${datos.sinMesa.length}` : ''}
           </BotonDeZona>
         </nav>
-        <div
-          role="radiogroup"
-          aria-label="Qué mesas"
-          className="flex gap-e1 rounded-redondo bg-fondo p-e1"
+        {/* «Mías», un solo botón que se pulsa y se suelta (0131): con borde, para que no
+            parezca otra zona. Puesto, solo se ven las mías. */}
+        <button
+          type="button"
+          aria-pressed={soloMias}
+          onClick={() => {
+            setSoloMias(!soloMias);
+          }}
+          className={[
+            'ml-auto flex min-h-toque shrink-0 items-center gap-e1 rounded-redondo border-2 px-e3 font-semibold md:ml-0',
+            soloMias ? 'border-charcoal bg-charcoal text-white' : 'border-borde bg-transparent',
+          ].join(' ')}
         >
-          <BotonDeZona
-            puesto={!soloMias}
-            radio
-            onClick={() => {
-              setSoloMias(false);
-            }}
-          >
-            Todas
-          </BotonDeZona>
-          <BotonDeZona
-            puesto={soloMias}
-            radio
-            onClick={() => {
-              setSoloMias(true);
-            }}
-          >
-            {mias > 0 ? `Mías · ${String(mias)}` : 'Mías'}
-          </BotonDeZona>
-        </div>
+          <IconoPersona size={16} aria-hidden />
+          {mias > 0 ? `Mías · ${String(mias)}` : 'Mías'}
+        </button>
       </LaBarraDeArriba>
 
       <LaFranjaSinInternet />
@@ -214,6 +208,12 @@ export function ElPlano() {
       />
       <LasImpresorasAvisan />
       <DescargaLaCajaParaWindows />
+      <ParaCobrar
+        cuentas={abiertas.filter((c) => !soloMias || c.esMia)}
+        alTocar={(cuentaId) => {
+          setOpciones(cuentaId);
+        }}
+      />
       {datos.tocaMarchar.map((t) => (
         <div
           key={t.cuentaId}
@@ -339,21 +339,60 @@ export function ElPlano() {
   );
 }
 
+/**
+ * **Para cobrar** (0131; Richi, 5-nov: «avisar a los camareros de pendiente de pago»): las
+ * mesas que comieron y llevan 15 minutos desde lo último, la que más lleva primero. Sin
+ * sonido: un compañero, no un policía. Se toca y se abre la mesa.
+ */
+function ParaCobrar({
+  cuentas,
+  alTocar,
+}: {
+  readonly cuentas: readonly CuentaEnElPlano[];
+  readonly alTocar: (cuentaId: string) => void;
+}) {
+  const paraCobrar = cuentas
+    .filter((c) => c.comoVa === 'para_cobrar')
+    .sort((a, b) => (b.minutosEnElEstado ?? 0) - (a.minutosEnElEstado ?? 0));
+  if (paraCobrar.length === 0) return null;
+  return (
+    <section
+      aria-label="Para cobrar"
+      className="mx-e4 mt-e3 flex flex-wrap items-center gap-e2 rounded-grande bg-app-equipo/15 py-e2 pl-e3 pr-e2 md:mx-e5"
+    >
+      <span className="flex items-center gap-e1 font-bold text-app-equipo">
+        <IconoCuenta size={18} aria-hidden />
+        Para cobrar
+      </span>
+      {paraCobrar.map((c) => (
+        <button
+          key={c.cuentaId}
+          type="button"
+          onClick={() => {
+            alTocar(c.cuentaId);
+          }}
+          className="min-h-toque rounded-redondo bg-superficie px-e3 font-semibold"
+        >
+          {c.titulo} · {minutosCortos(c.minutosEnElEstado ?? 0)}
+        </button>
+      ))}
+    </section>
+  );
+}
+
 function BotonDeZona({
   puesto,
   onClick,
   children,
-  radio = false,
 }: {
   readonly puesto: boolean;
   readonly onClick: () => void;
   readonly children: ReactNode;
-  readonly radio?: boolean;
 }) {
   return (
     <button
       type="button"
-      {...(radio ? { role: 'radio', 'aria-checked': puesto } : { 'aria-pressed': puesto })}
+      aria-pressed={puesto}
       onClick={onClick}
       className={[
         'min-h-toque shrink-0 rounded-redondo px-e4 font-semibold',

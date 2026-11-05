@@ -1,8 +1,18 @@
-import type { ReactNode } from 'react';
-import { IconoPersona } from '@estook/iconos';
-import type { CuentaEnElPlano, MesaDelPlano } from '../datos/tipos.ts';
-import { elPase } from '../logica/laCuenta.ts';
-import { cuantoLlevan, euros, laHora } from '../logica/texto.ts';
+import type { ColorDelTiempo } from '@estook/dominio';
+import {
+  IconoAdelante,
+  IconoComiendo,
+  IconoCuaderno,
+  IconoCuenta,
+  IconoEnviar,
+  IconoLibre,
+  IconoPersona,
+  IconoReloj,
+  type Icono,
+} from '@estook/iconos';
+import type { CuentaEnElPlano, EstadoDeLaMesa, MesaDelPlano } from '../datos/tipos.ts';
+import { laPalabra, losMinutos, loQueDice, minutosCortos } from '../logica/comoVaLaMesa.ts';
+import { euros, laHora } from '../logica/texto.ts';
 import { enderezar, estiloEnElPlano, redondeoDeLaForma } from './dibujo.tsx';
 
 /**
@@ -11,75 +21,88 @@ import { enderezar, estiloEnElPlano, redondeoDeLaForma } from './dibujo.tsx';
  * y **las iniciales de su camarero** en una pastilla (las mías, en el color de Servicio).
  * Si su camarero ha fichado la salida, lo dice, para que alguien se la quede.
  *
+ * **Cómo va, de verdad** (la pausa del 5-nov, 0131): al mandar, **«Esperando»** con el tiempo
+ * desde que la cocina lo recibió, en azul, ámbar y rojo como la pantalla de cocina; cuando
+ * sale todo, **«Comiendo»**; y a los 15 minutos de lo último, **«¿Cuenta?»** en morado.
+ *
  * En la tablet y en la caja va donde se dibujó, con su forma y su giro; en el móvil, en
  * su casilla de la cuadrícula, de tres en fila.
  */
 
-type Estado = MesaDelPlano['estado'];
+interface ComoSeVe {
+  readonly caja: string;
+  readonly texto: string;
+  readonly icono: Icono;
+}
 
-const COMO_SE_VE: Readonly<Record<Estado, { readonly caja: string; readonly texto: string }>> = {
-  libre: { caja: 'border-2 border-borde-fuerte bg-superficie', texto: 'text-texto-suave' },
-  sin_pedir: { caja: 'border-0 bg-atencion-suave', texto: 'text-atencion font-semibold' },
-  comiendo: { caja: 'border-0 bg-bien-suave', texto: 'text-bien font-semibold' },
-  toca_marchar: { caja: 'border-[3px] border-info bg-info-suave', texto: 'text-info font-bold' },
+const DE_SIEMPRE: Readonly<Record<Exclude<EstadoDeLaMesa, 'esperando'>, ComoSeVe>> = {
+  libre: {
+    caja: 'border-2 border-borde-fuerte bg-superficie',
+    texto: 'text-texto-suave',
+    icono: IconoLibre,
+  },
+  sin_pedir: {
+    caja: 'border-0 bg-atencion-suave',
+    texto: 'text-atencion font-semibold',
+    icono: IconoCuaderno,
+  },
   por_mandar: {
     caja: 'border-[3px] border-atencion bg-atencion-suave',
     texto: 'text-atencion font-bold',
+    icono: IconoEnviar,
+  },
+  toca_marchar: {
+    caja: 'border-[3px] border-info bg-info-suave',
+    texto: 'text-info font-bold',
+    icono: IconoAdelante,
+  },
+  comiendo: {
+    caja: 'border-0 bg-bien-suave',
+    texto: 'text-bien font-semibold',
+    icono: IconoComiendo,
+  },
+  para_cobrar: {
+    caja: 'border-2 border-app-equipo bg-app-equipo/15',
+    texto: 'text-app-equipo font-bold',
+    icono: IconoCuenta,
   },
 };
 
-/** Lo que dice la mesa debajo de su nombre. */
-export function comoVaLaMesa(mesa: MesaDelPlano): string {
-  const cuenta = mesa.cuenta;
-  if (cuenta === null) return `Libre · ${String(mesa.plazas)}`;
-  if (mesa.estado === 'toca_marchar' && cuenta.loSiguiente.que === 'marchar') {
-    return `Marchar ${elPase(cuenta.loSiguiente.pase)}`;
-  }
-  if (mesa.estado === 'por_mandar') return 'Sin mandar';
-  if (mesa.estado === 'sin_pedir') return `Sin pedir · ${cuantoLlevan(cuenta.minutos)}`;
-  return `Comiendo · ${cuantoLlevan(cuenta.minutos)}`;
+/** Esperando, del color del tiempo en cocina; sin color (nadie tacha), en azul. */
+const ESPERANDO: Readonly<Record<ColorDelTiempo | 'sin_color', ComoSeVe>> = {
+  sin_color: {
+    caja: 'border-0 bg-info-suave',
+    texto: 'text-info font-semibold',
+    icono: IconoReloj,
+  },
+  en_hora: { caja: 'border-0 bg-info-suave', texto: 'text-info font-semibold', icono: IconoReloj },
+  justo: {
+    caja: 'border-2 border-atencion bg-atencion-suave',
+    texto: 'text-atencion font-bold',
+    icono: IconoReloj,
+  },
+  tarde: {
+    caja: 'border-[3px] border-mal bg-mal-suave',
+    texto: 'text-mal font-bold',
+    icono: IconoReloj,
+  },
+};
+
+function comoSeVe(estado: EstadoDeLaMesa, color: ColorDelTiempo | null | undefined): ComoSeVe {
+  return estado === 'esperando' ? ESPERANDO[color ?? 'sin_color'] : DE_SIEMPRE[estado];
 }
 
-/** El icono de cada estado: va siempre con su texto. */
-function IconoDelEstado({ estado }: { readonly estado: Estado }) {
-  const trazo: Readonly<Record<Estado, ReactNode>> = {
-    libre: <circle cx="12" cy="12" r="7" />,
-    sin_pedir: (
-      <>
-        <rect x="6" y="4" width="12" height="16" rx="2" />
-        <path d="M9 9h6M9 13h6" />
-      </>
-    ),
-    comiendo: (
-      <>
-        <circle cx="12" cy="13" r="6" />
-        <path d="M5 5v5M8 5v5M6.5 10v9" />
-      </>
-    ),
-    toca_marchar: <path d="M5 12h12M13 7l5 5-5 5" />,
-    por_mandar: (
-      <>
-        <circle cx="12" cy="12" r="8" />
-        <path d="M12 7v6M12 16v1" />
-      </>
-    ),
-  };
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="shrink-0"
-    >
-      {trazo[estado]}
-    </svg>
-  );
+/** Lo que dice la mesa debajo de su nombre. */
+export function comoVaLaMesa(mesa: MesaDelPlano): string {
+  return mesa.cuenta === null
+    ? `Libre · ${String(mesa.plazas)}`
+    : loQueDice(mesa.estado, mesa.cuenta);
+}
+
+/** El icono de cada estado: va siempre con su texto (B1). */
+function IconoDelEstado({ como }: { readonly como: ComoSeVe }) {
+  const Dibujo = como.icono;
+  return <Dibujo size={16} aria-hidden className="shrink-0" />;
 }
 
 export function Pastilla({ cuenta }: { readonly cuenta: CuentaEnElPlano }) {
@@ -107,11 +130,12 @@ export function MesaEnElPlano({
   readonly enElPlano: boolean;
   readonly alTocar: () => void;
 }) {
-  const como = COMO_SE_VE[mesa.estado];
   const cuenta = mesa.cuenta;
+  const como = comoSeVe(mesa.estado, cuenta?.colorDelTiempo);
   const pequena = mesa.forma === 'taburete';
   const seHaIdo = cuenta?.suCamareroSeHaIdo === true;
   const linea = comoVaLaMesa(mesa);
+  const minutos = cuenta === null ? null : losMinutos(mesa.estado, cuenta);
   return (
     <button
       type="button"
@@ -140,16 +164,35 @@ export function MesaEnElPlano({
         </span>
         {!pequena && (
           <span
-            className={['flex items-center gap-e1 text-secundario leading-tight', como.texto].join(
-              ' ',
-            )}
+            className={[
+              'flex w-full min-w-0 items-center gap-e1 leading-tight',
+              // La palabra sola y pequeña, que en una casilla no cabe con los minutos: van
+              // debajo, en su color (0131). En el plano dibujado, centrada.
+              'text-etiqueta',
+              cuenta === null ? '' : 'font-bold',
+              enElPlano ? 'justify-center' : '',
+              como.texto,
+            ].join(' ')}
           >
-            <IconoDelEstado estado={mesa.estado} />
-            <span className="truncate">{linea}</span>
+            <IconoDelEstado como={como} />
+            <span className="truncate">
+              {cuenta === null ? linea : laPalabra(mesa.estado, cuenta)}
+            </span>
           </span>
         )}
         {cuenta !== null && !pequena && (
-          <span className="flex items-center gap-e1 truncate text-etiqueta leading-tight text-texto-suave">
+          <span
+            className={[
+              'flex w-full min-w-0 items-center gap-e2 text-etiqueta leading-tight text-texto-suave',
+              enElPlano ? 'justify-center' : '',
+            ].join(' ')}
+          >
+            {/* Los minutos, en el color de cómo va. */}
+            {minutos !== null && (
+              <span className={['shrink-0 font-bold', como.texto].join(' ')}>
+                {minutosCortos(minutos)}
+              </span>
+            )}
             {/* Los comensales con su muñeco, que en una casilla de tres en fila no cabe la palabra. */}
             {cuenta.personas !== null && (
               <span
@@ -159,7 +202,7 @@ export function MesaEnElPlano({
                 }
               >
                 <IconoPersona size={12} aria-hidden />
-                {cuenta.personas} ·
+                {cuenta.personas}
               </span>
             )}
             <span className="truncate">{euros(cuenta.totalCentimos)}</span>
@@ -183,34 +226,48 @@ export function TarjetaSinMesa({
   readonly cuenta: CuentaEnElPlano;
   readonly alTocar: () => void;
 }) {
-  const toca = cuenta.loSiguiente.que === 'marchar';
-  const sinMandar = cuenta.loSiguiente.que === 'mandar';
+  const estado = cuenta.comoVa ?? comoVaDeAntes(cuenta);
+  const como = comoSeVe(estado, cuenta.colorDelTiempo);
+  const linea = loQueDice(estado, cuenta);
   return (
     <button
       type="button"
       onClick={alTocar}
+      aria-label={`${cuenta.titulo}: ${linea}`}
       className={[
         'flex min-h-[7.5rem] flex-col gap-[2px] rounded-mayor p-e3 text-left',
-        toca
-          ? 'border-[3px] border-info bg-info-suave'
-          : sinMandar
-            ? 'border-[3px] border-atencion bg-atencion-suave'
-            : 'bg-bien-suave',
+        como.caja,
       ].join(' ')}
     >
       <span className="flex w-full items-start justify-between gap-e1">
         <span className="text-cuerpo font-bold">{cuenta.titulo}</span>
         <Pastilla cuenta={cuenta} />
       </span>
-      {cuenta.paraLas !== undefined && cuenta.paraLas !== null ? (
-        // Lo de llevar programado (0121): su hora, que es lo que importa, y no cuánto lleva.
+      <span className={['flex items-center gap-e1 text-secundario', como.texto].join(' ')}>
+        <IconoDelEstado como={como} />
+        <span className="truncate">{linea}</span>
+      </span>
+      {cuenta.paraLas !== undefined && cuenta.paraLas !== null && (
+        // Lo de llevar programado (0121): su hora, que es lo que importa.
         <span className="text-secundario font-bold text-info">
           Para las {laHora(cuenta.paraLas)}
         </span>
-      ) : (
-        <span className="text-secundario text-texto-suave">{cuantoLlevan(cuenta.minutos)}</span>
       )}
       <span className="text-secundario text-texto-suave">{euros(cuenta.totalCentimos)} €</span>
     </button>
   );
+}
+
+/** Con una API de antes, que no dice cómo va: lo de entonces, por lo que toca hacer. */
+function comoVaDeAntes(cuenta: CuentaEnElPlano): EstadoDeLaMesa {
+  switch (cuenta.loSiguiente.que) {
+    case 'pedir':
+      return 'sin_pedir';
+    case 'mandar':
+      return 'por_mandar';
+    case 'marchar':
+      return 'toca_marchar';
+    case 'cobrar':
+      return 'comiendo';
+  }
 }

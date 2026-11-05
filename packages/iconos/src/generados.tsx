@@ -11,6 +11,12 @@ export const IconoAtras = crearIcono(
   '<path d="m12 19-7-7 7-7" /><path d="M19 12H5" />',
 );
 
+/** Lucide `arrow-left-right` */
+export const IconoMover = crearIcono(
+  'arrow-left-right',
+  '<path d="M8 3 4 7l4 4" /><path d="M4 7h16" /><path d="m16 21 4-4-4-4" /><path d="M20 17H4" />',
+);
+
 /** Lucide `arrow-right` */
 export const IconoAdelante = crearIcono(
   'arrow-right',
@@ -98,6 +104,9 @@ export const IconoCambiar = crearIcono(
   '<path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" />',
 );
 
+/** Lucide `circle` */
+export const IconoLibre = crearIcono('circle', '<circle cx="12" cy="12" r="10" />');
+
 /** Lucide `circle-alert` */
 export const IconoMal = crearIcono(
   'circle-alert',
@@ -120,6 +129,12 @@ export const IconoServicio = crearIcono(
 export const IconoReloj = crearIcono(
   'clock',
   '<circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />',
+);
+
+/** Lucide `credit-card` */
+export const IconoCobrar = crearIcono(
+  'credit-card',
+  '<rect width="20" height="14" x="2" y="5" rx="2" /><line x1="2" x2="22" y1="10" y2="10" />',
 );
 
 /** Lucide `crosshair` */
@@ -236,6 +251,18 @@ export const IconoVincular = crearIcono(
   '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />',
 );
 
+/** Lucide `list-ordered` */
+export const IconoPases = crearIcono(
+  'list-ordered',
+  '<path d="M10 12h11" /><path d="M10 18h11" /><path d="M10 6h11" /><path d="M4 10h2" /><path d="M4 6h1v4" /><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />',
+);
+
+/** Lucide `lock` */
+export const IconoCandado = crearIcono(
+  'lock',
+  '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />',
+);
+
 /** Lucide `log-in` */
 export const IconoEntrar = crearIcono(
   'log-in',
@@ -264,6 +291,12 @@ export const IconoAmpliar = crearIcono(
 export const IconoMenu = crearIcono(
   'menu',
   '<line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" />',
+);
+
+/** Lucide `merge` */
+export const IconoJuntar = crearIcono(
+  'merge',
+  '<path d="m8 6 4-4 4 4" /><path d="M12 2v10.3a4 4 0 0 1-1.172 2.872L4 22" /><path d="m20 22-5-5" />',
 );
 
 /** Lucide `message-square` */
@@ -343,6 +376,24 @@ export const IconoReproducir = crearIcono('play', '<polygon points="6 3 20 12 6 
 
 /** Lucide `plus` */
 export const IconoAnadir = crearIcono('plus', '<path d="M5 12h14" /><path d="M12 5v14" />');
+
+/** Lucide `printer` */
+export const IconoImprimir = crearIcono(
+  'printer',
+  '<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /><rect x="6" y="14" width="12" height="8" rx="1" />',
+);
+
+/** Lucide `receipt-euro` */
+export const IconoCuenta = crearIcono(
+  'receipt-euro',
+  '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" /><path d="M8 12h5" /><path d="M16 9.5a4 4 0 1 0 0 5.2" />',
+);
+
+/** Lucide `replace` */
+export const IconoCambiarDeMesa = crearIcono(
+  'replace',
+  '<path d="M14 4a2 2 0 0 1 2-2" /><path d="M16 10a2 2 0 0 1-2-2" /><path d="M20 2a2 2 0 0 1 2 2" /><path d="M22 8a2 2 0 0 1-2 2" /><path d="m3 7 3 3 3-3" /><path d="M6 10V5a3 3 0 0 1 3-3h1" /><rect x="2" y="14" width="8" height="8" rx="2" />',
+);
 
 /** Lucide `reply` */
 export const IconoResponder = crearIcono(
@@ -470,6 +521,12 @@ export const IconoEquipo = crearIcono(
   '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />',
 );
 
+/** Lucide `utensils` */
+export const IconoComiendo = crearIcono(
+  'utensils',
+  '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" /><path d="M7 2v20" /><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />',
+);
+
 /** Lucide `wifi-off` */
 export const IconoSinConexion = crearIcono(
   'wifi-off',
@@ -478,3 +535,9 @@ export const IconoSinConexion = crearIcono(
 
 /** Lucide `x` */
 export const IconoCerrar = crearIcono('x', '<path d="M18 6 6 18" /><path d="m6 6 12 12" />');
+
+/** Lucide `zap` */
+export const IconoPrisa = crearIcono(
+  'zap',
+  '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />',
+);

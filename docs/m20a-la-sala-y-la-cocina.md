@@ -568,7 +568,8 @@ abajo:
 **Antes de T6 · 2 · 1, la pausa del 5-nov** ([0130](decisiones/0130-la-pausa-del-5-nov-r1-lo-rapido.md)):
 cuatro entregas con lo que Richi vio usando el TPV en IKATZ. **R1 · Lo rápido** (tachar, mandar, el
 logo y la barra del iPhone), **R2 · La mesa en el móvil**, **R3 · Ajustes y secciones** y **R4 ·
-Precios, IA y papeles**, con sus maquetas aprobadas. Después, T6 · 2 · 1.
+Precios, IA y papeles**, con sus maquetas aprobadas. R2 en dos: **R2 · 1 · La sala y la mesa**
+([0131](decisiones/0131-r2-1-la-sala-y-la-mesa.md)) y R2 · 2 · Servido y cambiar un plato. Después, T6 · 2 · 1.
 
 - **El motor del Anexo 4.9**: el número se da al preparar, con el candado de su serie; a Verifacti se
   le llama fuera de la transacción, con la clave del documento; **el estado se lee de lo que se le

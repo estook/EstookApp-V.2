@@ -2,28 +2,63 @@ import { useState, type ReactNode } from 'react';
 import { ALERGENOS, enSuOrden, NOMBRE_CORTO_DEL_ALERGENO } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { puedeEditar } from '@estook/permisos';
-import { Boton, CAJA, Envoltorio, ErrorEnCristiano, Hoja } from '@estook/ui';
+import {
+  IconoAtencion,
+  IconoCambiarDeMesa,
+  IconoCobrar,
+  IconoEquipo,
+  IconoCuaderno,
+  IconoCuenta,
+  IconoAnadir,
+  IconoBien,
+  IconoCerrar,
+  IconoImprimir,
+  IconoJuntar,
+  IconoMas,
+  IconoMover,
+  IconoPases,
+  IconoPersona,
+  IconoPrisa,
+  type Icono,
+} from '@estook/iconos';
+import { Boton, CAJA, Cargando, Envoltorio, ErrorEnCristiano, Hoja } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { usarAcciones, usarAlSegundo, usarLasImpresoras } from '../ganchos/usarLaSala.ts';
+import {
+  usarAcciones,
+  usarAlSegundo,
+  usarLaMesa,
+  usarLasImpresoras,
+} from '../ganchos/usarLaSala.ts';
 import type { CuentaEnElPlano, ElPlano } from '../datos/tipos.ts';
-import { elPase } from '../logica/laCuenta.ts';
-import { comensales, cuantoLlevan, euros, losNombres } from '../logica/texto.ts';
+import { elPase, losGruposDeLaCuenta } from '../logica/laCuenta.ts';
+import { comensales, cuantoLlevan, euros, eurosConSimbolo, losNombres } from '../logica/texto.ts';
 import { irAlPlano } from '../navegar.ts';
+import { LaCuenta } from './LaCuenta.tsx';
 
 /**
- * Lo que se puede hacer con una mesa abierta (0106, «MesaAcciones»), al tocarla en el
- * plano o desde «Opciones» dentro de ella. Lo de cobrar y dividirla llega con el cobro (M20C):
- * hasta entonces, se cobra en el TPV de siempre y aquí se libera la mesa.
+ * **La mesa, al tocarla** (0106, «MesaAcciones»; rehecha en la pausa del 5-nov, 0131).
+ *
+ * Antes salía una lista de trece opciones y los platos no se veían: para ver la cuenta había
+ * que abrir la mesa y luego «Ver la cuenta». Ahora, en una hoja **del alto de lo que lleva**:
+ *
+ *   · **los platos**, con cómo va cada uno (la misma cuenta que dentro de la mesa), y el total
+ *   · abajo, **los botones de siempre**: Pedir, Cuenta (imprimirla) y Cobrar (apagado hasta que
+ *     se cobre con Estook TPV, M20C)
+ *   · arriba, **tres iconos**: mover (cambiar de mesa, juntar, pasar a otro camarero), la nota
+ *     para cocina y **«···»** con lo que se usa menos, lo que borra al final y en rojo
+ *
+ * Dentro de la mesa se abre igual, desde sus tres iconos, por el paso que toque.
  *
  * **Imprimir la cuenta y reimprimir la comanda** (T5 · 1, 0119), si hay impresora para ello:
- * lo imprime la caja para Windows, desde cualquier aparato.
- *
- * **Alergias** (T4 · 2, 0117): los catorce, de un toque. Al pedir lo que lleva alguno, la sala
- * avisa; y en cocina y en la barra sale en rojo.
+ * lo imprime la caja para Windows, desde cualquier aparato. **Alergias** (T4 · 2, 0117): los
+ * catorce, de un toque; al pedir lo que lleva alguno, la sala avisa, y en cocina sale en rojo.
  */
 
-type Paso =
-  | 'lista'
+/** Por dónde se entra: la mesa entera (desde el plano), o uno de sus tres iconos. */
+export type PasoDeLaMesa =
+  | 'mesa'
+  | 'mover'
+  | 'mas'
   | 'cambiar'
   | 'juntar'
   | 'pasar'
@@ -33,25 +68,39 @@ type Paso =
   | 'liberar'
   | 'anular';
 
+/** De qué menú sale cada paso, para «Volver». */
+const VUELVE_A: Readonly<Partial<Record<PasoDeLaMesa, PasoDeLaMesa>>> = {
+  cambiar: 'mover',
+  juntar: 'mover',
+  pasar: 'mover',
+  personas: 'mas',
+  alergias: 'mas',
+  liberar: 'mas',
+  anular: 'mas',
+};
+
 export function OpcionesDeLaMesa({
   cuenta,
   plano,
   alCerrar,
   alAbrir,
+  empiezaEn = 'mesa',
   sinMandarAqui = 0,
 }: {
   readonly cuenta: CuentaEnElPlano;
   readonly plano: ElPlano;
   readonly alCerrar: () => void;
-  /** «Abrir la mesa»: solo desde el plano; dentro de la mesa ya se está. */
+  /** «Pedir»: solo desde el plano; dentro de la mesa ya se está. */
   readonly alAbrir?: () => void;
+  /** Por dónde se abre: desde el plano, la mesa entera; desde dentro, el icono tocado. */
+  readonly empiezaEn?: PasoDeLaMesa;
   /** Lo pedido en esta tablet que aún no ha salido de ella (`comanda.ts`). */
   readonly sinMandarAqui?: number;
 }) {
   const { porPases, notaParaCocina } = cuenta;
   const { yo } = usarSesion();
   const ejecutar = usarAcciones();
-  const [paso, setPaso] = useState<Paso>('lista');
+  const [paso, setPaso] = useState<PasoDeLaMesa>(empiezaEn);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
   const [haciendo, setHaciendo] = useState(false);
   const [texto, setTexto] = useState('');
@@ -78,25 +127,100 @@ export function OpcionesDeLaMesa({
     ...plano.sinMesa,
   ].filter((c) => c.cuentaId !== cuenta.cuentaId);
   const toca = cuenta.loSiguiente.que === 'marchar' ? cuenta.loSiguiente.pase : null;
+  // Los platos de la mesa: los mismos que dentro de ella (y, desde dentro, ya leídos).
+  const mesa = usarLaMesa(cuenta.cuentaId, usarAlSegundo());
+  const grupos = losGruposDeLaCuenta(mesa.data, []);
+  const hayParaLaCuenta = impresoras.data?.hayParaLaCuenta === true;
 
+  /**
+   * «Volver»: de una opción, a su menú; de un menú o de la nota, a la mesa si se entró por
+   * ella (desde el plano), o se cierra si se entró por su icono (desde dentro de la mesa).
+   */
   const volver = () => {
-    setPaso('lista');
     setFallo(null);
     setTexto('');
+    const menu = VUELVE_A[paso];
+    if (menu !== undefined) setPaso(menu);
+    else if (empiezaEn === 'mesa') setPaso('mesa');
+    else alCerrar();
   };
 
+  function imprimirLaCuenta() {
+    setImpreso(null);
+    void hacer('imprimir_la_cuenta', { cuenta_id: cuenta.cuentaId }, () => {
+      setImpreso('La cuenta sale por la impresora de la caja.');
+    });
+  }
+
+  const iconos = (
+    <>
+      <BotonRedondo
+        etiqueta="Mover la mesa: cambiar, juntar o pasar"
+        icono={IconoMover}
+        onClick={() => {
+          setPaso('mover');
+        }}
+      />
+      <BotonRedondo
+        etiqueta={
+          notaParaCocina === null ? 'Nota para cocina' : `Nota para cocina: ${notaParaCocina}`
+        }
+        icono={IconoCuaderno}
+        puesto={notaParaCocina !== null}
+        onClick={() => {
+          setTexto(notaParaCocina ?? '');
+          setPaso('nota');
+        }}
+      />
+      <BotonRedondo
+        etiqueta="Más opciones de la mesa"
+        icono={IconoMas}
+        onClick={() => {
+          setPaso('mas');
+        }}
+      />
+    </>
+  );
+
+  const pie = (
+    <div className="grid grid-cols-3 gap-e2">
+      <BotonDeLaMesa
+        icono={IconoAnadir}
+        texto="Pedir"
+        principal
+        {...(alAbrir === undefined ? { apagado: 'ya estás dentro' } : { onClick: alAbrir })}
+      />
+      <BotonDeLaMesa
+        icono={IconoCuenta}
+        texto="Cuenta"
+        etiqueta="Imprimir la cuenta"
+        detalle={hayParaLaCuenta ? 'imprimir' : 'sin impresora'}
+        {...(hayParaLaCuenta ? { onClick: imprimirLaCuenta } : { apagado: 'sin impresora' })}
+      />
+      {/* Cobrar llega con el cobro (M20C): se ve ya, apagado, para que nadie lo busque luego. */}
+      <BotonDeLaMesa icono={IconoCobrar} texto="Cobrar" detalle="pronto" apagado="llega pronto" />
+    </div>
+  );
+
   return (
-    <Hoja abierta alCerrar={alCerrar} titulo={cuenta.titulo}>
-      <p className="mb-e4 text-secundario text-texto-suave">
-        {[
-          comensales(cuenta.personas),
-          cuenta.camarero,
-          cuantoLlevan(cuenta.minutos),
-          `${euros(cuenta.totalCentimos)} €`,
-        ]
-          .filter((x) => x !== null)
-          .join(' · ')}
-      </p>
+    <Hoja
+      abierta
+      ajustada
+      alCerrar={alCerrar}
+      titulo={cuenta.titulo}
+      {...(paso === 'mesa' ? { acciones: iconos, pie } : {})}
+    >
+      {paso === 'mesa' && (
+        <p className="mb-e2 mt-e2 text-secundario text-texto-suave">
+          {[
+            comensales(cuenta.personas),
+            cuenta.camarero,
+            `sentados hace ${cuantoLlevan(cuenta.minutos)}`,
+          ]
+            .filter((x) => x !== null)
+            .join(' · ')}
+        </p>
+      )}
 
       {fallo !== null && (
         <div className="mb-e4">
@@ -109,8 +233,21 @@ export function OpcionesDeLaMesa({
         </p>
       )}
 
-      {paso === 'lista' && (
+      {paso === 'mesa' && (
         <div className="flex flex-col gap-e2">
+          {alergias.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setMarcadas(alergias);
+                setPaso('alergias');
+              }}
+              className="flex min-h-toque items-center gap-e1 self-start font-bold text-mal"
+            >
+              <IconoAtencion size={18} aria-hidden />
+              {losNombres(alergias)}
+            </button>
+          )}
           {toca !== null && (
             <Boton
               tono="principal"
@@ -118,58 +255,64 @@ export function OpcionesDeLaMesa({
               ancho
               cargando={haciendo}
               onClick={() => {
-                void hacer('marchar', { cuenta_id: cuenta.cuentaId, pase: toca });
+                void hacer('marchar', { cuenta_id: cuenta.cuentaId, pase: toca }, () => undefined);
               }}
             >
               Marchar el {elPase(toca)}
             </Boton>
           )}
-          {alAbrir !== undefined && (
-            <Opcion titulo="Abrir la mesa" detalle="pedir y cambiar" onClick={alAbrir} fuerte />
-          )}
-          {impresoras.data?.hayParaLaCuenta === true && (
-            <Opcion
-              titulo="🧾 Imprimir la cuenta"
-              detalle="lo que llevan, antes de cobrar"
-              onClick={() => {
-                setImpreso(null);
-                void hacer('imprimir_la_cuenta', { cuenta_id: cuenta.cuentaId }, () => {
-                  setImpreso('La cuenta sale por la impresora de la caja.');
-                });
+          {mesa.data === undefined ? (
+            <Cargando que="los platos de la mesa" forma="lista" lineas={3} />
+          ) : (
+            <LaCuenta
+              grupos={grupos}
+              borrador={[]}
+              alCambiarElBorrador={() => undefined}
+              porPases={mesa.data.porPases}
+              pases={mesa.data.pases.map((p) => p.numero)}
+              tocaMarchar={toca}
+              sinPreguntarAlMarchar={impresoras.data?.cocinaSaleEn === 'papel'}
+              alMarchar={(pase) => {
+                void hacer('marchar', { cuenta_id: cuenta.cuentaId, pase }, () => undefined);
               }}
             />
           )}
-          <Opcion
-            titulo={alergias.length === 0 ? '⚠ Alergias' : `⚠ Alergias · ${losNombres(alergias)}`}
-            detalle={
-              alergias.length === 0
-                ? 'avisa al pedir, y en cocina sale en rojo'
-                : 'al pedir avisa, y en cocina sale en rojo'
-            }
-            peligro={alergias.length > 0}
-            onClick={() => {
-              setMarcadas(alergias);
-              setPaso('alergias');
-            }}
-          />
-          <Opcion
-            titulo={cuenta.tipo === 'mesa' ? 'Cambiar de mesa' : 'Llevar a una mesa'}
-            detalle={cuenta.tipo === 'mesa' ? 'se cambian de sitio' : 'de la barra a una mesa'}
+          <div className="flex items-baseline justify-between border-t border-borde pt-e3">
+            <span className="font-bold">Total</span>
+            <span className="text-cifra">{eurosConSimbolo(cuenta.totalCentimos)}</span>
+          </div>
+        </div>
+      )}
+
+      {/* **Mover**: las tres que cambian de sitio la mesa o de quién es, juntas. */}
+      {paso === 'mover' && (
+        <Menu alVolver={volver} volverEsCerrar={empiezaEn !== 'mesa'}>
+          <OpcionDelMenu
+            icono={IconoCambiarDeMesa}
+            texto={cuenta.tipo === 'mesa' ? 'Cambiar de mesa' : 'Llevar a una mesa'}
             onClick={() => {
               setPaso('cambiar');
             }}
           />
-          <Opcion
-            titulo="Juntar mesas"
-            detalle="una sola cuenta"
+          <OpcionDelMenu
+            icono={IconoJuntar}
+            texto="Juntar con otra mesa"
             onClick={() => {
               setPaso('juntar');
             }}
           />
+          <OpcionDelMenu
+            icono={IconoPersona}
+            texto="Pasar a otro camarero"
+            onClick={() => {
+              setPaso('pasar');
+            }}
+          />
           {/* **Cualquiera se queda o pasa cualquier mesa**, con rastro (0107, Anexo 11.8). */}
           {cuenta.camareroId !== yo.personaId && (
-            <Opcion
-              titulo="Quedármela"
+            <OpcionDelMenu
+              icono={IconoBien}
+              texto="Quedármela"
               detalle={
                 cuenta.suCamareroSeHaIdo
                   ? `${cuenta.camarero ?? 'Su camarero'} ha fichado la salida`
@@ -183,20 +326,24 @@ export function OpcionesDeLaMesa({
               }}
             />
           )}
-          <Opcion
-            titulo="Pasar a otro camarero"
-            detalle="al cambiar de turno"
+        </Menu>
+      )}
+
+      {/* **«···»**: lo que se usa menos; lo que borra, al final y en rojo. */}
+      {paso === 'mas' && (
+        <Menu alVolver={volver} volverEsCerrar={empiezaEn !== 'mesa'}>
+          <OpcionDelMenu
+            icono={IconoAtencion}
+            texto={alergias.length === 0 ? 'Alergias' : `Alergias · ${losNombres(alergias)}`}
+            peligro={alergias.length > 0}
             onClick={() => {
-              setPaso('pasar');
+              setMarcadas(alergias);
+              setPaso('alergias');
             }}
           />
-          <Opcion
-            titulo={cuenta.conPrisa ? '⚡ Ya no tienen prisa' : '⚡ Tienen prisa'}
-            detalle={
-              cuenta.conPrisa
-                ? 'en cocina va arriba, con su franja'
-                : 'sube arriba en cocina, con su franja y su sonido'
-            }
+          <OpcionDelMenu
+            icono={IconoPrisa}
+            texto={cuenta.conPrisa ? 'Ya no tienen prisa' : 'Tienen prisa'}
             onClick={() => {
               void hacer('cambiar_la_prisa', {
                 cuenta_id: cuenta.cuentaId,
@@ -204,45 +351,36 @@ export function OpcionesDeLaMesa({
               });
             }}
           />
-          <Opcion
-            titulo="Nota para cocina"
-            detalle={notaParaCocina ?? 'Sin nota: «es un cumpleaños», «sin prisa»…'}
-            onClick={() => {
-              setTexto(notaParaCocina ?? '');
-              setPaso('nota');
-            }}
-          />
-          <Opcion
-            titulo="Comensales"
-            detalle={comensales(cuenta.personas) ?? 'sin decir'}
+          <OpcionDelMenu
+            icono={IconoEquipo}
+            texto={`Comensales · ${cuenta.personas === null ? 'sin decir' : String(cuenta.personas)}`}
             onClick={() => {
               setTexto(cuenta.personas === null ? '' : String(cuenta.personas));
               setPaso('personas');
             }}
           />
           {/* Lo de llevar sale siempre todo junto (28-oct): ni pases ni «Sacadlo todo». */}
-          {porPases && cuenta.tipo !== 'para_llevar' && (
-            <Opcion
-              titulo="Sacadlo todo"
-              detalle="lo que espera sale ya, y lo nuevo, todo junto"
+          {cuenta.tipo !== 'para_llevar' && (
+            <OpcionDelMenu
+              icono={IconoPases}
+              texto={porPases ? 'Sacadlo todo junto' : 'Por pases'}
               onClick={() => {
-                void hacer('cambiar_la_mesa', { cuenta_id: cuenta.cuentaId, por_pases: false });
+                void hacer('cambiar_la_mesa', { cuenta_id: cuenta.cuentaId, por_pases: !porPases });
               }}
             />
           )}
-          {!porPases && cuenta.tipo !== 'para_llevar' && (
-            <Opcion
-              titulo="Por pases"
-              detalle="lo nuevo, en su pase"
-              onClick={() => {
-                void hacer('cambiar_la_mesa', { cuenta_id: cuenta.cuentaId, por_pases: true });
-              }}
+          {/* Dentro de la mesa no hay botón de la cuenta: aquí. */}
+          {empiezaEn !== 'mesa' && hayParaLaCuenta && (
+            <OpcionDelMenu
+              icono={IconoCuenta}
+              texto="Imprimir la cuenta"
+              onClick={imprimirLaCuenta}
             />
           )}
           {impresoras.data?.hayParaLaComanda === true && (
-            <Opcion
-              titulo="Reimprimir la comanda"
-              detalle="lo ya mandado, otra vez, marcado «COPIA»"
+            <OpcionDelMenu
+              icono={IconoImprimir}
+              texto="Reimprimir la comanda"
               onClick={() => {
                 setImpreso(null);
                 void hacer('reimprimir_la_comanda', { cuenta_id: cuenta.cuentaId }, () => {
@@ -251,24 +389,25 @@ export function OpcionesDeLaMesa({
               }}
             />
           )}
-          <Opcion
-            titulo="Liberar la mesa"
-            detalle="ya han pagado en el TPV de siempre"
+          <hr className="my-e1 border-borde" />
+          <OpcionDelMenu
+            icono={IconoBien}
+            texto="Liberar la mesa"
             onClick={() => {
               setPaso('liberar');
             }}
           />
           {esJefe && (
-            <Opcion
-              titulo="Anular la mesa"
-              detalle="con su motivo: queda apuntado"
+            <OpcionDelMenu
+              icono={IconoCerrar}
+              texto="Anular la mesa"
               peligro
               onClick={() => {
                 setPaso('anular');
               }}
             />
           )}
-        </div>
+        </Menu>
       )}
 
       {paso === 'cambiar' && (
@@ -465,17 +604,120 @@ export function OpcionesDeLaMesa({
   );
 }
 
-function Opcion({
-  titulo,
+/** Uno de los tres iconos de arriba: mover, la nota y «···». Con su nombre para quien no ve. */
+function BotonRedondo({
+  etiqueta,
+  icono: Dibujo,
+  onClick,
+  puesto = false,
+}: {
+  readonly etiqueta: string;
+  readonly icono: Icono;
+  readonly onClick: () => void;
+  /** Con algo dentro: la nota escrita se nota en el icono, en naranja. */
+  readonly puesto?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={etiqueta}
+      title={etiqueta}
+      onClick={onClick}
+      className={[
+        'grid size-toque place-items-center rounded-redondo',
+        puesto ? 'bg-naranja-suave text-naranja' : 'bg-fondo text-texto',
+      ].join(' ')}
+    >
+      <Dibujo size={20} aria-hidden />
+    </button>
+  );
+}
+
+/**
+ * Un botón de abajo: Pedir, Cuenta y Cobrar, con su icono encima y grande, que en pleno
+ * servicio se pulsa con el pulgar. Apagado dice por qué, también a quien no ve.
+ */
+function BotonDeLaMesa({
+  icono: Dibujo,
+  texto,
+  etiqueta = texto,
+  detalle,
+  principal = false,
+  onClick,
+  apagado,
+}: {
+  readonly icono: Icono;
+  readonly texto: string;
+  /** Lo que oye quien no ve, si dice más que el texto: «Imprimir la cuenta». */
+  readonly etiqueta?: string;
+  readonly detalle?: string;
+  readonly principal?: boolean;
+  readonly onClick?: () => void;
+  /** Por qué no se puede: «llega pronto», «sin impresora». */
+  readonly apagado?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={apagado !== undefined}
+      aria-label={apagado === undefined ? etiqueta : `${etiqueta}: ${apagado}`}
+      className={[
+        'flex min-h-toque-cocina flex-col items-center justify-center gap-[2px] rounded-grande px-e2 py-e2 font-bold disabled:opacity-45',
+        principal ? 'bg-naranja text-sobre-naranja' : 'bg-fondo text-texto',
+      ].join(' ')}
+    >
+      <Dibujo size={22} aria-hidden />
+      <span>{texto}</span>
+      {detalle !== undefined && (
+        <span
+          className={[
+            'text-etiqueta font-semibold',
+            principal ? 'text-sobre-naranja/80' : 'text-texto-suave',
+          ].join(' ')}
+        >
+          {detalle}
+        </span>
+      )}
+    </button>
+  );
+}
+
+/** Un menú de la mesa (mover o «···»): sus opciones en filas, y abajo «Volver» o «Cerrar». */
+function Menu({
+  children,
+  alVolver,
+  volverEsCerrar,
+}: {
+  readonly children: ReactNode;
+  readonly alVolver: () => void;
+  /** Se entró por el icono, desde dentro de la mesa: volver es cerrar. */
+  readonly volverEsCerrar: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-e1 pt-e3">
+      {children}
+      <div className="flex justify-end pt-e2">
+        <Boton tono="texto" onClick={alVolver}>
+          {volverEsCerrar ? 'Cerrar' : 'Volver'}
+        </Boton>
+      </div>
+    </div>
+  );
+}
+
+/** Una fila de un menú: su icono y lo que hace, en una línea; lo que borra, en rojo. */
+function OpcionDelMenu({
+  icono: Dibujo,
+  texto,
   detalle,
   onClick,
-  fuerte = false,
   peligro = false,
 }: {
-  readonly titulo: string;
-  readonly detalle: string;
+  readonly icono: Icono;
+  readonly texto: string;
+  readonly detalle?: string;
   readonly onClick: () => void;
-  readonly fuerte?: boolean;
   readonly peligro?: boolean;
 }) {
   return (
@@ -483,16 +725,16 @@ function Opcion({
       type="button"
       onClick={onClick}
       className={[
-        'flex min-h-toque-cocina flex-col items-start justify-center rounded-grande px-e4 py-e2 text-left',
-        fuerte ? 'bg-charcoal text-white' : 'border border-borde bg-superficie',
-        peligro ? 'text-mal' : '',
+        'flex min-h-toque-cocina items-center gap-e3 rounded-grande px-e3 text-left hover:bg-fondo',
+        peligro ? 'text-mal' : 'text-texto',
       ].join(' ')}
     >
-      <span className="font-bold">{titulo}</span>
-      <span
-        className={['text-secundario', fuerte ? 'text-white/80' : 'text-texto-suave'].join(' ')}
-      >
-        {detalle}
+      <Dibujo size={22} aria-hidden className="shrink-0" />
+      <span className="flex min-w-0 flex-col">
+        <span className="font-semibold">{texto}</span>
+        {detalle !== undefined && (
+          <span className="text-secundario text-texto-suave">{detalle}</span>
+        )}
       </span>
     </button>
   );

@@ -189,6 +189,25 @@ const ICONOS = {
   history: 'Historial',
   leaf: 'Vegetariano',
   sprout: 'Vegano',
+
+  // ── La pausa del 5-nov · R2 · 1 · la sala y la mesa (0131) ─────────────────
+  //
+  // Cómo va cada mesa en el plano (comiendo, para cobrar, libre), y la hoja de la mesa:
+  // moverla (cambiar, juntar, pasar), la cuenta y cobrar, y lo de «···» (comensales,
+  // tienen prisa, sacadlo todo o por pases, reimprimir). Los comensales, con `users`, que
+  // ya es `IconoEquipo`. Richi, 5-nov: los iconos, de una colección profesional; nunca
+  // dibujados a mano.
+  utensils: 'Comiendo',
+  'receipt-euro': 'Cuenta',
+  circle: 'Libre',
+  'arrow-left-right': 'Mover',
+  replace: 'CambiarDeMesa',
+  merge: 'Juntar',
+  'credit-card': 'Cobrar',
+  zap: 'Prisa',
+  'list-ordered': 'Pases',
+  printer: 'Imprimir',
+  lock: 'Candado',
 };
 
 async function traer(nombre) {

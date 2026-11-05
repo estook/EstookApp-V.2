@@ -121,7 +121,7 @@ test('la sala: dibujarla en el TPV, abrir la mesa, pedir con los pases en pesta�
   }
 
   // ── El plano: todas las mesas, y «Mías» ──
-  await expect(page.getByRole('radio', { name: 'Todas', checked: true })).toBeVisible({
+  await expect(page.getByRole('button', { name: /^Mías/, pressed: false })).toBeVisible({
     timeout: 15_000,
   });
 
@@ -179,24 +179,38 @@ test('la sala: dibujarla en el TPV, abrir la mesa, pedir con los pases en pesta�
     await page.getByRole('button', { name: 'Cerrar' }).first().click();
   }
 
-  // Y en el plano, la mesa 1 come, con mis iniciales, y «Mías» la enseña.
+  // Y en el plano, la mesa 1 **espera a la cocina** (el 2.º acaba de marchar), con mis
+  // iniciales, y «Mías» la enseña (0131).
   await page.getByRole('button', { name: 'Volver al plano' }).click();
-  await expect(page.getByRole('button', { name: /^Mesa 1: Comiendo/ })).toBeVisible({
+  await expect(page.getByRole('button', { name: /^Mesa 1: Esperando/ })).toBeVisible({
     timeout: 15_000,
   });
   await expect(page.getByRole('button', { name: /^Mesa 2: Libre · 6/ })).toBeVisible();
-  await page.getByRole('radio', { name: /^Mías/ }).click();
+  await page.getByRole('button', { name: /^Mías/ }).click();
+  await expect(page.getByRole('button', { name: /^Mías/, pressed: true })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Mesa 1: / })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Mesa 2: / })).toHaveCount(0);
-  await page.getByRole('radio', { name: 'Todas' }).click();
+  await page.getByRole('button', { name: /^Mías/ }).click();
 
-  // Las opciones de la mesa, desde el plano: la nota para cocina se pone y se queda.
+  // **La mesa al tocarla** (0131): sus platos y su total, sin abrirla, y los botones de siempre.
   await page.getByRole('button', { name: /^Mesa 1: / }).click();
-  await page.getByRole('button', { name: /^Nota para cocina/ }).click();
+  const laMesa = page.getByRole('dialog', { name: 'Mesa 1' });
+  await expect(laMesa.getByText('Croquetas')).toBeVisible({ timeout: 15_000 });
+  await expect(laMesa.getByRole('button', { name: 'Pedir' })).toBeVisible();
+  await expect(laMesa.getByRole('button', { name: 'Cobrar: llega pronto' })).toBeDisabled();
+  // Las tres de mover, juntas, detrás de su icono.
+  await laMesa.getByRole('button', { name: /^Mover la mesa/ }).click();
+  await expect(laMesa.getByRole('button', { name: 'Cambiar de mesa' })).toBeVisible();
+  await expect(laMesa.getByRole('button', { name: 'Juntar con otra mesa' })).toBeVisible();
+  await expect(laMesa.getByRole('button', { name: 'Pasar a otro camarero' })).toBeVisible();
+  await laMesa.getByRole('button', { name: 'Volver' }).click();
+
+  // La nota para cocina se pone y se queda: el icono la dice.
+  await laMesa.getByRole('button', { name: /^Nota para cocina/ }).click();
   await page.getByLabel('Nota para cocina').fill('Tienen prisa');
   await page.getByRole('button', { name: 'Guardar la nota' }).click();
   await page.getByRole('button', { name: /^Mesa 1: / }).click();
-  await expect(page.getByRole('button', { name: /^Nota para cocina\s*Tienen prisa/ })).toBeVisible({
+  await expect(page.getByRole('button', { name: 'Nota para cocina: Tienen prisa' })).toBeVisible({
     timeout: 15_000,
   });
 });

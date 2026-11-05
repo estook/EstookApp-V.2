@@ -70,10 +70,22 @@ interface Plano {
         porPases: boolean;
         notaParaCocina: string | null;
         loSiguiente: { que: string; pase?: number };
+        comoVa: string;
+        minutosEnElEstado: number | null;
+        colorDelTiempo: string | null;
+        conComida: boolean;
       } | null;
     }[];
   }[];
-  sinMesa: { cuentaId: string; titulo: string; porPases?: boolean; paraLas?: string | null }[];
+  sinMesa: {
+    cuentaId: string;
+    titulo: string;
+    porPases?: boolean;
+    paraLas?: string | null;
+    comoVa: string;
+    minutosEnElEstado: number | null;
+    colorDelTiempo: string | null;
+  }[];
   tocaMarchar: { cuentaId: string; titulo: string; pase: number; salioEl: number }[];
   camareros: { id: string; nombre: string }[];
 }
@@ -120,6 +132,7 @@ interface Tarjeta {
   personas: number | null;
   estado: string;
   anulada: string | null;
+  minutos: number;
   ultimaMarcha: string | null;
   pases: { numero: number; marchadoEn: string | null; platos: PlatoEnCocina[] }[];
 }
@@ -629,7 +642,15 @@ describe('la mesa 6, de principio a fin', () => {
     const estado = (id: string) => lamesa.platos.find((p) => p.id === id)?.estado;
     expect([estado(l.croquetas), estado(l.entrecot)]).toEqual(['en_marcha', 'en_espera']);
     expect(lamesa.loSiguiente).toEqual({ que: 'cobrar' });
-    expect(laMesaDelPlano(await elPlano(saraTpv), '6').estado).toBe('comiendo');
+    // **Esperando, no comiendo** (0131; Richi, 5-nov): el 1.º está en la cocina.
+    const seisEnElPlano = laMesaDelPlano(await elPlano(saraTpv), '6');
+    expect(seisEnElPlano.estado).toBe('esperando');
+    expect(seisEnElPlano.cuenta).toMatchObject({
+      comoVa: 'esperando',
+      minutosEnElEstado: 0,
+      colorDelTiempo: 'en_hora',
+      conComida: true,
+    });
   });
 
   it('la cocina ve la mesa entera, con el 2.º en espera, y ni un euro', async () => {
@@ -681,6 +702,11 @@ describe('la mesa 6, de principio a fin', () => {
     expect(elFallo(await api.ejecutar(marcos, 'tachar', { linea_id: l.croquetas }))).toBe(
       'ya_hecho',
     );
+    // Doce minutos esperando: ámbar, con los mismos minutos que su tarjeta en cocina (0131).
+    const esperando = laMesaDelPlano(await elPlano(saraTpv), '6').cuenta;
+    expect(esperando).toMatchObject({ comoVa: 'esperando', colorDelTiempo: 'justo' });
+    expect(esperando?.minutosEnElEstado).toBe(enCocina(await laCocina(), seis)?.[1].minutos);
+    expect(esperando?.minutosEnElEstado).toBe(12);
 
     alSegundo.toques.length = 0;
     expect(
@@ -785,6 +811,12 @@ describe('la mesa 6, de principio a fin', () => {
     expect(pestana).toBe('enMarcha');
     expect(tarjeta?.ultimaMarcha).not.toBeNull();
     expect((await elPlano(saraTpv)).tocaMarchar).toEqual([]);
+    // Marchado el 2.º, la mesa vuelve a esperar, con el tiempo desde la marcha (0131).
+    expect(laMesaDelPlano(await elPlano(saraTpv), '6').cuenta).toMatchObject({
+      comoVa: 'esperando',
+      minutosEnElEstado: 0,
+      colorDelTiempo: 'en_hora',
+    });
   });
 
   it('lo pedido tarde llega NUEVO, y la nota cambiada, CAMBIO', async () => {
@@ -1335,6 +1367,51 @@ describe('pedir y mandar de una vez: la cocina lo tiene con una sola orden', () 
       salen: [],
     });
     expect((await laMesa(barra)).platos).toHaveLength(2);
+  });
+
+  it('en el plano: esperando, comiendo al salir todo, y a los 15 minutos «para cobrar» (0131)', async () => {
+    const barra = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
+        cuenta_id: barra,
+        tipo: 'barra',
+        nombre: 'Cuenta',
+      }),
+    );
+    const ensalada = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(saraTpv, 'mandar_a_cocina', {
+        cuenta_id: barra,
+        platos: [{ id: ensalada, plato_id: plato['Ensalada'], pase: 1 }],
+      }),
+    );
+    const enLaBarra = async () =>
+      (await elPlano(saraTpv)).sinMesa.find((c) => c.cuentaId === barra);
+    expect(await enLaBarra()).toMatchObject({ comoVa: 'esperando', minutosEnElEstado: 0 });
+
+    pasan(25);
+    expect(await enLaBarra()).toMatchObject({ comoVa: 'esperando', colorDelTiempo: 'tarde' });
+
+    losDatos(await api.ejecutar(marcos, 'tachar', { linea_id: ensalada }));
+    expect(await enLaBarra()).toMatchObject({
+      comoVa: 'comiendo',
+      minutosEnElEstado: null,
+      colorDelTiempo: null,
+    });
+
+    pasan(14);
+    expect((await enLaBarra())?.comoVa).toBe('comiendo');
+    pasan(1);
+    expect(await enLaBarra()).toMatchObject({ comoVa: 'para_cobrar', minutosEnElEstado: 15 });
+
+    // Piden un café: vuelve a contar desde lo último (0131).
+    losDatos(
+      await api.ejecutar(saraTpv, 'mandar_a_cocina', {
+        cuenta_id: barra,
+        platos: [{ id: crypto.randomUUID(), plato_id: plato['Caña'], destino: 'barra' }],
+      }),
+    );
+    expect((await enLaBarra())?.comoVa).toBe('comiendo');
   });
 
   it('si un plato no vale, no entra nada: ni lo pedido ni lo mandado', async () => {

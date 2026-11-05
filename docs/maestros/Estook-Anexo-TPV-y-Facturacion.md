@@ -1413,7 +1413,7 @@ En el aparato nuevo
 | Fichar (los de antes, 0115)   | Después de cada fichaje        | —                                                                               |
 
 - **El PIN se teclea al ponerse delante, no en cada cobro** (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md), punto 7): quien está dentro cobra a su nombre sin repetirlo, como en Toast y Square. Bloquear también al acabar cada cobro es una opción, para la caja que tocan muchos a la vez.
-- **«Bloquear»** está siempre arriba a la derecha: un toque y el siguiente entra con su PIN.
+- **«Bloquear»** está siempre arriba a la derecha: un toque y el siguiente entra con su PIN. **En el móvil, dentro de una mesa, no cabe** con sus tres iconos (0131): se bloquea desde el plano (tu nombre con el candado) o solo, al rato sin tocarlo.
 - **No se bloquea en mitad de algo**: con el teclado del cobro abierto o escribiendo una nota, el tiempo cuenta desde el último toque, y lo que se estaba pidiendo **se queda en la mesa sin mandar** (1 · 2, decisión 4), con aviso al siguiente que la abra.
 - **Se ficha en la caja** (3.4, [0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)): «Fichar», en naranja arriba, **también en la pantalla del PIN**: cada uno teclea su PIN y ficha la entrada, la pausa o la salida sin entrar en la caja; o en Estook con el móvil. **Con la caja abierta, «Fichar» también pide el PIN a todos** (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)): en ese ordenador ficha cualquiera, así que no ficha a quien la tiene abierta. Sale «Hola, Ana · ¿Fichar la entrada?» con «Sí» o «No, volver», y al acabar «✓ Ana · entrada a las 12:02» con el teclado listo para el siguiente. **Si el PIN es el de quien tiene la caja abierta**, lo suyo: sus mesas y «Fichar la salida y cerrar sesión». **Una salida por error no rompe nada**: si vuelve y ficha la entrada el mismo día, es otro tramo de la misma jornada (la jornada partida). **En un comandero, sin fichar no se entra**: «Sin fichar · ficha la entrada en la caja o en Estook». En la caja, a quien no ha fichado le sale, después del PIN, «No has fichado» con «Fichar la entrada y entrar»; si el local pide que **solo quien ha fichado la use** (apagado de fábrica), sin fichar no entra. **Fichar la salida con mesas abiertas** pregunta a quién se las pasa; con el botón naranja, sin entrar, dice que se entre a pasarlas.
 - **Lo que pide un encargado** se aprueba en el mismo aparato con su PIN (3.4): una cosa, una vez, dos minutos. **Si quien está dentro ya puede, no se pide nada más.**
@@ -1505,21 +1505,24 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 - **Cada mesa dice, sin abrirla:** su nombre o número, **su estado con color, icono y texto** (nunca solo color, B1), cuánto lleva abierta, sus comensales, su total **y las iniciales de su camarero** (SA, MA…) en una pastilla de su color.
 
-| Estado                       | Se ve                                     | Cuándo                                               |
-| ---------------------------- | ----------------------------------------- | ---------------------------------------------------- |
-| **Libre**                    | Oscura con borde, «Libre · 4»             | Sin cuenta                                           |
-| **Sin pedir**                | Ámbar, icono de libreta                   | Abierta y sin nada mandado                           |
-| **Sin mandar**               | Ámbar con borde, «Sin mandar»             | Tiene platos pedidos que no han ido a cocina         |
-| **Comiendo**                 | Verde, con su tiempo y su total           | Mandada                                              |
-| **Toca marchar**             | **Azul, «Marchar 2.º»**                   | Ha salido todo el pase anterior (3.1)                |
-| **Pide la cuenta**           | **Naranja, «Cuenta»**, lo que más resalta | Se imprimió la precuenta o se marcó «pide la cuenta» |
-| **De alguien que se ha ido** | Con el aviso «Ana ha fichado la salida»   | Su camarero ya no está fichado (0106)                |
+| Estado                       | Se ve                                      | Cuándo                                               |
+| ---------------------------- | ------------------------------------------ | ---------------------------------------------------- |
+| **Libre**                    | Oscura con borde, «Libre · 4»              | Sin cuenta                                           |
+| **Sin pedir**                | Ámbar, icono de libreta                    | Abierta y sin nada mandado                           |
+| **Sin mandar**               | Ámbar con borde, «Sin mandar»              | Tiene platos pedidos que no han ido a cocina         |
+| **Esperando**                | Azul, ámbar o rojo, «Esperando 12'»        | Algo suyo está en cocina y no ha salido (0131)       |
+| **Comiendo**                 | Verde, «Comiendo» («Bebiendo» sin comida)  | Ha salido todo lo de cocina (0131)                   |
+| **¿Cuenta?**                 | Morado, «¿Cuenta? 18'», y en «Para cobrar» | 15 minutos desde lo último servido o pedido (0131)   |
+| **Toca marchar**             | **Azul, «Marchar 2.º»**                    | Ha salido todo el pase anterior (3.1)                |
+| **Pide la cuenta**           | **Naranja, «Cuenta»**, lo que más resalta  | Se imprimió la precuenta o se marcó «pide la cuenta» |
+| **De alguien que se ha ido** | Con el aviso «Ana ha fichado la salida»    | Su camarero ya no está fichado (0106)                |
 
-- **Filtros**: **Todas · Mías**, y las salas en pestañas (Salón · Terraza · Barra). El aparato recuerda el último filtro; en el comandero personal empieza en **Mías**.
+- **Esperando cuenta desde que la cocina lo recibe**, con los mismos minutos y colores que su tarjeta en cocina (Ajustes › Cocina y barra); **con la cocina solo en papel** nadie tacha, así que se queda en azul y nunca pide la cuenta sola. **«¿Cuenta?» es una sugerencia, sin sonido**: «Pide la cuenta», en naranja, llega con el cobro (M20C) (Richi, 5-nov, [0131](../decisiones/0131-r2-1-la-sala-y-la-mesa.md)).
+- **Filtros**: **«Mías»**, un botón que se pulsa y se suelta (0131), y las salas en pestañas (Salón · Terraza · Barra). El aparato recuerda el último filtro; en el comandero personal empieza en **Mías**.
 - **En la tablet y en la caja, el plano** tal como se dibujó (11.9). **En el móvil, una cuadrícula** con las mismas mesas y sus estados, de tres en fila, en el orden de sus nombres: un plano dibujado no cabe en una mano.
 - **Tocar una mesa libre**: «Nº de comensales» (un toque) y «Por pases · Todo junto» con «Por pases» marcado. Y a pedir. **Las palabras, las de la sala** (Richi, 28-oct): «comensales», no «¿cuántos sois?» ni «personas».
 - **En barra o para llevar**, sin mesa: el nombre si se quiere. **Lo de llevar sale todo junto** y **se programa** (0121): «¿Para cuándo? · Ahora · Programar», con los cuartos de las tres horas siguientes u «Otra hora». La sala ve «Para las 21:30»; **la cocina lo ve aparte, en gris, hasta veinte minutos antes**, y el papel sale con «PARA LAS 21:30».
-- **Tocar una mesa con cuenta**: sus opciones, pegadas a la mesa (como Revo, 0106): **el botón grande con lo siguiente** (Pedir, Mandar, Marchar el 2.º o Cobrar), Abrir la mesa, Cobro rápido; y Imprimir la cuenta, Dividir, Cambiar de mesa, Juntar, **Quedármela**, **Pasar a otro camarero**, Pasar a la barra o para llevar, Nota, Comensales y alergias, Lo que ha pasado y Anular (con permiso y motivo).
+- **Tocar una mesa con cuenta** (rehecho en la pausa del 5-nov, [0131](../decisiones/0131-r2-1-la-sala-y-la-mesa.md)): **la mesa entera en una hoja**, del alto de lo que lleva: sus platos con cómo va cada uno, el total y «Marchar el 2.º» si toca; abajo, **Pedir, Cuenta (imprimirla) y Cobrar** (apagado hasta M20C); arriba, **tres iconos**: **mover** (cambiar de mesa, juntar, pasar a otro camarero, quedármela), **la nota para cocina** y **«···»** (alergias, tienen prisa, comensales, todo junto o por pases, reimprimir, liberar y, en rojo, anular). Dentro de la mesa, los mismos tres iconos. Dividir, cobro rápido, pasar a la barra o para llevar y «Lo que ha pasado», que estaban en la lista y aún no existen, llegan con el cobro (M20C).
 - **Quién se queda la venta**: **el camarero de la mesa** (el que la abrió, o el que se la quedó o la recibió). Cada plato queda además a nombre de quien lo pidió, y «Lo que ha pasado» lo cuenta. **Cualquier camarero puede quedarse una mesa o pasarla a otro**, y queda en el rastro (0107: el control de todo).
 - **Lo que cambia en un aparato se ve en los demás en menos de 2 segundos** (3.7).
 
@@ -1642,14 +1645,14 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 **Oscuro** (respuesta 8), denso y de mucho contraste, como un TPV de verdad: se usa con prisa, con poca luz o con el sol de la terraza. **Solo oscuro**: no hay tema claro en Estook TPV.
 
-| Pieza                     | Valor                                                                                                                                                                                                  |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Fondo · barras · tarjetas | `#0f1719` · `#111c1f` · `#18252a` (y `#22343a` para lo marcado)                                                                                                                                        |
-| Texto · secundario        | `#f1efea` · `#9fb0b3`                                                                                                                                                                                  |
-| La acción principal       | Naranja `#ff7a00`, con el texto oscuro: **un solo botón naranja por pantalla**, el de lo siguiente                                                                                                     |
-| Estados de las mesas      | Comiendo verde `#1f6b4a` · Toca marchar azul `#2c6e9b` · Sin mandar ámbar `#8a6a12` · Cuenta naranja · Alergia o retraso, borde rojo `#e2574c` · Libre, borde `#4a5c61`; **siempre con icono y texto** |
-| Letra                     | Montserrat, la de Estook; números con cifras del mismo ancho (`tabular-nums`)                                                                                                                          |
-| Toques                    | **48 px o más** en la caja y la tablet; **44 px** en el móvil; nada que se toque a menos de 8 px de otra cosa                                                                                          |
+| Pieza                     | Valor                                                                                                                                                                                                                                                                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fondo · barras · tarjetas | `#0f1719` · `#111c1f` · `#18252a` (y `#22343a` para lo marcado)                                                                                                                                                                                                         |
+| Texto · secundario        | `#f1efea` · `#9fb0b3`                                                                                                                                                                                                                                                   |
+| La acción principal       | Naranja `#ff7a00`, con el texto oscuro: **un solo botón naranja por pantalla**, el de lo siguiente                                                                                                                                                                      |
+| Estados de las mesas      | Comiendo verde `#1f6b4a` · Toca marchar azul `#2c6e9b` · Esperando azul, ámbar o rojo según su tiempo · ¿Cuenta? morado · Sin mandar ámbar `#8a6a12` · Cuenta naranja · Alergia o retraso, borde rojo `#e2574c` · Libre, borde `#4a5c61`; **siempre con icono y texto** |
+| Letra                     | Montserrat, la de Estook; números con cifras del mismo ancho (`tabular-nums`)                                                                                                                                                                                           |
+| Toques                    | **48 px o más** en la caja y la tablet; **44 px** en el móvil; nada que se toque a menos de 8 px de otra cosa                                                                                                                                                           |
 
 - **Las piezas del sistema de diseño** son las de `packages/ui`, con los colores de arriba como tokens de Estook TPV; **ningún color escrito a mano en una pantalla**.
 - **Sin animaciones que hagan esperar**: lo que se toca responde al momento (10.13) y la red va detrás.

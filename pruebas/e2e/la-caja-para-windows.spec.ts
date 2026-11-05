@@ -201,7 +201,7 @@ test('la caja para Windows: impresoras, la cuenta, marchar en papel y sin papel'
   );
 
   // ── Con la cocina en papel, «Marchar ya» va directo, sin preguntar ──
-  await opciones.getByRole('button', { name: /Abrir la mesa/ }).click();
+  await opciones.getByRole('button', { name: 'Pedir' }).click();
   // En el móvil, la cuenta va detrás de «Ver la cuenta».
   const verLaCuenta = page.getByRole('button', { name: /^Ver la cuenta/ });
   await expect(page.getByRole('button', { name: /^Entrecot/ })).toBeVisible({ timeout: 15_000 });

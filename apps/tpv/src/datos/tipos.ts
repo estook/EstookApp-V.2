@@ -7,6 +7,8 @@ import type {
   CaminoAlCentro,
   CaminoDeLaBotonera,
   ColorDeLaBotonera,
+  ColorDelTiempo,
+  ComoVaLaMesa,
   CosaDeLaSala,
   FormaDeMesa,
   PaseDeLaBotonera,
@@ -21,7 +23,8 @@ export type LoSiguiente =
   | { readonly que: 'marchar'; readonly pase: number }
   | { readonly que: 'cobrar' };
 
-export type EstadoDeLaMesa = 'libre' | 'sin_pedir' | 'comiendo' | 'toca_marchar' | 'por_mandar';
+/** Libre, o cómo va (0131). «Esperando» y «para cobrar» no los dice una API de antes. */
+export type EstadoDeLaMesa = 'libre' | ComoVaLaMesa;
 
 export interface CuentaEnElPlano {
   readonly cuentaId: string;
@@ -46,6 +49,15 @@ export interface CuentaEnElPlano {
   readonly loSiguiente: LoSiguiente;
   /** Su camarero ha fichado la salida: «Ana ha fichado la salida» (Anexo 11.8). */
   readonly suCamareroSeHaIdo: boolean;
+  /**
+   * **Cómo va** (0131), también sin mesa; los minutos de lo que dice, el color de la cocina
+   * si espera, y si pidió algo de cocina (sin ella, «Bebiendo»). **Una API de antes no lo dice**: la web se publica al
+   * fusionar y la API se despliega después, y entretanto el plano se pinta como antes.
+   */
+  readonly comoVa?: ComoVaLaMesa;
+  readonly minutosEnElEstado?: number | null;
+  readonly colorDelTiempo?: ColorDelTiempo | null;
+  readonly conComida?: boolean;
 }
 
 /** Una mesa como se dibujó en el TPV (T2): su forma, su sitio, su tamaño y su giro. */

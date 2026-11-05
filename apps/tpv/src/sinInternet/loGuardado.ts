@@ -56,6 +56,7 @@ function laCuenta(
 ): CuentaEnElPlano {
   const lineas = lineasGuardadas(abierta.cuenta_id, cola);
   const quien = abierta.cosa.quien;
+  const minutos = Math.max(0, Math.floor((ahora - abierta.cosa.hechoEn) / 60_000));
   return {
     cuentaId: abierta.cuenta_id,
     titulo,
@@ -65,7 +66,7 @@ function laCuenta(
     camareroId: quien.id,
     iniciales: quien.nombre.slice(0, 2).toUpperCase(),
     esMia: true,
-    minutos: Math.max(0, Math.floor((ahora - abierta.cosa.hechoEn) / 60_000)),
+    minutos,
     totalCentimos: loQueValen(lineas),
     porPases: abierta.tipo === 'para_llevar' ? false : (abierta.por_pases ?? true),
     notaParaCocina: null,
@@ -75,6 +76,11 @@ function laCuenta(
     alergias: [],
     loSiguiente: lineas.length > 0 ? { que: 'mandar' } : { que: 'pedir' },
     suCamareroSeHaIdo: false,
+    // Abierta sin internet: o sin pedir, o con lo pedido guardado aquí (0131).
+    comoVa: lineas.length > 0 ? 'por_mandar' : 'sin_pedir',
+    minutosEnElEstado: lineas.length > 0 ? null : minutos,
+    colorDelTiempo: null,
+    conComida: false,
   };
 }
 

@@ -7,7 +7,7 @@ import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
  * **T4 · 2 · La barra y la alergia de la mesa** (decisión 0117; maquetas de T4 3, 4 y 5), en la
  * pantalla y con una cuenta nueva:
  *
- *   · en la mesa, **Opciones › Alergias › Gluten**; al tocar las croquetas, que lo llevan, la
+ *   · en la mesa, **«···» › Alergias › Gluten**; al tocar las croquetas, que lo llevan, la
  *     sala avisa antes de pedirlas: «Pedirlo, la cocina lo verá»
  *   · la pantalla de barra **entra sin PIN** y ve solo la caña, con la franja de la alergia; al
  *     tacharla, la sala ve en la cuenta **✓ con su hora**
@@ -132,12 +132,14 @@ test('la barra y la alergia: avisar al pedir, la franja en rojo, y el ✓ con su
   await page.getByRole('button', { name: '2', exact: true }).click();
   await page.getByRole('button', { name: 'Abrir', exact: true }).click();
 
+  // Dentro de la mesa, «···» (0131): lo que se usa menos, las alergias entre ello.
   await page
-    .locator('button:has-text("Opciones") >> visible=true')
+    .getByRole('button', { name: 'Más opciones de la mesa' })
+    .locator('visible=true')
     .first()
     .click({ timeout: 15_000 });
   const opciones = page.getByRole('dialog', { name: 'Mesa 1' });
-  await opciones.getByRole('button', { name: /^⚠ Alergias/ }).click();
+  await opciones.getByRole('button', { name: /^Alergias/ }).click();
   await opciones.getByRole('button', { name: 'Gluten', exact: true }).click();
   await opciones.getByRole('button', { name: 'Guardar' }).click();
   await expect(opciones).toHaveCount(0, { timeout: 15_000 });

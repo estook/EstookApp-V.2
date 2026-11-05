@@ -1,5 +1,8 @@
 import { z } from 'zod';
 import {
+  comoVaLaMesa,
+  desdeCuandoEnCocina,
+  elColorDelTiempo,
   elPaseHaSalido,
   horaDeCorte,
   jornadaDe,
@@ -16,6 +19,8 @@ import {
   loQueProponeElNombre,
   loQueValeEnElBoton,
   type ColorDeLaBotonera,
+  type ColorDelTiempo,
+  type ComoVaLaMesa,
   type LaMesaEnCocina,
   type LoSiguiente,
   type PaseDeLaBotonera,
@@ -23,6 +28,7 @@ import {
 } from '@estook/dominio';
 import { laBotoneraGuardada, loMasPedido } from '../botonera.ts';
 import { losGruposDeLosPlatos } from '../opciones.ts';
+import { loDelLocalParaImprimir } from '../impresion.ts';
 import { lasSalasDibujadas, type MesaDibujada, type SalaDibujada } from './plano.ts';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { lasSeccionesDeLosMenus, losMenusDelLocal, losPlatosDelDia } from '../menus.ts';
@@ -96,8 +102,11 @@ function lasIniciales(nombre: string | null): string | null {
 
 // ═══ El plano ═════════════════════════════════════════════════════════════════
 
-/** Libre; sentados y sin pedir; comiendo; ha salido el pase y toca marchar; con algo sin mandar. */
-export type EstadoDeLaMesa = 'libre' | 'sin_pedir' | 'comiendo' | 'toca_marchar' | 'por_mandar';
+/**
+ * Libre, o cómo va la mesa (`comoVaLaMesa`, 0131): sentados y sin pedir; con algo sin mandar;
+ * toca marchar; **esperando a la cocina**; comiendo; y **para cobrar**.
+ */
+export type EstadoDeLaMesa = 'libre' | ComoVaLaMesa;
 
 export interface CuentaEnElPlano {
   readonly cuentaId: string;
@@ -123,6 +132,25 @@ export interface CuentaEnElPlano {
   readonly loSiguiente: LoSiguiente;
   /** Su camarero ha fichado la salida: «Ana ha fichado la salida» (Anexo 11.8). */
   readonly suCamareroSeHaIdo: boolean;
+  /** Cómo va (0131), también para lo de la barra y para llevar, que no tienen mesa. */
+  readonly comoVa: ComoVaLaMesa;
+  /**
+   * Los minutos de lo que dice: sin pedir, desde que se sentaron; esperando, desde que la
+   * cocina lo recibió (como su tarjeta); para cobrar, desde lo último. Nulo comiendo.
+   */
+  readonly minutosEnElEstado: number | null;
+  /** Esperando: el color de la cocina (verde, ámbar o rojo). Nulo si no, o si nadie tacha. */
+  readonly colorDelTiempo: ColorDelTiempo | null;
+  /** Si pidió algo de cocina: una mesa solo de bebida dice «Bebiendo», no «Comiendo». */
+  readonly conComida: boolean;
+}
+
+/** Lo que el plano necesita saber de la cocina del local para pintar el tiempo (0131). */
+interface LaCocinaParaElPlano {
+  readonly avisoMin: number;
+  readonly tardeMin: number;
+  /** Solo en papel: nadie tacha, y la sala no puede saber qué ha salido. */
+  readonly nadieTacha: boolean;
 }
 
 export interface SalidaElPlano {
@@ -152,13 +180,45 @@ export interface SalidaElPlano {
   readonly camareros: readonly { readonly id: string; readonly nombre: string }[];
 }
 
+/** La hora ISO más reciente de las que hay; nula si no hay ninguna. */
+function laMasReciente(horas: readonly (string | null)[]): string | null {
+  const hay = horas.filter((h): h is string => h !== null).sort();
+  return hay[hay.length - 1] ?? null;
+}
+
 function enElPlano(
   contexto: Contexto,
   cuenta: FilaDeCuenta,
   platos: readonly FilaDeLinea[],
   pases: readonly FilaDePase[],
-  seHanIdo: ReadonlySet<string> = new Set(),
+  seHanIdo: ReadonlySet<string>,
+  cocina: LaCocinaParaElPlano,
 ): CuentaEnElPlano {
+  const minutos = minutosDesde(contexto, cuenta.abierta_en) ?? 0;
+  const loSiguiente = loSiguienteDeLaMesa(
+    platos.map(comoPlatoDeLaMesa),
+    pases.map(comoPaseDeLaMesa),
+  );
+  const vivos = platos.filter((l) => l.quitada_en === null);
+  const deCocina = vivos.filter((l) => l.destino === 'cocina' && l.mandada_en !== null);
+  const desde = desdeCuandoEnCocina(
+    deCocina.map((l) => l.mandada_en as string),
+    pases.flatMap((p) => (p.marchado_en === null ? [] : [p.marchado_en])),
+  );
+  // Lo último que pasó en la mesa: lo último servido (o sacado con «Todo fuera») o pedido.
+  const loUltimo = laMasReciente([
+    ...vivos.map((l) => l.salio_en),
+    ...vivos.map((l) => l.mandada_en),
+    ...pases.map((p) => p.fuera_en),
+  ]);
+  const comoVa = comoVaLaMesa({
+    loSiguiente,
+    enCocina: laMesaEnCocina(platos.map(comoPlatoDeLaMesa), pases.map(comoPaseDeLaMesa)),
+    conComida: deCocina.length > 0,
+    minutosDesdeLoUltimo: minutosDesde(contexto, loUltimo),
+    nadieTacha: cocina.nadieTacha,
+  });
+  const minutosEnCocina = minutosDesde(contexto, desde) ?? 0;
   return {
     cuentaId: cuenta.id,
     titulo: elTituloDeLaCuenta(cuenta),
@@ -168,7 +228,7 @@ function enElPlano(
     camareroId: cuenta.camarero_id,
     iniciales: lasIniciales(cuenta.camarero),
     esMia: cuenta.camarero_id !== null && cuenta.camarero_id === contexto.personaId,
-    minutos: minutosDesde(contexto, cuenta.abierta_en) ?? 0,
+    minutos,
     totalCentimos: elTotal(platos),
     porPases: cuenta.por_pases,
     notaParaCocina: cuenta.nota_para_cocina,
@@ -176,8 +236,22 @@ function enElPlano(
     conPrisa: cuenta.con_prisa,
     cocinaLlamaEn: cuenta.cocina_llama_en,
     alergias: cuenta.alergias,
-    loSiguiente: loSiguienteDeLaMesa(platos.map(comoPlatoDeLaMesa), pases.map(comoPaseDeLaMesa)),
+    loSiguiente,
     suCamareroSeHaIdo: cuenta.camarero_id !== null && seHanIdo.has(cuenta.camarero_id),
+    comoVa,
+    minutosEnElEstado:
+      comoVa === 'sin_pedir'
+        ? minutos
+        : comoVa === 'esperando'
+          ? minutosEnCocina
+          : comoVa === 'para_cobrar'
+            ? (minutosDesde(contexto, loUltimo) ?? 0)
+            : null,
+    colorDelTiempo:
+      comoVa === 'esperando' && !cocina.nadieTacha
+        ? elColorDelTiempo(minutosEnCocina, cocina)
+        : null,
+    conComida: deCocina.length > 0,
   };
 }
 
@@ -192,11 +266,7 @@ function elDeAntes(platos: readonly FilaDeLinea[], pase: number): number {
 }
 
 function elEstado(cuenta: CuentaEnElPlano | null): EstadoDeLaMesa {
-  if (cuenta === null) return 'libre';
-  if (cuenta.loSiguiente.que === 'pedir') return 'sin_pedir';
-  if (cuenta.loSiguiente.que === 'marchar') return 'toca_marchar';
-  if (cuenta.loSiguiente.que === 'mandar') return 'por_mandar';
-  return 'comiendo';
+  return cuenta === null ? 'libre' : cuenta.comoVa;
 }
 
 export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
@@ -226,9 +296,29 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
       select estook.han_fichado_la_salida(${localId}::uuid)::text as persona_id
     `;
     const seHanIdo = new Set(idos.map((f) => f.persona_id));
+    // Los minutos del semáforo de la cocina y si la cocina tacha (0131): el plano pinta el
+    // tiempo de cada mesa como lo pinta la pantalla de cocina.
+    const [minutosDeLaCocina, paraImprimir] = await Promise.all([
+      contexto.sql<{ aviso_min: number; tarde_min: number }[]>`
+        select aviso_min, tarde_min from estook.la_cocina_del_local(${localId}::uuid)
+      `,
+      loDelLocalParaImprimir(contexto, localId),
+    ]);
+    const cocina: LaCocinaParaElPlano = {
+      avisoMin: minutosDeLaCocina[0]?.aviso_min ?? 10,
+      tardeMin: minutosDeLaCocina[0]?.tarde_min ?? 20,
+      nadieTacha: paraImprimir?.cocinaSaleEn === 'papel',
+    };
     const enPlano = cuentas.map((c) => ({
       fila: c,
-      cuenta: enElPlano(contexto, c, platos.get(c.id) ?? [], pases.get(c.id) ?? [], seHanIdo),
+      cuenta: enElPlano(
+        contexto,
+        c,
+        platos.get(c.id) ?? [],
+        pases.get(c.id) ?? [],
+        seHanIdo,
+        cocina,
+      ),
     }));
     const porMesa = new Map(
       enPlano.filter((c) => c.fila.mesa_id !== null).map((c) => [c.fila.mesa_id, c.cuenta]),
@@ -497,7 +587,15 @@ function laTarjeta(
     estado,
     anulada,
     llegoEn,
-    minutos: minutosDesde(contexto, ultimaMarcha ?? llegoEn) ?? 0,
+    // Con la misma cuenta que el plano de la sala (0131).
+    minutos:
+      minutosDesde(
+        contexto,
+        desdeCuandoEnCocina(
+          deCocina.map((l) => l.mandada_en as string),
+          marchas,
+        ),
+      ) ?? 0,
     ultimaMarcha,
     fueraEn:
       anulada !== null

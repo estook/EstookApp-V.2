@@ -36,7 +36,14 @@ import { LaCuenta } from './LaCuenta.tsx';
 import { LoQueSePide } from './LoQueSePide.tsx';
 import { LosPasesEnPestanas } from './LosPasesEnPestanas.tsx';
 import { laPestanaDeFabrica, type PestanaDelPase } from '../logica/losPases.ts';
-import { OpcionesDeLaMesa } from './OpcionesDeLaMesa.tsx';
+import { OpcionesDeLaMesa, type PasoDeLaMesa } from './OpcionesDeLaMesa.tsx';
+import {
+  IconoCuaderno,
+  IconoFlechaIzquierda,
+  IconoMas,
+  IconoMover,
+  type Icono,
+} from '@estook/iconos';
 import { LaCocinaLlama } from '../plano/LaCocinaLlama.tsx';
 
 /**
@@ -79,7 +86,8 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   const [mandando, setMandando] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
-  const [opciones, setOpciones] = useState(false);
+  /** La hoja de la mesa, abierta por uno de sus tres iconos de arriba (0131). */
+  const [opciones, setOpciones] = useState<PasoDeLaMesa | null>(null);
   const [cuentaEnElMovil, setCuentaEnElMovil] = useState(false);
   const [salir, setSalir] = useState(false);
   /** El pase marcado: lo que se toca va aquí (Anexo 11.10). Sin tocar, el que toca. */
@@ -158,6 +166,11 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
     datos.totalCentimos +
     loQueVale(borrador) +
     loGuardado.reduce((suma, l) => suma + l.precioCentimos * l.cantidad, 0);
+  // Lo que se lleva, para «La cuenta · 9 platos»: sin lo quitado, y un menú cuenta una vez.
+  const cuantos = grupos
+    .flatMap((g) => g.lineas)
+    .filter((l) => l.quitada === null && !l.delMenu)
+    .reduce((suma, l) => suma + l.cantidad, 0);
   const pestana = marcada ?? laPestanaDeFabrica(datos);
   const lasPestanas = datos.porPases ? (
     <LosPasesEnPestanas mesa={datos} marcada={pestana} alMarcar={setMarcada} />
@@ -346,8 +359,9 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
       ? null
       : `Para las ${laHora(datos.paraLas)}`,
     comensales(datos.personas),
-    datos.camarero,
     cuantoLlevan(datos.minutos),
+    // El camarero, lo último (0131): en el móvil es lo que se corta, y ya está en su pastilla.
+    datos.camarero,
   ]
     .filter((x) => x !== null)
     .join(' · ');
@@ -385,10 +399,8 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
           subtitulo={subtitulo}
           nota={datos.notaParaCocina}
           alVolver={volver}
-          alOpciones={() => {
-            setOpciones(true);
-          }}
-          opcionesListas={enElPlano !== undefined}
+          alAbrir={setOpciones}
+          listas={enElPlano !== undefined}
         />
         {lasPestanas}
         <div className="flex-1 overflow-y-auto px-e4">
@@ -417,10 +429,8 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
             subtitulo={subtitulo}
             nota={datos.notaParaCocina}
             alVolver={volver}
-            alOpciones={() => {
-              setOpciones(true);
-            }}
-            opcionesListas={enElPlano !== undefined}
+            alAbrir={setOpciones}
+            listas={enElPlano !== undefined}
           />
           {lasPestanas}
         </div>
@@ -437,17 +447,21 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
           <LaFranjaSinInternet enLaMesa />
           <Avisos hecho={hecho} fallo={fallo} />
           <div className="flex items-center gap-e2">
+            {/* **La cuenta, siempre a un toque** (0131): cuántos platos y cuánto, ya con lo nuevo. */}
             <button
               type="button"
+              aria-label={`Ver la cuenta: ${cuantosPlatos(cuantos)}, ${eurosConSimbolo(total)}`}
               onClick={() => {
                 setCuentaEnElMovil(true);
               }}
-              className="flex min-h-toque flex-col items-start justify-center rounded-medio px-e2 text-left"
+              className="flex min-h-toque flex-1 flex-col items-start justify-center rounded-grande bg-fondo px-e3 py-e1 text-left"
             >
-              <span className="text-secundario text-texto-suave">Ver la cuenta</span>
+              <span className="text-secundario text-texto-suave">
+                La cuenta · {cuantosPlatos(cuantos)}
+              </span>
               <span className="font-bold">{eurosConSimbolo(total)}</span>
             </button>
-            <div className="flex-1">{elBoton}</div>
+            {elBoton !== null && <div className="flex-1">{elBoton}</div>}
           </div>
         </div>
       </section>
@@ -470,13 +484,14 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
         </Hoja>
       )}
 
-      {opciones && plano.data !== undefined && enElPlano !== undefined && (
+      {opciones !== null && plano.data !== undefined && enElPlano !== undefined && (
         <OpcionesDeLaMesa
           cuenta={enElPlano}
           plano={plano.data}
           sinMandarAqui={borrador.length}
+          empiezaEn={opciones}
           alCerrar={() => {
-            setOpciones(false);
+            setOpciones(null);
           }}
         />
       )}
@@ -516,6 +531,11 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
       )}
     </div>
   );
+}
+
+/** «1 plato», «9 platos». */
+function cuantosPlatos(cuantos: number): string {
+  return cuantos === 1 ? '1 plato' : `${String(cuantos)} platos`;
 }
 
 /** «2 Croquetas, 1 Ensalada» → «3 platos pedidos». */
@@ -571,26 +591,27 @@ function Cabecera({
   subtitulo,
   nota,
   alVolver,
-  alOpciones,
-  opcionesListas,
+  alAbrir,
+  listas,
 }: {
   readonly titulo: string;
   readonly subtitulo: string;
   readonly nota: string | null;
   readonly alVolver: () => void;
-  readonly alOpciones: () => void;
+  /** Los tres iconos (0131): mover la mesa, la nota para cocina y «···». */
+  readonly alAbrir: (paso: PasoDeLaMesa) => void;
   /** Las opciones necesitan el plano (las mesas libres, quién toma nota): hasta que llega, espera. */
-  readonly opcionesListas: boolean;
+  readonly listas: boolean;
 }) {
   return (
-    <div className="flex items-center gap-e3 border-b border-borde bg-superficie px-e3 py-e3">
+    <div className="flex items-center gap-e2 border-b border-borde bg-superficie px-e3 py-e2">
       <button
         type="button"
         aria-label="Volver al plano"
         onClick={alVolver}
-        className="flex size-toque items-center justify-center rounded-medio bg-fondo text-seccion font-bold"
+        className="grid size-toque shrink-0 place-items-center rounded-medio bg-fondo"
       >
-        ‹
+        <IconoFlechaIzquierda size={22} aria-hidden />
       </button>
       <div className="flex min-w-0 flex-1 flex-col">
         <h1 className="truncate text-seccion font-bold">{titulo}</h1>
@@ -601,29 +622,81 @@ function Cabecera({
           </span>
         )}
       </div>
-      <Boton
-        tono="secundario"
-        cargando={!opcionesListas}
-        textoCargando="Opciones"
-        onClick={alOpciones}
-      >
-        Opciones
-      </Boton>
+      {/* **Los mismos tres iconos que la mesa en el plano** (0131), en vez de «Opciones», que
+          abría una lista de trece. Hasta que llega el plano, apagados. */}
+      <IconoDeArriba
+        etiqueta="Mover la mesa: cambiar, juntar o pasar"
+        icono={IconoMover}
+        listo={listas}
+        onClick={() => {
+          alAbrir('mover');
+        }}
+      />
+      <IconoDeArriba
+        etiqueta={nota === null ? 'Nota para cocina' : `Nota para cocina: ${nota}`}
+        icono={IconoCuaderno}
+        listo={listas}
+        puesto={nota !== null}
+        onClick={() => {
+          alAbrir('nota');
+        }}
+      />
+      <IconoDeArriba
+        etiqueta="Más opciones de la mesa"
+        icono={IconoMas}
+        listo={listas}
+        onClick={() => {
+          alAbrir('mas');
+        }}
+      />
       <BotonDeBloquear />
     </div>
   );
 }
 
+function IconoDeArriba({
+  etiqueta,
+  icono: Dibujo,
+  listo,
+  onClick,
+  puesto = false,
+}: {
+  readonly etiqueta: string;
+  readonly icono: Icono;
+  readonly listo: boolean;
+  readonly onClick: () => void;
+  readonly puesto?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={etiqueta}
+      title={etiqueta}
+      disabled={!listo}
+      onClick={onClick}
+      className={[
+        'grid size-toque shrink-0 place-items-center rounded-redondo disabled:opacity-45',
+        puesto ? 'bg-naranja-suave text-naranja' : 'bg-fondo text-texto',
+      ].join(' ')}
+    >
+      <Dibujo size={20} aria-hidden />
+    </button>
+  );
+}
+
 /**
- * **Bloquear, siempre arriba** (Anexo 11.4): lo que se estaba pidiendo se queda en la
- * mesa, sin mandar, y el siguiente que la abre lo ve.
+ * **Bloquear** (Anexo 11.4), en la tablet y la caja. En el móvil no cabe con los tres iconos
+ * (0131): ahí se bloquea desde el plano, con tu nombre y el candado, y solo al rato sin tocarlo.
+ * Lo que se estaba pidiendo se queda en la mesa, sin mandar, y el siguiente que la abre lo ve.
  */
 function BotonDeBloquear() {
   const { bloquear } = usarSesion();
   return (
-    <Boton tono="secundario" onClick={bloquear}>
-      Bloquear
-    </Boton>
+    <span className="max-md:hidden">
+      <Boton tono="secundario" onClick={bloquear}>
+        Bloquear
+      </Boton>
+    </span>
   );
 }
 

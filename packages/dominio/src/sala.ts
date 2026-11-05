@@ -171,6 +171,88 @@ export function laMesaEnCocina(
   return 'fuera';
 }
 
+// ═══ Cómo va la mesa en el plano (la pausa del 5-nov, 0131) ═══════════════════
+
+/**
+ * **El color del tiempo** (T4 · 1, 0116): verde, ámbar a los `avisoMin` y rojo a los
+ * `tardeMin` (Ajustes del TPV › Cocina y barra). Lo usan la pantalla de cocina y el plano de
+ * la sala, que así no pueden decir cosas distintas.
+ */
+export type ColorDelTiempo = 'en_hora' | 'justo' | 'tarde';
+
+export function elColorDelTiempo(
+  minutos: number,
+  ajustes: { readonly avisoMin: number; readonly tardeMin: number },
+): ColorDelTiempo {
+  if (minutos >= ajustes.tardeMin) return 'tarde';
+  if (minutos >= ajustes.avisoMin) return 'justo';
+  return 'en_hora';
+}
+
+/**
+ * **Desde cuándo cuenta la cocina** (0116): desde la última marcha si hubo más de una (el 2.º
+ * empieza al marcharlo) y, si no, desde lo primero que le llegó. Es lo que pone la tarjeta de
+ * cocina, y lo que pone el plano. Las horas, en ISO; nulo sin nada en cocina.
+ */
+export function desdeCuandoEnCocina(
+  mandadasACocina: readonly string[],
+  marchas: readonly string[],
+): string | null {
+  const llego = [...mandadasACocina].sort()[0];
+  if (llego === undefined) return null;
+  const enOrden = [...marchas].sort();
+  return enOrden.length > 1 ? (enOrden[enOrden.length - 1] ?? llego) : llego;
+}
+
+/**
+ * **A los cuántos minutos de lo último una mesa pide la cuenta** (Richi, 5-nov: «avisar a
+ * los camareros de pendiente de pago unos minutos después de los últimos platos»). Sin sonido
+ * ni aviso: la mesa se pone en morado con «¿Cuenta?» y sale arriba, en «Para cobrar».
+ */
+export const MINUTOS_PARA_LA_CUENTA = 15;
+
+/**
+ * **Cómo va una mesa abierta**, de lo que se sabe sin preguntar a nadie (0131):
+ *
+ *   · `sin_pedir`, `por_mandar` y `toca_marchar`, lo de siempre (lo que dice el botón grande)
+ *   · `esperando`: algo suyo está en la cocina y aún no ha salido; el tiempo, desde que le
+ *     llegó (`desdeCuandoEnCocina`)
+ *   · `comiendo`: lo de cocina ha salido entero (o solo pidieron bebida)
+ *   · `para_cobrar`: comieron, ha salido todo y hace `MINUTOS_PARA_LA_CUENTA` de lo último
+ *     (lo último servido o lo último pedido: si piden cafés, vuelve a contar)
+ *
+ * **Con la cocina solo en papel** nadie tacha: la sala no puede saber qué ha salido, así que
+ * la mesa se queda «esperando» sin ponerse en rojo y nunca pide la cuenta sola.
+ */
+export type ComoVaLaMesa =
+  'sin_pedir' | 'por_mandar' | 'toca_marchar' | 'esperando' | 'comiendo' | 'para_cobrar';
+
+export function comoVaLaMesa(datos: {
+  readonly loSiguiente: LoSiguiente;
+  readonly enCocina: LaMesaEnCocina;
+  /** Si tiene algo de cocina mandado y sin quitar: una mesa solo de bebida no pide la cuenta. */
+  readonly conComida: boolean;
+  /** Minutos desde lo último servido o pedido; nulo si no hay nada. */
+  readonly minutosDesdeLoUltimo: number | null;
+  /** La cocina solo en papel: nadie tacha. */
+  readonly nadieTacha: boolean;
+}): ComoVaLaMesa {
+  const { loSiguiente } = datos;
+  if (loSiguiente.que === 'pedir') return 'sin_pedir';
+  if (loSiguiente.que === 'mandar') return 'por_mandar';
+  if (loSiguiente.que === 'marchar') return 'toca_marchar';
+  if (datos.enCocina === 'en_marcha') return 'esperando';
+  if (datos.nadieTacha && datos.conComida) return 'esperando';
+  if (
+    datos.conComida &&
+    datos.minutosDesdeLoUltimo !== null &&
+    datos.minutosDesdeLoUltimo >= MINUTOS_PARA_LA_CUENTA
+  ) {
+    return 'para_cobrar';
+  }
+  return 'comiendo';
+}
+
 /** Si un pase ha salido entero: cada plato suyo en cocina, tachado. */
 export function elPaseHaSalido(platos: readonly PlatoDeLaMesa[], pase: number): boolean {
   return (

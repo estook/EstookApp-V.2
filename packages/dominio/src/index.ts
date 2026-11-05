@@ -1055,6 +1055,10 @@ export {
 } from './cartaLeida.ts';
 export type { CartaLeida, LoQueCambia, PlatoDeLaCarta, PlatoLeido } from './cartaLeida.ts';
 export {
+  comoVaLaMesa,
+  desdeCuandoEnCocina,
+  elColorDelTiempo,
+  MINUTOS_PARA_LA_CUENTA,
   elPaseHaSalido,
   elPaseQueTocaMarchar,
   enSuOrden,
@@ -1067,6 +1071,8 @@ export {
   losPasesQueSalenAlMandar,
 } from './sala.ts';
 export type {
+  ColorDelTiempo,
+  ComoVaLaMesa,
   DestinoDeLaLinea,
   LaMesaEnCocina,
   LineaDeLaBarra,

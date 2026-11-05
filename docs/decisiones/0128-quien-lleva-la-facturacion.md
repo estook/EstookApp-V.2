@@ -1,8 +1,8 @@
 # 0128 · Quién lleva la facturación, y la empresa de pruebas no se firma
 
 **Fecha:** 5 de noviembre de 2026
-**Estado:** construido en la rama `t6-1-quien-ve-la-facturacion`, con la migración **0100**
-(sin migrar todavía).
+**Estado:** en producción con la #161 (migración **0100**). El agujero del NIF de pruebas
+(punto 4 bis), en la rama `t6-1-el-nif-de-pruebas`, con la migración **0101**.
 **Sigue:** la [0126](0126-t6-1-el-alta-de-facturacion.md) (T6 · 1 · El alta) y la
 [0127](0127-con-verifactu-sin-envio-o-fuera.md) (cómo factura).
 **Cambia:** Roles (1.12), el catálogo de errores (tres nuevos y dos frases) y ESTADO.
@@ -86,6 +86,25 @@ y como no decía «correcta», lo pedía.
 **Lo que no se sabe todavía:** si Verifacti deja emitir con la empresa de pruebas sin una
 representación hecha. Es la que da a todos para probar, así que lo normal es que sí. Se comprueba
 con el primer ticket de pruebas en T6 · 2.
+
+## 4 bis · El NIF de la empresa de pruebas, escrito a mano (5-nov, después de la #161)
+
+Con la #161 ya en producción, Richi volvió a firmar y le siguió saliendo «Rechazada ·
+Certificado incorrecto». En sus capturas, el paso 2 decía «Ni SII ni foral» y no salía el aviso
+de la empresa de pruebas: **BILBABIT SL se había dado de alta en el paso 1 escribiendo su NIF**,
+como si fuera la empresa de IKATZ, y no desde el admin. Para Estook era una empresa normal, y el
+arreglo de la 0100 no le aplicaba. Volvió a firmar con el mismo certificado de Windows
+(«Firmado por 58ed0be5-…»), y Hacienda volvió a rechazarlo.
+
+- **El paso 1 ya no acepta ese NIF** (B75777847): dice que es el de la empresa de pruebas de
+  Verifacti, que no es suya, y no le pregunta a Hacienda.
+- **La base tampoco** lo guarda en una empresa que no sea la de pruebas (migración 0101).
+- **La que ya existía así pasa a ser la de pruebas**, sin firma, con su autorización y su error
+  borrados (siguen en la auditoría). Así IKATZ queda lista sin firmar nada.
+
+**Los campos del modelo que no caben** («Torrelodc…»): el modelo es de Verifacti, con casillas
+de ancho fijo. El texto entero va dentro de la casilla, aunque no se vea, y en el modelo de una
+sociedad de verdad no cambia nada. No es de Estook.
 
 ## 5 · Para cuando Richi dé de alta su empresa de verdad
 

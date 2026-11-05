@@ -13,7 +13,7 @@ import {
   type PuestoQueLaLleva,
 } from '@estook/dominio';
 import { documentoDeLaDeclaracion, type DeclaracionResponsable } from '@estook/documentos';
-import { VerifactiNoContesta } from '../../facturacion/verifacti.ts';
+import { NIF_DE_LA_EMPRESA_DE_PRUEBAS, VerifactiNoContesta } from '../../facturacion/verifacti.ts';
 import {
   EL_CUMPLIMIENTO_EN_BORRADOR,
   EL_SISTEMA,
@@ -194,6 +194,13 @@ async function comprobar(
 ): Promise<ElNifComprobado> {
   const forma = comoEsElNif(nif);
   if (!forma.valido) throw new FalloDeAplicacion('nif_no_vale', { porque: forma.porque });
+  // El de la empresa de pruebas de Verifacti no es el de nadie (0128): la pone el admin, sin firma.
+  if (forma.nif === NIF_DE_LA_EMPRESA_DE_PRUEBAS) {
+    throw new FalloDeAplicacion('empresa_de_pruebas', {
+      porque:
+        'Ese NIF es el de la empresa de pruebas de Verifacti, que no es tuya. Para probar, la pone Estook desde su panel; para facturar, escribe el NIF de tu empresa.',
+    });
+  }
   if (forma.persona === 'fisica' && (nombre === null || nombre.trim() === '')) {
     throw new FalloDeAplicacion('faltan_datos', {
       porque: 'Para una persona, Hacienda pide también sus apellidos y su nombre.',

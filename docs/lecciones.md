@@ -1037,4 +1037,6 @@
      miraba lo que contestaba Verifacti, y como no decía «correcta», le pidió a Richi firmar la
      representación de BILBABIT SL con su nombre y su DNI. Hacienda lo rechazó (su certificado era
      uno de Windows), y por suerte. **Lo que una decisión da por hecho se comprueba en el código y
-     en una prueba**, sobre todo si es firmar, pagar o hablar con Hacienda (0128, 5-nov).
+     en una prueba**, sobre todo si es firmar, pagar o hablar con Hacienda (0128, 5-nov). Y **se
+     mira por qué puerta entró el dato**: el primer arreglo cerraba la de la empresa de pruebas
+     puesta por el admin, pero en IKATZ se había escrito su NIF a mano en el paso 1 (0101).

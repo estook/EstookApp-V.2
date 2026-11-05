@@ -98,14 +98,7 @@ export function ProveedorDeSesion({ children }: { readonly children: ReactNode }
   // la petición tarda minutos en fallar. Si en cuatro segundos no ha contestado y
   // `/salud` tampoco, es «sin conexión»: lo último que se vio, con su aviso, como hace
   // el trabajador de servicio con las pantallas. Si la API sí está, se sigue esperando.
-  //
-  // **Y también abriendo con lo guardado de quién eres** (la pausa del 5-nov): entonces la
-  // consulta ya tiene datos, pero son del móvil, no de ahora. Se vigila igual hasta que
-  // llega la primera respuesta desde que se abrió.
-  const abiertaEn = useRef(Date.now());
-  const esperando =
-    consulta.fetchStatus === 'fetching' &&
-    (consulta.isPending || consulta.dataUpdatedAt < abiertaEn.current);
+  const esperando = consulta.isPending && consulta.fetchStatus === 'fetching';
   useEffect(() => {
     if (!esperando || recuperado.current) return;
     const tope = setTimeout(() => {

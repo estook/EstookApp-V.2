@@ -1049,4 +1049,7 @@
      releer lo que no se mira.** El tachado de cocina esperaba dos viajes a Irlanda antes de verse, y
      «Mandar» hacía dos órdenes con toda la sala releída entre medias: la cocina tardaba en recibir y
      el cocinero esperaba (Richi, pausa del 5-nov). Y **no se recarga una pantalla delante de nadie**:
-     la recarga por versión nueva devolvía el logo justo al entrar (0130).
+     la recarga por versión nueva devolvía el logo justo al entrar (0130). **Y lo que ya se quitó
+     por algo no se vuelve a poner sin leer por qué**: abrir con lo guardado de quién eres lo había
+     quitado el 1-oct, lo decía su propio comentario, y volver a ponerlo enseñaba permisos y locales
+     de antes; lo cazaron 22 pruebas de pantalla antes de subir.

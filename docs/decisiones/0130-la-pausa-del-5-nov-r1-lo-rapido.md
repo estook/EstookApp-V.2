@@ -21,7 +21,7 @@ Se construye en cuatro entregas, y después se vuelve a T6 · 2 · 1:
 
 | Entrega                        | Puntos de Richi       | Qué                                                                                                                                                        |
 | ------------------------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **R1 · Lo rápido**             | 1, 2, 3 y 4           | Tachar al momento, mandar de una vez, sin recargas a la vista, abrir sin esperar al logo, la barra del iPhone opaca. **Esta decisión**                     |
+| **R1 · Lo rápido**             | 1, 2, 3 y 4           | Tachar al momento, mandar de una vez, el logo ya no vuelve (sin recargas a la vista), la barra del iPhone opaca. **Esta decisión**                         |
 | **R2 · La mesa en el móvil**   | 1.1, 1.2, 1.3, 8, 8.1 | Esperando · Comiendo · ¿Cuenta? en el plano; la mesa entera al tocarla con Pedir, Servido, Cuenta y Cobrar; el camarero marca lo servido; cambiar un plato |
 | **R3 · Ajustes y secciones**   | 1.4 y 6               | Ajustes en listas compactas; Productos y precios con las secciones a la izquierda; icono y color de cada sección                                           |
 | **R4 · Precios, IA y papeles** | 5, 7 y 9              | Planes sin IVA (Esencial 49 €, Pro 119 €); la IA a un tercio; el coste con Verifacti a 15 €; Estook TPV para Android e iOS, como módulo final              |
@@ -61,10 +61,12 @@ toda la sala** (el plano, la mesa y las impresoras). La cocina esperaba a las do
   recarga nunca delante de nadie**: la que está abierta sigue con la suya, la nueva entra la próxima
   vez que se abra, y solo se recarga si la página no se está viendo. Un trozo que ya no existe lo
   sigue arreglando `SiAlgoFalla`, como hasta ahora. En Estook y en Estook TPV.
-- **Tardaba** porque esperaba a que Irlanda dijera quién eres. **Ahora, quien ya entró en ese aparato
-  abre con lo guardado de quién es** y se vuelve a preguntar al momento; el Panel sale con sus siluetas
-  y se lee. Solo si ibas al Panel o al de la cadena: elegir local o plan, la puerta y el alta se
-  preguntan siempre (es lo que hizo quitar lo guardado al abrir el 1-oct, y no vuelve).
+- **Tarda** porque espera a que Irlanda diga quién eres (y, si la API llevaba rato sin usarse, a que
+  arranque). **Se probó abrir con lo guardado de quién eres y se descartó**: durante un instante se
+  ven permisos, locales y tarjetas de antes (al cambiar de local, al quitarle un permiso a alguien) y
+  rompía 22 pruebas de pantalla. Es lo mismo que hizo quitarlo el 1-oct, y sigue en pie lo que propuso
+  la [0096](0096-el-arranque-y-el-precio-en-la-jornada.md). **Esta espera no se toca en R1**: se mide
+  en IKATZ con el logo que ya no vuelve, y si sigue siendo larga se trata aparte, con su prueba.
 
 ### La barra de arriba del iPhone (punto 4)
 
@@ -80,7 +82,7 @@ comprueba en el iPhone**: lo prueba Richi.
    centro y lo guardado sin internet, y la API no crece.
 2. Esperar solo a la mesa al mandar y al marchar; el resto de acciones de la sala siguen esperando a
    releerla entera, como hasta hoy.
-3. Recuperar al abrir solo `quien_soy`, y solo con destino Panel o cadena; nunca las cifras.
+3. No abrir con lo guardado de quién eres: se probó y enseñaba lo de antes (ver arriba).
 4. Recargar con la versión nueva solo con la página oculta, en vez de un aviso «Hay versión nueva».
 5. El color de la barra del navegador (`theme-color`) también sigue al tema, que antes era siempre
    oscuro.

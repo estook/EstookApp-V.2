@@ -18,9 +18,9 @@
 - **En cocina, el plato se tacha al tocarlo**, sin esperar. Si Estook no lo acepta, vuelve a su sitio
   y lo dice.
 - **«Mandar» llega antes a cocina**: una sola orden en vez de dos.
-- **Al abrir Estook, el Panel sale enseguida** si ya habías entrado en ese móvil, sin esperar con el
-  logo. Y **el logo ya no vuelve de golpe** cuando hay versión nueva: la nueva entra la próxima vez que
-  abras la app.
+- **El logo ya no vuelve de golpe** cuando hay versión nueva: la nueva entra la próxima vez que abras
+  la app. **Lo que tarda el logo la primera vez** (esperar a que el servidor diga quién eres) no cambia
+  todavía: dime si lo sigues notando largo.
 - **La barra de arriba del iPhone (la del reloj) ya no es de cristal**: clara con el tema claro, negra
   con el oscuro; en Estook TPV, negra.
 
@@ -63,8 +63,7 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
 ### 3 · Abrir Estook
 
 1. Cierra la app del todo (desliza hacia arriba) y ábrela otra vez.
-   - **Tiene que** salir el Panel **casi sin logo**, primero con sus siluetas grises y enseguida con
-     tus datos.
+   - Fíjate en **cuántos segundos** dura el logo y dímelo.
 2. Úsala unos minutos: **el logo no tiene que volver** de golpe.
 
 ### 4 · La barra de arriba del iPhone

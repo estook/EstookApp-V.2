@@ -44,15 +44,7 @@ async function huellaDe(token: string): Promise<string> {
  * pantalla de elegir local que ya se había elegido. Así que se recupera en dos casos:
  * al abrir sin red, y cuando el servidor no contesta porque no hay conexión
  * (`ProveedorDeSesion`). De esta misma sesión, y si no es viejo.
- *
- * **Con señal, solo quién eres** (la pausa del 5-nov; Richi: «el logo aparece mucho rato»).
- * El logo esperaba a que Irlanda dijera quién eres, y eso ya se sabe: se abre con lo guardado
- * de `quien_soy` y se vuelve a preguntar al momento, como hacen las apps del móvil. Solo si
- * ibas al Panel (o al de la cadena): elegir local o plan, la puerta y el alta se preguntan
- * siempre. Lo demás (el Panel y sus cifras) no se recupera: sale con sus siluetas y se lee.
  */
-const DESTINOS_DE_SIEMPRE: readonly unknown[] = ['panel', 'vista_de_cadena'];
-
 export async function recuperarLoGuardado(
   cache: QueryClient,
   token: string | null,
@@ -63,24 +55,11 @@ export async function recuperarLoGuardado(
       await borrar('cache', CLAVE);
       return;
     }
+    if (cuando === 'al_abrir' && hayRed()) return;
     const guardado = await leerUno<LoGuardado>('cache', CLAVE);
     if (guardado === undefined) return;
     if (guardado.huella !== (await huellaDe(token)) || Date.now() - guardado.cuando > DURA_MS) {
       await borrar('cache', CLAVE);
-      return;
-    }
-    if (cuando === 'al_abrir' && hayRed()) {
-      const soy = guardado.estado.queries.filter(
-        (q) =>
-          q.queryKey[0] === 'quien_soy' &&
-          DESTINOS_DE_SIEMPRE.includes(
-            (q.state.data as { destino?: unknown } | undefined)?.destino,
-          ),
-      );
-      if (soy.length === 0) return;
-      hydrate(cache, { mutations: [], queries: soy });
-      // Viejo a propósito: la sesión lo vuelve a preguntar nada más montarse.
-      await cache.invalidateQueries({ queryKey: ['quien_soy'], refetchType: 'none' });
       return;
     }
     hydrate(cache, guardado.estado);

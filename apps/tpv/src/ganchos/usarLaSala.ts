@@ -291,6 +291,12 @@ export function usarAcciones() {
       entrada: unknown,
       clave?: string,
       sinInternet?: ComoSeGuarda<T>,
+      /**
+       * **Lo único que se espera a releer** (la pausa del 5-nov). Sin decirlo, se espera a
+       * releer toda la sala, como siempre; diciéndolo (la mesa que se está mirando), lo demás
+       * se relee por detrás y quien pulsa no espera al plano ni a las impresoras.
+       */
+      esperarA?: readonly unknown[],
     ): Promise<Resultado<T>> => {
       const laClave = clave ?? crypto.randomUUID();
       const guardar = async (): Promise<Resultado<T> | null> => {
@@ -329,7 +335,16 @@ export function usarAcciones() {
         const guardado = await guardar();
         if (guardado !== null) return guardado;
       }
-      if (respuesta.ok) await cache.invalidateQueries({ queryKey: ['sala'] });
+      if (respuesta.ok && esperarA === undefined) {
+        await cache.invalidateQueries({ queryKey: ['sala'] });
+      } else if (respuesta.ok && esperarA !== undefined) {
+        const laQueSeEspera = JSON.stringify(esperarA);
+        void cache.invalidateQueries({
+          queryKey: ['sala'],
+          predicate: (q) => JSON.stringify(q.queryKey) !== laQueSeEspera,
+        });
+        await cache.invalidateQueries({ queryKey: esperarA, exact: true });
+      }
       return respuesta.ok
         ? { ok: true, datos: respuesta.datos }
         : { ok: false, error: respuesta.error };

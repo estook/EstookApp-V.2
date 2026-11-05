@@ -1045,3 +1045,8 @@
      encontraba nada y dejaba pasar lo que tenía que parar; la prueba lo cazó (0129, 5-nov). **Lo
      que el admin necesita saber de un cliente se lee con su función del esquema `plataforma`**, y
      cada comprobación nueva lleva su prueba que la ve fallar.
+250. **Lo que toca quien trabaja en servicio se pinta antes de procesarse, y una acción no espera a
+     releer lo que no se mira.** El tachado de cocina esperaba dos viajes a Irlanda antes de verse, y
+     «Mandar» hacía dos órdenes con toda la sala releída entre medias: la cocina tardaba en recibir y
+     el cocinero esperaba (Richi, pausa del 5-nov). Y **no se recarga una pantalla delante de nadie**:
+     la recarga por versión nueva devolvía el logo justo al entrar (0130).

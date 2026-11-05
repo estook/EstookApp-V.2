@@ -4,8 +4,10 @@
  * que Estook TPV se pueda instalar. **Solo en lo construido**: en desarrollo guardaría el
  * código y se vería el de ayer.
  *
- * **La versión nueva, sin quedarse en la vieja**, como en Estook: si al abrir llega un
- * trabajador nuevo y todavía no se ha tocado nada, se recarga una vez con la nueva.
+ * **La versión nueva, sin recargar delante de nadie** (la pausa del 5-nov), como en Estook:
+ * la que está abierta sigue con la suya y la nueva entra la próxima vez que se abra. Solo se
+ * recarga si la página no se está viendo. Antes se recargaba si llegaba en los primeros 15
+ * segundos sin tocar nada, y en pleno servicio volvía el logo.
  */
 export function ponerElTrabajador(): void {
   if (
@@ -25,16 +27,7 @@ export function ponerElTrabajador(): void {
   else window.addEventListener('load', poner, { once: true });
 
   const habiaTrabajador = navigator.serviceWorker.controller !== null;
-  let tocado = false;
-  const alTocar = () => {
-    tocado = true;
-  };
-  window.addEventListener('pointerdown', alTocar, { once: true, capture: true });
-  window.addEventListener('keydown', alTocar, { once: true, capture: true });
-  const abiertaEn = performance.now();
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (habiaTrabajador && !tocado && performance.now() - abiertaEn < 15_000) {
-      window.location.reload();
-    }
+    if (habiaTrabajador && document.visibilityState === 'hidden') window.location.reload();
   });
 }

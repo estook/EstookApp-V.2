@@ -69,6 +69,15 @@ export function usarTema(): {
 
   useEffect(() => {
     document.documentElement.dataset['tema'] = tema;
+    // La barra del navegador y la del reloj del iPhone, del color del tema (la pausa del
+    // 5-nov; lo mismo hace `tema-al-arrancar.js` al abrir). La del reloj, iOS la lee al abrir.
+    const oscuro = seVeOscuroAhora();
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', oscuro ? '#15181c' : '#f1efea');
+    document
+      .querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
+      ?.setAttribute('content', oscuro ? 'black' : 'default');
   }, [tema]);
 
   const poner = useCallback((nuevo: Tema) => {

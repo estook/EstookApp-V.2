@@ -20,7 +20,7 @@ import { usarPantallaEncendida, usarReloj } from '../ganchos/usarLaPantallaDeCoc
 import { losNombres } from '../logica/texto.ts';
 import { guardarLaCopia, leerLaCopia } from '../sinInternet/laCopia.ts';
 import { hayCaja, loQueTieneLaCaja } from '../sinInternet/laCaja.ts';
-import { conLoTachado, laCocinaConLoDeLaCaja } from './porLaCaja.ts';
+import { conLoTachado, laCocinaConLoDeLaCaja, type TachadoSinInternet } from './porLaCaja.ts';
 import {
   escucharLosTachados,
   losTachados,
@@ -135,15 +135,18 @@ export function LaPantallaDeCocina({
     ).then(() => cache.invalidateQueries({ queryKey: clave }));
   }, [deDonde, hayTachados, cliente, llave, cache, clave]);
 
+  // **Lo tachado va al momento** (la pausa del 5-nov; Richi: «primero se tacha y luego se
+  // procesa, no podemos hacer esperar al cocinero»). Lo que va camino de Estook se pinta ya,
+  // encima de lo leído, igual que lo tachado sin internet; se quita cuando Estook ya lo dice.
+  const [enCamino, setEnCamino] = useState<readonly TachadoSinInternet[]>([]);
+
   // Suena con lo nuevo, comparado con lo de la vez anterior.
   const leido = datos.data;
-  const lo = useMemo(
-    () =>
-      leido === undefined || deDonde === 'estook'
-        ? leido
-        : conLoTachado(leido, tachados, Date.now()),
-    [leido, deDonde, tachados],
-  );
+  const lo = useMemo(() => {
+    if (leido === undefined) return undefined;
+    const conLoDeAqui = deDonde === 'estook' ? leido : conLoTachado(leido, tachados, Date.now());
+    return conLoTachado(conLoDeAqui, enCamino, Date.now());
+  }, [leido, deDonde, tachados, enCamino]);
   useEffect(() => {
     if (lo === undefined) return;
     const sonido = loQueSuena(antes.current, lo);
@@ -160,6 +163,9 @@ export function LaPantallaDeCocina({
     },
     [cliente, llave, cache, clave],
   );
+  // Los toques salen **en fila**, en el orden en que se dieron: tachar y destachar el mismo
+  // plato muy seguido no puede llegar al revés.
+  const fila = useRef<Promise<void>>(Promise.resolve());
   const alTocarElPlato = useCallback(
     (lineaId: string, salio: boolean) => {
       // Sin internet se tacha aquí y sube al volver (0123).
@@ -167,11 +173,29 @@ export function LaPantallaDeCocina({
         tacharSinInternet(lineaId, !salio);
         return;
       }
-      void hacer(salio ? 'destachar_en_la_pantalla' : 'tachar_en_la_pantalla', {
-        linea_id: lineaId,
-      });
+      const toque: TachadoSinInternet = { lineaId, salio: !salio, en: Date.now() };
+      setEnCamino((antes) => [...antes, toque]);
+      setFallo(null);
+      fila.current = fila.current
+        .then(async () => {
+          try {
+            const respuesta = await cliente.ejecutar(
+              salio ? 'destachar_en_la_pantalla' : 'tachar_en_la_pantalla',
+              { llave, linea_id: lineaId },
+            );
+            // Se cortó justo ahora: se guarda como lo de sin internet, y sube al volver.
+            if (!respuesta.ok && respuesta.error.codigo === 'sin_conexion') {
+              tacharSinInternet(lineaId, !salio, toque.en);
+            } else if (!respuesta.ok) setFallo(respuesta.error.quePasa);
+            await cache.invalidateQueries({ queryKey: clave });
+          } finally {
+            setEnCamino((antes) => antes.filter((t) => t !== toque));
+          }
+        })
+        // Un toque que falla de forma rara no para los siguientes.
+        .catch(() => undefined);
     },
-    [hacer, deDonde],
+    [deDonde, cliente, llave, cache, clave],
   );
 
   // **El teclado de cocina**: la tecla de cada tarjeta tacha su siguiente plato. Lo programado

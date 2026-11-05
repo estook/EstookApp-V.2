@@ -565,6 +565,11 @@ abajo:
 
 **Quitar la empresa de un local** (0129), mientras se está en pruebas, ya está en T6 · 1.
 
+**Antes de T6 · 2 · 1, la pausa del 5-nov** ([0130](decisiones/0130-la-pausa-del-5-nov-r1-lo-rapido.md)):
+cuatro entregas con lo que Richi vio usando el TPV en IKATZ. **R1 · Lo rápido** (tachar, mandar, el
+logo y la barra del iPhone), **R2 · La mesa en el móvil**, **R3 · Ajustes y secciones** y **R4 ·
+Precios, IA y papeles**, con sus maquetas aprobadas. Después, T6 · 2 · 1.
+
 - **El motor del Anexo 4.9**: el número se da al preparar, con el candado de su serie; a Verifacti se
   le llama fuera de la transacción, con la clave del documento; **el estado se lee de lo que se le
   añade**; un trabajo termina cada pocos minutos lo que se quedó a medias; **los avisos de Verifacti**

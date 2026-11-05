@@ -414,6 +414,13 @@ export const ERRORES = {
     409,
   ),
 
+  empresa_en_real: error(
+    'empresa_en_real',
+    'Una empresa que ya factura de verdad no se quita del local.',
+    'Sus tickets los firmó ella. Si el local cambia de dueño, escríbenos desde Ajustes y lo vemos.',
+    409,
+  ),
+
   falta_la_empresa: error(
     'falta_la_empresa',
     'Primero van los datos de tu empresa.',

@@ -1040,3 +1040,8 @@
      en una prueba**, sobre todo si es firmar, pagar o hablar con Hacienda (0128, 5-nov). Y **se
      mira por qué puerta entró el dato**: el primer arreglo cerraba la de la empresa de pruebas
      puesta por el admin, pero en IKATZ se había escrito su NIF a mano en el paso 1 (0101).
+249. **En un comando del admin, `contexto.sql` lee con las políticas puestas, y el admin no ve las
+     tablas de los clientes.** Una comprobación hecha así («¿ese local ya tiene empresa?») no
+     encontraba nada y dejaba pasar lo que tenía que parar; la prueba lo cazó (0129, 5-nov). **Lo
+     que el admin necesita saber de un cliente se lee con su función del esquema `plataforma`**, y
+     cada comprobación nueva lleva su prueba que la ve fallar.

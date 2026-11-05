@@ -561,6 +561,8 @@ describe('las puertas se cierran solas', () => {
         'admin_marcar_condicion',
         'admin_guardar_el_productor',
         'admin_poner_la_empresa_de_pruebas',
+        // 0129: y quitarla de un local, si se puso donde no era.
+        'admin_quitar_la_empresa_de_pruebas',
         'admin_pasar_a_real',
       ].sort(),
     );

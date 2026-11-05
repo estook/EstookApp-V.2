@@ -18,6 +18,7 @@ import { enLaBase, laVerifacti, loQueNoHizoVerifacti } from '../facturacion.ts';
  *   admin_marcar_condicion             una de las once, con dónde está la prueba
  *   admin_guardar_el_productor         quién hace Estook, para su declaración responsable
  *   admin_poner_la_empresa_de_pruebas  la de Verifacti en un local de una cuenta de la casa
+ *   admin_quitar_la_empresa_de_pruebas y quitarla de ese local, si se puso donde no era (0129)
  *   admin_pasar_a_real                 una empresa, **solo con las once cumplidas**
  *
  * Todo del admin total, y cada cambio a la auditoría del admin.
@@ -328,6 +329,18 @@ export const ponerLaEmpresaDePruebas = comando<
   nivelDeAdmin: 'total',
 
   async ejecutar(contexto, entrada) {
+    // Un local con su propia empresa no se pisa (0129): se soltaría sin avisar y su NIF quedaría
+    // ocupado. Primero se quita desde su Ajustes › Facturación.
+    // El admin no lee las empresas de los clientes: lo mira la función que ya lo dice por local.
+    const [suya] = await contexto.sql<{ nombre: string }[]>`
+      select empresa as nombre from plataforma.los_locales_de_la_casa()
+       where local_id = ${entrada.local_id}::uuid and empresa is not null and not de_pruebas
+    `;
+    if (suya !== undefined) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: `Ese local ya tiene su empresa (${suya.nombre}). Quítala antes desde su Ajustes › Facturación.`,
+      });
+    }
     const verifacti = laVerifacti(contexto);
     let datos;
     let autorizacion;
@@ -361,6 +374,32 @@ export const ponerLaEmpresaDePruebas = comando<
       despues: { empresa: empresaId },
     });
     return { empresaId };
+  },
+});
+
+/**
+ * **Quitar la empresa de pruebas** de un local (0129): si se puso donde no era. El local se queda
+ * sin empresa y su alta vuelve al paso 1; la empresa de pruebas sigue en la cuenta, para volver a
+ * ponerla. No se llama a Verifacti.
+ */
+export const quitarLaEmpresaDePruebas = comando<{ local_id: string }, { readonly quitada: true }>({
+  nombre: 'admin_quitar_la_empresa_de_pruebas',
+  entrada: z.object({ local_id: z.string().uuid() }).strict(),
+  soloAdmin: true,
+  nivelDeAdmin: 'total',
+
+  async ejecutar(contexto, entrada) {
+    await enLaBase(
+      () => contexto.sql`select plataforma.quitar_la_empresa_de_pruebas(${entrada.local_id}::uuid)`,
+    );
+    await anotarEnElAdmin(contexto, {
+      accion: 'quitar_la_empresa_de_pruebas',
+      entidad: 'local',
+      entidadId: entrada.local_id,
+      antes: null,
+      despues: null,
+    });
+    return { quitada: true };
   },
 });
 

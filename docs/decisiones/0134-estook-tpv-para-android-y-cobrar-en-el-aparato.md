@@ -9,7 +9,7 @@ programa después de T7, como **M20D**.
 **Cambia:** el Plan (M20D y M31), el Anexo (6.3, 10.7, 11.2 y 11.3), la Arquitectura, el Manifiesto,
 el mapa, el plan de M20A, el coste por local, ESTADO y la carpeta de lo pasado.
 
-**R4 queda aplazada** (Richi, 6-nov): sus cifras siguen escritas en la 0133, punto 6.
+**R4 se paró solo para hablar de esto** (Richi, 6-nov): **va ahora**, tal como está en la 0133, punto 6, y después T6 · 2 · 1.
 
 ## Lo que pidió Richi
 

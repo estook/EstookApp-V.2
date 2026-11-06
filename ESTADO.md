@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 6 de noviembre de 2026 · **En producción todo hasta la #166**: 103 migraciones y la API con 119 consultas y 336 comandos (leído el 6-nov), y **la caja para Windows 1.2.0**. **Ahora, la pausa del 5-nov antes de T6 · 2 · 1** ([0130](docs/decisiones/0130-la-pausa-del-5-nov-r1-lo-rapido.md)): R1 y R2 en producción; **R3 · Ajustes y secciones** fusionada (#167, migración 0104, [0133](docs/decisiones/0133-r3-ajustes-y-secciones.md)); **R4, aplazada**. **Decidido: Estook TPV para Android** detrás de T7 ([0134](docs/decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), PR #168)
+Última actualización: 6 de noviembre de 2026 · **En producción todo hasta la #166**: 103 migraciones y la API con 119 consultas y 336 comandos (leído el 6-nov), y **la caja para Windows 1.2.0**. **Ahora, la pausa del 5-nov antes de T6 · 2 · 1** ([0130](docs/decisiones/0130-la-pausa-del-5-nov-r1-lo-rapido.md)): R1 y R2 en producción; **R3 · Ajustes y secciones** fusionada (#167, migración 0104, [0133](docs/decisiones/0133-r3-ajustes-y-secciones.md)); **Lo siguiente, R4**, y luego T6 · 2 · 1. **Decidido: Estook TPV para Android** detrás de T7 ([0134](docs/decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), PR #168)
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -30,7 +30,7 @@
 
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
-- **T6 · 1 · El alta de facturación**, en producción (#160 a #163). **La pausa del 5-nov** ([0130](docs/decisiones/0130-la-pausa-del-5-nov-r1-lo-rapido.md)): R1 y R2 en producción (103 migraciones y API 119/336, leído el 6-nov); **R3** fusionada (#167, 0104, [0133](docs/decisiones/0133-r3-ajustes-y-secciones.md)), sin comprobar aquí la migración ni el despliegue; **R4, aplazada** (0133, punto 6). **Decidido el 6-nov: M20D · Estook TPV para Android**, detrás de T7, con Stripe y sin salir de Estook ([0134](docs/decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), [la investigación](docs/estook-tpv-android-y-el-cobro.md)). Luego **T6 · 2 · 1**.
+- **T6 · 1 · El alta de facturación**, en producción (#160 a #163). **La pausa del 5-nov** ([0130](docs/decisiones/0130-la-pausa-del-5-nov-r1-lo-rapido.md)): R1 y R2 en producción (103 migraciones y API 119/336, leído el 6-nov); **R3** fusionada (#167, 0104, [0133](docs/decisiones/0133-r3-ajustes-y-secciones.md)), sin comprobar aquí la migración ni el despliegue; **Lo siguiente, R4** (0133, punto 6), y luego T6 · 2 · 1. **Decidido el 6-nov: M20D · Estook TPV para Android**, detrás de T7, con Stripe y sin salir de Estook ([0134](docs/decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), [la investigación](docs/estook-tpv-android-y-el-cobro.md)). Luego **T6 · 2 · 1**.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -79,7 +79,8 @@ HECHO         Quitar la empresa y la auditoría de T6 · 1 (0129, 0102, #163)
 HECHO         La pausa del 5-nov · R1 · Lo rápido (0130, #164)
 HECHO         R2 · 1 · La sala y la mesa (0131, #165) · R2 · 2 · Servido y cambiar un plato (0132, #166)
 HECHO         R3 · Ajustes y secciones (0133, migración 0104, #167)
-AHORA         Estook TPV para Android, decidido (0134, #168, solo documentos) · R4, aplazada
+HECHO         Estook TPV para Android, decidido (0134, #168, solo documentos)
+AHORA         R4 · Precios, IA y papeles (0133, punto 6) → T6 · 2 · 1
 ESTOOK TPV    → T6 · 2 · Emitir (2 · 1 el motor y el ticket, 2 · 2 facturas y correcciones, 2 · 3 «Pide tu factura») → T6 · 3 · Sin envío (NO VERI*FACTU) → T7 · M20C con M20 (0107) → T8 · M20D · Estook TPV para Android (0134)
 DESPUÉS       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b → Fases 5, 6 y 7
 ```
@@ -221,6 +222,6 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**T6 · 1 · El alta**, en producción. La pausa del 5-nov: R1 a R3 hechas; **R4, aplazada** (planes sin IVA de 39, 99, 89 y 9 €; la IA a un tercio; el coste con Verifacti). **Lo siguiente, T6 · 2 · Emitir**, en tres entregas (2 · 1 el motor y el ticket, 2 · 2 facturas y correcciones, 2 · 3 «Pide tu factura»), y **T6 · 3**. **Decidido: M20D · Estook TPV para Android** ([0134](docs/decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)), detrás de T7.
+**T6 · 1 · El alta**, en producción. La pausa del 5-nov: R1 a R3 hechas; **lo siguiente, R4** (planes sin IVA de 39, 99, 89 y 9 €; la IA a un tercio; el coste con Verifacti). **Después, T6 · 2 · Emitir**, en tres entregas (2 · 1 el motor y el ticket, 2 · 2 facturas y correcciones, 2 · 3 «Pide tu factura»), y **T6 · 3**. **Decidido: M20D · Estook TPV para Android** ([0134](docs/decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)), detrás de T7.
 
 **Lo que decidió la IA por su cuenta**, para que Richi lo sepa: los cinco de la [0130](docs/decisiones/0130-la-pausa-del-5-nov-r1-lo-rapido.md), los seis de la [0131](docs/decisiones/0131-r2-1-la-sala-y-la-mesa.md), los siete de la [0132](docs/decisiones/0132-r2-2-servido-y-cambiar-un-plato.md) y los siete de la [0133](docs/decisiones/0133-r3-ajustes-y-secciones.md) (como que la clave de cada NIF no se guarda en Estook, o que «Mandar» pide y manda en una orden). **Todo lo anterior**, entrega a entrega, en [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md).

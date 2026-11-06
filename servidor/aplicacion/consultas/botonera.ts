@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type {
   CaminoDeLaBotonera,
   ColorDeLaBotonera,
+  IconoDeLaSeccion,
   PaseDeLaBotonera,
   QuienLoPrepara,
 } from '@estook/dominio';
@@ -43,7 +44,9 @@ export interface BotonDeLaBotonera extends PlatoParaLaBotonera {
 export interface PaginaDeLaBotonera {
   readonly id: string;
   readonly nombre: string;
+  /** Como se ve (R3, 0133): lo del local, o lo que propone su nombre. */
   readonly color: ColorDeLaBotonera | null;
+  readonly icono: IconoDeLaSeccion;
   readonly quienLoPrepara: QuienLoPrepara;
   readonly pase: PaseDeLaBotonera;
   readonly deLaSeccion: string | null;
@@ -124,6 +127,7 @@ export const laBotonera = consulta<Record<string, never>, SalidaLaBotonera>({
         id: g.id,
         nombre: g.nombre,
         color: g.color,
+        icono: g.icono,
         quienLoPrepara: g.quienLoPrepara,
         pase: g.pase,
         deLaSeccion: g.seccionId === null ? null : (nombreDeLaSeccion.get(g.seccionId) ?? null),

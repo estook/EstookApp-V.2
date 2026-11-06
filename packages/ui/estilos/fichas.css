@@ -105,6 +105,17 @@
   --color-app-cuaderno: #7a6a56;
   --color-app-fogon: #ff7a00;
 
+  /*
+   * ── Los dos colores de sección que no tenía ninguna app (R3, 0133) ─────────
+   *
+   * Las secciones de Estook TPV llevan once colores: los nueve de antes (estados y acentos
+   * de las apps) y estos dos, el amarillo de «Lo más pedido» y el marrón de los cafés. Solo
+   * se usan en Estook TPV, que es oscuro: sus valores de verdad están en `temas.css`
+   * (`data-tema='tpv'`); estos son los de la paleta clara, por si alguna vez salen fuera.
+   */
+  --color-seccion-amarillo: #9a7400;
+  --color-seccion-marron: #8a5a36;
+
   /* ── Espaciado · escala de 4 ────────────────────────────────────────────── */
   --spacing-e1: 4px;
   --spacing-e2: 8px;

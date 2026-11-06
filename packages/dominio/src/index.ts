@@ -1150,7 +1150,11 @@ export type {
 export {
   CAMINOS_DE_LA_BOTONERA,
   COLORES_DE_LA_BOTONERA,
+  COMO_SE_VE_LO_MAS_PEDIDO,
+  ICONOS_DE_LA_SECCION,
   LO_MAS_PEDIDO,
+  comoSeVeElNombre,
+  comoSeVeLaSeccion,
   NOMBRE_DE_QUIEN_LO_PREPARA,
   NOMBRE_DEL_PASE,
   PASES_DE_LA_BOTONERA,
@@ -1166,6 +1170,8 @@ export {
 export type {
   CaminoDeLaBotonera,
   ColorDeLaBotonera,
+  ComoSeVeLaSeccion,
+  IconoDeLaSeccion,
   PaginaDeSiempre,
   PaseDeLaBotonera,
   QuienLoPrepara,

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  COLORES_DE_LA_BOTONERA,
+  ICONOS_DE_LA_SECCION,
+  comoSeVeElNombre,
+  comoSeVeLaSeccion,
   elDestinoDeLaLinea,
   esElPan,
   esPanOAgua,
@@ -114,5 +118,64 @@ describe('el pan, el agua y los cafés, en su página de siempre (0112)', () => 
     expect(esElPan('Agua mineral')).toBe(false);
     expect(esPanOAgua('Agua mineral')).toBe(true);
     expect(esElPan('Pan con tomate')).toBe(false);
+  });
+});
+
+describe('el icono y el color de cada sección, por su nombre (R3, 0133)', () => {
+  const ve = (nombre: string) => {
+    const s = comoSeVeElNombre(nombre);
+    return `${s.icono} ${s.color ?? 'gris'}`;
+  };
+
+  it('pone lo de la maqueta aprobada por Richi', () => {
+    expect(ve('Lo más pedido')).toBe('star amarillo');
+    expect(ve('Cervezas')).toBe('beer naranja');
+    expect(ve('Cañas')).toBe('beer naranja');
+    expect(ve('Vinos')).toBe('wine morado');
+    expect(ve('Cavas y espumosos')).toBe('wine morado');
+    expect(ve('Cócteles')).toBe('martini rosa');
+    expect(ve('Refrescos')).toBe('cup-soda azul');
+    expect(ve('Cafés e infusiones')).toBe('coffee marron');
+    expect(ve('Desayunos')).toBe('croissant arena');
+    expect(ve('Entrantes')).toBe('salad verde');
+    expect(ve('Carnes')).toBe('beef rojo');
+    expect(ve('Pescados')).toBe('fish turquesa');
+    expect(ve('Mariscos')).toBe('shell turquesa');
+    expect(ve('Pizzas')).toBe('pizza naranja');
+    expect(ve('Hamburguesas')).toBe('sandwich arena');
+    expect(ve('Postres')).toBe('cake-slice rosa');
+    expect(ve('Pan y agua')).toBe('wheat arena');
+  });
+
+  it('las palabras cortas no se cuelan dentro de otras', () => {
+    // «cana» en «americana», «ron» en «Ronda», «ave» en «llave»: no son bebida ni pollo.
+    expect(ve('Ensalada americana')).toBe('salad verde');
+    expect(ve('Ronda del chef')).toBe('chef-hat naranja');
+    expect(ve('Gin tonics')).toBe('martini rosa');
+    expect(ve('Aves')).toBe('drumstick ambar');
+  });
+
+  it('lo dulce gana a lo que lleva dentro, y lo que no se reconoce va en gris con los cubiertos', () => {
+    expect(ve('Tarta de queso')).toBe('cake-slice rosa');
+    expect(ve('Helados')).toBe('ice-cream-cone rosa');
+    expect(ve('Sugerencias')).toBe('utensils-crossed gris');
+  });
+
+  it('lo que elige el local manda; lo que no eligió, lo pone el nombre', () => {
+    expect(comoSeVeLaSeccion({ nombre: 'Cervezas', color: 'verde', icono: null })).toEqual({
+      icono: 'beer',
+      color: 'verde',
+    });
+    expect(comoSeVeLaSeccion({ nombre: 'Cervezas', color: null, icono: 'wine' })).toEqual({
+      icono: 'wine',
+      color: 'naranja',
+    });
+  });
+
+  it('once colores y treinta iconos, sin repetir', () => {
+    expect(new Set(COLORES_DE_LA_BOTONERA).size).toBe(11);
+    expect(COLORES_DE_LA_BOTONERA).toContain('amarillo');
+    expect(COLORES_DE_LA_BOTONERA).toContain('marron');
+    expect(new Set(ICONOS_DE_LA_SECCION).size).toBe(30);
   });
 });

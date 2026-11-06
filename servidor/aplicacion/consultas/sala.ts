@@ -15,12 +15,14 @@ import {
   losPasesDelMenu,
   LAS_PAGINAS_DE_SIEMPRE,
   LO_MAS_PEDIDO,
+  comoSeVeElNombre,
   laPaginaDeSiempre,
   loQueProponeElNombre,
   loQueValeEnElBoton,
   type ColorDeLaBotonera,
   type ColorDelTiempo,
   type ComoVaLaMesa,
+  type IconoDeLaSeccion,
   type LaMesaEnCocina,
   type LoSiguiente,
   type PaseDeLaBotonera,
@@ -898,11 +900,13 @@ export interface GrupoParaPedir {
   }[];
 }
 
-/** Una página de la botonera; sin montar, una sección de la carta (T3). */
+/** Una sección de la botonera; sin montar, una sección de la carta (T3). */
 export interface PaginaDeLaSala {
   readonly id: string;
   readonly nombre: string;
+  /** Su color y su icono, como se ven (R3, 0133): lo del local, o lo que propone su nombre. */
   readonly color: ColorDeLaBotonera | null;
+  readonly icono: IconoDeLaSeccion;
   /** Qué pestaña se marca sola al abrirla (Anexo 11.10). */
   readonly pase: PaseDeLaBotonera;
   /** «Pan y agua» o «Cafés» (0112): no es la que se abre sola al sentarse. */
@@ -940,7 +944,10 @@ export interface SalidaLaCartaDeLaSala {
   readonly montada: boolean;
   /** Las páginas de la botonera, en su orden; sin platos, no salen. */
   readonly paginas: readonly PaginaDeLaSala[];
-  /** Lo fijado y lo más vendido a esta hora en cuatro semanas (Anexo 11.10). */
+  /**
+   * Lo fijado y lo más vendido a esta hora en cuatro semanas (Anexo 11.10). **Vacío si el local
+   * no ha marcado nada** (R3, 0133): entonces la sección no sale en el TPV.
+   */
   readonly loMasPedido: readonly PlatoDeLaSala[];
   /** Los menús que se sirven hoy, con precio y lo que vale hoy (M10 · 2). */
   readonly menus: readonly MenuDeLaSala[];
@@ -1030,6 +1037,7 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
           id: g.id,
           nombre: g.nombre,
           color: g.color,
+          icono: g.icono,
           pase: g.pase,
           deSiempre: g.deSiempre,
           platos: botonera.botones
@@ -1050,7 +1058,11 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
       // Sin montar, la carta como hasta T3: una página por sección, con lo que propone su
       // nombre; el pan y el agua, en «Pan y agua», y los cafés, en «Cafés», como en
       // cualquier TPV (0112); lo que no tiene sección, en «Sin sección».
-      const deLaSeccion = (nombre: string) => ({ ...loQueProponeElNombre(nombre), color: null });
+      // El color y el icono, los que propone el nombre (R3, 0133): sin montar no hay nada elegido.
+      const deLaSeccion = (nombre: string) => ({
+        ...loQueProponeElNombre(nombre),
+        color: comoSeVeElNombre(nombre).color,
+      });
       const nombreDeLaSeccion = new Map(secciones.map((x) => [x.id, x.nombre]));
       const deSiempre = (p: (typeof deLaCarta)[number]) =>
         laPaginaDeSiempre(
@@ -1059,11 +1071,12 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
         );
       const lasDeSiempre = (tipo: 'pan' | 'cafes'): PaginaDeLaSala => {
         const g = LAS_PAGINAS_DE_SIEMPRE[tipo];
-        const vale = { quienLoPrepara: g.quienLoPrepara, pase: g.pase, color: null };
+        const seVe = comoSeVeElNombre(g.nombre);
+        const vale = { quienLoPrepara: g.quienLoPrepara, pase: g.pase, color: seVe.color };
         return {
           id: `de-siempre-${tipo}`,
           nombre: g.nombre,
-          color: null,
+          ...seVe,
           pase: g.pase,
           deSiempre: tipo,
           platos: deLaCarta.filter((p) => deSiempre(p) === tipo).map((p) => comoDeLaSala(p, vale)),
@@ -1077,7 +1090,7 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
           return {
             id: s.id,
             nombre: s.nombre,
-            color: null,
+            ...comoSeVeElNombre(s.nombre),
             pase: vale.pase,
             deSiempre: null,
             platos: queda.filter((p) => p.seccionId === s.id).map((p) => comoDeLaSala(p, vale)),
@@ -1090,7 +1103,7 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
         paginas.push({
           id: 'sin-seccion',
           nombre: 'Sin sección',
-          color: null,
+          ...comoSeVeElNombre('Sin sección'),
           pase: '1',
           deSiempre: null,
           platos: sueltos,
@@ -1101,10 +1114,13 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
     }
 
     // «Lo más pedido»: lo fijado primero, y después lo más vendido a esta hora; solo lo que
-    // está en la botonera (o en la carta, sin montar).
+    // está en la botonera. **Solo si el local marcó algo** (Richi, 6-nov: si no, ocupa sitio y
+    // el camarero desliza de más para llegar a las secciones).
     const enPaginas = new Map(paginas.flatMap((g) => g.platos.map((p) => [p.id, p] as const)));
-    const fijados = botonera.botones.filter((b) => b.fijado).map((b) => b.platoId);
-    const loMasPedidoAhora = [...new Set([...fijados, ...masPedido])]
+    const fijados = botonera.botones
+      .filter((b) => b.fijado && enPaginas.has(b.platoId))
+      .map((b) => b.platoId);
+    const loMasPedidoAhora = (fijados.length === 0 ? [] : [...new Set([...fijados, ...masPedido])])
       .flatMap((id) => {
         const plato = enPaginas.get(id);
         return plato === undefined ? [] : [plato];

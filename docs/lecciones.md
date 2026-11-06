@@ -1059,3 +1059,7 @@
      cazaron las pruebas contra la base antes de tocar una pantalla (0132, 6-nov). **Antes de dejar
      hacer algo nuevo a otro rol, se busca qué disparadores y políticas guardan esas columnas**, y la
      regla se amplía copiándola entera, con la prueba que la ve pasar.
+252. **Una palabra corta se cuela dentro de otra.** Al proponer el icono de una sección por su nombre,
+     «cana» encajaba en «Ensalada americana» (la jarra de cerveza), «ron» en «Ronda del chef» y «ave»
+     en «llave» (R3, 0133). **Las palabras de tres o cuatro letras se buscan enteras**, con su borde a
+     cada lado, y una prueba lleva los nombres que se colaban.

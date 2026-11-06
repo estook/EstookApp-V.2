@@ -1,9 +1,11 @@
 import {
   LO_MAS_PEDIDO,
+  comoSeVeLaSeccion,
   loQueProponeElNombre,
   loQueValeEnElBoton,
   type CaminoDeLaBotonera,
   type ColorDeLaBotonera,
+  type IconoDeLaSeccion,
   type PaseDeLaBotonera,
   type QuienLoPrepara,
 } from '@estook/dominio';
@@ -23,7 +25,12 @@ export interface PaginaGuardada {
   readonly id: string;
   readonly nombre: string;
   readonly orden: number;
+  /**
+   * Su color y su icono **como se ven** (R3, 0133): lo que eligió el local, y si no, lo que
+   * propone su nombre. El color sigue pudiendo ser nulo: el gris de lo que no se reconoce.
+   */
   readonly color: ColorDeLaBotonera | null;
+  readonly icono: IconoDeLaSeccion;
   readonly quienLoPrepara: QuienLoPrepara;
   readonly pase: PaseDeLaBotonera;
   readonly seccionId: string | null;
@@ -65,13 +72,14 @@ export async function laBotoneraGuardada(
         nombre: string;
         orden: number;
         color: ColorDeLaBotonera | null;
+        icono: IconoDeLaSeccion | null;
         quien_lo_prepara: QuienLoPrepara;
         pase: PaseDeLaBotonera;
         seccion_id: string | null;
         de_siempre: 'pan' | 'cafes' | null;
       }[]
     >`
-      select id::text as id, nombre, orden, color, quien_lo_prepara, pase,
+      select id::text as id, nombre, orden, color, icono, quien_lo_prepara, pase,
              seccion_id::text as seccion_id, de_siempre
         from estook.pagina_del_tpv
        where local_id = ${localId}::uuid
@@ -103,7 +111,7 @@ export async function laBotoneraGuardada(
       id: p.id,
       nombre: p.nombre,
       orden: p.orden,
-      color: p.color,
+      ...comoSeVeLaSeccion(p),
       quienLoPrepara: p.quien_lo_prepara,
       pase: p.pase,
       seccionId: p.seccion_id,

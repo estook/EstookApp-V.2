@@ -3,16 +3,27 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import {
   COLORES_DE_LA_BOTONERA,
+  COMO_SE_VE_LO_MAS_PEDIDO,
+  ICONOS_DE_LA_SECCION,
   NOMBRE_DE_QUIEN_LO_PREPARA,
   QUIEN_LO_PREPARA,
   centimos,
+  comoSeVeElNombre,
   cuantasSeEligen,
   loQueProponeElNombre,
   type CaminoDeLaBotonera,
   type Centimos,
   type ColorDeLaBotonera,
+  type IconoDeLaSeccion,
   type QuienLoPrepara,
 } from '@estook/dominio';
+import {
+  IconoArrastrar,
+  IconoColor,
+  IconoEditar,
+  IconoFlechaDerecha,
+  IconoFlechaIzquierda,
+} from '@estook/iconos';
 import {
   Boton,
   Botones,
@@ -37,27 +48,30 @@ import { euros } from '../logica/texto.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { COMO_SE_VE_EL_COLOR } from './colores.ts';
 import { HojaDeGrupo } from './HojaDeGrupo.tsx';
+import { LaBaldosaDeLaSeccion } from './LaBaldosaDeLaSeccion.tsx';
+import { EL_ICONO, NOMBRE_DEL_ICONO } from './iconosDeLaSeccion.ts';
 import { MontaTusBebidas } from './MontaTusBebidas.tsx';
 import { irA } from '../navegar.ts';
 import { moverUnPuesto, usarArrastrar } from '../ganchos/usarArrastrar.ts';
 
 /**
- * **Ajustes del TPV › Productos: la botonera** (T3, maquetas «Productos: cómo empezar» y
- * «Productos: la botonera»; Anexo 11.11). Qué se vende en el TPV, en qué página y de qué
- * color y **quién lo prepara**. **En qué pase sale no se pregunta** (Richi, 28-oct): lo elige el
- * camarero en cada mesa con las pestañas de los pases, que el cliente manda en su orden.
+ * **Ajustes del TPV › Productos y precios: la botonera** (T3, Anexo 11.11; reordenada en R3,
+ * 0133). Qué se vende en el TPV, en qué sección, con qué icono y color, y **quién lo prepara**.
+ * **En qué pase sale no se pregunta** (Richi, 28-oct): lo elige el camarero en cada mesa.
  *
  *   · **Al empezar, tres caminos**: traer toda la carta, elegir lo que se vende aquí o
  *     empezar de cero
- *   · **las páginas**, cada una con quién la prepara, que heredan sus botones; se
- *     arrastran para ordenarlas
- *   · **los botones**: «+ De la carta», su color, lo suyo si cambia lo de su página (el pan,
- *     de «Nadie»), fijarlo en «Lo más pedido», moverlo o quitarlo
+ *   · **las secciones** a la izquierda, con su icono y su color (Estook los pone por el
+ *     nombre); se arrastran para ordenarlas. A la derecha, la que se toca: quién la prepara,
+ *     que heredan sus productos, y sus productos
+ *   · **los productos**: «+ De la carta», su color, lo suyo si cambia lo de su sección (el
+ *     pan, de «Nadie»), «En Lo más pedido», moverlo o quitarlo
  *   · **«Nuevos en la carta»**: lo que está en la carta y aún no en el TPV, con «Añadir»
  *   · **«Nuevo producto»**: nace también en la carta de Estook, sin escandallo
  *
- * La botonera no copia la carta: el precio, el IVA, la foto y el escandallo son los de la
- * carta, y se cambian en Estook.
+ * «Página» pasó a llamarse **«Sección»** en R3, como en la Carta de Estook (por dentro sigue
+ * siendo `pagina_del_tpv`). La botonera no copia la carta: el precio, el IVA, la foto y el
+ * escandallo son los de la carta, y se cambian en Estook.
  */
 
 const CLAVE = ['botonera'];
@@ -173,7 +187,7 @@ function TresCaminos({ datos, orden }: { readonly datos: LaBotonera; readonly or
       id: 'toda_la_carta',
       titulo: 'Traer toda la carta',
       frase:
-        'Cada sección de tu carta, una página, en su orden. Lo que añadas a la carta después entra solo.',
+        'Cada sección de tu carta, con su icono y su color, en su orden. Lo que añadas a la carta después entra solo.',
       paraQuien: hayCarta
         ? `Recomendado: tu carta ya está en Estook · ${String(secciones)} ${secciones === 1 ? 'sección' : 'secciones'}, ${String(platos)} ${platos === 1 ? 'plato' : 'platos'}`
         : 'Para cuando tu carta ya esté en Estook',
@@ -189,7 +203,7 @@ function TresCaminos({ datos, orden }: { readonly datos: LaBotonera; readonly or
       id: 'de_cero',
       titulo: 'Empezar de cero',
       frase:
-        'Creas los productos aquí: nombre, precio, página y quién lo prepara. Van también a tu carta de Estook, «sin escandallo», para completarlos allí cuando quieras.',
+        'Creas los productos aquí: nombre, precio, sección y quién lo prepara. Van también a tu carta de Estook, «sin escandallo», para completarlos allí cuando quieras.',
       paraQuien: hayCarta
         ? 'Para un local que no quiere su carta en el TPV'
         : 'Recomendado: un local sin carta en Estook',
@@ -250,8 +264,31 @@ function TresCaminos({ datos, orden }: { readonly datos: LaBotonera; readonly or
   );
 }
 
-// ═══ La botonera montada ══════════════════════════════════════════════════════
+// ═══ La botonera montada: las secciones a la izquierda, la que tocas a la derecha ═══
 
+/** «Lo más pedido», en la lista de secciones: no es una sección guardada. */
+const LO_MAS_PEDIDO = 'lo-mas-pedido';
+
+type LaHoja =
+  | { readonly que: 'icono'; readonly pagina: PaginaDeLaBotonera }
+  | { readonly que: 'nombre'; readonly pagina: PaginaDeLaBotonera }
+  | { readonly que: 'quitar'; readonly pagina: PaginaDeLaBotonera }
+  | {
+      readonly que: 'boton';
+      readonly pagina: PaginaDeLaBotonera;
+      readonly boton: BotonDeLaBotonera;
+    }
+  | { readonly que: 'de_la_carta'; readonly pagina: PaginaDeLaBotonera }
+  | { readonly que: 'nueva_pagina' }
+  | { readonly que: 'nuevo_producto' };
+
+/**
+ * **Productos y precios** (R3, 0133; maqueta aprobada el 5-nov), como el editor de un TPV
+ * profesional: **la lista de secciones** a la izquierda (se arrastran para ordenarlas, en el
+ * orden del comandero) y **el detalle de la que tocas** a la derecha, con su icono y su color,
+ * quién la prepara y sus productos tal como se ven al pedir. En el móvil, primero la lista; al
+ * tocar una sección se abre su detalle, con «‹ Secciones» para volver.
+ */
 function LaBotoneraMontada({
   datos,
   camino,
@@ -264,59 +301,50 @@ function LaBotoneraMontada({
   /** Desde «Monta tus bebidas», «+ Una que no está en el almacén» abre «Nuevo producto». */
   readonly conElNuevoAbierto: boolean;
 }) {
-  const [hoja, setHoja] = useState<
-    | { readonly que: 'pagina'; readonly pagina: PaginaDeLaBotonera }
-    | {
-        readonly que: 'boton';
-        readonly pagina: PaginaDeLaBotonera;
-        readonly boton: BotonDeLaBotonera;
-      }
-    | { readonly que: 'de_la_carta'; readonly pagina: PaginaDeLaBotonera }
-    | { readonly que: 'nueva_pagina' }
-    | { readonly que: 'nuevo_producto' }
-    | null
-  >(conElNuevoAbierto && datos.puedeCrearProductos ? { que: 'nuevo_producto' } : null);
+  const [hoja, setHoja] = useState<LaHoja | null>(
+    conElNuevoAbierto && datos.puedeCrearProductos ? { que: 'nuevo_producto' } : null,
+  );
+  const [elegida, setElegida] = useState<string | null>(null);
   const cerrar = () => {
     setHoja(null);
     if (conElNuevoAbierto) irA('ajustes/productos');
   };
   const paginas = datos.paginas;
+  const marcados = paginas.flatMap((g) =>
+    g.botones.filter((b) => b.fijado).map((b) => ({ pagina: g, boton: b })),
+  );
+  // La que se ve a la derecha: la tocada; si no, en la tablet, la primera. En el móvil, sin
+  // tocar ninguna, solo la lista.
+  const existe = (id: string | null) =>
+    id !== null && (id === LO_MAS_PEDIDO || paginas.some((g) => g.id === id));
+  const tocada = existe(elegida) ? elegida : null;
+  const vista = tocada ?? paginas[0]?.id ?? null;
   // Lo de la hoja abierta, siempre como está ahora: tras ordenar o cambiar, no la copia vieja.
   const laDeAhora = (g: PaginaDeLaBotonera) => paginas.find((x) => x.id === g.id) ?? g;
-  const hojaViva = (() => {
+  const hojaViva = ((): LaHoja | null => {
     if (hoja === null) return null;
     if (hoja.que === 'boton') {
       const id = hoja.boton.botonId;
       const pagina = paginas.find((g) => g.botones.some((b) => b.botonId === id)) ?? hoja.pagina;
       return { ...hoja, pagina, boton: pagina.botones.find((b) => b.botonId === id) ?? hoja.boton };
     }
-    if (hoja.que === 'pagina' || hoja.que === 'de_la_carta') {
-      return { ...hoja, pagina: laDeAhora(hoja.pagina) };
-    }
+    if ('pagina' in hoja) return { ...hoja, pagina: laDeAhora(hoja.pagina) };
     return hoja;
   })();
   const ids = useMemo(() => paginas.map((g) => g.id), [paginas]);
-  const ordenarPaginas = (nuevo: readonly string[]) => {
+  const arrastre = usarArrastrar(ids, (nuevo) => {
     void orden('ordenar_las_paginas_del_tpv', { paginas: nuevo });
-  };
-  const arrastre = usarArrastrar(ids, ordenarPaginas);
+  });
+  const laVista = paginas.find((g) => g.id === vista);
 
   return (
     <>
       <div className="flex flex-wrap items-center gap-e3">
-        <h1 className="text-pantalla font-bold">Productos</h1>
+        <h1 className="text-pantalla font-bold">Productos y precios</h1>
         <span className="rounded-redondo bg-charcoal px-e3 py-[2px] text-secundario font-semibold">
           {NOMBRE_DEL_CAMINO[camino]}
         </span>
         <div className="ml-auto flex flex-wrap gap-e2">
-          <Boton
-            tono="secundario"
-            onClick={() => {
-              setHoja({ que: 'nueva_pagina' });
-            }}
-          >
-            + Página
-          </Boton>
           <Boton
             tono="secundario"
             onClick={() => {
@@ -338,62 +366,127 @@ function LaBotoneraMontada({
         </div>
       </div>
 
-      <div className="grid items-start gap-e5 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="flex flex-col gap-e3">
-          {paginas.length === 0 ? (
-            <div className="rounded-mayor border-2 border-dashed border-borde p-e5 text-cuerpo text-texto-suave">
-              Aún no hay páginas. Crea una con «+ Página»
-              {datos.puedeCrearProductos ? ', o un producto con «Nuevo producto»' : ''}.
+      <div className="grid items-start gap-e5 lg:grid-cols-[19rem_minmax(0,1fr)]">
+        {/* ── Las secciones ── */}
+        <div className={['flex-col gap-e4', tocada === null ? 'flex' : 'hidden lg:flex'].join(' ')}>
+          <section aria-label="Secciones" className="flex flex-col gap-e2">
+            <h2 className="text-seccion font-bold">Secciones</h2>
+            <div className="flex flex-col overflow-hidden rounded-mayor bg-superficie">
+              <FilaDeSeccion
+                nombre="Lo más pedido"
+                icono={COMO_SE_VE_LO_MAS_PEDIDO.icono}
+                color={COMO_SE_VE_LO_MAS_PEDIDO.color}
+                linea={
+                  marcados.length === 0
+                    ? 'No sale: nada marcado'
+                    : `Sale · ${String(marcados.length)} ${marcados.length === 1 ? 'marcado' : 'marcados'}`
+                }
+                apagada={marcados.length === 0}
+                vista={vista === LO_MAS_PEDIDO}
+                alTocar={() => {
+                  setElegida(LO_MAS_PEDIDO);
+                }}
+              />
+              {paginas.map((g) => (
+                <FilaDeSeccion
+                  key={g.id}
+                  id={g.id}
+                  nombre={g.nombre}
+                  icono={elIconoDe(g)}
+                  color={g.color}
+                  linea={`${g.botones.length === 1 ? '1 producto' : `${String(g.botones.length)} productos`} · ${NOMBRE_DE_QUIEN_LO_PREPARA[g.quienLoPrepara]}`}
+                  vista={vista === g.id}
+                  asa={arrastre.asa(g.id)}
+                  arrastrando={arrastre.arrastrando === g.id}
+                  sobre={arrastre.sobre === g.id}
+                  alTocar={() => {
+                    setElegida(g.id);
+                  }}
+                />
+              ))}
             </div>
-          ) : (
-            <p className="text-secundario text-texto-suave">
-              Arrastra para ordenar. Toca un botón para su color o quién lo prepara.
-            </p>
-          )}
-          {paginas.map((g) => (
-            <TarjetaDePagina
-              key={g.id}
-              pagina={g}
-              orden={orden}
-              asa={arrastre.asa(g.id)}
-              arrastrando={arrastre.arrastrando === g.id}
-              sobre={arrastre.sobre === g.id}
-              alTocarLaPagina={() => {
-                setHoja({ que: 'pagina', pagina: g });
+            {paginas.length === 0 && (
+              <p className="text-secundario text-texto-suave">
+                Aún no hay secciones. Crea una con «+ Nueva sección»
+                {datos.puedeCrearProductos ? ', o un producto con «Nuevo producto»' : ''}.
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setHoja({ que: 'nueva_pagina' });
               }}
-              alTocarUnBoton={(b) => {
-                setHoja({ que: 'boton', pagina: g, boton: b });
-              }}
-              alPonerDeLaCarta={() => {
-                setHoja({ que: 'de_la_carta', pagina: g });
-              }}
-            />
-          ))}
-        </div>
-
-        <aside className="flex flex-col gap-e4">
-          <div className="rounded-mayor bg-superficie p-e4 text-secundario text-texto-suave">
-            <strong className="text-texto">«Lo más pedido»</strong> va la primera y se llena sola
-            con lo que más se vende a cada hora. Cada página se lo pasa a sus botones; un botón
-            puede tener lo suyo: el pan, en Entrantes, es de «Nadie» (se sirve tal cual y no va a
-            ninguna pantalla).
-          </div>
+              className="min-h-toque rounded-mayor border-2 border-dashed border-borde px-e4 font-bold text-texto-suave"
+            >
+              + Nueva sección
+            </button>
+          </section>
           <NuevosEnLaCarta datos={datos} orden={orden} />
           <div className="rounded-mayor bg-superficie p-e4">
             <Interruptor
               etiqueta="Lo nuevo de la carta entra solo"
-              ayuda="Cada plato que añadas en Estook › Carta sale solo en la página de su sección."
+              ayuda="Cada plato que añadas en Estook › Carta sale aquí, en su sección."
               puesto={datos.entraSolo}
               alCambiar={(si) => {
                 void orden('lo_nuevo_entra_solo', { si });
               }}
             />
           </div>
-        </aside>
+          <details className="rounded-mayor bg-superficie p-e4 text-secundario text-texto-suave">
+            <summary className="min-h-toque cursor-pointer content-center font-bold text-texto">
+              ¿Cómo funciona?
+            </summary>
+            <p className="pt-e2">
+              <strong className="text-texto">«Lo más pedido»</strong> sale la primera en el TPV solo
+              si marcas algún producto (tócalo y enciende «En Lo más pedido»): primero lo marcado y
+              después lo que más se vende a esa hora. Sin nada marcado no sale, y el camarero llega
+              antes a las demás.
+            </p>
+            <p className="pt-e2">
+              Cada sección pasa a sus productos su color y quién la prepara. Un producto puede tener
+              lo suyo: el pan, en Entrantes, es de «Nadie» (se sirve tal cual y no va a ninguna
+              pantalla).
+            </p>
+          </details>
+        </div>
+
+        {/* ── La que tocas ── */}
+        <div className={['flex-col gap-e4', tocada === null ? 'hidden lg:flex' : 'flex'].join(' ')}>
+          <button
+            type="button"
+            onClick={() => {
+              setElegida(null);
+            }}
+            className="flex min-h-toque items-center gap-e1 self-start font-semibold text-texto-suave lg:hidden"
+          >
+            <IconoFlechaIzquierda size={20} />
+            Secciones
+          </button>
+          {vista === LO_MAS_PEDIDO ? (
+            <ElDetalleDeLoMasPedido
+              marcados={marcados}
+              alTocarUnBoton={(pagina, boton) => {
+                setHoja({ que: 'boton', pagina, boton });
+              }}
+            />
+          ) : laVista === undefined ? (
+            <div className="rounded-mayor border-2 border-dashed border-borde p-e5 text-cuerpo text-texto-suave">
+              Crea la primera sección con «+ Nueva sección».
+            </div>
+          ) : (
+            <ElDetalleDeLaSeccion key={laVista.id} pagina={laVista} orden={orden} abrir={setHoja} />
+          )}
+        </div>
       </div>
 
-      {hojaViva?.que === 'pagina' && (
-        <HojaDePagina pagina={hojaViva.pagina} ids={ids} orden={orden} alCerrar={cerrar} />
+      {hojaViva?.que === 'icono' && (
+        <HojaIconoYColor pagina={hojaViva.pagina} orden={orden} alCerrar={cerrar} />
+      )}
+      {hojaViva?.que === 'nombre' && (
+        <HojaNombreDeLaSeccion pagina={hojaViva.pagina} ids={ids} orden={orden} alCerrar={cerrar} />
+      )}
+      {hojaViva?.que === 'quitar' && (
+        <HojaQuitarLaSeccion pagina={hojaViva.pagina} orden={orden} alCerrar={cerrar} />
       )}
       {hojaViva?.que === 'boton' && (
         <HojaDeBoton
@@ -422,7 +515,15 @@ function LaBotoneraMontada({
           />
         </Hoja>
       )}
-      {hojaViva?.que === 'nueva_pagina' && <HojaNuevaPagina orden={orden} alCerrar={cerrar} />}
+      {hojaViva?.que === 'nueva_pagina' && (
+        <HojaNuevaPagina
+          orden={orden}
+          alCerrar={cerrar}
+          alCrear={(id) => {
+            setElegida(id);
+          }}
+        />
+      )}
       {hojaViva?.que === 'nuevo_producto' && (
         <HojaNuevoProducto paginas={paginas} orden={orden} alCerrar={cerrar} />
       )}
@@ -430,135 +531,526 @@ function LaBotoneraMontada({
   );
 }
 
-function TarjetaDePagina({
+/** El icono de una sección: el que manda la API, o el de su nombre con una API de antes. */
+function elIconoDe(g: {
+  readonly nombre: string;
+  readonly icono?: IconoDeLaSeccion;
+}): IconoDeLaSeccion {
+  return g.icono ?? comoSeVeElNombre(g.nombre).icono;
+}
+
+/** Una fila de la lista de secciones: el asa, su baldosa, su nombre y una línea. */
+function FilaDeSeccion({
+  id,
+  nombre,
+  icono,
+  color,
+  linea,
+  apagada = false,
+  vista,
+  asa,
+  arrastrando = false,
+  sobre = false,
+  alTocar,
+}: {
+  readonly id?: string;
+  readonly nombre: string;
+  readonly icono: IconoDeLaSeccion;
+  readonly color: ColorDeLaBotonera | null;
+  readonly linea: string;
+  readonly apagada?: boolean;
+  readonly vista: boolean;
+  readonly asa?: ReturnType<ReturnType<typeof usarArrastrar>['asa']>;
+  readonly arrastrando?: boolean;
+  readonly sobre?: boolean;
+  readonly alTocar: () => void;
+}) {
+  return (
+    <div
+      {...(id === undefined ? {} : { 'data-orden': id })}
+      className={[
+        'flex items-center border-b border-borde last:border-b-0',
+        vista ? 'lg:bg-charcoal lg:shadow-[inset_3px_0_0_var(--color-naranja)]' : '',
+        arrastrando ? 'opacity-60' : '',
+        sobre ? 'outline outline-2 -outline-offset-2 outline-naranja' : '',
+      ].join(' ')}
+    >
+      {asa === undefined ? (
+        <span aria-hidden="true" className="w-[2rem] shrink-0" />
+      ) : (
+        <span
+          {...asa}
+          role="img"
+          aria-label={`Arrastrar ${nombre}`}
+          className="flex min-h-toque w-[2rem] shrink-0 select-none items-center justify-center text-texto-tenue"
+        >
+          <IconoArrastrar size={18} />
+        </span>
+      )}
+      <button
+        type="button"
+        onClick={alTocar}
+        aria-label={`${nombre}: ${linea}`}
+        aria-current={vista ? 'true' : undefined}
+        className="flex min-h-toque-cocina min-w-0 flex-1 items-center gap-e3 py-e2 pr-e3 text-left"
+      >
+        <span className={apagada ? 'opacity-50' : ''}>
+          <LaBaldosaDeLaSeccion icono={icono} color={color} lado={36} />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate font-bold">{nombre}</span>
+          <span className="truncate text-secundario text-texto-suave">{linea}</span>
+        </span>
+        <IconoFlechaDerecha size={18} className="shrink-0 text-texto-tenue" />
+      </button>
+    </div>
+  );
+}
+
+/** El detalle de una sección: su icono y su color, quién la prepara y sus productos. */
+function ElDetalleDeLaSeccion({
   pagina,
   orden,
-  asa,
-  arrastrando,
-  sobre,
-  alTocarLaPagina,
-  alTocarUnBoton,
-  alPonerDeLaCarta,
+  abrir,
 }: {
   readonly pagina: PaginaDeLaBotonera;
   readonly orden: Orden;
-  readonly asa: ReturnType<ReturnType<typeof usarArrastrar>['asa']>;
-  readonly arrastrando: boolean;
-  readonly sobre: boolean;
-  readonly alTocarLaPagina: () => void;
-  readonly alTocarUnBoton: (b: BotonDeLaBotonera) => void;
-  readonly alPonerDeLaCarta: () => void;
+  readonly abrir: (hoja: LaHoja) => void;
 }) {
   const idsDeBotones = useMemo(() => pagina.botones.map((b) => b.botonId), [pagina.botones]);
   const arrastre = usarArrastrar(idsDeBotones, (nuevo) => {
     void orden('ordenar_los_botones', { pagina_id: pagina.id, botones: nuevo });
   });
-  const cambiar = (cambios: Record<string, unknown>) => {
-    void orden('cambiar_pagina_del_tpv', { pagina_id: pagina.id, ...cambios });
-  };
   const n = pagina.botones.length;
 
   return (
-    <section
-      data-orden={pagina.id}
-      aria-label={`Página ${pagina.nombre}`}
-      className={[
-        'flex flex-col gap-e3 rounded-mayor bg-superficie p-e4',
-        pagina.color === null ? '' : `border-l-[6px] ${COMO_SE_VE_EL_COLOR[pagina.color].franja}`,
-        arrastrando ? 'opacity-60' : '',
-        sobre ? 'outline outline-2 outline-naranja' : '',
-      ].join(' ')}
-    >
-      <div className="flex flex-wrap items-center gap-e3">
-        <span
-          {...asa}
-          role="img"
-          aria-label={`Arrastrar ${pagina.nombre}`}
-          className="select-none px-e1 text-seccion text-texto-tenue"
-        >
-          ⋮⋮
-        </span>
-        <button
-          type="button"
-          onClick={alTocarLaPagina}
-          className="min-h-toque text-left text-seccion font-bold underline-offset-4 hover:underline"
-        >
-          {pagina.nombre}
-        </button>
-        <span className="text-secundario text-texto-suave">
-          {n === 1 ? '1 botón' : `${String(n)} botones`}
-        </span>
+    <section aria-label={`Sección ${pagina.nombre}`} className="flex flex-col gap-e4">
+      <div className="flex flex-wrap items-center gap-e4">
+        <LaBaldosaDeLaSeccion icono={elIconoDe(pagina)} color={pagina.color} lado={64} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <h2 className="text-pantalla font-bold [overflow-wrap:anywhere]">{pagina.nombre}</h2>
+          <span className="text-secundario text-texto-suave">
+            {pagina.deLaSeccion !== null ? `Viene de «${pagina.deLaSeccion}» de tu carta · ` : ''}
+            {n === 1 ? '1 producto' : `${String(n)} productos`}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-e2">
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              abrir({ que: 'icono', pagina });
+            }}
+          >
+            <IconoColor size={18} />
+            Icono y color
+          </Boton>
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              abrir({ que: 'nombre', pagina });
+            }}
+          >
+            <IconoEditar size={18} />
+            Nombre
+          </Boton>
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-x-e5 gap-y-e3">
-        <Pregunta titulo="¿Quién lo prepara?">
-          {QUIEN_LO_PREPARA.map((q) => (
-            <Opcion
-              key={q}
-              puesto={pagina.quienLoPrepara === q}
-              onClick={() => {
-                cambiar({ quien_lo_prepara: q });
-              }}
-            >
-              {NOMBRE_DE_QUIEN_LO_PREPARA[q]}
-            </Opcion>
-          ))}
-        </Pregunta>
-      </div>
+      {pagina.deSiempre !== null && (
+        <p className="text-secundario text-texto-suave">
+          {pagina.deSiempre === 'pan'
+            ? 'Aquí entran solos el pan y el agua de tu carta, estén en la sección que estén: los sirve el camarero.'
+            : 'Aquí entran solos los cafés y las infusiones de tu carta, estén en la sección que estén: los hace la barra.'}
+        </p>
+      )}
 
-      <div className="flex flex-wrap gap-e2">
-        {pagina.botones.map((b) => {
-          const suyo = b.quienLoPrepara !== null && b.quienLoPrepara !== pagina.quienLoPrepara;
-          const color = b.color ?? pagina.color;
-          return (
-            <div
-              key={b.botonId}
-              data-orden={b.botonId}
-              className={[
-                'flex items-stretch overflow-hidden rounded-grande border bg-fondo',
-                color === null
-                  ? 'border-borde'
-                  : `border-borde border-l-[5px] ${COMO_SE_VE_EL_COLOR[color].franja}`,
-                arrastre.arrastrando === b.botonId ? 'opacity-60' : '',
-                arrastre.sobre === b.botonId ? 'outline outline-2 outline-naranja' : '',
-              ].join(' ')}
-            >
-              <span
-                {...arrastre.asa(b.botonId)}
-                role="img"
-                aria-label={`Arrastrar ${b.nombre}`}
-                className="flex select-none items-center px-e1 text-texto-tenue"
+      <Pregunta titulo="¿Quién lo prepara?">
+        {QUIEN_LO_PREPARA.map((q) => (
+          <Opcion
+            key={q}
+            puesto={pagina.quienLoPrepara === q}
+            onClick={() => {
+              void orden('cambiar_pagina_del_tpv', { pagina_id: pagina.id, quien_lo_prepara: q });
+            }}
+          >
+            {NOMBRE_DE_QUIEN_LO_PREPARA[q]}
+          </Opcion>
+        ))}
+      </Pregunta>
+
+      <div className="flex flex-col gap-e2">
+        <p className="text-cuerpo">
+          <strong>Productos</strong>
+          <span className="text-secundario text-texto-suave">
+            {n > 1 ? ' · arrastra para ordenar; toca uno para cambiar lo suyo' : ''}
+          </span>
+        </p>
+        <div className="grid grid-cols-2 gap-e2 sm:grid-cols-3 xl:grid-cols-4">
+          {pagina.botones.map((b) => {
+            const suyo = b.quienLoPrepara !== null && b.quienLoPrepara !== pagina.quienLoPrepara;
+            const color = b.color ?? pagina.color;
+            return (
+              <div
+                key={b.botonId}
+                data-orden={b.botonId}
+                className={[
+                  'flex min-h-[4.25rem] items-stretch overflow-hidden rounded-grande border border-borde bg-fondo',
+                  color === null ? '' : `border-l-[6px] ${COMO_SE_VE_EL_COLOR[color].franja}`,
+                  arrastre.arrastrando === b.botonId ? 'opacity-60' : '',
+                  arrastre.sobre === b.botonId ? 'outline outline-2 outline-naranja' : '',
+                ].join(' ')}
               >
-                ⋮
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  alTocarUnBoton(b);
-                }}
-                className="min-h-toque py-e1 pr-e3 text-left font-semibold"
-              >
-                {b.nombre}
-                {suyo && (
-                  <span className="font-normal text-texto-suave">
-                    {' '}
-                    · {NOMBRE_DE_QUIEN_LO_PREPARA[b.quienLoPrepara]}
+                <button
+                  type="button"
+                  onClick={() => {
+                    abrir({ que: 'boton', pagina, boton: b });
+                  }}
+                  aria-label={b.nombre}
+                  className="flex min-w-0 flex-1 flex-col justify-center py-e2 pl-e3 text-left"
+                >
+                  <span className="line-clamp-2 font-semibold leading-tight [overflow-wrap:anywhere]">
+                    {b.nombre}
+                  </span>
+                  <span className="text-secundario text-texto-suave">
+                    {b.precioCentimos === null ? 'Sin precio' : euros(b.precioCentimos)}
+                    {suyo ? ` · ${NOMBRE_DE_QUIEN_LO_PREPARA[b.quienLoPrepara]}` : ''}
+                    {b.fijado ? ' · ★' : ''}
+                  </span>
+                </button>
+                {n > 1 && (
+                  <span
+                    {...arrastre.asa(b.botonId)}
+                    role="img"
+                    aria-label={`Arrastrar ${b.nombre}`}
+                    className="flex w-[1.75rem] shrink-0 select-none items-center justify-center text-texto-tenue"
+                  >
+                    <IconoArrastrar size={16} />
                   </span>
                 )}
-                {b.fijado && <span className="font-normal text-texto-suave"> · fijado</span>}
-              </button>
-            </div>
-          );
-        })}
+              </div>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => {
+              abrir({ que: 'de_la_carta', pagina });
+            }}
+            className="min-h-[4.25rem] rounded-grande border-2 border-dashed border-borde px-e3 font-semibold text-texto-suave"
+          >
+            + De la carta
+          </button>
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-e2">
         <button
           type="button"
-          onClick={alPonerDeLaCarta}
-          className="min-h-toque rounded-grande border-2 border-dashed border-borde px-e4 font-semibold text-texto-suave"
+          onClick={() => {
+            abrir({ que: 'quitar', pagina });
+          }}
+          className="min-h-toque px-e3 font-semibold text-mal"
         >
-          + De la carta
+          Quitar la sección
         </button>
       </div>
     </section>
+  );
+}
+
+/** «Lo más pedido», a la derecha: lo marcado, y cuándo sale. */
+function ElDetalleDeLoMasPedido({
+  marcados,
+  alTocarUnBoton,
+}: {
+  readonly marcados: readonly {
+    readonly pagina: PaginaDeLaBotonera;
+    readonly boton: BotonDeLaBotonera;
+  }[];
+  readonly alTocarUnBoton: (pagina: PaginaDeLaBotonera, boton: BotonDeLaBotonera) => void;
+}) {
+  return (
+    <section aria-label="Sección Lo más pedido" className="flex flex-col gap-e4">
+      <div className="flex items-center gap-e4">
+        <LaBaldosaDeLaSeccion
+          icono={COMO_SE_VE_LO_MAS_PEDIDO.icono}
+          color={COMO_SE_VE_LO_MAS_PEDIDO.color}
+          lado={64}
+        />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <h2 className="text-pantalla font-bold">Lo más pedido</h2>
+          <span className="text-secundario text-texto-suave">
+            {marcados.length === 0
+              ? 'No sale en el TPV: no hay nada marcado'
+              : 'Sale la primera: lo marcado, y después lo que más se vende a esa hora'}
+          </span>
+        </div>
+      </div>
+      {marcados.length === 0 ? (
+        <p className="rounded-mayor border-2 border-dashed border-borde p-e4 text-cuerpo text-texto-suave">
+          Para que salga, toca un producto en su sección y enciende{' '}
+          <strong className="text-texto">«En Lo más pedido»</strong>. Sin nada marcado no ocupa
+          sitio en el comandero.
+        </p>
+      ) : (
+        <div className="grid grid-cols-2 gap-e2 sm:grid-cols-3 xl:grid-cols-4">
+          {marcados.map(({ pagina, boton }) => {
+            const color = boton.color ?? pagina.color;
+            return (
+              <button
+                key={boton.botonId}
+                type="button"
+                onClick={() => {
+                  alTocarUnBoton(pagina, boton);
+                }}
+                className={[
+                  'flex min-h-[4.25rem] flex-col justify-center rounded-grande border border-borde bg-fondo py-e2 pl-e3 text-left',
+                  color === null ? '' : `border-l-[6px] ${COMO_SE_VE_EL_COLOR[color].franja}`,
+                ].join(' ')}
+              >
+                <span className="line-clamp-2 font-semibold leading-tight">{boton.nombre}</span>
+                <span className="text-secundario text-texto-suave">{pagina.nombre}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ═══ Las hojas de una sección ═════════════════════════════════════════════════
+
+/**
+ * **Icono y color** (maqueta «El icono y el color de una sección»): arriba cómo quedará en el
+ * comandero; debajo los once colores y los treinta iconos de Lucide.
+ */
+function HojaIconoYColor({
+  pagina,
+  orden,
+  alCerrar,
+}: {
+  readonly pagina: PaginaDeLaBotonera;
+  readonly orden: Orden;
+  readonly alCerrar: () => void;
+}) {
+  const [color, setColor] = useState<ColorDeLaBotonera | null>(pagina.color);
+  const [icono, setIcono] = useState<IconoDeLaSeccion>(elIconoDe(pagina));
+  const [trabajando, setTrabajando] = useState(false);
+
+  async function guardar() {
+    setTrabajando(true);
+    const hecho = await orden('cambiar_pagina_del_tpv', { pagina_id: pagina.id, icono, color });
+    setTrabajando(false);
+    if (hecho.ok) alCerrar();
+  }
+
+  return (
+    <Hoja
+      abierta
+      titulo="Icono y color"
+      alCerrar={alCerrar}
+      pie={
+        <Botones>
+          <Boton
+            tono="principal"
+            cargando={trabajando}
+            textoCargando="Guardando"
+            onClick={() => {
+              void guardar();
+            }}
+          >
+            Guardar
+          </Boton>
+        </Botones>
+      }
+    >
+      <div className="flex flex-col gap-e4 pt-e3">
+        <div className="flex items-center gap-e3 rounded-mayor bg-fondo p-e3">
+          <LaBaldosaDeLaSeccion icono={icono} color={color} lado={52} />
+          <div className="flex min-w-0 flex-col">
+            <strong className="truncate">{pagina.nombre}</strong>
+            <span className="text-secundario text-texto-suave">Así se verá en el comandero</span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-e2">
+          <span className="text-secundario font-bold text-texto-suave">Color</span>
+          <div role="radiogroup" aria-label="Color" className="flex flex-wrap gap-e2">
+            {COLORES_DE_LA_BOTONERA.map((c) => (
+              <button
+                key={c}
+                type="button"
+                role="radio"
+                aria-checked={color === c}
+                aria-label={COMO_SE_VE_EL_COLOR[c].nombre}
+                title={COMO_SE_VE_EL_COLOR[c].nombre}
+                onClick={() => {
+                  setColor(c);
+                }}
+                className={[
+                  'size-toque rounded-redondo',
+                  COMO_SE_VE_EL_COLOR[c].punto,
+                  color === c ? 'outline outline-[3px] outline-offset-2 outline-texto' : '',
+                ].join(' ')}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col gap-e2">
+          <span className="text-secundario font-bold text-texto-suave">Icono</span>
+          <div
+            role="radiogroup"
+            aria-label="Icono"
+            className="grid grid-cols-[repeat(auto-fill,minmax(3.25rem,1fr))] gap-e2"
+          >
+            {ICONOS_DE_LA_SECCION.map((i) => {
+              const ElIcono = EL_ICONO[i];
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  role="radio"
+                  aria-checked={icono === i}
+                  aria-label={NOMBRE_DEL_ICONO[i]}
+                  title={NOMBRE_DEL_ICONO[i]}
+                  onClick={() => {
+                    setIcono(i);
+                  }}
+                  className={[
+                    'flex h-[3.25rem] items-center justify-center rounded-grande',
+                    icono === i ? 'bg-texto text-fondo' : 'bg-charcoal text-texto',
+                  ].join(' ')}
+                >
+                  <ElIcono size={24} strokeWidth={2} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </Hoja>
+  );
+}
+
+/** El nombre de la sección, y su sitio en la lista para quien no arrastra. */
+function HojaNombreDeLaSeccion({
+  pagina,
+  ids,
+  orden,
+  alCerrar,
+}: {
+  readonly pagina: PaginaDeLaBotonera;
+  readonly ids: readonly string[];
+  readonly orden: Orden;
+  readonly alCerrar: () => void;
+}) {
+  const [nombre, setNombre] = useState(pagina.nombre);
+  const donde = ids.indexOf(pagina.id);
+
+  async function guardar() {
+    const hecho = await orden('cambiar_pagina_del_tpv', {
+      pagina_id: pagina.id,
+      nombre: nombre.trim(),
+    });
+    if (hecho.ok) alCerrar();
+  }
+
+  return (
+    <Hoja
+      abierta
+      titulo={pagina.nombre}
+      alCerrar={alCerrar}
+      pie={
+        <Botones>
+          <Boton
+            tono="principal"
+            disabled={nombre.trim() === ''}
+            onClick={() => {
+              void guardar();
+            }}
+          >
+            Guardar
+          </Boton>
+        </Botones>
+      }
+    >
+      <div className="flex flex-col gap-e4 pt-e3">
+        <Campo
+          etiqueta="Nombre de la sección"
+          value={nombre}
+          maxLength={30}
+          onChange={(e) => {
+            setNombre(e.target.value);
+          }}
+        />
+        {ids.length > 1 && (
+          <div className="flex flex-wrap items-center gap-e2">
+            <span className="text-secundario text-texto-suave">
+              Va la {String(donde + 1)}.ª de {String(ids.length)}
+            </span>
+            <Opcion
+              desactivado={donde <= 0}
+              onClick={() => {
+                void orden('ordenar_las_paginas_del_tpv', {
+                  paginas: moverUnPuesto(ids, pagina.id, -1),
+                });
+              }}
+            >
+              Antes
+            </Opcion>
+            <Opcion
+              desactivado={donde >= ids.length - 1}
+              onClick={() => {
+                void orden('ordenar_las_paginas_del_tpv', {
+                  paginas: moverUnPuesto(ids, pagina.id, 1),
+                });
+              }}
+            >
+              Después
+            </Opcion>
+          </div>
+        )}
+      </div>
+    </Hoja>
+  );
+}
+
+function HojaQuitarLaSeccion({
+  pagina,
+  orden,
+  alCerrar,
+}: {
+  readonly pagina: PaginaDeLaBotonera;
+  readonly orden: Orden;
+  readonly alCerrar: () => void;
+}) {
+  return (
+    <Hoja
+      abierta
+      titulo={`Quitar ${pagina.nombre}`}
+      alCerrar={alCerrar}
+      pie={
+        <Botones>
+          <Boton tono="secundario" onClick={alCerrar}>
+            No, dejarla
+          </Boton>
+          <Boton
+            tono="peligro"
+            onClick={() => {
+              void orden('quitar_pagina_del_tpv', { pagina_id: pagina.id }).then((r) => {
+                if (r.ok) alCerrar();
+              });
+            }}
+          >
+            Quitar la sección
+          </Boton>
+        </Botones>
+      }
+    >
+      <p className="pt-e3 text-cuerpo">
+        Sus productos se van con ella. <strong>Los platos siguen en tu carta</strong>: solo dejan de
+        venderse en el TPV.
+      </p>
+    </Hoja>
   );
 }
 
@@ -611,150 +1103,14 @@ function NuevosEnLaCarta({ datos, orden }: { readonly datos: LaBotonera; readonl
       )}
       {nuevos.some((p) => p.seccion === null) && (
         <p className="text-etiqueta text-texto-suave">
-          Lo que no tiene sección se pone con «+ De la carta» en la página que quieras.
+          Lo que no tiene sección se pone con «+ De la carta» en la sección que quieras.
         </p>
       )}
     </section>
   );
 }
 
-// ═══ Las hojas ════════════════════════════════════════════════════════════════
-
-function HojaDePagina({
-  pagina,
-  ids,
-  orden,
-  alCerrar,
-}: {
-  readonly pagina: PaginaDeLaBotonera;
-  readonly ids: readonly string[];
-  readonly orden: Orden;
-  readonly alCerrar: () => void;
-}) {
-  const [nombre, setNombre] = useState(pagina.nombre);
-  const [color, setColor] = useState(pagina.color);
-  const [quitar, setQuitar] = useState(false);
-  const donde = ids.indexOf(pagina.id);
-
-  async function guardar() {
-    const hecho = await orden('cambiar_pagina_del_tpv', {
-      pagina_id: pagina.id,
-      nombre: nombre.trim(),
-      color,
-    });
-    if (hecho.ok) alCerrar();
-  }
-
-  return (
-    <Hoja
-      abierta
-      titulo={pagina.nombre}
-      alCerrar={alCerrar}
-      pie={
-        quitar ? (
-          <Botones>
-            <Boton
-              tono="secundario"
-              onClick={() => {
-                setQuitar(false);
-              }}
-            >
-              No, dejarla
-            </Boton>
-            <Boton
-              tono="peligro"
-              onClick={() => {
-                void orden('quitar_pagina_del_tpv', { pagina_id: pagina.id }).then((r) => {
-                  if (r.ok) alCerrar();
-                });
-              }}
-            >
-              Quitar la página
-            </Boton>
-          </Botones>
-        ) : (
-          <Botones>
-            <Boton
-              tono="texto"
-              onClick={() => {
-                setQuitar(true);
-              }}
-            >
-              Quitar la página
-            </Boton>
-            <Boton
-              tono="principal"
-              disabled={nombre.trim() === ''}
-              onClick={() => {
-                void guardar();
-              }}
-            >
-              Guardar
-            </Boton>
-          </Botones>
-        )
-      }
-    >
-      {quitar ? (
-        <p className="pt-e3 text-cuerpo">
-          Sus botones se van con ella. <strong>Los platos siguen en tu carta</strong>: solo dejan de
-          venderse en el TPV.
-        </p>
-      ) : (
-        <div className="flex flex-col gap-e4 pt-e3">
-          {pagina.deLaSeccion !== null && (
-            <p className="text-secundario text-texto-suave">
-              Viene de «{pagina.deLaSeccion}» de tu carta.
-            </p>
-          )}
-          {pagina.deSiempre !== null && (
-            <p className="text-secundario text-texto-suave">
-              {pagina.deSiempre === 'pan'
-                ? 'Aquí entran solos el pan y el agua de tu carta, estén en la sección que estén: los sirve el camarero.'
-                : 'Aquí entran solos los cafés y las infusiones de tu carta, estén en la sección que estén: los hace la barra.'}
-            </p>
-          )}
-          <Campo
-            etiqueta="Nombre de la página"
-            value={nombre}
-            maxLength={30}
-            onChange={(e) => {
-              setNombre(e.target.value);
-            }}
-          />
-          <ElegirColor color={color} alCambiar={setColor} sinColor="Sin color" />
-          {ids.length > 1 && (
-            <div className="flex flex-wrap items-center gap-e2">
-              <span className="text-secundario text-texto-suave">
-                Va la {String(donde + 1)}.ª de {String(ids.length)}
-              </span>
-              <Opcion
-                desactivado={donde <= 0}
-                onClick={() => {
-                  void orden('ordenar_las_paginas_del_tpv', {
-                    paginas: moverUnPuesto(ids, pagina.id, -1),
-                  });
-                }}
-              >
-                Antes
-              </Opcion>
-              <Opcion
-                desactivado={donde >= ids.length - 1}
-                onClick={() => {
-                  void orden('ordenar_las_paginas_del_tpv', {
-                    paginas: moverUnPuesto(ids, pagina.id, 1),
-                  });
-                }}
-              >
-                Después
-              </Opcion>
-            </div>
-          )}
-        </div>
-      )}
-    </Hoja>
-  );
-}
+// ═══ Las hojas de un producto ═══════════════════════════════════════════════
 
 function HojaDeBoton({
   pagina,
@@ -870,9 +1226,7 @@ function HojaDeBoton({
         )}
 
         <div className="flex flex-col gap-e2">
-          <span className="text-etiqueta font-bold uppercase tracking-wide text-texto-tenue">
-            Opciones al pedirlo
-          </span>
+          <span className="text-secundario font-bold text-texto-suave">Opciones al pedirlo</span>
           {grupos.data === undefined ? (
             <Cargando que="los grupos" />
           ) : (
@@ -946,11 +1300,11 @@ function HojaDeBoton({
             setColor(c);
             void cambiar({ color: c });
           }}
-          sinColor="El de la página"
+          sinColor="El de la sección"
         />
         <Interruptor
-          etiqueta="Fijado en «Lo más pedido»"
-          ayuda="Sale el primero en «Lo más pedido», se venda o no."
+          etiqueta="En «Lo más pedido»"
+          ayuda="«Lo más pedido» sale en el TPV solo si hay algo marcado: lo marcado primero, y después lo que más se vende a esa hora."
           puesto={fijado}
           alCambiar={(si) => {
             setFijado(si);
@@ -959,7 +1313,7 @@ function HojaDeBoton({
         />
         {paginas.length > 1 && (
           <Selector
-            etiqueta="Página"
+            etiqueta="Sección"
             value={pagina.id}
             opciones={paginas.map((g) => ({ valor: g.id, texto: g.nombre }))}
             onChange={(e) => {
@@ -1020,16 +1374,20 @@ function HojaDeBoton({
 function HojaNuevaPagina({
   orden,
   alCerrar,
+  alCrear,
 }: {
   readonly orden: Orden;
   readonly alCerrar: () => void;
+  /** La sección nueva se abre a la derecha. */
+  readonly alCrear: (paginaId: string) => void;
 }) {
   const [nombre, setNombre] = useState('');
   const propone = loQueProponeElNombre(nombre);
+  const seVe = comoSeVeElNombre(nombre);
   return (
     <Hoja
       abierta
-      titulo="Nueva página"
+      titulo="Nueva sección"
       alCerrar={alCerrar}
       pie={
         <Botones>
@@ -1037,19 +1395,23 @@ function HojaNuevaPagina({
             tono="principal"
             disabled={nombre.trim() === ''}
             onClick={() => {
-              void orden('crear_pagina_del_tpv', { nombre: nombre.trim() }).then((r) => {
-                if (r.ok) alCerrar();
+              void orden<{ paginaId: string }>('crear_pagina_del_tpv', {
+                nombre: nombre.trim(),
+              }).then((r) => {
+                if (!r.ok) return;
+                alCrear(r.datos.paginaId);
+                alCerrar();
               });
             }}
           >
-            Crear la página
+            Crear la sección
           </Boton>
         </Botones>
       }
     >
       <div className="flex flex-col gap-e3 pt-e3">
         <Campo
-          etiqueta="Nombre de la página"
+          etiqueta="Nombre de la sección"
           placeholder="Ej.: Vinos, Del día, Tapas…"
           value={nombre}
           maxLength={30}
@@ -1058,10 +1420,13 @@ function HojaNuevaPagina({
           }}
         />
         {nombre.trim() !== '' && (
-          <p className="text-secundario text-texto-suave">
-            La prepara {NOMBRE_DE_QUIEN_LO_PREPARA[propone.quienLoPrepara].toLowerCase()}. Se cambia
-            después con un toque.
-          </p>
+          <div className="flex items-center gap-e3">
+            <LaBaldosaDeLaSeccion icono={seVe.icono} color={seVe.color} lado={44} />
+            <p className="text-secundario text-texto-suave">
+              La prepara {NOMBRE_DE_QUIEN_LO_PREPARA[propone.quienLoPrepara].toLowerCase()}. El
+              icono, el color y quién la prepara se cambian después con un toque.
+            </p>
+          </div>
         )}
       </div>
     </Hoja>
@@ -1079,7 +1444,7 @@ function HojaNuevoProducto({
 }) {
   const [nombre, setNombre] = useState('');
   const [precio, setPrecio] = useState<Centimos | null>(null);
-  // Se propone la primera de las de la carta: un producto nuevo no suele ser pan ni café.
+  // Se propone la primera sección de la carta: un producto nuevo no suele ser pan ni café.
   const [paginaId, setPaginaId] = useState(
     (paginas.find((g) => g.deSiempre === null) ?? paginas[0])?.id ?? '',
   );
@@ -1146,7 +1511,7 @@ function HojaNuevoProducto({
         <CampoMoneda etiqueta="Precio, con IVA" valor={precio} alCambiar={setPrecio} />
         {paginas.length > 0 ? (
           <Selector
-            etiqueta="Página"
+            etiqueta="Sección"
             value={paginaId}
             opciones={paginas.map((g) => ({ valor: g.id, texto: g.nombre }))}
             onChange={(e) => {
@@ -1155,7 +1520,7 @@ function HojaNuevoProducto({
           />
         ) : (
           <Campo
-            etiqueta="Página"
+            etiqueta="Sección"
             placeholder="Ej.: Entrantes"
             value={nuevaPagina}
             maxLength={30}
@@ -1178,7 +1543,7 @@ function HojaNuevoProducto({
           ))}
         </Pregunta>
         <p className="text-secundario text-texto-suave">
-          Se crea también en tu carta de Estook, en la sección que se llama como la página,{' '}
+          Se crea también en tu carta de Estook, en la sección que se llama igual,{' '}
           <strong className="text-texto">sin escandallo</strong>: complétalo allí cuando quieras
           para que el almacén lo descuente.
         </p>
@@ -1350,10 +1715,8 @@ function ElegirColor({
 
 function Pregunta({ titulo, children }: { readonly titulo: string; readonly children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-e1">
-      <span className="text-etiqueta font-bold uppercase tracking-wide text-texto-tenue">
-        {titulo}
-      </span>
+    <div className="flex flex-col gap-e2">
+      <span className="text-secundario font-bold text-texto-suave">{titulo}</span>
       <div role="radiogroup" aria-label={titulo} className="flex flex-wrap gap-e1">
         {children}
       </div>

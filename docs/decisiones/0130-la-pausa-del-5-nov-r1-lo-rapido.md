@@ -24,15 +24,17 @@ Se construye en cuatro entregas, y después se vuelve a T6 · 2 · 1:
 | **R1 · Lo rápido**             | 1, 2, 3 y 4           | Tachar al momento, mandar de una vez, el logo ya no vuelve (sin recargas a la vista), la barra del iPhone opaca. **Esta decisión**                         |
 | **R2 · La mesa en el móvil**   | 1.1, 1.2, 1.3, 8, 8.1 | Esperando · Comiendo · ¿Cuenta? en el plano; la mesa entera al tocarla con Pedir, Servido, Cuenta y Cobrar; el camarero marca lo servido; cambiar un plato |
 | **R3 · Ajustes y secciones**   | 1.4 y 6               | Ajustes en listas compactas; Productos y precios con las secciones a la izquierda; icono y color de cada sección                                           |
-| **R4 · Precios, IA y papeles** | 5, 7 y 9              | Planes sin IVA (Esencial 49 €, Pro 119 €); la IA a un tercio; el coste con Verifacti a 15 €; Estook TPV para Android e iOS, como módulo final              |
+| **R4 · Precios, IA y papeles** | 5, 7 y 9              | Planes sin IVA (Esencial 39 €, Pro 99 €, Cadena 89 €, Pausa 9 €); la IA a un tercio; el coste con Verifacti; Estook TPV para Android e iOS                 |
 
 **Las respuestas de Richi para R2 y R4** (5-nov, noche):
 
 1. **Cambiar un plato, nunca con PIN**: «en un servicio cada segundo es oro». Se cambia y listo; si ya
    estaba hecho, va a merma como «cambio del cliente». **«¿Ya estaba hecho?» lo contesta el camarero**,
    no la cocina: los cocineros van más liados y con las manos ocupadas o grasientas.
-2. **Cadena a 109 € + IVA** (10 € menos que Pro). **Pausa a 9 € + IVA**: de uno a seis meses, una vez
-   cada doce meses, al instante y sin penalización al volver, con el mes empezado prorrateado.
+2. **Los planes, sin IVA, con el precio final del 6-nov** ([0133](0133-r3-ajustes-y-secciones.md)):
+   **Esencial 39 €, Pro 99 €, Cadena 89 € por local** (10 € menos que Pro) y **Pausa 9 €**, todos +
+   IVA. La Pausa: de uno a seis meses, una vez cada doce meses, al instante y sin penalización al
+   volver, con el mes empezado prorrateado.
 3. **La IA a un tercio**: 100 créditos en Esencial y 500 en Pro, tope de 1,65 € por local y mes, y
    «Analiza mi zona» una vez cada diez días.
 4. **Verifacti**: 14,99 € sin IVA el primer NIF al mes y 1,99 € cada NIF más.

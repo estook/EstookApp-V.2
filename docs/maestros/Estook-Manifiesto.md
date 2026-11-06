@@ -75,7 +75,7 @@ Cobrar lo puede hacer Estook con **Estook TPV** —sala, cocina, cobro y tickets
 
 **Lo que Estook hace:** controlar el género y las compras, calcular el coste real de cada plato, montar y analizar la carta, organizar el calendario del local, cuadrar el equipo y sus horas, llevar el APPCC, tomar nota, mandar a cocina, cobrar y emitir tickets y facturas con VeriFactu si el local usa Estook TPV —o leer las ventas de su TPV si sigue con el suyo— para cerrar el círculo, agregar los canales de reparto, generar documentos profesionales y explicarlo todo con Fogón.
 
-**Lo que Estook no hace, y es una decisión firme:** tocar el dinero —ni pasarela de pago ni datos de tarjeta: la tarjeta la cobra el datáfono del banco del local—, hacer nóminas, llevar reservas o guardar datos de clientes finales más allá de los que exige una factura que el propio cliente pide.
+**Lo que Estook no hace, y es una decisión firme:** tocar el dinero —ni pasarela de pago ni datos de tarjeta: la tarjeta la cobra el datáfono del banco del local o su proveedor de pagos, a su nombre—, hacer nóminas, llevar reservas o guardar datos de clientes finales más allá de los que exige una factura que el propio cliente pide.
 
 > **Estook cobra desde la versión 1.2.** El local elige entre tres formas de que entren sus ventas: **cobrar con Estook TPV**, que es la principal; **conectar su TPV**; o **apuntarlo a mano**. Lo que no se mueve es que **Estook nunca tiene el dinero en la mano**, y que la facturación vive aislada del resto y cumple VeriFactu al pie de la letra. Todo lo del cobro, en el **Anexo TPV y facturación**.
 
@@ -983,7 +983,7 @@ Se abre una mesa con sus comensales, se toma nota con la carta de su canal, y **
 
 **Cobro.** Efectivo, tarjeta en el datáfono del local o las dos cosas. La cuenta se divide por comensal, por platos o a partes iguales, y **cada cobro sale con su ticket**, con el QR tributario y la leyenda VERI*FACTU, **lo pida el cliente o no**: lo que elige es llevárselo en papel, por correo o en un QR. Si el ticket no se puede emitir, la mesa no se cierra. Sin internet, justificante provisional y el ticket al volver.
 
-**El dinero no pasa por Estook.** El efectivo va al cajón, que **se abre solo al cobrar en efectivo**; la tarjeta, al datáfono del banco. Y más adelante, **el datáfono conectado**: el importe viaja solo y vuelve «aprobado», sin teclear. En los dos casos el dinero va a la cuenta del local.
+**El dinero no pasa por Estook.** El efectivo va al cajón, que **se abre solo al cobrar en efectivo**; la tarjeta, al datáfono del banco. Y más adelante, **el datáfono conectado**: el importe viaja solo y vuelve «aprobado», sin teclear. Y con **Estook TPV para Android**, **el TPV portátil cobra con tarjeta en la mesa**: el cliente acerca la tarjeta o el móvil al propio aparato, que imprime el ticket ahí mismo (Anexo, 10.7). En todos los casos el dinero va a la cuenta del local.
 
 **Caja.** Apertura con fondo, entradas y salidas con motivo, y arqueo con su descuadre. **Abrir el cajón sin venta se puede, con motivo, y queda apuntado.** El local elige **caja central o la bolsa de cada camarero**, que la liquida al acabar. El cierre de cada caja es el **informe Z**, con **arqueo ciego** —se cuenta sin ver lo que debería haber— y **el total del datáfono cuadrado con lo cobrado con tarjeta**. **El cierre del día suma las cajas y se rellena solo**, con origen «Estook TPV».
 

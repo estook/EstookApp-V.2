@@ -47,17 +47,17 @@ y hay que saber cuál.
 
 ## Las superficies
 
-| Superficie               | Dónde vive                            | Qué es                                                                                                                                                                    | Estado                    |
-| ------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| **Web**                  | `apps/web` → `estook.com`             | Vender y contratar, y lo legal                                                                                                                                            | En producción             |
-| **Estook**               | `apps/app` → `estook.com/app/`        | La gestión: el Panel y las ocho apps. Con conexión                                                                                                                        | En producción             |
-| **Estook TPV**           | `apps/tpv` → `estook.com/tpv/`        | El servicio: sala, barra, cocina, cobro y caja. **Funciona sin conexión** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md))                              | M20A                      |
-| **Carta digital**        | `apps/carta` → `estook.com/carta/…`   | La carta pública con su QR, sin login                                                                                                                                     | En producción (la subida) |
-| **Panel interno**        | `apps/admin` → `estook.com/admin/`    | Nuestro, para llevar a los clientes                                                                                                                                       | En producción             |
-| **La cáscara**           | `apps/movil`                          | Estook TPV envuelto con Capacitor, **opcional**: Android, iPad y el food truck sin la caja. Ni una pantalla propia                                                        | M20A                      |
-| **La caja para Windows** | `apps/caja-windows`                   | Estook TPV en un programa de Windows (Electron), con el centro del local dentro: impresoras, cajón y sin internet ([0119](../decisiones/0119-t5-la-caja-para-windows.md)) | T5 (M19a)                 |
-| **Estook Link**          | —                                     | El conector de un TPV ajeno, para quien no cobra con Estook; se decide con M18                                                                                            | M19b                      |
-| **La API**               | `servidor/` → Supabase Edge Functions | Toda la lógica, detrás del despachador                                                                                                                                    | En producción             |
+| Superficie                  | Dónde vive                            | Qué es                                                                                                                                                                                                                                                                                              | Estado                    |
+| --------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| **Web**                     | `apps/web` → `estook.com`             | Vender y contratar, y lo legal                                                                                                                                                                                                                                                                      | En producción             |
+| **Estook**                  | `apps/app` → `estook.com/app/`        | La gestión: el Panel y las ocho apps. Con conexión                                                                                                                                                                                                                                                  | En producción             |
+| **Estook TPV**              | `apps/tpv` → `estook.com/tpv/`        | El servicio: sala, barra, cocina, cobro y caja. **Funciona sin conexión** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md))                                                                                                                                                        | M20A                      |
+| **Carta digital**           | `apps/carta` → `estook.com/carta/…`   | La carta pública con su QR, sin login                                                                                                                                                                                                                                                               | En producción (la subida) |
+| **Panel interno**           | `apps/admin` → `estook.com/admin/`    | Nuestro, para llevar a los clientes                                                                                                                                                                                                                                                                 | En producción             |
+| **Estook TPV para Android** | `apps/tpv-movil`                      | Estook TPV en una app de Android con Capacitor: la impresora de dentro, el cajón, el lector de códigos, el quiosco y **cobrar con tarjeta en el aparato**. Ni una pantalla propia ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)); la del iPhone y el iPad, al final | M20D · M31                |
+| **La caja para Windows**    | `apps/caja-windows`                   | Estook TPV en un programa de Windows (Electron), con el centro del local dentro: impresoras, cajón y sin internet ([0119](../decisiones/0119-t5-la-caja-para-windows.md))                                                                                                                           | T5 (M19a)                 |
+| **Estook Link**             | —                                     | El conector de un TPV ajeno, para quien no cobra con Estook; se decide con M18                                                                                                                                                                                                                      | M19b                      |
+| **La API**                  | `servidor/` → Supabase Edge Functions | Toda la lógica, detrás del despachador                                                                                                                                                                                                                                                              | En producción             |
 
 **Una sola base de código, en web.** Estook TPV es otra puerta del mismo código: comparte
 la API, la base, el login, el PIN, los permisos y los paquetes. **No duplica ni una regla,
@@ -74,32 +74,32 @@ enseña la misma Estook TPV y solo añade lo que un navegador no puede hacer.
 
 # 2 · La pila, cerrada
 
-| Capa                       | Tecnología                                                                                                | Por qué, y dónde está decidido                                                                                       |
-| -------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Repositorio                | Monorepo con pnpm y Turborepo                                                                             | Todas las puertas comparten dominio, tipos y diseño                                                                  |
-| Aplicaciones               | React 18, Vite 6 y TypeScript estricto                                                                    | Terreno conocido y rápido en móvil                                                                                   |
-| Estilos                    | Tailwind 4 con las fichas de B1 del Plan                                                                  | Sin CSS suelto                                                                                                       |
-| Datos en pantalla          | TanStack Query 5                                                                                          | Caché, reintentos, invalidar por evento                                                                              |
-| Enrutado                   | React Router 6, con almohadilla mientras se publique en GitHub Pages                                      | [0008](../decisiones/0008-enrutado-con-almohadilla.md)                                                               |
-| Gráficas                   | Recharts, cargado aparte                                                                                  | [0064](../decisiones/0064-las-graficas-contestan-una-pregunta.md)                                                    |
-| Arrastrar                  | `@dnd-kit`, cargado aparte                                                                                | [0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)                                                        |
-| Instalable y sin conexión  | Un _service worker_ por puerta: Estook en la entrega I, Estook TPV desde la 0115                          | Abren sin señal; trabajar sin internet en Estook TPV llega con T5 · 2                                                |
-| Base de datos              | PostgreSQL 17 en Supabase, en la Unión Europea (Irlanda)                                                  | Relacional, seguridad por filas, extensiones                                                                         |
-| API                        | Hono sobre Supabase Edge Functions (Deno)                                                                 | [0002](../decisiones/0002-runtime-de-la-api.md)                                                                      |
-| Entrar                     | Sesiones propias, PIN y Google; segundo factor propio                                                     | [0010](../decisiones/0010-el-login-es-nuestro.md), [0042](../decisiones/0042-registro-abierto-google-y-la-oferta.md) |
-| Trabajos                   | Cola en tabla, y `pg_cron` que llama a la API cada hora                                                   | [0016](../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)                                                  |
-| Documentos PDF             | Siempre en el servidor: plantillas HTML en `packages/documentos` y **Cloudflare Browser Run** las imprime | [0068](../decisiones/0068-las-respuestas-de-h.md): un Chromium no cabe en una Edge Function; el motor es un puerto   |
-| IA                         | Detrás de una interfaz propia, `ProveedorIA`                                                              | M22 · [0023](../decisiones/0023-fogon-nunca-arma-su-contexto-en-el-navegador.md)                                     |
-| La caja para Windows       | Electron, con la misma web dentro y un puente pequeño; firmado antes de vender                            | [0119](../decisiones/0119-t5-la-caja-para-windows.md): un solo lenguaje y se prueba con Vitest y Playwright          |
-| La cuota de Estook         | Stripe, sin librería                                                                                      | [0048](../decisiones/0048-el-pago-con-stripe.md)                                                                     |
-| Facturación                | Verifacti detrás de `ProveedorFacturacion`                                                                | M20B · Anexo 4                                                                                                       |
-| Datáfonos conectados       | Detrás de `ProveedorDatafono`                                                                             | Después de M20C · Anexo 10.7                                                                                         |
-| Impresión                  | Cola en el servidor y la caja para Windows hablando ESC/POS (`packages/impresion`)                        | T5 · Anexo 6                                                                                                         |
-| Correo                     | Resend, con el dominio `estook.com` verificado                                                            | [0017](../decisiones/0017-como-avisa-estook.md)                                                                      |
-| Errores                    | Sentry, en la región de la UE                                                                             | Hoy solo el navegador; el servidor, [0061](../decisiones/0061-el-orden-y-la-infraestructura.md)                      |
-| Publicación de las páginas | GitHub Pages hoy; **Cloudflare Pages antes del primer cliente de pago**                                   | [0061](../decisiones/0061-el-orden-y-la-infraestructura.md)                                                          |
-| Pruebas                    | Vitest, PGlite (un Postgres en memoria) y Playwright                                                      | [0011](../decisiones/0011-la-api-en-las-pruebas.md)                                                                  |
-| Integración continua       | GitHub Actions                                                                                            | Tres comprobaciones obligatorias para fusionar                                                                       |
+| Capa                       | Tecnología                                                                                                                        | Por qué, y dónde está decidido                                                                                       |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Repositorio                | Monorepo con pnpm y Turborepo                                                                                                     | Todas las puertas comparten dominio, tipos y diseño                                                                  |
+| Aplicaciones               | React 18, Vite 6 y TypeScript estricto                                                                                            | Terreno conocido y rápido en móvil                                                                                   |
+| Estilos                    | Tailwind 4 con las fichas de B1 del Plan                                                                                          | Sin CSS suelto                                                                                                       |
+| Datos en pantalla          | TanStack Query 5                                                                                                                  | Caché, reintentos, invalidar por evento                                                                              |
+| Enrutado                   | React Router 6, con almohadilla mientras se publique en GitHub Pages                                                              | [0008](../decisiones/0008-enrutado-con-almohadilla.md)                                                               |
+| Gráficas                   | Recharts, cargado aparte                                                                                                          | [0064](../decisiones/0064-las-graficas-contestan-una-pregunta.md)                                                    |
+| Arrastrar                  | `@dnd-kit`, cargado aparte                                                                                                        | [0039](../decisiones/0039-el-panel-se-monta-como-un-movil.md)                                                        |
+| Instalable y sin conexión  | Un _service worker_ por puerta: Estook en la entrega I, Estook TPV desde la 0115                                                  | Abren sin señal; trabajar sin internet en Estook TPV llega con T5 · 2                                                |
+| Base de datos              | PostgreSQL 17 en Supabase, en la Unión Europea (Irlanda)                                                                          | Relacional, seguridad por filas, extensiones                                                                         |
+| API                        | Hono sobre Supabase Edge Functions (Deno)                                                                                         | [0002](../decisiones/0002-runtime-de-la-api.md)                                                                      |
+| Entrar                     | Sesiones propias, PIN y Google; segundo factor propio                                                                             | [0010](../decisiones/0010-el-login-es-nuestro.md), [0042](../decisiones/0042-registro-abierto-google-y-la-oferta.md) |
+| Trabajos                   | Cola en tabla, y `pg_cron` que llama a la API cada hora                                                                           | [0016](../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)                                                  |
+| Documentos PDF             | Siempre en el servidor: plantillas HTML en `packages/documentos` y **Cloudflare Browser Run** las imprime                         | [0068](../decisiones/0068-las-respuestas-de-h.md): un Chromium no cabe en una Edge Function; el motor es un puerto   |
+| IA                         | Detrás de una interfaz propia, `ProveedorIA`                                                                                      | M22 · [0023](../decisiones/0023-fogon-nunca-arma-su-contexto-en-el-navegador.md)                                     |
+| La caja para Windows       | Electron, con la misma web dentro y un puente pequeño; firmado antes de vender                                                    | [0119](../decisiones/0119-t5-la-caja-para-windows.md): un solo lenguaje y se prueba con Vitest y Playwright          |
+| La cuota de Estook         | Stripe, sin librería                                                                                                              | [0048](../decisiones/0048-el-pago-con-stripe.md)                                                                     |
+| Facturación                | Verifacti detrás de `ProveedorFacturacion`                                                                                        | M20B · Anexo 4                                                                                                       |
+| Datáfonos conectados       | Detrás de `ProveedorDatafono`: el lector en la nube, **en el propio aparato** (Tap to Pay, con la app de Android) o por Bluetooth | Después de M20C, y en el aparato con M20D · Anexo 10.7                                                               |
+| Impresión                  | Cola en el servidor y la caja para Windows hablando ESC/POS (`packages/impresion`)                                                | T5 · Anexo 6                                                                                                         |
+| Correo                     | Resend, con el dominio `estook.com` verificado                                                                                    | [0017](../decisiones/0017-como-avisa-estook.md)                                                                      |
+| Errores                    | Sentry, en la región de la UE                                                                                                     | Hoy solo el navegador; el servidor, [0061](../decisiones/0061-el-orden-y-la-infraestructura.md)                      |
+| Publicación de las páginas | GitHub Pages hoy; **Cloudflare Pages antes del primer cliente de pago**                                                           | [0061](../decisiones/0061-el-orden-y-la-infraestructura.md)                                                          |
+| Pruebas                    | Vitest, PGlite (un Postgres en memoria) y Playwright                                                                              | [0011](../decisiones/0011-la-api-en-las-pruebas.md)                                                                  |
+| Integración continua       | GitHub Actions                                                                                                                    | Tres comprobaciones obligatorias para fusionar                                                                       |
 
 **Descartado a propósito:** Next.js, Flutter, jsPDF, las librerías de componentes
 pesadas, y **cualquier dependencia nueva que no se justifique por escrito**. Que el
@@ -119,7 +119,7 @@ estook/
 │   ├── carta/                la carta digital
 │   ├── admin/                el panel interno
 │   ├── caja-windows/         la caja para Windows, en Electron            (T5)
-│   └── movil/                la cáscara de Capacitor, sin pantallas     (M20A)
+│   └── tpv-movil/            Estook TPV para Android (Capacitor), sin pantallas (M20D)
 ├── packages/
 │   ├── dominio/              tipos, reglas y cálculos, sin red
 │   ├── ui/                   el sistema de diseño y los catálogos de navegación y widgets
@@ -243,18 +243,19 @@ terminal y el turno del operador → con qué caja, el turno del cajón o su bol
 
 # 6 · Los aparatos
 
-| Aparato                                                 | Cómo trabaja con Estook                                                                            |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| PC con Windows táctil (el TPV de barra)                 | **La caja para Windows**, que se descarga; o Estook TPV instalado desde Edge o Chrome              |
-| Tablet Android                                          | Estook TPV instalado desde Chrome, o la cáscara                                                    |
-| iPad                                                    | **La cáscara**: Safari no deja hablar con la red del local                                         |
-| Móvil del camarero                                      | Su comandero personal: vinculado a su nombre, y solo entra su PIN (Anexo 11.3)                     |
-| Pantalla de cocina y de barra                           | Estook TPV en su función de cocina o de barra, en quiosco; sin internet recibe por la caja         |
-| Impresora de cocina y de tickets                        | Cualquiera ESC/POS, por la caja para Windows (o las que preguntan solas a la nube)                 |
-| Cajón                                                   | Enchufado a la impresora de tickets: se abre con una línea del ticket                              |
-| Datáfono                                                | El del banco, sin conectar (se cuadra al cierre); o uno conectado por internet, a nombre del local |
-| Lector de códigos, llave de camarero, teclado de cocina | Escriben como un teclado: el navegador ya los lee (el lector, desde la entrega L)                  |
-| Balanza                                                 | Por el puerto serie desde Chrome o Edge, o por la caja para Windows                                |
+| Aparato                                                 | Cómo trabaja con Estook                                                                                                                                  |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PC con Windows táctil (el TPV de barra)                 | **La caja para Windows**, que se descarga; o Estook TPV instalado desde Edge o Chrome                                                                    |
+| Tablet Android                                          | Estook TPV instalado desde Chrome, o **Estook TPV para Android** (M20D)                                                                                  |
+| TPV Android con impresora (Sunmi V3 PLUS, T3, D3…)      | **Estook TPV para Android** (M20D): imprime en la suya y cobra con tarjeta en el aparato                                                                 |
+| iPad                                                    | Estook TPV desde Safari; para hablar con la red del local, la app de iPhone y iPad (M31)                                                                 |
+| Móvil del camarero                                      | Su comandero personal: vinculado a su nombre, y solo entra su PIN (Anexo 11.3)                                                                           |
+| Pantalla de cocina y de barra                           | Estook TPV en su función de cocina o de barra, en quiosco; sin internet recibe por la caja                                                               |
+| Impresora de cocina y de tickets                        | Cualquiera ESC/POS, por la caja para Windows (o las que preguntan solas a la nube)                                                                       |
+| Cajón                                                   | Enchufado a la impresora de tickets: se abre con una línea del ticket                                                                                    |
+| Datáfono                                                | El del banco, sin conectar (se cuadra al cierre); o uno conectado por internet, a nombre del local; o **el propio aparato** con la app de Android (M20D) |
+| Lector de códigos, llave de camarero, teclado de cocina | Escriben como un teclado: el navegador ya los lee (el lector, desde la entrega L)                                                                        |
+| Balanza                                                 | Por el puerto serie desde Chrome o Edge, o por la caja para Windows                                                                                      |
 
 **Cuáles valen, cómo se instala cada uno y qué se les enchufa**, en el Anexo, 11.2.
 
@@ -352,7 +353,7 @@ Verifacti en su servidor. Que lo genere la caja en el local es futuro
   cuentas abiertas, o al tocar «Actualizar». Si una versión es incompatible, la API lo
   dice y el TPV lo avisa antes de que nada falle. **La versión de cada terminal** se ve
   en Ajustes del TPV › Aparatos y en el panel interno.
-- **El navegador nunca habla con una impresora.** Imprime la caja para Windows (o la cáscara).
+- **El navegador nunca habla con una impresora.** Imprime la caja para Windows (o Estook TPV para Android, M20D).
 
 ---
 
@@ -382,21 +383,21 @@ venta no espera a que se recalculen los costes de toda la carta.
 > oficial vigente, y solo se usa lo que de verdad está disponible. Cada servicio vive
 > detrás de su adaptador: cambiarlo es cambiar el adaptador.
 
-| Servicio                       | Para qué                                           | Cómo se entra                                     | Estado                                            |
-| ------------------------------ | -------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- |
-| **Supabase**                   | Base, API, ficheros, reloj                         | Proyecto en la UE                                 | En producción, **plan gratuito** (Pro en semanas) |
-| **Resend**                     | Los correos                                        | Clave en los secretos de Supabase                 | En producción                                     |
-| **Stripe**                     | La cuota de Estook                                 | Clave de prueba; la real al cobrar de verdad      | En producción en modo prueba                      |
-| **Google Places**              | Situar el local y la nota en Google                | Clave con tope por local, contado antes de llamar | En producción                                     |
-| **Entrar con Google**          | Crear cuenta y entrar                              | Cliente OAuth «Estook»                            | En producción                                     |
-| **Google Business Profile**    | Leer y contestar reseñas                           | OAuth del dueño y acceso aprobado por Google      | Esperando a Google                                |
-| **Sentry**                     | Los errores                                        | DSN público (solo manda errores)                  | En producción (navegador)                         |
-| **GitHub**                     | Código, pull request, pruebas y hoy la publicación | —                                                 | En producción                                     |
-| **Cloudflare Pages**           | La publicación de las páginas                      | Dos secretos en GitHub                            | Antes del primer cliente de pago                  |
-| **Verifacti**                  | El registro VeriFactu de tickets y facturas        | Una clave por NIF y entorno, en el Vault          | M20B · Anexo 4                                    |
-| **Datáfonos conectados**       | Cobrar con tarjeta sin teclear                     | La cuenta del local con su proveedor              | Después de M20C · Anexo 10.7                      |
-| **Uber Eats, Glovo, Just Eat** | Los pedidos de reparto                             | Acceso aprobado por cada plataforma               | M29 · abajo                                       |
-| **Proveedor de IA**            | Fogón                                              | Clave en los secretos de Supabase                 | M22                                               |
+| Servicio                       | Para qué                                                     | Cómo se entra                                     | Estado                                            |
+| ------------------------------ | ------------------------------------------------------------ | ------------------------------------------------- | ------------------------------------------------- |
+| **Supabase**                   | Base, API, ficheros, reloj                                   | Proyecto en la UE                                 | En producción, **plan gratuito** (Pro en semanas) |
+| **Resend**                     | Los correos                                                  | Clave en los secretos de Supabase                 | En producción                                     |
+| **Stripe**                     | La cuota de Estook                                           | Clave de prueba; la real al cobrar de verdad      | En producción en modo prueba                      |
+| **Google Places**              | Situar el local y la nota en Google                          | Clave con tope por local, contado antes de llamar | En producción                                     |
+| **Entrar con Google**          | Crear cuenta y entrar                                        | Cliente OAuth «Estook»                            | En producción                                     |
+| **Google Business Profile**    | Leer y contestar reseñas                                     | OAuth del dueño y acceso aprobado por Google      | Esperando a Google                                |
+| **Sentry**                     | Los errores                                                  | DSN público (solo manda errores)                  | En producción (navegador)                         |
+| **GitHub**                     | Código, pull request, pruebas y hoy la publicación           | —                                                 | En producción                                     |
+| **Cloudflare Pages**           | La publicación de las páginas                                | Dos secretos en GitHub                            | Antes del primer cliente de pago                  |
+| **Verifacti**                  | El registro VeriFactu de tickets y facturas                  | Una clave por NIF y entorno, en el Vault          | M20B · Anexo 4                                    |
+| **Datáfonos conectados**       | Cobrar con tarjeta sin teclear, también en el propio aparato | La cuenta del local con su proveedor              | Después de M20C, y M20D · Anexo 10.7              |
+| **Uber Eats, Glovo, Just Eat** | Los pedidos de reparto                                       | Acceso aprobado por cada plataforma               | M29 · abajo                                       |
+| **Proveedor de IA**            | Fogón                                                        | Clave en los secretos de Supabase                 | M22                                               |
 
 ## Los pedidos de reparto · lo comprobado de Uber Eats
 

@@ -44,3 +44,7 @@ pruebas/e2e/capturas-nuevas/
 
 # Los documentos de muestra de `pnpm documentos:muestra` (0068): se miran, no se suben.
 .muestras/
+
+# Los PDF de los maestros son una salida: se sacan con `pnpm maestros` cuando hagan falta
+# y no se suben, porque una copia vieja dice cosas que el Markdown ya no dice (0134).
+docs/maestros/pdf/

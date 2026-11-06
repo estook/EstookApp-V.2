@@ -21,10 +21,10 @@ Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entien
   **actualizar** y acababa abriendo **Estook** (`/app/`). Para el navegador eran **la misma app**:
   las dos se presentaban con el mismo carné (el `id` del manifiesto), y el carné se lee contra
   `estook.com`, no contra la carpeta. Pasaba desde el 25-oct, cuando Estook TPV se hizo instalable
-  ([lección 235](lecciones.md)).
+  ([lección 235](../../lecciones.md)).
 - Ahora **cada una tiene el suyo**: Estook, el de siempre (los móviles donde ya está instalada no
   notan nada), y Estook TPV, `estook.com/tpv/`. Y el navegador **se entera** de que el carné ha
-  cambiado, que antes no se enteraba ([lección 236](lecciones.md)).
+  cambiado, que antes no se enteraba ([lección 236](../../lecciones.md)).
 
 **Entrar por la web nunca falló**: `estook.com/tpv/` en el navegador abre Estook TPV. Y **la caja
 para Windows** (el programa, T5 · 1) es otra cosa, que no tiene este problema.
@@ -73,5 +73,5 @@ el enlace sirve también para tu web:
 `https://github.com/estook/EstookApp-V.2/releases/latest/download/Estook-TPV-caja-para-Windows.exe`
 
 **Hoy ese enlace no baja nada**: el programa todavía no está publicado. Se publica con el paso 5 de
-[los pasos de T5 · 1](pasos-de-t5-1.md). Y **el día que el repositorio pase a privado** (la
+[los pasos de T5 · 1](../../pasos-de-t5-1.md). Y **el día que el repositorio pase a privado** (la
 mudanza), el enlace deja de servir: hay que llevar el programa al alojamiento nuevo antes.

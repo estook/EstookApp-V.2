@@ -5,6 +5,7 @@ import {
   partidaDe,
   sePuedeTirar,
   valorDeLaMerma,
+  type MotivoDeMerma,
 } from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import {
@@ -13,8 +14,8 @@ import {
   claveDeLaFotoDeMerma,
 } from '../../infraestructura/almacen.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
-import { comando, FalloDeAplicacion } from '../contrato.ts';
-import { apuntar, elProductoBloqueado, loQueHay } from '../almacen.ts';
+import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { apuntar, elProductoBloqueado, loQueHay, type FichaBasica } from '../almacen.ts';
 import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
 
 /**
@@ -112,26 +113,68 @@ export const apuntarMerma = comando<EntradaApuntarMerma, SalidaApuntarMerma>({
       });
     }
 
-    const valor = valorDeLaMerma(entrada.cuanto, antes.coste);
-
-    const apuntado = await apuntar(contexto, producto, {
-      tipo: 'merma',
-      cantidad: -entrada.cuanto,
-      motivo: entrada.detalle ?? null,
-      motivoDeMerma: entrada.motivo,
+    const { apuntado, valor, conPrecios } = await apuntarUnaMerma(contexto, producto, {
+      cuanto: entrada.cuanto,
+      motivo: entrada.motivo,
+      detalle: entrada.detalle ?? null,
+      costeMilesimas: antes.coste,
       origen: 'a_mano',
-      esEjemplo: producto.esEjemplo,
-      ...(contexto.hechoHaceMs === undefined || contexto.hechoHaceMs === null
-        ? {}
-        : { cuando: laHoraDeLoHecho(contexto.ahora, contexto.hechoHaceMs) }),
     });
 
-    const puedePrecios = await contexto.sql<{ puede: boolean }[]>`
+    return {
+      movimientoId: apuntado.movimientoId,
+      cantidad: apuntado.despues.cantidad,
+      unidadDeUso: producto.unidadDeUso,
+      fechaOperativa: apuntado.fechaOperativa,
+      partida: partidaDe(entrada.motivo),
+      ...(conPrecios ? { valorCentimos: valor } : {}),
+    };
+  },
+});
+
+/**
+ * **Apuntar una merma de un producto ya bloqueado**: el movimiento, la auditoría y el evento. Lo
+ * usan `apuntar_merma` y la sala al cambiar un plato que ya estaba hecho (0132), que apunta lo
+ * que llevaba con «Cambio del cliente».
+ */
+export async function apuntarUnaMerma(
+  contexto: Contexto,
+  producto: FichaBasica,
+  merma: {
+    readonly cuanto: number;
+    readonly motivo: MotivoDeMerma;
+    readonly detalle: string | null;
+    /** El coste medio de lo que hay antes de sacarlo: es con el que se valora lo perdido. */
+    readonly costeMilesimas: Parameters<typeof valorDeLaMerma>[1];
+    readonly origen: 'a_mano' | 'sala';
+  },
+): Promise<{
+  readonly apuntado: Awaited<ReturnType<typeof apuntar>>;
+  readonly valor: ReturnType<typeof valorDeLaMerma>;
+  readonly conPrecios: boolean;
+}> {
+  const entrada = { cuanto: merma.cuanto, motivo: merma.motivo, detalle: merma.detalle };
+  const antes = { coste: merma.costeMilesimas };
+  const valor = valorDeLaMerma(entrada.cuanto, antes.coste);
+
+  const apuntado = await apuntar(contexto, producto, {
+    tipo: 'merma',
+    cantidad: -entrada.cuanto,
+    motivo: entrada.detalle ?? null,
+    motivoDeMerma: entrada.motivo,
+    origen: merma.origen,
+    esEjemplo: producto.esEjemplo,
+    ...(contexto.hechoHaceMs === undefined || contexto.hechoHaceMs === null
+      ? {}
+      : { cuando: laHoraDeLoHecho(contexto.ahora, contexto.hechoHaceMs) }),
+  });
+
+  const puedePrecios = await contexto.sql<{ puede: boolean }[]>`
       select estook.puede_ver('dato.precio_de_compra', ${producto.localId}::uuid) as puede
     `;
-    const conPrecios = puedePrecios[0]?.puede === true;
+  const conPrecios = puedePrecios[0]?.puede === true;
 
-    await contexto.sql`
+  await contexto.sql`
       select estook.anotar(
         ${laOrganizacionDeLaSesion(contexto)}::uuid, 'crear', 'movimiento_de_stock',
         ${apuntado.movimientoId}, ${producto.localId}::uuid, null,
@@ -145,39 +188,31 @@ export const apuntarMerma = comando<EntradaApuntarMerma, SalidaApuntarMerma>({
       )
     `;
 
-    // Y este **sí** publica evento, cuando la entrada y la salida no lo hacen. La
-    // regla 14 pregunta a quién le importa, y aquí la respuesta es concreta: el
-    // food cost del periodo, la desviación de M8 y, cuando hable, Fogón —que es
-    // quien tiene que decir «llevas tres semanas tirando pulpo los martes».
-    await publicar(contexto.sql, {
-      tipo: 'merma.apuntada',
-      organizacionId: laOrganizacionDeLaSesion(contexto),
-      localId: producto.localId,
-      datos: {
-        productoId: producto.id,
-        nombre: producto.nombre,
-        cuanto: entrada.cuanto,
-        motivo: entrada.motivo,
-        partida: partidaDe(entrada.motivo),
-        valorCentimos: valor,
-        // Para el aviso de lo que se tira caro (0052): de qué es, en qué se mide y si es de ejemplo.
-        movimientoId: apuntado.movimientoId,
-        unidadDeUso: producto.unidadDeUso,
-        esEjemplo: producto.esEjemplo,
-      },
-      correlacionId: contexto.correlacionId,
-    });
-
-    return {
-      movimientoId: apuntado.movimientoId,
-      cantidad: apuntado.despues.cantidad,
-      unidadDeUso: producto.unidadDeUso,
-      fechaOperativa: apuntado.fechaOperativa,
+  // Y este **sí** publica evento, cuando la entrada y la salida no lo hacen. La
+  // regla 14 pregunta a quién le importa, y aquí la respuesta es concreta: el
+  // food cost del periodo, la desviación de M8 y, cuando hable, Fogón —que es
+  // quien tiene que decir «llevas tres semanas tirando pulpo los martes».
+  await publicar(contexto.sql, {
+    tipo: 'merma.apuntada',
+    organizacionId: laOrganizacionDeLaSesion(contexto),
+    localId: producto.localId,
+    datos: {
+      productoId: producto.id,
+      nombre: producto.nombre,
+      cuanto: entrada.cuanto,
+      motivo: entrada.motivo,
       partida: partidaDe(entrada.motivo),
-      ...(conPrecios ? { valorCentimos: valor } : {}),
-    };
-  },
-});
+      valorCentimos: valor,
+      // Para el aviso de lo que se tira caro (0052): de qué es, en qué se mide y si es de ejemplo.
+      movimientoId: apuntado.movimientoId,
+      unidadDeUso: producto.unidadDeUso,
+      esEjemplo: producto.esEjemplo,
+    },
+    correlacionId: contexto.correlacionId,
+  });
+
+  return { apuntado, valor, conPrecios };
+}
 
 // ── La foto de la merma, si se quiere (M8 · 0078, 4A · 0079) ─────────────────
 

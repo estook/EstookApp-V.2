@@ -1,4 +1,5 @@
 import type { LaPantallaDeCocina, TarjetaDeCocina } from '../datos/tipos.ts';
+import { MINUTOS_PARA_DESHACER_SERVIDO } from '@estook/dominio';
 
 /**
  * **Lo que piensa la pantalla de cocina** (T4 · 1, decisión 0116), sin pintar nada: el color
@@ -119,4 +120,58 @@ export function elPlatoQueSigue(t: TarjetaDeCocina): string | null {
     if (plato !== undefined) return plato.id;
   }
   return null;
+}
+
+/**
+ * **Lo que acaba de marcar servido la sala** (R2 · 2, decisión 0132): en verde en su tarjeta,
+ * con quién y «Deshacer», durante `MINUTOS_PARA_DESHACER_SERVIDO`. De quien marcó lo último; lo
+ * de antes ya se ve tachado, como lo suyo. Nulo si no hay nada reciente.
+ */
+export interface LoServidoPorLaSala {
+  readonly quien: string | null;
+  readonly platos: readonly { readonly id: string; readonly texto: string }[];
+  /** Los minutos que quedan para poder deshacerlo, redondeando hacia arriba. */
+  readonly quedan: number;
+}
+
+export function loServidoPorLaSala(t: TarjetaDeCocina, ahoraMs: number): LoServidoPorLaSala | null {
+  const plazo = MINUTOS_PARA_DESHACER_SERVIDO * 60_000;
+  const recientes = t.pases
+    .flatMap((p) => p.platos)
+    .filter(
+      (p) =>
+        p.servidoEnSala === true && p.salioEn !== null && ahoraMs - Date.parse(p.salioEn) < plazo,
+    )
+    .sort((a, b) => Date.parse(b.salioEn ?? '') - Date.parse(a.salioEn ?? ''));
+  const ultimo = recientes[0];
+  if (ultimo === undefined) return null;
+  const quien = ultimo.servidoPor ?? null;
+  const suyos = recientes.filter((p) => (p.servidoPor ?? null) === quien);
+  const desde = Math.min(...suyos.map((p) => Date.parse(p.salioEn ?? '')));
+  return {
+    quien,
+    platos: suyos.map((p) => ({ id: p.id, texto: `${String(p.cantidad)} ${p.nombre}` })),
+    quedan: Math.max(1, Math.ceil((desde + plazo - ahoraMs) / 60_000)),
+  };
+}
+
+/**
+ * **Los platos cambiados que aún hay que hacer** (0132): «CAMBIO · 1 Croquetas → 1 Bravas», en
+ * naranja arriba de la tarjeta, con quién lo cambió. Lo ya salido no se anuncia.
+ */
+export function losCambios(
+  t: TarjetaDeCocina,
+): readonly { readonly id: string; readonly texto: string; readonly quien: string | null }[] {
+  const platos = t.pases.flatMap((p) => p.platos);
+  return platos.flatMap((p) => {
+    if (p.cambioDe == null || p.salioEn !== null || p.anulado) return [];
+    const antes = platos.find((x) => x.anulado && x.cambiadoA === p.nombre);
+    return [
+      {
+        id: p.id,
+        texto: `${p.cambioDe} → ${String(p.cantidad)} ${p.nombre}`,
+        quien: antes?.cambioPor ?? null,
+      },
+    ];
+  });
 }

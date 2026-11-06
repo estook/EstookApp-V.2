@@ -13,6 +13,8 @@ import {
   fechaOperativa,
   loQueFaltaPorElegir,
   losPasesQueSalenAlMandar,
+  elNombreDelPase,
+  loQueDebiaGastarse,
 } from '@estook/dominio';
 import { losGruposDeLosPlatos } from '../opciones.ts';
 import { elLibroDelLocal } from '../escandallos.ts';
@@ -22,6 +24,9 @@ import { lasSeccionesDeLosMenus, losPlatosDelDia } from '../menus.ts';
 import { tocarElServicio } from '../al-segundo.ts';
 import { alPapelSinPararElServicio, elNombreDeQuien } from '../impresion.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
+import { elProductoBloqueado, loQueHay } from '../almacen.ts';
+import { loServidoDelLocal, laSalaMarca } from '../servido.ts';
+import { apuntarUnaMerma } from './merma.ts';
 import { comoLista } from '../listas.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
 import { aprobarConElPin, usarLaAprobacion } from '../aprobaciones.ts';
@@ -32,6 +37,8 @@ import {
   elLocalDelServicio,
   laCuentaAbierta,
   laJornadaDeHoy,
+  lasCuentas,
+  elTituloDeLaCuenta,
   losPases,
   losPlatos,
   rehacerElFueraDelPase,
@@ -46,6 +53,8 @@ import {
  *   cambiar_plato_de_la_mesa  cuántos (sin mandar), su nota y su pase
  *   quitar_plato          sin mandar, libre; ya en cocina, con motivo y lo quita un jefe
  *   devolver_a_cocina     un plato que salió y se rehace: «VUELVE»
+ *   marcar_servido        el camarero marca lo que lleva a la mesa (si el local lo deja, 0132)
+ *   cambiar_un_plato      otro en su lugar, sin PIN; si estaba hecho, a merma (0132)
  *   mandar_a_cocina       lo nuevo, a cocina y a la barra; sale el pase que toca
  *   marchar               el siguiente pase. **Nunca la cocina** (0106)
  *   cambiar_la_mesa       personas, la nota para cocina y «por pases» o «todo junto»
@@ -690,7 +699,7 @@ export const devolverACocina = comando<{ linea_id: string; motivo: string }, { l
     }
     await contexto.sql`
       update estook.linea_de_cuenta
-         set salio_en = null, salio_por = null,
+         set salio_en = null, salio_por = null, servida_en_sala = false,
              vuelve_en = ${contexto.ahora.toISOString()}::timestamptz,
              motivo_de_vuelve = ${entrada.motivo}
        where id = ${linea.id}::uuid
@@ -713,6 +722,312 @@ export const devolverACocina = comando<{ linea_id: string; motivo: string }, { l
     return { lineaId: linea.id };
   },
 });
+
+// ═══ Servido y cambiar un plato (R2 · 2, 0132) ═════════════════════════════════
+
+export const entradaMarcarServido = z
+  .object({
+    cuenta_id: id,
+    /** Lo que se acaba de llevar a la mesa. */
+    servidos: z.array(id).max(100).optional(),
+    /** Lo marcado servido por la sala sin querer: vuelve a estar pendiente. */
+    no_servidos: z.array(id).max(100).optional(),
+  })
+  .strict()
+  .refine((e) => (e.servidos?.length ?? 0) + (e.no_servidos?.length ?? 0) > 0, {
+    message: 'Marca lo que acabas de llevar a la mesa.',
+    path: ['servidos'],
+  });
+export type EntradaMarcarServido = z.infer<typeof entradaMarcarServido>;
+
+/**
+ * **El camarero marca lo servido** (0132; la pausa del 5-nov, punto 1.2): queda tachado como si
+ * lo tachara la cocina, y la cocina lo ve en verde, con quién y «Deshacer». Solo si el local lo
+ * tiene encendido, o si eso solo sale en papel (nadie más lo tacha). Lo que ya tachó la cocina
+ * entretanto no se toca, ni se queja: en un servicio se cruzan.
+ */
+export const marcarServido = comando<
+  EntradaMarcarServido,
+  { servidos: number; noServidos: number }
+>({
+  nombre: 'marcar_servido',
+  entrada: entradaMarcarServido,
+  exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelServicio(contexto);
+    const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
+    const lo = await loServidoDelLocal(contexto, localId);
+    const [platos, pases] = await Promise.all([
+      losPlatos(contexto, [cuenta.id]),
+      losPases(contexto, [cuenta.id]),
+    ]);
+    const porId = new Map(platos.map((l) => [l.id, l]));
+    const marchado = new Map(pases.map((p) => [p.numero, p.marchado_en !== null]));
+
+    const servidos: FilaDeLinea[] = [];
+    for (const lineaId of new Set(entrada.servidos ?? [])) {
+      const linea = porId.get(lineaId);
+      if (linea === undefined || linea.destino === 'ninguno' || linea.mandada_en === null) {
+        throw new FalloDeAplicacion('no_existe', {
+          porque: 'Eso no está mandado en esta mesa.',
+        });
+      }
+      if (linea.quitada_en !== null || linea.salio_en !== null) continue;
+      if (!laSalaMarca(lo, linea.destino)) {
+        throw new FalloDeAplicacion('sin_permiso', {
+          porque:
+            'Aquí lo servido lo tacha la cocina. Para que la sala también lo marque, enciéndelo en Ajustes del TPV › Cocina y barra.',
+        });
+      }
+      if (linea.destino === 'cocina' && marchado.get(linea.pase as number) !== true) {
+        throw new FalloDeAplicacion('ya_hecho', {
+          porque: `«${linea.nombre}» es del ${elNombreDelPase(linea.pase as number)}, que aún no está marchado: márchalo primero.`,
+        });
+      }
+      servidos.push(linea);
+    }
+    // Deshacer lo suyo: solo lo que marcó la sala. Lo que tachó la cocina, lo destacha ella.
+    const noServidos = [...new Set(entrada.no_servidos ?? [])]
+      .map((lineaId) => porId.get(lineaId))
+      .filter((l): l is FilaDeLinea => l !== undefined && l.servida_en_sala);
+
+    const ahora = contexto.ahora.toISOString();
+    if (servidos.length > 0) {
+      await contexto.sql`
+        update estook.linea_de_cuenta
+           set salio_en = ${ahora}::timestamptz, salio_por = ${contexto.personaId}::uuid,
+               servida_en_sala = true
+         where id = any (${comoLista(servidos.map((l) => l.id))}::text::uuid[])
+           and salio_en is null and quitada_en is null
+      `;
+    }
+    if (noServidos.length > 0) {
+      await contexto.sql`
+        update estook.linea_de_cuenta
+           set salio_en = null, salio_por = null, servida_en_sala = false
+         where id = any (${comoLista(noServidos.map((l) => l.id))}::text::uuid[])
+           and servida_en_sala
+      `;
+    }
+    const losPasesTocados = new Set(
+      [...servidos, ...noServidos].flatMap((l) =>
+        l.destino === 'cocina' && l.pase !== null ? [l.pase] : [],
+      ),
+    );
+    for (const pase of losPasesTocados) await rehacerElFueraDelPase(contexto, cuenta.id, pase);
+    await avisar(contexto, localId, 'marcar_servido', cuenta.id, {
+      servidos: servidos.map((l) => `${String(l.cantidad)} ${l.nombre}`),
+      ...(noServidos.length === 0
+        ? {}
+        : { no_servidos: noServidos.map((l) => `${String(l.cantidad)} ${l.nombre}`) }),
+    });
+    return { servidos: servidos.length, noServidos: noServidos.length };
+  },
+});
+
+/** El plato que se pide en lugar de otro: como al pedir, sin menú ni pase (son los de antes). */
+const elPlatoNuevo = unPlato.omit({ menu_id: true, parte_de: true, pase: true, destino: true });
+
+export const entradaCambiarUnPlato = z
+  .object({
+    linea_id: id,
+    por: elPlatoNuevo,
+    /**
+     * Si ya estaba hecho, lo dice el camarero (Richi, 5-nov: la cocina está con las manos
+     * ocupadas). Solo se pregunta si ya está en marcha y no ha salido.
+     */
+    estaba_hecho: z.boolean().optional(),
+  })
+  .strict();
+export type EntradaCambiarUnPlato = z.infer<typeof entradaCambiarUnPlato>;
+
+export interface SalidaCambiarUnPlato {
+  readonly lineaId: string;
+  readonly estabaHecho: boolean;
+  /** Cuántos productos de su ficha se han apuntado en merma. */
+  readonly aMerma: number;
+}
+
+/**
+ * **Cambiar un plato** (0132; la pausa del 5-nov, punto 8.1): «quiere bravas en vez de
+ * croquetas». **Sin PIN, nunca** (Richi: «hace parar a todos; en un servicio cada segundo es
+ * oro»). En un paso:
+ *
+ *   · **sin mandar**, se cambia sin más
+ *   · **ya mandado**, el de antes queda quitado con «Cambio del cliente» y el nuevo va a cocina
+ *     en su mismo pase, marcado «CAMBIO · Croquetas → Bravas», con su sonido y en papel
+ *   · **si ya estaba hecho** (lo dice el camarero; si ya salió, lo estaba), lo que lleva su
+ *     ficha se apunta en merma, «Cambio del cliente»: no se pierde nada
+ *
+ * La cuenta cambia de precio sola: el de antes ya no cuenta y el nuevo sí. Queda en la
+ * auditoría quién lo cambió, de qué a qué y si estaba hecho.
+ */
+export const cambiarUnPlato = comando<EntradaCambiarUnPlato, SalidaCambiarUnPlato>({
+  nombre: 'cambiar_un_plato',
+  entrada: entradaCambiarUnPlato,
+  exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelServicio(contexto);
+    const linea = await elPlatoDeLaCuenta(contexto, localId, entrada.linea_id);
+    if (linea.quitada_en !== null) {
+      throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese plato ya está quitado.' });
+    }
+    if (linea.menu_id !== null) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Un menú no se cambia entero: cambia el plato de dentro que quieran cambiar.',
+      });
+    }
+    if (
+      entrada.por.plato_id === linea.plato_id &&
+      (entrada.por.opciones ?? []).length === 0 &&
+      linea.opciones.length === 0
+    ) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Es el mismo plato. Para cambiar cómo lo quieren, escríbelo en la nota.',
+      });
+    }
+    const nuevo = {
+      ...entrada.por,
+      cantidad: entrada.por.cantidad ?? linea.cantidad,
+      // El de un menú, en su menú (tiene que estar hoy en él); y en el mismo pase.
+      ...(linea.parte_de === null ? {} : { parte_de: linea.parte_de }),
+      ...(linea.pase === null ? {} : { pase: linea.pase }),
+    };
+
+    // Sin mandar: se cambia sin más, sin que nadie se entere.
+    if (linea.mandada_en === null) {
+      await pedir.ejecutar(contexto, { cuenta_id: linea.cuenta_id, platos: [nuevo] });
+      await contexto.sql`
+        delete from estook.linea_de_cuenta where id = ${linea.id}::uuid and mandada_en is null
+      `;
+      await tocarElServicio(contexto, localId);
+      return { lineaId: nuevo.id, estabaHecho: false, aMerma: 0 };
+    }
+
+    // Ya mandado. ¿Estaba hecho? Si salió, sí; si su pase aún espera a marchar, no (nadie lo
+    // ha empezado); lo del medio lo sabe el camarero, que es quien pregunta en la cocina.
+    const pases = await losPases(contexto, [linea.cuenta_id]);
+    const suPase = pases.find((p) => p.numero === linea.pase);
+    const enMarcha =
+      linea.destino === 'barra' ||
+      (linea.destino === 'cocina' && suPase !== undefined && suPase.marchado_en !== null);
+    let estabaHecho: boolean;
+    if (linea.salio_en !== null && linea.destino !== 'ninguno') estabaHecho = true;
+    else if (!enMarcha) estabaHecho = false;
+    else if (entrada.estaba_hecho === undefined) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['estaba_hecho'],
+        porque: '¿Ya estaba hecho? Si lo estaba, va a merma como «cambio del cliente».',
+      });
+    } else estabaHecho = entrada.estaba_hecho;
+
+    await pedir.ejecutar(contexto, { cuenta_id: linea.cuenta_id, platos: [nuevo] });
+    const nueva = (await losPlatos(contexto, [linea.cuenta_id])).find((l) => l.id === nuevo.id);
+    if (nueva === undefined) throw new FalloDeAplicacion('no_existe');
+    const ahora = contexto.ahora.toISOString();
+    const antes = `${String(linea.cantidad)} ${linea.nombre}`;
+    await contexto.sql`
+      update estook.linea_de_cuenta
+         set mandada_en = ${ahora}::timestamptz, mandada_por = ${contexto.personaId}::uuid,
+             cambio_de = ${antes}
+       where id = ${nueva.id}::uuid
+    `;
+    if (nueva.destino === 'cocina' && nueva.pase !== null) {
+      // En su pase de siempre: si ya estaba marchado, vuelve a «En marcha»; si espera, espera.
+      // Un pase que no había (lo de antes era de la barra) sale ya: sustituye a algo mandado.
+      await contexto.sql`
+        insert into estook.pase (cuenta_id, numero, local_id, marchado_en, marchado_por)
+        values (${linea.cuenta_id}::uuid, ${nueva.pase}, ${localId}::uuid,
+                ${ahora}::timestamptz, ${contexto.personaId}::uuid)
+        on conflict (cuenta_id, numero) do update set fuera_en = null
+      `;
+    }
+    await contexto.sql`
+      update estook.linea_de_cuenta
+         set quitada_en = ${ahora}::timestamptz, quitada_por = ${contexto.personaId}::uuid,
+             motivo_de_quitar = 'Cambio del cliente', cambiada_por = ${nueva.id}::uuid,
+             estaba_hecho = ${estabaHecho}
+       where id = ${linea.id}::uuid
+    `;
+    if (linea.destino === 'cocina' && linea.pase !== null && linea.pase !== nueva.pase) {
+      await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase);
+    }
+
+    const [cuenta] = await lasCuentas(contexto, localId, [linea.cuenta_id]);
+    const deLaMesa = cuenta === undefined ? '' : `${elTituloDeLaCuenta(cuenta)} · `;
+    const aMerma = estabaHecho
+      ? await aMermaLoQueLlevaba(contexto, localId, linea, `${deLaMesa}${antes} → ${nueva.nombre}`)
+      : 0;
+
+    await avisar(contexto, localId, 'cambiar_un_plato', linea.cuenta_id, {
+      de: antes,
+      a: `${String(nueva.cantidad)} ${nueva.nombre}`,
+      estaba_hecho: estabaHecho,
+      ...(aMerma === 0 ? {} : { a_merma: aMerma }),
+    });
+    // En papel: el nuevo, «CAMBIO», con lo de antes debajo. Si lo de antes lo prepara otro
+    // sitio (era de la barra y ahora es de cocina), a ese le sale ANULADO.
+    if (linea.salio_en === null && linea.destino !== nueva.destino) {
+      await alPapelSinPararElServicio(contexto, localId, linea.cuenta_id, {
+        que: 'anulado',
+        lineaIds: [linea.id],
+        motivo: 'Cambio del cliente',
+      });
+    }
+    await alPapelSinPararElServicio(contexto, localId, linea.cuenta_id, {
+      que: 'cambio',
+      lineaIds: [nueva.id],
+      motivo: antes,
+    });
+    return { lineaId: nueva.id, estabaHecho, aMerma };
+  },
+});
+
+/**
+ * **Lo que llevaba un plato cambiado que ya estaba hecho, a merma** (0132): cada producto de su
+ * ficha, por las raciones del plato, con «Cambio del cliente». Nunca más de lo que hay (lo que
+ * no tiene existencias no se apunta), y solo si quien lo cambia puede apuntar mermas (el
+ * camarero puede de fábrica): el cambio no se para por esto. El plato cambiado queda apuntado
+ * igual, con «estaba hecho».
+ */
+async function aMermaLoQueLlevaba(
+  contexto: Contexto,
+  localId: string,
+  linea: FilaDeLinea,
+  detalle: string,
+): Promise<number> {
+  if (linea.plato_id === null) return 0;
+  const puede = await loQuePuede(contexto, localId, ['accion.registrar_merma']);
+  if (!puede.editar('accion.registrar_merma')) return 0;
+  const elLibro = await elLibroDelLocal(contexto, localId, false);
+  const receta = elLibro.recetaDelPlato.get(linea.plato_id);
+  if (receta === undefined || receta.lineas.length === 0) return 0;
+  const lleva = loQueDebiaGastarse(
+    [{ lineas: receta.lineas, raciones: linea.cantidad, racionesDeLaReceta: receta.raciones }],
+    elLibro.libro,
+  );
+  let apuntados = 0;
+  for (const [productoId, cuanto] of lleva) {
+    if (cuanto <= 0) continue;
+    const producto = await elProductoBloqueado(contexto, productoId);
+    const hay = await loQueHay(contexto, producto.id);
+    const sale = Math.min(cuanto, Number(hay.cantidad));
+    if (!(sale > 0)) continue;
+    await apuntarUnaMerma(contexto, producto, {
+      cuanto: sale,
+      motivo: 'cambio_del_cliente',
+      detalle: detalle.slice(0, 400),
+      costeMilesimas: hay.coste,
+      origen: 'sala',
+    });
+    apuntados += 1;
+  }
+  return apuntados;
+}
 
 // ═══ Mandar y marchar ══════════════════════════════════════════════════════════
 

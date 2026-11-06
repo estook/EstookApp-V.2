@@ -211,6 +211,7 @@ Un pase sin marchar **se ve en cocina en espera, no desaparece**: el cocinero sa
 
 - **Antes de mandar**, libre.
 - **Ya en cocina**, deja autor y motivo, y si quien lo quita no tiene el permiso de Roles 1.12, **lo aprueba un encargado con su PIN en la misma pantalla** ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)). Y **cocina se entera**: la línea sale tachada en su pantalla, con aviso, porque puede estar ya en la plancha. Si ya se había hecho, es una merma con su motivo.
+- **Cambiar un plato por otro no pide PIN** (Richi, 5-nov; [0132](../decisiones/0132-r2-2-servido-y-cambiar-un-plato.md)): en su lugar va otro de verdad, en su mismo pase. «¿Ya estaba hecho?» lo contesta el camarero, solo si está en marcha; si lo estaba, lo que lleva su ficha va a merma, «Cambio del cliente».
 
 ### Mover, juntar, dividir y traspasar
 
@@ -238,6 +239,7 @@ Se marca desde la comanda y desaparece de la carta y de la carta digital (M10 y 
 - **«Llamar al camarero»** en cada tarjeta: al camarero de la mesa le sale «La cocina te llama» (y le vibra el móvil) hasta que dice «Ya voy».
 - **Pestañas: En marcha · Acabados**, y **Delivery** cuando el local tenga pedidos de reparto en el TPV. El pedido de reparto lleva la moto, la plataforma, el nombre, **la hora a la que pasa el repartidor** y lo que va a la bolsa, y se cierra con «Listo para el repartidor».
 - **Lo que cambia sale en la misma tarjeta**: «NUEVO» con su hora, «ANULADO» en rojo y con sonido, «CAMBIO» de nota, y «VUELVE» arriba del todo cuando un plato devuelto se rehace.
+- **Un plato cambiado** ([0132](../decisiones/0132-r2-2-servido-y-cambiar-un-plato.md)): franja naranja «CAMBIO · Lucía · 1 Croquetas → 1 Bravas», el de antes tachado con «→ Bravas» y el aviso fuerte. **Lo que marca servido la sala** (si el local lo deja, o con la cocina solo en papel): franja verde «Lucía ha marcado servido», con «Deshacer» durante 5 minutos.
 - **Pantalla, papel o las dos**, a elección del local. En papel sale el ticket entero con sus pases, y un papelito por cada marcha, plato nuevo o anulado.
 - **Lo que no prepara la cocina no va a cocina**: va a la barra, o a ninguna parte, según **«¿Quién lo prepara?»** de su página (11.11).
 
@@ -1512,17 +1514,17 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 | **Sin mandar**               | Ámbar con borde, «Sin mandar»              | Tiene platos pedidos que no han ido a cocina         |
 | **Esperando**                | Azul, ámbar o rojo, «Esperando 12'»        | Algo suyo está en cocina y no ha salido (0131)       |
 | **Comiendo**                 | Verde, «Comiendo» («Bebiendo» sin comida)  | Ha salido todo lo de cocina (0131)                   |
-| **¿Cuenta?**                 | Morado, «¿Cuenta? 18'», y en «Para cobrar» | 15 minutos desde lo último servido o pedido (0131)   |
+| **¿Cuenta?**                 | Morado, «¿Cuenta? 18'», y en «Para cobrar» | Los minutos del local (15) desde lo último (0132)    |
 | **Toca marchar**             | **Azul, «Marchar 2.º»**                    | Ha salido todo el pase anterior (3.1)                |
 | **Pide la cuenta**           | **Naranja, «Cuenta»**, lo que más resalta  | Se imprimió la precuenta o se marcó «pide la cuenta» |
 | **De alguien que se ha ido** | Con el aviso «Ana ha fichado la salida»    | Su camarero ya no está fichado (0106)                |
 
-- **Esperando cuenta desde que la cocina lo recibe**, con los mismos minutos y colores que su tarjeta en cocina (Ajustes › Cocina y barra); **con la cocina solo en papel** nadie tacha, así que se queda en azul y nunca pide la cuenta sola. **«¿Cuenta?» es una sugerencia, sin sonido**: «Pide la cuenta», en naranja, llega con el cobro (M20C) (Richi, 5-nov, [0131](../decisiones/0131-r2-1-la-sala-y-la-mesa.md)).
+- **Esperando cuenta desde que la cocina lo recibe**, con los mismos minutos y colores que su tarjeta en cocina (Ajustes › Cocina y barra); **con la cocina solo en papel** nadie tacha: se queda en azul hasta que el camarero lo marca «Servido» ([0132](../decisiones/0132-r2-2-servido-y-cambiar-un-plato.md)). **«¿Cuenta?» es una sugerencia, sin sonido**: «Pide la cuenta», en naranja, llega con el cobro (M20C) (Richi, 5-nov, [0131](../decisiones/0131-r2-1-la-sala-y-la-mesa.md)).
 - **Filtros**: **«Mías»**, un botón que se pulsa y se suelta (0131), y las salas en pestañas (Salón · Terraza · Barra). El aparato recuerda el último filtro; en el comandero personal empieza en **Mías**.
 - **En la tablet y en la caja, el plano** tal como se dibujó (11.9). **En el móvil, una cuadrícula** con las mismas mesas y sus estados, de tres en fila, en el orden de sus nombres: un plano dibujado no cabe en una mano.
 - **Tocar una mesa libre**: «Nº de comensales» (un toque) y «Por pases · Todo junto» con «Por pases» marcado. Y a pedir. **Las palabras, las de la sala** (Richi, 28-oct): «comensales», no «¿cuántos sois?» ni «personas».
 - **En barra o para llevar**, sin mesa: el nombre si se quiere. **Lo de llevar sale todo junto** y **se programa** (0121): «¿Para cuándo? · Ahora · Programar», con los cuartos de las tres horas siguientes u «Otra hora». La sala ve «Para las 21:30»; **la cocina lo ve aparte, en gris, hasta veinte minutos antes**, y el papel sale con «PARA LAS 21:30».
-- **Tocar una mesa con cuenta** (rehecho en la pausa del 5-nov, [0131](../decisiones/0131-r2-1-la-sala-y-la-mesa.md)): **la mesa entera en una hoja**, del alto de lo que lleva: sus platos con cómo va cada uno, el total y «Marchar el 2.º» si toca; abajo, **Pedir, Cuenta (imprimirla) y Cobrar** (apagado hasta M20C); arriba, **tres iconos**: **mover** (cambiar de mesa, juntar, pasar a otro camarero, quedármela), **la nota para cocina** y **«···»** (alergias, tienen prisa, comensales, todo junto o por pases, reimprimir, liberar y, en rojo, anular). Dentro de la mesa, los mismos tres iconos. Dividir, cobro rápido, pasar a la barra o para llevar y «Lo que ha pasado», que estaban en la lista y aún no existen, llegan con el cobro (M20C).
+- **Tocar una mesa con cuenta** (rehecho en la pausa del 5-nov, [0131](../decisiones/0131-r2-1-la-sala-y-la-mesa.md)): **la mesa entera en una hoja**, del alto de lo que lleva: sus platos con cómo va cada uno, el total y «Marchar el 2.º» si toca; abajo, **Pedir, Servido** (si la sala marca lo servido, 0132), **Cuenta (imprimirla) y Cobrar** (apagado hasta M20C); arriba, **tres iconos**: **mover** (cambiar de mesa, juntar, pasar a otro camarero, quedármela), **la nota para cocina** y **«···»** (alergias, tienen prisa, comensales, todo junto o por pases, reimprimir, liberar y, en rojo, anular). Dentro de la mesa, los mismos tres iconos. Dividir, cobro rápido, pasar a la barra o para llevar y «Lo que ha pasado», que estaban en la lista y aún no existen, llegan con el cobro (M20C).
 - **Quién se queda la venta**: **el camarero de la mesa** (el que la abrió, o el que se la quedó o la recibió). Cada plato queda además a nombre de quien lo pidió, y «Lo que ha pasado» lo cuenta. **Cualquier camarero puede quedarse una mesa o pasarla a otro**, y queda en el rastro (0107: el control de todo).
 - **Lo que cambia en un aparato se ve en los demás en menos de 2 segundos** (3.7).
 

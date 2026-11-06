@@ -140,7 +140,9 @@ export async function destacharEnElLocal(
     throw new FalloDeAplicacion('ya_hecho', { porque: 'Ese plato no está tachado.' });
   }
   await contexto.sql`
-      update estook.linea_de_cuenta set salio_en = null, salio_por = null where id = ${linea.id}::uuid
+      update estook.linea_de_cuenta
+         set salio_en = null, salio_por = null, servida_en_sala = false
+       where id = ${linea.id}::uuid
     `;
   if (linea.pase !== null) await rehacerElFueraDelPase(contexto, linea.cuenta_id, linea.pase);
   await apuntarEnLaMesa(
@@ -226,7 +228,7 @@ export const recuperar = comando<{ cuenta_id: string }, { destachados: number }>
     // Vuelve lo último que se tachó de ese pase: es lo que se dio por salido sin querer.
     const destachados = await contexto.sql<{ id: string }[]>`
       update estook.linea_de_cuenta
-         set salio_en = null, salio_por = null
+         set salio_en = null, salio_por = null, servida_en_sala = false
        where cuenta_id = ${cuenta.id}::uuid and pase = ${ultimo.numero} and quitada_en is null
          and salio_en = (
            select max(salio_en) from estook.linea_de_cuenta

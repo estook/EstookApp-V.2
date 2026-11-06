@@ -197,7 +197,6 @@ describe('cómo va la mesa en el plano (0131)', () => {
     enCocina: 'fuera' as const,
     conComida: true,
     minutosDesdeLoUltimo: 3,
-    nadieTacha: false,
   };
 
   it('lo de siempre sigue igual: sin pedir, sin mandar y toca marchar', () => {
@@ -226,8 +225,22 @@ describe('cómo va la mesa en el plano (0131)', () => {
     expect(comoVaLaMesa({ ...base, conComida: false, minutosDesdeLoUltimo: 90 })).toBe('comiendo');
   });
 
-  it('con la cocina solo en papel nadie tacha: espera, y nunca pide la cuenta sola', () => {
-    expect(comoVaLaMesa({ ...base, nadieTacha: true, minutosDesdeLoUltimo: 90 })).toBe('esperando');
+  it('los minutos de «¿Cuenta?» son del local (0132): con 30, a los 20 sigue comiendo', () => {
+    expect(comoVaLaMesa({ ...base, minutosDesdeLoUltimo: 20, minutosParaLaCuenta: 30 })).toBe(
+      'comiendo',
+    );
+    expect(comoVaLaMesa({ ...base, minutosDesdeLoUltimo: 30, minutosParaLaCuenta: 30 })).toBe(
+      'para_cobrar',
+    );
+  });
+
+  it('con la cocina solo en papel, lo marcado servido por la sala también cuenta (0132)', () => {
+    // Nada tachado: el pase sigue en marcha y la mesa espera.
+    expect(comoVaLaMesa({ ...base, enCocina: 'en_marcha', minutosDesdeLoUltimo: 90 })).toBe(
+      'esperando',
+    );
+    // El camarero lo marca servido: el pase sale y la mesa come, y luego pide la cuenta.
+    expect(comoVaLaMesa({ ...base, minutosDesdeLoUltimo: 90 })).toBe('para_cobrar');
   });
 });
 

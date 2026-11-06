@@ -79,6 +79,17 @@ export interface FilaDeLinea {
   readonly peso_gramos: number | null;
   /** Lo que lleva, congelado al pedir (0117). Vacío en lo pedido antes de la 0092. */
   readonly alergenos: readonly string[];
+  /** Quién lo tachó (la cocina o, con «Servido», la sala) y quién lo quitó. */
+  readonly salio_por: string | null;
+  readonly quitada_por: string | null;
+  /** Lo marcó servido la sala (0132), no la cocina. */
+  readonly servida_en_sala: boolean;
+  /** En el plato nuevo de un cambio: lo que había antes, «1 Croquetas» (0132). */
+  readonly cambio_de: string | null;
+  /** En el plato cambiado: el que lo sustituye. */
+  readonly cambiada_por: string | null;
+  /** En el plato cambiado ya mandado: si estaba hecho (y se fue a merma). */
+  readonly estaba_hecho: boolean | null;
 }
 
 export interface FilaDePase {
@@ -149,7 +160,9 @@ export async function losPlatos(
            to_char(l.quitada_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as quitada_en,
            l.motivo_de_quitar,
            to_char(l.vuelve_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as vuelve_en,
-           l.motivo_de_vuelve, l.opciones, l.peso_gramos, l.alergenos
+           l.motivo_de_vuelve, l.opciones, l.peso_gramos, l.alergenos,
+           l.salio_por::text as salio_por, l.quitada_por::text as quitada_por, l.servida_en_sala,
+           l.cambio_de, l.cambiada_por::text as cambiada_por, l.estaba_hecho
       from estook.linea_de_cuenta l
      where l.cuenta_id = any (${comoLista(cuentaIds)}::text::uuid[])
      order by l.pedida_en, l.id

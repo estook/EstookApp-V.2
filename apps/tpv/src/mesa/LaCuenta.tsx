@@ -5,6 +5,7 @@ import { Boton, CAJA, Envoltorio, ErrorEnCristiano, Hoja } from '@estook/ui';
 import { usarAcciones } from '../ganchos/usarLaSala.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { LoApruebaUnEncargado } from './LoApruebaUnEncargado.tsx';
+import { CambiarElPlato } from './CambiarElPlato.tsx';
 import { cambiarLinea, quitarLinea, type Borrador } from '../logica/comanda.ts';
 import { elPase, type GrupoDeLaCuenta, type LineaALaVista } from '../logica/laCuenta.ts';
 import { euros, laHora, losNombres } from '../logica/texto.ts';
@@ -14,8 +15,9 @@ import { euros, laHora, losNombres } from '../logica/texto.ts';
  * cómo van, y lo nuevo. Tocar un plato abre lo que se puede hacer con él (0106, «Nota»):
  *
  *   · **sin mandar**: cuántos, la nota, en qué pase sale, o quitarlo sin más
- *   · **ya en cocina**: cambiar la nota (la cocina ve CAMBIO), devolverlo si salió (VUELVE)
- *     o quitarlo con su motivo, que lo aprueba un jefe (la cocina ve ANULADO)
+ *   · **ya en cocina**: cambiar la nota (la cocina ve CAMBIO), **cambiarlo por otro** sin PIN
+ *     (0132: la cocina ve «CAMBIO · Croquetas → Bravas»), devolverlo si salió (VUELVE) o
+ *     quitarlo con su motivo, que lo aprueba un jefe (la cocina ve ANULADO)
  */
 export function LaCuenta({
   grupos,
@@ -125,6 +127,11 @@ export function LaCuenta({
                     ⚠ Lleva {losNombres(l.lleva).toLowerCase()}
                   </span>
                 )}
+                {l.cambioDe !== null && l.quitada === null && (
+                  <span className="text-secundario font-semibold text-naranja">
+                    En lugar de {l.cambioDe}
+                  </span>
+                )}
                 {l.vuelve !== null && l.quitada === null && (
                   <span className="text-secundario font-semibold text-mal">Vuelve: {l.vuelve}</span>
                 )}
@@ -226,7 +233,7 @@ function ElPlato({
   const [motivo, setMotivo] = useState('');
   // Lo que ya salió no se cambia de nota (está en la mesa): se devuelve si hace falta.
   const sinNota = linea.esMenu || linea.salio;
-  const [modo, setModo] = useState<'cambiar' | 'quitar' | 'devolver'>(
+  const [modo, setModo] = useState<'cambiar' | 'otro' | 'quitar' | 'devolver'>(
     linea.esMenu ? 'quitar' : linea.salio ? 'devolver' : 'cambiar',
   );
   const paraQuien = linea.destino === 'barra' ? 'Nota para la barra' : 'Nota para cocina';
@@ -343,6 +350,17 @@ function ElPlato({
               Devolver
             </Pestana>
           )}
+          {/* **Cambiar por otro** (0132): sin PIN. Un menú entero no: se cambia su plato. */}
+          {!linea.esMenu && linea.platoId !== null && (
+            <Pestana
+              puesta={modo === 'otro'}
+              onClick={() => {
+                setModo('otro');
+              }}
+            >
+              Cambiar
+            </Pestana>
+          )}
           <Pestana
             puesta={modo === 'quitar'}
             onClick={() => {
@@ -388,6 +406,8 @@ function ElPlato({
             </Boton>
           </>
         )}
+
+        {modo === 'otro' && <CambiarElPlato linea={linea} alCambiar={alCerrar} />}
 
         {modo === 'devolver' && (
           <>

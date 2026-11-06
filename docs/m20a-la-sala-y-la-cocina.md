@@ -569,7 +569,9 @@ abajo:
 cuatro entregas con lo que Richi vio usando el TPV en IKATZ. **R1 · Lo rápido** (tachar, mandar, el
 logo y la barra del iPhone), **R2 · La mesa en el móvil**, **R3 · Ajustes y secciones** y **R4 ·
 Precios, IA y papeles**, con sus maquetas aprobadas. R2 en dos: **R2 · 1 · La sala y la mesa**
-([0131](decisiones/0131-r2-1-la-sala-y-la-mesa.md)) y R2 · 2 · Servido y cambiar un plato. Después, T6 · 2 · 1.
+([0131](decisiones/0131-r2-1-la-sala-y-la-mesa.md), en main con la #165) y **R2 · 2 · Servido y
+cambiar un plato** ([0132](decisiones/0132-r2-2-servido-y-cambiar-un-plato.md), migración 0103).
+Después, R3, R4 y T6 · 2 · 1.
 
 - **El motor del Anexo 4.9**: el número se da al preparar, con el candado de su serie; a Verifacti se
   le llama fuera de la transacción, con la clave del documento; **el estado se lee de lo que se le

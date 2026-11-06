@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  MOTIVOS_DE_MERMA,
+  MOTIVOS_PARA_APUNTAR_A_MANO,
   NOMBRE_DEL_MOTIVO_DE_MERMA,
   NOMBRE_DE_LA_PARTIDA,
   QUE_ES_CADA_MOTIVO,
@@ -392,7 +392,7 @@ export function ApuntarMerma({
                 aria-labelledby="por-que-la-merma"
                 className="mt-e2 grid gap-e2 sm:grid-cols-2"
               >
-                {MOTIVOS_DE_MERMA.map((cual) => {
+                {MOTIVOS_PARA_APUNTAR_A_MANO.map((cual) => {
                   const puesto = cual === motivo;
                   return (
                     <button

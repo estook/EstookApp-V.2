@@ -4,16 +4,21 @@ import {
   POR_QUE_NO_SE_EMITE,
   elCuerpoParaVerifacti,
   elDesglose,
+  elEstadoDeVerifacti,
   elEstadoDelDocumento,
   elJustificanteEnPapel,
   elNumeroEntero,
   elTicketEnPapel,
   fechaEnElLocal,
   fechaParaVerifacti,
+  laFacturaEnPapel,
+  lineasDeLaFactura,
   numeroEnTexto,
   porQueNoSeEmite,
   type ApunteDelDocumento,
+  type DocumentoSustituido,
   type ElDesglose,
+  type ElDestinatario,
   type EstadoDelDocumento,
   type FechaOperativa,
   type LineaVendida,
@@ -23,6 +28,7 @@ import {
 import { variable } from '@estook/utiles';
 import type { EntornoDeVerifacti, LoQuePasoAlEmitir, Verifacti } from '../facturacion/verifacti.ts';
 import { apuntarUnFallo } from '../infraestructura/fallos.ts';
+import { avisar, losQueLoQuieren, quienesPuedenRecibir } from './avisos.ts';
 import { FalloDeAplicacion, type Contexto } from './contrato.ts';
 import { enLaBase } from './facturacion.ts';
 import { cuandoEnElLocal, dejarEnLaCola, laImpresoraDe } from './impresion.ts';
@@ -69,6 +75,8 @@ export interface LaEmpresaDelDocumento {
   readonly de_pruebas?: boolean;
 }
 
+export type OrigenDelDocumento = 'ticket_de_prueba' | 'cobro' | 'a_mano' | 'canje';
+
 export interface ElDocumento {
   readonly id: string;
   readonly localId: string;
@@ -84,9 +92,11 @@ export interface ElDocumento {
   readonly total: number;
   readonly empresa: LaEmpresaDelDocumento;
   readonly donde: string | null;
-  readonly origen: 'ticket_de_prueba' | 'cobro';
+  readonly origen: OrigenDelDocumento;
   readonly preparadoEn: string;
   readonly zonaHoraria: string;
+  readonly destinatario: ElDestinatario | null;
+  readonly vencimiento: FechaOperativa | null;
 }
 
 export interface UnEnvio {
@@ -114,7 +124,26 @@ export interface LaHistoria {
   readonly envios: readonly UnEnvio[];
   readonly registros: readonly UnRegistro[];
   readonly justificante: string | null;
+  /** Los tickets que sustituye esta factura. */
+  readonly sustituye: readonly { readonly id: string; readonly numero: string }[];
+  /** La factura que sustituye a este ticket, si la tiene. */
+  readonly factura: { readonly id: string; readonly numero: string; readonly en: string } | null;
+  /** Cuándo se cobró, si se hizo a mano sin cobrar. */
+  readonly cobradaEn: string | null;
+  /** A quién se le ha mandado por correo. */
+  readonly copias: readonly { readonly para: string; readonly en: string }[];
 }
+
+/** La historia de un documento al que todavía no se le ha añadido nada. */
+export const SIN_HISTORIA: LaHistoria = {
+  envios: [],
+  registros: [],
+  justificante: null,
+  sustituye: [],
+  factura: null,
+  cobradaEn: null,
+  copias: [],
+};
 
 interface FilaDelDocumento {
   id: string;
@@ -133,9 +162,11 @@ interface FilaDelDocumento {
   total: number;
   empresa_copia: LaEmpresaDelDocumento;
   donde: string | null;
-  origen: 'ticket_de_prueba' | 'cobro';
+  origen: OrigenDelDocumento;
   preparado_en: string;
   zona_horaria: string;
+  destinatario: ElDestinatario | null;
+  vencimiento: string | null;
 }
 
 function delaFila(f: FilaDelDocumento): ElDocumento {
@@ -157,6 +188,8 @@ function delaFila(f: FilaDelDocumento): ElDocumento {
     origen: f.origen,
     preparadoEn: new Date(f.preparado_en).toISOString(),
     zonaHoraria: f.zona_horaria,
+    destinatario: f.destinatario,
+    vencimiento: f.vencimiento as FechaOperativa | null,
   };
 }
 
@@ -170,7 +203,8 @@ export async function losDocumentos(
     select d.id::text as id, d.local_id::text as local_id, d.entorno, d.modalidad, d.tipo, d.serie,
            d.numero, to_char(d.fecha_operacion, 'YYYY-MM-DD') as fecha_operacion, d.descripcion,
            d.lineas, d.desglose, d.base, d.cuota, d.total, d.empresa_copia, d.donde, d.origen,
-           d.preparado_en::text as preparado_en, l.zona_horaria
+           d.preparado_en::text as preparado_en, l.zona_horaria, d.destinatario,
+           to_char(d.vencimiento, 'YYYY-MM-DD') as vencimiento
       from facturacion.documento d
       join estook.local l on l.id = d.local_id
      where d.id = any (${ids as string[]}::uuid[])
@@ -185,8 +219,29 @@ export async function lasHistorias(
 ): Promise<Map<string, LaHistoria>> {
   const historias = new Map<
     string,
-    { envios: UnEnvio[]; registros: UnRegistro[]; justificante: string | null }
-  >(ids.map((id) => [id, { envios: [], registros: [], justificante: null }]));
+    {
+      envios: UnEnvio[];
+      registros: UnRegistro[];
+      justificante: string | null;
+      sustituye: { id: string; numero: string }[];
+      factura: { id: string; numero: string; en: string } | null;
+      cobradaEn: string | null;
+      copias: { para: string; en: string }[];
+    }
+  >(
+    ids.map((id) => [
+      id,
+      {
+        envios: [],
+        registros: [],
+        justificante: null,
+        sustituye: [],
+        factura: null,
+        cobradaEn: null,
+        copias: [],
+      },
+    ]),
+  );
   if (ids.length === 0) return historias;
   const envios = await contexto.sql<
     {
@@ -257,7 +312,79 @@ export async function lasHistorias(
     const h = historias.get(j.documento_id);
     if (h !== undefined) h.justificante = j.codigo;
   }
+  const canjes = await contexto.sql<
+    {
+      ticket_id: string;
+      factura_id: string;
+      en: string;
+      del_ticket: string;
+      de_la_factura: string;
+    }[]
+  >`
+    select c.ticket_id::text as ticket_id, c.factura_id::text as factura_id, c.en::text as en,
+           t.serie || lpad(t.numero::text, 6, '0') as del_ticket,
+           f.serie || lpad(f.numero::text, 6, '0') as de_la_factura
+      from facturacion.canje c
+      join facturacion.documento t on t.id = c.ticket_id
+      join facturacion.documento f on f.id = c.factura_id
+     where c.ticket_id = any (${ids as string[]}::uuid[])
+        or c.factura_id = any (${ids as string[]}::uuid[])
+  `;
+  for (const c of canjes) {
+    const delTicket = historias.get(c.ticket_id);
+    if (delTicket !== undefined) {
+      delTicket.factura = {
+        id: c.factura_id,
+        numero: c.de_la_factura,
+        en: new Date(c.en).toISOString(),
+      };
+    }
+    historias.get(c.factura_id)?.sustituye.push({ id: c.ticket_id, numero: c.del_ticket });
+  }
+  const cobros = await contexto.sql<{ documento_id: string; en: string }[]>`
+    select documento_id::text as documento_id, en::text as en from facturacion.cobro_de_factura
+     where documento_id = any (${ids as string[]}::uuid[])
+  `;
+  for (const c of cobros) {
+    const h = historias.get(c.documento_id);
+    if (h !== undefined) h.cobradaEn = new Date(c.en).toISOString();
+  }
+  const copias = await contexto.sql<{ documento_id: string; para: string; en: string }[]>`
+    select documento_id::text as documento_id, para, en::text as en from facturacion.copia_mandada
+     where documento_id = any (${ids as string[]}::uuid[])
+     order by en, id
+  `;
+  for (const c of copias) {
+    historias.get(c.documento_id)?.copias.push({ para: c.para, en: new Date(c.en).toISOString() });
+  }
   return historias;
+}
+
+/**
+ * Los tickets que sustituye una factura, **con la fecha con la que Verifacti los registró**: es la
+ * que tiene Hacienda, y puede no ser la de la venta si se mandó otro día (Anexo 4.11).
+ */
+export async function lasSustituidas(
+  contexto: Contexto,
+  facturaId: string,
+): Promise<DocumentoSustituido[]> {
+  const filas = await contexto.sql<
+    { serie: string; numero: number; fecha: string; expedicion: string | null }[]
+  >`
+    select t.serie, t.numero, to_char(t.fecha_operacion, 'YYYY-MM-DD') as fecha,
+           (select to_char(e.fecha_expedicion, 'YYYY-MM-DD') from facturacion.envio e
+             where e.documento_id = t.id and e.resultado = 'aceptado'
+             order by e.en desc, e.id desc limit 1) as expedicion
+      from facturacion.canje c
+      join facturacion.documento t on t.id = c.ticket_id
+     where c.factura_id = ${facturaId}::uuid
+     order by t.preparado_en
+  `;
+  return filas.map((f) => ({
+    serie: f.serie,
+    numero: f.numero,
+    fechaExpedicion: (f.expedicion ?? f.fecha) as FechaOperativa,
+  }));
 }
 
 /** Lo que se le ha ido añadiendo, como lo lee el dominio. */
@@ -292,7 +419,13 @@ export interface LoQueSeEmite {
   readonly regimenDelLocal: LineaVendida['regimen'];
   readonly zonaHoraria: string;
   readonly donde: string | null;
-  readonly origen: 'ticket_de_prueba';
+  readonly origen: Exclude<OrigenDelDocumento, 'cobro'>;
+  /** La fecha de la comida, si fue antes. Sin ella, hoy. */
+  readonly fechaOperacion?: FechaOperativa | undefined;
+  readonly destinatario?: ElDestinatario | undefined;
+  readonly vencimiento?: FechaOperativa | null | undefined;
+  /** Se guarda en el cliente, para la vez siguiente; no va en el documento. */
+  readonly correo?: string | null | undefined;
 }
 
 /**
@@ -306,7 +439,7 @@ export async function prepararUnDocumento(
   const no = porQueNoSeEmite(que.tipo, que.lineas, que.regimenDelLocal);
   if (no !== null) throw new FalloDeAplicacion('faltan_datos', { porque: POR_QUE_NO_SE_EMITE[no] });
   const desglose = elDesglose(que.lineas);
-  const fecha = fechaEnElLocal(contexto.ahora, que.zonaHoraria);
+  const fecha = que.fechaOperacion ?? fechaEnElLocal(contexto.ahora, que.zonaHoraria);
   const [fila] = await enLaBase(
     () => contexto.sql<{ id: string; serie: string; numero: number }[]>`
       select id::text as id, serie, numero
@@ -315,7 +448,9 @@ export async function prepararUnDocumento(
           ${JSON.stringify(que.lineas)}::text::jsonb, ${JSON.stringify(desglose.lineas)}::text::jsonb,
           ${desglose.base}::integer, ${desglose.cuota}::integer, ${desglose.total}::integer,
           ${que.donde}, ${que.origen}, ${contexto.sesion?.aparato?.terminalId ?? null}::uuid,
-          ${contexto.ahora.toISOString()}::timestamptz
+          ${contexto.ahora.toISOString()}::timestamptz,
+          ${que.destinatario === undefined ? null : JSON.stringify(que.destinatario)}::text::jsonb,
+          ${que.vencimiento ?? null}::date, ${que.correo ?? null}
         )
     `,
   );
@@ -327,16 +462,21 @@ export async function prepararUnDocumento(
 // ── Qué toca con cada uno ─────────────────────────────────────────────────────────
 
 /**
- * **Cuándo se pregunta por un registro «Pendiente»**, sin guardar cuándo se preguntó: una vez
- * en su minuto 2 (lo normal es que Hacienda ya haya contestado) y después **en cada hora en
- * punto de su edad** (Anexo 4.10, prueba 17). El reloj late cada minuto, así que cae una vez en
- * cada sitio. Lo normal es que llegue antes su aviso.
+ * **Cuándo se pregunta por un registro «Pendiente»**, sin guardar cuándo se preguntó: **en cada
+ * latido hasta los cinco minutos** (lo normal es que Hacienda conteste en ese rato), luego **cada
+ * cinco** hasta la hora, y después **cada hora en punto de su edad** (Anexo 4.10, prueba 17).
+ *
+ * Con una sola pregunta en el minuto 2, un ticket que Hacienda aceptaba en el minuto 3 se quedaba
+ * una hora en «En Hacienda» si no llegaba el aviso, que no es una garantía de entrega (lo vio Richi
+ * en IKATZ el 6-nov). En cada hora se dejan dos latidos: uno que se retrase no se la salta.
  */
 export function tocaPreguntar(edadMs: number): boolean {
   const minutos = Math.floor(edadMs / 60_000);
-  const primera = Math.floor(A_MEDIAS_DESDE_MS / 60_000);
+  if (minutos < Math.floor(A_MEDIAS_DESDE_MS / 60_000)) return false;
+  if (minutos <= 5) return true;
   const cadaHora = Math.floor(PENDIENTE_DEMASIADO_MS / 60_000);
-  return minutos === primera || (minutos >= cadaHora && minutos % cadaHora === 0);
+  if (minutos < cadaHora) return minutos % 5 === 0;
+  return minutos % cadaHora <= 1;
 }
 
 export type ElPlan =
@@ -359,8 +499,8 @@ export type ElPlan =
  * **Qué toca con un documento ahora** (Anexo 4.9, pasos 6 y 7; 4.10 y 4.11). Sin red y sin base.
  *
  *   · Terminado (correcto, rechazado, con errores) o por el SII: nada.
- *   · Registrado y «Pendiente»: preguntar, a los dos minutos la primera vez y después cada
- *     hora (prueba 17). Lo normal es que llegue antes su aviso.
+ *   · Registrado y «Pendiente»: preguntar, como dice `tocaPreguntar` (prueba 17). Lo normal es
+ *     que llegue antes su aviso.
  *   · Sin registro: mandarlo. **El mismo día, con la misma clave y el mismo cuerpo** que la
  *     primera vez: si aquella llegó, Verifacti repite su respuesta y no registra otro (prueba 7).
  *     **Otro día**, Verifacti ya no acepta esa fecha: se pregunta a Hacienda si lo tiene y, si
@@ -496,6 +636,7 @@ async function hacerElPlan(
   verifacti: Verifacti,
   doc: ElDocumento,
   plan: ElPlan,
+  sustituidas: readonly DocumentoSustituido[],
 ): Promise<LoQueSeSupo> {
   const entorno = elEntorno(doc);
   const nif = doc.empresa.nif;
@@ -543,10 +684,13 @@ async function hacerElPlan(
       };
     }
   }
-  const cuerpo = elCuerpoParaVerifacti(doc, {
-    fechaExpedicion: plan.fechaExpedicion,
-    incidencia: plan.incidencia,
-  });
+  const cuerpo = elCuerpoParaVerifacti(
+    { ...doc, sustituidas },
+    {
+      fechaExpedicion: plan.fechaExpedicion,
+      incidencia: plan.incidencia,
+    },
+  );
   const paso = await verifacti.emitir(nif, entorno, cuerpo, plan.idempotencia);
   return {
     que: 'envio',
@@ -581,14 +725,12 @@ export async function mandarLosDocumentos(
         enNombreDelSistema(contexto, async () => {
           const [doc] = await losDocumentos(contexto, [id]);
           if (doc === undefined) return null;
-          const h = (await lasHistorias(contexto, [id])).get(id) ?? {
-            envios: [],
-            registros: [],
-            justificante: null,
-          };
+          const h = (await lasHistorias(contexto, [id])).get(id) ?? SIN_HISTORIA;
           const hoy = fechaEnElLocal(contexto.ahora, doc.zonaHoraria);
           return {
             doc,
+            antes: comoEsta(doc, h),
+            sustituidas: doc.tipo === 'F3' ? await lasSustituidas(contexto, id) : [],
             plan: elPlan(doc, h, hoy, contexto.ahora, como.alMomento),
             verifacti: contexto.facturacion ?? null,
             primeraVez: h.envios.length === 0,
@@ -596,11 +738,11 @@ export async function mandarLosDocumentos(
         }),
       );
       if (leido === null) continue;
-      const { doc, plan, verifacti, primeraVez } = leido;
+      const { doc, antes, sustituidas, plan, verifacti, primeraVez } = leido;
       const supo =
         verifacti === null || plan.que === 'nada'
           ? ({ que: 'nada' } as const)
-          : await hacerElPlan(verifacti, doc, plan);
+          : await hacerElPlan(verifacti, doc, plan, sustituidas);
 
       const estado = await enTransaccion((contexto) =>
         enNombreDelSistema(contexto, async () => {
@@ -609,6 +751,7 @@ export async function mandarLosDocumentos(
           const h = (await lasHistorias(contexto, [id])).get(id);
           if (h === undefined) return 'preparado' as const;
           const ahora = comoEsta(doc, h);
+          if (ahora !== antes) await avisarSiHayQueHacerAlgo(contexto, doc, ahora);
           // El papel del ticket de prueba, la primera vez: con su QR si Verifacti lo aceptó,
           // y el justificante si no se llegó (4.11). Lo rechazado por los datos no se imprime.
           if (como.imprimir && primeraVez && doc.origen === 'ticket_de_prueba') {
@@ -673,6 +816,53 @@ export async function repasarLosDocumentos(enTransaccion: EnUnaTransaccion): Pro
   });
   await escucharLosAvisos(enTransaccion);
   return hechos;
+}
+
+// ── La campana ────────────────────────────────────────────────────────────────────
+
+/**
+ * **Lo que rechaza Hacienda llega a la campana** de quien lleva la facturación (maqueta de T6, 3;
+ * Anexo 4.10). Una vez por documento. Lo de pruebas también: es para ver cómo funciona. **Nunca
+ * rompe nada**: un aviso que no sale no puede tirar lo que se ha apuntado.
+ */
+async function avisarSiHayQueHacerAlgo(
+  contexto: Contexto,
+  doc: ElDocumento,
+  estado: EstadoDelDocumento | 'fuera_sii',
+): Promise<void> {
+  if (estado !== 'rechazado' && estado !== 'rechazado_por_datos') return;
+  try {
+    const [local] = await contexto.sql<{ organizacion_id: string }[]>`
+      select organizacion_id::text as organizacion_id from estook.local where id = ${doc.localId}::uuid
+    `;
+    if (local === undefined) return;
+    const numero = elNumeroEntero(doc.serie, doc.numero);
+    await avisar(
+      contexto,
+      {
+        tipo: 'documento.rechazado',
+        organizacionId: local.organizacion_id,
+        localId: doc.localId,
+        clave: doc.id,
+        texto: () => ({
+          titulo: `${numero} no ha llegado a Hacienda`,
+          detalle: 'Mira en Tickets y facturas qué dice y qué hacer.',
+        }),
+        ir: '/servicio/ventas/tickets-y-facturas',
+        quien: null,
+      },
+      await losQueLoQuieren(
+        contexto,
+        'documento.rechazado',
+        await quienesPuedenRecibir(contexto, doc.localId, 'documento.rechazado'),
+      ),
+    );
+  } catch (fallo) {
+    await apuntarUnFallo(fallo, {
+      mensaje: 'no se ha podido avisar de un documento rechazado',
+      correlacionId: contexto.correlacionId,
+    });
+  }
 }
 
 // ── Los avisos de Verifacti (4.10) ────────────────────────────────────────────────
@@ -761,7 +951,13 @@ export async function aplicarElAvisoDeVerifacti(
         operacion: typeof c.operacion === 'string' ? c.operacion : null,
         por: 'aviso',
       });
-      if (nuevoEstado) apuntados += 1;
+      if (nuevoEstado) {
+        apuntados += 1;
+        const [elDoc] = await losDocumentos(contexto, [doc.documento_id]);
+        if (elDoc !== undefined) {
+          await avisarSiHayQueHacerAlgo(contexto, elDoc, elEstadoDeVerifacti(estado));
+        }
+      }
     }
     return apuntados;
   });
@@ -826,6 +1022,12 @@ async function escucharLosAvisos(enTransaccion: EnUnaTransaccion): Promise<void>
 
 const NOMBRE_DEL_IMPUESTO = { iva: 'IVA', igic: 'IGIC', ipsi: 'IPSI' } as const;
 
+/** «2026-11-14» → «14/11/2026». */
+export function fechaLegible(fecha: FechaOperativa): string {
+  const [ano, mes, dia] = fecha.split('-');
+  return `${dia ?? ''}/${mes ?? ''}/${ano ?? ''}`;
+}
+
 function porciento(tipo: number): string {
   return `${String(Number((tipo * 100).toFixed(2))).replace('.', ',')} %`;
 }
@@ -853,6 +1055,41 @@ export function elPapelDelDocumento(
     importeCentimos: l.importe,
   }));
   const conQr = h.registros.find((r) => r.url !== null);
+  const losImpuestos = doc.desglose.lineas.map((l) => ({
+    nombre: `${NOMBRE_DEL_IMPUESTO[l.regimen]} ${porciento(l.tipo)}`,
+    baseCentimos: l.base,
+    cuotaCentimos: l.cuota,
+  }));
+  if (doc.destinatario !== null) {
+    if (doc.modalidad !== 'fuera_sii' && conQr === undefined) return null;
+    return laFacturaEnPapel({
+      empresa,
+      titulo: `Factura ${elNumeroEntero(doc.serie, doc.numero)}`,
+      cuando,
+      fechaDeLaOperacion:
+        doc.fechaOperacion === fechaEnElLocal(new Date(doc.preparadoEn), doc.zonaHoraria)
+          ? null
+          : fechaLegible(doc.fechaOperacion),
+      sustituye: h.sustituye.map((t) => t.numero),
+      vence: doc.vencimiento === null ? null : fechaLegible(doc.vencimiento),
+      para: {
+        nombre: doc.destinatario.nombre,
+        identificador: doc.destinatario.identificador,
+        domicilio: doc.destinatario.domicilio,
+      },
+      lineas: lineasDeLaFactura(doc.lineas).map((l) => ({
+        cantidad: l.cantidad,
+        nombre: l.nombre,
+        precioSinImpuesto: l.precioSinImpuesto,
+        tipo: l.tipo,
+        baseCentimos: l.base,
+      })),
+      impuestos: losImpuestos,
+      totalCentimos: doc.total,
+      qr: doc.modalidad === 'fuera_sii' ? null : (conQr?.url ?? null),
+      pruebas: doc.entorno === 'pruebas',
+    });
+  }
   if (doc.modalidad === 'fuera_sii' || conQr !== undefined) {
     return elTicketEnPapel({
       empresa,
@@ -860,11 +1097,7 @@ export function elPapelDelDocumento(
       cuando,
       donde: doc.donde,
       lineas,
-      impuestos: doc.desglose.lineas.map((l) => ({
-        nombre: `${NOMBRE_DEL_IMPUESTO[l.regimen]} ${porciento(l.tipo)}`,
-        baseCentimos: l.base,
-        cuotaCentimos: l.cuota,
-      })),
+      impuestos: losImpuestos,
       totalCentimos: doc.total,
       qr: doc.modalidad === 'fuera_sii' ? null : (conQr?.url ?? null),
       pruebas: doc.entorno === 'pruebas',

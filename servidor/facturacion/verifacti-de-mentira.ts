@@ -223,6 +223,13 @@ export function verifactiDeMentira(): VerifactiDeMentira {
       return Promise.resolve({ nifs: dadosDeAlta.size + 1 });
     },
 
+    comprobarIva(codigoPais, iva) {
+      apuntar(`comprobar IVA ${codigoPais} ${iva}`);
+      return Promise.resolve(
+        iva === 'DE123456789' ? 'si' : iva === 'DE000000000' ? 'no_se_sabe' : 'no',
+      );
+    },
+
     comprobarNif(nif, nombre) {
       apuntar(`comprobar ${nif}`);
       const suyo = EN_HACIENDA[nif];

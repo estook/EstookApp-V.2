@@ -25,6 +25,10 @@ export function LaBarraDeArriba({
 }) {
   const { yo, aparato, bloquear } = usarSesion();
   const enLaCaja = aparato.funcion === 'caja';
+  // Hacer una factura, en cualquier aparato de sala (0137).
+  const factura =
+    puedeEditar(yo.permisos, 'accion.factura_de_un_ticket') ||
+    puedeEditar(yo.permisos, 'accion.factura_a_mano');
   const ajusta =
     enLaCaja &&
     (puedeEditar(yo.permisos, 'accion.ajustes_del_tpv') ||
@@ -60,6 +64,20 @@ export function LaBarraDeArriba({
         </div>
       )}
       <div className="flex-1" />
+      {factura && (
+        <button
+          type="button"
+          aria-label="Tickets y facturas"
+          onClick={() => {
+            irA('facturas');
+          }}
+          className="flex min-h-toque min-w-toque items-center justify-center gap-e2 rounded-redondo border border-borde px-e3 font-medium sm:px-e4"
+        >
+          <Icono dibujo="impresora" lado={18} />
+          {/* En el móvil, solo el dibujo: la barra cabe en una fila. */}
+          <span className="max-sm:hidden">Tickets</span>
+        </button>
+      )}
       {enLaCaja && (
         <button
           type="button"

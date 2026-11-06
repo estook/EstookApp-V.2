@@ -58,6 +58,21 @@ const LO_QUE_DICE_LA_BASE: Readonly<Record<string, CodigoDeError>> = {
   empresa_sin_terminar: 'empresa_sin_terminar',
 };
 
+/** Lo que dice la base al hacer una factura, con su frase (0137). */
+const LO_QUE_SE_EXPLICA: Readonly<Record<string, string>> = {
+  ya_tiene_factura: 'Uno de esos tickets ya tiene factura: cada ticket, una sola vez.',
+  no_es_un_ticket: 'Solo se puede hacer factura de un ticket.',
+  ticket_sin_registrar: 'Uno de esos tickets todavía se está enviando. Prueba en un momento.',
+  ticket_no_valido: 'Hacienda no tiene uno de esos tickets: no se puede sustituir.',
+  el_importe_no_cuadra: 'El importe tiene que ser exactamente el de los tickets.',
+  sin_tickets: 'Elige al menos un ticket.',
+  fecha_futura: 'La fecha de la comida no puede ser de mañana en adelante.',
+  no_esta_en_el_local: 'Esa persona ya no está en este local.',
+  la_direccion_siempre: 'La dirección siempre puede: no se le quita.',
+  la_gestoria_solo_mira: 'La gestoría solo mira: ese permiso no se le da.',
+  permiso_desconocido: 'Ese permiso no se cambia desde aquí.',
+};
+
 function esElNifRepetido(fallo: unknown): boolean {
   if (typeof fallo !== 'object' || fallo === null) return false;
   const f = fallo as { code?: unknown; constraint_name?: unknown; constraint?: unknown };
@@ -76,6 +91,8 @@ export async function enLaBase<T>(hacer: () => Promise<T>): Promise<T> {
   } catch (fallo) {
     const codigo = fallo instanceof Error ? LO_QUE_DICE_LA_BASE[fallo.message.trim()] : undefined;
     if (codigo !== undefined) throw new FalloDeAplicacion(codigo);
+    const frase = fallo instanceof Error ? LO_QUE_SE_EXPLICA[fallo.message.trim()] : undefined;
+    if (frase !== undefined) throw new FalloDeAplicacion('faltan_datos', { porque: frase });
     // Un índice único: el NIF que otra cuenta acaba de dar de alta a la vez.
     if (esElNifRepetido(fallo)) throw new FalloDeAplicacion('nif_de_otra_empresa');
     throw fallo;

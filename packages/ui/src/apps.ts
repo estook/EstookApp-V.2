@@ -590,15 +590,16 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // «Tickets y facturas» llega primero, con T6 · 2 · 1 (0136): es la lista de lo que
         // ha emitido el propio sistema de facturación del local, con su estado ante
         // Hacienda (Anexo, 5.1). Las tres primeras salen de cualquier vía de ventas —CSV,
-        // conector o TPV— y llegan con M20. **Solo para quien lleva la facturación** (0128):
-        // es lo único construido, y es suyo.
+        // conector o TPV— y llegan con M20. La ve quien hace facturas, también la sala (0137):
+        // hacer una factura no pide acceso a la parte fiscal. Quien solo consulta, como la
+        // gestoría, tiene su permiso, y lo que puede cada uno lo vuelve a mirar la API.
         vistas: vistas(
           ['Del turno', 'M20'],
           ['Del día', 'M20'],
           ['Por producto', 'M20'],
           'Tickets y facturas',
         ),
-        permiso: 'accion.alta_de_facturacion',
+        permiso: 'accion.factura_de_un_ticket',
       },
       {
         /*

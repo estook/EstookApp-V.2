@@ -10,6 +10,7 @@ import {
   Etiqueta,
   Hoja,
   Interruptor,
+  QuienHaceQue,
   Tarjeta,
 } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -290,6 +291,8 @@ export function TuFacturacion() {
           </ol>
         </div>
       </Tarjeta>
+
+      <QuienHaceQue cliente={cliente} />
 
       {lo.quienLaLleva !== null && (
         <QuienLaLleva

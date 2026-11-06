@@ -17,6 +17,8 @@ export interface CorreoParaMandar {
   /** El texto plano, que es lo que leen los que no pintan HTML. */
   readonly texto: string;
   readonly html: string;
+  /** Un PDF, en base 64 (Resend, `attachments`): la factura que se manda. */
+  readonly adjuntos?: readonly { readonly nombre: string; readonly base64: string }[];
 }
 
 export interface CorreoSaliente {
@@ -172,6 +174,14 @@ export function correoDeResend(
           subject: correo.asunto,
           text: correo.texto,
           html: correo.html,
+          ...(correo.adjuntos === undefined
+            ? {}
+            : {
+                attachments: correo.adjuntos.map((a) => ({
+                  filename: a.nombre,
+                  content: a.base64,
+                })),
+              }),
         }),
       });
       if (!respuesta.ok) {

@@ -417,3 +417,33 @@ export function correoDeUnAviso(para: string, aviso: AvisoParaElCorreo): CorreoP
     ]),
   };
 }
+
+/**
+ * **La factura, a quien la ha pedido** (0137; lo investigado, A8: por correo, si el cliente lo
+ * elige). Sale a nombre del local, que es quien factura, y Estook solo la hace.
+ */
+export function correoConElDocumento(
+  para: string,
+  local: string,
+  numero: string,
+  adjunto: { readonly nombre: string; readonly base64: string },
+): CorreoParaMandar {
+  const texto = [
+    'Hola:',
+    '',
+    `Te mandamos adjunto el documento ${numero} de ${local}.`,
+    '',
+    `Si tienes cualquier duda, pregunta en ${local}: es quien lo ha emitido.`,
+  ].join('\n');
+  return {
+    para,
+    asunto: `${numero} · ${local}`,
+    texto,
+    html: envolver([
+      'Hola:',
+      `Te mandamos adjunto el documento <strong>${escapar(numero)}</strong> de ${escapar(local)}.`,
+      `Si tienes cualquier duda, pregunta en ${escapar(local)}: es quien lo ha emitido.`,
+    ]),
+    adjuntos: [adjunto],
+  };
+}

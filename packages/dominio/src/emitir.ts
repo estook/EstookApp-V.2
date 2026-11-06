@@ -1,4 +1,4 @@
-import { centimos, enEuros } from './dinero.ts';
+import { centimos, enEuros, entreFactor } from './dinero.ts';
 import { desglosar } from './fiscal/desglose.ts';
 import type { Regimen } from './fiscal/vocabulario.ts';
 import type { FechaOperativa } from './tiempo.ts';
@@ -167,6 +167,29 @@ export function tipoParaVerifacti(tipo: number): string {
 /** El impuesto, como lo cuenta Hacienda: 01 IVA, 02 IPSI, 03 IGIC. */
 const CLAVE_DEL_IMPUESTO: Readonly<Record<Regimen, string>> = { iva: '01', ipsi: '02', igic: '03' };
 
+/** Quién recibe una factura (RD 1619/2012, art. 6.1; lo investigado, A18). */
+export type ClaseDeCliente = 'empresa' | 'particular' | 'de_fuera';
+
+/** El destinatario, congelado en el documento: lo que sale impreso. */
+export interface ElDestinatario {
+  readonly clase: ClaseDeCliente;
+  readonly nombre: string;
+  /** El NIF, el número de IVA o el pasaporte, sin espacios y en mayúsculas. */
+  readonly identificador: string;
+  /** De fuera: 02, su IVA en el censo europeo; 03, su pasaporte (Verifacti, `id_otro`). */
+  readonly id_tipo: '02' | '03' | null;
+  readonly codigo_pais: string | null;
+  /** No va a Verifacti, que no tiene ese campo: va en el papel, como pide el art. 6.1.e. */
+  readonly domicilio: string;
+}
+
+/** Un ticket que sustituye una factura F3, con la fecha con la que Verifacti lo registró. */
+export interface DocumentoSustituido {
+  readonly serie: string;
+  readonly numero: number;
+  readonly fechaExpedicion: FechaOperativa;
+}
+
 /** Lo que guarda el documento de sí mismo al prepararse: no cambia nunca más. */
 export interface DocumentoParaEmitir {
   readonly tipo: TipoDeDocumento;
@@ -177,6 +200,10 @@ export interface DocumentoParaEmitir {
   readonly fechaOperacion: FechaOperativa;
   readonly descripcion: string;
   readonly desglose: ElDesglose;
+  /** F1 y F3 lo llevan; un ticket, nunca (Verifacti, `destinatario_no_aplica`). */
+  readonly destinatario?: ElDestinatario | null | undefined;
+  /** Los tickets que sustituye una F3. */
+  readonly sustituidas?: readonly DocumentoSustituido[] | undefined;
 }
 
 export interface CuerpoParaVerifacti {
@@ -194,10 +221,23 @@ export interface CuerpoParaVerifacti {
   }[];
   readonly importe_total: string;
   readonly incidencia?: 'S';
+  readonly nombre?: string;
+  readonly nif?: string;
+  readonly id_otro?: {
+    readonly codigo_pais: string;
+    readonly id_type: '02' | '03';
+    readonly id: string;
+  };
+  readonly facturas_sustituidas?: readonly {
+    readonly serie: string;
+    readonly numero: string;
+    readonly fecha_expedicion: string;
+  }[];
 }
 
 /**
- * **El cuerpo de `POST /verifactu/create`** para un ticket (F2): sin destinatario.
+ * **El cuerpo de `POST /verifactu/create`**: un ticket (F2) sin destinatario; una factura (F1 y
+ * F3) con su nombre y su NIF, o su `id_otro` si es de fuera; y una F3 con los tickets que sustituye.
  *
  * La fecha de expedición **es la del día en que se manda** (Verifacti: «debe ser la fecha
  * actual»), y la de la operación solo va si es otra: un documento que se manda al día
@@ -225,7 +265,28 @@ export function elCuerpoParaVerifacti(
     })),
     importe_total: importeParaVerifacti(doc.desglose.total),
     ...(envio.incidencia ? { incidencia: 'S' as const } : {}),
+    ...elDestinatarioParaVerifacti(doc.destinatario ?? null),
+    ...(doc.sustituidas === undefined || doc.sustituidas.length === 0
+      ? {}
+      : {
+          facturas_sustituidas: doc.sustituidas.map((t) => ({
+            serie: t.serie,
+            numero: numeroEnTexto(t.numero),
+            fecha_expedicion: fechaParaVerifacti(t.fechaExpedicion),
+          })),
+        }),
   };
+}
+
+function elDestinatarioParaVerifacti(d: ElDestinatario | null): Partial<CuerpoParaVerifacti> {
+  if (d === null) return {};
+  if (d.clase === 'de_fuera' && d.id_tipo !== null && d.codigo_pais !== null) {
+    return {
+      nombre: d.nombre,
+      id_otro: { codigo_pais: d.codigo_pais, id_type: d.id_tipo, id: d.identificador },
+    };
+  }
+  return { nombre: d.nombre, nif: d.identificador };
 }
 
 // ── Cómo está ─────────────────────────────────────────────────────────────────────
@@ -356,8 +417,7 @@ export function loQueDiceEnLlano(
     case 'rechazado':
       return {
         que: `Hacienda lo ha rechazado.${dice}`,
-        hacer:
-          'Corrígelo con otro documento. Este no se borra: su número queda usado (llega con T6 · 2 · 2).',
+        hacer: 'Hay que corregirlo con otro documento. Este no se borra: su número queda usado.',
       };
     case 'aceptado_con_errores':
       return {
@@ -368,12 +428,107 @@ export function loQueDiceEnLlano(
       return {
         que: `Verifacti no lo ha mandado a Hacienda por los datos.${dice}`,
         hacer:
-          'No ha llegado a Hacienda. Corrige el dato que dice y vuelve a emitirlo; su número queda usado.',
+          'No ha llegado a Hacienda. Corrige el dato que dice y vuelve a hacerlo; su número queda usado.',
       };
     default:
       return null;
   }
 }
+
+// ── La factura ────────────────────────────────────────────────────────────────────
+
+/**
+ * **Lo que lleva cada línea de una factura completa** (RD 1619/2012, art. 6.1.f, g): el precio
+ * unitario sin impuesto, el tipo y su base. Lo vendido viene con el impuesto dentro, como la carta.
+ */
+export interface LineaDeLaFactura {
+  readonly nombre: string;
+  readonly cantidad: number;
+  /** «31,82», en euros. Con más decimales solo si hacen falta para no falsear el precio. */
+  readonly precioSinImpuesto: string;
+  /** «10 %». */
+  readonly tipo: string;
+  /** La base de la línea, en céntimos. */
+  readonly base: number;
+}
+
+export function lineasDeLaFactura(lineas: readonly LineaVendida[]): LineaDeLaFactura[] {
+  return lineas.map((l) => {
+    const base: number = entreFactor(centimos(l.importe), 1 + l.tipo);
+    const unidad = base / 100 / l.cantidad;
+    const conDos = unidad.toFixed(2);
+    const exacto = Math.abs(Number(conDos) * l.cantidad * 100 - base) < 0.5;
+    return {
+      nombre: l.nombre,
+      cantidad: l.cantidad,
+      precioSinImpuesto: (exacto ? conDos : unidad.toFixed(4)).replace('.', ','),
+      tipo: `${String(Number((l.tipo * 100).toFixed(2))).replace('.', ',')} %`,
+      base,
+    };
+  });
+}
+
+/**
+ * **Juntar lo de varios tickets**: los platos iguales, al mismo precio y tipo, en una sola línea,
+ * para que un mes de comidas quepa en una página. El total no cambia.
+ */
+export function juntarLasLineas(lineas: readonly LineaVendida[]): LineaVendida[] {
+  const juntas = new Map<string, LineaVendida>();
+  for (const l of lineas) {
+    const clave = `${l.nombre}|${String(l.importe / l.cantidad)}|${l.regimen}|${String(l.tipo)}`;
+    const ya = juntas.get(clave);
+    juntas.set(
+      clave,
+      ya === undefined
+        ? l
+        : { ...ya, cantidad: ya.cantidad + l.cantidad, importe: ya.importe + l.importe },
+    );
+  }
+  return [...juntas.values()];
+}
+
+/**
+ * **El plazo de una factura a una empresa o un profesional**: antes del día 16 del mes siguiente
+ * al de la operación (RD 1619/2012, art. 11; lo investigado, A21). Nulo si no hay que avisar: un
+ * particular, o una operación de este mismo mes.
+ */
+export function elPlazoDeLaFactura(
+  fechaOperacion: FechaOperativa,
+  hoy: FechaOperativa,
+  clase: ClaseDeCliente,
+): { readonly hasta: FechaOperativa; readonly pasado: boolean } | null {
+  if (clase === 'particular') return null;
+  if (fechaOperacion.slice(0, 7) === hoy.slice(0, 7)) return null;
+  const [ano = 0, mes = 1] = fechaOperacion.split('-').map(Number);
+  const siguiente = mes === 12 ? { a: ano + 1, m: 1 } : { a: ano, m: mes + 1 };
+  const hasta =
+    `${String(siguiente.a)}-${String(siguiente.m).padStart(2, '0')}-15` as FechaOperativa;
+  return { hasta, pasado: hoy > hasta };
+}
+
+export type PorQueNoSeCanjea = 'ya_tiene_factura' | 'no_es_un_ticket' | 'sin_registrar' | 'no_vale';
+
+/** Si un documento se puede juntar en una factura (Anexo 5.3, prueba 11), y por qué no. */
+export function porQueNoSeCanjea(
+  tipo: TipoDeDocumento,
+  estado: EstadoDelDocumento | 'fuera_sii',
+  tieneFactura: boolean,
+): PorQueNoSeCanjea | null {
+  if (tipo !== 'F2') return 'no_es_un_ticket';
+  if (tieneFactura) return 'ya_tiene_factura';
+  if (estado === 'preparado' || estado === 'enviando') return 'sin_registrar';
+  if (estado === 'rechazado' || estado === 'rechazado_por_datos' || estado === 'anulado') {
+    return 'no_vale';
+  }
+  return null;
+}
+
+export const POR_QUE_NO_SE_CANJEA: Readonly<Record<PorQueNoSeCanjea, string>> = {
+  ya_tiene_factura: 'ya tiene factura',
+  no_es_un_ticket: 'no es un ticket',
+  sin_registrar: 'todavía se está enviando',
+  no_vale: 'Hacienda no lo tiene',
+};
 
 // ── Para la pantalla ──────────────────────────────────────────────────────────────
 

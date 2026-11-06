@@ -45,6 +45,8 @@ import { variable } from '@estook/utiles';
  *   POST /verifactu/status                serie, numero, fecha_expedicion → la factura en
  *                                           Hacienda, con el uuid de su último registro aceptado
  *   GET/POST /webhooks, POST /webhooks/{id}/nifs/{nif}   los avisos (url, entorno, secret, nifs)
+ *   POST /nifs/validar/vies               codigo_pais, iva → iva, resultado (IDENTIFICADO,
+ *                                           NO IDENTIFICADO, ERROR API VIES)
  *
  * **Nunca se llama a la eliminación permanente de un NIF** (Anexo 4.2): borra sus registros.
  */
@@ -220,6 +222,8 @@ export interface Verifacti {
   /** Probar la clave de la cuenta: cuántos NIF tiene. */
   probar(): Promise<{ readonly nifs: number }>;
   comprobarNif(nif: string, nombre: string | null): Promise<ElNifEnHacienda>;
+  /** Un número de IVA de otro país, en el censo europeo: lo que Hacienda exige para aceptarlo. */
+  comprobarIva(codigoPais: string, iva: string): Promise<'si' | 'no' | 'no_se_sabe'>;
   /** Da de alta un NIF; si ya estaba en la cuenta, lo dice sin fallar. */
   darDeAlta(datos: DatosDelAlta): Promise<'dado_de_alta' | 'ya_estaba'>;
   elNif(entorno: EntornoDeVerifacti, nif: string): Promise<ElNifEnVerifacti | null>;
@@ -513,6 +517,17 @@ export function verifactiDeVerdad(
         }),
       )) as Record<string, unknown> | null;
       return { resultado: texto(cuerpo?.resultado), nombre: textoONulo(cuerpo?.nombre) };
+    },
+
+    async comprobarIva(codigoPais, iva) {
+      const cuerpo = (await enJson(
+        await pedir('POST', '/nifs/validar/vies', { cuerpo: { codigo_pais: codigoPais, iva } }),
+      )) as Record<string, unknown> | null;
+      const resultado = texto(cuerpo?.resultado).trim().toUpperCase();
+      if (resultado === 'IDENTIFICADO') return 'si';
+      if (resultado === 'NO IDENTIFICADO') return 'no';
+      // ERROR API VIES: el censo de ese país no contesta. No dice nada del número.
+      return 'no_se_sabe';
     },
 
     async darDeAlta(datos) {

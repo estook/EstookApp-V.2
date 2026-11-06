@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { LAS_MODALIDADES, enMinuscula, type ModalidadDeFacturacion } from '@estook/dominio';
-import { Cargando, ComoFactura, ErrorEnCristiano } from '@estook/ui';
+import { Cargando, ComoFactura, ErrorEnCristiano, QuienHaceQue } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { FalloDeLaSala } from '../ganchos/usarLaSala.ts';
 import { usarLaFacturacionDelTpv } from '../ganchos/usarLaFacturacionDelTpv.ts';
@@ -43,6 +43,7 @@ export function LaFacturacion() {
   return (
     <section aria-label="Facturación" className="flex max-w-[44rem] flex-col gap-e4">
       <h2 className="text-seccion font-bold">Facturación</h2>
+      <QuienHaceQue cliente={cliente} />
       <div className="rounded-grande border border-borde bg-superficie p-e4">
         <p className="text-cuerpo font-semibold">
           {e === null ? 'Sin dar de alta' : e.nombre}

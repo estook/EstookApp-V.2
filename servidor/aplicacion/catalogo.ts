@@ -421,6 +421,19 @@ import {
   unDocumento,
 } from './comandos/emitir.ts';
 import {
+  comprobarAlCliente,
+  darUnPermiso,
+  elDocumentoEnPdf,
+  hacerFacturaAMano,
+  hacerFacturaDeTickets,
+  loQueSePuedeFacturar,
+  losClientesDeFactura,
+  mandarElDocumento,
+  marcarCobrada,
+  quienHaceQue,
+  quitarElCliente,
+} from './comandos/hacer-facturas.ts';
+import {
   comprobarUnNif,
   contestarDondeTributa,
   darDeAltaEnVerifacti,
@@ -692,6 +705,10 @@ export const catalogo = {
     [laFacturacionEnElAdmin.nombre]: laFacturacionEnElAdmin,
     // T6 · 2 · 1 · El motor y el ticket (0136): lo emitido, con su estado ante Hacienda.
     [ticketsYFacturas.nombre]: ticketsYFacturas,
+    [losClientesDeFactura.nombre]: losClientesDeFactura,
+    [loQueSePuedeFacturar.nombre]: loQueSePuedeFacturar,
+    [elDocumentoEnPdf.nombre]: elDocumentoEnPdf,
+    [quienHaceQue.nombre]: quienHaceQue,
     [unDocumento.nombre]: unDocumento,
   } as Record<string, Consulta<never, unknown>>,
 
@@ -1189,6 +1206,13 @@ export const catalogo = {
     [quitarLaEmpresa.nombre]: quitarLaEmpresa,
     // T6 · 2 · 1 (0136): el ticket de prueba de Ajustes y reimprimir lo emitido.
     [imprimirUnTicketDePrueba.nombre]: imprimirUnTicketDePrueba,
+    [comprobarAlCliente.nombre]: comprobarAlCliente,
+    [quitarElCliente.nombre]: quitarElCliente,
+    [hacerFacturaDeTickets.nombre]: hacerFacturaDeTickets,
+    [hacerFacturaAMano.nombre]: hacerFacturaAMano,
+    [marcarCobrada.nombre]: marcarCobrada,
+    [mandarElDocumento.nombre]: mandarElDocumento,
+    [darUnPermiso.nombre]: darUnPermiso,
     [reimprimirElDocumento.nombre]: reimprimirElDocumento,
     [probarVerifacti.nombre]: probarVerifacti,
     [marcarCondicion.nombre]: marcarCondicion,

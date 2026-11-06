@@ -359,19 +359,19 @@ La versión 1.1 prometía que la cocina seguía imprimiendo sin internet con una
 
 ## 4.1 El proveedor: Verifacti
 
-| Qué                  | Cómo                                                                                                                                                             |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Formato              | API REST, JSON                                                                                                                                                   |
-| Autenticación        | `Authorization: Bearer <API Key>`, **una clave por NIF y por entorno**                                                                                           |
-| Entornos             | La URL no cambia. **La clave decide**: `vf_test_…` es pruebas, `vf_prod_…` es producción                                                                         |
-| QR                   | Llega en la respuesta inmediata, en imagen Base64                                                                                                                |
-| Huella y cadena      | **Las hace el proveedor.** Estook no calcula ninguna cadena                                                                                                      |
-| Envío a la AEAT      | Lo hace el proveedor con su certificado, en el minuto siguiente                                                                                                  |
-| Respuesta de la AEAT | Por webhook (preferido) o consultando el estado del registro                                                                                                     |
-| Gestión de los NIF   | Una API aparte, con su propia clave (`vfn_…`): dar de alta, desactivar, reactivar, comprobar un NIF contra la AEAT, la autorización ante Hacienda y los webhooks |
-| Idempotencia         | **Cabecera `Idempotency-Key` en `/verifactu/create`**: 409 si ya se está procesando, 422 si el cuerpo no cuadra con la clave (comprobado el 29-sep-2026)         |
+| Qué                  | Cómo                                                                                                                                                                                                                                                            |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Formato              | API REST, JSON                                                                                                                                                                                                                                                  |
+| Autenticación        | `Authorization: Bearer <API Key>`, **una clave por NIF y por entorno**                                                                                                                                                                                          |
+| Entornos             | La URL no cambia. **La clave decide**: `vf_test_…` es pruebas, `vf_prod_…` es producción                                                                                                                                                                        |
+| QR                   | Llega en la respuesta inmediata, en imagen Base64                                                                                                                                                                                                               |
+| Huella y cadena      | **Las hace el proveedor.** Estook no calcula ninguna cadena                                                                                                                                                                                                     |
+| Envío a la AEAT      | Lo hace el proveedor con su certificado, en el minuto siguiente                                                                                                                                                                                                 |
+| Respuesta de la AEAT | Por webhook (preferido) o consultando el estado del registro                                                                                                                                                                                                    |
+| Gestión de los NIF   | Una API aparte, con su propia clave (`vfn_…`): dar de alta, desactivar, reactivar, comprobar un NIF contra la AEAT, la autorización ante Hacienda y los webhooks                                                                                                |
+| Idempotencia         | **Cabecera `Idempotency-Key` en `/verifactu/create`**: 409 si ya se está procesando, 422 si el cuerpo no cuadra con la clave; se recuerda 24 h por NIF y **repite también un 400**: con los datos corregidos, otra clave (comprobado el 29-sep y el 6-nov-2026) |
 
-> **Los avisos por webhook, comprobados el 30-sep-2026** en la documentación de su API de NIF ([0066](../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)): se registran por entorno y por NIF; cada aviso va firmado en la cabecera `X-Webhook-Signature` (HMAC-SHA256 del cuerpo exacto, en hexadecimal, con el secreto del webhook) y lleva `X-Webhook-Id`, que no cambia en los reintentos; hay que contestar `2xx` **en menos de 10 segundos**. Consultar el estado (`/verifactu/status`) sigue siendo la red de seguridad: un webhook no es una garantía de entrega (4.10).
+> **Los avisos por webhook, comprobados el 30-sep-2026** en la documentación de su API de NIF ([0066](../decisiones/0066-sin-asesor-por-ahora-verifacti-y-el-chat.md)), y desde T6 · 2 · 1 en `/avisos/verifacti` con el secreto `VERIFACTI_SECRETO_DE_LOS_AVISOS` ([0136](../decisiones/0136-t6-2-1-el-motor-y-el-ticket.md)): se registran por entorno y por NIF; cada aviso va firmado en la cabecera `X-Webhook-Signature` (HMAC-SHA256 del cuerpo exacto, en hexadecimal, con el secreto del webhook) y lleva `X-Webhook-Id`, que no cambia en los reintentos; hay que contestar `2xx` **en menos de 10 segundos**. Consultar el estado (`/verifactu/status`) sigue siendo la red de seguridad: un webhook no es una garantía de entrega (4.10).
 
 **Dos detalles que ahorran errores:**
 
@@ -419,7 +419,7 @@ Cinco pasos, uno por pantalla, y **hasta el último el botón de cobrar sale blo
 - **Una serie por tipo de documento y por local.** Las rectificativas van **siempre** en serie propia; el abono en negativo puede ir en la serie original.
 - **Numeración correlativa dentro de cada serie, sin huecos.** Es una obligación del reglamento de facturación que VeriFactu **no comprueba**: que la AEAT acepte un registro no significa que la numeración esté bien.
 - **El número se asigna al preparar el documento**, en una transacción corta con el candado de **su serie** (`pg_advisory_xact_lock`), que dura milisegundos. Con varios aparatos cobrando a la vez, **ninguno espera a Verifacti para numerar**. Así lo corrigió la [0059](../decisiones/0059-emitir-un-documento-fiscal.md): la versión 1.1 numeraba al volver la respuesta, con la llamada dentro de la transacción, y una respuesta perdida dejaba el número libre para el siguiente cobro.
-- **Un documento preparado nunca se pierde**: o se registra, o se queda a la vista con su error. **Si Verifacti lo rechaza por los datos antes de registrar nada**, se corrige y se vuelve a mandar **con el mismo número**, porque no se ha entregado. **[VERIFICAR con el asesor.]**
+- **Un documento preparado nunca se pierde**: o se registra, o se queda a la vista con su error. **Si Verifacti lo rechaza por los datos antes de registrar nada** (un 400: no genera el registro ni llega a la AEAT, comprobado en su documentación el 6-nov-2026), técnicamente se puede corregir y mandar **con el mismo número y otra clave de idempotencia**. **[VERIFICAR con el asesor]** si debe hacerse; **hasta entonces el número queda usado** y se corrige con otro documento ([0136](../decisiones/0136-t6-2-1-el-motor-y-el-ticket.md)).
 - Si la AEAT rechaza después un registro ya aceptado por Verifacti, **el número queda usado**: se corrige con otro documento, nunca reutilizándolo.
 - La misma serie y número pueden repetirse en **ejercicios distintos**: la AEAT solo ve duplicado si coinciden serie, número y fecha de expedición.
 
@@ -440,7 +440,7 @@ _Los motivos de rectificativa se comprobaron el 20 de septiembre de 2026 contra 
 | F1 en negativo | Abono por devolución total                                                      | Puede ir en la serie original                                                                                                                              |
 | Anulación      | Registro propio, no es una factura                                              | Solo si el documento **nunca debió existir**                                                                                                               |
 
-**Y un segundo dato que va con toda rectificativa, y que se olvida:** además de la clave R, VeriFactu pide la **naturaleza de la rectificación**, que es `S` si **sustituye** al documento anterior o `I` si va **por diferencias**. Son dos formas distintas de contar lo mismo y la AEAT las trata distinto. **[VERIFICAR con el asesor cuál se usa en una devolución de hostelería]**, y **[VERIFICAR el nombre exacto del campo]** en la referencia de la API del proveedor antes de escribirlo: aquí no se inventa ningún nombre.
+**Y un segundo dato que va con toda rectificativa, y que se olvida:** además de la clave R, VeriFactu pide la **naturaleza de la rectificación**, que es `S` si **sustituye** al documento anterior o `I` si va **por diferencias**. Son dos formas distintas de contar lo mismo y la AEAT las trata distinto. **[VERIFICAR con el asesor cuál se usa en una devolución de hostelería].** El campo es **`tipo_rectificativa`** (con `importe_rectificativa` si es `S`), comprobado en la especificación de Verifacti el 6-nov-2026.
 
 **Reglas de uso, que es donde se equivoca todo el mundo:**
 
@@ -482,7 +482,7 @@ _Todo lo de este apartado se comprobó el 20 de septiembre de 2026 contra el [ar
 | `fecha_operacion`  | El servidor de Estook | Opcional. Solo si la operación fue antes: es la que decide el periodo de IVA |
 | Hora del registro  | **Verifacti**         | No se manda. El control de tiempo de la AEAT va sobre ella                   |
 
-**Nunca se usa el reloj del aparato.** Y ojo con la jornada operativa: un cobro a las 02:30 pertenece a la **jornada** del día anterior a efectos de gestión, pero su **fecha de expedición es la del día real**. Son dos cosas distintas y no se mezclan.
+**Nunca se usa el reloj del aparato.** **La de expedición se pone al mandar**, no al preparar: Verifacti la quiere «actual». Un documento que se manda otro día lleva la de ese día, la de la operación (la de la venta) y la incidencia; y antes se pregunta a Hacienda si ya tiene el envío de aquel día, para no registrarlo dos veces ([0136](../decisiones/0136-t6-2-1-el-motor-y-el-ticket.md)). Y ojo con la jornada operativa: un cobro a las 02:30 pertenece a la **jornada** del día anterior a efectos de gestión, pero su **fecha de expedición es la del día real**. Son dos cosas distintas y no se mezclan.
 
 Prueba obligatoria en los dos cambios de hora del año.
 
@@ -535,7 +535,7 @@ FUERA DE LA TRANSACCION
 
 **Webhooks del proveedor:** se registra un endpoint por entorno. Cada notificación trae `X-Webhook-Id`, **que es la clave de idempotencia**: la misma notificación dos veces no cambia nada. El proveedor reintenta hasta tres veces, con esperas de 1, 6 y 30 minutos, no reintenta los 4xx y **desactiva el webhook si falla mucho**, avisando por correo, sin reactivarlo solo.
 
-Por eso, además del webhook, un trabajo repasa a diario los registros que lleven más de una hora en «pendiente» y consulta su estado. **Un webhook no es una garantía de entrega.**
+Por eso, además del webhook, **el reloj pregunta** por los registros en «pendiente»: en su minuto 2 y en cada hora de su edad (T6 · 2 · 1). **Un webhook no es una garantía de entrega.**
 
 **Pantalla de registros con error** (gerente y dirección): qué documento, qué dijo la AEAT traducido a lenguaje normal, y el botón de la corrección que toca. **Nunca se corrige tocando el original.**
 
@@ -785,7 +785,7 @@ La puesta en marcha pregunta qué tiene, no qué le vendemos:
 
 **La cola.** `trabajo_de_impresion`: local, impresora, tipo (`comanda`, `ticket`, `precuenta`, `informe`), **contenido ya compuesto por el servidor**, estado (`pendiente`, `entregado`, `impreso`, `error`), intentos y momento de cada paso. Un trabajo por documento, con identificador único.
 
-**El contenido se compone en el servidor, una sola vez, y en un formato intermedio propio** —líneas, alineación, tamaño, negrita, corte, cajón—, no en ESC/POS crudo. Cada agente lo traduce a lo que entiende su impresora. Así una impresora nueva es un traductor nuevo, y no se toca nada más. Es la misma regla de los documentos del Manifiesto: reimprimir da exactamente lo mismo.
+**El contenido se compone en el servidor, una sola vez, y en un formato intermedio propio** —líneas, alineación, tamaño, negrita, corte, cajón y, desde T6 · 2 · 1, **el QR**—, no en ESC/POS crudo. **El papel con QR es la versión 2**: lo imprime la caja para Windows desde la 1.3.0, que lo dice al pedir su cola, y a una de antes no se le da ([0136](../decisiones/0136-t6-2-1-el-motor-y-el-ticket.md)). Cada agente lo traduce a lo que entiende su impresora. Así una impresora nueva es un traductor nuevo, y no se toca nada más. Es la misma regla de los documentos del Manifiesto: reimprimir da exactamente lo mismo.
 
 **Cómo lee cada agente la cola:**
 

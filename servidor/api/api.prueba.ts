@@ -451,6 +451,16 @@ describe('las dos puertas que no traen persona (0048)', () => {
     expect(respuesta.status).toBe(403);
   });
 
+  it('ni un aviso que no firma Verifacti (0136)', async () => {
+    const { app } = api();
+    const respuesta = await app.request('/api/avisos/verifacti', {
+      method: 'POST',
+      headers: { 'x-webhook-signature': 'me la invento', 'x-webhook-id': 'aviso-1' },
+      body: '[{"uuid":"u","estado":"Correcto"}]',
+    });
+    expect(respuesta.status).toBe(403);
+  });
+
   it('un latido sin el secreto del reloj tampoco pasa', async () => {
     const { app } = api();
     const respuesta = await app.request('/api/tareas/latir', {

@@ -11,6 +11,14 @@ import { dejoCorreos, dejoMoviles, mandarLosCorreosDeLosAvisos } from './avisos.
 import { mandarLoDelMovil, type LoQueHizoElMovil } from './al-movil.ts';
 import { darLosToques } from './al-segundo.ts';
 import { apuntarUnFallo } from '../infraestructura/fallos.ts';
+import {
+  aplicarElAvisoDeVerifacti,
+  elSecretoDeLosAvisos,
+  laFirmaEsDeVerifacti,
+  loQueHayQueMandar,
+  mandarLosDocumentos,
+  repasarLosDocumentos,
+} from './emitir.ts';
 
 export type { LoQueHizoElMovil } from './al-movil.ts';
 
@@ -145,6 +153,16 @@ export interface Despachador {
    * exacto) y su cabecera `Stripe-Signature` (0048). Sin persona: lo hace el sistema.
    */
   avisoDeStripe(quien: QuienLlama, cuerpo: string, firma: string | null): Promise<AvisoRecibido>;
+  /**
+   * Un aviso de Verifacti (T6 · 2 · 1, 0136): el estado de unos registros ante Hacienda,
+   * firmado con el secreto y con su id, que no cambia en los reintentos.
+   */
+  avisoDeVerifacti(
+    quien: QuienLlama,
+    cuerpo: string,
+    firma: string | null,
+    id: string | null,
+  ): Promise<{ readonly firmaValida: boolean; readonly apuntados?: number }>;
   /** El latido del reloj (0016, 0048), con el secreto que manda `pg_cron`. */
   latir(quien: QuienLlama, secreto: string | null): Promise<LoQueHizoElReloj | null>;
   /**
@@ -524,6 +542,18 @@ export function crearDespachador(puertos: Puertos): Despachador {
       // sería avisar de algo que todavía no se puede leer. Nunca lanza.
       await darLosToques(quien.correlacionId);
 
+      // Los documentos fiscales que ha preparado (T6 · 2 · 1, 0136), **con el comando ya
+      // guardado y fuera de su transacción** (Anexo 4.9): cada uno se lee y se apunta en una
+      // corta, y la llamada a Verifacti va entre las dos, sin ninguna abierta. Nunca lanza.
+      const documentos = loQueHayQueMandar(quien.correlacionId);
+      if (documentos.length > 0 && resultado.estado === 'ok') {
+        // Con la sesión de quien lo pidió: el papel sale por la impresora de **su** local.
+        await mandarLosDocumentos((hacer) => puertos.enTransaccion(quien, hacer), documentos, {
+          alMomento: true,
+          imprimir: true,
+        });
+      }
+
       // Lo del móvil (0070), igual que el correo: **con el comando ya guardado**, y
       // antes que los correos, porque lo que el móvil no recibe sale por correo.
       let correoDeRepuesto = false;
@@ -591,7 +621,37 @@ export function crearDespachador(puertos: Puertos): Despachador {
     },
 
     async alMovil(quien, secreto): Promise<LoQueHizoElMovil | null> {
-      return puertos.enTransaccion(quien, (contexto) => latidoDelMovil(contexto, secreto));
+      const hecho = await puertos.enTransaccion(quien, (contexto) =>
+        latidoDelMovil(contexto, secreto),
+      );
+      // Y cada minuto, lo fiscal que se quedó a medias (T6 · 2 · 1, 0136; Anexo 4.9, paso 7):
+      // con el secreto del reloj ya comprobado, y fuera de su transacción.
+      if (hecho !== null) {
+        try {
+          await repasarLosDocumentos((hacer) => puertos.enTransaccion(quien, hacer));
+        } catch (fallo) {
+          await apuntarUnFallo(fallo, {
+            mensaje: 'el repaso de los documentos fiscales ha fallado',
+            correlacionId: quien.correlacionId,
+          });
+        }
+      }
+      return hecho;
+    },
+
+    async avisoDeVerifacti(quien, cuerpo, firma, id) {
+      const secreto = elSecretoDeLosAvisos();
+      if (!(await laFirmaEsDeVerifacti(cuerpo, firma, secreto))) return { firmaValida: false };
+      let leido: unknown;
+      try {
+        leido = JSON.parse(cuerpo);
+      } catch {
+        return { firmaValida: true, apuntados: 0 };
+      }
+      const apuntados = await puertos.enTransaccion(quien, (contexto) =>
+        aplicarElAvisoDeVerifacti(contexto, id ?? '', leido),
+      );
+      return { firmaValida: true, apuntados };
     },
   };
   return despachador;

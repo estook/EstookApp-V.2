@@ -415,6 +415,12 @@ import { quienTieneAcceso } from './consultas/quien-tiene-acceso.ts';
 import { unLocal } from './consultas/un-local.ts';
 import type { Comando, Consulta } from './contrato.ts';
 import {
+  imprimirUnTicketDePrueba,
+  reimprimirElDocumento,
+  ticketsYFacturas,
+  unDocumento,
+} from './comandos/emitir.ts';
+import {
   comprobarUnNif,
   contestarDondeTributa,
   darDeAltaEnVerifacti,
@@ -684,6 +690,9 @@ export const catalogo = {
     [laDeclaracionResponsable.nombre]: laDeclaracionResponsable,
     [laDeclaracionResponsableEnPdf.nombre]: laDeclaracionResponsableEnPdf,
     [laFacturacionEnElAdmin.nombre]: laFacturacionEnElAdmin,
+    // T6 · 2 · 1 · El motor y el ticket (0136): lo emitido, con su estado ante Hacienda.
+    [ticketsYFacturas.nombre]: ticketsYFacturas,
+    [unDocumento.nombre]: unDocumento,
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
@@ -1178,6 +1187,9 @@ export const catalogo = {
     [ponerPideTuFactura.nombre]: ponerPideTuFactura,
     [darLaFacturacion.nombre]: darLaFacturacion,
     [quitarLaEmpresa.nombre]: quitarLaEmpresa,
+    // T6 · 2 · 1 (0136): el ticket de prueba de Ajustes y reimprimir lo emitido.
+    [imprimirUnTicketDePrueba.nombre]: imprimirUnTicketDePrueba,
+    [reimprimirElDocumento.nombre]: reimprimirElDocumento,
     [probarVerifacti.nombre]: probarVerifacti,
     [marcarCondicion.nombre]: marcarCondicion,
     [guardarElProductor.nombre]: guardarElProductor,

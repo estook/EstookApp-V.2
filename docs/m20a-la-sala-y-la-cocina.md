@@ -566,6 +566,14 @@ abajo:
 
 **Quitar la empresa de un local** (0129), mientras se está en pruebas, ya está en T6 · 1.
 
+**T6 · 2 · 1 · El motor y el ticket, hecho** ([0136](decisiones/0136-t6-2-1-el-motor-y-el-ticket.md),
+migración 0106, la caja para Windows 1.3.0): el motor de arriba, el ticket de prueba de Ajustes ›
+Facturación con su QR, el papel a 80 y 58 mm, el justificante, Servicio › Ventas › Tickets y
+facturas con la historia de cada documento, y las pruebas del capítulo 8 que le tocan. Lo que
+cambia de lo escrito abajo: **un rechazo por los datos deja el número usado** hasta que lo diga
+el asesor (Verifacti no registra nada con un 400), y **recoger el ticket con el código del
+justificante** llega con la página de «Pide tu factura» (T6 · 2 · 3).
+
 **Antes de T6 · 2 · 1, la pausa del 5-nov** ([0130](decisiones/0130-la-pausa-del-5-nov-r1-lo-rapido.md)):
 cuatro entregas con lo que Richi vio usando el TPV en IKATZ. **R1 · Lo rápido** (tachar, mandar, el
 logo y la barra del iPhone), **R2 · La mesa en el móvil**, **R3 · Ajustes y secciones** y **R4 ·

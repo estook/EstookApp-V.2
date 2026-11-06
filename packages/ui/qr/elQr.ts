@@ -10,13 +10,14 @@
  * para fichar.
  *
  * Con corrección de errores **Q** (un 25 %): un QR pegado en una mesa se mancha, se
- * raya y se dobla, y con Q se sigue leyendo. Es lo que usan las cartas de verdad.
+ * raya y se dobla, y con Q se sigue leyendo. Es lo que usan las cartas de verdad. **El
+ * tributario va con M**, que es lo que pide la Orden HAC/1177/2024 (T6 · 2 · 1, 0136).
  */
 export type MatrizDelQr = readonly (readonly boolean[])[];
 
-export async function laMatriz(texto: string): Promise<MatrizDelQr> {
+export async function laMatriz(texto: string, correccion: 'M' | 'Q' = 'Q'): Promise<MatrizDelQr> {
   const { encode } = await import('uqr');
-  return encode(texto, { ecc: 'Q', border: 0 }).data;
+  return encode(texto, { ecc: correccion, border: 0 }).data;
 }
 
 /**

@@ -33,6 +33,19 @@ import { variable } from '@estook/utiles';
  *   GET  /verifactu/declaracion           url, url_version, sistema_informatico (con la de un NIF)
  *   GET  /nifs                            la lista: sirve para probar la clave de la cuenta
  *
+ * Y para emitir (T6 · 2 · 1, 0136), de su especificación OpenAPI (verifactu.min.yaml y
+ * nifs.min.yaml, leídas enteras el 6-nov-2026):
+ *
+ *   POST /verifactu/create                el documento, con `Idempotency-Key` → uuid, estado
+ *                                           (siempre «Pendiente»), url, qr, huella; 400 con
+ *                                           error y codigo; 409 si la misma clave está en curso;
+ *                                           422 si la clave se usó con otro cuerpo
+ *   GET  /verifactu/status?uuid=          el estado del registro: estado, url, qr,
+ *                                           codigo_error, mensaje_error, operacion
+ *   POST /verifactu/status                serie, numero, fecha_expedicion → la factura en
+ *                                           Hacienda, con el uuid de su último registro aceptado
+ *   GET/POST /webhooks, POST /webhooks/{id}/nifs/{nif}   los avisos (url, entorno, secret, nifs)
+ *
  * **Nunca se llama a la eliminación permanente de un NIF** (Anexo 4.2): borra sus registros.
  */
 
@@ -43,6 +56,12 @@ export const NIF_DE_LA_EMPRESA_DE_PRUEBAS = 'B75777847';
 
 /** Lo más que se espera: una persona está mirando la pantalla. */
 const ESPERA_MAXIMA_MS = 20_000;
+
+/**
+ * Lo más que se espera al emitir: alguien espera su ticket delante de la caja. Pasado esto, se
+ * da por perdido y se pregunta después con la misma clave (Anexo 4.9).
+ */
+const ESPERA_PARA_EMITIR_MS = 8_000;
 
 /** Lo que dura la clave de un NIF recordada: si se rota en Verifacti, a la hora se pide otra. */
 const LO_QUE_SE_RECUERDA_UNA_CLAVE_MS = 60 * 60 * 1000;
@@ -120,9 +139,84 @@ export interface LaDeclaracionDeVerifacti {
   } | null;
 }
 
+/** Lo que pasó al mandar un documento (Anexo 4.9, paso 6). */
+export type LoQuePasoAlEmitir =
+  | {
+      readonly resultado: 'aceptado';
+      readonly uuid: string;
+      readonly estado: string;
+      readonly url: string | null;
+      readonly qr: string | null;
+      readonly huella: string | null;
+    }
+  /** 400: no se genera el registro ni va nada a Hacienda. Con su código estable y su frase. */
+  | {
+      readonly resultado: 'rechazado_por_datos';
+      readonly codigoHttp: number;
+      readonly codigo: string | null;
+      readonly mensaje: string;
+    }
+  /** 409: otra petición con la misma clave está en curso. Se espera y se pregunta. */
+  | { readonly resultado: 'en_curso'; readonly codigoHttp: number }
+  /** Sin respuesta, un 5xx o un 422: no se sabe si se registró. Se pregunta. */
+  | {
+      readonly resultado: 'sin_respuesta';
+      readonly codigoHttp: number | null;
+      readonly mensaje: string;
+    };
+
+/** El estado de un registro, como lo da `GET /verifactu/status` y como llega en un aviso. */
+export interface ElRegistroEnVerifacti {
+  readonly uuid: string;
+  readonly estado: string;
+  readonly url: string | null;
+  readonly qr: string | null;
+  readonly codigoError: string | null;
+  readonly mensajeError: string | null;
+  readonly operacion: string | null;
+  readonly serie: string | null;
+  readonly numero: string | null;
+}
+
 export interface Verifacti {
   /** Quién es, para los registros: nunca sale a la pantalla. */
   readonly quien: string;
+  /**
+   * **Manda un documento** (`POST /verifactu/create`) con la clave de su NIF y entorno, y con la
+   * de idempotencia: el mismo cuerpo con la misma clave nunca registra dos veces. **No lanza**:
+   * todo lo que puede pasar vuelve dicho, para apuntarlo.
+   */
+  emitir(
+    nif: string,
+    entorno: EntornoDeVerifacti,
+    cuerpo: unknown,
+    idempotencia: string,
+  ): Promise<LoQuePasoAlEmitir>;
+  /** El estado de un registro por su uuid. Nulo si no existe (404). */
+  elRegistro(
+    nif: string,
+    entorno: EntornoDeVerifacti,
+    uuid: string,
+  ): Promise<ElRegistroEnVerifacti | null>;
+  /**
+   * **Si Hacienda ya tiene ese número con esa fecha** (`POST /verifactu/status`): el uuid de su
+   * último registro aceptado, o nulo. Es lo que se pregunta antes de volver a mandar otro día
+   * un documento que se quedó sin respuesta, para no registrarlo dos veces.
+   */
+  buscarEnHacienda(
+    nif: string,
+    entorno: EntornoDeVerifacti,
+    factura: { readonly serie: string; readonly numero: string; readonly fecha: string },
+  ): Promise<string | null>;
+  /**
+   * Que los avisos de ese NIF lleguen a `url` (4.10): crea el aviso del entorno o le añade el NIF.
+   * Devuelve el id del aviso.
+   */
+  escucharElNif(
+    entorno: EntornoDeVerifacti,
+    nif: string,
+    aviso: { readonly id: string | null; readonly url: string; readonly secreto: string },
+  ): Promise<string>;
   /** Probar la clave de la cuenta: cuántos NIF tiene. */
   probar(): Promise<{ readonly nifs: number }>;
   comprobarNif(nif: string, nombre: string | null): Promise<ElNifEnHacienda>;
@@ -181,6 +275,27 @@ function textoONulo(valor: unknown): string | null {
   return typeof valor === 'string' && valor !== '' ? valor : null;
 }
 
+/** Un registro tal como lo cuenta Verifacti (su status o un aviso), leído sin fiarse de su forma. */
+export function leerElRegistro(cuerpo: unknown): ElRegistroEnVerifacti | null {
+  const c = (cuerpo ?? {}) as Record<string, unknown>;
+  const uuid = texto(c.uuid);
+  const estado = texto(c.estado);
+  if (estado === '') return null;
+  return {
+    uuid,
+    estado,
+    url: textoONulo(c.url),
+    qr: textoONulo(c.qr),
+    codigoError: textoONulo(
+      typeof c.codigo_error === 'number' ? String(c.codigo_error) : c.codigo_error,
+    ),
+    mensajeError: textoONulo(c.mensaje_error),
+    operacion: textoONulo(c.operacion),
+    serie: textoONulo(c.serie),
+    numero: textoONulo(c.numero),
+  };
+}
+
 /** La autorización tal como la cuenta Verifacti, leída sin fiarse de su forma. */
 export function leerLaAutorizacion(cuerpo: unknown): LaAutorizacionEnVerifacti {
   const c = (cuerpo ?? {}) as Record<string, unknown>;
@@ -235,6 +350,29 @@ export function verifactiDeVerdad(
     return respuesta;
   }
 
+  async function conClave(
+    metodo: 'GET' | 'POST',
+    camino: string,
+    clave: string,
+    cuerpo: unknown,
+    idempotencia?: string,
+  ): Promise<Response> {
+    try {
+      return await fetch(`${RAIZ}${camino}`, {
+        method: metodo,
+        headers: {
+          Authorization: `Bearer ${clave}`,
+          ...(cuerpo === undefined ? {} : { 'Content-Type': 'application/json' }),
+          ...(idempotencia === undefined ? {} : { 'Idempotency-Key': idempotencia }),
+        },
+        ...(cuerpo === undefined ? {} : { body: JSON.stringify(cuerpo) }),
+        signal: AbortSignal.timeout(ESPERA_PARA_EMITIR_MS),
+      });
+    } catch (fallo) {
+      throw new VerifactiNoContesta(null, fallo instanceof Error ? fallo.name : 'sin respuesta');
+    }
+  }
+
   async function enJson(respuesta: Response, aceptados: readonly number[] = []): Promise<unknown> {
     const cuerpo: unknown = await respuesta.json().catch(() => null);
     if (!respuesta.ok && !aceptados.includes(respuesta.status)) {
@@ -263,6 +401,100 @@ export function verifactiDeVerdad(
 
   return {
     quien: 'verifacti',
+
+    async emitir(nif, entorno, cuerpo, idempotencia) {
+      let clave: string;
+      try {
+        clave = await laClaveDelNif(entorno, nif);
+      } catch (fallo) {
+        return {
+          resultado: 'sin_respuesta',
+          codigoHttp: fallo instanceof VerifactiNoContesta ? fallo.estado : null,
+          mensaje: 'Sin la clave del NIF',
+        };
+      }
+      let respuesta: Response;
+      try {
+        respuesta = await conClave('POST', '/verifactu/create', clave, cuerpo, idempotencia);
+      } catch (fallo) {
+        return {
+          resultado: 'sin_respuesta',
+          codigoHttp: null,
+          mensaje: fallo instanceof VerifactiNoContesta ? fallo.detalle : 'sin respuesta',
+        };
+      }
+      const leido = ((await respuesta.json().catch(() => null)) ?? {}) as Record<string, unknown>;
+      if (respuesta.status === 200) {
+        return {
+          resultado: 'aceptado',
+          uuid: texto(leido.uuid),
+          estado: texto(leido.estado) || 'Pendiente',
+          url: textoONulo(leido.url),
+          qr: textoONulo(leido.qr),
+          huella: textoONulo(leido.huella),
+        };
+      }
+      if (respuesta.status === 400) {
+        return {
+          resultado: 'rechazado_por_datos',
+          codigoHttp: 400,
+          codigo: textoONulo(leido.codigo),
+          mensaje: texto(leido.error).slice(0, 500),
+        };
+      }
+      if (respuesta.status === 409) return { resultado: 'en_curso', codigoHttp: 409 };
+      return {
+        resultado: 'sin_respuesta',
+        codigoHttp: respuesta.status,
+        mensaje: (texto(leido.error) || texto(leido.message)).slice(0, 500),
+      };
+    },
+
+    async elRegistro(nif, entorno, uuid) {
+      const clave = await laClaveDelNif(entorno, nif);
+      const respuesta = await conClave(
+        'GET',
+        `/verifactu/status?uuid=${encodeURIComponent(uuid)}`,
+        clave,
+        undefined,
+      );
+      if (respuesta.status === 404) return null;
+      return leerElRegistro(await enJson(respuesta));
+    },
+
+    async buscarEnHacienda(nif, entorno, factura) {
+      const clave = await laClaveDelNif(entorno, nif);
+      const respuesta = await conClave('POST', '/verifactu/status', clave, {
+        serie: factura.serie,
+        numero: factura.numero,
+        fecha_expedicion: factura.fecha,
+      });
+      if (respuesta.status === 404) return null;
+      const c = ((await enJson(respuesta)) ?? {}) as Record<string, unknown>;
+      return textoONulo(c.uuid);
+    },
+
+    async escucharElNif(entorno, nif, aviso) {
+      if (aviso.id !== null) {
+        const r = await pedir(
+          'POST',
+          `/webhooks/${encodeURIComponent(aviso.id)}/nifs/${encodeURIComponent(nif)}`,
+        );
+        // Si el aviso ya no existe (lo borraron en su panel), se crea otro.
+        if (r.status !== 404) {
+          await enJson(r, [409]);
+          return aviso.id;
+        }
+      }
+      const creado = ((await enJson(
+        await pedir('POST', '/webhooks', {
+          cuerpo: { url: aviso.url, entorno, secret: aviso.secreto, nifs: [nif] },
+        }),
+      )) ?? {}) as Record<string, unknown>;
+      const id = texto(creado.id);
+      if (id === '') throw new VerifactiNoContesta(200, 'sin id del aviso');
+      return id;
+    },
 
     async probar() {
       const cuerpo = await enJson(await pedir('GET', '/nifs'));

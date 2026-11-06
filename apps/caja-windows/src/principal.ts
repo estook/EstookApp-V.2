@@ -13,7 +13,7 @@ import {
 import electronUpdater from 'electron-updater';
 import { crearCliente } from '@estook/cliente-api';
 import { escucharAlSegundo, type Escucha } from '@estook/cliente-api/al-segundo';
-import { esPapelCompuesto, laHuellaDeLaLlave } from '@estook/dominio';
+import { VERSION_DEL_PAPEL_CON_QR, esPapelCompuesto, laHuellaDeLaLlave } from '@estook/dominio';
 import { aEscPos, IMPRESORA_DE_58_MM, IMPRESORA_DE_80_MM } from '@estook/impresion';
 import type { ImpresoraEncontrada, LoQueNecesitaLaCaja } from '@estook/impresion';
 import { comoEstaLaImpresora, mandarALaImpresora, suNombre } from './la-impresora.ts';
@@ -154,6 +154,8 @@ function conectar(datos: LoQueNecesitaLaCaja): void {
       leerLaCola: async () => {
         const respuesta = await cliente.ejecutar<LaColaQueDaLaApi>('la_cola_de_la_caja', {
           llave: datos.llave,
+          // Desde la 1.3.0 (T6 · 2 · 1, 0136) sabe imprimir el papel con el QR tributario.
+          papeles: VERSION_DEL_PAPEL_CON_QR,
         });
         if (!respuesta.ok) {
           // No es una caja, o la desvincularon: no hay nada que imprimir aquí.

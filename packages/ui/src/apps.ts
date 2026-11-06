@@ -587,17 +587,18 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         nombre: 'Ventas',
         icono: IconoNegocio,
         queContesta: '¿Qué se ha vendido, y qué consumo ha generado?',
-        // «Tickets y facturas» es M20C y no M20: las tres primeras salen de
-        // cualquier vía de ventas —CSV, conector o TPV—, y esta solo existe si el
-        // local **cobra con Estook**, porque es la lista de lo que ha emitido su
-        // propio sistema de facturación con su estado ante Hacienda (Anexo, 5.1).
+        // «Tickets y facturas» llega primero, con T6 · 2 · 1 (0136): es la lista de lo que
+        // ha emitido el propio sistema de facturación del local, con su estado ante
+        // Hacienda (Anexo, 5.1). Las tres primeras salen de cualquier vía de ventas —CSV,
+        // conector o TPV— y llegan con M20. **Solo para quien lleva la facturación** (0128):
+        // es lo único construido, y es suyo.
         vistas: vistas(
           ['Del turno', 'M20'],
           ['Del día', 'M20'],
           ['Por producto', 'M20'],
-          ['Tickets y facturas', 'M20C'],
+          'Tickets y facturas',
         ),
-        modulo: 'M20',
+        permiso: 'accion.alta_de_facturacion',
       },
       {
         /*

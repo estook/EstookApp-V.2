@@ -1,7 +1,9 @@
 import {
   NIF_DE_LA_EMPRESA_DE_PRUEBAS,
   VerifactiNoContesta,
+  type ElRegistroEnVerifacti,
   type LaAutorizacionEnVerifacti,
+  type LoQuePasoAlEmitir,
   type Verifacti,
 } from './verifacti.ts';
 
@@ -22,9 +24,38 @@ const EN_HACIENDA: Readonly<Record<string, string>> = {
   B84935048: 'EJEMPLO NORTE SL',
 };
 
+/**
+ * Cómo contesta a `emitir` (T6 · 2 · 1, 0136), para las pruebas del capítulo 8 del Anexo:
+ *
+ *   · `normal`            lo registra y contesta «Pendiente», con su QR
+ *   · `rechazar`          400 por los datos: no registra nada (prueba 5)
+ *   · `perder_respuesta`  lo registra, pero la respuesta no llega (prueba 7)
+ *   · `caido`             no llega a Verifacti: nada registrado (prueba 14)
+ *   · `en_curso`          409: otra petición con la misma clave está en curso
+ */
+export type ComoEmite = 'normal' | 'rechazar' | 'perder_respuesta' | 'caido' | 'en_curso';
+
+export interface UnRegistroDeMentira {
+  readonly uuid: string;
+  readonly nif: string;
+  readonly serie: string;
+  readonly numero: string;
+  readonly fecha: string;
+  readonly cuerpo: unknown;
+  estado: string;
+  codigoError: string | null;
+  mensajeError: string | null;
+}
+
 export interface VerifactiDeMentira extends Verifacti {
   /** Lo que se le ha pedido, para comprobarlo en las pruebas. */
   readonly llamadas: string[];
+  /** Cada registro que ha generado, como los tiene Verifacti. */
+  readonly registros: UnRegistroDeMentira[];
+  /** Cómo contesta a lo siguiente que se le mande. */
+  emitirAsi(como: ComoEmite): void;
+  /** Lo que dice Hacienda de un registro: «Correcto», «Incorrecto»… */
+  decirHacienda(uuid: string, estado: string, codigo?: string, mensaje?: string): void;
   /** La persona firma en el enlace: la autorización pasa a «Correcto». */
   firmar(nif: string): void;
   /** Deja de contestar (o vuelve a hacerlo): como cuando Verifacti no responde. */
@@ -36,6 +67,28 @@ export function verifactiDeMentira(): VerifactiDeMentira {
   const dadosDeAlta = new Set<string>();
   const autorizaciones = new Map<string, LaAutorizacionEnVerifacti>();
   let callado = false;
+  const registros: UnRegistroDeMentira[] = [];
+  // Lo que se recuerda de cada clave de idempotencia: el cuerpo y lo que se contestó (24 h).
+  const claves = new Map<string, { cuerpo: string; respuesta: LoQuePasoAlEmitir }>();
+  let comoEmite: ComoEmite = 'normal';
+
+  function elQr(r: UnRegistroDeMentira): string {
+    return `https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?nif=${r.nif}&numserie=${r.serie}${r.numero}&fecha=${r.fecha}`;
+  }
+
+  function comoRegistro(r: UnRegistroDeMentira): ElRegistroEnVerifacti {
+    return {
+      uuid: r.uuid,
+      estado: r.estado,
+      url: elQr(r),
+      qr: 'iVBORw0KGgo-qr-de-mentira',
+      codigoError: r.codigoError,
+      mensajeError: r.mensajeError,
+      operacion: 'Alta',
+      serie: r.serie,
+      numero: r.numero,
+    };
+  }
 
   function apuntar(que: string) {
     llamadas.push(que);
@@ -54,6 +107,108 @@ export function verifactiDeMentira(): VerifactiDeMentira {
   return {
     quien: 'verifacti-de-mentira',
     llamadas,
+    registros,
+
+    emitirAsi(como) {
+      comoEmite = como;
+    },
+
+    decirHacienda(uuid, estado, codigo, mensaje) {
+      const r = registros.find((x) => x.uuid === uuid);
+      if (r === undefined) throw new Error(`No hay registro ${uuid}`);
+      r.estado = estado;
+      r.codigoError = codigo ?? null;
+      r.mensajeError = mensaje ?? null;
+    },
+
+    emitir(nif, entorno, cuerpo, idempotencia) {
+      llamadas.push(`emitir ${entorno} ${nif} ${idempotencia}`);
+      const texto = JSON.stringify(cuerpo);
+      const recordada = claves.get(`${nif}/${idempotencia}`);
+      if (recordada !== undefined) {
+        // La misma clave con otro cuerpo: 422. Con el mismo, la respuesta de la primera vez.
+        if (recordada.cuerpo !== texto) {
+          return Promise.resolve({ resultado: 'sin_respuesta', codigoHttp: 422, mensaje: '' });
+        }
+        if (comoEmite !== 'caido' && comoEmite !== 'perder_respuesta') {
+          return Promise.resolve(recordada.respuesta);
+        }
+      }
+      if (callado || comoEmite === 'caido') {
+        return Promise.resolve({
+          resultado: 'sin_respuesta',
+          codigoHttp: null,
+          mensaje: 'TimeoutError',
+        });
+      }
+      if (comoEmite === 'en_curso')
+        return Promise.resolve({ resultado: 'en_curso', codigoHttp: 409 });
+      if (comoEmite === 'rechazar') {
+        const respuesta: LoQuePasoAlEmitir = {
+          resultado: 'rechazado_por_datos',
+          codigoHttp: 400,
+          codigo: 'vf-verifactu-descripcion_requerida',
+          mensaje: 'El campo descripcion es obligatorio.',
+        };
+        claves.set(`${nif}/${idempotencia}`, { cuerpo: texto, respuesta });
+        return Promise.resolve(respuesta);
+      }
+      const c = cuerpo as { serie: string; numero: string; fecha_expedicion: string };
+      const r: UnRegistroDeMentira = {
+        uuid: crypto.randomUUID(),
+        nif,
+        serie: c.serie,
+        numero: c.numero,
+        fecha: c.fecha_expedicion,
+        cuerpo,
+        estado: 'Pendiente',
+        codigoError: null,
+        mensajeError: null,
+      };
+      registros.push(r);
+      const respuesta: LoQuePasoAlEmitir = {
+        resultado: 'aceptado',
+        uuid: r.uuid,
+        estado: 'Pendiente',
+        url: elQr(r),
+        qr: 'iVBORw0KGgo-qr-de-mentira',
+        huella: 'B11F3A015173AD99075E2720F61E2DE1FF08CBFEDD85C6F73C77AD835301B2A3',
+      };
+      claves.set(`${nif}/${idempotencia}`, { cuerpo: texto, respuesta });
+      // Registrado, pero la respuesta se pierde por el camino (prueba 7).
+      if (comoEmite === 'perder_respuesta') {
+        return Promise.resolve({
+          resultado: 'sin_respuesta',
+          codigoHttp: null,
+          mensaje: 'TimeoutError',
+        });
+      }
+      return Promise.resolve(respuesta);
+    },
+
+    elRegistro(nif, entorno, uuid) {
+      apuntar(`registro ${entorno} ${uuid}`);
+      const r = registros.find((x) => x.uuid === uuid && x.nif === nif);
+      return Promise.resolve(r === undefined ? null : comoRegistro(r));
+    },
+
+    buscarEnHacienda(nif, entorno, factura) {
+      apuntar(`buscar ${entorno} ${factura.serie}${factura.numero}`);
+      const r = registros.find(
+        (x) =>
+          x.nif === nif &&
+          x.serie === factura.serie &&
+          x.numero === factura.numero &&
+          x.fecha === factura.fecha &&
+          x.estado !== 'Pendiente',
+      );
+      return Promise.resolve(r?.uuid ?? null);
+    },
+
+    escucharElNif(entorno, nif, aviso) {
+      apuntar(`escuchar ${entorno} ${nif}`);
+      return Promise.resolve(aviso.id ?? 'aviso-de-mentira');
+    },
 
     firmar(nif) {
       autorizaciones.set(nif, { estado: 'Correcto', error: null, url: null, caduca: null });

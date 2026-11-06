@@ -377,6 +377,30 @@ export function crearApi(despachador: Despachador) {
     );
   });
 
+  /*
+    El aviso de Verifacti (T6 · 2 · 1, 0136; Anexo 4.10), como el de Stripe: fuera de `/v1`,
+    con el cuerpo tal cual, porque la firma (`X-Webhook-Signature`, HMAC-SHA256 del cuerpo
+    exacto) es de ese cuerpo. Una firma que no vale es un 400 y no se toca nada; Verifacti no
+    reintenta los 4xx. Hay que contestar en menos de diez segundos: solo se apunta.
+  */
+  // **No empieza por «/v»**: junto a `v:version` dejaría al enrutador sin ninguna ruta (25-sep).
+  api.post('/avisos/verifacti', async (c) => {
+    const correlacionId = c.get('correlacionId');
+    const cuerpo = await c.req.text();
+    const recibido = await despachador.avisoDeVerifacti(
+      quienLlama(undefined, correlacionId, c.req.header(CABECERA_DIRECCION)),
+      cuerpo,
+      c.req.header('x-webhook-signature') ?? null,
+      c.req.header('x-webhook-id') ?? null,
+    );
+    if (!recibido.firmaValida) {
+      return respuestaDeError('sin_permiso', correlacionId, {
+        porque: 'La firma no es de Verifacti.',
+      });
+    }
+    return respuestaConDatos({ recibido: true }, correlacionId, 200, {});
+  });
+
   // El latido del reloj (0016, 0048): lo llama `pg_cron` con su secreto.
   // Fuera de `/v1`, como el aviso de Stripe: la dirección la guarda `pg_cron` y no
   // cambia con una versión nuestra. Y dentro no se puede: una ruta más que empiece por

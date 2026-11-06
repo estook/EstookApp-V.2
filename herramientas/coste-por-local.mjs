@@ -81,9 +81,10 @@ const INFRAESTRUCTURA = 0.55;
 const CONECTOR = 0.4;
 
 /**
- * DOCUMENTO: Verifacti, sin IVA (Richi, 6-nov-2026, 0135): **14,99 € al mes el primer NIF y
- * 1,99 € cada NIF más**. Lo de las facturas incluidas (3.000 al mes por NIF, y 0,002 € cada
- * una de más) es de la propuesta del 21-sep-2026 ([VERIFICAR] que siga igual con este precio).
+ * DOCUMENTO: Verifacti, sin IVA: **14,99 € al mes el primer NIF y 1,99 € cada NIF más**, la
+ * oferta de startup que le dieron a Richi (6-nov-2026, 0135 y 0136); su web pública va por
+ * tramos. COMPROBADO el 6-nov en su página de precios: 3.000 registros al mes por NIF dentro, y
+ * 2 € por cada 1.000 de más.
  */
 const VERIFACTI = { primerNif: 14.99, cadaNifMas: 1.99, incluidas: 3000, extra: 0.002 };
 

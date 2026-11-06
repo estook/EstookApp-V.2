@@ -361,7 +361,10 @@ describe('paso 3 · las series', () => {
       /solo se inserta/,
     );
     await expect(base.bd.query('delete from facturacion.serie')).rejects.toThrow(/solo se inserta/);
-    await expect(base.bd.query('truncate facturacion.serie')).rejects.toThrow(/solo se inserta/);
+    // En cascada, que es como se vaciaría con lo que cuelga de ellas (los documentos, 0136).
+    await expect(base.bd.query('truncate facturacion.serie cascade')).rejects.toThrow(
+      /solo se inserta/,
+    );
   });
 
   it('la API no escribe la empresa ni las series a mano', async () => {

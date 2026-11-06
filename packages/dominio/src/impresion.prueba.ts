@@ -233,7 +233,8 @@ describe('la prueba y el cajón', () => {
 
   it('reconoce un papel guardado, y no otra cosa', () => {
     expect(esPapelCompuesto(abrirElCajonEnPapel())).toBe(true);
-    expect(esPapelCompuesto({ version: 2, piezas: [] })).toBe(false);
+    // La 2 es la del QR (0136); una que todavía no existe, no.
+    expect(esPapelCompuesto({ version: 3, piezas: [] })).toBe(false);
     expect(esPapelCompuesto('papel')).toBe(false);
   });
 });

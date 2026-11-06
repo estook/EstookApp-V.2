@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { abrirElCajonEnPapel, laComandaEnPapel, laPruebaEnPapel } from '@estook/dominio';
 import {
   IMPRESORA_DE_58_MM,
+  PUNTOS_POR_MM,
   aEscPos,
+  elModuloDelQr,
   comoEstaElPapel,
   enDosColumnas,
   enLaPagina858,
   enLineas,
+  laVersionDelQr,
 } from './escpos.ts';
 
 function contiene(bytes: Uint8Array, trozo: readonly number[]): boolean {
@@ -128,5 +131,29 @@ describe('cómo está el papel', () => {
     expect(comoEstaElPapel(0x12)).toBe('bien');
     expect(comoEstaElPapel(0x12 | 0x0c)).toBe('poco_papel');
     expect(comoEstaElPapel(0x12 | 0x60)).toBe('sin_papel');
+  });
+});
+
+describe('el QR tributario (T6 · 2 · 1, Anexo 4.7)', () => {
+  const direccion =
+    'https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ValidarQR?nif=B12345678&numserie=T-IKA-2026-000037&fecha=06-11-2026&importe=47.50';
+
+  it('mide entre 30 y 40 mm, en 80 y en 58 mm, con direcciones cortas y largas', () => {
+    for (const largo of [40, direccion.length, 250]) {
+      const { modulos } = laVersionDelQr(largo);
+      const mm = (elModuloDelQr(largo, 35) * modulos) / PUNTOS_POR_MM;
+      expect(mm, `con ${String(largo)} letras`).toBeGreaterThanOrEqual(30);
+      expect(mm, `con ${String(largo)} letras`).toBeLessThanOrEqual(40);
+    }
+  });
+
+  it('va con su orden de QR, corrección M y los datos tal cual, centrado', () => {
+    const bytes = Array.from(
+      aEscPos({ version: 2, piezas: [{ tipo: 'qr', contenido: direccion, milimetros: 35 }] }),
+    );
+    const texto = String.fromCharCode(...bytes);
+    expect(texto).toContain(direccion);
+    // GS ( k … 1 E 1: corrección de errores M.
+    expect(texto).toContain(String.fromCharCode(0x1d, 0x28, 0x6b, 3, 0, 0x31, 0x45, 0x31));
   });
 });

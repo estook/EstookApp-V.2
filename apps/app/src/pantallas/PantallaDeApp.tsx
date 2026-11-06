@@ -34,6 +34,7 @@ import {
   QuienTieneAcceso,
   Resenas,
   ResumenDelEquipo,
+  TicketsYFacturas,
   Ventas,
 } from './lasPantallas.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -309,6 +310,10 @@ function Contenido({
     return <EnMarcha />;
   }
   if (app.id === 'negocio' && destino.id === 'ventas') return <Ventas />;
+  // T6 · 2 · 1 (0136): lo emitido, con su estado ante Hacienda.
+  if (app.id === 'servicio' && destino.id === 'ventas' && vista?.id === 'tickets-y-facturas') {
+    return <TicketsYFacturas />;
+  }
   // R2 (0053): Tu día, Tu semana y Tu mes, y la nota en Google.
   if (app.id === 'negocio' && destino.id === 'informes') {
     return <Informes vista={vista?.id ?? 'dia'} />;

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
+import { laSeccion } from './la-seccion.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
 
@@ -77,8 +78,9 @@ test('las opciones: montar la guarnición, el jamón a peso, y pedirlos', async 
   });
 
   // ── La guarnición de la hamburguesa: un grupo nuevo, desde su botón ──
-  await page
-    .getByRole('region', { name: 'Página Principales' })
+  await (
+    await laSeccion(page, 'Principales')
+  )
     .getByRole('button', { name: 'Hamburguesa', exact: true })
     .click({ timeout: 15_000 });
   const hojaDelBoton = page.getByRole('dialog', { name: 'Hamburguesa' });
@@ -98,8 +100,9 @@ test('las opciones: montar la guarnición, el jamón a peso, y pedirlos', async 
   await hojaDelBoton.getByRole('button', { name: 'Listo' }).click();
 
   // ── El jamón, a peso ──
-  await page
-    .getByRole('region', { name: 'Página Para picar' })
+  await (
+    await laSeccion(page, 'Para picar')
+  )
     .getByRole('button', { name: 'Jamón ibérico', exact: true })
     .click();
   const hojaDelJamon = page.getByRole('dialog', { name: 'Jamón ibérico' });

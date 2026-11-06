@@ -1059,3 +1059,12 @@
      cazaron las pruebas contra la base antes de tocar una pantalla (0132, 6-nov). **Antes de dejar
      hacer algo nuevo a otro rol, se busca qué disparadores y políticas guardan esas columnas**, y la
      regla se amplía copiándola entera, con la prueba que la ve pasar.
+252. **Una palabra corta se cuela dentro de otra.** Al proponer el icono de una sección por su nombre,
+     «cana» encajaba en «Ensalada americana» (la jarra de cerveza), «ron» en «Ronda del chef» y «ave»
+     en «llave» (R3, 0133). **Las palabras de tres o cuatro letras se buscan enteras**, con su borde a
+     cada lado, y una prueba lleva los nombres que se colaban.
+253. **Un cambio de lo que se ve rompe pruebas que no se han tocado.** En R3 «Lo más pedido» dejó de
+     salir sin nada marcado, y se pasaron en local solo las pruebas de pantalla editadas: la de la caja
+     para Windows daba por hecho que la mesa se abría en «Lo más pedido» y GitHub salió en rojo (Richi
+     lo vio, 6-nov). **Cuando cambia cómo se comporta una pantalla, antes de subir se pasan todas las
+     pruebas que abren esa app** (en el TPV, las que usan el puerto 5178), en los tres navegadores.

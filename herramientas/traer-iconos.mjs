@@ -208,6 +208,52 @@ const ICONOS = {
   'list-ordered': 'Pases',
   printer: 'Imprimir',
   lock: 'Candado',
+
+  // ── La pausa del 5-nov · R3 · Ajustes y secciones (0133) ───────────────────
+  //
+  // Los Ajustes del TPV, con los iconos de Lucide de la maqueta aprobada (antes eran trazos
+  // a mano): lo agotado, los productos y precios, los aparatos, la declaración, la caja, el
+  // comandero y la pantalla de cocina; y el asa para arrastrar las secciones.
+  ban: 'Agotado',
+  tag: 'Etiqueta',
+  'monitor-smartphone': 'Aparatos',
+  'scroll-text': 'Declaracion',
+  monitor: 'Caja',
+  smartphone: 'Movil',
+  tablet: 'Tableta',
+  'grip-vertical': 'Arrastrar',
+  // **Los treinta iconos de las secciones** (`ICONOS_DE_LA_SECCION` de @estook/dominio): los
+  // pone Estook por el nombre y el local los cambia. Hamburguesa y paella no existen en
+  // Lucide: van con el bocadillo y la olla. `leaf` y `chef-hat` ya estaban (Vegetariano,
+  // ModoCocina) y valen igual.
+  beer: 'Cerveza',
+  wine: 'Vino',
+  martini: 'Coctel',
+  'cup-soda': 'Refresco',
+  'glass-water': 'Agua',
+  coffee: 'Cafe',
+  milk: 'Leche',
+  croissant: 'Desayuno',
+  sandwich: 'Bocadillo',
+  pizza: 'Pizza',
+  salad: 'Ensalada',
+  soup: 'Sopa',
+  beef: 'Carne',
+  drumstick: 'Pollo',
+  ham: 'Embutido',
+  fish: 'Pescado',
+  shell: 'Marisco',
+  'egg-fried': 'Huevo',
+  'cooking-pot': 'Olla',
+  wheat: 'Pan',
+  'cake-slice': 'Postre',
+  'ice-cream-cone': 'Helado',
+  cookie: 'Galleta',
+  cherry: 'Fruta',
+  citrus: 'Citrico',
+  baby: 'Infantil',
+  star: 'Estrella',
+  'utensils-crossed': 'Cubiertos',
 };
 
 async function traer(nombre) {

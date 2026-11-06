@@ -7,6 +7,7 @@ import type {
   CaminoAlCentro,
   CaminoDeLaBotonera,
   ColorDeLaBotonera,
+  IconoDeLaSeccion,
   ColorDelTiempo,
   ComoVaLaMesa,
   CosaDeLaSala,
@@ -203,11 +204,14 @@ export interface GrupoParaPedir {
   }[];
 }
 
-/** Una página de la botonera; sin montar, una sección de la carta (T3). */
+/** Una sección de la botonera; sin montar, una sección de la carta (T3). */
 export interface PaginaDeLaSala {
   readonly id: string;
   readonly nombre: string;
+  /** Como se ve (R3, 0133): lo del local, o lo que propone su nombre. */
   readonly color: ColorDeLaBotonera | null;
+  /** Una API de antes no lo dice: entonces, el que propone su nombre. */
+  readonly icono?: IconoDeLaSeccion;
   /** Lo que se le propuso al crearla (T3). Desde el 28-oct no marca nada: el pase lo elige el camarero. */
   readonly pase: PaseDeLaBotonera;
   /** «Pan y agua» o «Cafés» (0112): no es la que se abre sola al sentarse. */
@@ -245,7 +249,7 @@ export interface LaCartaDeLaSala {
   /** Si la botonera está montada; sin montar, una página por sección de la carta. */
   readonly montada: boolean;
   readonly paginas: readonly PaginaDeLaSala[];
-  /** Lo fijado y lo más vendido a esta hora en cuatro semanas (Anexo 11.10). */
+  /** Lo fijado y lo más vendido a esta hora (Anexo 11.10); vacío si no hay nada fijado (0133). */
   readonly loMasPedido: readonly PlatoDeLaSala[];
   readonly menus: readonly MenuDeLaSala[];
 }
@@ -310,6 +314,8 @@ export interface PaginaDeLaBotonera {
   readonly id: string;
   readonly nombre: string;
   readonly color: ColorDeLaBotonera | null;
+  /** Una API de antes no lo dice: entonces, el que propone su nombre. */
+  readonly icono?: IconoDeLaSeccion;
   readonly quienLoPrepara: QuienLoPrepara;
   readonly pase: PaseDeLaBotonera;
   readonly deLaSeccion: string | null;

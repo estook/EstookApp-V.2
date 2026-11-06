@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   CAMINOS_DE_LA_BOTONERA,
   COLORES_DE_LA_BOTONERA,
+  ICONOS_DE_LA_SECCION,
   PASES_DE_LA_BOTONERA,
   LAS_PAGINAS_DE_SIEMPRE,
   QUIEN_LO_PREPARA,
@@ -35,6 +36,8 @@ import { soloEnLaCaja } from './aparatos.ts';
 const id = z.string().uuid();
 const nombreDePagina = z.string().trim().min(1).max(30);
 const color = z.enum(COLORES_DE_LA_BOTONERA).nullable();
+/** El icono de una sección (R3, 0133): uno de los treinta de Lucide; nulo, el de su nombre. */
+const icono = z.enum(ICONOS_DE_LA_SECCION).nullable();
 const quien = z.enum(QUIEN_LO_PREPARA);
 const pase = z.enum(PASES_DE_LA_BOTONERA);
 
@@ -338,6 +341,7 @@ const entradaCrearPaginaDelTpv = z
     quien_lo_prepara: quien.optional(),
     pase: pase.optional(),
     color: color.optional(),
+    icono: icono.optional(),
   })
   .strict();
 
@@ -354,11 +358,11 @@ export const crearPaginaDelTpv = comando<
     // Las dos preguntas vienen propuestas por el nombre, y se cambian con un toque.
     const propone = loQueProponeElNombre(entrada.nombre);
     const filas = await contexto.sql<{ id: string }[]>`
-      insert into estook.pagina_del_tpv (local_id, nombre, orden, color, quien_lo_prepara, pase)
+      insert into estook.pagina_del_tpv (local_id, nombre, orden, color, icono, quien_lo_prepara, pase)
       values (
         ${localId}::uuid, ${entrada.nombre},
         coalesce((select max(orden) + 1 from estook.pagina_del_tpv where local_id = ${localId}::uuid), 0),
-        ${entrada.color ?? null}, ${entrada.quien_lo_prepara ?? propone.quienLoPrepara},
+        ${entrada.color ?? null}, ${entrada.icono ?? null}, ${entrada.quien_lo_prepara ?? propone.quienLoPrepara},
         ${entrada.pase ?? propone.pase}
       )
       returning id::text as id
@@ -381,6 +385,7 @@ const entradaCambiarPaginaDelTpv = z
     pagina_id: id,
     nombre: nombreDePagina.optional(),
     color: color.optional(),
+    icono: icono.optional(),
     quien_lo_prepara: quien.optional(),
     pase: pase.optional(),
   })
@@ -401,6 +406,7 @@ export const cambiarPaginaDelTpv = comando<
       update estook.pagina_del_tpv
          set nombre = coalesce(${entrada.nombre ?? null}, nombre),
              color = case when ${entrada.color !== undefined} then ${entrada.color ?? null} else color end,
+             icono = case when ${entrada.icono !== undefined} then ${entrada.icono ?? null} else icono end,
              quien_lo_prepara = coalesce(${entrada.quien_lo_prepara ?? null}, quien_lo_prepara),
              pase = coalesce(${entrada.pase ?? null}, pase)
        where id = ${entrada.pagina_id}::uuid

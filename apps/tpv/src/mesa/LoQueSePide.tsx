@@ -1,5 +1,13 @@
 import { useMemo, useState } from 'react';
-import { elDestinoDeLaLinea, enSuOrden, esElPan } from '@estook/dominio';
+import {
+  COMO_SE_VE_LO_MAS_PEDIDO,
+  comoSeVeElNombre,
+  elDestinoDeLaLinea,
+  enSuOrden,
+  esElPan,
+  type ColorDeLaBotonera,
+  type IconoDeLaSeccion,
+} from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
 import { Boton, Cargando, EstadoVacio, filtrarPorParecido } from '@estook/ui';
 import type { LaCartaDeLaSala, LaMesa, PaginaDeLaSala, PlatoDeLaSala } from '../datos/tipos.ts';
@@ -14,6 +22,7 @@ import { elNumeroDelPase, laPestanaDelPase, type PestanaDelPase } from '../logic
 import { elAlergeno, euros } from '../logica/texto.ts';
 import { irA } from '../navegar.ts';
 import { COMO_SE_VE_EL_COLOR } from '../productos/colores.ts';
+import { LaBaldosaDeLaSeccion } from '../productos/LaBaldosaDeLaSeccion.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ElMenuDelDia } from './ElMenuDelDia.tsx';
 import { LoQueSeElige } from './LoQueSeElige.tsx';
@@ -22,10 +31,12 @@ import { usarPulsacionLarga } from '../ganchos/usarPulsacionLarga.ts';
 import { LoDelProducto } from './LoDelProducto.tsx';
 
 /**
- * **Lo que se pide** (T3, maqueta 9; Anexo 11.10 y 11.11): **la botonera por páginas**, con
- * **«Lo más pedido» la primera** (lo fijado y lo más vendido a esta hora), el buscador que
- * tolera erratas y la página **Menú** los días que hay menú. Cada producto es un botón con
- * su nombre entero, su precio, su color y su foto; **agotado**, en gris y sin tocar.
+ * **Lo que se pide** (T3, maqueta 9; Anexo 11.10 y 11.11): **la botonera por secciones**,
+ * cada una **con su icono y su color** (R3, 0133), con **«Lo más pedido» la primera** solo si
+ * el local marcó algo (lo marcado y lo más vendido a esta hora), el buscador que tolera
+ * erratas y la sección **Menú** los días que hay menú. Cada producto es un botón con su
+ * nombre entero, su precio, la franja del color de su sección y su foto; **agotado**, en gris
+ * y sin tocar.
  *
  * **Lo que se toca va al pase marcado** en las pestañas de encima de la cuenta, y **el pase lo
  * elige siempre el camarero** (Richi, 28-oct): un plato no está atado a un pase, porque el
@@ -176,45 +187,49 @@ export function LoQueSePide({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {/* Las páginas, y el buscador que tolera erratas. */}
+      {/* Las secciones, y el buscador que tolera erratas. */}
       <div className="flex flex-wrap items-center gap-e2 border-b border-borde bg-superficie px-e3 py-e2">
         <nav
-          aria-label="Las páginas de la botonera"
-          className="flex min-w-0 flex-1 gap-e1 overflow-x-auto"
+          aria-label="Las secciones de la botonera"
+          className="flex min-w-0 flex-1 gap-e1 overflow-x-auto [scrollbar-width:thin]"
         >
           {masPedido.length > 0 && (
-            <BotonDePagina
+            <BotonDeSeccion
               puesta={laDeAhora === LO_MAS_PEDIDO}
-              color={null}
+              icono={COMO_SE_VE_LO_MAS_PEDIDO.icono}
+              color={COMO_SE_VE_LO_MAS_PEDIDO.color}
+              rotulo="Lo más"
               onClick={() => {
                 abrir(LO_MAS_PEDIDO);
               }}
             >
               Lo más pedido
-            </BotonDePagina>
+            </BotonDeSeccion>
           )}
           {paginas.map((g) => (
-            <BotonDePagina
+            <BotonDeSeccion
               key={g.id}
               puesta={typeof laDeAhora === 'object' && laDeAhora.id === g.id}
+              icono={g.icono ?? comoSeVeElNombre(g.nombre).icono}
               color={g.color}
               onClick={() => {
                 abrir(g);
               }}
             >
               {g.nombre}
-            </BotonDePagina>
+            </BotonDeSeccion>
           ))}
           {menus.length > 0 && (
-            <BotonDePagina
+            <BotonDeSeccion
               puesta={laDeAhora === MENU}
-              color={null}
+              icono="chef-hat"
+              color="naranja"
               onClick={() => {
                 abrir(MENU);
               }}
             >
               {menus.length === 1 ? 'Menú' : 'Menús'}
-            </BotonDePagina>
+            </BotonDeSeccion>
           )}
         </nav>
         <input
@@ -286,7 +301,7 @@ export function LoQueSePide({
             <EstadoVacio
               compacto
               titulo="Aún no hay botones"
-              frase="Pon lo que se vende aquí en Ajustes del TPV › Productos: toda la carta, lo que elijas o productos nuevos."
+              frase="Pon lo que se vende aquí en Ajustes del TPV › Productos y precios: toda la carta, lo que elijas o productos nuevos."
               dibujo="platos"
               {...(montaLaBotonera
                 ? {
@@ -307,7 +322,7 @@ export function LoQueSePide({
             <EstadoVacio
               compacto
               titulo="La carta está vacía"
-              frase="Pon tus platos con su precio en Estook › Carta y saldrán aquí, una página por sección."
+              frase="Pon tus platos con su precio en Estook › Carta y saldrán aquí, sección a sección."
               dibujo="platos"
               sinAccionPorque="La carta se cambia en Estook, no en la sala."
             />
@@ -367,34 +382,49 @@ export function LoQueSePide({
   );
 }
 
-function BotonDePagina({
+/**
+ * **Una sección, en baldosa** (R3, maqueta «Dentro de la mesa, pidiendo»): su icono sobre su
+ * color, y debajo su nombre. La puesta, con un aro.
+ */
+function BotonDeSeccion({
   puesta,
+  icono,
   color,
+  rotulo,
   onClick,
   children,
 }: {
   readonly puesta: boolean;
-  readonly color: PaginaDeLaSala['color'];
+  readonly icono: IconoDeLaSeccion;
+  readonly color: ColorDeLaBotonera | null;
+  /** Lo que se lee debajo, si el nombre entero no cabe («Lo más»). */
+  readonly rotulo?: string;
   readonly onClick: () => void;
-  readonly children: React.ReactNode;
+  readonly children: string;
 }) {
   return (
     <button
       type="button"
       aria-pressed={puesta}
       onClick={onClick}
+      aria-label={children}
+      title={children}
       className={[
-        'flex min-h-toque shrink-0 items-center gap-e2 rounded-redondo px-e4 font-semibold',
-        puesta ? 'bg-charcoal font-bold' : 'bg-fondo text-texto-suave',
+        'flex w-[4.25rem] shrink-0 flex-col items-center gap-[3px] rounded-grande py-e1 sm:w-[4.75rem]',
+        puesta ? 'font-bold text-texto' : 'font-semibold text-texto-suave',
       ].join(' ')}
     >
-      {color !== null && (
-        <span
-          aria-hidden="true"
-          className={`size-[0.6rem] shrink-0 rounded-redondo ${COMO_SE_VE_EL_COLOR[color].punto}`}
-        />
-      )}
-      {children}
+      <span
+        className={[
+          'rounded-grande',
+          puesta ? 'outline outline-[3px] outline-offset-2 outline-texto' : '',
+        ].join(' ')}
+      >
+        <LaBaldosaDeLaSeccion icono={icono} color={color} lado={42} />
+      </span>
+      <span className="w-full truncate text-center text-etiqueta leading-tight">
+        {rotulo ?? children}
+      </span>
     </button>
   );
 }

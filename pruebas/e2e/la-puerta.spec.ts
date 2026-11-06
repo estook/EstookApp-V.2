@@ -103,7 +103,7 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
 
   // ── El engranaje › Aparatos del local › Añadir: la tablet de la sala ──
   await page.getByRole('button', { name: 'Ajustes', exact: true }).click();
-  for (const grupo of ['Hoy', 'Lo que se vende', 'Lo que se conecta', 'Seguridad']) {
+  for (const grupo of ['Lo que se vende', 'Lo que se conecta', 'Seguridad y Hacienda']) {
     await expect(page.getByRole('region', { name: grupo })).toBeVisible();
   }
   await page.getByRole('button', { name: /^Aparatos del local/ }).click();

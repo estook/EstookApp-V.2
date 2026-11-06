@@ -380,12 +380,13 @@ describe('«Empezar de cero»: un producto nuevo', () => {
 });
 
 describe('«Lo más pedido»', () => {
-  it('lo fijado primero, y después lo más vendido a esta hora', async () => {
+  it('sin nada marcado no sale; con algo marcado, lo marcado primero y después lo más vendido', async () => {
     const enLaCaja = await enElAparato(llaveDeLaCaja, ROSA);
     // Arriba se han pedido dos croquetas y cuatro Coca-Colas; ahora, tres croquetas más.
     await pedirYVer(enLaCaja, ['Croquetas', 'Croquetas', 'Croquetas']);
-    const carta = await laCarta(enLaCaja);
-    expect(carta.loMasPedido.slice(0, 2).map((p) => p.nombre)).toEqual(['Croquetas', 'Coca-Cola']);
+    // R3 (0133, Richi): «Lo más pedido» solo sale si el local marca algún plato; si no, ocupa
+    // sitio y el camarero desliza de más para llegar a las secciones.
+    expect((await laCarta(enLaCaja)).loMasPedido).toEqual([]);
     const tarta = (await laBotonera(enLaCaja)).paginas
       .flatMap((g) => g.botones)
       .find((b) => b.nombre === 'Tarta de queso');
@@ -395,7 +396,70 @@ describe('«Lo más pedido»', () => {
         fijado: true,
       }),
     );
-    expect((await laCarta(enLaCaja)).loMasPedido[0]?.nombre).toBe('Tarta de queso');
+    expect((await laCarta(enLaCaja)).loMasPedido.slice(0, 3).map((p) => p.nombre)).toEqual([
+      'Tarta de queso',
+      'Croquetas',
+      'Coca-Cola',
+    ]);
+  });
+});
+
+describe('el icono y el color de cada sección (R3, 0133)', () => {
+  it('Estook los pone por el nombre, el local los cambia, y los botones llevan el de su sección', async () => {
+    const enLaCaja = await enElAparato(llaveDeLaCaja, ROSA);
+    const { paginaId } = losDatos<{ paginaId: string }>(
+      await api.ejecutar(enLaCaja, 'crear_pagina_del_tpv', { nombre: 'Cervezas' }),
+    );
+    const laPagina = async () =>
+      losDatos<{ paginas: { id: string; icono: string; color: string | null }[] }>(
+        await api.consultar(enLaCaja, 'la_botonera'),
+      ).paginas.find((g) => g.id === paginaId);
+    expect(await laPagina()).toMatchObject({ icono: 'beer', color: 'naranja' });
+
+    // Lo del local manda, con los dos colores nuevos.
+    losDatos(
+      await api.ejecutar(enLaCaja, 'cambiar_pagina_del_tpv', {
+        pagina_id: paginaId,
+        icono: 'wine',
+        color: 'marron',
+      }),
+    );
+    expect(await laPagina()).toMatchObject({ icono: 'wine', color: 'marron' });
+    // Un icono que no es de la lista no entra.
+    expect(
+      elFallo(
+        await api.ejecutar(enLaCaja, 'cambiar_pagina_del_tpv', {
+          pagina_id: paginaId,
+          icono: 'dibujo-mio',
+        }),
+      ),
+    ).toBe('faltan_datos');
+
+    // En la sala, la sección con su icono y su color, y sus productos con su franja.
+    losDatos(
+      await api.ejecutar(enLaCaja, 'poner_botones', {
+        pagina_id: paginaId,
+        plato_ids: [plato['Coca-Cola']],
+      }),
+    );
+    const enLaSala = losDatos<{
+      paginas: {
+        id: string;
+        icono: string;
+        color: string | null;
+        platos: { color: string | null }[];
+      }[];
+    }>(await api.consultar(enLaCaja, 'la_carta_de_la_sala')).paginas.find((g) => g.id === paginaId);
+    expect(enLaSala).toMatchObject({ icono: 'wine', color: 'marron' });
+    expect(enLaSala?.platos[0]?.color).toBe('marron');
+
+    // Y la base tampoco deja un color inventado, aunque alguien se salte la API.
+    await expect(
+      base.bd.query(`update estook.pagina_del_tpv set color = 'fucsia' where id = $1::uuid`, [
+        paginaId,
+      ]),
+    ).rejects.toThrow(/pagina_color_conocido/);
+    losDatos(await api.ejecutar(enLaCaja, 'quitar_pagina_del_tpv', { pagina_id: paginaId }));
   });
 });
 

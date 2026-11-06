@@ -38,21 +38,140 @@ export const NOMBRE_DEL_PASE: Readonly<Record<PaseDeLaBotonera, string>> = {
 };
 
 /**
- * Los colores de una página o de un botón: **los del sistema de diseño**, por su nombre
- * (Anexo 11.12: ningún color escrito a mano en una pantalla). Sin color, el de su página.
+ * Los colores de una sección o de un botón: **los del sistema de diseño**, por su nombre
+ * (Anexo 11.12: ningún color escrito a mano en una pantalla). Sin color, el de su sección.
+ *
+ * **Once** desde R3 (0133): los nueve de T3 y dos más, **amarillo** (el de «Lo más pedido») y
+ * **marrón** (el de los cafés). En el orden en que salen al elegir.
  */
 export const COLORES_DE_LA_BOTONERA = [
+  'amarillo',
   'naranja',
-  'verde',
-  'azul',
   'ambar',
   'rojo',
   'rosa',
   'morado',
+  'azul',
   'turquesa',
+  'verde',
   'arena',
+  'marron',
 ] as const;
 export type ColorDeLaBotonera = (typeof COLORES_DE_LA_BOTONERA)[number];
+
+/**
+ * **Los iconos de una sección** (R3, 0133): treinta de comida y bebida, **todos de Lucide**
+ * (Richi, 5-nov: nunca dibujados a mano), descargados con `herramientas/traer-iconos.mjs`. Se
+ * guardan por su nombre de Lucide. La hamburguesa y la paella no existen en Lucide: van con el
+ * bocadillo y la olla.
+ */
+export const ICONOS_DE_LA_SECCION = [
+  'beer',
+  'wine',
+  'martini',
+  'cup-soda',
+  'glass-water',
+  'coffee',
+  'milk',
+  'croissant',
+  'sandwich',
+  'pizza',
+  'salad',
+  'soup',
+  'beef',
+  'drumstick',
+  'ham',
+  'fish',
+  'shell',
+  'egg-fried',
+  'cooking-pot',
+  'leaf',
+  'wheat',
+  'cake-slice',
+  'ice-cream-cone',
+  'cookie',
+  'cherry',
+  'citrus',
+  'baby',
+  'chef-hat',
+  'star',
+  'utensils-crossed',
+] as const;
+export type IconoDeLaSeccion = (typeof ICONOS_DE_LA_SECCION)[number];
+
+/** Cómo se ve una sección: su icono, y su color (nulo: el gris de «lo demás»). */
+export interface ComoSeVeLaSeccion {
+  readonly icono: IconoDeLaSeccion;
+  readonly color: ColorDeLaBotonera | null;
+}
+
+/** «Lo más pedido» va siempre con la estrella en amarillo. */
+export const COMO_SE_VE_LO_MAS_PEDIDO: ComoSeVeLaSeccion = { icono: 'star', color: 'amarillo' };
+
+/**
+ * Lo que propone cada nombre, **en este orden** (el primero que encaja): los postres antes que
+ * nada («Tarta de queso» no es queso), las bebidas antes que la comida, el marisco antes que el
+ * pescado. Lo que no se reconoce, los cubiertos en gris.
+ */
+const POR_EL_NOMBRE: readonly (readonly [RegExp, IconoDeLaSeccion, ColorDeLaBotonera | null])[] = [
+  [/lo mas pedido/, 'star', 'amarillo'],
+  [/(helado|granizado|sorbete)/, 'ice-cream-cone', 'rosa'],
+  [/(postre|dulce|tarta|reposteria|pasteleria)/, 'cake-slice', 'rosa'],
+  [/(infantil|ninos|nino|peques|kids)/, 'baby', 'azul'],
+  [/(cafe|infusion|cafeteria)/, 'coffee', 'marron'],
+  // Antes que las bebidas: «Pan y agua» es del pan, que lo sirve el camarero al sentarse.
+  [/(^|[^a-z])(pan|panes|panaderia)([^a-z]|$)/, 'wheat', 'arena'],
+  [/(cerveza|(^|[^a-z])canas?([^a-z]|$)|tercio|birra)/, 'beer', 'naranja'],
+  [/(vino|cava|champan|bodega|tinto|rosado|espumoso)/, 'wine', 'morado'],
+  [
+    /(coctel|copa|combinado|licor|(^|[^a-z])(gin|ron)([^a-z]|$)|whisky|vermut|aperitivo|chupito)/,
+    'martini',
+    'rosa',
+  ],
+  [/(refresco|agua|zumo|bebida|soda|batido)/, 'cup-soda', 'azul'],
+  [/(desayuno|bolleria|tostada|merienda)/, 'croissant', 'arena'],
+  [/pizza/, 'pizza', 'naranja'],
+  [
+    /(bocadillo|bocata|burger|hamburguesa|sandwich|montadito|bikini|kebab|wrap)/,
+    'sandwich',
+    'arena',
+  ],
+  [/(marisco|molusco|ostra|gamba|mejillon)/, 'shell', 'turquesa'],
+  [/(pescado|del mar|bacalao|merluza)/, 'fish', 'turquesa'],
+  [/(pollo|(^|[^a-z])aves?([^a-z]|$)|alitas)/, 'drumstick', 'ambar'],
+  [/(embutido|iberico|jamon|chacina|tabla)/, 'ham', 'rojo'],
+  [/(carne|parrilla|brasa|chuleton|ternera|cerdo|cordero|asado)/, 'beef', 'rojo'],
+  [/(arroz|arroces|paella|guiso|cuchara|potaje|cocido|olla)/, 'cooking-pot', 'ambar'],
+  [/(sopa|crema|caldo)/, 'soup', 'ambar'],
+  [/(huevo|tortilla)/, 'egg-fried', 'amarillo'],
+  [/(vegetariano|vegano|verdura|vegetal)/, 'leaf', 'verde'],
+  [/fruta/, 'cherry', 'rojo'],
+  [/(entrante|para picar|picoteo|tapa|racion|ensalada|primero|compartir)/, 'salad', 'verde'],
+  [/(menu|del dia|chef|degustacion)/, 'chef-hat', 'naranja'],
+];
+
+/**
+ * **Lo que Estook pone solo a una sección por su nombre** (R3, maqueta «Icono y color»):
+ * «Cervezas» → la jarra en naranja; «Vinos» → la copa en morado; «Lo más pedido» → la estrella
+ * en amarillo. El local lo cambia en Ajustes del TPV › Productos y precios, y lo suyo manda.
+ */
+export function comoSeVeElNombre(nombre: string): ComoSeVeLaSeccion {
+  const limpio = sinAcentos(nombre).trim().replace(/\s+/g, ' ');
+  for (const [encaja, icono, color] of POR_EL_NOMBRE) {
+    if (encaja.test(limpio)) return { icono, color };
+  }
+  return { icono: 'utensils-crossed', color: null };
+}
+
+/** Cómo se ve una sección: lo que eligió el local, y si no, lo que propone su nombre. */
+export function comoSeVeLaSeccion(seccion: {
+  readonly nombre: string;
+  readonly color: ColorDeLaBotonera | null;
+  readonly icono?: IconoDeLaSeccion | null;
+}): ComoSeVeLaSeccion {
+  const propone = comoSeVeElNombre(seccion.nombre);
+  return { icono: seccion.icono ?? propone.icono, color: seccion.color ?? propone.color };
+}
 
 /** Cómo se montó la botonera (Anexo 11.11, «Al empezar: tres caminos»). */
 export const CAMINOS_DE_LA_BOTONERA = ['toda_la_carta', 'elegir', 'de_cero'] as const;

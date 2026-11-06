@@ -188,6 +188,10 @@
     --color-app-negocio: #f0796c;
     --color-app-cuaderno: #c4b49a;
 
+    /* Los dos colores de sección nuevos (R3, 0133), los de la maqueta aprobada. */
+    --color-seccion-amarillo: #f5c84c;
+    --color-seccion-marron: #c08a5b;
+
     --sombra-tarjeta: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.35);
     --relleno-tarjeta: none;
 

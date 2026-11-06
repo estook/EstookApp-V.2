@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import type { FuncionDelAparato } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
+import { IconoFlechaDerecha } from '@estook/iconos';
 import { EstadoVacio } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { irA } from '../navegar.ts';
 import { LaBarraDeArriba } from '../inicio/LaBarraDeArriba.tsx';
 import { FalloDeLaSala, usarAlSegundo, usarElPlano } from '../ganchos/usarLaSala.ts';
 import { IconoEnSuColor, type Dibujo, type Tono } from '../iconos.tsx';
-import type { LosAparatos as LosAparatosDeLaApi } from '../datos/tipos.ts';
+import type { LaBotonera, LosAparatos as LosAparatosDeLaApi } from '../datos/tipos.ts';
 import { LosAparatos } from './LosAparatos.tsx';
 import { PinYBloqueo } from './PinYBloqueo.tsx';
 import { CocinaYBarra } from './CocinaYBarra.tsx';
@@ -22,6 +23,10 @@ import { ComoFacturaEnUnaLinea, LaFacturacion } from './LaFacturacion.tsx';
  * está cada cosa. Solo lo de vender: la carta, los precios y el equipo se cambian en Estook.
  * **Solo en la caja** (0115), y cada apartado solo a quien puede tocarlo.
  *
+ * **Desde R3 (0133), como los ajustes del teléfono**: cada grupo es una lista de filas de una
+ * línea, con su título grande y legible; dos columnas en la tablet y una en el móvil, sin
+ * huecos. Tres grupos: lo que se vende, lo que se conecta, y seguridad y Hacienda.
+ *
  * Lo que llega con su entrega (la caja y el datáfono) **no se enseña hasta que funcione**; las
  * impresoras y el cajón, desde T5 · 1 (0119). «Editar sala» vive aquí, en «La sala y las mesas».
  */
@@ -31,12 +36,12 @@ interface Apartado {
   readonly nombre: string;
   readonly dibujo: Dibujo;
   readonly tono: Tono;
-  readonly grupo: 'Hoy' | 'Lo que se vende' | 'Lo que se conecta' | 'Seguridad' | 'Hacienda';
+  readonly grupo: (typeof GRUPOS)[number];
   /** A dónde lleva: la sala y los agotados son pantallas enteras. */
   readonly ir: string;
 }
 
-const GRUPOS = ['Hoy', 'Lo que se vende', 'Lo que se conecta', 'Seguridad', 'Hacienda'] as const;
+const GRUPOS = ['Lo que se vende', 'Lo que se conecta', 'Seguridad y Hacienda'] as const;
 const DE_AQUI_DENTRO: readonly string[] = [
   'productos',
   'cocina',
@@ -60,7 +65,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'Agotados',
             dibujo: 'agotado',
             tono: 'rojo',
-            grupo: 'Hoy',
+            grupo: 'Lo que se vende',
             ir: 'agotados',
           } as const,
         ]
@@ -124,7 +129,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'PIN y bloqueo',
             dibujo: 'candado',
             tono: 'gris',
-            grupo: 'Seguridad',
+            grupo: 'Seguridad y Hacienda',
             ir: 'ajustes/pin',
           } as const,
         ]
@@ -137,7 +142,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'Facturación',
             dibujo: 'documento',
             tono: 'naranja',
-            grupo: 'Hacienda',
+            grupo: 'Seguridad y Hacienda',
             ir: 'ajustes/facturacion',
           } as const,
         ]
@@ -147,9 +152,9 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
     {
       id: 'declaracion',
       nombre: 'Declaración responsable',
-      dibujo: 'documento',
+      dibujo: 'declaracion',
       tono: 'gris',
-      grupo: 'Hacienda',
+      grupo: 'Seguridad y Hacienda',
       ir: 'ajustes/declaracion',
     } as const,
   ];
@@ -183,28 +188,33 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
     );
   }
 
-  // **El engranaje**: los grupos, con lo que dice cada uno.
+  // **El engranaje**: los grupos, con lo que dice cada uno. Dos columnas en la tablet que se
+  // reparten solas, para que ningún grupo deje media fila vacía.
   if (elegido === undefined || !puede(elegido)) {
     return (
       <div className="flex min-h-pantalla flex-col bg-fondo text-texto">
         <LaBarraDeArriba titulo="Ajustes" />
-        <main className="flex flex-col gap-e6 p-e4 md:p-e6">
-          {GRUPOS.map((grupo) => {
-            const suyos = apartados.filter((a) => a.grupo === grupo);
-            if (suyos.length === 0) return null;
-            return (
-              <section key={grupo} aria-label={grupo} className="flex flex-col gap-e3">
-                <h2 className="text-etiqueta font-bold uppercase tracking-wide text-texto-suave">
-                  {grupo}
-                </h2>
-                <div className="grid gap-e3 sm:grid-cols-2 xl:grid-cols-3">
-                  {suyos.map((a) => (
-                    <Baldosa key={a.id} apartado={a} />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+        <main className="flex flex-col gap-e4 p-e4 md:p-e5">
+          <div className="gap-e5 md:columns-2">
+            {GRUPOS.map((grupo) => {
+              const suyos = apartados.filter((a) => a.grupo === grupo);
+              if (suyos.length === 0) return null;
+              return (
+                <section
+                  key={grupo}
+                  aria-label={grupo}
+                  className="mb-e5 flex break-inside-avoid flex-col gap-e2"
+                >
+                  <h2 className="text-seccion font-bold">{grupo}</h2>
+                  <div className="flex flex-col overflow-hidden rounded-mayor bg-superficie">
+                    {suyos.map((a) => (
+                      <Fila key={a.id} apartado={a} />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
           <p className="text-secundario text-texto-tenue">
             Lo de vender. La carta, los precios y el equipo, en Estook.
           </p>
@@ -271,37 +281,64 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
   );
 }
 
-function Baldosa({ apartado: a }: { readonly apartado: Apartado }) {
+/** Una fila de la lista: su dibujo, su nombre y cómo está, en una línea cada uno. */
+function Fila({ apartado: a }: { readonly apartado: Apartado }) {
   return (
     <button
       type="button"
       onClick={() => {
         irA(a.ir);
       }}
-      className="flex min-h-[5.75rem] items-start gap-e3 rounded-mayor border-2 border-borde bg-superficie p-e4 text-left active:bg-charcoal"
+      className="flex min-h-toque-cocina items-center gap-e3 border-b border-borde px-e3 py-e2 text-left last:border-b-0 active:bg-charcoal"
     >
-      <IconoEnSuColor dibujo={a.dibujo} tono={a.tono} />
-      <span className="flex min-w-0 flex-col gap-e1">
-        <span className="text-seccion font-bold">{a.nombre}</span>
-        <span className="text-secundario text-texto-suave">
+      <IconoEnSuColor dibujo={a.dibujo} tono={a.tono} lado={36} />
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="font-bold">{a.nombre}</span>
+        <span className="truncate text-secundario text-texto-suave">
           <ComoEsta id={a.id} />
         </span>
       </span>
+      <IconoFlechaDerecha size={20} className="shrink-0 text-texto-tenue" />
     </button>
   );
 }
 
-/** La línea de cada baldosa: cómo está ahora, o qué se hace ahí si no se sabe todavía. */
+/** La línea de cada fila: cómo está ahora, o qué se hace ahí si no se sabe todavía. */
 function ComoEsta({ id }: { readonly id: string }) {
   if (id === 'agotados') return <LosAgotadosDeHoy />;
   if (id === 'sala') return <LaSala />;
-  if (id === 'productos') return <>La botonera, las opciones y las bebidas</>;
+  if (id === 'productos') return <LosProductos />;
   if (id === 'cocina') return <LaCocina />;
   if (id === 'aparatos') return <LosAparatosDelLocal />;
   if (id === 'impresoras') return <LasImpresorasDelLocal />;
   if (id === 'facturacion') return <ComoFacturaEnUnaLinea />;
   if (id === 'declaracion') return <>Lo que Estook declara a Hacienda</>;
   return <ElBloqueo />;
+}
+
+/** «8 secciones · 40 productos», o qué se hace ahí si aún no hay botonera. */
+function LosProductos() {
+  const { cliente } = usarSesion();
+  // La misma clave que Productos y precios: al entrar, ya está leída.
+  const botonera = useQuery({
+    queryKey: ['botonera'],
+    queryFn: async () => {
+      const respuesta = await cliente.consultar<LaBotonera>('la_botonera');
+      if (!respuesta.ok) throw new FalloDeLaSala(respuesta.error);
+      return respuesta.datos;
+    },
+  });
+  const datos = botonera.data;
+  if (datos === undefined || datos.camino === null)
+    return <>Las secciones, sus productos y sus precios</>;
+  const secciones = datos.paginas.length;
+  const productos = datos.paginas.reduce((n, g) => n + g.botones.length, 0);
+  return (
+    <>
+      {secciones === 1 ? '1 sección' : `${String(secciones)} secciones`} ·{' '}
+      {productos === 1 ? '1 producto' : `${String(productos)} productos`}
+    </>
+  );
 }
 
 function LosAgotadosDeHoy() {
@@ -318,7 +355,7 @@ function LosAgotadosDeHoy() {
   });
   const agotados = (platos.data ?? []).filter((p) => p.agotado !== null);
   if (platos.data === undefined) return <>Marcar lo que se ha acabado</>;
-  if (agotados.length === 0) return <>Nada agotado. Marcar lo que se acaba</>;
+  if (agotados.length === 0) return <>Nada agotado</>;
   const nombres = agotados.slice(0, 3).map((p) => p.nombre);
   return (
     <>
@@ -339,7 +376,7 @@ function LaSala() {
   return (
     <>
       {zonas.length === 1 ? '1 zona' : `${String(zonas.length)} zonas`} ·{' '}
-      {mesas === 1 ? '1 mesa' : `${String(mesas)} mesas`}. Dibujar, mover y añadir
+      {mesas === 1 ? '1 mesa' : `${String(mesas)} mesas`}
     </>
   );
 }
@@ -362,7 +399,7 @@ function LaCocina() {
   if (a === undefined) return <>Los minutos del color y el sonido</>;
   return (
     <>
-      Ámbar a los {a.avisoMin} min, rojo a los {a.tardeMin} · {a.suena ? 'suena' : 'sin sonido'}
+      Ámbar {a.avisoMin}′, rojo {a.tardeMin}′ · {a.suena ? 'suena' : 'sin sonido'}
     </>
   );
 }
@@ -437,7 +474,5 @@ function LasImpresorasDelLocal() {
 function ElBloqueo() {
   const { aparato } = usarSesion();
   const minutos = aparato.bloqueo.minutos;
-  return (
-    <>Se bloquea a {minutos === 1 ? 'el minuto' : `los ${String(minutos)} minutos`} sin tocar</>
-  );
+  return <>Se bloquea {minutos === 1 ? 'al minuto' : `a los ${String(minutos)} min`}</>;
 }

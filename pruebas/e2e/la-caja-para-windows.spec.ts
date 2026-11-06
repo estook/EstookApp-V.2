@@ -204,6 +204,8 @@ test('la caja para Windows: impresoras, la cuenta, marchar en papel y sin papel'
   await opciones.getByRole('button', { name: 'Pedir' }).click();
   // En el móvil, la cuenta va detrás de «Ver la cuenta».
   const verLaCuenta = page.getByRole('button', { name: /^Ver la cuenta/ });
+  // Sin nada marcado no sale «Lo más pedido» (R3, 0133): el Entrecot está en su sección.
+  await page.getByRole('button', { name: 'Principales', exact: true }).click({ timeout: 15_000 });
   await expect(page.getByRole('button', { name: /^Entrecot/ })).toBeVisible({ timeout: 15_000 });
   if (await verLaCuenta.isVisible()) await verLaCuenta.click();
   await page.getByRole('button', { name: 'Marchar ya' }).click({ timeout: 15_000 });

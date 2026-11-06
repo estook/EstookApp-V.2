@@ -416,6 +416,41 @@ describe('la caja, con su llave', () => {
   });
 });
 
+describe('el papel con el QR (T6 · 2 · 1, 0136)', () => {
+  it('no se le da a una caja que no dice que lo sabe imprimir; a la 1.3.0, sí', async () => {
+    const barCentro = await base.localPorCodigo('bar-centro');
+    const [trabajo] = (
+      await base.bd.query<{ id: string }>(
+        `insert into estook.trabajo_de_impresion (local_id, impresora_id, tipo, papel)
+         values ($1, $2, 'ticket', $3::jsonb) returning id`,
+        [
+          barCentro,
+          impresora['Cocina'],
+          JSON.stringify({
+            version: 2,
+            piezas: [
+              { tipo: 'qr', contenido: 'https://www2.agenciatributaria.gob.es', milimetros: 35 },
+            ],
+          }),
+        ],
+      )
+    ).rows;
+    // La caja de antes (sin decir nada) no lo recibe: se rompería a medias y pararía lo demás.
+    expect((await laCola()).trabajos.map((t) => t.id)).not.toContain(trabajo?.id);
+    // Vuelve a la cola al minuto, como lo que no sale.
+    await base.bd.query(
+      `update estook.trabajo_de_impresion set entregado_en = entregado_en - interval '2 minutes'
+        where id = $1`,
+      [trabajo?.id],
+    );
+    const conQr = losDatos<Cola>(
+      await api.ejecutar(null, 'la_cola_de_la_caja', { llave: llaveDeLaCaja, papeles: 2 }),
+    );
+    expect(conQr.trabajos.map((t) => t.id)).toContain(trabajo?.id);
+    await imprimirlo(conQr.trabajos);
+  });
+});
+
 describe('el cajón', () => {
   it('lo abre en la caja quien puede, con motivo; queda en la auditoría', async () => {
     const hecho = losDatos<{ trabajoId: string }>(

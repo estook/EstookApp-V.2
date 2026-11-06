@@ -19,6 +19,7 @@ import { usarLaDeclaracion } from '../ganchos/usarLaFacturacion.ts';
 import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
 import type { MiFacturacion } from './contrato.ts';
 import { QuienLaLleva } from './QuienLaLleva.tsx';
+import { ElTicketDePrueba } from './ElTicketDePrueba.tsx';
 import {
   PasoDeDondeTributa,
   PasoDeLaAutorizacion,
@@ -298,6 +299,10 @@ export function TuFacturacion() {
           }}
         />
       )}
+
+      {/* Probar el papel (T6 · 2 · 1, 0136): con el alta lista y en pruebas, con VERI*FACTU o
+          por el SII. En real no se imprime nada de mentira (Anexo 4.12). */}
+      {lo.como.estado === 'lista' && e !== null && e.entorno === 'pruebas' && <ElTicketDePrueba />}
 
       <Tarjeta titulo="«Pide tu factura» en el ticket">
         <div className="flex flex-col gap-e3">

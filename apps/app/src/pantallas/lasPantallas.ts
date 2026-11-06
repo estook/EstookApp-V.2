@@ -57,6 +57,9 @@ export const CierreDeCaja = perezosa(
 );
 export const EnMarcha = perezosa(async () => (await import('../servicio/EnMarcha.tsx')).EnMarcha);
 export const Ventas = perezosa(async () => (await import('../servicio/Ventas.tsx')).Ventas);
+export const TicketsYFacturas = perezosa(
+  async () => (await import('../facturacion/TicketsYFacturas.tsx')).TicketsYFacturas,
+);
 export const Delivery = perezosa(async () => (await import('../servicio/Delivery.tsx')).Delivery);
 export const Informes = perezosa(async () => (await import('../negocio/Informes.tsx')).Informes);
 export const Resenas = perezosa(async () => (await import('../negocio/Resenas.tsx')).Resenas);

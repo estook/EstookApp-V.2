@@ -601,9 +601,14 @@ async function laCajaDeLaLlave(contexto: Contexto, laLlave: string) {
   return aparato;
 }
 
-export const laColaDeLaCaja = comando<{ llave: string }, LaColaDeLaCaja>({
+export const laColaDeLaCaja = comando<
+  { llave: string; papeles?: number | undefined },
+  LaColaDeLaCaja
+>({
   nombre: 'la_cola_de_la_caja',
-  entrada: z.object({ llave }).strict(),
+  // `papeles`: la versión de papel más alta que sabe imprimir esa caja. La 1.3.0 dice 2 (el QR
+  // tributario, 0136); una de antes no dice nada, y es la 1.
+  entrada: z.object({ llave, papeles: z.number().int().min(1).max(9).optional() }).strict(),
   sinSesion: true,
   sinRecordar: true,
 
@@ -643,6 +648,10 @@ export const laColaDeLaCaja = comando<{ llave: string }, LaColaDeLaCaja>({
       trabajos: filas.flatMap((f) => {
         // Lo que no es un papel que se sabe imprimir no se manda: se queda y se ve que no sale.
         if (!esPapelCompuesto(f.papel)) return [];
+        // Ni uno con QR a una caja que no lo sabe imprimir (0136): se rompería a medias y
+        // pararía lo demás. Como lo que no es un papel: vuelve a la cola cada minuto y, a los
+        // cinco intentos, queda «No salió», que se ve. Con la 1.3.0 sale.
+        if (f.papel.version > (entrada.papeles ?? 1)) return [];
         return [
           {
             id: f.trabajo_id,

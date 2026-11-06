@@ -412,6 +412,7 @@ export type {
 // y como partida aparte, o el food cost miente» (Manifiesto 28).
 export {
   MOTIVOS_DE_MERMA,
+  MOTIVOS_PARA_APUNTAR_A_MANO,
   PARTIDAS_DE_MERMA,
   NOMBRE_DEL_MOTIVO_DE_MERMA,
   QUE_ES_CADA_MOTIVO,
@@ -1058,7 +1059,9 @@ export {
   comoVaLaMesa,
   desdeCuandoEnCocina,
   elColorDelTiempo,
+  MINUTOS_PARA_DESHACER_SERVIDO,
   MINUTOS_PARA_LA_CUENTA,
+  TOPES_DE_LOS_MINUTOS_PARA_LA_CUENTA,
   elPaseHaSalido,
   elPaseQueTocaMarchar,
   enSuOrden,

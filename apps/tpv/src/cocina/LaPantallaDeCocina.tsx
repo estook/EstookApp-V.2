@@ -13,6 +13,8 @@ import {
   elPlatoQueSigue,
   losAcabados,
   loQueSuena,
+  loServidoPorLaSala,
+  losCambios,
   type ColorDelTiempo,
 } from './laCocina.ts';
 import { alCambiarSiSuena, despertar, puedeSonar, tocar } from './sonidos.ts';
@@ -331,6 +333,7 @@ export function LaPantallaDeCocina({
                   tarjeta={t}
                   tecla={i < 9 ? i + 1 : null}
                   ajustes={lo.ajustes}
+                  ahora={ahora}
                   alTocarElPlato={alTocarElPlato}
                   alLlamar={() => void hacer('llamar_al_camarero', { cuenta_id: t.cuentaId })}
                 />
@@ -341,6 +344,7 @@ export function LaPantallaDeCocina({
                   tarjeta={t}
                   tecla={null}
                   ajustes={lo.ajustes}
+                  ahora={ahora}
                   alTocarElPlato={alTocarElPlato}
                   alLlamar={() => void hacer('llamar_al_camarero', { cuenta_id: t.cuentaId })}
                 />
@@ -352,6 +356,7 @@ export function LaPantallaDeCocina({
                   tarjeta={t}
                   tecla={null}
                   ajustes={lo.ajustes}
+                  ahora={ahora}
                   alTocarElPlato={alTocarElPlato}
                   todaviaNo
                 />
@@ -379,6 +384,7 @@ export function LaPantallaDeCocina({
                     tarjeta={t}
                     tecla={null}
                     ajustes={lo.ajustes}
+                    ahora={ahora}
                     alTocarElPlato={alTocarElPlato}
                   />
                 ))}
@@ -399,6 +405,7 @@ export function LaPantallaDeCocina({
                         tarjeta={t}
                         tecla={null}
                         ajustes={lo.ajustes}
+                        ahora={ahora}
                         alTocarElPlato={alTocarElPlato}
                       />
                     </div>
@@ -423,6 +430,7 @@ function Tarjeta({
   tarjeta: t,
   tecla,
   ajustes,
+  ahora,
   alTocarElPlato,
   alLlamar,
   todaviaNo = false,
@@ -430,6 +438,7 @@ function Tarjeta({
   readonly tarjeta: TarjetaDeCocina;
   readonly tecla: number | null;
   readonly ajustes: LaPantallaDeCocina['ajustes'];
+  readonly ahora: number;
   readonly alTocarElPlato: (lineaId: string, salio: boolean) => void;
   readonly alLlamar?: () => void;
   /** Lo de llevar programado que aún no toca empezar (0121): en gris, con su hora. */
@@ -437,6 +446,9 @@ function Tarjeta({
 }) {
   const acabada = t.estado === 'fuera';
   const marcha = acabada ? null : elPaseQueAcabaDeMarchar(t);
+  // Lo que la sala acaba de marcar servido, con su «Deshacer», y lo cambiado (0132).
+  const servido = t.anulada === null ? loServidoPorLaSala(t, ahora) : null;
+  const cambios = t.anulada === null ? losCambios(t) : [];
   const color = elColorDelTiempo(t.minutos, ajustes);
   const borde =
     t.anulada !== null
@@ -491,7 +503,32 @@ function Tarjeta({
               FUERA LO MARCHADO · ESPERANDO A QUE MARCHEN
             </p>
           )}
+          {cambios.map((c) => (
+            <p key={c.id} className="bg-atencion px-e3 py-e1 text-seccion font-bold text-fondo">
+              CAMBIO{c.quien === null ? '' : ` · ${c.quien}`}
+              <span className="block text-cuerpo">{c.texto}</span>
+            </p>
+          ))}
         </>
+      )}
+      {servido !== null && (
+        <div className="flex flex-col items-start gap-e1 bg-bien px-e3 py-e2 text-fondo">
+          <p>
+            <b className="block">{servido.quien ?? 'La sala'} ha marcado servido</b>
+            <span className="text-secundario">
+              {servido.platos.map((p) => p.texto).join(' · ')}
+            </span>
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              for (const p of servido.platos) alTocarElPlato(p.id, true);
+            }}
+            className="min-h-toque rounded-grande bg-fondo/20 px-e3 font-bold"
+          >
+            Deshacer · quedan {servido.quedan} min
+          </button>
+        </div>
       )}
       <div className="flex flex-wrap items-center gap-e2 px-e3 py-e2">
         {tecla !== null && (
@@ -555,19 +592,31 @@ function Tarjeta({
                   <span className="text-seccion font-bold">
                     <span
                       className={
-                        p.anulado
-                          ? 'text-mal line-through'
-                          : salio
-                            ? 'text-texto-suave line-through'
-                            : ''
+                        p.anulado && (p.cambiadoA ?? null) !== null
+                          ? 'text-texto-suave line-through'
+                          : p.anulado
+                            ? 'text-mal line-through'
+                            : salio
+                              ? 'text-texto-suave line-through'
+                              : ''
                       }
                     >
                       {p.nombre}
                     </span>
+                    {/* Un plato cambiado (0132): tachado, y por cuál, en naranja. */}
+                    {p.anulado && (p.cambiadoA ?? null) !== null && (
+                      <span className="ml-e2 text-atencion">→ {p.cambiadoA}</span>
+                    )}
                     {p.vuelve !== null && <Marca tono="bg-info text-fondo">VUELVE</Marca>}
-                    {p.anulado && <Marca tono="bg-mal text-fondo">ANULADO</Marca>}
-                    {p.nuevo && !p.anulado && <Marca tono="bg-info text-fondo">NUEVO</Marca>}
-                    {p.cambio && <Marca tono="bg-atencion text-fondo">CAMBIO</Marca>}
+                    {p.anulado && (p.cambiadoA ?? null) === null && (
+                      <Marca tono="bg-mal text-fondo">ANULADO</Marca>
+                    )}
+                    {p.nuevo && !p.anulado && (p.cambioDe ?? null) === null && (
+                      <Marca tono="bg-info text-fondo">NUEVO</Marca>
+                    )}
+                    {(p.cambio || ((p.cambioDe ?? null) !== null && !p.anulado)) && (
+                      <Marca tono="bg-atencion text-fondo">CAMBIO</Marca>
+                    )}
                     {(p.lleva ?? []).length > 0 && !p.anulado && (
                       <Marca tono="bg-mal text-fondo">
                         {`LLEVA ${losNombres(p.lleva ?? []).toUpperCase()}`}

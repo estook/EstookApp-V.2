@@ -1053,3 +1053,9 @@
      por algo no se vuelve a poner sin leer por qué**: abrir con lo guardado de quién eres lo había
      quitado el 1-oct, lo decía su propio comentario, y volver a ponerlo enseñaba permisos y locales
      de antes; lo cazaron 22 pruebas de pantalla antes de subir.
+251. **Una puerta nueva en la API pide la misma puerta en la base.** «Servido» y «cambiar un plato»
+     estaban bien en la API, pero la regla de la base que guarda lo mandado (`lo_mandado_no_se_reescribe`)
+     solo deja tachar a la cocina y quitar lo de cocina a un jefe, y todo salía «sin permiso». Lo
+     cazaron las pruebas contra la base antes de tocar una pantalla (0132, 6-nov). **Antes de dejar
+     hacer algo nuevo a otro rol, se busca qué disparadores y políticas guardan esas columnas**, y la
+     regla se amplía copiándola entera, con la prueba que la ve pasar.

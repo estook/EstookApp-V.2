@@ -110,6 +110,8 @@ export interface ElPlano {
     readonly salioEl: number;
   }[];
   readonly camareros: readonly { readonly id: string; readonly nombre: string }[];
+  /** Si la sala marca lo servido (0132): el botón «Servido». Una API de antes no lo dice. */
+  readonly marcanServido?: boolean;
 }
 
 export type EstadoDelPlato =
@@ -135,6 +137,10 @@ export interface PlatoDeLaCuenta {
   readonly pesoGramos?: number | null;
   /** Lo que lleva, congelado al pedir (0117). Una API de antes no lo dice. */
   readonly alergenos?: readonly string[];
+  /** Lo marcó servido la sala (0132). Una API de antes no lo dice. */
+  readonly servidoEnSala?: boolean;
+  /** El plato nuevo de un cambio: lo de antes, «1 Croquetas» (0132). */
+  readonly cambioDe?: string | null;
 }
 
 export interface LaMesa {
@@ -162,6 +168,8 @@ export interface LaMesa {
     readonly haSalido: boolean;
   }[];
   readonly loSiguiente: LoSiguiente;
+  /** Qué puede marcar servido la sala aquí (0132). Una API de antes no lo dice. */
+  readonly marcanServido?: { readonly cocina: boolean; readonly barra: boolean };
 }
 
 export interface PlatoDeLaSala {
@@ -542,6 +550,13 @@ export interface PlatoEnCocina {
   readonly pesoGramos: number | null;
   /** Lo que lleva de la alergia de la mesa: «LLEVA GLUTEN» (0117). */
   readonly lleva?: readonly string[];
+  /** Lo marcó servido la sala (0132): verde, con quién y «Deshacer». Una API de antes no lo dice. */
+  readonly servidoEnSala?: boolean;
+  readonly servidoPor?: string | null;
+  /** El plato nuevo de un cambio: lo de antes, «1 Croquetas»; y el cambiado: por cuál. */
+  readonly cambioDe?: string | null;
+  readonly cambiadoA?: string | null;
+  readonly cambioPor?: string | null;
 }
 
 export interface TarjetaDeCocina {

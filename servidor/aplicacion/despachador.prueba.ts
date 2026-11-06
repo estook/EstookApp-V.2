@@ -1006,6 +1006,9 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'cambiar_plato_de_la_mesa',
         'quitar_plato',
         'devolver_a_cocina',
+        // Servido y cambiar un plato (0132): el camarero, sin PIN.
+        'marcar_servido',
+        'cambiar_un_plato',
         'mandar_a_cocina',
         'marchar',
         'cambiar_la_mesa',

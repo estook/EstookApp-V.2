@@ -209,7 +209,17 @@ export function desdeCuandoEnCocina(
  * los camareros de pendiente de pago unos minutos después de los últimos platos»). Sin sonido
  * ni aviso: la mesa se pone en morado con «¿Cuenta?» y sale arriba, en «Para cobrar».
  */
+/** Los minutos de «¿Cuenta?» de fábrica; cada local pone los suyos en Cocina y barra (0132). */
 export const MINUTOS_PARA_LA_CUENTA = 15;
+
+/** Lo que dejan Ajustes del TPV › Cocina y barra para «¿Cuenta?» (la base dice lo mismo). */
+export const TOPES_DE_LOS_MINUTOS_PARA_LA_CUENTA = { minimo: 5, maximo: 120 } as const;
+
+/**
+ * **Lo que la sala marca servido, la cocina lo puede deshacer** durante estos minutos (0132): se
+ * ve en verde en su tarjeta, con quién y «Deshacer». Después se queda tachado, como lo suyo.
+ */
+export const MINUTOS_PARA_DESHACER_SERVIDO = 5;
 
 /**
  * **Cómo va una mesa abierta**, de lo que se sabe sin preguntar a nadie (0131):
@@ -218,11 +228,11 @@ export const MINUTOS_PARA_LA_CUENTA = 15;
  *   · `esperando`: algo suyo está en la cocina y aún no ha salido; el tiempo, desde que le
  *     llegó (`desdeCuandoEnCocina`)
  *   · `comiendo`: lo de cocina ha salido entero (o solo pidieron bebida)
- *   · `para_cobrar`: comieron, ha salido todo y hace `MINUTOS_PARA_LA_CUENTA` de lo último
- *     (lo último servido o lo último pedido: si piden cafés, vuelve a contar)
+ *   · `para_cobrar`: comieron, ha salido todo y hace los minutos del local de lo último (15 de
+ *     fábrica; lo último servido o lo último pedido: si piden cafés, vuelve a contar)
  *
- * **Con la cocina solo en papel** nadie tacha: la sala no puede saber qué ha salido, así que
- * la mesa se queda «esperando» sin ponerse en rojo y nunca pide la cuenta sola.
+ * **Con la cocina solo en papel** nadie tacha: la mesa se queda «esperando» hasta que el camarero
+ * lo marca servido (0132), que es la única forma de que la sala sepa qué ha salido.
  */
 export type ComoVaLaMesa =
   'sin_pedir' | 'por_mandar' | 'toca_marchar' | 'esperando' | 'comiendo' | 'para_cobrar';
@@ -234,19 +244,18 @@ export function comoVaLaMesa(datos: {
   readonly conComida: boolean;
   /** Minutos desde lo último servido o pedido; nulo si no hay nada. */
   readonly minutosDesdeLoUltimo: number | null;
-  /** La cocina solo en papel: nadie tacha. */
-  readonly nadieTacha: boolean;
+  /** Los minutos de «¿Cuenta?» del local; sin ellos, los de fábrica. */
+  readonly minutosParaLaCuenta?: number;
 }): ComoVaLaMesa {
   const { loSiguiente } = datos;
   if (loSiguiente.que === 'pedir') return 'sin_pedir';
   if (loSiguiente.que === 'mandar') return 'por_mandar';
   if (loSiguiente.que === 'marchar') return 'toca_marchar';
   if (datos.enCocina === 'en_marcha') return 'esperando';
-  if (datos.nadieTacha && datos.conComida) return 'esperando';
   if (
     datos.conComida &&
     datos.minutosDesdeLoUltimo !== null &&
-    datos.minutosDesdeLoUltimo >= MINUTOS_PARA_LA_CUENTA
+    datos.minutosDesdeLoUltimo >= (datos.minutosParaLaCuenta ?? MINUTOS_PARA_LA_CUENTA)
   ) {
     return 'para_cobrar';
   }

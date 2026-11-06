@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { TOPES_DE_LOS_MINUTOS_PARA_LA_CUENTA } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { Boton, Cargando, ErrorEnCristiano } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -10,12 +11,20 @@ interface LaCocinaYLaBarra {
   readonly avisoMin: number;
   readonly tardeMin: number;
   readonly suena: boolean;
+  /** Los camareros también marcan lo servido (0132). Una API de antes no lo dice. */
+  readonly camarerosMarcan?: boolean;
+  /** Los minutos de «¿Cuenta?» (0132). Una API de antes no lo dice. */
+  readonly minutosParaLaCuenta?: number;
+  readonly cocinaSaleEn?: 'pantalla' | 'papel' | 'las_dos';
 }
 
 /**
  * **Ajustes del TPV › Cocina y barra** (T4 · 1, decisión 0116; Anexo 3.2 y 11.13): a los
  * cuántos minutos se pone un pase en ámbar y en rojo, y si la pantalla suena. Una vez, para
  * todo el local; la pantalla lo coge en su siguiente vuelta.
+ *
+ * Y lo de la sala (R2 · 2, 0132): **si los camareros también marcan lo servido** (apagado de
+ * fábrica: tacha la cocina) y **a los cuántos minutos una mesa sale en «¿Cuenta?»**.
  */
 export function CocinaYBarra() {
   const { cliente } = usarSesion();
@@ -44,6 +53,10 @@ export function CocinaYBarra() {
       aviso_min: nuevos.avisoMin,
       tarde_min: nuevos.tardeMin,
       suena: nuevos.suena,
+      ...(nuevos.camarerosMarcan === undefined ? {} : { camareros_marcan: nuevos.camarerosMarcan }),
+      ...(nuevos.minutosParaLaCuenta === undefined
+        ? {}
+        : { minutos_para_la_cuenta: nuevos.minutosParaLaCuenta }),
     });
     setOcupado(false);
     if (!respuesta.ok) {
@@ -110,6 +123,34 @@ export function CocinaYBarra() {
           </Boton>
         </div>
       </section>
+
+      {/* Lo de la sala (0132). Una API de antes no lo dice: no se enseña. */}
+      {ajustes.camarerosMarcan !== undefined && ajustes.minutosParaLaCuenta !== undefined && (
+        <section className="flex flex-col gap-e4 rounded-mayor bg-superficie p-e5">
+          <span className="text-seccion font-bold">La sala</span>
+          <Casilla
+            titulo="Los camareros también marcan lo servido"
+            frase={
+              ajustes.cocinaSaleEn === 'papel'
+                ? 'Con la cocina solo en papel lo marcan siempre: nadie más lo tacha'
+                : 'Con «Servido» en la mesa. La cocina lo ve en verde, con quién y «Deshacer»'
+            }
+            puesta={ajustes.camarerosMarcan || ajustes.cocinaSaleEn === 'papel'}
+            ocupado={ocupado || ajustes.cocinaSaleEn === 'papel'}
+            alCambiar={(camarerosMarcan) => void guardar({ ...ajustes, camarerosMarcan })}
+          />
+          <Minutos
+            titulo="«¿Cuenta?» a los"
+            frase="Desde lo último servido o pedido, en una mesa que ha comido"
+            valor={ajustes.minutosParaLaCuenta}
+            desde={TOPES_DE_LOS_MINUTOS_PARA_LA_CUENTA.minimo}
+            hasta={TOPES_DE_LOS_MINUTOS_PARA_LA_CUENTA.maximo}
+            paso={5}
+            ocupado={ocupado}
+            alCambiar={(minutosParaLaCuenta) => void guardar({ ...ajustes, minutosParaLaCuenta })}
+          />
+        </section>
+      )}
 
       <p role="status" className="text-secundario text-texto-tenue">
         {guardado ? 'Guardado. La pantalla de cocina lo coge al momento.' : 'Se guarda solo.'}

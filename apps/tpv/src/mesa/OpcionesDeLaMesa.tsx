@@ -14,6 +14,7 @@ import {
   IconoCerrar,
   IconoImprimir,
   IconoJuntar,
+  IconoLeido as IconoServido,
   IconoMas,
   IconoMover,
   IconoPases,
@@ -34,6 +35,7 @@ import { elPase, losGruposDeLaCuenta } from '../logica/laCuenta.ts';
 import { comensales, cuantoLlevan, euros, eurosConSimbolo, losNombres } from '../logica/texto.ts';
 import { irAlPlano } from '../navegar.ts';
 import { LaCuenta } from './LaCuenta.tsx';
+import { LoServido } from './LoServido.tsx';
 
 /**
  * **La mesa, al tocarla** (0106, «MesaAcciones»; rehecha en la pausa del 5-nov, 0131).
@@ -42,8 +44,8 @@ import { LaCuenta } from './LaCuenta.tsx';
  * que abrir la mesa y luego «Ver la cuenta». Ahora, en una hoja **del alto de lo que lleva**:
  *
  *   · **los platos**, con cómo va cada uno (la misma cuenta que dentro de la mesa), y el total
- *   · abajo, **los botones de siempre**: Pedir, Cuenta (imprimirla) y Cobrar (apagado hasta que
- *     se cobre con Estook TPV, M20C)
+ *   · abajo, **los botones de siempre**: Pedir, Servido (si la sala marca lo servido, 0132),
+ *     Cuenta (imprimirla) y Cobrar (apagado hasta que se cobre con Estook TPV, M20C)
  *   · arriba, **tres iconos**: mover (cambiar de mesa, juntar, pasar a otro camarero), la nota
  *     para cocina y **«···»** con lo que se usa menos, lo que borra al final y en rojo
  *
@@ -66,7 +68,8 @@ export type PasoDeLaMesa =
   | 'personas'
   | 'alergias'
   | 'liberar'
-  | 'anular';
+  | 'anular'
+  | 'servido';
 
 /** De qué menú sale cada paso, para «Volver». */
 const VUELVE_A: Readonly<Partial<Record<PasoDeLaMesa, PasoDeLaMesa>>> = {
@@ -182,14 +185,26 @@ export function OpcionesDeLaMesa({
     </>
   );
 
+  const marcanServido = plano.marcanServido === true;
   const pie = (
-    <div className="grid grid-cols-3 gap-e2">
+    <div className={`grid gap-e2 ${marcanServido ? 'grid-cols-4' : 'grid-cols-3'}`}>
       <BotonDeLaMesa
         icono={IconoAnadir}
         texto="Pedir"
         principal
         {...(alAbrir === undefined ? { apagado: 'ya estás dentro' } : { onClick: alAbrir })}
       />
+      {/* **Servido** (0132): lo que el camarero lleva a la mesa, si el local lo deja. */}
+      {marcanServido && (
+        <BotonDeLaMesa
+          icono={IconoServido}
+          texto="Servido"
+          etiqueta="Marcar lo servido"
+          onClick={() => {
+            setPaso('servido');
+          }}
+        />
+      )}
       <BotonDeLaMesa
         icono={IconoCuenta}
         texto="Cuenta"
@@ -201,6 +216,12 @@ export function OpcionesDeLaMesa({
       <BotonDeLaMesa icono={IconoCobrar} texto="Cobrar" detalle="pronto" apagado="llega pronto" />
     </div>
   );
+
+  if (paso === 'servido') {
+    return (
+      <LoServido titulo={cuenta.titulo} mesa={mesa.data} alVolver={volver} alAcabar={volver} />
+    );
+  }
 
   return (
     <Hoja

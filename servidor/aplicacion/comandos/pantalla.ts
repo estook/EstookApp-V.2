@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TOPES_DE_LOS_MINUTOS_PARA_LA_CUENTA } from '@estook/dominio';
 import { tocarElServicio } from '../al-segundo.ts';
 import { comando, consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { laBarraDelLocal, laCocinaDelLocal, type SalidaLaCocina } from '../consultas/sala.ts';
@@ -69,20 +70,21 @@ export const laPantallaDeCocina = comando<{ llave: string }, LaPantallaDeCocina>
 
   async ejecutar(contexto, entrada) {
     return comoLaPantalla(contexto, entrada.llave, async (aparato, donde) => {
-      const [cocina, ajustes, nombres] = await Promise.all([
+      // La pantalla no lee personas: el nombre de quien lleva cada mesa, de pila, y el de quien
+      // marca servido o cambia un plato (0132).
+      const nombres = await contexto.sql<{ persona_id: string; nombre: string }[]>`
+        select persona_id::text as persona_id, nombre
+          from estook.los_nombres_de_la_sala(${aparato.localId}::uuid)
+      `;
+      const nombreDe = new Map(nombres.map((n) => [n.persona_id, n.nombre]));
+      const [cocina, ajustes] = await Promise.all([
         donde === 'barra'
-          ? laBarraDelLocal(contexto, aparato.localId)
-          : laCocinaDelLocal(contexto, aparato.localId),
+          ? laBarraDelLocal(contexto, aparato.localId, nombreDe)
+          : laCocinaDelLocal(contexto, aparato.localId, nombreDe),
         contexto.sql<{ aviso_min: number; tarde_min: number; suena: boolean }[]>`
           select aviso_min, tarde_min, suena from estook.la_cocina_del_local(${aparato.localId}::uuid)
         `,
-        contexto.sql<{ persona_id: string; nombre: string }[]>`
-          select persona_id::text as persona_id, nombre
-            from estook.los_nombres_de_la_sala(${aparato.localId}::uuid)
-        `,
       ]);
-      // La pantalla no lee personas: el nombre de quien lleva cada mesa, de pila.
-      const nombreDe = new Map(nombres.map((n) => [n.persona_id, n.nombre]));
       const conNombre = (t: SalidaLaCocina['enMarcha'][number]) => ({
         ...t,
         camarero: t.camareroId === null ? null : (nombreDe.get(t.camareroId) ?? t.camarero),
@@ -185,12 +187,25 @@ export interface LaCocinaYLaBarra {
   /** Dónde ve cada una lo suyo (T5 · 1, 0119): en su pantalla, en papel o en las dos. */
   readonly cocinaSaleEn: DondeSale;
   readonly barraSaleEn: DondeSale;
+  /** Los camareros también marcan lo servido (0132). */
+  readonly camarerosMarcan: boolean;
+  /** Los minutos de «¿Cuenta?» (0131, 0132). */
+  readonly minutosParaLaCuenta: number;
 }
 
 async function losDeLaCocina(contexto: Contexto, localId: string): Promise<LaCocinaYLaBarra> {
   const [filas, local] = await Promise.all([
-    contexto.sql<{ aviso_min: number; tarde_min: number; suena: boolean }[]>`
-      select aviso_min, tarde_min, suena from estook.la_cocina_del_local(${localId}::uuid)
+    contexto.sql<
+      {
+        aviso_min: number;
+        tarde_min: number;
+        suena: boolean;
+        camareros_marcan: boolean;
+        minutos_para_la_cuenta: number;
+      }[]
+    >`
+      select aviso_min, tarde_min, suena, camareros_marcan, minutos_para_la_cuenta
+        from estook.la_cocina_del_local(${localId}::uuid)
     `,
     loDelLocalParaImprimir(contexto, localId),
   ]);
@@ -202,6 +217,8 @@ async function losDeLaCocina(contexto: Contexto, localId: string): Promise<LaCoc
     suena: fila.suena,
     cocinaSaleEn: local.cocinaSaleEn,
     barraSaleEn: local.barraSaleEn,
+    camarerosMarcan: fila.camareros_marcan,
+    minutosParaLaCuenta: fila.minutos_para_la_cuenta,
   };
 }
 
@@ -225,6 +242,14 @@ const entradaCocinaYBarra = z
     suena: z.boolean(),
     cocina_sale_en: z.enum(['pantalla', 'papel', 'las_dos']).optional(),
     barra_sale_en: z.enum(['pantalla', 'papel', 'las_dos']).optional(),
+    /** Los camareros también marcan lo servido (0132). */
+    camareros_marcan: z.boolean().optional(),
+    minutos_para_la_cuenta: z
+      .number()
+      .int()
+      .min(TOPES_DE_LOS_MINUTOS_PARA_LA_CUENTA.minimo)
+      .max(TOPES_DE_LOS_MINUTOS_PARA_LA_CUENTA.maximo)
+      .optional(),
   })
   .strict()
   .refine((e) => e.tarde_min > e.aviso_min, {
@@ -250,7 +275,8 @@ export const guardarLaCocinaYLaBarra = comando<
       select estook.cambiar_lo_del_tpv_del_local(
         ${localId}::uuid, null, null, null, null, null,
         ${entrada.aviso_min}::smallint, ${entrada.tarde_min}::smallint, ${entrada.suena},
-        ${entrada.cocina_sale_en ?? null}, ${entrada.barra_sale_en ?? null}
+        ${entrada.cocina_sale_en ?? null}, ${entrada.barra_sale_en ?? null},
+        ${entrada.camareros_marcan ?? null}, ${entrada.minutos_para_la_cuenta ?? null}::smallint
       )
     `;
     return losDeLaCocina(contexto, localId);

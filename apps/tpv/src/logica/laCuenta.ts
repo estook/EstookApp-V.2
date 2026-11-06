@@ -1,5 +1,5 @@
 import { comoSeLeeElPeso, lasAlergiasQueLleva } from '@estook/dominio';
-import type { LaMesa, PlatoDeLaCuenta } from '../datos/tipos.ts';
+import type { EstadoDelPlato, LaMesa, PlatoDeLaCuenta } from '../datos/tipos.ts';
 import type { Borrador, LineaNueva } from './comanda.ts';
 
 /**
@@ -39,6 +39,13 @@ export interface LineaALaVista {
   readonly nueva: boolean;
   /** Pedida y guardada en la API pero sin mandar (desde otro aparato). */
   readonly guardada: boolean;
+  /** Para cambiarlo por otro (0132): su plato, y el menú de su línea si es de un menú. */
+  readonly platoId: string | null;
+  readonly menuDelPlato: string | null;
+  /** Cómo va, como lo dice Estook; nulo en lo de la tablet sin mandar. */
+  readonly estado: EstadoDelPlato | null;
+  /** El plato nuevo de un cambio: lo de antes, «1 Croquetas» (0132). */
+  readonly cambioDe: string | null;
 }
 
 export type ComoVaElPase = 'en_espera' | 'en_marcha' | 'ha_salido';
@@ -56,7 +63,11 @@ export function elDetalle(opciones: readonly string[], pesoGramos: number | null
   return partes.length === 0 ? null : partes.join(' · ');
 }
 
-function deLaApi(p: PlatoDeLaCuenta, alergias: readonly string[]): LineaALaVista {
+function deLaApi(
+  p: PlatoDeLaCuenta,
+  alergias: readonly string[],
+  menuDe: (lineaId: string) => string | null,
+): LineaALaVista {
   return {
     id: p.id,
     nombre: p.nombre,
@@ -76,6 +87,10 @@ function deLaApi(p: PlatoDeLaCuenta, alergias: readonly string[]): LineaALaVista
     pase: p.pase,
     nueva: false,
     guardada: p.estado === 'sin_mandar',
+    platoId: p.platoId,
+    menuDelPlato: p.parteDe === null ? null : menuDe(p.parteDe),
+    estado: p.estado,
+    cambioDe: p.cambioDe ?? null,
   };
 }
 
@@ -103,6 +118,10 @@ function delBorrador(l: LineaNueva): LineaALaVista {
     pase: l.pase,
     nueva: true,
     guardada: false,
+    platoId: l.platoId,
+    menuDelPlato: null,
+    estado: null,
+    cambioDe: null,
   };
 }
 
@@ -125,7 +144,8 @@ export function losGruposDeLaCuenta(
   const yaMandados = platos.filter((p) => p.estado !== 'sin_mandar');
   const grupos: GrupoDeLaCuenta[] = [];
   const alergias = mesa?.alergias ?? [];
-  const deLaApiConAlergias = (p: PlatoDeLaCuenta) => deLaApi(p, alergias);
+  const menuDe = (lineaId: string) => platos.find((x) => x.id === lineaId)?.menuId ?? null;
+  const deLaApiConAlergias = (p: PlatoDeLaCuenta) => deLaApi(p, alergias, menuDe);
 
   const bebidas = yaMandados.filter((p) => p.destino === 'barra' && p.parteDe === null);
   if (bebidas.length > 0) {

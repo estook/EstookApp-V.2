@@ -40,6 +40,8 @@ export const MOTIVOS_DE_MERMA = [
   'mal_estado',
   'roto',
   'fallo_de_elaboracion',
+  // El cliente cambió un plato que ya estaba hecho (0132): lo apunta la sala al cambiarlo.
+  'cambio_del_cliente',
   'comida_de_personal',
   'invitacion',
   'prueba_de_carta',
@@ -47,6 +49,14 @@ export const MOTIVOS_DE_MERMA = [
 ] as const;
 
 export type MotivoDeMerma = (typeof MOTIVOS_DE_MERMA)[number];
+
+/**
+ * Los que se eligen al apuntar una merma a mano. «Cambio del cliente» no: lo apunta la sala sola
+ * al cambiar un plato que ya estaba hecho (0132), y en la lista sería uno más que leer.
+ */
+export const MOTIVOS_PARA_APUNTAR_A_MANO: readonly MotivoDeMerma[] = MOTIVOS_DE_MERMA.filter(
+  (m) => m !== 'cambio_del_cliente',
+);
 
 export const PARTIDAS_DE_MERMA = ['perdida', 'personal', 'atencion'] as const;
 
@@ -64,6 +74,7 @@ export const NOMBRE_DEL_MOTIVO_DE_MERMA: Readonly<Record<MotivoDeMerma, string>>
   mal_estado: 'Estaba malo',
   roto: 'Se ha caído o roto',
   fallo_de_elaboracion: 'Ha salido mal',
+  cambio_del_cliente: 'Cambio del cliente',
   comida_de_personal: 'Comida del personal',
   invitacion: 'Invitación a un cliente',
   prueba_de_carta: 'Prueba o cata',
@@ -76,6 +87,8 @@ export const QUE_ES_CADA_MOTIVO: Readonly<Record<MotivoDeMerma, string>> = {
   mal_estado: 'Llegó mal, se cortó, olía mal',
   roto: 'Se cayó al suelo, se rompió el envase',
   fallo_de_elaboracion: 'Se quemó, se pasó de sal, se rehízo el plato',
+  cambio_del_cliente:
+    'El cliente cambió un plato que ya estaba hecho. Lo apunta la sala al cambiarlo',
   comida_de_personal: 'Lo que come el equipo. No es una pérdida: es gasto de personal',
   invitacion: 'Se le puso a un cliente sin cobrarlo',
   prueba_de_carta: 'Una cata, una foto, probar un plato nuevo',

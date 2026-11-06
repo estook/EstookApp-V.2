@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MOTIVOS_DE_MERMA } from './merma.ts';
+import { MOTIVOS_DE_MERMA, MOTIVOS_PARA_APUNTAR_A_MANO } from './merma.ts';
 import { TIPOS_DE_MOVIMIENTO } from './almacen.ts';
 import {
   FAMILIAS_DE_SALIDA,
@@ -29,8 +29,12 @@ describe('por qué sale el género', () => {
   it('los siete motivos de merma de la 0028 están, y se apuntan como merma', () => {
     const comoMerma = MOTIVOS_DE_SALIDA.filter((motivo) => esMerma(motivo));
     // Todos los de la lista cerrada menos «otro», que al sacar género no es una
-    // pérdida: es una salida con su nota.
-    expect([...comoMerma].sort()).toEqual([...MOTIVOS_DE_MERMA.filter((m) => m !== 'otro')].sort());
+    // pérdida: es una salida con su nota; y menos «cambio del cliente», que lo apunta
+    // la sala sola al cambiar un plato hecho (0132).
+    expect([...comoMerma].sort()).toEqual(
+      [...MOTIVOS_PARA_APUNTAR_A_MANO.filter((m) => m !== 'otro')].sort(),
+    );
+    expect(MOTIVOS_DE_MERMA).toContain('cambio_del_cliente');
     for (const motivo of comoMerma) {
       expect(QUE_ES_CADA_SALIDA[motivo].tipo).toBe('merma');
       expect(QUE_ES_CADA_SALIDA[motivo].motivoDeMerma).toBe(motivo);

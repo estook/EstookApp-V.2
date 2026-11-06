@@ -65,7 +65,8 @@ const CORTAR: PiezaDelPapel = { tipo: 'cortar' };
 // ═══ La comanda ═════════════════════════════════════════════════════════════════
 
 /** Por qué sale este papel en cocina o en la barra. */
-export type QueSaleEnLaComanda = 'nueva' | 'marcha' | 'anulado' | 'vuelve';
+/** `cambio` (0132): el plato nuevo de un plato cambiado, con «En lugar de» lo de antes. */
+export type QueSaleEnLaComanda = 'nueva' | 'marcha' | 'anulado' | 'vuelve' | 'cambio';
 
 export interface LineaDeLaComanda {
   readonly cantidad: number;
@@ -101,7 +102,7 @@ export interface LaComandaQueSeImprime {
   /** Lo de llevar programado (0121): «21:30», en la hora del local. */
   readonly paraLas?: string | null;
   readonly pases: readonly PaseDeLaComanda[];
-  /** Por qué se anula o por qué vuelve. */
+  /** Por qué se anula o por qué vuelve; en un cambio, lo que había antes («1 Croquetas»). */
   readonly motivo: string | null;
   /** Quién lo quita y quién lo aprueba, en lo anulado. */
   readonly quien: string | null;
@@ -120,6 +121,7 @@ const TITULO: Record<QueSaleEnLaComanda, string | null> = {
   marcha: null,
   anulado: 'ANULADO',
   vuelve: 'VUELVE',
+  cambio: 'CAMBIO',
 };
 
 function nombreDeLaAlergia(a: Alergeno): string {
@@ -203,7 +205,12 @@ export function laComandaEnPapel(c: LaComandaQueSeImprime): PapelCompuesto {
 
   if (c.motivo !== null && c.motivo.trim() !== '') {
     piezas.push(RAYA);
-    piezas.push(texto(`Motivo: ${c.motivo.trim()}`));
+    // En un cambio, lo de antes, bien grande: es lo que el cocinero tiene que dejar de hacer.
+    if (c.que === 'cambio') {
+      piezas.push(texto(`EN LUGAR DE: ${c.motivo.trim()}`, { tamano: 'doble', negrita: true }));
+    } else {
+      piezas.push(texto(`Motivo: ${c.motivo.trim()}`));
+    }
   }
   if (c.quien !== null && c.quien.trim() !== '') piezas.push(texto(c.quien.trim()));
   piezas.push(RAYA);

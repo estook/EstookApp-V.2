@@ -17,6 +17,16 @@ import { NOMBRE_CORTO_DEL_ALERGENO, type Alergeno } from './referencia.ts';
 
 export const VERSION_DEL_PAPEL = 1;
 
+/**
+ * **La versión del papel que lleva el QR tributario** (T6 · 2 · 1, decisión 0136). Solo lo que
+ * lleva un QR la usa: una caja para Windows de antes de la 1.3.0 no sabe imprimir un QR y
+ * **dice que no sabe** (`esPapelCompuesto`) en vez de romperse a medias; las comandas y las
+ * cuentas siguen en la 1 y le llegan como siempre.
+ */
+export const VERSION_DEL_PAPEL_CON_QR = 2;
+
+export type VersionDelPapel = typeof VERSION_DEL_PAPEL | typeof VERSION_DEL_PAPEL_CON_QR;
+
 export type Alineacion = 'izquierda' | 'centro' | 'derecha';
 
 /** «doble» es el doble de alto y de ancho; «grande», el triple: la mesa en la comanda. */
@@ -43,15 +53,23 @@ export type PiezaDelPapel =
   | { readonly tipo: 'hueco'; readonly lineas: number }
   | { readonly tipo: 'cortar' }
   /** Abrir el cajón enchufado a esa impresora (Anexo 10.6). */
-  | { readonly tipo: 'cajon' };
+  | { readonly tipo: 'cajon' }
+  /**
+   * **Un QR** con lo que lleva dentro (la dirección de cotejo de la AEAT), de `milimetros` de
+   * lado: el tributario va **entre 30 y 40 mm** (Orden HAC/1177/2024, art. 21; Anexo 4.7). Lo
+   * dibuja la impresora con su orden de QR, con corrección de errores M, centrado.
+   */
+  | { readonly tipo: 'qr'; readonly contenido: string; readonly milimetros: number };
 
 export interface PapelCompuesto {
-  readonly version: typeof VERSION_DEL_PAPEL;
+  readonly version: VersionDelPapel;
   readonly piezas: readonly PiezaDelPapel[];
 }
 
 function papel(piezas: readonly PiezaDelPapel[]): PapelCompuesto {
-  return { version: VERSION_DEL_PAPEL, piezas };
+  // Con un QR, la versión que lo sabe imprimir; sin él, la de siempre.
+  const conQr = piezas.some((p) => p.tipo === 'qr');
+  return { version: conQr ? VERSION_DEL_PAPEL_CON_QR : VERSION_DEL_PAPEL, piezas };
 }
 
 const texto = (
@@ -326,5 +344,173 @@ export function abrirElCajonEnPapel(): PapelCompuesto {
 export function esPapelCompuesto(valor: unknown): valor is PapelCompuesto {
   if (typeof valor !== 'object' || valor === null) return false;
   const v = valor as { version?: unknown; piezas?: unknown };
-  return v.version === VERSION_DEL_PAPEL && Array.isArray(v.piezas);
+  return (
+    (v.version === VERSION_DEL_PAPEL || v.version === VERSION_DEL_PAPEL_CON_QR) &&
+    Array.isArray(v.piezas)
+  );
+}
+
+// ═══ El ticket y el justificante (T6 · 2 · 1) ═════════════════════════════════════
+
+/** El lado del QR tributario impreso: en medio de los 30 a 40 mm de la Orden (Anexo 4.7). */
+export const MILIMETROS_DEL_QR = 35;
+
+/** Lo que va arriba y abajo de un papel de pruebas (Anexo 4.12). */
+export const PRUEBA_SIN_VALIDEZ = 'PRUEBA · SIN VALIDEZ';
+
+export interface LaEmpresaEnElPapel {
+  /** El nombre comercial del local, grande. */
+  readonly local: string;
+  /** El nombre o la razón social, como la tiene Hacienda. */
+  readonly nombre: string;
+  readonly nif: string;
+  /** «Calle Mayor 12, 48001 Bilbao». */
+  readonly domicilio: string;
+}
+
+export interface LineaDelTicket {
+  readonly cantidad: number;
+  readonly nombre: string;
+  readonly importeCentimos: number;
+}
+
+export interface ImpuestoDelTicket {
+  /** «IVA 10 %» o «IGIC 7 %». */
+  readonly nombre: string;
+  readonly baseCentimos: number;
+  readonly cuotaCentimos: number;
+}
+
+export interface ElTicketQueSeImprime {
+  readonly empresa: LaEmpresaEnElPapel;
+  /** «T-IKA-2026-000037». */
+  readonly numero: string;
+  /** «06/11/2026 14:31», en la hora del local. */
+  readonly cuando: string;
+  /** «Mesa 6 · Sara», o nada. */
+  readonly donde: string | null;
+  readonly lineas: readonly LineaDelTicket[];
+  readonly impuestos: readonly ImpuestoDelTicket[];
+  readonly totalCentimos: number;
+  /** Lo que lleva el QR tributario: la dirección de cotejo que devuelve Verifacti. */
+  readonly qr: string | null;
+  readonly pruebas: boolean;
+  readonly copia: boolean;
+}
+
+const MARCA_DE_PRUEBAS = texto(` ${PRUEBA_SIN_VALIDEZ} `, { alinear: 'centro', negativo: true });
+
+function empresaEnPapel(e: LaEmpresaEnElPapel): PiezaDelPapel[] {
+  return [
+    texto(e.local, { alinear: 'centro', tamano: 'doble', negrita: true }),
+    texto(e.nombre, { alinear: 'centro' }),
+    texto(`NIF ${e.nif}`, { alinear: 'centro' }),
+    texto(e.domicilio, { alinear: 'centro' }),
+  ];
+}
+
+function lineasEnPapel(lineas: readonly LineaDelTicket[]): PiezaDelPapel[] {
+  return lineas.map((l) => ({
+    tipo: 'dos_columnas',
+    izquierda: `${String(l.cantidad)} ${l.nombre}`,
+    derecha: importeEnElPapel(l.importeCentimos),
+  }));
+}
+
+/**
+ * **El ticket** (factura simplificada, F2; Anexo 4.6 y 4.7): **el QR tributario primero**, con
+ * «QR tributario:» encima y «VERI*FACTU» debajo (Orden HAC/1177/2024, art. 21); después quién lo
+ * emite, el número, la fecha, lo vendido, el total y el impuesto incluido. Fuera de VERI*FACTU,
+ * por el SII, sin QR ni leyenda (0127). En pruebas, «PRUEBA · SIN VALIDEZ» arriba y abajo.
+ * Reimprimir pinta exactamente esto, con «COPIA».
+ */
+export function elTicketEnPapel(t: ElTicketQueSeImprime): PapelCompuesto {
+  const piezas: PiezaDelPapel[] = [];
+  if (t.pruebas) piezas.push(MARCA_DE_PRUEBAS);
+  if (t.qr !== null) {
+    piezas.push(texto('QR tributario:', { alinear: 'centro' }));
+    piezas.push({ tipo: 'qr', contenido: t.qr, milimetros: MILIMETROS_DEL_QR });
+    piezas.push(texto('VERI*FACTU', { alinear: 'centro', negrita: true }));
+    piezas.push(RAYA);
+  }
+  piezas.push(...empresaEnPapel(t.empresa));
+  piezas.push(RAYA);
+  piezas.push(texto('Factura simplificada', { alinear: 'centro', negrita: true }));
+  if (t.copia) piezas.push(texto(' COPIA ', { negativo: true, alinear: 'centro' }));
+  piezas.push(texto(t.numero, { alinear: 'centro', negrita: true }));
+  piezas.push(texto(t.cuando, { alinear: 'centro' }));
+  if (t.donde !== null && t.donde !== '') piezas.push(texto(t.donde, { alinear: 'centro' }));
+  piezas.push(RAYA);
+  piezas.push(...lineasEnPapel(t.lineas));
+  piezas.push(RAYA);
+  piezas.push({
+    tipo: 'dos_columnas',
+    izquierda: 'TOTAL',
+    derecha: `${importeEnElPapel(t.totalCentimos)} EUR`,
+    negrita: true,
+  });
+  for (const i of t.impuestos) {
+    piezas.push({
+      tipo: 'dos_columnas',
+      izquierda: `${i.nombre} incluido`,
+      derecha: importeEnElPapel(i.cuotaCentimos),
+    });
+    piezas.push({
+      tipo: 'dos_columnas',
+      izquierda: 'Base',
+      derecha: importeEnElPapel(i.baseCentimos),
+    });
+  }
+  piezas.push(RAYA);
+  piezas.push(texto('¿Quieres factura? Pídela en la barra.', { alinear: 'centro' }));
+  if (t.pruebas) piezas.push(MARCA_DE_PRUEBAS);
+  piezas.push(CORTAR);
+  return papel(piezas);
+}
+
+export interface ElJustificanteQueSeImprime {
+  readonly empresa: LaEmpresaEnElPapel;
+  readonly cuando: string;
+  readonly donde: string | null;
+  readonly lineas: readonly LineaDelTicket[];
+  readonly totalCentimos: number;
+  /** El código con el que se recoge el ticket cuando se emita. */
+  readonly codigo: string;
+  readonly pruebas: boolean;
+}
+
+/**
+ * **El justificante provisional de venta** (Anexo 4.11): lo que se da cuando no se llega a
+ * Verifacti. Lleva lo mismo que el ticket, **dice claramente que no es una factura**, y no lleva
+ * número de serie fiscal, ni QR tributario, ni la leyenda. Con su código se recoge el ticket
+ * cuando se emita. **[VERIFICAR con el asesor el texto]**: sale como lo pide el Anexo.
+ */
+export function elJustificanteEnPapel(j: ElJustificanteQueSeImprime): PapelCompuesto {
+  const piezas: PiezaDelPapel[] = [];
+  if (j.pruebas) piezas.push(MARCA_DE_PRUEBAS);
+  piezas.push(...empresaEnPapel(j.empresa));
+  piezas.push(RAYA);
+  piezas.push(texto('JUSTIFICANTE PROVISIONAL DE VENTA', { alinear: 'centro', negrita: true }));
+  piezas.push(texto(' NO ES UNA FACTURA ', { alinear: 'centro', negativo: true }));
+  piezas.push(texto(j.cuando, { alinear: 'centro' }));
+  if (j.donde !== null && j.donde !== '') piezas.push(texto(j.donde, { alinear: 'centro' }));
+  piezas.push(RAYA);
+  piezas.push(...lineasEnPapel(j.lineas));
+  piezas.push(RAYA);
+  piezas.push({
+    tipo: 'dos_columnas',
+    izquierda: 'TOTAL',
+    derecha: `${importeEnElPapel(j.totalCentimos)} EUR`,
+    negrita: true,
+  });
+  piezas.push(RAYA);
+  piezas.push(
+    texto('Hacienda no responde ahora. Tu ticket se emite en cuanto vuelva, con este código:', {
+      alinear: 'centro',
+    }),
+  );
+  piezas.push(texto(j.codigo, { alinear: 'centro', tamano: 'doble', negrita: true }));
+  if (j.pruebas) piezas.push(MARCA_DE_PRUEBAS);
+  piezas.push(CORTAR);
+  return papel(piezas);
 }

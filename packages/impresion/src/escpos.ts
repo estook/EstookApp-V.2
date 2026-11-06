@@ -21,6 +21,108 @@ export interface ComoEsLaImpresora {
 export const IMPRESORA_DE_80_MM: ComoEsLaImpresora = { columnas: 48 };
 export const IMPRESORA_DE_58_MM: ComoEsLaImpresora = { columnas: 32 };
 
+/**
+ * **Puntos por milímetro** de una impresora de tickets: 203 ppp, que son 8 por milímetro en las
+ * de 80 y en las de 58 mm. Con esto se calcula el tamaño de cada módulo del QR.
+ */
+export const PUNTOS_POR_MM = 8;
+
+/**
+ * Cuántos caracteres caben en un QR de cada versión, en modo de bytes y con corrección de
+ * errores M (ISO/IEC 18004, tabla 7). La versión 1 es 21 × 21 módulos, y cada una suma 4.
+ */
+const CABEN_CON_M = [14, 26, 42, 62, 84, 106, 122, 152, 180, 213, 251, 287, 331, 362, 412];
+
+/** La versión más pequeña en la que cabe, y sus módulos de lado. */
+export function laVersionDelQr(caracteres: number): { version: number; modulos: number } {
+  const i = CABEN_CON_M.findIndex((caben) => caben >= caracteres);
+  const version = i < 0 ? CABEN_CON_M.length : i + 1;
+  return { version, modulos: 17 + 4 * version };
+}
+
+/**
+ * **El tamaño de cada módulo**, en puntos, para que el QR mida lo más cerca posible de los
+ * milímetros pedidos **sin salirse de 30 a 40 mm** (Orden HAC/1177/2024, art. 21). La impresora
+ * admite de 1 a 16.
+ */
+export function elModuloDelQr(caracteres: number, milimetros: number): number {
+  const { modulos } = laVersionDelQr(caracteres);
+  const mide = (modulo: number) => (modulo * modulos) / PUNTOS_POR_MM;
+  let modulo = Math.max(1, Math.min(16, Math.round((milimetros * PUNTOS_POR_MM) / modulos)));
+  while (modulo < 16 && mide(modulo) < 30) modulo += 1;
+  while (modulo > 1 && mide(modulo) > 40) modulo -= 1;
+  return modulo;
+}
+
+/**
+ * **El QR, con la orden propia de la impresora** (`GS ( k`, modelo 2): el tamaño del módulo, la
+ * corrección de errores M, los datos y que lo imprima, centrado. Lo que lleva dentro es la
+ * dirección de cotejo de la AEAT, que es ASCII: va tal cual, sin la página 858.
+ */
+export function elQrEnEscPos(contenido: string, milimetros: number): number[] {
+  const datos = Array.from(contenido, (letra) => {
+    const codigo = letra.charCodeAt(0);
+    return codigo < 0x20 || codigo > 0x7e ? 0x3f : codigo;
+  });
+  const largo = datos.length + 3;
+  return [
+    ESC,
+    0x61,
+    1,
+    // Modelo 2.
+    GS,
+    0x28,
+    0x6b,
+    4,
+    0,
+    0x31,
+    0x41,
+    0x32,
+    0,
+    // El módulo, en puntos.
+    GS,
+    0x28,
+    0x6b,
+    3,
+    0,
+    0x31,
+    0x43,
+    elModuloDelQr(datos.length, milimetros),
+    // Corrección de errores M (Anexo 4.7).
+    GS,
+    0x28,
+    0x6b,
+    3,
+    0,
+    0x31,
+    0x45,
+    0x31,
+    // Los datos.
+    GS,
+    0x28,
+    0x6b,
+    largo % 256,
+    Math.floor(largo / 256),
+    0x31,
+    0x50,
+    0x30,
+    ...datos,
+    // Imprimirlo.
+    GS,
+    0x28,
+    0x6b,
+    3,
+    0,
+    0x31,
+    0x51,
+    0x30,
+    LF,
+    ESC,
+    0x61,
+    0,
+  ];
+}
+
 const ESC = 0x1b;
 const GS = 0x1d;
 const LF = 0x0a;
@@ -229,6 +331,8 @@ function unaPieza(pieza: PiezaDelPapel, impresora: ComoEsLaImpresora): number[] 
       return CORTAR;
     case 'cajon':
       return CAJON;
+    case 'qr':
+      return elQrEnEscPos(pieza.contenido, pieza.milimetros);
   }
 }
 

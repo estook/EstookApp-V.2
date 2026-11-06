@@ -1223,9 +1223,14 @@ export type {
 
 // ── T5 · 1 · Imprimir (0119): el formato intermedio y lo que lleva cada papel ──
 export {
+  MILIMETROS_DEL_QR,
+  PRUEBA_SIN_VALIDEZ,
   VERSION_DEL_PAPEL,
+  VERSION_DEL_PAPEL_CON_QR,
   abrirElCajonEnPapel,
+  elJustificanteEnPapel,
   elNombreDelPase,
+  elTicketEnPapel,
   esPapelCompuesto,
   importeEnElPapel,
   laComandaEnPapel,
@@ -1234,6 +1239,12 @@ export {
 } from './impresion.ts';
 export type {
   Alineacion,
+  ElJustificanteQueSeImprime,
+  ElTicketQueSeImprime,
+  ImpuestoDelTicket,
+  LaEmpresaEnElPapel,
+  LineaDelTicket,
+  VersionDelPapel,
   LaComandaQueSeImprime,
   LaCuentaQueSeImprime,
   LaPruebaQueSeImprime,
@@ -1327,3 +1338,41 @@ export type {
   TerritorioDelLocal,
   TipoDeSerie,
 } from './facturacion.ts';
+
+// ── T6 · 2 · 1 · Emitir (0136): el número, lo que va a Verifacti y cómo está ──
+export {
+  A_MEDIAS_DESDE_MS,
+  ESPERA_DE_VERIFACTI_MS,
+  LA_CHAPA,
+  LIMITE_DEL_TICKET,
+  LINEAS_DE_DESGLOSE,
+  NOMBRE_DEL_DOCUMENTO,
+  PENDIENTE_DEMASIADO_MS,
+  POR_QUE_NO_SE_EMITE,
+  elCuerpoParaVerifacti,
+  elDesglose,
+  elEstadoDeVerifacti,
+  elEstadoDelDocumento,
+  elNumeroEntero,
+  faltaAlgo,
+  fechaParaVerifacti,
+  hayQueHacerAlgo,
+  importeDelDocumento,
+  importeParaVerifacti,
+  loQueDiceEnLlano,
+  numeroEnTexto,
+  porQueNoSeEmite,
+  tipoParaVerifacti,
+} from './emitir.ts';
+export type {
+  ApunteDelDocumento,
+  CuerpoParaVerifacti,
+  DocumentoParaEmitir,
+  ElDesglose,
+  EstadoDelDocumento,
+  LineaDeDesglose,
+  LineaVendida,
+  LoQueDiceEnLlano,
+  PorQueNoSeEmite,
+  TipoDeDocumento,
+} from './emitir.ts';

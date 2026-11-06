@@ -1,8 +1,12 @@
 export {
   IMPRESORA_DE_58_MM,
   IMPRESORA_DE_80_MM,
+  PUNTOS_POR_MM,
   PREGUNTAR_POR_EL_PAPEL,
   aEscPos,
+  elModuloDelQr,
+  elQrEnEscPos,
+  laVersionDelQr,
   comoEstaElPapel,
   enDosColumnas,
   enLaPagina858,

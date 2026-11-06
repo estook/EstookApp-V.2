@@ -1,4 +1,4 @@
-import { centimos, enEuros, type Centimos } from './dinero.ts';
+import { centimos, enEuros } from './dinero.ts';
 import { desglosar } from './fiscal/desglose.ts';
 import type { Regimen } from './fiscal/vocabulario.ts';
 import type { FechaOperativa } from './tiempo.ts';
@@ -154,7 +154,8 @@ export function fechaParaVerifacti(fecha: FechaOperativa): string {
 /** Céntimos → «12.34» o «-5.00»: punto decimal y dos decimales, siempre en euros (4.9). */
 export function importeParaVerifacti(importe: number): string {
   const signo = importe < 0 ? '-' : '';
-  const absoluto = Math.abs(Math.round(importe));
+  // Céntimos enteros (regla 9): no hay nada que redondear.
+  const absoluto = Math.abs(centimos(importe));
   return `${signo}${String(Math.floor(absoluto / 100))}.${String(absoluto % 100).padStart(2, '0')}`;
 }
 
@@ -378,6 +379,6 @@ export function loQueDiceEnLlano(
 
 /** «12,30 €», con el signo de menos de verdad si es negativo. */
 export function importeDelDocumento(importe: number): string {
-  const texto = `${enEuros(centimos(Math.abs(importe)) as Centimos)} €`;
+  const texto = `${enEuros(centimos(Math.abs(importe)))} €`;
   return importe < 0 ? `−${texto}` : texto;
 }

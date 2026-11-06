@@ -48,7 +48,8 @@ export function laVersionDelQr(caracteres: number): { version: number; modulos: 
 export function elModuloDelQr(caracteres: number, milimetros: number): number {
   const { modulos } = laVersionDelQr(caracteres);
   const mide = (modulo: number) => (modulo * modulos) / PUNTOS_POR_MM;
-  let modulo = Math.max(1, Math.min(16, Math.round((milimetros * PUNTOS_POR_MM) / modulos)));
+  // Puntos de la impresora, no dinero: el más cercano por debajo, y los dos bucles lo ajustan.
+  let modulo = Math.max(1, Math.min(16, Math.floor((milimetros * PUNTOS_POR_MM) / modulos)));
   while (modulo < 16 && mide(modulo) < 30) modulo += 1;
   while (modulo > 1 && mide(modulo) > 40) modulo -= 1;
   return modulo;

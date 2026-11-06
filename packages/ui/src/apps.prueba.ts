@@ -435,15 +435,23 @@ describe('lo construido y lo que llega', () => {
   });
 
   it('si ninguna vista esta construida, se entra por la primera', () => {
-    // Servicio · Ventas es M20 entero: las cuatro vistas están pendientes. La
-    // dirección tiene que seguir siendo copiable, así que se entra por la primera
-    // y el destino enseña su cartel.
+    // La dirección tiene que seguir siendo copiable, así que se entra por la primera y el
+    // destino enseña su cartel. (Era Servicio · Ventas hasta que llegó «Tickets y facturas».)
     const ventas = laApp('servicio').destinos.find((d) => d.id === 'ventas');
-    expect(ventas, 'Servicio ya no tiene Ventas').toBeDefined();
-    if (ventas === undefined) throw new Error('ventas');
+    if (ventas === undefined) throw new Error('Servicio ya no tiene Ventas');
+    const nadaHecho = {
+      ...ventas,
+      vistas: ventas.vistas.map((v) => ({ ...v, modulo: v.modulo ?? 'M99' })),
+    };
+    expect(vistasConstruidas(nadaHecho)).toHaveLength(0);
+    expect(dondeEntraEnElDestino(nadaHecho)?.id).toBe('del-turno');
+  });
 
-    expect(vistasConstruidas(ventas)).toHaveLength(0);
-    expect(dondeEntraEnElDestino(ventas)?.id).toBe('del-turno');
+  it('Servicio · Ventas entra por «Tickets y facturas», que es lo construido (0136)', () => {
+    const ventas = laApp('servicio').destinos.find((d) => d.id === 'ventas');
+    if (ventas === undefined) throw new Error('Servicio ya no tiene Ventas');
+    expect(vistasConstruidas(ventas).map((v) => v.id)).toEqual(['tickets-y-facturas']);
+    expect(dondeEntraEnElDestino(ventas)?.id).toBe('tickets-y-facturas');
   });
 
   it('un destino sin vistas no tiene vista de entrada', () => {

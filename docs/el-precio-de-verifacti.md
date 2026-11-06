@@ -1,7 +1,10 @@
 # El precio de Verifacti, y qué decide
 
 > **Al día el 6 de noviembre de 2026** ([0135](decisiones/0135-r4-precios-ia-y-papeles.md)):
-> el precio que vale es **14,99 € al mes el primer NIF y 1,99 € cada NIF más**, sin IVA. La
+> el precio que vale es **14,99 € al mes el primer NIF y 1,99 € cada NIF más**, sin IVA: **la
+> oferta de startup que Verifacti le dio a Richi** al ponerse en contacto con ellos. Su web
+> pública va por tramos (del 2 al 5, 5,99 €; del 6 al 35, 3,39 €…), y no es el nuestro
+> ([0136](decisiones/0136-t6-2-1-el-motor-y-el-ticket.md)). La
 > cuenta de lo que cuesta y deja cada local, con todo, está en
 > [`coste-por-local.md`](coste-por-local.md); aquí, lo que Verifacti ofrece y lo que decide.
 
@@ -24,8 +27,9 @@ Y la letra pequeña de la propuesta del 21-sep-2026, que es donde está lo que i
   Manifiesto; queda confirmado.
 - **Solo cuentan los NIF activos en producción.** Las pruebas no se pagan.
 - **Sin coste de instalación.**
-- **Hasta 3.000 facturas al mes por NIF.** A partir de ahí, **0,002 € por factura**.
-  **[VERIFICAR]** que con el precio de 14,99 € siga siendo así.
+- **Hasta 3.000 registros al mes por NIF.** A partir de ahí, **2 € por cada 1.000** (0,002 €
+  cada uno). Confirmado en su página de precios el 6-nov-2026: cuenta cada alta, cambio o
+  anulación, y la operativa no se para nunca.
 
 ---
 
@@ -67,9 +71,7 @@ Cadena exista.
    registros—, así que hay que confirmar que desactivar sí quita el cobro.
 2. **¿Las facturas extra se cuentan por NIF o en total?** Cambia mucho en una cadena
    con un NIF y cinco locales.
-3. **Si las 3.000 facturas incluidas por NIF y los 0,002 € de más siguen igual** con
-   este precio.
-4. **Mensual al principio**, sin permanencia, y se pasa a anual cuando haya volumen.
+3. **Mensual al principio**, sin permanencia, y se pasa a anual cuando haya volumen.
 
 ---
 

@@ -1068,3 +1068,8 @@
      para Windows daba por hecho que la mesa se abría en «Lo más pedido» y GitHub salió en rojo (Richi
      lo vio, 6-nov). **Cuando cambia cómo se comporta una pantalla, antes de subir se pasan todas las
      pruebas que abren esa app** (en el TPV, las que usan el puerto 5178), en los tres navegadores.
+254. **Un cambio solo de documentos también rompe pruebas.** La #168 tocaba solo papeles y salió en
+     rojo: `packages/ui/src/apps.prueba.ts` lee el Plan y cuenta sus fichas de módulo, y M20D y M31
+     subieron la cuenta de 34 a 36 (6-nov). **Antes de subir un cambio de los maestros, se pasan las
+     pruebas que leen documentos** (`apps.prueba.ts`, la de ESTADO, la de los enlaces, la del
+     lanzador, la de las variables y `se-usan.prueba.ts`), no solo el formato.

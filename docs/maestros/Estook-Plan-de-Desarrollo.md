@@ -72,17 +72,17 @@ El riesgo principal de construir esto con una IA es que a mitad de camino olvide
 
 **Los documentos van al día en el mismo pull request que el cambio**, nunca después. Qué se toca con cada cosa:
 
-| Si el cambio…                                       | Se actualiza                                                                                |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Cualquiera                                          | `ESTADO.md`                                                                                 |
-| Decide algo de producto o de cómo está hecho        | Una decisión nueva en `docs/decisiones/` y su línea en el `LEEME`                           |
-| Contradice o mejora un maestro                      | El maestro, su línea en `docs/maestros/CAMBIOS.md` y sus PDF (`pnpm maestros`)              |
-| Cambia qué queda, en qué orden o qué deja preparado | `docs/MAPA-de-modulos.md`                                                                   |
-| Cierra una entrega                                  | `docs/historia-de-los-modulos.md` y lo decidido por la IA en `docs/lo-que-decidio-la-ia.md` |
-| Le pide algo a Richi (fusionar, migrar, desplegar…) | Los pasos de la fase (`docs/historia/pasos/pasos-de-m9.md` hoy)                             |
-| Nace de un fallo                                    | Una lección en `docs/lecciones.md`, y su prueba                                             |
-| Toca lo legal, una clave o un servicio de fuera     | `docs/legal/`, `config/claves.md` o la Arquitectura (capítulos 10 a 13)                     |
-| Toca Estook TPV o la facturación                    | El Anexo, que manda en lo suyo                                                              |
+| Si el cambio…                                       | Se actualiza                                                                                    |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Cualquiera                                          | `ESTADO.md`                                                                                     |
+| Decide algo de producto o de cómo está hecho        | Una decisión nueva en `docs/decisiones/` y su línea en el `LEEME`                               |
+| Contradice o mejora un maestro                      | El maestro y su línea en `docs/maestros/CAMBIOS.md`; el PDF se saca al leerlo (`pnpm maestros`) |
+| Cambia qué queda, en qué orden o qué deja preparado | `docs/MAPA-de-modulos.md`                                                                       |
+| Cierra una entrega                                  | `docs/historia-de-los-modulos.md` y lo decidido por la IA en `docs/lo-que-decidio-la-ia.md`     |
+| Le pide algo a Richi (fusionar, migrar, desplegar…) | Los pasos de la fase (`docs/historia/pasos/pasos-de-m9.md` hoy)                                 |
+| Nace de un fallo                                    | Una lección en `docs/lecciones.md`, y su prueba                                                 |
+| Toca lo legal, una clave o un servicio de fuera     | `docs/legal/`, `config/claves.md` o la Arquitectura (capítulos 10 a 13)                         |
+| Toca Estook TPV o la facturación                    | El Anexo, que manda en lo suyo                                                                  |
 
 **La plantilla de tarea.** Ninguna tarea se pide ni se acepta sin estos ocho apartados:
 
@@ -113,7 +113,7 @@ El riesgo principal de construir esto con una IA es que a mitad de camino olvide
 
 **Dependencias en un solo sentido:** `apps → packages`, `api → aplicacion → dominio`, y el dominio no importa nada de infraestructura ni de red. Se comprueba en integración continua con `dependency-cruiser`.
 
-> **Los documentos maestros viven en el repositorio.** Su fuente es el Markdown de `docs/maestros/` y el PDF es lo que sale, generado con `pnpm maestros`. Es la misma regla que el resto del producto: los documentos son salidas, nunca entradas.
+> **Los documentos maestros viven en el repositorio.** Su fuente es el Markdown de `docs/maestros/` y el PDF es lo que sale, generado con `pnpm maestros` cuando se quiere leer en PDF, y **no se sube**: una copia vieja decía cosas que el Markdown ya no dice ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)). Es la misma regla que el resto del producto: los documentos son salidas, nunca entradas.
 
 ## A5 · Las superficies, y dónde vive cada cosa
 
@@ -471,7 +471,7 @@ Una página por app, por tipo de local y por caso de uso, cada una con su títul
 
 # D · Los módulos
 
-**32 módulos, de M0 a M31, más M6½ y los cuatro del TPV (M20A, M20B, M20C y M20D)**; M20D y M31, propuestos el 6-nov-2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)). Cada uno se entrega funcionando, probado en móvil real y con datos de verdad. **Ninguno se da por bueno «al 90 %».**
+**32 módulos, de M0 a M31, más M6½ y los cuatro del TPV (M20A, M20B, M20C y M20D)**; M20D y M31, añadidos el 6-nov-2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)). Cada uno se entrega funcionando, probado en móvil real y con datos de verdad. **Ninguno se da por bueno «al 90 %».**
 
 **Las fichas van por fases, y el orden en el que se construyen es este** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)). Los números no cambian, para no romper las referencias de las decisiones ya escritas.
 
@@ -734,7 +734,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 > **Orden de construcción, desde el 23-oct-2026** ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)), en siete entregas de Estook TPV:
 >
-> **M16a → M20A · 1 → T1 · La puerta → T2 · La sala → T3 · Los productos → T4 · La cocina y la barra → T5 · La caja para Windows (M19a y M20A · 2) → T6 · M20B → T7 · M20C con M20 → T8 · M20D · Estook TPV para Android**, justo después de M10 (T8, propuesto en la [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), pendiente de Richi); y **M18 y M19b**, al final de la Fase 3. Qué deja cada una y cuándo se da por buena, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md); qué hace cada pantalla, en el Anexo, capítulo 11.
+> **M16a → M20A · 1 → T1 · La puerta → T2 · La sala → T3 · Los productos → T4 · La cocina y la barra → T5 · La caja para Windows (M19a y M20A · 2) → T6 · M20B → T7 · M20C con M20 → T8 · M20D · Estook TPV para Android**, justo después de M10 (T8, [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)); y **M18 y M19b**, al final de la Fase 3. Qué deja cada una y cuándo se da por buena, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md); qué hace cada pantalla, en el Anexo, capítulo 11.
 >
 > **M20A · 1 (la base y la API de la sala y la cocina) ya está en producción**, y sus primeras pantallas se rehacen en T1 a T3: Richi pidió **un TPV entero, aparte de Estook**, no un comandero (0107). **M20 deja de ir el primero**: el cierre a mano no trae platos, así que sin cobro no tiene ventas que mover; va con M20C, donde nace la venta ([el plan](../m20-ventas-y-consumo.md)). Hasta la 0106 el orden era M16a → M20 → M19a → M20A (1.4).
 >
@@ -848,7 +848,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y cómo se ve y cómo se usa** (capítulo 10 del Anexo): la pantalla de cobrar con el total en grande, los billetes para no teclear y el cambio a la vista · el ticket impreso, por correo o en un QR, y «Pedir factura» en la misma pantalla · **el cajón**, que se abre solo con efectivo como una línea más del formato de impresión, y **abrirlo sin venta con permiso, motivo y rastro** · **informe X** sin cerrar e **informe Z** al cerrar, que son consultas y no documentos fiscales · **arqueo ciego de fábrica** · **el cuadre de la tarjeta**: el total del cierre del datáfono frente a lo cobrado con tarjeta · el datáfono del banco **sin conectar**, que vale para todos.
 
-**Después de M20C, local a local: el datáfono conectado** (Anexo, 10.7), detrás de `ProveedorDatafono`, con el importe que viaja solo y vuelve «aprobado». La cuenta es del local y el dinero no pasa por Estook. Cuál va primero —Stripe Terminal, Viva.com o SumUp— lo decide Richi con los precios delante (**propuesta: Stripe**, [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)). **Cobrar con tarjeta en el propio aparato** (Tap to Pay) necesita la app de Android: va en M20D. **Estook nunca es entidad de pago ni cobra comisión por cobro** (Arquitectura, capítulo 10).
+**Después de M20C, local a local: el datáfono conectado** (Anexo, 10.7), detrás de `ProveedorDatafono`, con el importe que viaja solo y vuelve «aprobado». La cuenta es del local y el dinero no pasa por Estook. **Va primero Stripe** (Richi, 6-nov, [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)): cobra sin salir de Estook y un solo SDK cubre Android, iPhone y los lectores; Viva o SumUp, solo si un local lo pide. **Cobrar con tarjeta en el propio aparato** (Tap to Pay) necesita la app de Android: va en M20D. **Estook nunca es entidad de pago ni cobra comisión por cobro** (Arquitectura, capítulo 10).
 
 **Depende de.** M20A, M20B, M16a y M6½.
 
@@ -858,21 +858,21 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M20D · Estook TPV para Android: el TPV portátil y cobrar en el aparato
 
-_Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md); la investigación, en [`docs/estook-tpv-android-y-el-cobro.md`](../estook-tpv-android-y-el-cobro.md)). **Propuesto: cuándo, con qué proveedor, dónde vive el código y si Estook gana algo con los cobros son las cuatro preguntas de la 0134.** Aquí va la opción recomendada de cada una._
+_Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md); la investigación, en [`docs/estook-tpv-android-y-el-cobro.md`](../estook-tpv-android-y-el-cobro.md)). **Decidido con Richi el mismo día**: detrás de T7, con Stripe y sin salir de Estook, en este repositorio con su propio flujo de GitHub, y sin que Estook gane nada con los cobros._
 
 **Objetivo.** Que un local tenga todo con Estook: **un TPV Android con impresora dentro** (como un Sunmi V3 PLUS) que toma nota en la mesa, imprime la cuenta y el ticket y **cobra con tarjeta en el propio aparato**; y que el móvil Android de un camarero cobre igual.
 
-**Entra.** **`apps/tpv-movil`**, una app de Android con **Capacitor** que abre el mismo `apps/tpv` (como la caja para Windows con Electron): **ninguna pantalla nueva** · un puente pequeño, como `window.estookCaja`, con imprimir (la impresora de dentro acepta ESC/POS, que ya genera `packages/impresion`, y las de red), abrir el cajón, el lector de códigos, el modo quiosco, arrancar al encender y no actualizarse en servicio · **«TPV portátil» al vincular**: un comandero que imprime y cobra con tarjeta (Anexo 11.3) · **cobrar en el propio aparato** (Tap to Pay) y con **un lector Bluetooth** para las tarjetas con chip, con el primer proveedor detrás de `ProveedorDatafono` (Anexo 10.7) · conectar la cuenta del local con su proveedor desde Ajustes del TPV · anular y devolver · el cuadre de la tarjeta, solo · los lectores en la nube desde la caja para Windows y la web · el segundo proveedor · y, al final, **la caja Android de centro**: que una caja Android haga lo que hace la caja para Windows sin internet.
+**Entra.** **`apps/tpv-movil`**, en este repositorio con su propio flujo de GitHub (solo corre cuando se toca esa carpeta o la impresión, y no es obligatorio para fusionar), una app de Android con **Capacitor** que abre el mismo `apps/tpv` (como la caja para Windows con Electron): **ninguna pantalla nueva** · un puente pequeño, como `window.estookCaja`, con imprimir (la impresora de dentro acepta ESC/POS, que ya genera `packages/impresion`, y las de red), abrir el cajón, el lector de códigos, el modo quiosco, arrancar al encender y no actualizarse en servicio · **«TPV portátil» al vincular**: un comandero que imprime y cobra con tarjeta (Anexo 11.3) · **cobrar en el propio aparato** (Tap to Pay) y con **un lector Bluetooth** para las tarjetas con chip, con **Stripe, sin salir de Estook** (la pantalla de cobro de Stripe sale dentro de la app y vuelve sola), detrás de `ProveedorDatafono` (Anexo 10.7) · conectar la cuenta de Stripe del local desde Ajustes del TPV (Stripe Connect, cargos directos: todo es de su cuenta y a Estook no le cuesta nada) · el comprobante de la tarjeta con lo que piden las redes · anular y devolver · el cuadre de la tarjeta, solo · los lectores en la nube desde la caja para Windows y la web · otro proveedor solo si un local lo pide · y, al final, **la caja Android de centro**: que una caja Android haga lo que hace la caja para Windows sin internet.
 
 **En cuatro entregas:** T8 · 1 la app de Android · T8 · 2 cobrar con tarjeta aquí · T8 · 3 los lectores en la nube y el segundo proveedor · T8 · 4 la caja Android de centro (0134).
 
 **Depende de.** M20C (el cobro y la caja) y M19a (la impresión y el centro del local).
 
-**Reglas críticas.** **Estook no toca el dinero**: la cuenta es del local con su proveedor, y Estook no ve la tarjeta ni guarda sus datos. **Nunca se para un cobro**: si el cobro con tarjeta falla o no hay internet, se cobra con el datáfono del banco, que **no se quita nunca**. **Solo aparatos que no sean datáfono, con NFC y los servicios de Google**: al vincularlo, Estook comprueba si el aparato puede cobrar y lo dice. **Ninguna marca en el núcleo**: Estook dice qué aparatos están probados, no los vende. **Firmada y en Google Play antes de vender.**
+**Reglas críticas.** **Estook no toca el dinero**: la cuenta es del local con su proveedor, y Estook no ve la tarjeta ni guarda sus datos. **Nunca se para un cobro**: si el cobro con tarjeta falla o no hay internet, se cobra con el datáfono del banco, que **no se quita nunca**. **Solo aparatos que no sean datáfono, con NFC y los servicios de Google**: al vincularlo, Estook comprueba si el aparato puede cobrar y lo dice. **Ninguna marca en el núcleo**: Estook dice qué aparatos están probados, no los vende. **Estook no gana nada con los cobros**, solo la suscripción. **Firmada y en Google Play antes de vender.**
 
 **Qué NO entra.** El iPhone y el iPad (M31) · que pague el cliente con su móvil desde un QR (más adelante, Anexo 10.7) · los datáfonos Android de los bancos.
 
-**Antes de escribir una línea.** Comprar un aparato de prueba (Sunmi V3 PLUS con Google), comprobar en la documentación oficial de ese día que el Tap to Pay del proveedor está abierto en España para Android (en noviembre de 2026, el de Stripe estaba en vista previa pública), y hacer con él un cobro de prueba y una impresión.
+**Antes de escribir una línea.** Comprobar en la documentación oficial de ese día que el Tap to Pay de Stripe está abierto en España para Android (en noviembre de 2026, disponible en su lista de lectores y en vista previa pública en su guía), y leer su guía de seguridad para cobrar en móviles (MPoC). **Se programa con el lector simulado de Stripe en un móvil Android compatible**; con todo terminado, **se alquila un Sunmi** para la prueba final (Richi, 6-nov).
 
 **Terminado cuando.** Con un TPV portátil se toma nota de una mesa, sale en cocina, se imprime la cuenta en el propio aparato, **se cobra con una tarjeta sin contacto y con un móvil**, sale el ticket con su QR, y al cerrar la caja **la tarjeta cuadra sola**. Una tarjeta que pide el chip se cobra con el lector o con el datáfono del banco. Con internet cortado, se cobra con el datáfono del banco y nada se para. Un aparato que no puede cobrar con tarjeta lo dice al vincularlo.
 

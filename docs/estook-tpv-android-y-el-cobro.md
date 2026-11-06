@@ -3,7 +3,7 @@
 **Investigado el 6 de noviembre de 2026**, a petición de Richi. Las fuentes están al final, con su
 fecha. **Nada de esto se ha probado todavía con un aparato de verdad.** Lo marcado **[VERIFICAR]**
 no se programa hasta comprobarlo con el proveedor o con el aparato en la mano (regla 13 del Plan).
-La decisión que sale de aquí es la [0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md).
+La decisión que sale de aquí es la [0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), **ya contestada por Richi el mismo día** (apartado 8).
 
 ## En corto
 
@@ -17,10 +17,11 @@ La decisión que sale de aquí es la [0134](decisiones/0134-estook-tpv-para-andr
 - **Sirve también el móvil de cada camarero**, si es Android y tiene NFC: con la app, cobra en la
   mesa sin ningún aparato más. **El iPhone también puede** (Tap to Pay en iPhone ya funciona en
   España), pero necesita la app de iPhone, que va después.
-- **El proveedor que mejor encaja para empezar es Stripe**, no SumUp. Lo explico en el apartado 4.
-  SumUp sirve, pero su SDK de Tap to Pay se da con permiso y no dice qué aparatos valen.
+- **Se empieza con Stripe**, no con SumUp (apartado 4), y **se cobra sin salir de Estook**: la
+  pantalla de Stripe para acercar la tarjeta aparece dentro de nuestra app y vuelve sola.
 - **Dónde va:** justo después de cobrar (T7), como **M20D · Estook TPV para Android**. El iPhone y el
   iPad, al final, cuando el mercado lo pida.
+- **Estook no gana nada con los cobros**: solo la suscripción.
 - **La regla de siempre no cambia:** el dinero va de la tarjeta del cliente a la cuenta del local,
   con un proveedor a nombre del local. Estook no toca fondos, no ve la tarjeta y no es entidad de
   pago. **El datáfono del banco sigue valiendo siempre.**
@@ -80,7 +81,8 @@ Los precios son de tiendas de Europa en noviembre de 2026, sin saber si llevan I
 **Sobre el SUNMI V3H que propuso Richi:** existe, con impresora de 58 mm, NFC, lector 2D y versión
 GMS (la P06100047). Pero la web de Sunmi España ya no lo enseña: ahora vende el **V3 PLUS**, el
 **V3e**, el **V3** y el **V3 MIX**. Ninguna lista de proveedor nombra el V3H. **Antes de recomendar
-uno, se prueba**: comprar un V3 PLUS GMS y hacer un cobro de prueba con Stripe y con SumUp.
+uno, se prueba**: con todo terminado, se alquila un V3 PLUS con Google y se hace un cobro de prueba
+y una impresión (Richi, 6-nov).
 
 ### El lector de códigos de barras
 
@@ -123,24 +125,22 @@ ese modo viene así de fábrica en el V3 PLUS.
    Tap to Pay, con permiso.
 3. **Dice qué aparatos valen**, y nombra los Sunmi. SumUp no publica lista y su guía piensa en un
    móvil.
-4. **El local tiene su propia cuenta de Stripe** y la conecta a Estook (Stripe Connect, cuenta
-   «estándar»): el dinero va a la suya, Stripe le cobra a él y Estook no pone comisión.
-5. **Lo que hay que mirar:** en España, el Tap to Pay de Stripe en Android está **en vista previa
-   pública**. Se comprueba al empezar M20D que ya está para todos; si no, se empieza con el lector
-   Bluetooth y SumUp o Viva pasan delante.
+4. **El local tiene su propia cuenta de Stripe** y la conecta a Estook (Stripe Connect, «cargos
+   directos»): el dinero va a la suya, Stripe le cobra a él, y a Estook no le cuesta nada.
+5. **Lo que hay que mirar:** Stripe pone Tap to Pay en Android **disponible en España** en su lista
+   de lectores y **en vista previa pública** en la guía. Se comprueba al empezar M20D; si no
+   estuviera abierto, se empieza con el lector Bluetooth.
 
-**Después, local a local**, detrás del mismo adaptador: **Viva** (lo tienen muchos bares, y su
-integración de app a app es la más sencilla) y **SumUp** (cuando den el permiso del SDK).
+**Otro proveedor, solo si un local lo pide**, detrás del mismo adaptador: **Viva** (lo tienen muchos
+bares, y su integración de app a app es la más sencilla) o **SumUp** (cuando den el permiso del SDK).
 
-### ¿Puede ganar Estook con los cobros?
+### ¿Gana Estook con los cobros?
 
-Hoy la regla firme es que **no** ([0058](decisiones/0058-el-cobro-los-pagos-y-la-caja.md)). Hay dos
-formas de cambiarla sin tocar el dinero, y **es decisión de Richi** (pregunta 4 de la 0134):
-
-- **Un acuerdo de socio con el proveedor**: el proveedor paga a Estook una parte de su comisión. El
-  local paga lo mismo que si fuera directo.
-- **Una comisión de plataforma** encima (Stripe la llama `application_fee`; Viva, `ISV_amount`). El
-  local paga más.
+**No** (Richi, 6-nov): Estook solo cobra la suscripción, como dice la
+[0058](decisiones/0058-el-cobro-los-pagos-y-la-caja.md). Lo que la ley no deja es **tocar el dinero**
+sin ser entidad de pago, y Estook nunca lo toca: el Real Decreto-ley 19/2018 (artículo 4, letra j)
+deja fuera a quien da el soporte técnico sin tener nunca los fondos, y la entidad autorizada es
+Stripe.
 
 ## 5 · Cómo se construye
 
@@ -160,11 +160,11 @@ formas de cambiarla sin tocar el dinero, y **es decisión de Richi** (pregunta 4
     encender y **no actualizarse en mitad de un servicio** (Anexo 10.12).
   - **Más adelante, la caja de centro**: que una caja Android haga lo que hace hoy la caja para
     Windows sin internet (T5 · 2 · 2). Es lo más largo, y va en su propia entrega.
-- **Dónde vive el código:** recomiendo **el mismo repositorio, en su propia carpeta**
-  (`apps/tpv-movil`), como `apps/caja-windows`. Es otro lenguaje, otra compilación y otra
-  publicación, pero comparte las pruebas, el formato de impresión y los tipos con todo lo demás. Un
-  repositorio aparte obliga a copiar o publicar paquetes y a sincronizar dos sitios en cada cambio.
-  La 0133 decía «repositorio aparte»: **lo decide Richi** (pregunta 3 de la 0134).
+- **Dónde vive el código:** **en este repositorio, en su propia carpeta** (`apps/tpv-movil`), como
+  `apps/caja-windows` (Richi, 6-nov, si no vuelve nada más lento y se separa bien; se cumple). Es
+  otro lenguaje, otra compilación y otra publicación, con **su propio flujo de GitHub** que solo
+  corre cuando se toca esa carpeta o la impresión, y no es obligatorio para fusionar. Comparte el
+  formato de impresión y los tipos con todo lo demás.
 - **Cómo llega a los aparatos:** por Google Play como app privada de la empresa, o como APK firmado
   desde la web de Estook. En los Sunmi, también por su tienda de socios, que la manda a todos los
   aparatos de un local. **Firmada y en Play antes de vender** (ESTADO: nada se vende hasta estar al
@@ -212,8 +212,9 @@ conviene llegar con Android ya rodado. Richi: «iOS seguro al final».
 7. **Estook no vende los aparatos.** Dice cuáles están probados y dónde comprarlos. Tener almacén,
    garantía y devoluciones es otro negocio; más adelante se puede pactar con un distribuidor de
    Sunmi.
-8. **Para probar hace falta un aparato de verdad**: Tap to Pay no funciona en un emulador ni con la
-   app en modo de pruebas conectada al ordenador.
+8. **Para probar**: Tap to Pay no funciona en un emulador. Se programa con el **lector simulado de
+   Stripe en un móvil Android compatible**, y la prueba final se hace con un Sunmi alquilado y una
+   tarjeta de verdad.
 
 ## 7 · Cómo queda todo lo que puede tener un local
 
@@ -231,10 +232,36 @@ Lo que escribió Richi, corregido donde hacía falta:
 (están cerrados a su app); el V3H no está en la web de Sunmi España ni en ninguna lista, y el V3 PLUS
 o el V3 son la apuesta segura; y para empezar encaja mejor Stripe que SumUp.
 
+## 8 · Lo que contestó Richi el 6-nov, y lo que se investigó además
+
+1. **Cuándo:** justo después de T7, como M20D.
+2. **Proveedor:** Stripe, porque **cobra sin salir de Estook**: su SDK para Android «se hace cargo de
+   la pantalla» de nuestra app para el cobro (con los colores de Estook) y la devuelve al acabar.
+3. **El código:** en este repositorio, en su propia carpeta, con su propio flujo de GitHub.
+4. **Estook no gana nada con los cobros.**
+
+**Y para dejarlo cerrado:**
+
+- **Stripe Connect con «cargos directos»**: los lectores, los cobros, las devoluciones y las
+  comisiones son de la cuenta del local. **A Estook no le cuesta nada** cuando Stripe cobra las
+  comisiones al local. El alta del local la hace Stripe en su propia página.
+- **El comprobante de la tarjeta** es obligatorio (en papel o por correo) y lleva el nombre de la
+  aplicación de la tarjeta, el AID y el tipo de cuenta, que Stripe da al acabar el cobro.
+- **Seguridad:** Estook nunca ve la tarjeta. La pantalla del PIN de Stripe no deja capturas,
+  grabaciones ni nada encima. Stripe está pasando la certificación PCI para cobrar en móviles
+  (MPoC) y publica la guía que debe seguir la app.
+- **Rápido:** la app se conecta al lector al arrancar, en segundo plano; las actualizaciones del
+  lector se hacen al conectarse, antes del servicio.
+- **[VERIFICAR al construir]** si Stripe exige que la app venga de Google Play para Tap to Pay, y si
+  el puente de Capacitor funciona con Estook TPV cargado de `estook.com/tpv/` (si no, va dentro de
+  cada versión de la app).
+
 ## Fuentes
 
 Leídas el 6 de noviembre de 2026.
 
+- Stripe · [Terminal con Connect (cargos directos)](https://docs.stripe.com/terminal/features/connect?connect-charge-type=direct) · [Precios de Connect](https://stripe.com/es/connect/pricing) · [Comprobantes](https://docs.stripe.com/terminal/features/receipts) · [Lectores Tap to Pay y MPoC](https://docs.stripe.com/terminal/tap-to-pay-readers) · [Probar con el lector simulado](https://docs.stripe.com/terminal/references/testing)
+- Ley · [Real Decreto-ley 19/2018 de servicios de pago (BOE), artículo 4, letra j](https://www.boe.es/buscar/act.php?id=BOE-A-2018-16036)
 - Stripe · [Tap to Pay: países, requisitos y aparatos](https://docs.stripe.com/terminal/payments/setup-reader/tap-to-pay?platform=android) · [Consideraciones por país (España)](https://docs.stripe.com/terminal/payments/regional?integration-country=ES) · [Apps on Devices](https://docs.stripe.com/terminal/features/apps-on-devices/overview) · [Precios en España](https://stripe.com/es/pricing)
 - SumUp · [SDK de Tap to Pay para Android](https://developer.sumup.com/terminal-payments/sdks/android/tap-to-pay/) · [Tap to Pay, países](https://developer.sumup.com/terminal-payments/readers/tap-to-pay/) · [Tap to Pay en España](https://www.sumup.com/es-es/tap-to-pay/) · [SumUp frente a Stripe (de SumUp, junio de 2026)](https://www.sumup.com/es-es/compare/sumup-vs-stripe/)
 - Viva · [De app a app en Android](https://developer.viva.com/apis-for-point-of-sale/card-terminal-apps/android-app/) · [Aparatos compatibles (abiertos y cerrados)](https://www.viva.com/es-es/vendor-solutions/supported-devices) · [Guía para elegir aparatos](https://intercom.help/vivacomeu/es/articles/10210826-guia-para-elegir-dispositivos-de-viva-com)

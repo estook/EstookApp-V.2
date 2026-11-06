@@ -263,11 +263,12 @@ describe('los modulos que se nombran en pantalla', () => {
     if (letra !== undefined && nombre !== undefined) delPlan.set(letra, `${letra} · ${nombre}`);
   }
 
-  it('el Plan tiene sus treinta y cuatro fichas de modulo', () => {
-    // De M0 a M30, mas M20A, M20B y M20C. Si esto se cae, es que el Plan ha
+  it('el Plan tiene sus treinta y seis fichas de modulo', () => {
+    // De M0 a M31, mas M20A, M20B, M20C y M20D (Estook TPV para Android, 0134;
+    // M31 es el iPhone y el iPad). Si esto se cae, es que el Plan ha
     // cambiado de forma y hay que mirarlo antes de creerse el resto de esta
     // descripcion.
-    expect([...delPlan.keys()].filter((k) => /^M\d/.test(k))).toHaveLength(34);
+    expect([...delPlan.keys()].filter((k) => /^M\d/.test(k))).toHaveLength(36);
   });
 
   it('y las cinco entregas de antes de M8, en su orden', () => {

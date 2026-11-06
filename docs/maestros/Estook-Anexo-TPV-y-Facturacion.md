@@ -36,7 +36,7 @@ Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (có
 
 1. **El soporte en horario de servicio**: horario, canal y quién. Se decide antes de vender el primer TPV.
 2. **Si el camarero cobra de fábrica.** Propuesta: sí, y el gerente lo apaga por local.
-3. **Qué datáfono conectado va primero** (10.7), con sus precios y comisiones delante. **Propuesta: Stripe** ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), pregunta 2).
+3. ~~Qué datáfono conectado va primero~~ **Contestado el 6-nov: Stripe**, que cobra sin salir de Estook ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)).
 
 ---
 
@@ -736,7 +736,7 @@ El programa del PC de la caja: **Estook TPV tal cual, y dentro lo que se llamaba
 
 ### Vía 2 · La cáscara de Estook TPV
 
-> **Desde la [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md) (6-nov-2026, propuesto), la cáscara tiene nombre y módulo:** **Estook TPV para Android** (`apps/tpv-movil`, M20D), que además imprime en la impresora de dentro de los TPV Android y **cobra con tarjeta en el aparato** (10.7); la del iPhone y el iPad, en M31. Donde este capítulo dice «la cáscara», es esa app.
+> **Desde la [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md) (6-nov-2026), la cáscara tiene nombre y módulo:** **Estook TPV para Android** (`apps/tpv-movil`, M20D), que además imprime en la impresora de dentro de los TPV Android y **cobra con tarjeta en el aparato** (10.7); la del iPhone y el iPad, en M31. Donde este capítulo dice «la cáscara», es esa app.
 
 **Y aquí está la respuesta a «¿web o nativo?»: no hay que elegir.** Estook TPV es web, y para el iPad y para imprimir sin la caja para Windows se envuelve en una cáscara nativa —Capacitor— que se publica en Google Play y en la App Store. Es opcional.
 
@@ -1160,7 +1160,7 @@ Dos niveles, y **en los dos el dinero va de la tarjeta del cliente a la cuenta d
 
 ### Cobrar en el propio aparato (M20D)
 
-Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md); la investigación, en [`docs/estook-tpv-android-y-el-cobro.md`](../estook-tpv-android-y-el-cobro.md)). **Propuesta, pendiente de las cuatro preguntas de la 0134.**
+Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md); la investigación, en [`docs/estook-tpv-android-y-el-cobro.md`](../estook-tpv-android-y-el-cobro.md)). **Decidido con Richi el mismo día.**
 
 Con **Estook TPV para Android**, el nivel 2 tiene **tres caminos**, todos detrás del mismo `ProveedorDatafono`:
 
@@ -1174,13 +1174,16 @@ Con **Estook TPV para Android**, el nivel 2 tiene **tres caminos**, todos detrá
 - **Vale un aparato Android que no sea datáfono, con NFC y los servicios de Google** (Sunmi V3 PLUS, V3, V3 MIX, T3, D3; muchos móviles). **Los datáfonos Android (Sunmi P3, PAX) no valen**: llevan cerrada la app de su banco. **Al vincular, Estook comprueba si el aparato puede cobrar con tarjeta** y lo dice.
 - **Desde el navegador no se puede**: ni Chrome ni Safari dejan cobrar con tarjeta. Por eso hace falta la app.
 - **Sin internet no hay Tap to Pay**: se cobra con el datáfono del banco y queda marcado, como siempre.
-- El PIN de las tarjetas que lo piden (por encima de 50 €, normalmente) **se teclea en la misma pantalla**. El ticket de Estook sigue siendo el ticket; qué datos de la tarjeta tiene que llevar el comprobante lo dice el proveedor **[VERIFICAR al llegar]**.
+- **Sin salir de Estook:** el camarero toca Cobrar › Tarjeta y la pantalla de Stripe para acercar la tarjeta sale **dentro de la misma app**, con los colores de Estook; al acabar vuelve sola con «Cobrado» y el ticket sale solo. La app se conecta al lector **al arrancar**, para que el botón responda al momento.
+- El PIN de las tarjetas que lo piden (por encima de 50 €, normalmente) **se teclea en la misma pantalla**, que no deja capturas, grabaciones ni nada encima.
+- **La cuenta es la de Stripe del local**, conectada una vez desde Ajustes del TPV (Stripe Connect, cargos directos): los cobros, las devoluciones y las comisiones son suyos, y a Estook no le cuesta nada.
+- **El comprobante de la tarjeta** es obligatorio, en papel o por correo, con el nombre de la aplicación de la tarjeta, el AID y el tipo de cuenta (lo piden las redes de tarjetas, y Stripe los da al acabar el cobro). El ticket de Estook, con su QR, sigue siendo el ticket.
 
-**Cómo se construye:** detrás de un adaptador, `ProveedorDatafono`, igual que la facturación (4.2), con cobrar, consultar, anular y devolver una operación. **La cuenta del datáfono es del local**, a su nombre con ese proveedor: Estook no guarda tarjetas, no recibe fondos y **no pasa a ser pasarela de pago** ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md)). **Cuál va primero** se decide al llegar a M20C con los precios delante (decisión 0054). Y ningún campo ni llamada se escribe sin leer antes su documentación oficial de ese día.
+**Cómo se construye:** detrás de un adaptador, `ProveedorDatafono`, igual que la facturación (4.2), con cobrar, consultar, anular y devolver una operación. **La cuenta del datáfono es del local**, a su nombre con ese proveedor: Estook no guarda tarjetas, no recibe fondos y **no pasa a ser pasarela de pago** ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md)). **Va primero Stripe** (Richi, 6-nov, [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)); Viva o SumUp, solo si un local lo pide. Y ningún campo ni llamada se escribe sin leer antes su documentación oficial de ese día.
 
 **Si el datáfono conectado no responde**, se cobra como en el nivel 1 y queda marcado. **Nunca se para un cobro.**
 
-**Y la regla que no se mueve** ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md)): **Estook no cobra comisión por los pagos del local** ni pasa a ser entidad de pago. Lo mismo vale, cuando lleguen, para pagar en la mesa con el móvil y para Bizum: el proveedor es del local y el dinero va a su cuenta.
+**Y la regla que no se mueve** ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md), confirmada por Richi el 6-nov): **Estook no cobra comisión por los pagos del local**, solo la suscripción, ni pasa a ser entidad de pago. Nunca tiene los fondos: la ley de servicios de pago deja fuera a quien da el soporte técnico sin tenerlos (Real Decreto-ley 19/2018, artículo 4, letra j), y la entidad autorizada es el proveedor. Lo mismo vale, cuando lleguen, para pagar en la mesa con el móvil y para Bizum: el proveedor es del local y el dinero va a su cuenta.
 
 ## 10.8 Los pedidos de reparto, en la misma cocina
 

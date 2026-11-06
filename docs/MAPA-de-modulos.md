@@ -93,7 +93,7 @@ Incidencias del turno que lee el siguiente, notas, y el mantenimiento de los equ
 
 ## Fase 4 · Las ventas, y Estook TPV
 
-**El orden es M16a → M20A · 1 → T1 a T4 (la puerta, la sala, los productos, la cocina y la barra) → T5 · La caja para Windows → T6 · M20B → T7 · M20C con M20 → T8 · M20D · Estook TPV para Android, justo después de M10 (T8, propuesto en la [0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)); y M18 y M19b, al final de la Fase 3** ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md)).
+**El orden es M16a → M20A · 1 → T1 a T4 (la puerta, la sala, los productos, la cocina y la barra) → T5 · La caja para Windows → T6 · M20B → T7 · M20C con M20 → T8 · M20D · Estook TPV para Android, justo después de M10 (T8, [0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)); y M18 y M19b, al final de la Fase 3** ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md)).
 
 ### M20 · Ventas, emparejamiento y consumo
 
@@ -117,7 +117,7 @@ Efectivo, datáfono y mixto; dividir la cuenta; factura a petición; devolucione
 
 ### M20D · Estook TPV para Android
 
-**Propuesto el 6-nov** ([0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), [la investigación](estook-tpv-android-y-el-cobro.md)): una app de Android que abre el mismo Estook TPV y pone lo del aparato. **El TPV portátil** (un Sunmi V3 PLUS o parecido) toma nota, imprime la cuenta y el ticket y **cobra con tarjeta en la mesa**; el móvil Android del camarero, también. Tap to Pay y un lector Bluetooth para las tarjetas con chip, con el primer proveedor (propuesta: Stripe). El datáfono del banco sigue valiendo siempre. En cuatro entregas, T8 · 1 a T8 · 4; la última, la caja Android de centro.
+**Decidido el 6-nov** ([0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), [la investigación](estook-tpv-android-y-el-cobro.md)): una app de Android que abre el mismo Estook TPV y pone lo del aparato. **El TPV portátil** (un Sunmi V3 PLUS o parecido) toma nota, imprime la cuenta y el ticket y **cobra con tarjeta en la mesa**; el móvil Android del camarero, también. Tap to Pay y un lector Bluetooth para las tarjetas con chip, con Stripe, sin salir de Estook. El datáfono del banco sigue valiendo siempre. En cuatro entregas, T8 · 1 a T8 · 4; la última, la caja Android de centro.
 
 ### M18 · El conector · vía nube
 

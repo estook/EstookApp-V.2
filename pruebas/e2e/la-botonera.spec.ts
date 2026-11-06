@@ -139,7 +139,9 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
     'aria-checked',
     'true',
   );
-  await iconoYColor.getByRole('button', { name: 'Cerrar' }).first().click();
+  // Con Escape: el primer «Cerrar» de la hoja es el fondo, que en GitHub no se deja tocar.
+  await page.keyboard.press('Escape');
+  await expect(iconoYColor).toHaveCount(0, { timeout: 15_000 });
 
   // ── El pan no va en Entrantes: va en «Pan y agua», de «Nadie», sin tocar nada (0112) ──
   const panYAgua = await laSeccion(page, 'Pan y agua');

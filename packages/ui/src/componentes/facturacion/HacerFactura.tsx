@@ -16,7 +16,7 @@ import { Boton } from '../Boton.tsx';
 import { Campo, CampoMoneda } from '../Campo.tsx';
 import { Selector } from '../Selector.tsx';
 import { clases } from '../../clases.ts';
-import { usarLectura, type ClienteDeFacturas } from '../../ganchos/usarLectura.ts';
+import { usarConPausa, usarLectura, type ClienteDeFacturas } from '../../ganchos/usarLectura.ts';
 
 /**
  * **Hacer una factura** (T6 · 2 · 2 · 1, decisión 0137; maqueta de T6 · 2 · 2, 2 y 3). Dos caminos
@@ -197,6 +197,7 @@ export function HacerFactura({
   const [comprobado, setComprobado] = useState<Comprobado | null>(null);
   const [comprobando, setComprobando] = useState(false);
   const [buscar, setBuscar] = useState('');
+  const buscado = usarConPausa(buscar.trim());
   // La factura a mano.
   const [conceptos, setConceptos] = useState<readonly UnConcepto[]>([]);
   const [fecha, setFecha] = useState('');
@@ -216,9 +217,9 @@ export function HacerFactura({
   const guardados = usarLectura<readonly Guardado[]>(
     () =>
       puedeAMano
-        ? cliente.consultar('los_clientes_de_factura', buscar === '' ? {} : { buscar })
+        ? cliente.consultar('los_clientes_de_factura', buscado === '' ? {} : { buscar: buscado })
         : Promise.resolve({ ok: true, datos: [] }),
-    `clientes|${buscar}|${String(puedeAMano)}`,
+    `clientes|${buscado}|${String(puedeAMano)}`,
   );
   const lo = usarLectura<LoDeLaFactura | null>(
     () =>
@@ -807,6 +808,7 @@ function AnadirTickets({
 }) {
   const [elegidos, setElegidos] = useState<readonly TicketParaFacturar[]>(ya);
   const [numero, setNumero] = useState('');
+  const buscado = usarConPausa(numero.trim());
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
   const hayFechas = puedeTodo && desde !== '' && hasta !== '';
@@ -814,10 +816,10 @@ function AnadirTickets({
     () =>
       cliente.consultar('tickets_y_facturas', {
         que: 'tickets',
-        ...(numero.trim() === '' ? {} : { buscar: numero.trim() }),
+        ...(buscado === '' ? {} : { buscar: buscado }),
         ...(hayFechas ? { desde, hasta } : {}),
       }),
-    `anadir|${numero}|${desde}|${hasta}`,
+    `anadir|${buscado}|${desde}|${hasta}`,
   );
   const total = elegidos.reduce((s, t) => s + t.total, 0);
   const marcado = (id: string) => elegidos.some((t) => t.id === id);

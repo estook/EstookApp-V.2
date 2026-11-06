@@ -574,6 +574,15 @@ cambia de lo escrito abajo: **un rechazo por los datos deja el número usado** h
 el asesor (Verifacti no registra nada con un 400), y **recoger el ticket con el código del
 justificante** llega con la página de «Pide tu factura» (T6 · 2 · 3).
 
+**T6 · 2 · 2 se entrega en dos** ([0137](decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md), 7-nov):
+
+- **T6 · 2 · 2 · 1 · Las facturas y quién hace qué, hecho** (migración 0107, sin caja nueva,
+  [maqueta](maquetas/t6-2-2-las-facturas.html)): la factura a mano (F1), el canje de uno o varios
+  tickets (F3), los clientes guardados, el A4 y el papel de ticket, el correo, la lista con fechas y
+  buscador, y **los permisos acción por acción**, en Estook y en Estook TPV. Pruebas 2, 6, 11 y 20.
+- **T6 · 2 · 2 · 2**, lo siguiente: las devoluciones (R5 y R1), corregir los datos del cliente (R4),
+  anular y la señal de un evento, cada uno con su permiso y su motivo. Pruebas 13 y la R5 de la 12.
+
 **Antes de T6 · 2 · 1, la pausa del 5-nov** ([0130](decisiones/0130-la-pausa-del-5-nov-r1-lo-rapido.md)):
 cuatro entregas con lo que Richi vio usando el TPV en IKATZ. **R1 · Lo rápido** (tachar, mandar, el
 logo y la barra del iPhone), **R2 · La mesa en el móvil**, **R3 · Ajustes y secciones** y **R4 ·

@@ -503,8 +503,8 @@ TRANSACCION CORTA (el cobro)
 FUERA DE LA TRANSACCION
 6. ENVIANDO: POST a Verifacti con Idempotency-Key = el id del documento
    ├─ 200 → REGISTRADO: uuid, QR y huella; se imprime el ticket
-   ├─ 400 → RECHAZADO POR DATOS: se enseña que falla, en cristiano; se
-   │        corrige y se manda con el MISMO numero [VERIFICAR]
+   ├─ 400 → RECHAZADO POR DATOS: se enseña que falla, en cristiano; el
+   │        numero queda usado y se corrige con otro documento (0136)
    ├─ 409 → ya se esta procesando: se espera y se pregunta el estado
    ├─ 429 → se reintenta con espera creciente y la MISMA clave
    └─ sin respuesta (timeout, 5xx, sin red) → se pregunta el estado
@@ -535,7 +535,7 @@ FUERA DE LA TRANSACCION
 
 **Webhooks del proveedor:** se registra un endpoint por entorno. Cada notificación trae `X-Webhook-Id`, **que es la clave de idempotencia**: la misma notificación dos veces no cambia nada. El proveedor reintenta hasta tres veces, con esperas de 1, 6 y 30 minutos, no reintenta los 4xx y **desactiva el webhook si falla mucho**, avisando por correo, sin reactivarlo solo.
 
-Por eso, además del webhook, **el reloj pregunta** por los registros en «pendiente»: en su minuto 2 y en cada hora de su edad (T6 · 2 · 1). **Un webhook no es una garantía de entrega.**
+Por eso, además del webhook, **el reloj pregunta** por los registros en «pendiente»: en cada latido hasta los cinco minutos, cada cinco hasta la hora y después cada hora ([0137](../decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md)). **Un webhook no es una garantía de entrega.** Y **con un registro «Incorrecto» Verifacti ofrece dos caminos**, subsanar con el mismo número (`rechazo_previo`) o una rectificativa: **[VERIFICAR con el asesor]**; hasta entonces, corregir con otro documento.
 
 **Pantalla de registros con error** (gerente y dirección): qué documento, qué dijo la AEAT traducido a lenguaje normal, y el botón de la corrección que toca. **Nunca se corrige tocando el original.**
 
@@ -653,7 +653,9 @@ Desde el ticket, en un toque: nombre o razón social, NIF y domicilio. Se emite 
 - El importe **tiene que coincidir** con el del ticket.
 - El ticket queda **canjeado** y no se puede canjear dos veces.
 - **No toca el stock ni la caja:** la venta ya se registró.
-- Verifacti valida por defecto que el NIF del destinatario está censado en la AEAT; si no lo está, la AEAT rechazaría. Ese aviso se enseña **antes** de emitir.
+- Verifacti valida por defecto que el NIF del destinatario está censado en la AEAT; si no lo está, la AEAT rechazaría. Ese aviso se enseña **antes** de emitir, y **no se gasta un número** en él: un NIF, o un IVA de otro país en el censo europeo, se comprueban antes de numerar ([0137](../decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md)).
+- **Un ticket con factura se devuelve sobre su factura**, y uno con devolución no se canjea: el importe ya no sería el suyo.
+- **Lo hace cualquiera de la sala**, en Estook o en Estook TPV, sin acceso a la parte fiscal; se imprime también en el papel de ticket, que lleva lo que pide la ley (0137).
 
 ## 5.4 Devoluciones
 
@@ -897,6 +899,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 ## 7.6 Facturación (esquema `facturacion`, solo inserción)
 
 - `serie` — local, empresa, tipo y **prefijo**, solo de inserción: la de ahora es la última de su local y su tipo (T6 · 1). **El ejercicio y el número los pone emitir** (T6 · 2), y pruebas y real numeran aparte
+- `canje` — qué tickets sustituye cada F3; `cobro_de_factura` — cuándo se cobró una hecha a mano; `copia_mandada` — a quién se le mandó y quién (T6 · 2 · 2 · 1, 0137). **Los clientes guardados no son fiscales** (`estook.cliente_de_factura`): se pueden quitar, y lo emitido lleva su copia
 - `documento` — empresa, serie, número, tipo, fecha de expedición, fecha de operación, destinatario si lo hay, base, cuota, total, **copia congelada de las líneas y del desglose**, **copia de los datos de la empresa del momento**, `sustituye_a` (F3), `rectifica_a` (R), referencia al cobro, y su identificador, que es **la clave de idempotencia** ante el proveedor ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)). **Nace preparado y no cambia nunca más**
 - `registro` — documento, lo que devolvió el proveedor al registrarlo (`uuid`, **QR**, **huella**), y cada estado ante la AEAT que llegue después, **una fila por novedad**
 - `envio` — documento, **cada intento**: cuándo, qué se mandó, qué contestó, código
@@ -971,7 +974,7 @@ Todas automáticas, contra el entorno de pruebas. Cada una se rompe a propósito
 **Numeración y cadena**
 
 4. Cien cobros simultáneos desde cinco aparatos del mismo NIF: numeración correlativa, sin huecos ni duplicados, y **ninguno espera a Verifacti para numerar**.
-5. Un rechazo por datos de Verifacti **se corrige y sale con el mismo número**, sin huecos.
+5. Un rechazo por datos de Verifacti no llega a Hacienda y **el número queda usado**, hasta que el asesor diga otra cosa (0136).
 6. Dos NIF cobrando a la vez: no se mezclan series ni claves.
 7. **Verifacti registra y la respuesta se pierde**: al reintentar con la misma clave no hay dos registros ni dos números, y el documento acaba registrado.
 8. **La función se cae con el documento enviándose**: el trabajo lo encuentra y lo termina.
@@ -1524,7 +1527,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
   - **Factura**: el canje F3 con los datos del cliente (5.3).
   - **Cambiar la forma de pago** (efectivo por tarjeta, o al revés), con permiso, motivo y rastro: mueve la caja y no toca el ticket **[VERIFICAR con el asesor]** (0107, 6.8).
   - **Devolver**: la rectificativa (5.4), entera o por platos, con permiso y motivo. **Un ticket emitido no se reabre**: se devuelve y, si hace falta, se vuelve a cobrar.
-- **El camarero ve los suyos del turno** («solo lo mío», Roles 1.12); el jefe de sala y el gerente, todos. **Lo que no es de hoy se mira en Estook** (Servicio · Ventas).
+- **Tickets y facturas**, ya en Estook TPV desde T6 · 2 · 2 · 1 ([0137](../decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md)): la misma pantalla que en Estook, a un toque desde la sala y en cualquier aparato. **El camarero ve lo de hoy y ayer, y lo demás por su número exacto**, sin la lista de clientes (Roles 1.12); el jefe de sala y el gerente, todo. Los totales, los filtros por forma de pago y cambiar la forma de pago llegan con el cobro (T7).
 
 ## 11.8 Las mesas
 

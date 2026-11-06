@@ -11,7 +11,7 @@ import { Tabla, type Columna } from '../Tabla.tsx';
 import { PapelEnPantalla } from '../PapelEnPantalla.tsx';
 import { clases } from '../../clases.ts';
 import { HacerFactura, type TicketParaFacturar } from './HacerFactura.tsx';
-import { usarLectura, type ClienteDeFacturas } from '../../ganchos/usarLectura.ts';
+import { usarConPausa, usarLectura, type ClienteDeFacturas } from '../../ganchos/usarLectura.ts';
 
 /**
  * **Tickets y facturas** (T6 · 2 · 1 y 2 · 2 · 1, decisiones 0136 y 0137). La misma pantalla en
@@ -133,13 +133,14 @@ export function TicketsYFacturas({
   const [hasta, setHasta] = useState('');
   const [que, setQue] = useState<Que>('todos');
   const [buscar, setBuscar] = useState('');
+  const buscado = usarConPausa(buscar.trim());
   const [abierta, setAbierta] = useState<Abierta>(null);
   const conFechas = cuando === 'fechas' && desde !== '' && hasta !== '';
   const parametros: Record<string, string> = {
     ...(cuando === 'ayer' ? { dia: 'ayer' } : {}),
     ...(conFechas ? { desde, hasta } : {}),
     ...(que === 'todos' ? {} : { que }),
-    ...(buscar.trim() === '' ? {} : { buscar: buscar.trim() }),
+    ...(buscado === '' ? {} : { buscar: buscado }),
   };
   const lista = usarLectura<LaLista>(
     () => cliente.consultar('tickets_y_facturas', parametros),

@@ -1073,3 +1073,12 @@
      subieron la cuenta de 34 a 36 (6-nov). **Antes de subir un cambio de los maestros, se pasan las
      pruebas que leen documentos** (`apps.prueba.ts`, la de ESTADO, la de los enlaces, la del
      lanzador, la de las variables y `se-usan.prueba.ts`), no solo el formato.
+255. **Una pregunta que se hace una sola vez, en un minuto exacto, se la salta cualquier retraso.** El
+     motor preguntaba a Verifacti en el minuto 2 y en cada hora; Hacienda contestó en el minuto 3 y el
+     ticket de IKATZ se quedó en «En Hacienda» (Richi lo vio con el móvil en la web de la AEAT, 6-nov).
+     **Lo que espera a alguien de fuera se pregunta de más al principio, y con margen.** Y lo que da de
+     verdad por bueno un dato fiscal es mirarlo en la AEAT, no solo en nuestra pantalla.
+256. **Una maqueta aprobada también se comprueba contra la ley.** El A4 del 2-nov no llevaba el precio
+     unitario sin impuesto, que pide el art. 6.1.f del RD 1619/2012, y nadie lo vio hasta leer el
+     artículo entero antes de programarlo (6-nov). **Antes de programar un documento fiscal, se lee el
+     artículo que dice qué lleva, y se compara línea a línea con lo dibujado.**

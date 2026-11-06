@@ -63,3 +63,17 @@ export function usarLectura<T>(
 
   return { datos, error, cargando, otraVez };
 }
+
+/** Lo escrito, cuando se deja de escribir: una búsqueda por palabra, no una por tecla. */
+export function usarConPausa(valor: string, ms = 300): string {
+  const [conPausa, setConPausa] = useState(valor);
+  useEffect(() => {
+    const reloj = window.setTimeout(() => {
+      setConPausa(valor);
+    }, ms);
+    return () => {
+      window.clearTimeout(reloj);
+    };
+  }, [valor, ms]);
+  return conPausa;
+}

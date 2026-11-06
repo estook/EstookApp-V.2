@@ -173,6 +173,8 @@ export interface QuienSoy {
     readonly laLlevo: boolean;
     /** Si su plan lleva Estook TPV (0120): el botón de Ajustes, abierto o con candado. */
     readonly conEstookTpv: boolean;
+    /** Si está en Pausa (0135): solo lectura porque lo ha pedido, no porque deba nada. */
+    readonly enPausa: boolean;
   } | null;
 
   /**
@@ -293,6 +295,7 @@ export const quienSoy = consulta<Record<string, never>, QuienSoy>({
             ...comoEstaAhora(suscripcion, contexto.ahora),
             laLlevo,
             conEstookTpv: llevaEstookTpv(paraElDominio(suscripcion)),
+            enPausa: suscripcion.plan === 'pausa' && !suscripcion.deLaCasa,
           };
 
     const foto = laFirmada(fotos, persona.foto_clave);

@@ -74,9 +74,9 @@ export interface Plan {
   readonly nombre: string;
   /** En una frase, para quién es. */
   readonly paraQuien: string;
-  /** Céntimos por local y mes, **con el IVA incluido** (Richi, 16-sep-2026). */
+  /** Céntimos por local y mes, **sin IVA**: el IVA va aparte (Richi, 6-nov-2026, 0135). */
   readonly alMesPorLocal: number;
-  /** Céntimos por local y año, con el IVA incluido. Nulo si no hay pago anual. */
+  /** Céntimos por local y año, sin IVA. Nulo si no hay pago anual. */
   readonly alAnoPorLocal: number | null;
   readonly localesDesde: number;
   /** Nulo: sin tope. */
@@ -86,20 +86,21 @@ export interface Plan {
 }
 
 /**
- * Los planes del Manifiesto (32), con el IVA incluido.
+ * Los planes del Manifiesto (32), **sin IVA**: el IVA se suma aparte en cada cobro.
  *
  * **Los precios de verdad los cobra Stripe** (entrega 2): estos son los que se
  * enseñan, y una prueba comprueba que el anual sea diez meses. Si un día cambian,
  * se cambian aquí y se sube la versión de su precio en `suscripcion.ts`, con su
- * decisión. Pro a 99 € y Cadena a 89 €, desde la 0067 (30-sep-2026).
+ * decisión. Los de hoy son los finales del 6-nov-2026 (0135): Esencial 39 €, Pro 99 €,
+ * Cadena 89 € por local y Pausa 9 €, todos más IVA.
  */
 export const PLANES: readonly Plan[] = [
   {
     codigo: 'esencial',
     nombre: 'Esencial',
     paraQuien: 'Para controlar tu cocina sin cambiar nada más.',
-    alMesPorLocal: 4_900,
-    alAnoPorLocal: 49_000,
+    alMesPorLocal: 3_900,
+    alAnoPorLocal: 39_000,
     localesDesde: 1,
     localesHasta: null,
     loQueLleva: [
@@ -149,11 +150,15 @@ export const PLANES: readonly Plan[] = [
     codigo: 'pausa',
     nombre: 'Pausa',
     paraQuien: 'Para cierres de temporada o reformas: tus datos, guardados.',
-    alMesPorLocal: 1_200,
+    alMesPorLocal: 900,
     alAnoPorLocal: null,
     localesDesde: 1,
     localesHasta: null,
-    loQueLleva: ['Solo lectura', 'Datos conservados y exportables'],
+    loQueLleva: [
+      'Solo lectura, con tus datos guardados y exportables',
+      'Hasta seis meses, una vez al año',
+      'Vuelves cuando quieras, sin penalización',
+    ],
   },
 ];
 

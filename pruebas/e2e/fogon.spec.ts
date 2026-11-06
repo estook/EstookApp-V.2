@@ -94,8 +94,8 @@ test('con Fogón encendido, se le pregunta y rellena el borrador de un escandall
   await expect(
     ventana.getByText('Esto es Fogón de pruebas: no he llamado a ningún modelo.'),
   ).toBeVisible();
-  // Esencial: 300 al mes y 30 al día. Ha gastado uno.
-  await expect(ventana.getByText(/quedan 29 hoy y 299 de 300 este mes/)).toBeVisible();
+  // Esencial: 100 al mes y 10 al día (0135). Ha gastado uno.
+  await expect(ventana.getByText(/quedan 9 hoy y 99 de 100 este mes/)).toBeVisible();
   await cerrarFogon(page);
 
   // «Rellenar con Fogón», al desgranar un plato vacío.

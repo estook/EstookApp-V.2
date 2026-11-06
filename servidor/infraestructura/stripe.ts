@@ -1,3 +1,4 @@
+import { laCuotaSinIva } from '@estook/dominio';
 import { variable } from '@estook/utiles';
 
 /**
@@ -20,6 +21,9 @@ import { variable } from '@estook/utiles';
 export const VERSION_DE_STRIPE = '2026-08-26.dahlia';
 
 const RAIZ = 'https://api.stripe.com/v1';
+
+/** El tipo de IVA de Estook en Stripe, aparte del precio (0135). El de antes era `iva-21`. */
+const IVA_APARTE = 'iva-21-aparte';
 
 export type ModoDeStripe = 'prueba' | 'real';
 
@@ -46,8 +50,9 @@ export interface SuscripcionDeStripe {
   readonly clave: string | null;
   readonly cantidad: number;
   /**
-   * Lo que se cobra cada vez, en céntimos y con el IVA: el precio por los locales, **sin
-   * descuentos** (A4 · 0077). Nulo si Stripe no lo dice.
+   * Lo que se cobra cada vez, en céntimos y **sin IVA** (0135): el precio por los locales,
+   * **sin descuentos** (A4 · 0077). Un precio de antes, con el IVA dentro, se pasa a sin
+   * IVA. Nulo si Stripe no lo dice.
    */
   readonly importe: number | null;
   /** «2026-10-07», en hora de Madrid. */
@@ -133,6 +138,11 @@ export interface Pagos {
       readonly pruebaHasta?: Date;
       /** El cupón del primer mes, para el siguiente cobro (A3). */
       readonly cupon?: string;
+      /**
+       * El IVA aparte (0135), al cambiar de precio: una suscripción de antes llevaba el
+       * «incluido», y con un precio sin IVA tiene que sumarlo.
+       */
+      readonly iva?: string;
     },
   ): Promise<SuscripcionDeStripe>;
 }
@@ -314,6 +324,14 @@ function laMarca(marca: string): string {
   return conocidas[marca] ?? marca.charAt(0).toUpperCase() + marca.slice(1);
 }
 
+/**
+ * Un importe de Stripe, sin IVA. Los precios de Estook son sin IVA desde la 0135
+ * (`exclusive`); los de antes lo llevaban dentro (`inclusive`), y se le quita.
+ */
+function sinElIvaSiLoLleva(importe: number, comoLlevaElIva: unknown): number {
+  return comoLlevaElIva === 'inclusive' ? laCuotaSinIva(importe) : importe;
+}
+
 /** Lo que devuelve Stripe de una suscripción, a lo que Estook entiende. */
 export function traducirSuscripcion(s: Record<string, unknown>): SuscripcionDeStripe {
   const lineas = (s['items'] as { data?: Record<string, unknown>[] } | undefined)?.data ?? [];
@@ -343,7 +361,10 @@ export function traducirSuscripcion(s: Record<string, unknown>): SuscripcionDeSt
     cantidad: Number(linea['quantity'] ?? 1),
     importe:
       typeof precio['unit_amount'] === 'number'
-        ? precio['unit_amount'] * Number(linea['quantity'] ?? 1)
+        ? sinElIvaSiLoLleva(
+            precio['unit_amount'] * Number(linea['quantity'] ?? 1),
+            precio['tax_behavior'],
+          )
         : null,
     pruebaHasta:
       estado === 'trialing' && typeof finDePrueba === 'number' ? fechaDeMadrid(finDePrueba) : null,
@@ -503,7 +524,8 @@ export function pagosDeStripe(
           unit_amount: falta.centimos,
           recurring: { interval: falta.intervalo },
           lookup_key: falta.clave,
-          tax_behavior: 'inclusive',
+          // Sin IVA, y el IVA aparte (0135): «Esencial 39 € + IVA».
+          tax_behavior: 'exclusive',
           nickname: falta.clave,
         },
         `precio-${falta.clave}`,
@@ -513,28 +535,33 @@ export function pagosDeStripe(
     return resultado;
   }
 
+  /**
+   * El IVA general, **aparte del precio** (0135): Stripe lo suma en cada factura. El de
+   * antes, «incluido» (`iva-21`), se queda en Stripe para las suscripciones que ya lo
+   * llevaban, y se les cambia por este cuando cambian de plan.
+   */
   async function elIva(hay: string | undefined): Promise<string> {
     if (hay !== undefined) return hay;
     const lista = await pedir<{ data: { id: string; metadata: Record<string, string> }[] }>(
       'GET',
       '/tax_rates',
-      { active: true, inclusive: true, limit: 100 },
+      { active: true, inclusive: false, limit: 100 },
     );
-    const suyo = lista.data.find((t) => t.metadata['estook'] === 'iva-21');
+    const suyo = lista.data.find((t) => t.metadata['estook'] === IVA_APARTE);
     if (suyo !== undefined) return suyo.id;
     const creado = await pedir<{ id: string }>(
       'POST',
       '/tax_rates',
       {
         display_name: 'IVA',
-        description: 'IVA general, incluido en el precio',
+        description: 'IVA general, aparte del precio',
         percentage: 21,
-        inclusive: true,
+        inclusive: false,
         country: 'ES',
         tax_type: 'vat',
-        metadata: { estook: 'iva-21' },
+        metadata: { estook: IVA_APARTE },
       },
-      'iva-21',
+      IVA_APARTE,
     );
     return creado.id;
   }
@@ -765,6 +792,7 @@ export function pagosDeStripe(
                 proration_behavior: 'none',
               }),
           ...(cambios.cupon === undefined ? {} : { discounts: [{ coupon: cambios.cupon }] }),
+          ...(cambios.iva === undefined ? {} : { default_tax_rates: [cambios.iva] }),
           expand: ['default_payment_method'],
         }),
       );

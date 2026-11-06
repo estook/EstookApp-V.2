@@ -19,6 +19,7 @@ export interface MiSuscripcion {
   readonly intervalo: Intervalo | null;
   readonly locales: number;
   readonly localesActivos: number;
+  /** Sin IVA (0135). */
   readonly cuota: number | null;
   readonly pruebaHasta: string | null;
   readonly periodoHasta: string | null;
@@ -30,4 +31,13 @@ export interface MiSuscripcion {
   readonly conUnLocalMas: { readonly plan: CodigoDePlan; readonly cuota: number | null } | null;
   /** El descuento del primer mes del código con que llegó (A3), si todavía no se ha cobrado. */
   readonly descuento: { readonly codigo: string; readonly porcentaje: number } | null;
+  /** En Pausa (0135): desde cuándo, el día que vuelve sola y a qué plan. */
+  readonly pausa: {
+    readonly desde: string;
+    readonly vuelveSola: string;
+    readonly vuelveA: CodigoDePlan;
+    readonly vuelveAIntervalo: Intervalo;
+  } | null;
+  /** Por qué no puede pausar hoy, en una frase. Nulo: puede. */
+  readonly noPuedePausar: string | null;
 }

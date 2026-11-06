@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { avisoDeLaRevision } from './avisos.ts';
+import { BUSQUEDAS_POR_ANALISIS } from './tu-zona.ts';
 import {
   CREDITOS_AL_MES,
   CREDITOS_DE_FOGON,
+  MODELO_DE_FOGON,
+  PARTE_DEL_MES_AL_DIA,
+  TOPE_EN_EUROS,
   casarConUnProducto,
   centimosDeEuros,
   costeEnMicroEuros,
@@ -55,13 +59,32 @@ describe('de euros a céntimos', () => {
 describe('lo que gasta cada cosa', () => {
   it('una foto gasta más que un texto, y nada pasa de lo que deja apuntar la base', () => {
     expect(CREDITOS_DE_FOGON.leer_merma_foto).toBeGreaterThan(CREDITOS_DE_FOGON.leer_merma_voz);
-    // Buscar en internet, lo que más (0104): y cabe en el día de Esencial (30).
+    // Buscar en internet, lo que más (0104): y cabe en el día de Esencial (10, desde la 0135).
     expect(CREDITOS_DE_FOGON.analizar_zona).toBe(Math.max(...Object.values(CREDITOS_DE_FOGON)));
     expect(CREDITOS_DE_FOGON.analizar_zona).toBeLessThanOrEqual(CREDITOS_AL_MES.esencial / 10);
     for (const creditos of Object.values(CREDITOS_DE_FOGON)) {
       expect(creditos).toBeGreaterThanOrEqual(1);
       expect(creditos).toBeLessThanOrEqual(30);
     }
+  });
+});
+
+describe('la IA a un tercio (0135)', () => {
+  it('100 créditos en Esencial, 500 en Pro y Cadena, y 1,65 € al mes por local', () => {
+    expect(CREDITOS_AL_MES).toEqual({ esencial: 100, pro: 500, cadena: 500, pausa: 0 });
+    expect(TOPE_EN_EUROS.mes).toBe(1_650_000);
+    expect(TOPE_EN_EUROS.dia).toBe(TOPE_EN_EUROS.mes / PARTE_DEL_MES_AL_DIA);
+  });
+
+  it('un análisis de la zona, con todas sus búsquedas, cabe en el tope de un día', () => {
+    const analisis = costeEnMicroEuros(MODELO_DE_FOGON, {
+      entrada: 30_000,
+      cacheLeidos: 0,
+      cacheEscritos: 0,
+      salida: 4_000,
+      busquedas: BUSQUEDAS_POR_ANALISIS,
+    });
+    expect(analisis).toBeLessThan(TOPE_EN_EUROS.dia);
   });
 });
 

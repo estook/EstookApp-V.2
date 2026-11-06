@@ -147,7 +147,7 @@ type Tono = 'bien' | 'info' | 'mal' | 'atencion' | 'neutro' | 'marca';
 /** El contrato, en una etiqueta: lo que ha pagado, no lo que usa. */
 export function elContrato(c: ClienteEnLista): { readonly texto: string; readonly tono: Tono } {
   if (c.deLaCasa) return { texto: 'De la casa', tono: 'marca' };
-  // Pausa paga 12 € por guardar sus datos: su cuenta es de solo lectura, que es lo
+  // Pausa paga 9 € más IVA por guardar sus datos: su cuenta es de solo lectura, que es lo
   // que compra, pero no es «Sin pagar» (A4 · 0077).
   if (c.enPausa) return { texto: 'En Pausa', tono: 'info' };
   switch (c.como) {

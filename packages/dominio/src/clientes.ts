@@ -78,7 +78,7 @@ export const NOMBRE_DE_LA_PESTANA: Readonly<Record<PestanaDeClientes, string>> =
  *     bajando—, y los que tienen un cobro fallido o han pedido cancelar. Es la señal
  *     que pedía Richi: «lleva pagando tres meses y apenas lo usa».
  *   · **Sin pagar**: los que no han pagado nunca o están en solo lectura.
- *   · **Pausa paga** (A4 · 0077): 12 € al mes por guardar sus datos. Su cuenta está en
+ *   · **Pausa paga** (A4 · 0077): 9 € más IVA al mes por guardar sus datos. Su cuenta está en
  *     solo lectura, que es lo que compra, y aun así está en **Pagando**, no en «Sin
  *     pagar». Hasta A4 caía en «Sin pagar», y su cuota no se contaba.
  */

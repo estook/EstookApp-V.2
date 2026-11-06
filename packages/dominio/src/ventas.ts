@@ -1,6 +1,6 @@
 import { esDeLosQuePagan, estaEnLaPestana, type ActividadDeCliente } from './clientes.ts';
 import { centimos, conSimbolo } from './dinero.ts';
-import { sinIva } from './iva.ts';
+import { conIva, sinIva } from './iva.ts';
 import type { CifraDelCorreo } from './informes.ts';
 import type { ComoEstaLaCuenta } from './suscripcion.ts';
 import { diaDeLaSemana, masDias, type FechaOperativa } from './tiempo.ts';
@@ -36,12 +36,23 @@ import type { OrigenDeLlegada } from './vendedores.ts';
 
 // ── El dinero, sin IVA (1A) ──────────────────────────────────────────────────
 
-/** El IVA de las cuotas de Estook: el general, dentro del precio (0048). */
+/**
+ * El IVA de las cuotas de Estook: el general. **Desde el 6-nov-2026 va aparte** (0135): la
+ * cuota que se guarda y se cuenta ya es sin IVA (Pro, 99 €), y el IVA se suma al cobrar.
+ */
 export const IVA_DE_LA_CUOTA = 0.21;
 
-/** Lo que es de Estook de una cuota con el IVA dentro: 99 € son 81,82 €. */
-export function laCuotaSinIva(conIva: number): number {
-  return sinIva(centimos(conIva), IVA_DE_LA_CUOTA);
+/**
+ * Lo que es de Estook de un importe con el IVA dentro: 121 € son 100 €. Sirve para lo que
+ * Stripe dice con el IVA (lo devuelto) y para los precios de antes de la 0135.
+ */
+export function laCuotaSinIva(importeConIva: number): number {
+  return sinIva(centimos(importeConIva), IVA_DE_LA_CUOTA);
+}
+
+/** Lo que paga el cliente por una cuota sin IVA: 99 € son 119,79 €. */
+export function laCuotaConIva(cuotaSinIva: number): number {
+  return conIva(centimos(cuotaSinIva), IVA_DE_LA_CUOTA);
 }
 
 /** Con menos de estos pagando al empezar, la pérdida no se da en tanto por ciento. */
@@ -157,7 +168,7 @@ export interface ClienteDeVentas {
   readonly deLaCasa: boolean;
   /** El modo de Stripe de su suscripción. Nulo: no ha pasado por Stripe. */
   readonly modo: ModoDeCobro | null;
-  /** Lo que deja al mes, en céntimos y **con IVA**. Nulo sin plan. */
+  /** Lo que deja al mes, en céntimos y **sin IVA** (0135). Nulo sin plan. */
   readonly cuotaAlMes: number | null;
   readonly origen: OrigenDeLlegada;
   readonly vendedor: { readonly id: string; readonly nombre: string } | null;
@@ -171,7 +182,7 @@ export interface FotoDeVentas {
   readonly dia: FechaOperativa;
   readonly como: ComoEstaLaCuenta;
   readonly enPausa: boolean;
-  /** Con IVA. Nulo si no pagaba. */
+  /** Sin IVA (0135). Nulo si no pagaba. */
   readonly cuotaAlMes: number | null;
   readonly deLaCasa: boolean;
   readonly modo: ModoDeCobro | null;
@@ -516,11 +527,11 @@ export function elTableroDeVentas(hay: LoQueHayParaLasVentas): TableroDeVentas {
       const total = [...end.values()].reduce((a, b) => a + b, 0);
       return {
         mes,
-        cuota: laCuotaSinIva(total),
-        nueva: laCuotaSinIva(nueva),
-        ampliada: laCuotaSinIva(ampliada),
-        perdida: laCuotaSinIva(perdida),
-        reducida: laCuotaSinIva(reducida),
+        cuota: total,
+        nueva,
+        ampliada,
+        perdida,
+        reducida,
       };
     })
     .filter((m): m is NonNullable<typeof m> => m !== null);
@@ -582,9 +593,9 @@ export function elTableroDeVentas(hay: LoQueHayParaLasVentas): TableroDeVentas {
     },
     dinero: {
       cuotaAlMes: {
-        ahora: laCuotaSinIva(cuotaAhora),
-        conIva: cuotaAhora,
-        antes: pagandoAlEmpezar === null ? null : laCuotaSinIva(cuotaDe(pagandoAlEmpezar)),
+        ahora: cuotaAhora,
+        conIva: laCuotaConIva(cuotaAhora),
+        antes: pagandoAlEmpezar === null ? null : cuotaDe(pagandoAlEmpezar),
       },
       cobrado: {
         ahora: cobradoAhora.sinIva,
@@ -599,7 +610,7 @@ export function elTableroDeVentas(hay: LoQueHayParaLasVentas): TableroDeVentas {
             ? null
             : // Un tanto por ciento con un decimal: no es dinero, es una proporción.
               Number(((bajasAhora.length / pagaban) * 100).toFixed(1)),
-        cuota: cuotaPerdida === null ? null : laCuotaSinIva(cuotaPerdida),
+        cuota: cuotaPerdida,
       },
     },
     origenes: [...porOrigen.entries()]
@@ -611,7 +622,7 @@ export function elTableroDeVentas(hay: LoQueHayParaLasVentas): TableroDeVentas {
         nombre: v.nombre,
         traidos: v.traidos,
         pagan: v.pagan,
-        cuotaAlMes: laCuotaSinIva(v.cuota),
+        cuotaAlMes: v.cuota,
         visitas: v.visitas,
       }))
       .sort(

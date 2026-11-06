@@ -1,4 +1,4 @@
-import { DIAS_DE_AVISO_ANTES_DE_COBRAR, DIAS_DE_GRACIA } from '@estook/dominio';
+import { DIAS_DE_AVISO_ANTES_DE_COBRAR, DIAS_DE_GRACIA, MESES_DE_PAUSA } from '@estook/dominio';
 import { IconoFlechaAbajo } from '@estook/iconos';
 
 /**
@@ -21,8 +21,13 @@ export function ComoFunciona({ diasDePrueba }: { readonly diasDePrueba: number |
       <ul className="mt-e2 flex flex-col gap-e2 text-texto-suave">
         <li>Pagas con tarjeta en la página segura de Stripe. Estook no ve ni guarda tu tarjeta.</li>
         <li>
-          La cuota es por local, con el IVA incluido, y{' '}
-          <strong className="text-texto">se renueva sola</strong> cada mes o cada año, según elijas.
+          La cuota es por local, más IVA, y <strong className="text-texto">se renueva sola</strong>{' '}
+          cada mes o cada año, según elijas.
+        </li>
+        <li>
+          Si cierras una temporada, la <strong className="text-texto">Pausa</strong> guarda tus
+          datos en solo lectura: hasta {MESES_DE_PAUSA} meses, una vez al año, y vuelves cuando
+          quieras pagando solo la parte del mes que quede.
         </li>
         {diasDePrueba !== null && (
           <li>

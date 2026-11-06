@@ -90,6 +90,8 @@ export interface QuienSoy {
     readonly laLlevo: boolean;
     /** Si su plan lleva Estook TPV (0120). Opcional mientras la API no esté desplegada. */
     readonly conEstookTpv?: boolean;
+    /** Si está en Pausa (0135). Opcional mientras la API no esté desplegada. */
+    readonly enPausa?: boolean;
   } | null;
   /**
    * Lo que recuerda su cuenta en todos sus aparatos (0084): el periodo de cada widget y

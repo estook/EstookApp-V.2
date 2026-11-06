@@ -31,7 +31,7 @@ Lo hecho y por qué, en la [0104](decisiones/0104-m10-2-los-menus-y-tu-zona.md);
    - **Lo que te deja**: debajo, si a algún plato le falta su escandallo, dice cuál; **Desgranar en Escandallos** te lleva a Escandallos → **Menús**, donde están para desgranarlos. Con los escandallos hechos, dice de cuánto a cuánto te deja cada menú.
    - **Descargar**: el botón abre cuatro cosas. **Cartel en A3** (para la puerta: imprímelo en una copistería en A3, o en A4 en casa), **PDF en A4**, **Por WhatsApp…** y **Imagen** para Instagram.
    - **El Panel de un camarero**: con la cuenta de un camarero nuevo, en el Panel sale **«Menú del día»** con el de hoy y su precio.
-   - **Analiza mi zona**: Carta → Análisis → **Tu zona** → **Analiza mi zona**. Tarda un minuto: Fogón busca en internet. Saldrá cada plato tuyo comparado con los de alrededor, cada precio con su enlace. Gasta 25 créditos y se puede una vez cada 24 horas. Si dice que falta algo (la dirección del local, o que Fogón está apagado), lo dice con un enlace a donde se arregla.
+   - **Analiza mi zona**: Carta → Análisis → **Tu zona** → **Analiza mi zona**. Tarda un minuto: Fogón busca en internet. Saldrá cada plato tuyo comparado con los de alrededor, cada precio con su enlace. Gasta 8 créditos y se puede una vez cada diez días (desde la 0135). Si dice que falta algo (la dirección del local, o que Fogón está apagado), lo dice con un enlace a donde se arregla.
    - **Apagarlo**: Ajustes → Tu local → Tu carta → **Tu local sirve menús**. Apagado, la pestaña Menús desaparece; enciéndelo otra vez para seguir.
 5. **En GitHub**, después de fusionar: la vuelta de `main` tiene que salir en verde **en pocos minutos**.
 

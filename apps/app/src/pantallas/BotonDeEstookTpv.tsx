@@ -177,8 +177,8 @@ export function BotonDeEstookTpv() {
             </ul>
             {pro !== undefined && (
               <p className="rounded-grande bg-naranja-suave px-e3 py-e2 tabular-nums">
-                <strong>Pro · {conSimbolo(centimos(pro.alMesPorLocal))}</strong> al mes por local,
-                IVA incluido.
+                <strong>Pro · {conSimbolo(centimos(pro.alMesPorLocal))}</strong> + IVA al mes por
+                local.
               </p>
             )}
             {!laLlevo && (

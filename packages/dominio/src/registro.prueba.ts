@@ -38,11 +38,11 @@ describe('la oferta de prueba', () => {
 });
 
 describe('los planes', () => {
-  it('son los del Manifiesto, con el IVA incluido', () => {
-    expect(planPorCodigo('esencial')?.alMesPorLocal).toBe(4_900);
+  it('son los finales del Manifiesto, sin IVA (0135)', () => {
+    expect(planPorCodigo('esencial')?.alMesPorLocal).toBe(3_900);
     expect(planPorCodigo('pro')?.alMesPorLocal).toBe(9_900);
     expect(planPorCodigo('cadena')?.alMesPorLocal).toBe(8_900);
-    expect(planPorCodigo('pausa')?.alMesPorLocal).toBe(1_200);
+    expect(planPorCodigo('pausa')?.alMesPorLocal).toBe(900);
   });
 
   it('el anual son diez meses: dos gratis', () => {

@@ -16,9 +16,10 @@ import { elUltimoAnalisis, miZonaDelLocal, type MiZona } from '../consultas/mi-z
 /**
  * «Analiza mi zona» (M10 · 2, decisiones 0103 y 0104). Richi, 21-oct: «una burbuja de
  * Fogón, que puedas decirle analiza mi zona, y que él busque en internet; ponle buen
- * contexto para que sepa qué hacer y rápido… solo 1 al día cada 24 horas».
+ * contexto para que sepa qué hacer y rápido… solo 1 al día cada 24 horas». Desde el 6-nov
+ * (0135), una vez cada diez días.
  *
- * Lo pide quien edita la Carta. Antes de gastar nada se mira que hayan pasado 24 horas
+ * Lo pide quien edita la Carta. Antes de gastar nada se mira que hayan pasado diez días
  * desde el último análisis del local. Fogón recibe **el local y sus platos con su precio,
  * sin un coste** (los de los demás no necesitan saber lo que te cuesta a ti), busca en
  * internet y contesta un JSON. De lo que contesta se guarda solo lo que se sostiene:
@@ -195,7 +196,7 @@ export const analizarMiZona = comando<Record<string, never>, MiZona>({
     const otraVez = cuandoSePuedeOtraVez(await elUltimoAnalisis(contexto, localId), contexto.ahora);
     if (otraVez !== null) {
       throw new FalloDeAplicacion('faltan_datos', {
-        porque: 'Tu zona ya se ha analizado hoy. Se puede otra vez cuando pasen 24 horas.',
+        porque: 'Tu zona se analizó hace menos de diez días. Se puede otra vez cuando pasen.',
         otraVezDesde: otraVez.toISOString(),
       });
     }
@@ -235,7 +236,8 @@ export const analizarMiZona = comando<Record<string, never>, MiZona>({
     if (!leido.success) {
       // Lo gastado queda apuntado (auditoría del 20-oct).
       throw falloQueSeGuarda('faltan_datos', {
-        porque: 'Fogón ha buscado, pero no ha contestado algo que se entienda. Prueba mañana.',
+        porque:
+          'Fogón ha buscado, pero no ha contestado algo que se entienda. Prueba otra vez más tarde.',
       });
     }
     const vistas = new Set(

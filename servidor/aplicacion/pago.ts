@@ -7,6 +7,7 @@ import {
   dejaEscribir,
   dejaMirar,
   elEstadoDeStripe,
+  elPlanPorLosLocales,
   laCuotaSinIva,
   llevaEstookTpv,
   type CodigoDePlan,
@@ -106,6 +107,11 @@ export interface FilaDeSuscripcion {
   readonly stripeCliente: string | null;
   readonly stripeSuscripcion: string | null;
   readonly tarjeta: string | null;
+  /** El día que empezó la última Pausa (0135): de él cuentan los seis y los doce meses. */
+  readonly pausaEmpezo: FechaOperativa | null;
+  /** En Pausa, el plan y el intervalo a los que vuelve. */
+  readonly vuelveAPlan: CodigoDePlan | null;
+  readonly vuelveAIntervalo: Intervalo | null;
 }
 
 /** La lee quien ve la organización (la política de la 0018). */
@@ -131,6 +137,9 @@ export async function laSuscripcionDe(
       stripe_cliente: string | null;
       stripe_suscripcion: string | null;
       tarjeta: string | null;
+      pausa_empezo: string | null;
+      vuelve_a_plan: string | null;
+      vuelve_a_intervalo: string | null;
     }[]
   >`
     select s.estado::text as estado, s.plan, s.intervalo, s.locales_pagados,
@@ -138,7 +147,8 @@ export async function laSuscripcionDe(
            to_char(s.prueba_hasta, 'YYYY-MM-DD') as prueba_hasta,
            s.periodo_hasta::text as periodo_hasta, s.cancela_al_acabar,
            s.impago_desde::text as impago_desde, s.dias_de_prueba, s.de_la_casa, o.es_ejemplo,
-           s.stripe_modo, s.stripe_cliente, s.stripe_suscripcion, s.tarjeta
+           s.stripe_modo, s.stripe_cliente, s.stripe_suscripcion, s.tarjeta,
+           to_char(s.pausa_empezo, 'YYYY-MM-DD') as pausa_empezo, s.vuelve_a_plan, s.vuelve_a_intervalo
       from estook.suscripcion s
       join estook.organizacion o on o.id = s.organizacion_id
      where s.organizacion_id = ${organizacionId}
@@ -162,6 +172,9 @@ export async function laSuscripcionDe(
     stripeCliente: f.stripe_cliente,
     stripeSuscripcion: f.stripe_suscripcion,
     tarjeta: f.tarjeta,
+    pausaEmpezo: f.pausa_empezo as FechaOperativa | null,
+    vuelveAPlan: f.vuelve_a_plan as CodigoDePlan | null,
+    vuelveAIntervalo: f.vuelve_a_intervalo as Intervalo | null,
   };
 }
 
@@ -512,8 +525,8 @@ export async function aplicarLoDeStripe(
       ${organizacionId}::uuid, ${JSON.stringify(cambios)}::text::jsonb, ${quien}, ${porque}
     )
   `;
-  // Y lo que le cobra de verdad, con el precio con el que se apuntó (A4 · 0077): quien
-  // entró en Pro a 79 € sigue pagando 79 €, aunque hoy cueste 99 €.
+  // Y lo que le cobra de verdad, sin IVA (0135), con el precio con el que se apuntó
+  // (A4 · 0077): quien entró con un precio de antes sigue con él hasta que cambie de plan.
   if (s.importe !== null) {
     await contexto.sql`
       select plataforma.apuntar_la_cuota_de_stripe(${organizacionId}::uuid, ${s.importe}::integer, ${modo})
@@ -589,6 +602,50 @@ export async function apuntarLaDevolucion(
             ${ahora}, ${laCuotaSinIva(ahora)})
   `;
   return true;
+}
+
+// ── Volver de la Pausa (0135) ────────────────────────────────────────────────
+
+/**
+ * De la Pausa al plan que tenía antes, con los locales de hoy (Pro con dos o más es
+ * Cadena). **Sin penalización**: Stripe prorratea lo que quede del mes. Lo llaman «Volver»
+ * en Ajustes → Suscripción y el reloj el día que la Pausa llega a sus seis meses.
+ */
+export async function volverDeLaPausa(
+  contexto: Contexto,
+  organizacionId: string,
+  fila: Pick<FilaDeSuscripcion, 'vuelveAPlan' | 'vuelveAIntervalo' | 'localesActivos'> & {
+    readonly stripeSuscripcion: string;
+  },
+  quien: string,
+  porque: string,
+): Promise<CodigoDePlan> {
+  const pagos = losPagos(contexto);
+  const antes = fila.vuelveAPlan ?? 'esencial';
+  const intervalo = fila.vuelveAIntervalo ?? 'mes';
+  const plan = elPlanPorLosLocales(antes, Math.max(1, fila.localesActivos));
+  const catalogo = await elCatalogo(contexto);
+  const precio = catalogo.precios[claveDelPrecio(plan, intervalo)];
+  if (precio === undefined) throw new FalloDeAplicacion('faltan_datos', { campos: ['plan'] });
+  const id = fila.stripeSuscripcion;
+  const actual = await conStripe(contexto, () => pagos.leerSuscripcion(id));
+  const nueva = await conStripe(contexto, () =>
+    pagos.cambiarSuscripcion(id, {
+      linea: actual.linea,
+      precio,
+      cantidad: Math.max(1, fila.localesActivos),
+      iva: catalogo.iva,
+    }),
+  );
+  await aplicarLoDeStripe(contexto, organizacionId, nueva, pagos.modo, quien, porque);
+  await cambiarLaSuscripcion(
+    contexto,
+    organizacionId,
+    { vuelve_a_plan: null, vuelve_a_intervalo: null },
+    quien,
+    porque,
+  );
+  return plan;
 }
 
 /** Cambia la suscripción con lo que diga el código (no Stripe): el cliente nuevo, los días de prueba. */

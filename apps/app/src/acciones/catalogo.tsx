@@ -272,7 +272,7 @@ export const ACCIONES: readonly Accion[] = [
   },
   {
     // M10 · 2 (0104; Richi: «una burbuja de Fogón, que puedas decirle analiza mi
-    // zona»). Lleva a Tu zona, donde se pulsa: un enlace no gasta 25 créditos solo.
+    // zona»). Lleva a Tu zona, donde se pulsa: un enlace no gasta créditos solo.
     id: 'analizar-mi-zona',
     app: 'carta',
     nombre: 'Analiza mi zona',

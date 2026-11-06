@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { masDias, masMeses, type FechaOperativa } from '@estook/dominio';
 import { correoEnMemoria } from '../../servidor/infraestructura/correo.ts';
 import {
   pagosDeMentira,
@@ -21,6 +22,8 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  *   · un local más sube la cuota, y Pro con dos locales pasa a Cadena
  *   · cancelar y reanudar
  *   · el reloj: sin su secreto no late, y el correo del impago sale una vez al día
+ *   · la Pausa (0135): al instante, se vuelve cuando se quiere, una al año, y a los seis
+ *     meses vuelve sola, con su correo siete días antes
  */
 
 let base: BaseDePrueba;
@@ -276,6 +279,7 @@ describe('un cobro que falla', () => {
       laLlevo: true,
       // Paga Esencial: sin Estook TPV (0120).
       conEstookTpv: false,
+      enPausa: false,
     });
     losDatos(
       await api.ejecutar(token, 'crear_producto', {
@@ -420,5 +424,128 @@ describe('el reloj', () => {
     // Tres latidos del reloj entero, por cada cuenta de esta base: sola tarda 1,6 s, pero
     // con todas las pruebas a la vez pasó de los 5 s de fábrica (la semana entera, 18-oct).
     // Lo que mide es qué hace cada latido, no cuánto tarda.
+  }, 30_000);
+});
+
+describe('la Pausa (0135)', () => {
+  const SECRETO = 'el-secreto-del-reloj-de-las-pruebas';
+  /** Un día a partir de hoy, en «2026-11-08». */
+  const dentroDe = (dias: number) =>
+    new Date(Date.now() + dias * UN_DIA).toISOString().slice(0, 10) as FechaOperativa;
+
+  async function laPausaDe(para: string) {
+    const [fila] = await comoDuena<{
+      plan: string | null;
+      pausa_empezo: string | null;
+      vuelve_a_plan: string | null;
+    }>(
+      `select s.plan, s.pausa_empezo::text as pausa_empezo, s.vuelve_a_plan
+         from estook.suscripcion s
+         join estook.membresia m on m.organizacion_id = s.organizacion_id
+         join estook.persona p on p.id = m.persona_id
+        where p.correo = $1`,
+      [para],
+    );
+    return fila;
+  }
+
+  it('al instante, en solo lectura; se vuelve cuando se quiere, y una vez al año', async () => {
+    const para = 'pausa@correo-de-prueba.com';
+    const token = await cuentaNueva(para, 'Chiringuito Que Pausa');
+    await pagar(token, 'pro', 'mes');
+
+    losDatos(await api.ejecutar(token, 'cambiar_de_plan', { plan: 'pausa', intervalo: 'mes' }));
+    const enPausa = await laPausaDe(para);
+    expect(enPausa).toMatchObject({ plan: 'pausa', vuelve_a_plan: 'pro' });
+    expect(enPausa?.pausa_empezo).not.toBeNull();
+    const suya = losDatos<{ pausa: { vuelveA: string } | null; noPuedePausar: string | null }>(
+      await api.consultar(token, 'mi_suscripcion'),
+    );
+    expect(suya.pausa?.vuelveA).toBe('pro');
+    // El aviso de arriba de la app lo dice como Pausa, no como algo que se debe.
+    expect(
+      losDatos<{ cuenta: { como: string; enPausa: boolean } }>(
+        await api.consultar(token, 'quien_soy'),
+      ).cuenta,
+    ).toMatchObject({ como: 'solo_lectura', enPausa: true });
+    // En Pausa, la cuenta es de solo lectura: es lo que se paga.
+    expect(
+      elFallo(
+        await api.ejecutar(token, 'crear_producto', {
+          nombre: 'Hielo',
+          unidad_de_uso: 'kg',
+          zona: 'cocina',
+        }),
+      ),
+    ).toBe('cuenta_en_solo_lectura');
+
+    // Volver, cuando se quiera.
+    losDatos(await api.ejecutar(token, 'cambiar_de_plan', { plan: 'pro', intervalo: 'mes' }));
+    expect(await laPausaDe(para)).toMatchObject({ plan: 'pro', vuelve_a_plan: null });
+
+    // Y otra vez no: una cada doce meses.
+    const otra = await api.ejecutar(token, 'cambiar_de_plan', { plan: 'pausa', intervalo: 'mes' });
+    expect(elFallo(otra)).toBe('faltan_datos');
+    expect(JSON.stringify(otra)).toContain('una vez al año');
+    expect(
+      losDatos<{ noPuedePausar: string | null }>(await api.consultar(token, 'mi_suscripcion'))
+        .noPuedePausar,
+    ).toContain('una vez al año');
+  });
+
+  it('en la prueba no se pausa: no se paga nada', async () => {
+    const para = 'pausa-en-prueba@correo-de-prueba.com';
+    const token = await cuentaNueva(para, 'Bar En Prueba');
+    await pagar(token);
+    const { organizacion_id: org } = await suscripcionDe(para);
+    await comoDuena(
+      `update estook.suscripcion set estado = 'prueba', prueba_hasta = current_date + 5
+        where organizacion_id = $1`,
+      [org],
+    );
+    const no = await api.ejecutar(token, 'cambiar_de_plan', { plan: 'pausa', intervalo: 'mes' });
+    expect(elFallo(no)).toBe('faltan_datos');
+    expect(JSON.stringify(no)).toContain('En la prueba');
+  });
+
+  it('siete días antes de los seis meses avisa, y ese día vuelve sola al plan de antes', async () => {
+    await comoDuena(
+      `update plataforma.reloj set huella = encode(sha256(convert_to($1, 'UTF8')), 'hex')`,
+      [SECRETO],
+    );
+    const para = 'pausa-seis-meses@correo-de-prueba.com';
+    const token = await cuentaNueva(para, 'Chiringuito De Invierno');
+    await pagar(token, 'pro', 'mes');
+    losDatos(await api.ejecutar(token, 'cambiar_de_plan', { plan: 'pausa', intervalo: 'mes' }));
+    const { organizacion_id: org } = await suscripcionDe(para);
+    const antes = ahora;
+    try {
+      // Dentro de dos días, a siete de cumplir los seis meses: el correo.
+      const dia1 = dentroDe(2);
+      await comoDuena(
+        `update estook.suscripcion set pausa_empezo = $2 where organizacion_id = $1`,
+        [org, masMeses(masDias(dia1, 7), -6)],
+      );
+      ahora = new Date(`${dia1}T07:10:00Z`);
+      expect(await api.despachador.latir(quien(), SECRETO)).toMatchObject({ diario: true });
+      expect(correo.mandados.filter((c) => c.para === para).at(-1)?.asunto).toContain(
+        'tu Pausa acaba el',
+      );
+
+      // Dentro de tres, el día que se cumplen: vuelve sola a Pro.
+      const dia2 = dentroDe(3);
+      await comoDuena(
+        `update estook.suscripcion set pausa_empezo = $2 where organizacion_id = $1`,
+        [org, masMeses(dia2, -6)],
+      );
+      ahora = new Date(`${dia2}T07:10:00Z`);
+      expect(await api.despachador.latir(quien(), SECRETO)).toMatchObject({ diario: true });
+      expect(await laPausaDe(para)).toMatchObject({ plan: 'pro', vuelve_a_plan: null });
+      // El Stripe de mentira avisa del cambio por su cuenta, como el de verdad: se le espera
+      // para que no llegue con la base ya cerrada.
+      await new Promise((listo) => setTimeout(listo, 300));
+    } finally {
+      ahora = antes;
+    }
   }, 30_000);
 });

@@ -2,6 +2,8 @@ import { z } from 'zod';
 import {
   claveDelPrecio,
   elPlanPorLosLocales,
+  porQueNoSePausaEnLetra,
+  porQueNoSePuedePausar,
   type CodigoDePlan,
   type Intervalo,
 } from '@estook/dominio';
@@ -15,9 +17,11 @@ import {
   elCatalogo,
   elCuponDe,
   elDescuentoDe,
+  hoyEnMadrid,
   laAppPublica,
   laSuscripcionDe,
   losPagos,
+  volverDeLaPausa,
   type FilaDeSuscripcion,
 } from '../pago.ts';
 
@@ -38,7 +42,7 @@ const PLANES_QUE_SE_ELIGEN = ['esencial', 'pro', 'cadena', 'pausa'] as const;
  */
 function elAvisoDelPago(diasDePrueba: number | null, descuentoAlAcabar: number | null): string {
   const renovacion =
-    'La suscripción se renueva sola al final de cada periodo, al precio de tu plan con el IVA incluido. La cancelas cuando quieras en Estook, en Ajustes → Suscripción, y sigue hasta el final de lo pagado.';
+    'La suscripción se renueva sola al final de cada periodo, al precio de tu plan más IVA. La cancelas cuando quieras en Estook, en Ajustes → Suscripción, y sigue hasta el final de lo pagado.';
   const conDescuento =
     descuentoAlAcabar === null
       ? ''
@@ -255,6 +259,11 @@ export const entradaCambiarDePlan = z
  * Cambia el plan, o de mensual a anual. Se prorratea en la siguiente factura, y a
  * anual lo cobra Stripe al momento, que es lo que hace al cambiar de periodo. Pausa
  * solo es mensual.
+ *
+ * **La Pausa** (0135): empieza al instante y se prorratea; se puede **una vez cada doce
+ * meses** y no en la prueba ni debiendo (`porQueNoSePuedePausar`). Se guarda cuándo
+ * empezó y a qué plan vuelve: a él se vuelve cuando se quiera, sin penalización, y solo el
+ * día que llega a los seis meses (el reloj).
  */
 export const cambiarDePlan = comando<
   z.infer<typeof entradaCambiarDePlan>,
@@ -273,7 +282,30 @@ export const cambiarDePlan = comando<
         porque: 'Todavía no hay ningún plan pagado que cambiar.',
       });
     }
-    const intervalo: Intervalo = entrada.plan === 'pausa' ? 'mes' : entrada.intervalo;
+    const quien = `persona:${contexto.personaId ?? ''}`;
+    const pausar = entrada.plan === 'pausa';
+    const antes = fila.plan;
+    if (pausar) {
+      const no = porQueNoSePuedePausar(fila, fila.pausaEmpezo, hoyEnMadrid(contexto.ahora));
+      if (no !== null || antes === null || antes === 'pausa') {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: porQueNoSePausaEnLetra(no ?? { porque: 'ya_en_pausa', desde: null }),
+        });
+      }
+    }
+    // Volver de la Pausa al plan de antes, con su intervalo: «Volver» en la pantalla.
+    if (antes === 'pausa' && !pausar && entrada.plan === fila.vuelveAPlan) {
+      const plan = await volverDeLaPausa(
+        contexto,
+        organizacionId,
+        fila,
+        quien,
+        'vuelve de la Pausa',
+      );
+      return { plan, intervalo: fila.vuelveAIntervalo ?? 'mes' };
+    }
+
+    const intervalo: Intervalo = pausar ? 'mes' : entrada.intervalo;
     const plan = elPlanPorLosLocales(entrada.plan, Math.max(1, fila.localesActivos));
     const catalogo = await elCatalogo(contexto);
     const precio = catalogo.precios[claveDelPrecio(plan, intervalo)];
@@ -287,6 +319,7 @@ export const cambiarDePlan = comando<
         linea: actual.linea,
         precio,
         cantidad: Math.max(1, fila.localesActivos),
+        iva: catalogo.iva,
       }),
     );
     await aplicarLoDeStripe(
@@ -294,9 +327,31 @@ export const cambiarDePlan = comando<
       organizacionId,
       nueva,
       pagos.modo,
-      `persona:${contexto.personaId ?? ''}`,
-      `cambia a ${plan} (${intervalo})`,
+      quien,
+      pausar ? 'empieza la Pausa' : `cambia a ${plan} (${intervalo})`,
     );
+    if (pausar) {
+      await cambiarLaSuscripcion(
+        contexto,
+        organizacionId,
+        {
+          pausa_empezo: hoyEnMadrid(contexto.ahora),
+          vuelve_a_plan: antes,
+          vuelve_a_intervalo: fila.intervalo ?? 'mes',
+        },
+        quien,
+        'empieza la Pausa',
+      );
+    } else if (antes === 'pausa') {
+      // Vuelve de la Pausa a otro plan: ya no hay a qué volver.
+      await cambiarLaSuscripcion(
+        contexto,
+        organizacionId,
+        { vuelve_a_plan: null, vuelve_a_intervalo: null },
+        quien,
+        'vuelve de la Pausa',
+      );
+    }
     return { plan, intervalo };
   },
 });
@@ -375,7 +430,7 @@ export async function laCuotaSigueALosLocales(
     pagos.cambiarSuscripcion(id, {
       linea: actual.linea,
       cantidad: locales,
-      ...(plan === fila.plan || precio === undefined ? {} : { precio }),
+      ...(plan === fila.plan || precio === undefined ? {} : { precio, iva: catalogo.iva }),
     }),
   );
   await aplicarLoDeStripe(

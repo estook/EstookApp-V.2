@@ -133,14 +133,16 @@ export function elPlanPorLosLocales(plan: CodigoDePlan, locales: number): Codigo
 /**
  * Por qué versión va el precio de cada plan. **Un precio de Stripe no se cambia, se
  * sustituye**: subir un plan es subirle aquí la versión, y el catálogo crea el precio
- * nuevo la primera vez que hace falta. Pro y Cadena van por la 2 desde la decisión
- * 0067 (99 € y 89 €); quien ya pagaba con la 1 sigue con ella hasta que cambie de plan.
+ * nuevo la primera vez que hace falta. Desde la 0135 (6-nov-2026) todos son **sin IVA**,
+ * con el IVA aparte (`tax_behavior: exclusive`): Esencial va por la 2, Pro y Cadena por
+ * la 3 y Pausa por la 2. Quien pagaba con un precio de antes sigue con él hasta que
+ * cambie de plan; nadie paga todavía de verdad (solo hay pagos de prueba).
  */
 const VERSION_DEL_PRECIO: Readonly<Record<CodigoDePlan, number>> = {
-  esencial: 1,
-  pro: 2,
-  cadena: 2,
-  pausa: 1,
+  esencial: 2,
+  pro: 3,
+  cadena: 3,
+  pausa: 2,
 };
 
 /** El nombre del precio en Stripe (`estook-pro-mes-v2`). */
@@ -179,7 +181,7 @@ export function elEstadoDeStripe(status: string): EstadoDeSuscripcion {
 
 export interface CorreoDeLaCuenta {
   /** Qué correo es, para no mandarlo dos veces el mismo día. */
-  readonly tipo: 'impago' | 'solo_lectura' | 'fin_de_prueba';
+  readonly tipo: 'impago' | 'solo_lectura' | 'fin_de_prueba' | 'fin_de_pausa';
   readonly clave: string;
   readonly asunto: string;
   /** Párrafos. El que manda el correo los pinta. */
@@ -189,7 +191,10 @@ export interface CorreoDeLaCuenta {
 export interface LoQueSabeElReloj {
   readonly nombre: string;
   readonly suscripcion: LaSuscripcion;
+  /** Lo que se paga cada periodo, en céntimos y **sin IVA**. */
   readonly cuota: number | null;
+  /** Si está en Pausa: cuándo empezó y a qué plan vuelve (0135). */
+  readonly pausa?: LaPausa | null;
 }
 
 const A_SUSCRIPCION = 'Lo tienes todo en Estook, en Ajustes → Suscripción.';
@@ -246,7 +251,9 @@ export function elCorreoDeHoy(
     const faltan = diasEntre(hoy, s.pruebaHasta);
     if (faltan >= 1 && faltan <= DIAS_DE_AVISO_ANTES_DE_COBRAR) {
       const cuanto =
-        cuenta.cuota === null ? 'la cuota de tu plan' : conSimbolo(centimos(cuenta.cuota));
+        cuenta.cuota === null
+          ? 'la cuota de tu plan'
+          : `${conSimbolo(centimos(cuenta.cuota))} más IVA`;
       return {
         tipo: 'fin_de_prueba',
         clave: s.pruebaHasta,
@@ -260,7 +267,115 @@ export function elCorreoDeHoy(
     }
   }
 
+  const pausa = cuenta.pausa ?? null;
+  if (s.plan === 'pausa' && pausa !== null) {
+    const acaba = cuandoAcabaLaPausa(pausa.empezo);
+    const faltan = diasEntre(hoy, acaba);
+    if (faltan >= 1 && faltan <= DIAS_DE_AVISO_ANTES_DE_VOLVER) {
+      const vuelveA = planPorCodigo(pausa.vuelveA)?.nombre ?? 'tu plan';
+      return {
+        tipo: 'fin_de_pausa',
+        clave: acaba,
+        asunto: `${nombre}: tu Pausa acaba el ${fechaEnLetra(acaba)}`,
+        parrafos: [
+          `Tu Pausa llega a los seis meses el ${fechaEnLetra(acaba)}. Ese día vuelves solo a ${vuelveA}, como tenías antes, y todo se abre otra vez para apuntar.`,
+          'Si reabres antes, vuelve cuando quieras desde Ajustes → Suscripción: se cobra solo la parte del mes que quede.',
+          'Si no vas a seguir, cancela antes de esa fecha y no se te cobrará nada más.',
+        ],
+      };
+    }
+  }
+
   return null;
+}
+
+// ── La Pausa (0135) ──────────────────────────────────────────────────────────
+
+/**
+ * La Pausa, con las reglas que dijo Richi (0130 y 6-nov-2026, 0135): para el chiringuito
+ * que cierra en invierno o el local en obras. **La cuenta queda en solo lectura por 9 € al
+ * mes**, empieza **al instante**, se vuelve **cuando se quiera y sin penalización** —se
+ * cobra solo la parte del mes que queda, como hacen todas— y **dura hasta seis meses**: si
+ * llega, vuelve sola al plan de antes, con un correo siete días antes. **Una vez cada doce
+ * meses**, contados desde que empezó la anterior. No se elige cuándo se vuelve: «que vuelva
+ * cuando pueda volver, más libre y justo» (Richi).
+ */
+export const MESES_DE_PAUSA = 6;
+export const MESES_ENTRE_PAUSAS = 12;
+export const DIAS_DE_AVISO_ANTES_DE_VOLVER = 7;
+
+export interface LaPausa {
+  /** El día que empezó, en Madrid. */
+  readonly empezo: FechaOperativa;
+  /** El plan al que vuelve: el que tenía al pausar. */
+  readonly vuelveA: CodigoDePlan;
+}
+
+/** Un día y unos meses más tarde; si ese mes es más corto, su último día (31-ago + 6 = 28-feb). */
+export function masMeses(fecha: FechaOperativa, meses: number): FechaOperativa {
+  const [anio, mes, dia] = fecha.split('-').map(Number) as [number, number, number];
+  const total = anio * 12 + (mes - 1) + meses;
+  const nuevoAnio = Math.floor(total / 12);
+  const nuevoMes = (total % 12) + 1;
+  const ultimo = new Date(Date.UTC(nuevoAnio, nuevoMes, 0)).getUTCDate();
+  const dos = (n: number) => String(n).padStart(2, '0');
+  return `${String(nuevoAnio)}-${dos(nuevoMes)}-${dos(Math.min(dia, ultimo))}` as FechaOperativa;
+}
+
+/** El día que la Pausa llega a los seis meses: ese día vuelve sola. */
+export function cuandoAcabaLaPausa(empezo: FechaOperativa): FechaOperativa {
+  return masMeses(empezo, MESES_DE_PAUSA);
+}
+
+/** Desde qué día se puede volver a pausar: doce meses después de la anterior. */
+export function cuandoSePuedeOtraPausa(empezoLaAnterior: FechaOperativa): FechaOperativa {
+  return masMeses(empezoLaAnterior, MESES_ENTRE_PAUSAS);
+}
+
+/** Si toca volver hoy al plan de antes: la Pausa ha llegado a sus seis meses. */
+export function tocaVolverDeLaPausa(empezo: FechaOperativa, hoy: FechaOperativa): boolean {
+  return hoy >= cuandoAcabaLaPausa(empezo);
+}
+
+export type PorQueNoSePausa = 'ya_en_pausa' | 'en_prueba' | 'sin_pagar' | 'una_al_ano';
+
+/**
+ * Si se puede pausar hoy, o por qué no. La pantalla lo enseña y la API lo cumple.
+ *
+ *   · **En la prueba no hace falta**: no se paga nada, y quien cierra cancela.
+ *   · **Con un cobro pendiente o en solo lectura, no**: primero se paga lo que se debe.
+ *   · **Una al año**: doce meses desde que empezó la anterior.
+ */
+export function porQueNoSePuedePausar(
+  s: { readonly estado: EstadoDeSuscripcion; readonly plan: CodigoDePlan | null },
+  ultimaPausa: FechaOperativa | null,
+  hoy: FechaOperativa,
+): { readonly porque: PorQueNoSePausa; readonly desde: FechaOperativa | null } | null {
+  if (s.plan === 'pausa') return { porque: 'ya_en_pausa', desde: null };
+  if (s.estado === 'prueba') return { porque: 'en_prueba', desde: null };
+  if (s.estado !== 'activa' || s.plan === null) return { porque: 'sin_pagar', desde: null };
+  if (ultimaPausa !== null) {
+    const desde = cuandoSePuedeOtraPausa(ultimaPausa);
+    if (hoy < desde) return { porque: 'una_al_ano', desde };
+  }
+  return null;
+}
+
+/** Lo que se le dice a quien no puede pausar. Corto, y con qué hacer. */
+export function porQueNoSePausaEnLetra(no: {
+  readonly porque: PorQueNoSePausa;
+  readonly desde: FechaOperativa | null;
+}): string {
+  switch (no.porque) {
+    case 'ya_en_pausa':
+      return 'Tu cuenta ya está en Pausa.';
+    case 'en_prueba':
+      return 'En la prueba no se paga nada: si cierras, cancela y no se te cobrará.';
+    case 'sin_pagar':
+      return 'Para pausar, la suscripción tiene que estar al día.';
+    case 'una_al_ano':
+      return `La Pausa se puede una vez al año: la siguiente, desde el ${fechaEnLetra(no.desde ?? ('' as FechaOperativa))}.`;
+  }
 }
 
 /** Días de calendario de una fecha a otra (las dos, «2026-09-25»). */

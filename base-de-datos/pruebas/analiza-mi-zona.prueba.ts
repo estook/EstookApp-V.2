@@ -11,7 +11,7 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  *     busque en internet cerca de su dirección
  *   · se guarda solo lo que se sostiene: **un enlace que no ha visto, no se guarda**
  *   · las medias las hace Estook, y con menos de tres precios no se juzga
- *   · **una vez cada 24 horas**: la segunda no llega al modelo ni gasta
+ *   · **una vez cada diez días** (0135): la segunda no llega al modelo ni gasta
  *   · la comparación se rehace con tu precio de hoy, sin buscar otra vez
  *   · la camarera lo ve y no lo lanza
  */
@@ -117,7 +117,7 @@ describe('analiza mi zona', () => {
     expect(zona.analisis).toBeNull();
     expect(zona.otraVezDesde).toBeNull();
     expect(zona.puedeAnalizar).toBe(true);
-    expect(zona.creditos).toBe(25);
+    expect(zona.creditos).toBe(8);
   });
 
   it('la camarera no lo lanza', async () => {
@@ -141,12 +141,12 @@ describe('analiza mi zona', () => {
     expect(pedida?.resumen).not.toMatch(/coste|cuesta/i);
     expect(zona.analisis?.locales.map((l) => l.nombre)).toEqual(['Bar 1', 'Bar 2', 'Bar 3']);
 
-    // Apuntada, con sus búsquedas y sus 25 créditos.
+    // Apuntada, con sus búsquedas y sus 8 créditos (0135).
     const [llamada] = await comoDuena<{ creditos: number; busquedas: number }>(
       `select creditos, busquedas_en_internet as busquedas from estook.llamada_a_fogon
         where que = 'analizar_zona'`,
     );
-    expect(llamada).toEqual({ creditos: 25, busquedas: 3 });
+    expect(llamada).toEqual({ creditos: 8, busquedas: 3 });
   });
 
   it('el precio con un enlace que no ha visto no se guarda; las bravas, 1 € por encima', async () => {
@@ -167,14 +167,16 @@ describe('analiza mi zona', () => {
     expect(zona.analisis?.platos[0]?.nombre).toBe('Patatas bravas');
   });
 
-  it('una vez cada 24 horas: la segunda no llega a Fogón ni gasta', async () => {
+  it('una vez cada diez días: la segunda no llega a Fogón ni gasta', async () => {
     const pedidas = modelo.pedidas.length;
     ahora = new Date('2026-10-22T08:00:00Z');
     expect(elFallo(await api.ejecutar(rosa, 'analizar_mi_zona', {}))).toBe('faltan_datos');
     expect(modelo.pedidas.length).toBe(pedidas);
     const zona = losDatos<MiZona>(await api.consultar(rosa, 'mi_zona'));
-    expect(zona.otraVezDesde).toBe('2026-10-22T10:00:00.000Z');
-    ahora = new Date('2026-10-22T10:00:00Z');
+    expect(zona.otraVezDesde).toBe('2026-10-31T10:00:00.000Z');
+    ahora = new Date('2026-10-30T10:00:00Z');
+    expect(elFallo(await api.ejecutar(rosa, 'analizar_mi_zona', {}))).toBe('faltan_datos');
+    ahora = new Date('2026-10-31T10:00:00Z');
     expect(losDatos<MiZona>(await api.consultar(rosa, 'mi_zona')).otraVezDesde).toBeNull();
   });
 

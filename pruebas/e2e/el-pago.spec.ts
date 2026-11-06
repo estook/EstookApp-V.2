@@ -12,7 +12,7 @@ import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts'
  * `?pago=hecho&sesion=…`. Su aviso entra firmado por la misma puerta que el de verdad.
  *
  *   · sin pago no hay app: se elige plan, se paga y se entra al alta
- *   · Ajustes → Suscripción: el plan, la renovación, cancelar y seguir
+ *   · Ajustes → Suscripción: el plan, la renovación, cancelar y seguir, y la Pausa (0135)
  *   · un cobro que falla: el aviso de arriba con los días que quedan
  *   · las cuentas de la casa lo dicen, y el admin ve quién ha pagado (en Clientes, desde A2)
  */
@@ -36,9 +36,15 @@ test('Ajustes → Suscripción: el plan, la renovación, cancelar y seguir', asy
   page,
   request,
 }, info) => {
-  await cuentaNueva(page, request, `ajustes-${unico(info)}@correo-de-prueba.com`, 'Bar De Ajustes');
+  const correo = `ajustes-${unico(info)}@correo-de-prueba.com`;
+  await cuentaNueva(page, request, correo, 'Bar De Ajustes');
   await pagarEsencial(page);
   await sinElAlta(page);
+  // Cobrada ya, sin prueba: la Pausa no se ofrece en la prueba (0135).
+  const cobro = await request.post(
+    `${API}/pruebas/stripe/cobrar?correo=${encodeURIComponent(correo)}`,
+  );
+  expect(cobro.ok()).toBe(true);
 
   await irA(page, 'ajustes/suscripcion');
   const tarjeta = page
@@ -46,7 +52,7 @@ test('Ajustes → Suscripción: el plan, la renovación, cancelar y seguir', asy
     .filter({ has: page.getByRole('heading', { name: 'Tu suscripción' }) })
     .last();
   await expect(tarjeta).toContainText('Esencial · mensual');
-  await expect(tarjeta).toContainText('49,00 €');
+  await expect(tarjeta).toContainText('39,00 € + IVA al mes');
   await expect(tarjeta).toContainText(/Se renueva el|Tu prueba acaba el/);
   await expect(tarjeta).toContainText('Visa ···· 4242');
 
@@ -80,7 +86,31 @@ test('Ajustes → Suscripción: el plan, la renovación, cancelar y seguir', asy
     .getByRole('button', { name: 'Cambiar' })
     .click();
   await expect(deNuevo).toContainText('Pro · mensual');
-  await expect(deNuevo).toContainText('99,00 €');
+  await expect(deNuevo).toContainText('99,00 € + IVA');
+
+  // La Pausa (0135): al instante, en solo lectura, y se vuelve cuando se quiere.
+  await deNuevo.getByRole('button', { name: 'Cambiar de plan' }).click();
+  await deNuevo
+    .getByRole('listitem')
+    .filter({ hasText: 'Pausa' })
+    .getByRole('button', { name: 'Pausar' })
+    .click();
+  await expect(deNuevo.getByText('¿Pausar tu cuenta?')).toBeVisible();
+  await expect(deNuevo).toContainText('9,00 € + IVA al mes');
+  await deNuevo.getByRole('button', { name: 'Sí, pausar' }).click();
+  await expect(deNuevo.getByText(/^En Pausa desde el/)).toBeVisible();
+  await expect(deNuevo).toContainText('Pausa · mensual');
+  await expect(deNuevo.getByRole('button', { name: 'Pagar ahora' })).toHaveCount(0);
+
+  await deNuevo.getByRole('button', { name: 'Volver a Pro' }).click();
+  await expect(deNuevo).toContainText('Pro · mensual');
+  await expect(deNuevo.getByText(/^En Pausa desde el/)).toHaveCount(0);
+
+  // Una al año: la segunda, con la fecha y sin botón.
+  await deNuevo.getByRole('button', { name: 'Cambiar de plan' }).click();
+  const laPausa = deNuevo.getByRole('listitem').filter({ hasText: 'Pausa' });
+  await expect(laPausa).toContainText('La Pausa se puede una vez al año');
+  await expect(laPausa.getByRole('button', { name: 'Pausar' })).toBeDisabled();
 });
 
 test('un cobro que falla: arriba, los días que quedan y que no se pierde nada', async ({

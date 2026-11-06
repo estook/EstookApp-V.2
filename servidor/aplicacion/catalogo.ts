@@ -1125,7 +1125,7 @@ export const catalogo = {
     [quitarPlatoDelMenu.nombre]: quitarPlatoDelMenu,
     [copiarLaSemanaPasada.nombre]: copiarLaSemanaPasada,
     [ponerEnLaCarta.nombre]: ponerEnLaCarta,
-    // «Analiza mi zona»: Fogón busca en internet, una vez cada 24 horas (25 créditos).
+    // «Analiza mi zona»: Fogón busca en internet, una vez cada diez días (8 créditos, 0135).
     [analizarMiZona.nombre]: analizarMiZona,
 
     // ── M9 · 2 · Fichas y escandallos (0087) ─────────────────────────────────

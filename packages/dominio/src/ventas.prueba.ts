@@ -5,6 +5,7 @@ import {
   elCorreoDeLaSemana,
   elLunes,
   elTableroDeVentas,
+  laCuotaConIva,
   laCuotaSinIva,
   losTramos,
   type ApunteDeDinero,
@@ -15,7 +16,7 @@ import {
 
 const f = (dia: string) => dia as FechaOperativa;
 
-/** Un cliente que paga Pro al mes (99 € con IVA), de alta el 1 de septiembre. */
+/** Un cliente que paga Pro al mes (99 € más IVA), de alta el 1 de septiembre. */
 function cliente(id: string, cambios: Partial<ClienteDeVentas> = {}): ClienteDeVentas {
   return {
     id,
@@ -104,15 +105,16 @@ describe('el periodo', () => {
 });
 
 describe('el dinero, sin IVA (1A)', () => {
-  it('99 € con IVA son 81,82 € de Estook; 79 €, 65,29 €', () => {
+  it('lo cobrado con el IVA dentro, sin él: 121 € son 100 €; y 99 € más IVA son 119,79 €', () => {
+    expect(laCuotaSinIva(12_100)).toBe(10_000);
     expect(laCuotaSinIva(9_900)).toBe(8_182);
-    expect(laCuotaSinIva(7_900)).toBe(6_529);
+    expect(laCuotaConIva(9_900)).toBe(11_979);
   });
 
-  it('la cuota al mes se da sin IVA, y con él al lado', () => {
+  it('la cuota al mes ya es sin IVA (0135), y con él al lado', () => {
     const t = elTableroDeVentas(hay({ clientes: [cliente('a'), cliente('b')] }));
-    expect(t.dinero.cuotaAlMes.ahora).toBe(laCuotaSinIva(19_800));
-    expect(t.dinero.cuotaAlMes.conIva).toBe(19_800);
+    expect(t.dinero.cuotaAlMes.ahora).toBe(19_800);
+    expect(t.dinero.cuotaAlMes.conIva).toBe(laCuotaConIva(19_800));
   });
 });
 
@@ -143,12 +145,12 @@ describe('quién cuenta', () => {
   });
 
   it('el plan Pausa paga: está en Pagando y su cuota cuenta', () => {
-    const pausa = cliente('p', { como: 'solo_lectura', enPausa: true, cuotaAlMes: 1_200 });
+    const pausa = cliente('p', { como: 'solo_lectura', enPausa: true, cuotaAlMes: 900 });
     const t = elTableroDeVentas(hay({ clientes: [pausa] }));
     expect(t.clientes.pagando.ahora).toBe(1);
     expect(t.clientes.enPausa).toBe(1);
     expect(t.clientes.sinPagar).toBe(0);
-    expect(t.dinero.cuotaAlMes.conIva).toBe(1_200);
+    expect(t.dinero.cuotaAlMes.ahora).toBe(900);
   });
 
   it('«Pagando» es la misma cuenta que la pestaña de Clientes', () => {
@@ -163,7 +165,7 @@ describe('quién cuenta', () => {
       todos.filter((c) => estaEnLaPestana('pagando', c)).length,
     );
     // El cobro fallido no está en Pagando, pero su cuota todavía cuenta.
-    expect(t.dinero.cuotaAlMes.conIva).toBe(9_900 * 3);
+    expect(t.dinero.cuotaAlMes.ahora).toBe(9_900 * 3);
   });
 });
 
@@ -179,7 +181,7 @@ describe('las bajas, de las fotos de cada día', () => {
       }),
     );
     expect(t.clientes.bajas.ahora).toBe(1);
-    expect(t.dinero.perdida.cuota).toBe(laCuotaSinIva(9_900));
+    expect(t.dinero.perdida.cuota).toBe(9_900);
   });
 
   it('pasar de pagar a prueba, o de un cobro fallido a pagar, no es una baja', () => {
@@ -282,10 +284,10 @@ describe('las gráficas', () => {
     const octubre = t.series.meses.find((m) => m.mes === '2026-10');
     expect(octubre).toEqual({
       mes: '2026-10',
-      cuota: laCuotaSinIva(19_800),
-      nueva: laCuotaSinIva(9_900),
-      ampliada: laCuotaSinIva(5_000),
-      perdida: laCuotaSinIva(9_900),
+      cuota: 19_800,
+      nueva: 9_900,
+      ampliada: 5_000,
+      perdida: 9_900,
       reducida: 0,
     });
   });
@@ -328,7 +330,7 @@ describe('las gráficas', () => {
         nombre: 'Juan',
         traidos: 1,
         pagan: 1,
-        cuotaAlMes: laCuotaSinIva(9_900),
+        cuotaAlMes: 9_900,
         visitas: 5,
       },
       { id: 'pedro', nombre: 'Pedro', traidos: 0, pagan: 0, cuotaAlMes: 0, visitas: 40 },
@@ -359,7 +361,7 @@ describe('quién se está yendo, y el correo del lunes (4A)', () => {
 
   it('el correo dice lo esencial y avisa del modo prueba', () => {
     const correo = elCorreoDeLaSemana(t);
-    expect(correo.asunto).toBe('Estook, la semana: 2 pagando · 245,45 € al mes');
+    expect(correo.asunto).toBe('Estook, la semana: 2 pagando · 297,00 € al mes');
     expect(correo.cifras.map((c) => c.nombre)).toEqual([
       'Pagando',
       'Entra al mes, sin IVA',

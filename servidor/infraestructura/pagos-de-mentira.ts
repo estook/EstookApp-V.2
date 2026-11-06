@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/require-await -- hace de Stripe, que contesta por la red: el puerto es asíncrono aunque aquí la respuesta esté en memoria */
-import { centimos, porFraccion, sinIva } from '@estook/dominio';
+import { centimos, conIva, porFraccion } from '@estook/dominio';
 import {
   elCuponDelPorcentaje,
   firmarComoStripe,
@@ -36,7 +36,12 @@ interface SuscripcionGuardada {
     data: {
       id: string;
       quantity: number;
-      price: { id: string; lookup_key: string; unit_amount: number | null };
+      price: {
+        id: string;
+        lookup_key: string;
+        unit_amount: number | null;
+        tax_behavior?: 'inclusive' | 'exclusive';
+      };
       current_period_end: number;
     }[];
   };
@@ -179,6 +184,7 @@ export function pagosDeMentira(
                 id: datos.precio,
                 lookup_key: clavePorPrecio(datos.precio),
                 unit_amount: importes.get(datos.precio) ?? null,
+                tax_behavior: 'exclusive',
               },
               current_period_end: ahoraS() + (conPrueba ? datos.diasDePrueba : 30) * 86_400,
             },
@@ -220,11 +226,12 @@ export function pagosDeMentira(
       const gastado = s.cupon;
       s.cupon = null;
       // La factura, con lo que dice la de Stripe (A4): el precio por los locales, el
-      // descuento del cupón y el IVA dentro, separado como lo separa Stripe.
+      // descuento del cupón y **el IVA aparte** (0135), sumado como lo suma Stripe.
       const linea = s.items.data[0];
       const bruto = (linea?.price.unit_amount ?? 0) * (linea?.quantity ?? 1);
       const porcentaje = Number(/(\d+)$/.exec(gastado ?? '')?.[1] ?? 0);
-      const total = porFraccion(centimos(bruto), (100 - porcentaje) / 100);
+      const base = porFraccion(centimos(bruto), (100 - porcentaje) / 100);
+      const total = conIva(base, 0.21);
       const factura = {
         id: nuevo('in'),
         object: 'invoice',
@@ -232,7 +239,7 @@ export function pagosDeMentira(
         customer: s.customer,
         amount_paid: total,
         total,
-        total_excluding_tax: sinIva(total, 0.21),
+        total_excluding_tax: base,
         billing_reason: facturas.some((x) => x.organizacionId === organizacionId)
           ? 'subscription_cycle'
           : 'subscription_create',
@@ -306,6 +313,7 @@ export function pagosDeMentira(
             id: cambios.precio,
             lookup_key: clavePorPrecio(cambios.precio),
             unit_amount: importes.get(cambios.precio) ?? null,
+            tax_behavior: 'exclusive',
           };
         if (cambios.cantidad !== undefined) linea.quantity = cambios.cantidad;
       }

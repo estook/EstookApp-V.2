@@ -181,7 +181,7 @@ export function ElegirPlan() {
       )}
 
       <p className="mt-e3 text-center text-secundario text-texto-suave">
-        Precios por local, con el IVA incluido.
+        Precios por local, más IVA.
       </p>
 
       <div className="mt-e4">
@@ -239,11 +239,11 @@ function TarjetaDePlan({
       <p className="mt-e1 text-secundario text-texto-suave">{plan.paraQuien}</p>
       <p className="mt-e3">
         <span className="text-pantalla font-semibold">{conSimbolo(centimos(precio))}</span>{' '}
-        <span className="text-secundario text-texto-suave">por local {cada}</span>
+        <span className="text-secundario text-texto-suave">+ IVA por local {cada}</span>
       </p>
       {locales > 1 && (
         <p className="text-secundario text-texto-suave">
-          Con tus {locales} locales: {conSimbolo(centimos(precio * locales))} {cada}.
+          Con tus {locales} locales: {conSimbolo(centimos(precio * locales))} + IVA {cada}.
         </p>
       )}
       <ul className="mt-e3 flex flex-col gap-e1 text-secundario">

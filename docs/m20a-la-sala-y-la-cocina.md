@@ -574,9 +574,11 @@ Precios, IA y papeles**, con sus maquetas aprobadas. R2 en dos: **R2 · 1 · La 
 cambiar un plato** ([0132](decisiones/0132-r2-2-servido-y-cambiar-un-plato.md), migración 0103), en
 main con la #166. **R3 · Ajustes y secciones** ([0133](decisiones/0133-r3-ajustes-y-secciones.md),
 migración 0104): los Ajustes compactos, Productos y precios en dos columnas, el icono y el color de
-cada sección, y «Lo más pedido» solo si se marca algo. Después, **R4** (los planes sin IVA: Esencial
-39 €, Pro 99 €, Cadena 89 €, Pausa 9 €; la IA a un tercio; el coste con Verifacti; Estook TPV para
-Android) y T6 · 2 · 1.
+cada sección, y «Lo más pedido» solo si se marca algo. **R4 · Precios, IA y papeles**
+([0135](decisiones/0135-r4-precios-ia-y-papeles.md), migración 0105): los planes sin IVA (Esencial
+39 €, Pro 99 €, Cadena 89 €, Pausa 9 €, más IVA), la Pausa con sus reglas, la IA a un tercio y el
+coste con Verifacti; Estook TPV para Android quedó decidido aparte (0134), detrás de T7. Después,
+T6 · 2 · 1.
 
 - **El motor del Anexo 4.9**: el número se da al preparar, con el candado de su serie; a Verifacti se
   le llama fuera de la transacción, con la clave del documento; **el estado se lee de lo que se le

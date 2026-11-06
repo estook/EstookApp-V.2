@@ -5,6 +5,8 @@ import {
   elPlanPorLosLocales,
   laCuota,
   claveDelPrecio,
+  tocaVolverDeLaPausa,
+  type LaPausa,
   type CodigoDePlan,
   type EstadoDeSuscripcion,
   type FechaOperativa,
@@ -29,6 +31,7 @@ import {
   elCatalogo,
   enNombreDelSistema,
   hoyEnMadrid,
+  volverDeLaPausa,
 } from './pago.ts';
 import { apuntarUnFallo } from '../infraestructura/fallos.ts';
 import { revisarDeNoche } from './fogon-revisa.ts';
@@ -123,6 +126,34 @@ async function lasCuentas(contexto: Contexto): Promise<Cuenta[]> {
            impago_desde::text as impago_desde, de_la_casa, stripe_modo, stripe_suscripcion, correos
       from estook.las_cuentas()
   `;
+}
+
+/** Las cuentas en Pausa, con cuándo empezó y a qué vuelven (0135), por organización. */
+async function lasPausas(
+  contexto: Contexto,
+): Promise<Map<string, { empezo: FechaOperativa; vuelveA: CodigoDePlan; intervalo: Intervalo }>> {
+  const filas = await contexto.sql<
+    {
+      organizacion_id: string;
+      pausa_empezo: string;
+      vuelve_a_plan: string;
+      vuelve_a_intervalo: string | null;
+    }[]
+  >`
+    select organizacion_id, to_char(pausa_empezo, 'YYYY-MM-DD') as pausa_empezo, vuelve_a_plan,
+           vuelve_a_intervalo
+      from estook.las_pausas()
+  `;
+  return new Map(
+    filas.map((f) => [
+      f.organizacion_id,
+      {
+        empezo: f.pausa_empezo as FechaOperativa,
+        vuelveA: f.vuelve_a_plan as CodigoDePlan,
+        intervalo: (f.vuelve_a_intervalo ?? 'mes') as Intervalo,
+      },
+    ]),
+  );
 }
 
 /** Algo del reloj que falla se apunta y no para lo demás. */
@@ -287,6 +318,7 @@ async function elDiario(
   hoy: FechaOperativa,
 ): Promise<{ correos: number; cuadrados: number; fallos: number; avisos: number; notas: number }> {
   const cuentas = await lasCuentas(contexto);
+  const pausas = await lasPausas(contexto);
 
   let correos = 0;
   let cuadrados = 0;
@@ -311,12 +343,18 @@ async function elDiario(
       queSeAvisan.push({ organizacionId: cuenta.organizacion_id });
     }
 
+    // En Pausa (0135): cuándo empezó y a qué vuelve, para avisar y para volver a los seis meses.
+    const enPausa = plan === 'pausa' ? (pausas.get(cuenta.organizacion_id) ?? null) : null;
+    const pausa: LaPausa | null =
+      enPausa === null ? null : { empezo: enPausa.empezo, vuelveA: enPausa.vuelveA };
+
     // 1 · El correo de hoy.
     const correo = elCorreoDeHoy(
       {
         nombre: cuenta.nombre,
         suscripcion,
         cuota: plan === null ? null : laCuota(plan, intervalo, cuenta.locales_pagados ?? 1),
+        pausa,
       },
       contexto.ahora,
       hoy,
@@ -349,8 +387,41 @@ async function elDiario(
       }
     }
 
-    // 2 · Los locales, cuadrados con Stripe.
+    // 1 bis · La Pausa que llega a sus seis meses vuelve sola al plan de antes (0135).
     const pagos = contexto.pagos;
+    if (
+      enPausa !== null &&
+      tocaVolverDeLaPausa(enPausa.empezo, hoy) &&
+      pagos !== null &&
+      cuenta.stripe_suscripcion !== null &&
+      cuenta.stripe_modo === pagos.modo &&
+      !cuenta.de_la_casa
+    ) {
+      try {
+        await volverDeLaPausa(
+          contexto,
+          cuenta.organizacion_id,
+          {
+            vuelveAPlan: enPausa.vuelveA,
+            vuelveAIntervalo: enPausa.intervalo,
+            localesActivos: cuenta.locales_activos,
+            stripeSuscripcion: cuenta.stripe_suscripcion,
+          },
+          'reloj',
+          'la Pausa llega a sus seis meses',
+        );
+        cuadrados += 1;
+      } catch (fallo) {
+        fallos += 1;
+        await apuntarUnFallo(fallo, {
+          mensaje: 'no se ha podido volver de la Pausa',
+          correlacionId: contexto.correlacionId,
+        });
+      }
+      continue;
+    }
+
+    // 2 · Los locales, cuadrados con Stripe.
     const cobraEsto =
       pagos !== null &&
       cuenta.stripe_suscripcion !== null &&
@@ -374,7 +445,10 @@ async function elDiario(
             cantidad: cuenta.locales_activos,
             ...(elQueToca === plan
               ? {}
-              : { precio: catalogo.precios[claveDelPrecio(elQueToca, intervalo)] ?? '' }),
+              : {
+                  precio: catalogo.precios[claveDelPrecio(elQueToca, intervalo)] ?? '',
+                  iva: catalogo.iva,
+                }),
           }),
         );
         await aplicarLoDeStripe(

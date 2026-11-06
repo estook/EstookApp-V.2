@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { laCuotaSinIva, type TableroDeVentas } from '@estook/dominio';
+import { laCuotaConIva, laCuotaSinIva, type TableroDeVentas } from '@estook/dominio';
 import { codigoEn } from '../../servidor/dominio/doble-factor.ts';
 import { correoEnMemoria } from '../../servidor/infraestructura/correo.ts';
 import { pagosDeMentira } from '../../servidor/infraestructura/pagos-de-mentira.ts';
@@ -170,25 +170,25 @@ describe('las ventas solo las lee el admin', () => {
 // ── Lo que cobra Stripe ──────────────────────────────────────────────────────
 
 describe('lo que cobra Stripe a cada uno, con el precio con el que se apuntó', () => {
-  it('al pagar se apunta lo que dice Stripe: Esencial, 49 €', async () => {
+  it('al pagar se apunta lo que dice Stripe: Esencial, 39 € sin IVA (0135)', async () => {
     const [cuota] = await comoDuena<{ importe: number; modo: string }>(
       `select importe, modo from plataforma.cuota_de_stripe where organizacion_id = $1`,
       [pagadora],
     );
-    expect(cuota).toEqual({ importe: 4_900, modo: 'prueba' });
+    expect(cuota).toEqual({ importe: 3_900, modo: 'prueba' });
   });
 
-  it('y manda sobre el precio de hoy: quien entró a 39 € sigue contando 39 €', async () => {
+  it('y manda sobre el precio de hoy: quien entró a 29 € sigue contando 29 €', async () => {
     await comoDuena(
-      `update plataforma.cuota_de_stripe set importe = 3900 where organizacion_id = $1`,
+      `update plataforma.cuota_de_stripe set importe = 2900 where organizacion_id = $1`,
       [pagadora],
     );
     const lista = losDatos<{ clientes: { organizacionId: string; cuotaAlMes: number | null }[] }>(
       await api.consultar(admin, 'admin_los_clientes', { buscar: 'Bar Que Paga' }),
     );
-    expect(lista.clientes.find((c) => c.organizacionId === pagadora)?.cuotaAlMes).toBe(3_900);
+    expect(lista.clientes.find((c) => c.organizacionId === pagadora)?.cuotaAlMes).toBe(2_900);
     await comoDuena(
-      `update plataforma.cuota_de_stripe set importe = 4900 where organizacion_id = $1`,
+      `update plataforma.cuota_de_stripe set importe = 3900 where organizacion_id = $1`,
       [pagadora],
     );
   });
@@ -203,7 +203,8 @@ describe('lo cobrado y lo devuelto (2A)', () => {
       `select importe, sin_iva, motivo from plataforma.cobro where organizacion_id = $1`,
       [pagadora],
     );
-    expect(cobros).toEqual([{ importe: 4_900, sin_iva: 4_050, motivo: 'subscription_create' }]);
+    // 39 € más el 21 % de IVA: 47,19 € cobrados, 39 € de Estook.
+    expect(cobros).toEqual([{ importe: 4_719, sin_iva: 3_900, motivo: 'subscription_create' }]);
   });
 
   it('lo devuelto se apunta por partes, sin contar dos veces lo de antes', async () => {
@@ -241,7 +242,7 @@ describe('lo cobrado y lo devuelto (2A)', () => {
     );
     expect(t.dinero.cobrado.conIva).toBe(Number(aMano?.con_iva));
     expect(t.dinero.cobrado.ahora).toBe(Number(aMano?.sin_iva));
-    expect(t.dinero.cobrado.conIva).toBe(4_900 - 1_500);
+    expect(t.dinero.cobrado.conIva).toBe(4_719 - 1_500);
     expect(t.modo).toBe('prueba');
   });
 });
@@ -344,7 +345,7 @@ describe('la foto de cada noche dice cómo está la cuenta y cuánto deja', () =
     expect(foto).toEqual({
       como: 'al_dia',
       en_pausa: false,
-      cuota_al_mes: 4_900,
+      cuota_al_mes: 3_900,
       de_la_casa: false,
       modo: 'prueba',
     });
@@ -380,8 +381,8 @@ describe('el tablero cuadra con una consulta a mano', () => {
         where not o.es_ejemplo and not s.de_la_casa and s.estado in ('activa', 'impago')
           and s.intervalo = 'mes' and q.modo = 'prueba'`,
     );
-    expect(t.dinero.cuotaAlMes.conIva).toBe(aMano?.suma);
-    expect(t.dinero.cuotaAlMes.ahora).toBe(laCuotaSinIva(aMano?.suma ?? 0));
+    expect(t.dinero.cuotaAlMes.ahora).toBe(aMano?.suma);
+    expect(t.dinero.cuotaAlMes.conIva).toBe(laCuotaConIva(aMano?.suma ?? 0));
   });
 
   it('un cliente de ejemplo no cambia ninguna cifra', async () => {
@@ -404,14 +405,14 @@ describe('las bajas salen de las fotos', () => {
     await comoDuena(
       `insert into plataforma.uso_diario (organizacion_id, dia, dias_de_alta, productos, dias_sin_entrar,
          apuntes_7, apuntes_14, apuntes_14_antes, actividad, como, en_pausa, cuota_al_mes, de_la_casa, modo)
-       values ($1, $2::date, 1, 0, 0, 0, 0, 0, 'activo', 'al_dia', false, 4900, false, 'prueba'),
+       values ($1, $2::date, 1, 0, 0, 0, 0, 0, 'activo', 'al_dia', false, 3900, false, 'prueba'),
               ($1, $3::date, 2, 0, 0, 0, 0, 0, 'activo', 'sin_pagar', false, null, false, 'prueba')
        on conflict (organizacion_id, dia) do update set como = excluded.como, cuota_al_mes = excluded.cuota_al_mes`,
       [pagadora, haceDias(2), haceDias(1)],
     );
     const t = await lasVentas('7');
     expect(t.clientes.bajas.ahora).toBe(1);
-    expect(t.dinero.perdida.cuota).toBe(laCuotaSinIva(4_900));
+    expect(t.dinero.perdida.cuota).toBe(3_900);
     expect(t.fotosDesde).not.toBeNull();
   });
 });

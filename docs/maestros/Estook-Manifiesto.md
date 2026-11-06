@@ -842,7 +842,7 @@ POPULARIDAD
 - Cuántos llevan producto de temporada y qué va a pasar cuando suba.
 - **El tamaño de la carta:** una carta de 80 platos no se puede ejecutar bien ni comprar bien, y Estook lo dice.
 
-**Y la comparación con tu zona:** qué cobran los de al lado por el menú y por los platos que también tienes tú. **La busca Fogón en internet** cuando se lo pides —«Analiza mi zona»—, con el enlace y la fecha de cada precio, y la deja guardada; las medias las calcula Estook, y con menos de tres locales no juzga un plato (0103). **Una vez cada 24 horas**: buscar en internet cuesta más que preguntar, y los precios de una calle no cambian de un día para otro (0104).
+**Y la comparación con tu zona:** qué cobran los de al lado por el menú y por los platos que también tienes tú. **La busca Fogón en internet** cuando se lo pides —«Analiza mi zona»—, con el enlace y la fecha de cada precio, y la deja guardada; las medias las calcula Estook, y con menos de tres locales no juzga un plato (0103). **Una vez cada diez días**: buscar en internet cuesta más que preguntar, y los precios de una calle no cambian de un día para otro (0104, [0135](../decisiones/0135-r4-precios-ia-y-papeles.md)).
 
 ## Diseños y carta digital
 
@@ -1475,36 +1475,36 @@ Estook no toca dinero. Si el local cobra con Estook, sus tickets y facturas pasa
 
 | Local                                        | Le cuesta a Estook | Deja |
 | -------------------------------------------- | ------------------ | ---- |
-| Esencial, uso normal                         | ≈ 3,20 €           | 92 % |
-| Pro sin TPV, uso normal                      | ≈ 5,80 €           | 93 % |
-| Pro con Estook TPV, restaurante de carta     | ≈ 11,40 €          | 86 % |
-| Pro con Estook TPV, bar muy ocupado y a tope | ≈ 46,20 €          | 44 % |
+| Esencial, uso normal                         | ≈ 3,15 €           | 92 % |
+| Pro sin TPV, uso normal                      | ≈ 5,20 €           | 95 % |
+| Pro con Estook TPV, restaurante de carta     | ≈ 8,50 €           | 91 % |
+| Pro con Estook TPV, bar muy ocupado y a tope | ≈ 35,20 €          | 64 % |
 
-**Lo fijo:** hoy, nada; para vender, unos 65 € al mes; con Estook TPV, unos 163 €. **La IA es un supuesto hasta que se mida con el piloto** (Fogón 1 usa Claude Haiku 5.5, el más barato: [0097](../decisiones/0097-fogon-1-las-respuestas-y-la-base.md)), y es lo que más mueve la cuenta.
+**Lo fijo:** hoy, nada; para vender, unos 65 € al mes; con Estook TPV, unos 163 €. **La IA tiene techo: nunca más de 1,65 € por local y mes**, que el servidor corta antes de llamar al modelo ([0135](../decisiones/0135-r4-precios-ia-y-papeles.md)); lo que gasta de verdad se mide con el piloto (Fogón 1 usa Claude Haiku 5.5, el más barato: [0097](../decisiones/0097-fogon-1-las-respuestas-y-la-base.md)).
 
-> **Coste añadido si el local cobra con Estook.** El proveedor de VeriFactu (Verifacti) cobra **por NIF activo en producción**, no por local ni por aparato, y el precio baja con el volumen: **de 5,59 € por NIF con diez, a 3,71 € con cincuenta**, sin IVA. Incluye **3.000 facturas al mes por NIF**, y a partir de ahí 0,002 € cada una, que es lo que de verdad mueve el coste: un bar de tapas hace el triple de tickets que un restaurante de carta facturando lo mismo. Las cuentas, con los tres casos y lo que queda por preguntar, en [`docs/el-precio-de-verifacti.md`](../el-precio-de-verifacti.md). _Propuesta recibida el 21 de septiembre de 2026._
+> **Coste añadido si el local cobra con Estook.** El proveedor de VeriFactu (Verifacti) cobra **por NIF activo en producción**, no por local ni por aparato: **14,99 € al mes el primer NIF y 1,99 € cada NIF más**, sin IVA (con diez clientes, 3,29 € cada uno). Incluye **3.000 facturas al mes por NIF**, y a partir de ahí 0,002 € cada una, que es lo que de verdad mueve el coste: un bar de tapas hace el triple de tickets que un restaurante de carta facturando lo mismo. Las cuentas, con los tres casos, en [`docs/el-precio-de-verifacti.md`](../el-precio-de-verifacti.md).
 
 ## Los planes
 
-Tres planes, con una diferencia clara: **el primero es gestión a mano, el segundo lo hace solo, y el tercero es lo mismo para varios locales.**
+Tres planes, con una diferencia clara: **el primero es gestión a mano, el segundo lo hace solo, y el tercero es lo mismo para varios locales.** **Todos los precios son sin IVA: el IVA va aparte** (los finales, decididos el 6-nov-2026: [0135](../decisiones/0135-r4-precios-ia-y-papeles.md)).
 
-### ESTOOK ESENCIAL · 49 € por local y mes
+### ESTOOK ESENCIAL · 39 € + IVA por local y mes
 
 Para el bar que quiere controlar su cocina sin cambiar nada más.
 
-Las ocho apps completas · carta digital con QR · documentos sin límite · auditorías con autoevaluación · acceso para la gestoría · **Fogón Esencial**: 300 créditos al mes, con el modelo económico.
+Las ocho apps completas · carta digital con QR · documentos sin límite · auditorías con autoevaluación · acceso para la gestoría · **Fogón Esencial**: 100 créditos al mes, con el modelo económico.
 
 Las ventas y el catálogo de **su TPV** entran **por fichero**, con la guía de exportación, y **conectadas cuando lleguen los conectores** (M19b): quien cobra con otro TPV solo trae sus datos, y no se le pide Pro ([0120](../decisiones/0120-estook-tpv-es-de-pro.md); Richi, 28-oct).
 
 _Lo que cuesta y lo que deja, en [`coste-por-local.md`](../coste-por-local.md)._
 
-### ESTOOK PRO · 99 € por local y mes
+### ESTOOK PRO · 99 € + IVA por local y mes
 
 Para el local que factura de verdad y quiere que Estook trabaje solo. Todo lo de Esencial, y además:
 
-- **Cobro con Estook**, que es **Estook TPV, solo de Pro** ([0120](../decisiones/0120-estook-tpv-es-de-pro.md)): sala, cocina, caja y tickets y facturas cumpliendo VeriFactu. _Las cuentas salen con el precio del proveedor delante —el margen aguanta entre el 84 % y el 44 % según cuántos tickets haga el local—, y **falta una respuesta suya: qué se paga con menos de diez NIF** ([`el-precio-de-verifacti.md`](../el-precio-de-verifacti.md)). Hasta entonces, propuesta._
+- **Cobro con Estook**, que es **Estook TPV, solo de Pro** ([0120](../decisiones/0120-estook-tpv-es-de-pro.md)): sala, cocina, caja y tickets y facturas cumpliendo VeriFactu. _Las cuentas salen con el precio del proveedor delante: el margen aguanta entre el 91 % y el 64 % según cuántos tickets haga el local ([`el-precio-de-verifacti.md`](../el-precio-de-verifacti.md))._
 - **Canales de reparto conectados**, con su comisión descontada.
-- **Fogón Pro**: 1.500 créditos al mes, con el modelo grande. Análisis del cierre cada noche, resumen semanal, propuestas de menú, de precios y de cuadrante.
+- **Fogón Pro**: 500 créditos al mes, con el modelo grande. Análisis del cierre cada noche, resumen semanal, propuestas de menú, de precios y de cuadrante.
 - **Estook Pulse** con su histórico.
 - Previsión de ventas y presupuesto por mes.
 - Análisis de equilibrio de carta y comparación con tu zona.
@@ -1514,19 +1514,17 @@ Para el local que factura de verdad y quiere que Estook trabaje solo. Todo lo de
 
 _Lo que cuesta y lo que deja, con TPV y sin él, en [`coste-por-local.md`](../coste-por-local.md)._
 
-### ESTOOK CADENA · 89 € por local y mes · de 2 a 10 locales
+### ESTOOK CADENA · 89 € + IVA por local y mes · de 2 a 10 locales
 
-Todo lo de Pro en cada local, y encima la capa que solo necesita un grupo: panel de cadena con gestión por excepción · catálogo maestro con sus tres políticas · áreas y area managers sin límite · auditorías comparadas · informes de grupo · **bolsa común de 1.500 créditos por local** · una sola factura con desglose por local.
+Todo lo de Pro en cada local, y encima la capa que solo necesita un grupo: panel de cadena con gestión por excepción · catálogo maestro con sus tres políticas · áreas y area managers sin límite · auditorías comparadas · informes de grupo · **bolsa común de 500 créditos por local** · una sola factura con desglose por local.
 
-_4 locales: 356 €/mes. Lo que cuesta cada uno, en [`coste-por-local.md`](../coste-por-local.md)._
+_4 locales: 356 € + IVA al mes. Lo que cuesta cada uno, en [`coste-por-local.md`](../coste-por-local.md)._
 
-**A partir de 11 locales** no hay precio en la web: formulario corto y presupuesto, porque a ese tamaño entran integración con su ERP, informes propios, formación y responsable asignado. Punto de partida orientativo: **desde 59 € por local**.
+**A partir de 11 locales** no hay precio en la web: formulario corto y presupuesto, porque a ese tamaño entran integración con su ERP, informes propios, formación y responsable asignado. Punto de partida orientativo: **desde 59 € + IVA por local**.
 
-**PAUSA · 12 € por local y mes.** Para chiringuitos que cierran en invierno o locales en reforma. Solo lectura, datos conservados y exportables.
+**PAUSA · 9 € + IVA por local y mes.** Para chiringuitos que cierran en invierno o locales en reforma. Solo lectura, datos conservados y exportables. **Empieza al momento, dura como mucho seis meses y se puede una vez cada doce.** Se vuelve cuando se quiera, sin penalización, pagando solo la parte del mes que queda; a los seis meses vuelve sola al plan de antes, con un correo siete días antes.
 
-**Anual:** dos meses gratis pagando por adelantado. Esencial 490 € · Pro 990 € · Cadena 890 € por local.
-
-**Pro subió de 79 a 99 € y Cadena de 69 a 89 € el 30 de septiembre de 2026** ([0067](../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)), antes de que nadie pagase de verdad. Esencial y Pausa no cambian.
+**Anual:** dos meses gratis pagando por adelantado. Esencial 390 € · Pro 990 € · Cadena 890 € por local, más IVA.
 
 ## Los créditos de Fogón
 
@@ -1542,7 +1540,7 @@ La IA es el único coste que crece con el uso, así que se mide y se enseña. **
 | Traducir una ficha técnica           | 2        |
 | Leer un albarán por foto             | 3        |
 | Leer la carta por foto, cada página  | 3        |
-| Analizar tu zona (busca en internet) | 25       |
+| Analizar tu zona (busca en internet) | 8        |
 | Análisis del cierre del día          | 5        |
 | Propuesta de menú del día            | 5        |
 | Propuesta de precios o de cuadrante  | 5        |
@@ -1550,6 +1548,10 @@ La IA es el único coste que crece con el uso, así que se mide y se enseña. **
 | Importar un listado                  | 10       |
 
 **Leer la carta en PDF con texto no gasta nada**: la lee Estook, sin IA (0102). Solo una foto o un PDF escaneado pasa por Fogón, página a página.
+
+**Analizar tu zona, una vez cada diez días**: los precios de la calle no cambian de un día para otro.
+
+**Y un techo en euros que no se ve**: Fogón nunca gasta más de **1,65 € por local y mes** (y una décima parte al día). Es lo que paga Estook, y el servidor lo mira antes de cada llamada ([0135](../decisiones/0135-r4-precios-ia-y-papeles.md)).
 
 **Cuando se acaban.** Al 80 % se avisa. Al llegar al tope, **todo lo que no cuesta sigue funcionando igual**. Solo se pausa lo que llama al modelo.
 
@@ -1579,10 +1581,10 @@ _Investigado en septiembre de 2026._
 | Producto            | Precio                             | Qué es                                                     |
 | ------------------- | ---------------------------------- | ---------------------------------------------------------- |
 | Yurest · Cuiner     | desde 40 €                         | TPV o personal, alcance corto                              |
-| **Estook Esencial** | **49 €**                           | Gestión completa con IA                                    |
+| **Estook Esencial** | **39 € + IVA**                     | Gestión completa con IA                                    |
 | ia.rest             | 59 €/local                         | TPV con IA                                                 |
 | Gstock ONE          | ~82 € · **no publica precio**      | El comparable directo, sin carta, calendario ni auditorías |
-| **Estook Pro**      | **99 €**                           | Todo automatizado con IA potente, y con Estook TPV dentro  |
+| **Estook Pro**      | **99 € + IVA**                     | Todo automatizado con IA potente, y con Estook TPV dentro  |
 | Gstock Premium      | ~124 € · **no publica precio**     | Informes y analítica de proveedores                        |
 | Apicbase            | ~160-249 € · **no publica precio** | Internacional, para grupos y cocinas centrales             |
 | MarketMan           | ~220 € / local                     | Internacional                                              |

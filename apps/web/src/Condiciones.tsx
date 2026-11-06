@@ -32,7 +32,7 @@ export function Condiciones() {
         <Lista>
           <li>
             Estook se paga por local, al mes o al año, según el plan que elijas. Los precios se
-            enseñan antes de pagar y llevan el IVA incluido.
+            enseñan antes de pagar, sin IVA, y el IVA se suma aparte en cada cobro.
           </li>
           <li>
             Se paga con tarjeta, en la página segura de Stripe, al empezar. Sin un plan pagado no se
@@ -55,6 +55,13 @@ export function Condiciones() {
             Si un cobro no se puede hacer, te avisamos cada día por correo y tienes siete días para
             arreglarlo. Pasados esos días, la cuenta queda en solo lectura: puedes ver y llevarte
             tus datos, pero no apuntar nada, hasta que se pague. No se borra nada.
+          </li>
+          <li>
+            Si cierras una temporada o por obras, puedes pasar al plan Pausa: tu cuenta queda en
+            solo lectura, con tus datos, por una cuota más baja. Empieza en el momento, dura como
+            mucho seis meses y se puede una vez cada doce meses. Vuelves cuando quieras, sin
+            penalización, y pagas solo la parte del mes que quede; a los seis meses vuelves solo al
+            plan que tenías, y te avisamos por correo siete días antes.
           </li>
           <li>Las facturas te llegan por correo y las tienes en Ajustes → Suscripción.</li>
           <li>

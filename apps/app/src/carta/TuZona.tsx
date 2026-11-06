@@ -30,8 +30,8 @@ import {
  * Carta › Análisis › Tu zona (M10 · 2, decisiones 0103 y 0104).
  *
  * Richi, 21-oct: «una burbuja de Fogón, que puedas decirle analiza mi zona y que él
- * busque en internet… solo 1 al día cada 24 horas». Un botón, y lo que encuentra se
- * queda guardado con su fecha: se vuelve a mirar sin gastar, y si cambias un precio, la
+ * busque en internet… solo 1 al día cada 24 horas»; desde la 0135, una vez cada diez días.
+ * Un botón, y lo que encuentra se queda guardado con su fecha: se vuelve a mirar sin gastar, y si cambias un precio, la
  * comparación se rehace sola. Cada precio dice **de dónde lo ha leído**.
  */
 
@@ -181,7 +181,7 @@ export function TuZona() {
       ) : (
         <p className="text-secundario text-texto-suave">
           {datos.otraVezDesde === null
-            ? `${String(datos.creditos)} créditos de Fogón · una vez cada 24 horas`
+            ? `${String(datos.creditos)} créditos de Fogón · una vez cada diez días`
             : `Otra vez desde el ${cuando(datos.otraVezDesde)}`}
         </p>
       )}

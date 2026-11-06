@@ -825,6 +825,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'las_impresoras_de_la_caja',
       // 0097 (0123): lo que imprime la caja de centro sin internet.
       'las_impresoras_del_centro',
+      // 0105 (0135): las cuentas en Pausa, para el reloj; solo las lee el sistema.
+      'las_pausas',
       'lleva_la_facturacion',
       'lo_gastado_en_fogon',
       'lo_que_hacen_los_clientes',

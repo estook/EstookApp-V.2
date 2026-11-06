@@ -5,7 +5,8 @@ import { parecido, sinAcentos } from './parecido.ts';
  * Fogón · lo que gasta y hasta dónde (Fogón 1 · 1, decisión 0097).
  *
  * Richi, 18-oct: «un local en IA no debe superar los 5 euros en consumo, y tirando por
- * lo alto… hay que poner límites diarios, si no se nos va de las manos». **Todos los
+ * lo alto… hay que poner límites diarios, si no se nos va de las manos». El 6-nov (0135),
+ * **la IA a un tercio**: 1,65 € al mes y 100 o 500 créditos. **Todos los
  * números de gasto viven aquí, una sola vez**: el servidor corta con ellos y la app
  * enseña lo que queda con ellos.
  *
@@ -15,7 +16,7 @@ import { parecido, sinAcentos } from './parecido.ts';
  *     una décima parte al día, para que un día raro no se coma el mes.
  *   · **Los euros**, que es lo que paga Estook, por dentro: lo que de verdad ha costado
  *     cada llamada. Es la red de seguridad: si mañana cambia el modelo o su precio,
- *     corta antes de pasarse de los 5 € al mes.
+ *     corta antes de pasarse de los 1,65 € al mes.
  */
 
 /**
@@ -40,18 +41,23 @@ export const CREDITOS_DE_FOGON = {
   // ── M10 · 1 · Leer tu carta (0102): una página, por foto o escaneada ────────
   leer_carta: 3,
   // ── M10 · 2 · Analiza mi zona (0104): busca en internet, y eso se paga aparte.
-  // Richi, 21-oct: «gastando muchos créditos y solo 1 al día cada 24 horas». 25 cabe en
-  // el día de Esencial (30) y deja sitio para alguna pregunta.
-  analizar_zona: 25,
+  // Desde la 0135 (la IA a un tercio), 8: un tercio de los 25 de antes, que cabe en el día
+  // de Esencial (10) y es lo que cuesta de verdad (unos 8 céntimos, casi todo búsquedas).
+  // Y una vez cada diez días (`tu-zona.ts`).
+  analizar_zona: 8,
 } as const;
 
 export type QueSeLePide = keyof typeof CREDITOS_DE_FOGON;
 
-/** Los créditos del mes de cada plan (Manifiesto 32). Pausa no tiene Fogón. */
+/**
+ * Los créditos del mes de cada plan (Manifiesto 32). Pausa no tiene Fogón. **A un tercio
+ * desde el 6-nov-2026** (Richi, 0135): 100 en Esencial y 500 en Pro y Cadena; antes, 300 y
+ * 1.500.
+ */
 export const CREDITOS_AL_MES = {
-  esencial: 300,
-  pro: 1500,
-  cadena: 1500,
+  esencial: 100,
+  pro: 500,
+  cadena: 500,
   pausa: 0,
 } as const;
 
@@ -60,12 +66,17 @@ export type PlanConFogon = keyof typeof CREDITOS_AL_MES;
 /** Al día, una décima parte de los del mes. */
 export const PARTE_DEL_MES_AL_DIA = 10;
 
-/** El freno en euros, por local: lo que paga Estook. En millonésimas de euro. */
+/**
+ * El freno en euros, por local: lo que paga Estook. En millonésimas de euro. **1,65 € al
+ * mes desde el 6-nov-2026** (Richi, 0135: «la IA a un tercio»; antes, 5 €). Al día, una
+ * décima parte, como los créditos: así un análisis de la zona (unos 8 céntimos) no deja
+ * al local sin Fogón el resto del día.
+ */
 export const TOPE_EN_EUROS = {
-  /** 5 € al mes: lo que dijo Richi, «tirando por lo alto». */
-  mes: 5_000_000,
-  /** 25 céntimos al día. */
-  dia: 250_000,
+  /** 1,65 € al mes. */
+  mes: 1_650_000,
+  /** 16,5 céntimos al día. */
+  dia: 165_000,
 } as const;
 
 /** Al 80 % de los créditos del mes se avisa (Manifiesto, «Cuando se acaban»). */

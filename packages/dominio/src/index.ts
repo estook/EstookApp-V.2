@@ -702,9 +702,18 @@ export type { CodigoDePlan, OfertaDePrueba, Plan, VueltaDeGoogle } from './regis
 // ── E2 · el pago · cómo está la cuenta y qué deja hacer (0048) ────────────────
 export {
   DIAS_DE_AVISO_ANTES_DE_COBRAR,
+  DIAS_DE_AVISO_ANTES_DE_VOLVER,
   DIAS_DE_GRACIA,
+  MESES_DE_PAUSA,
+  MESES_ENTRE_PAUSAS,
   claveDelPrecio,
   comoEstaLaCuenta,
+  cuandoAcabaLaPausa,
+  cuandoSePuedeOtraPausa,
+  masMeses,
+  porQueNoSePuedePausar,
+  porQueNoSePausaEnLetra,
+  tocaVolverDeLaPausa,
   dejaEscribir,
   dejaMirar,
   elCorreoDeHoy,
@@ -719,8 +728,10 @@ export type {
   EstadoDeSuscripcion,
   Intervalo,
   LaCuentaAhora,
+  LaPausa,
   LaSuscripcion,
   LoQueSabeElReloj,
+  PorQueNoSePausa,
 } from './suscripcion.ts';
 
 // ── A2 · los clientes, vistos desde el admin (0041) ──────────────────────────
@@ -772,6 +783,7 @@ export {
   elCorreoDeLaSemana,
   elLunes,
   elTableroDeVentas,
+  laCuotaConIva,
   laCuotaSinIva,
   losTramos,
 } from './ventas.ts';
@@ -1019,7 +1031,7 @@ export {
 } from './menus.ts';
 export {
   BUSQUEDAS_POR_ANALISIS,
-  HORAS_ENTRE_ANALISIS_DE_ZONA,
+  DIAS_ENTRE_ANALISIS_DE_ZONA,
   MARGEN_DE_LA_MEDIA,
   MINIMO_PARA_COMPARAR,
   compararConLaZona,

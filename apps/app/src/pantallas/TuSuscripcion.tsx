@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  MESES_DE_PAUSA,
   PLANES,
   centimos,
   conSimbolo,
@@ -114,6 +115,8 @@ export function TuSuscripcion() {
   const s = suya.data;
   const plan = s.plan === null ? null : planPorCodigo(s.plan);
   const cada = s.intervalo === 'ano' ? 'al año' : 'al mes';
+  // En Pausa también es solo lectura, pero no se debe nada: es lo que se paga.
+  const debe = s.como === 'impago' || (s.como === 'solo_lectura' && s.plan !== 'pausa');
   const etiqueta = s.deLaCasa
     ? { texto: 'De la casa', tono: 'info' as const }
     : s.cancelaAlAcabar && s.como !== 'solo_lectura'
@@ -144,8 +147,7 @@ export function TuSuscripcion() {
                     {conSimbolo(centimos(s.cuota))}
                   </span>{' '}
                   <span className="text-secundario text-texto-suave">
-                    {cada} · {s.locales === 1 ? '1 local' : `${String(s.locales)} locales`} · IVA
-                    incluido
+                    + IVA {cada} · {s.locales === 1 ? '1 local' : `${String(s.locales)} locales`}
                   </span>
                 </p>
               )}
@@ -164,6 +166,19 @@ export function TuSuscripcion() {
                 lectura; no se pierde nada.
               </Aviso>
             )}
+            {s.pausa !== null && s.conStripe && (
+              <EnPausa
+                pausa={s.pausa}
+                ocupado={hacer.isPending}
+                alVolver={() => {
+                  if (s.pausa === null) return;
+                  hacer.mutate({
+                    nombre: 'cambiar_de_plan',
+                    entrada: { plan: s.pausa.vuelveA, intervalo: s.pausa.vuelveAIntervalo },
+                  });
+                }}
+              />
+            )}
             {s.como === 'solo_lectura' && s.plan !== 'pausa' && (
               <Aviso tono="atencion" titulo="Tu cuenta está en solo lectura">
                 Paga desde «Tarjeta y facturas» y vuelve todo como estaba. No se ha perdido nada.
@@ -174,9 +189,7 @@ export function TuSuscripcion() {
             {s.conStripe && (
               <div className="flex flex-wrap gap-e2">
                 <Boton
-                  tono={
-                    s.como === 'impago' || s.como === 'solo_lectura' ? 'principal' : 'secundario'
-                  }
+                  tono={debe ? 'principal' : 'secundario'}
                   cargando={ir.isPending}
                   textoCargando="Abriendo"
                   onClick={() => {
@@ -184,9 +197,7 @@ export function TuSuscripcion() {
                     ir.mutate();
                   }}
                 >
-                  {s.como === 'impago' || s.como === 'solo_lectura'
-                    ? 'Pagar ahora'
-                    : 'Tarjeta y facturas'}
+                  {debe ? 'Pagar ahora' : 'Tarjeta y facturas'}
                 </Boton>
                 {!cambiando && (
                   <Boton
@@ -306,6 +317,33 @@ function LoQueViene({ s }: { readonly s: MiSuscripcion }) {
   return <p className="mt-e2 text-cuerpo">{texto}</p>;
 }
 
+/** En Pausa (0135): desde cuándo, cuándo vuelve sola y el botón para volver ya. */
+function EnPausa({
+  pausa,
+  ocupado,
+  alVolver,
+}: {
+  readonly pausa: NonNullable<MiSuscripcion['pausa']>;
+  readonly ocupado: boolean;
+  readonly alVolver: () => void;
+}) {
+  const vuelveA = planPorCodigo(pausa.vuelveA)?.nombre ?? 'tu plan';
+  return (
+    <Aviso
+      tono="info"
+      titulo={`En Pausa desde el ${elDia(pausa.desde) ?? ''}`}
+      accion={
+        <Boton tono="principal" cargando={ocupado} textoCargando="Volviendo" onClick={alVolver}>
+          Volver a {vuelveA}
+        </Boton>
+      }
+    >
+      Tus datos, guardados en solo lectura. Vuelves cuando quieras, pagando solo lo que quede del
+      mes; si no, el {elDia(pausa.vuelveSola) ?? ''} vuelves solo a {vuelveA}.
+    </Aviso>
+  );
+}
+
 /** Los planes a los que se puede cambiar, con el que toca por los locales. */
 function CambiarDePlan({
   s,
@@ -319,10 +357,46 @@ function CambiarDePlan({
   readonly alCerrar: () => void;
 }) {
   const [intervalo, setIntervalo] = useState<Intervalo>(s.intervalo ?? 'mes');
+  const [pausando, setPausando] = useState(false);
   const locales = Math.max(1, s.localesActivos);
   const opciones = PLANES.filter((p) =>
     locales >= 2 ? p.codigo !== 'pro' : p.codigo !== 'cadena',
   );
+  const pausa = planPorCodigo('pausa');
+
+  if (pausando && pausa !== undefined) {
+    return (
+      <Aviso
+        tono="atencion"
+        titulo="¿Pausar tu cuenta?"
+        accion={
+          <div className="flex flex-wrap gap-e2">
+            <Boton
+              tono="principal"
+              cargando={ocupado}
+              textoCargando="Pausando"
+              onClick={() => {
+                alElegir('pausa', 'mes');
+              }}
+            >
+              Sí, pausar
+            </Boton>
+            <Boton
+              tono="texto"
+              onClick={() => {
+                setPausando(false);
+              }}
+            >
+              No
+            </Boton>
+          </div>
+        }
+      >
+        Desde hoy, solo lectura por {conSimbolo(centimos(pausa.alMesPorLocal * locales))} + IVA al
+        mes. Hasta {MESES_DE_PAUSA} meses, una vez al año; vuelves cuando quieras, sin penalización.
+      </Aviso>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-e3 rounded-grande border border-borde p-e3">
@@ -358,27 +432,33 @@ function CambiarDePlan({
           const cadaUno = intervalo === 'ano' && !soloMensual ? p.alAnoPorLocal : p.alMesPorLocal;
           const esElSuyo =
             s.plan === elQueToca && (s.intervalo ?? 'mes') === (soloMensual ? 'mes' : intervalo);
+          const esLaPausa = p.codigo === 'pausa';
+          const noSePuede = esLaPausa && !esElSuyo ? s.noPuedePausar : null;
           return (
             <li key={p.codigo} className="flex items-center justify-between gap-e3 py-e2">
               <span className="min-w-0">
                 <span className="block font-medium">{p.nombre}</span>
                 <span className="block text-secundario text-texto-suave">
-                  {conSimbolo(centimos(cadaUno * locales))}{' '}
+                  {conSimbolo(centimos(cadaUno * locales))} + IVA{' '}
                   {intervalo === 'ano' && !soloMensual ? 'al año' : 'al mes'}
-                  {p.codigo === 'pausa' ? ' · solo lectura' : ''}
+                  {esLaPausa ? ' · solo lectura' : ''}
                 </span>
+                {noSePuede !== null && (
+                  <span className="mt-e1 block text-etiqueta text-texto-suave">{noSePuede}</span>
+                )}
               </span>
               {esElSuyo ? (
                 <Etiqueta tono="neutro">El tuyo</Etiqueta>
               ) : (
                 <Boton
                   tono="secundario"
-                  disabled={ocupado}
+                  disabled={ocupado || noSePuede !== null}
                   onClick={() => {
-                    alElegir(p.codigo, soloMensual ? 'mes' : intervalo);
+                    if (esLaPausa) setPausando(true);
+                    else alElegir(p.codigo, soloMensual ? 'mes' : intervalo);
                   }}
                 >
-                  Cambiar
+                  {esLaPausa ? 'Pausar' : 'Cambiar'}
                 </Boton>
               )}
             </li>
@@ -386,8 +466,7 @@ function CambiarDePlan({
         })}
       </ul>
       <p className="text-etiqueta text-texto-suave">
-        Se prorratea en la siguiente factura. Pausa deja la cuenta en solo lectura, con tus datos,
-        por 12 € al mes por local.
+        Se prorratea en la siguiente factura. Precios por local, más IVA.
       </p>
       <div>
         <Boton tono="texto" onClick={alCerrar}>

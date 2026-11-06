@@ -32,15 +32,23 @@ const FIN = '<!-- coste:fin -->';
 const EUROS_POR_DOLAR = 0.9;
 
 /**
- * DOCUMENTO: los planes llevan el IVA dentro (Manifiesto 32). Pro a 99 € y Cadena a
- * 89 € desde el 30-sep-2026 (decisión 0067); antes, 79 € y 69 €.
+ * DOCUMENTO: los planes, **sin IVA** y con el IVA aparte, los finales del 6-nov-2026
+ * (Manifiesto 32, decisión 0135): Esencial 39 €, Pro 99 € y Cadena 89 € por local. Y
+ * **la IA a un tercio**: 100 créditos en Esencial y 500 en Pro y Cadena.
  */
 const IVA = 0.21;
 const PLANES = {
-  esencial: { nombre: 'Esencial', conIva: 49, creditos: 300 },
-  pro: { nombre: 'Pro', conIva: 99, creditos: 1500 },
-  cadena: { nombre: 'Cadena (por local)', conIva: 89, creditos: 1500 },
+  esencial: { nombre: 'Esencial', sinIva: 39, creditos: 100 },
+  pro: { nombre: 'Pro', sinIva: 99, creditos: 500 },
+  cadena: { nombre: 'Cadena (por local)', sinIva: 89, creditos: 500 },
 };
+
+/**
+ * DOCUMENTO: el tope de IA por local y mes, que el servidor cumple antes de cada llamada
+ * (`TOPE_EN_EUROS` de @estook/dominio, 0135). **Ningún local gasta más que esto en IA**,
+ * use el modelo que use.
+ */
+const TOPE_DE_IA = 1.65;
 
 /**
  * COMPROBADO el 30-sep-2026 · platform.claude.com/docs/en/about-claude/pricing · $ por millón de tokens.
@@ -72,8 +80,15 @@ const GOOGLE_PLACES = 0.9;
 const INFRAESTRUCTURA = 0.55;
 const CONECTOR = 0.4;
 
-/** DOCUMENTO: docs/el-precio-de-verifacti.md (propuesta del 21-sep-2026, sin IVA, por NIF). */
-const VERIFACTI = { porNifConDiez: 5.59, porNifConCincuenta: 3.71, incluidas: 3000, extra: 0.002 };
+/**
+ * DOCUMENTO: Verifacti, sin IVA (Richi, 6-nov-2026, 0135): **14,99 € al mes el primer NIF y
+ * 1,99 € cada NIF más**. Lo de las facturas incluidas (3.000 al mes por NIF, y 0,002 € cada
+ * una de más) es de la propuesta del 21-sep-2026 ([VERIFICAR] que siga igual con este precio).
+ */
+const VERIFACTI = { primerNif: 14.99, cadaNifMas: 1.99, incluidas: 3000, extra: 0.002 };
+
+/** SUPUESTO: cuántos clientes cobran con Estook TPV en las cuentas de un local (el NIF repartido). */
+const CLIENTES_CON_TPV = 10;
 
 /**
  * Lo fijo de cada mes, no depende de cuántos locales haya. En dólares lo que se cobra
@@ -151,7 +166,11 @@ const LOCALES_CON_TPV = [
 
 const euros = (n) => `${n.toFixed(2).replace('.', ',')} €`;
 const porCiento = (n) => `${(n * 100).toFixed(0)} %`;
-const sinIva = (plan) => plan.conIva / (1 + IVA);
+const sinIva = (plan) => plan.sinIva;
+const conIva = (plan) => plan.sinIva * (1 + IVA);
+/** Verifacti por NIF, con tantos clientes que cobran con Estook: lo fijo, repartido. */
+const verifactiPorNif = (clientes) =>
+  (VERIFACTI.primerNif + (clientes - 1) * VERIFACTI.cadaNifMas) / clientes;
 
 /** Lo que cuesta un crédito con un modelo, en euros. */
 const creditoCon = (m) =>
@@ -161,24 +180,28 @@ const creditoCon = (m) =>
     1_000_000) *
   EUROS_POR_DOLAR;
 
+/** Lo que gasta en IA, nunca más que el tope que corta el servidor. */
+const conTope = (euros) => Math.min(euros, TOPE_DE_IA);
+
 const ia = {
   // Esencial usa el modelo económico; Pro reparte (Manifiesto 20, «cada tarea, a su modelo»).
   esencial: {
-    normal: PLANES.esencial.creditos * USO_NORMAL * creditoCon(MODELOS.economico),
-    tope: PLANES.esencial.creditos * creditoCon(MODELOS.economico),
+    normal: conTope(PLANES.esencial.creditos * USO_NORMAL * creditoCon(MODELOS.economico)),
+    tope: conTope(PLANES.esencial.creditos * creditoCon(MODELOS.economico)),
   },
   pro: {
-    normal:
+    normal: conTope(
       PLANES.pro.creditos *
-      USO_NORMAL *
-      ((1 - PARTE_AL_GRANDE_EN_PRO) * creditoCon(MODELOS.economico) +
-        PARTE_AL_GRANDE_EN_PRO * creditoCon(MODELOS.grande)),
-    tope: PLANES.pro.creditos * creditoCon(MODELOS.grande),
-    topeConElMasCaro: PLANES.pro.creditos * creditoCon(MODELOS.elMasCaro),
+        USO_NORMAL *
+        ((1 - PARTE_AL_GRANDE_EN_PRO) * creditoCon(MODELOS.economico) +
+          PARTE_AL_GRANDE_EN_PRO * creditoCon(MODELOS.grande)),
+    ),
+    tope: conTope(PLANES.pro.creditos * creditoCon(MODELOS.grande)),
   },
 };
 
-const stripe = (plan, tipo) => plan.conIva * (STRIPE[tipo] + STRIPE.suscripciones) + STRIPE.fijo;
+// Stripe cobra su parte de lo que paga el cliente, que lleva el IVA encima.
+const stripe = (plan, tipo) => conIva(plan) * (STRIPE[tipo] + STRIPE.suscripciones) + STRIPE.fijo;
 const verifacti = (ticketsAlDia, porNif) =>
   porNif + Math.max(0, ticketsAlDia * 30 - VERIFACTI.incluidas) * VERIFACTI.extra;
 const base = GOOGLE_PLACES + INFRAESTRUCTURA + CONECTOR;
@@ -191,7 +214,7 @@ function casos() {
   const pro = PLANES.pro;
   const lista = [];
   const caso = (nombre, plan, costeIa, tarjeta, tickets) => {
-    const v = tickets === undefined ? 0 : verifacti(tickets, VERIFACTI.porNifConDiez);
+    const v = tickets === undefined ? 0 : verifacti(tickets, verifactiPorNif(CLIENTES_CON_TPV));
     const s = stripe(plan, tarjeta);
     const total = costeIa + base + s + v;
     const ingreso = sinIva(plan);
@@ -281,14 +304,29 @@ function bloque() {
     '### Lo que cuesta un crédito de Fogón',
     '',
     tabla(
-      ['Modelo', 'Por crédito', 'Los 300 de Esencial', 'Los 1.500 de Pro'],
+      ['Modelo', 'Por crédito', 'Los 100 de Esencial', 'Los 500 de Pro'],
       Object.values(MODELOS).map((m) => [
         m.nombre,
         `${(creditoCon(m) * 100).toFixed(2).replace('.', ',')} cént.`,
-        euros(300 * creditoCon(m)),
-        euros(1500 * creditoCon(m)),
+        euros(PLANES.esencial.creditos * creditoCon(m)),
+        euros(PLANES.pro.creditos * creditoCon(m)),
       ]),
     ),
+    '',
+    `**Nunca más de ${euros(TOPE_DE_IA)} de IA por local y mes**: el servidor corta antes de pasarse, use el modelo que use.`,
+    '',
+    '### Verifacti, según cuántos clientes cobran con Estook TPV',
+    '',
+    tabla(
+      ['Clientes con TPV', 'Al mes, todos', 'Por cliente'],
+      [1, 10, 50, 200].map((n) => [
+        `${n}`,
+        euros(VERIFACTI.primerNif + (n - 1) * VERIFACTI.cadaNifMas),
+        euros(verifactiPorNif(n)),
+      ]),
+    ),
+    '',
+    `En las cuentas de abajo, el de ${CLIENTES_CON_TPV} clientes, más las facturas que pasen de 3.000 al mes por NIF.`,
     '',
     '### Lo que cuesta un local al mes, y lo que deja',
     '',

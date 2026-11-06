@@ -29,17 +29,17 @@ describe('tu precio frente a la zona', () => {
   });
 });
 
-describe('una vez cada 24 horas', () => {
-  const ayerALasDiez = new Date('2026-10-20T08:00:00Z');
+describe('una vez cada diez días (0135)', () => {
+  const elDiaUno = new Date('2026-11-01T08:00:00Z');
 
-  it('antes de las 24 horas, dice cuándo', () => {
-    expect(cuandoSePuedeOtraVez(ayerALasDiez, new Date('2026-10-21T07:00:00Z'))).toEqual(
-      new Date('2026-10-21T08:00:00Z'),
+  it('antes de los diez días, dice cuándo', () => {
+    expect(cuandoSePuedeOtraVez(elDiaUno, new Date('2026-11-10T07:00:00Z'))).toEqual(
+      new Date('2026-11-11T08:00:00Z'),
     );
   });
 
-  it('pasadas, o sin ninguno antes, ya se puede', () => {
-    expect(cuandoSePuedeOtraVez(ayerALasDiez, new Date('2026-10-21T08:00:00Z'))).toBeNull();
-    expect(cuandoSePuedeOtraVez(null, new Date('2026-10-21T08:00:00Z'))).toBeNull();
+  it('pasados, o sin ninguno antes, ya se puede', () => {
+    expect(cuandoSePuedeOtraVez(elDiaUno, new Date('2026-11-11T08:00:00Z'))).toBeNull();
+    expect(cuandoSePuedeOtraVez(null, new Date('2026-11-11T08:00:00Z'))).toBeNull();
   });
 });

@@ -34,6 +34,32 @@ export function AvisoDeLaCuenta({
     </Boton>
   ) : undefined;
 
+  // En Pausa (0135) no se debe nada: lo ha pedido, y se vuelve desde Ajustes.
+  if (cuenta.enPausa === true) {
+    return (
+      <Aviso
+        tono="info"
+        titulo="Tu cuenta está en Pausa"
+        accion={
+          laPaga ? (
+            <Boton
+              tono="secundario"
+              onClick={() => {
+                navegar('/ajustes/suscripcion');
+              }}
+            >
+              Volver
+            </Boton>
+          ) : undefined
+        }
+      >
+        {laPaga
+          ? 'Puedes verlo todo, pero no apuntar nada. Vuelve cuando quieras.'
+          : 'Puedes verlo todo, pero no apuntar nada. Avisa a quien lleva la cuenta.'}
+      </Aviso>
+    );
+  }
+
   return cuenta.como === 'impago' ? (
     <Aviso
       tono="mal"

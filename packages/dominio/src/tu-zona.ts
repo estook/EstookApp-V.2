@@ -13,8 +13,11 @@ import { centimos, entreFactor } from './dinero.ts';
 /** Con menos de tres precios de la zona, un plato no se compara. */
 export const MINIMO_PARA_COMPARAR = 3;
 
-/** Richi, 21-oct: «solo 1 al día cada 24 horas». */
-export const HORAS_ENTRE_ANALISIS_DE_ZONA = 24;
+/**
+ * Una vez cada diez días (Richi, 6-nov-2026, 0135: «la IA a un tercio»). Antes era una
+ * vez cada 24 horas (21-oct). Los precios de la calle no cambian de un día para otro.
+ */
+export const DIAS_ENTRE_ANALISIS_DE_ZONA = 10;
 
 /** Lo más que puede buscar Fogón en un análisis: unos 8 céntimos de búsquedas. */
 export const BUSQUEDAS_POR_ANALISIS = 8;
@@ -64,6 +67,6 @@ export function compararConLaZona(
 /** Cuándo se puede volver a analizar la zona, o nulo si ya se puede. */
 export function cuandoSePuedeOtraVez(ultimo: Date | null, ahora: Date): Date | null {
   if (ultimo === null) return null;
-  const otraVez = new Date(ultimo.getTime() + HORAS_ENTRE_ANALISIS_DE_ZONA * 3_600_000);
+  const otraVez = new Date(ultimo.getTime() + DIAS_ENTRE_ANALISIS_DE_ZONA * 86_400_000);
   return otraVez > ahora ? otraVez : null;
 }

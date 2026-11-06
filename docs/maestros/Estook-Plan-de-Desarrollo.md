@@ -2,7 +2,7 @@
 titulo: Plan de desarrollo
 tipo: Documento de construcción
 fecha: Septiembre de 2026 · versión 1.4
-nota: Reglas de trabajo, sistema de diseño, web pública y 31 módulos, más M6½ y los tres del TPV (M20A, M20B y M20C), en orden. Escrito para que no haga falta inventar nada. Documentos hermanos - Manifiesto, Arquitectura, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
+nota: Reglas de trabajo, sistema de diseño, web pública y 32 módulos, más M6½ y los cuatro del TPV (M20A, M20B, M20C y M20D), en orden. Escrito para que no haga falta inventar nada. Documentos hermanos - Manifiesto, Arquitectura, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
 ---
 
 # Qué es este documento
@@ -119,7 +119,7 @@ El riesgo principal de construir esto con una IA es que a mitad de camino olvide
 
 **Está en la [Arquitectura](Estook-Arquitectura.md), capítulo 1**, y en la [decisión 0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md). En una línea:
 
-> **Todo Estook es una sola base de código, en web.** **Estook** (`apps/app`) es la gestión y **Estook TPV** (`apps/tpv`) es el servicio: otra puerta del mismo código, con la misma API, la misma base, el mismo PIN y los mismos paquetes, que se instala aparte y funciona sin conexión. **La caja para Windows** es el programa del PC de la caja: Estook TPV con lo que se llamaba Estook Link dentro (27-oct). Y `apps/movil` es una cáscara opcional, sin una sola pantalla propia.
+> **Todo Estook es una sola base de código, en web.** **Estook** (`apps/app`) es la gestión y **Estook TPV** (`apps/tpv`) es el servicio: otra puerta del mismo código, con la misma API, la misma base, el mismo PIN y los mismos paquetes, que se instala aparte y funciona sin conexión. **La caja para Windows** es el programa del PC de la caja: Estook TPV con lo que se llamaba Estook Link dentro (27-oct). Y `apps/tpv-movil`, **Estook TPV para Android** (M20D), es una cáscara sin una sola pantalla propia.
 
 **Descartado, por escrito:** rehacer el producto en nativo; un TPV de escritorio para Windows; y un TPV con su propio repositorio, su base o su login.
 
@@ -471,7 +471,7 @@ Una página por app, por tipo de local y por caso de uso, cada una con su títul
 
 # D · Los módulos
 
-**31 módulos, de M0 a M30, más M6½ y los tres del TPV (M20A, M20B y M20C)**. Cada uno se entrega funcionando, probado en móvil real y con datos de verdad. **Ninguno se da por bueno «al 90 %».**
+**32 módulos, de M0 a M31, más M6½ y los cuatro del TPV (M20A, M20B, M20C y M20D)**; M20D y M31, propuestos el 6-nov-2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)). Cada uno se entrega funcionando, probado en móvil real y con datos de verdad. **Ninguno se da por bueno «al 90 %».**
 
 **Las fichas van por fases, y el orden en el que se construyen es este** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)). Los números no cambian, para no romper las referencias de las decisiones ya escritas.
 
@@ -734,7 +734,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 > **Orden de construcción, desde el 23-oct-2026** ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)), en siete entregas de Estook TPV:
 >
-> **M16a → M20A · 1 → T1 · La puerta → T2 · La sala → T3 · Los productos → T4 · La cocina y la barra → T5 · La caja para Windows (M19a y M20A · 2) → T6 · M20B → T7 · M20C con M20**, justo después de M10; y **M18 y M19b**, al final de la Fase 3. Qué deja cada una y cuándo se da por buena, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md); qué hace cada pantalla, en el Anexo, capítulo 11.
+> **M16a → M20A · 1 → T1 · La puerta → T2 · La sala → T3 · Los productos → T4 · La cocina y la barra → T5 · La caja para Windows (M19a y M20A · 2) → T6 · M20B → T7 · M20C con M20 → T8 · M20D · Estook TPV para Android**, justo después de M10 (T8, propuesto en la [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), pendiente de Richi); y **M18 y M19b**, al final de la Fase 3. Qué deja cada una y cuándo se da por buena, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md); qué hace cada pantalla, en el Anexo, capítulo 11.
 >
 > **M20A · 1 (la base y la API de la sala y la cocina) ya está en producción**, y sus primeras pantallas se rehacen en T1 a T3: Richi pidió **un TPV entero, aparte de Estook**, no un comandero (0107). **M20 deja de ir el primero**: el cierre a mano no trae platos, así que sin cobro no tiene ventas que mover; va con M20C, donde nace la venta ([el plan](../m20-ventas-y-consumo.md)). Hasta la 0106 el orden era M16a → M20 → M19a → M20A (1.4).
 >
@@ -807,7 +807,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Entra** (el detalle, en el capítulo 3 del Anexo).
 
-- **`apps/tpv`, Estook TPV** (A5, B5, [0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md) y [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)): se instala aparte, **solo funciona en un aparato vinculado**, arranca en su función con **su inicio** y guarda en el aparato lo que necesita para trabajar sin conexión · **vincular, funciones, PIN y bloqueo** (Anexo 11.3 y 11.4) · **Ajustes del TPV** (11.13) · `apps/movil`, la cáscara de Capacitor, **opcional**.
+- **`apps/tpv`, Estook TPV** (A5, B5, [0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md) y [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)): se instala aparte, **solo funciona en un aparato vinculado**, arranca en su función con **su inicio** y guarda en el aparato lo que necesita para trabajar sin conexión · **vincular, funciones, PIN y bloqueo** (Anexo 11.3 y 11.4) · **Ajustes del TPV** (11.13) · `apps/tpv-movil`, Estook TPV para Android con Capacitor (M20D, [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)).
 - **Sala:** **el plano dibujado en el TPV a ojo** (11.9) y **todas las mesas para todos** (11.8) · **tres caminos de venta: mesa, barra y para llevar** · tomar nota con **los pases en pestañas** y **la botonera** (11.10 y 11.11), extras, modificadores y notas · **aviso de alergia de la mesa** con los alérgenos de M9 · pases y **marchar**, siempre el camarero (0106) · quitar una línea ya mandada con motivo, permiso y **aviso a cocina** · mover, juntar, dividir y **traspasar una mesa a otro camarero**, que es el cambio de turno · agotado desde la comanda, con aviso previo calculado con el stock real.
 - **Cocina:** **el ticket entero de la mesa, sin partidas** (0106), y lo que prepara la barra en **la pantalla de barra** (11.11) · tiempos en tres tramos con los minutos que pone el local · marcar listo, **deshacer dentro de un margen** · aviso sonoro distinto para alergia y prioridad · **contador del día por plato** · **la ficha técnica de M9 desde cualquier plato** · **sin un solo importe**, tampoco en la respuesta del servidor.
 - **Cómo se ve y cómo se usa** (capítulos 10 y 11 del Anexo): **oscuro**, la pantalla de pedir con «Lo más pedido» primero, **opciones obligatorias que no dejan mandar sin contestarlas**, menú del día paso a paso y **una comanda de cuatro platos en diez toques o menos** · el comandero en el móvil del camarero, con la misma pantalla en una columna · «Venta rápida» en barra · el plano con «Todas · Mías», dibujado a ojo con `@dnd-kit` (ya en el proyecto) · lo que cambia en un aparato, en los demás en menos de 2 segundos.
@@ -848,13 +848,33 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y cómo se ve y cómo se usa** (capítulo 10 del Anexo): la pantalla de cobrar con el total en grande, los billetes para no teclear y el cambio a la vista · el ticket impreso, por correo o en un QR, y «Pedir factura» en la misma pantalla · **el cajón**, que se abre solo con efectivo como una línea más del formato de impresión, y **abrirlo sin venta con permiso, motivo y rastro** · **informe X** sin cerrar e **informe Z** al cerrar, que son consultas y no documentos fiscales · **arqueo ciego de fábrica** · **el cuadre de la tarjeta**: el total del cierre del datáfono frente a lo cobrado con tarjeta · el datáfono del banco **sin conectar**, que vale para todos.
 
-**Después de M20C, local a local: el datáfono conectado** (Anexo, 10.7), detrás de `ProveedorDatafono`, con el importe que viaja solo y vuelve «aprobado». La cuenta es del local y el dinero no pasa por Estook. Cuál va primero —Stripe Terminal, Viva.com o SumUp— lo decide Richi con los precios delante. **Estook nunca es entidad de pago ni cobra comisión por cobro** (Arquitectura, capítulo 10).
+**Después de M20C, local a local: el datáfono conectado** (Anexo, 10.7), detrás de `ProveedorDatafono`, con el importe que viaja solo y vuelve «aprobado». La cuenta es del local y el dinero no pasa por Estook. Cuál va primero —Stripe Terminal, Viva.com o SumUp— lo decide Richi con los precios delante (**propuesta: Stripe**, [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)). **Cobrar con tarjeta en el propio aparato** (Tap to Pay) necesita la app de Android: va en M20D. **Estook nunca es entidad de pago ni cobra comisión por cobro** (Arquitectura, capítulo 10).
 
 **Depende de.** M20A, M20B, M16a y M6½.
 
 **Reglas críticas.** Nunca se cierra una mesa cobrada sin ticket o sin justificante provisional. **El cobro no espera a Hacienda**: cobrar y emitir son dos pasos, y el segundo puede llegar después. Reabrir lo cobrado no existe: se rectifica. Los PDF —factura completa, ticket por correo— salen del servidor (regla 7); el ticket impreso no es un PDF. **La impresión no bloquea el cobro**: si falla, el ticket ya está emitido y se reimprime.
 
 **Terminado cuando.** Un servicio de prueba completo —diez mesas, una dividida, un pago mixto, una factura pedida y una devolución— cuadra al céntimo entre caja, tickets, ventas y almacén; y con internet cortado se cobra con justificante y al volver salen los tickets en orden. Reimprimir un ticket sale idéntico, marcado como copia, y no crea ningún registro nuevo. **Y pasan las pruebas del apartado 10.12 del Anexo**: el cajón se abre solo con efectivo, abrirlo sin venta sale en el X y en el Z, el arqueo ciego no enseña lo esperado antes de contar, y un cobro con tarjeta que no pasó por el datáfono sale como descuadre.
+
+### M20D · Estook TPV para Android: el TPV portátil y cobrar en el aparato
+
+_Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md); la investigación, en [`docs/estook-tpv-android-y-el-cobro.md`](../estook-tpv-android-y-el-cobro.md)). **Propuesto: cuándo, con qué proveedor, dónde vive el código y si Estook gana algo con los cobros son las cuatro preguntas de la 0134.** Aquí va la opción recomendada de cada una._
+
+**Objetivo.** Que un local tenga todo con Estook: **un TPV Android con impresora dentro** (como un Sunmi V3 PLUS) que toma nota en la mesa, imprime la cuenta y el ticket y **cobra con tarjeta en el propio aparato**; y que el móvil Android de un camarero cobre igual.
+
+**Entra.** **`apps/tpv-movil`**, una app de Android con **Capacitor** que abre el mismo `apps/tpv` (como la caja para Windows con Electron): **ninguna pantalla nueva** · un puente pequeño, como `window.estookCaja`, con imprimir (la impresora de dentro acepta ESC/POS, que ya genera `packages/impresion`, y las de red), abrir el cajón, el lector de códigos, el modo quiosco, arrancar al encender y no actualizarse en servicio · **«TPV portátil» al vincular**: un comandero que imprime y cobra con tarjeta (Anexo 11.3) · **cobrar en el propio aparato** (Tap to Pay) y con **un lector Bluetooth** para las tarjetas con chip, con el primer proveedor detrás de `ProveedorDatafono` (Anexo 10.7) · conectar la cuenta del local con su proveedor desde Ajustes del TPV · anular y devolver · el cuadre de la tarjeta, solo · los lectores en la nube desde la caja para Windows y la web · el segundo proveedor · y, al final, **la caja Android de centro**: que una caja Android haga lo que hace la caja para Windows sin internet.
+
+**En cuatro entregas:** T8 · 1 la app de Android · T8 · 2 cobrar con tarjeta aquí · T8 · 3 los lectores en la nube y el segundo proveedor · T8 · 4 la caja Android de centro (0134).
+
+**Depende de.** M20C (el cobro y la caja) y M19a (la impresión y el centro del local).
+
+**Reglas críticas.** **Estook no toca el dinero**: la cuenta es del local con su proveedor, y Estook no ve la tarjeta ni guarda sus datos. **Nunca se para un cobro**: si el cobro con tarjeta falla o no hay internet, se cobra con el datáfono del banco, que **no se quita nunca**. **Solo aparatos que no sean datáfono, con NFC y los servicios de Google**: al vincularlo, Estook comprueba si el aparato puede cobrar y lo dice. **Ninguna marca en el núcleo**: Estook dice qué aparatos están probados, no los vende. **Firmada y en Google Play antes de vender.**
+
+**Qué NO entra.** El iPhone y el iPad (M31) · que pague el cliente con su móvil desde un QR (más adelante, Anexo 10.7) · los datáfonos Android de los bancos.
+
+**Antes de escribir una línea.** Comprar un aparato de prueba (Sunmi V3 PLUS con Google), comprobar en la documentación oficial de ese día que el Tap to Pay del proveedor está abierto en España para Android (en noviembre de 2026, el de Stripe estaba en vista previa pública), y hacer con él un cobro de prueba y una impresión.
+
+**Terminado cuando.** Con un TPV portátil se toma nota de una mesa, sale en cocina, se imprime la cuenta en el propio aparato, **se cobra con una tarjeta sin contacto y con un móvil**, sale el ticket con su QR, y al cerrar la caja **la tarjeta cuadra sola**. Una tarjeta que pide el chip se cobra con el lector o con el datáfono del banco. Con internet cortado, se cobra con el datáfono del banco y nada se para. Un aparato que no puede cobrar con tarjeta lo dice al vincularlo.
 
 ## Fase 5 · Inteligencia
 
@@ -979,6 +999,14 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 **Reglas críticas.** La API pública **no es un atajo al dominio**: pasa por los mismos comandos, los mismos permisos y la misma auditoría que la aplicación. Un tercero **nunca** ve más de lo que vería la persona que autorizó la conexión.
 
 **Por qué está aquí y no antes.** Porque exige que el dominio esté cerrado. Y por qué está: el TPV líder de España se integra con dos back-office de nuestra categoría, así que **quiere integrarse con nosotros** y tiene que haber dónde.
+
+### M31 · Estook TPV para iPhone y iPad
+
+_Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md))._ Richi: «empezaremos con Android, y si el mercado lo pide más adelante haremos iOS (iOS seguro al final)».
+
+**Objetivo.** Lo mismo que M20D en el iPhone y el iPad: la misma app de Capacitor con su parte de iPhone, imprimir sin la caja para Windows y **cobrar con Tap to Pay en iPhone** (en noviembre de 2026 ya funcionaba en España con Stripe, SumUp, Viva y Adyen).
+
+**Reglas críticas.** Apple tiene que **dar permiso a la app para usar Tap to Pay** y **revisa cada versión** antes de publicarla: por eso va después de Android, con la app ya rodada.
 
 ---
 

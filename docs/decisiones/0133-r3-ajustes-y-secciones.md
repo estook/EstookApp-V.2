@@ -92,7 +92,7 @@ empiece con las cifras finales.
 2. **La IA a un tercio**: 100 créditos en Esencial y 500 en Pro, tope de 1,65 € por local y mes, y
    «Analiza mi zona» una vez cada diez días.
 3. **El coste por local** con Verifacti a 14,99 € + IVA el primer NIF al mes y 1,99 € cada NIF más.
-4. **Estook TPV para Android, y después iOS**, como módulo final: **una app aparte, en su propio
+4. **Estook TPV para Android, y después iOS** (el 6-nov pasó a la [0134](0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), con el TPV portátil y cobrar con tarjeta en el aparato; **R4 queda aplazada**), como módulo final: **una app aparte, en su propio
    repositorio, que comparte el dominio, la API y el sistema de diseño**; primero Android y, cuando el
    mercado lo pida, iOS.
 

@@ -93,7 +93,7 @@ Incidencias del turno que lee el siguiente, notas, y el mantenimiento de los equ
 
 ## Fase 4 · Las ventas, y Estook TPV
 
-**El orden es M16a → M20A · 1 → T1 a T4 (la puerta, la sala, los productos, la cocina y la barra) → T5 · La caja para Windows → T6 · M20B → T7 · M20C con M20, justo después de M10; y M18 y M19b, al final de la Fase 3** ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md)).
+**El orden es M16a → M20A · 1 → T1 a T4 (la puerta, la sala, los productos, la cocina y la barra) → T5 · La caja para Windows → T6 · M20B → T7 · M20C con M20 → T8 · M20D · Estook TPV para Android, justo después de M10 (T8, propuesto en la [0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)); y M18 y M19b, al final de la Fase 3** ([0107](decisiones/0107-estook-tpv-el-tpv-entero.md)).
 
 ### M20 · Ventas, emparejamiento y consumo
 
@@ -114,6 +114,10 @@ El esquema aislado y de solo inserción, el alta fiscal del local, los tipos de 
 ### M20C · Cobro y caja
 
 Efectivo, datáfono y mixto; dividir la cuenta; factura a petición; devoluciones por rectificativa; caja y arqueo. Cerrar una mesa mueve caja, ventas y almacén sin teclear nada más.
+
+### M20D · Estook TPV para Android
+
+**Propuesto el 6-nov** ([0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), [la investigación](estook-tpv-android-y-el-cobro.md)): una app de Android que abre el mismo Estook TPV y pone lo del aparato. **El TPV portátil** (un Sunmi V3 PLUS o parecido) toma nota, imprime la cuenta y el ticket y **cobra con tarjeta en la mesa**; el móvil Android del camarero, también. Tap to Pay y un lector Bluetooth para las tarjetas con chip, con el primer proveedor (propuesta: Stripe). El datáfono del banco sigue valiendo siempre. En cuatro entregas, T8 · 1 a T8 · 4; la última, la caja Android de centro.
 
 ### M18 · El conector · vía nube
 
@@ -175,6 +179,10 @@ Uber Eats primero, con su OAuth, su firma y el plazo de once minutos y medio par
 
 Que un TPV o un ERP puedan leer y escribir con permiso del cliente. Va al final porque exige el dominio cerrado, y porque el TPV líder de España ya se integra con dos competidores tuyos: cuando quiera integrarse contigo, tiene que haber dónde.
 
+### M31 · Estook TPV para iPhone y iPad
+
+Lo de M20D en el iPhone y el iPad, con Tap to Pay en iPhone. Al final, cuando el mercado lo pida: Apple revisa cada versión, así que se llega con Android ya rodado (0134).
+
 ---
 
 ## Lo que puedes vender en cada momento
@@ -186,6 +194,7 @@ Que un TPV o un ERP puedan leer y escribir con permiso del cliente. Va al final 
 | **+ M20**         | Que las ventas muevan el almacén, por CSV o a mano                                          |
 | **+ M19a y M20A** | **Comandero y cocina.** Puede cobrar con su TPV de siempre                                  |
 | **+ M20B y M20C** | **El TPV completo**, con tickets legales                                                    |
+| **+ M20D**        | **Y todo con Estook**: el TPV portátil que imprime y cobra con tarjeta en la mesa           |
 | **+ M18**         | O conectar el TPV que ya tiene                                                              |
 | **+ M26**         | Que contrate solo desde la web                                                              |
 

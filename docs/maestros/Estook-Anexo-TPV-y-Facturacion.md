@@ -21,9 +21,9 @@ Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (có
 
 |                                            | Decisión                                                                                                                                                                                                                                        |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ¿Web o nativo?                             | **Web, una sola base de código.** La cáscara nativa es opcional (iPad y food truck sin la caja para Windows)                                                                                                                                    |
+| ¿Web o nativo?                             | **Web, una sola base de código.** **Estook TPV para Android** (M20D, [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)) abre ese mismo código y pone lo del aparato: la impresora de dentro y cobrar con tarjeta     |
 | ¿Una aplicación aparte para el TPV?        | **Sí, con su inicio**, `apps/tpv`, del mismo código: mismos datos, permisos y PIN, y **solo en aparatos vinculados** ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md), [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)) |
-| ¿Estook toca el dinero?                    | **Nunca.** El efectivo va al cajón y la tarjeta al datáfono del local. Estook apunta ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md))                                                                                               |
+| ¿Estook toca el dinero?                    | **Nunca.** El efectivo va al cajón y la tarjeta al datáfono del local o, con la app de Android, a su proveedor de pagos (10.7). Estook apunta ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md))                                      |
 | ¿Quién hace la parte técnica de VeriFactu? | **Verifacti**, detrás de un adaptador. Estook responde de su parte (1.5)                                                                                                                                                                        |
 | ¿Qué impresoras?                           | **Cualquiera ESC/POS**, por la caja para Windows. Ninguna marca en el núcleo (capítulo 6)                                                                                                                                                       |
 | ¿Sin internet?                             | **Se sigue trabajando** con la caja para Windows en el local; el ticket, con justificante y al volver (3.6 y 4.11)                                                                                                                              |
@@ -36,7 +36,7 @@ Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (có
 
 1. **El soporte en horario de servicio**: horario, canal y quién. Se decide antes de vender el primer TPV.
 2. **Si el camarero cobra de fábrica.** Propuesta: sí, y el gerente lo apaga por local.
-3. **Qué datáfono conectado va primero** (10.7), con sus precios y comisiones delante.
+3. **Qué datáfono conectado va primero** (10.7), con sus precios y comisiones delante. **Propuesta: Stripe** ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), pregunta 2).
 
 ---
 
@@ -736,6 +736,8 @@ El programa del PC de la caja: **Estook TPV tal cual, y dentro lo que se llamaba
 
 ### Vía 2 · La cáscara de Estook TPV
 
+> **Desde la [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md) (6-nov-2026, propuesto), la cáscara tiene nombre y módulo:** **Estook TPV para Android** (`apps/tpv-movil`, M20D), que además imprime en la impresora de dentro de los TPV Android y **cobra con tarjeta en el aparato** (10.7); la del iPhone y el iPad, en M31. Donde este capítulo dice «la cáscara», es esa app.
+
 **Y aquí está la respuesta a «¿web o nativo?»: no hay que elegir.** Estook TPV es web, y para el iPad y para imprimir sin la caja para Windows se envuelve en una cáscara nativa —Capacitor— que se publica en Google Play y en la App Store. Es opcional.
 
 Dentro de la cáscara, la web es exactamente la misma. Lo que la cáscara añade es lo que un navegador no puede dar:
@@ -1156,6 +1158,24 @@ Dos niveles, y **en los dos el dinero va de la tarjeta del cliente a la cuenta d
 - **SumUp**, con su Cloud API y el lector Solo, a cualquier distancia, con lector virtual y cuenta de pruebas. [Documentación](https://developer.sumup.com/terminal-payments/cloud-api).
 - **Los datáfonos de banco (Redsys)**: **[VERIFICAR]**. Su integración suele ser local y distinta en cada banco. Se estudia cuando un cliente lo pida.
 
+### Cobrar en el propio aparato (M20D)
+
+Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md); la investigación, en [`docs/estook-tpv-android-y-el-cobro.md`](../estook-tpv-android-y-el-cobro.md)). **Propuesta, pendiente de las cuatro preguntas de la 0134.**
+
+Con **Estook TPV para Android**, el nivel 2 tiene **tres caminos**, todos detrás del mismo `ProveedorDatafono`:
+
+| Camino                   | Cómo                                                                                         | Desde dónde                                      |
+| ------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| **Lector en la nube**    | La API manda el importe al lector por internet (lo de arriba)                                | Cualquiera: la web, la caja para Windows, la app |
+| **En el propio aparato** | **Tap to Pay**: el cliente acerca la tarjeta, el móvil o el reloj a la pantalla del aparato  | **Solo la app de Android** (y la de iPhone, M31) |
+| **Lector Bluetooth**     | La app le habla a un lector pequeño del mismo proveedor, para las tarjetas que piden el chip | Solo la app                                      |
+
+- **Solo sin contacto** en el propio aparato. En España ya son el 95,6 % de los pagos con tarjeta en tienda (Banco de España, segundo semestre de 2025). Para el resto, el lector Bluetooth o el datáfono del banco.
+- **Vale un aparato Android que no sea datáfono, con NFC y los servicios de Google** (Sunmi V3 PLUS, V3, V3 MIX, T3, D3; muchos móviles). **Los datáfonos Android (Sunmi P3, PAX) no valen**: llevan cerrada la app de su banco. **Al vincular, Estook comprueba si el aparato puede cobrar con tarjeta** y lo dice.
+- **Desde el navegador no se puede**: ni Chrome ni Safari dejan cobrar con tarjeta. Por eso hace falta la app.
+- **Sin internet no hay Tap to Pay**: se cobra con el datáfono del banco y queda marcado, como siempre.
+- El PIN de las tarjetas que lo piden (por encima de 50 €, normalmente) **se teclea en la misma pantalla**. El ticket de Estook sigue siendo el ticket; qué datos de la tarjeta tiene que llevar el comprobante lo dice el proveedor **[VERIFICAR al llegar]**.
+
 **Cómo se construye:** detrás de un adaptador, `ProveedorDatafono`, igual que la facturación (4.2), con cobrar, consultar, anular y devolver una operación. **La cuenta del datáfono es del local**, a su nombre con ese proveedor: Estook no guarda tarjetas, no recibe fondos y **no pasa a ser pasarela de pago** ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md)). **Cuál va primero** se decide al llegar a M20C con los precios delante (decisión 0054). Y ningún campo ni llamada se escribe sin leer antes su documentación oficial de ese día.
 
 **Si el datáfono conectado no responde**, se cobra como en el nivel 1 y queda marcado. **Nunca se para un cobro.**
@@ -1295,27 +1315,28 @@ _Añadido en la versión 1.4 (23 de octubre de 2026, [decisión 0107](../decisio
 
 **Estook TPV se vende a cualquier local**, así que vale lo que cada local ya tenga (respuesta 2 de la 0107). **Es la misma aplicación web en todos**; lo que cambia es cómo se instala y qué aparatos se le enchufan.
 
-| Aparato                                                            | Para qué suele ser             | Cómo se instala                                                                                 | Pantalla mínima      | Quiosco (que no se salga nadie)                     |
-| ------------------------------------------------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------- |
-| **Ordenador con Windows, táctil** (el TPV de caja de toda la vida) | Caja                           | **La caja para Windows**, que se descarga; o Edge › «Instalar»                                  | 12″, apaisado        | El «acceso asignado» de Windows con Edge en quiosco |
-| **Tablet Android**                                                 | Caja o comandero de sala       | Chrome › «Instalar aplicación»                                                                  | 8″; 10″ para la caja | «Fijar pantalla» de Android, o la cáscara           |
-| **iPad**                                                           | Caja o comandero de sala       | Safari › Compartir › «Añadir a pantalla de inicio». **La cáscara** si imprime sin la caja (6.3) | 9″; 10″ para la caja | «Acceso guiado» del iPad                            |
-| **Móvil Android o iPhone**                                         | Comandero (personal o de sala) | Chrome o Safari, igual que arriba                                                               | 5,8″, en vertical    | No hace falta: es el móvil de alguien               |
-| **Pantalla de cocina o de barra**                                  | Pantalla de cocina o de barra  | Una tablet de 13″ o más, o una tele con un mini PC con Chrome; en quiosco                       | 13″, apaisada        | El del sistema que tenga, como arriba               |
+| Aparato                                                                | Para qué suele ser             | Cómo se instala                                                                                 | Pantalla mínima      | Quiosco (que no se salga nadie)                     |
+| ---------------------------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------- |
+| **Ordenador con Windows, táctil** (el TPV de caja de toda la vida)     | Caja                           | **La caja para Windows**, que se descarga; o Edge › «Instalar»                                  | 12″, apaisado        | El «acceso asignado» de Windows con Edge en quiosco |
+| **Tablet Android**                                                     | Caja o comandero de sala       | Chrome › «Instalar aplicación»                                                                  | 8″; 10″ para la caja | «Fijar pantalla» de Android, o la cáscara           |
+| **iPad**                                                               | Caja o comandero de sala       | Safari › Compartir › «Añadir a pantalla de inicio». **La cáscara** si imprime sin la caja (6.3) | 9″; 10″ para la caja | «Acceso guiado» del iPad                            |
+| **Móvil Android o iPhone**                                             | Comandero (personal o de sala) | Chrome o Safari, igual que arriba                                                               | 5,8″, en vertical    | No hace falta: es el móvil de alguien               |
+| **TPV Android con impresora** (Sunmi V3 PLUS, T3, D3…), **desde M20D** | TPV portátil o caja            | **Estook TPV para Android** (0134): la impresora de dentro y cobrar con tarjeta                 | 6,75″                | El modo quiosco de la app                           |
+| **Pantalla de cocina o de barra**                                      | Pantalla de cocina o de barra  | Una tablet de 13″ o más, o una tele con un mini PC con Chrome; en quiosco                       | 13″, apaisada        | El del sistema que tenga, como arriba               |
 
 - **Navegadores:** Edge y Chrome de los dos últimos años; **Safari 16.4 o más nuevo** (es el que deja instalar con avisos en el iPhone y el iPad). Uno más viejo ve «Actualiza el navegador para usar Estook TPV», nunca una pantalla rota.
 - **En vertical y en apaisado** (Arquitectura, capítulo 8): la caja y la cocina se piensan apaisadas; el comandero en el móvil, en vertical; la tablet de sala, en las dos.
 - **Lo que se le enchufa**, y quién habla con ello:
 
-| Periférico                                              | Cómo se conecta                                                                                                       | Quién le habla                                                                |
-| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Impresora de tickets o de cocina (ESC/POS)              | Por red, USB o Bluetooth                                                                                              | **La caja para Windows** (o la cáscara, o la que pregunta sola): nunca la web |
-| Cajón                                                   | **Enchufado a la impresora de tickets** (el conector RJ-11 que traen todas)                                           | La orden de abrir va dentro del trabajo de impresión (10.6)                   |
-| Datáfono del banco                                      | No se conecta: se teclea el importe y se confirma en Estook TPV (nivel 1, 10.7)                                       | El camarero; se cuadra al cerrar la caja                                      |
-| Datáfono conectado                                      | Por internet (Stripe Terminal, Viva.com, SumUp) o por la caja (Redsys TPV-PC con su pinpad) **[VERIFICAR al llegar]** | La API de Estook, detrás de `ProveedorDatafono` (10.7)                        |
-| Lector de códigos, teclado de cocina, llave de camarero | USB o Bluetooth: escriben como un teclado                                                                             | El navegador, sin nada más                                                    |
-| Balanza                                                 | Puerto serie                                                                                                          | Chrome o Edge, o la caja para Windows                                         |
-| Pantalla para el cliente (el total a la vista)          | Segunda pantalla del ordenador de caja                                                                                | **Más adelante**: no entra en T1 a T7                                         |
+| Periférico                                              | Cómo se conecta                                                                                                                                                                            | Quién le habla                                                                                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Impresora de tickets o de cocina (ESC/POS)              | Por red, USB o Bluetooth                                                                                                                                                                   | **La caja para Windows** o **la app de Android** (también la impresora de dentro del aparato), o la que pregunta sola: nunca la web |
+| Cajón                                                   | **Enchufado a la impresora de tickets** (el conector RJ-11 que traen todas)                                                                                                                | La orden de abrir va dentro del trabajo de impresión (10.6)                                                                         |
+| Datáfono del banco                                      | No se conecta: se teclea el importe y se confirma en Estook TPV (nivel 1, 10.7)                                                                                                            | El camarero; se cuadra al cerrar la caja                                                                                            |
+| Datáfono conectado                                      | Por internet (Stripe Terminal, Viva.com, SumUp) o por la caja (Redsys TPV-PC con su pinpad) **[VERIFICAR al llegar]**; o **en el propio aparato** con la app de Android (Tap to Pay, 10.7) | La API de Estook, detrás de `ProveedorDatafono` (10.7)                                                                              |
+| Lector de códigos, teclado de cocina, llave de camarero | USB o Bluetooth: escriben como un teclado                                                                                                                                                  | El navegador, sin nada más                                                                                                          |
+| Balanza                                                 | Puerto serie                                                                                                                                                                               | Chrome o Edge, o la caja para Windows                                                                                               |
+| Pantalla para el cliente (el total a la vista)          | Segunda pantalla del ordenador de caja                                                                                                                                                     | **Más adelante**: no entra en T1 a T7                                                                                               |
 
 **Ninguna marca en el núcleo** (6.7, regla 6): en la web se dice «funciona con tu impresora», no «compra esta».
 
@@ -1333,6 +1354,7 @@ _Añadido en la versión 1.4 (23 de octubre de 2026, [decisión 0107](../decisio
 | **Pantalla de barra**  | Lo mismo que la de cocina, con lo que prepara la barra (11.11)                                                                                                                           | La barra, sin PIN                                                   | Nunca                                                          | Nada                                                        |
 | **Fichar**             | **Ya no se vincula** (0115): se ficha en la caja. Los que había siguen, con el quiosco de 0068, hasta quitarlos                                                                          | Cada uno, con su PIN                                                | Después de cada fichaje                                        | Nada                                                        |
 
+- **El TPV portátil** (desde M20D, [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)): al vincular desde la app de Android sale la opción **«TPV portátil»**. Toma nota, **imprime la cuenta y el ticket en el propio aparato** y **cobra con tarjeta en la mesa**. Por dentro es un **comandero** que además imprime y cobra con tarjeta: el PIN, el bloqueo, la bolsa del camarero y los permisos son los del comandero. Si el aparato no puede cobrar con tarjeta, lo dice al vincularlo.
 - **Lo que separa la caja del comandero es el cajón**: un aparato de caja tiene siempre el suyo, y el efectivo que cobra va a la caja de ese cajón. **Dos aparatos de caja pueden compartir un cajón** (la barra con dos pantallas), y entonces comparten su caja abierta. Un comandero no tiene cajón: si cobra en efectivo, va a la bolsa de quien cobra (5.5), y si el local no usa bolsa, el comandero cobra solo con tarjeta.
 - **El comandero personal** es el móvil de alguien: se vincula a nombre de esa persona y **solo entra su PIN** («Este móvil es de Sara»). Si esa persona deja el local, el aparato se desvincula solo.
 - **Cambiar la función o el nombre** de un aparato se hace desde Ajustes del TPV › Aparatos, sin volver a vincularlo.

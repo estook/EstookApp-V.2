@@ -383,7 +383,8 @@ export function crearApi(despachador: Despachador) {
     exacto) es de ese cuerpo. Una firma que no vale es un 400 y no se toca nada; Verifacti no
     reintenta los 4xx. Hay que contestar en menos de diez segundos: solo se apunta.
   */
-  api.post('/verifacti/aviso', async (c) => {
+  // **No empieza por «/v»**: junto a `v:version` dejaría al enrutador sin ninguna ruta (25-sep).
+  api.post('/avisos/verifacti', async (c) => {
     const correlacionId = c.get('correlacionId');
     const cuerpo = await c.req.text();
     const recibido = await despachador.avisoDeVerifacti(

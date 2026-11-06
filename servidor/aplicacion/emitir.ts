@@ -685,7 +685,7 @@ export function elSecretoDeLosAvisos(): string | null {
 
 /** Dónde llegan: la API pública, fuera de `/v1`, como el de Stripe. */
 export function dondeLleganLosAvisos(): string {
-  return `${laApiPublica()}/verifacti/aviso`;
+  return `${laApiPublica()}/avisos/verifacti`;
 }
 
 /** La firma de un aviso: HMAC-SHA256 del cuerpo exacto, en hexadecimal (`X-Webhook-Signature`). */

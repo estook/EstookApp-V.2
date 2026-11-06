@@ -135,8 +135,17 @@ test('la dirección se la da a la gestoría y se la quita, en «Quién la lleva�
 }) => {
   // Bar Muelle: ni Rosa ni Vera (la de las capturas) están en él, y la gestoría sí.
   await entrarEnLaApp(page, 'elena@ejemplo.estook.com');
-  const muelle = page.getByRole('button', { name: /Bar Muelle/ });
-  if (await muelle.isVisible()) await muelle.click();
+  // En Bar Muelle por la API, con la sesión de la página: mirar si sale el selector de local era
+  // una carrera, y con Elena entrando a la vez en dos navegadores a veces no salía (6-nov, 0136).
+  const token = (await page.evaluate(() => window.localStorage.getItem('estook.sesion'))) ?? '';
+  const yo = await consultarEnLaApi<{ locales: { id: string; nombre: string }[] }>(
+    page.request,
+    token,
+    'quien_soy',
+  );
+  const muelle = yo.locales.find((l) => l.nombre === 'Bar Muelle');
+  expect(muelle, 'Elena no está en Bar Muelle').toBeDefined();
+  await ejecutarEnLaApi(page.request, token, 'cambiar_de_contexto', { local_id: muelle?.id });
   await abrirSinQueSeCaiga(page, `${APP}#/ajustes/facturacion`);
   await expect(page.getByRole('heading', { name: 'Quién la lleva' })).toBeVisible();
   await expect(page.getByText('Siempre', { exact: true })).toBeVisible();

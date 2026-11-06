@@ -119,9 +119,11 @@ export function TuSuscripcion() {
   const debe = s.como === 'impago' || (s.como === 'solo_lectura' && s.plan !== 'pausa');
   const etiqueta = s.deLaCasa
     ? { texto: 'De la casa', tono: 'info' as const }
-    : s.cancelaAlAcabar && s.como !== 'solo_lectura'
-      ? { texto: 'Cancelada', tono: 'atencion' as const }
-      : COMO_SE_LLAMA[s.como];
+    : s.plan === 'pausa' && s.como === 'solo_lectura'
+      ? { texto: 'En Pausa', tono: 'info' as const }
+      : s.cancelaAlAcabar && s.como !== 'solo_lectura'
+        ? { texto: 'Cancelada', tono: 'atencion' as const }
+        : COMO_SE_LLAMA[s.como];
 
   return (
     <Tarjeta

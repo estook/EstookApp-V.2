@@ -44,8 +44,10 @@ import { variable } from '@estook/utiles';
  *                                           codigo_error, mensaje_error, operacion
  *   POST /verifactu/status                serie, numero, fecha_expedicion → la factura en
  *                                           Hacienda, con el uuid de su último registro aceptado
- *   GET/POST /webhooks, POST /webhooks/{id}/nifs/{nif}   los avisos (url, entorno, secret, nifs)
- *   POST /nifs/validar/vies               codigo_pais, iva → iva, resultado (IDENTIFICADO,
+ *   GET/POST /webhooks, PUT /webhooks/{id}, POST /webhooks/{id}/nifs/{nif}   los avisos (url,
+ *                                           entorno, secret, activo, nifs); 409 si ya hay uno con
+ *                                           esa dirección
+ *   POST /nifs/validar/vies              codigo_pais, iva → iva, resultado (IDENTIFICADO,
  *                                           NO IDENTIFICADO, ERROR API VIES)
  *
  * **Nunca se llama a la eliminación permanente de un NIF** (Anexo 4.2): borra sus registros.
@@ -208,7 +210,13 @@ export interface Verifacti {
   buscarEnHacienda(
     nif: string,
     entorno: EntornoDeVerifacti,
-    factura: { readonly serie: string; readonly numero: string; readonly fecha: string },
+    factura: {
+      readonly serie: string;
+      readonly numero: string;
+      readonly fecha: string;
+      /** La de la operación, si fue en el registro original porque es otra (su especificación). */
+      readonly fechaOperacion?: string;
+    },
   ): Promise<string | null>;
   /**
    * Que los avisos de ese NIF lleguen a `url` (4.10): crea el aviso del entorno o le añade el NIF.
@@ -325,7 +333,7 @@ export function verifactiDeVerdad(
   let declaracion: { valor: LaDeclaracionDeVerifacti; hasta: number } | null = null;
 
   async function pedir(
-    metodo: 'GET' | 'POST',
+    metodo: 'GET' | 'POST' | 'PUT',
     camino: string,
     opciones: {
       readonly cuerpo?: unknown;
@@ -472,6 +480,9 @@ export function verifactiDeVerdad(
         serie: factura.serie,
         numero: factura.numero,
         fecha_expedicion: factura.fecha,
+        ...(factura.fechaOperacion === undefined
+          ? {}
+          : { fecha_operacion: factura.fechaOperacion }),
       });
       if (respuesta.status === 404) return null;
       const c = ((await enJson(respuesta)) ?? {}) as Record<string, unknown>;
@@ -490,11 +501,35 @@ export function verifactiDeVerdad(
           return aviso.id;
         }
       }
-      const creado = ((await enJson(
-        await pedir('POST', '/webhooks', {
-          cuerpo: { url: aviso.url, entorno, secret: aviso.secreto, nifs: [nif] },
-        }),
-      )) ?? {}) as Record<string, unknown>;
+      const alCrear = await pedir('POST', '/webhooks', {
+        cuerpo: { url: aviso.url, entorno, secret: aviso.secreto, nifs: [nif] },
+      });
+      if (alCrear.status === 409) {
+        // Ya hay uno con esa dirección, puesto a mano en su panel o de una vez anterior: se usa ese,
+        // con este secreto y encendido. Sin esto, los avisos no se pedirían nunca.
+        const lista = await enJson(
+          await pedir('GET', `/webhooks?entorno=${encodeURIComponent(entorno)}`),
+        );
+        const elQueHay = (Array.isArray(lista) ? (lista as Record<string, unknown>[]) : []).find(
+          (w) => texto(w.url) === aviso.url,
+        );
+        const id = texto(elQueHay?.id);
+        if (id === '') throw new VerifactiNoContesta(409, 'el aviso existe y no sale en la lista');
+        await enJson(
+          await pedir('PUT', `/webhooks/${encodeURIComponent(id)}`, {
+            cuerpo: { secret: aviso.secreto, activo: true },
+          }),
+        );
+        await enJson(
+          await pedir(
+            'POST',
+            `/webhooks/${encodeURIComponent(id)}/nifs/${encodeURIComponent(nif)}`,
+          ),
+          [409],
+        );
+        return id;
+      }
+      const creado = ((await enJson(alCrear)) ?? {}) as Record<string, unknown>;
       const id = texto(creado.id);
       if (id === '') throw new VerifactiNoContesta(200, 'sin id del aviso');
       return id;

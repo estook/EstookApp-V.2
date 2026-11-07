@@ -21,7 +21,8 @@
 - **Hacer factura** de uno o varios tickets, y **Hacer una factura** a mano.
 - **Ajustes › Facturación › Quién hace qué**: los camareros ya pueden hacer la factura de un ticket, sin
   ver la parte fiscal. Tú cambias a cada persona con un interruptor.
-- **«En Hacienda» ya no se queda parado**: Estook pregunta mucho más a menudo.
+- ~~**«En Hacienda» ya no se queda parado**~~: **no era verdad**, y lo arregla
+  [el reloj de los documentos](pasos-del-reloj-de-los-documentos.md).
 
 ## Lo que te toca · fusionar, migrar y desplegar
 

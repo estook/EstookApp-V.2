@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { codigoEn } from '../../servidor/dominio/doble-factor.ts';
 import { verifactiDeMentira } from '../../servidor/facturacion/verifacti-de-mentira.ts';
+import { correoEnMemoria } from '../../servidor/infraestructura/correo.ts';
 import {
   ADMIN_DE_EJEMPLO,
   CLAVE_DE_EJEMPLO,
@@ -22,6 +23,7 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
 let base: BaseDePrueba;
 let api: ApiDePrueba;
 const verifacti = verifactiDeMentira();
+const correo = correoEnMemoria();
 let ahora = new Date('2026-11-06T13:31:00Z');
 let pablo: string;
 let casaLola: string;
@@ -47,6 +49,7 @@ interface UnDocumento {
   sustituye: { id: string; numero: string }[];
   porCobrar: string | null;
   porQueNoSeCanjea: string | null;
+  seEntrega: boolean;
   papel: {
     piezas: { tipo: string; texto?: string; izquierda?: string; contenido?: string }[];
   } | null;
@@ -72,7 +75,7 @@ const elCuerpo = (numero: string) =>
 
 beforeAll(async () => {
   base = await levantarBase();
-  api = montarLaApi(base.bd, { facturacion: verifacti, ahora: () => ahora });
+  api = montarLaApi(base.bd, { facturacion: verifacti, correo, ahora: () => ahora });
   casaLola = await base.localPorCodigo('casa-lola');
   await comoDuena(
     `insert into estook.suscripcion (organizacion_id, estado, de_la_casa)
@@ -592,6 +595,252 @@ describe('los cambios de hora (prueba 20)', () => {
       );
       expect(hecha.numero).toMatch(/^F-CL-2027-/);
       expect(elCuerpo(hecha.numero)?.['fecha_operacion']).toBe('20-12-2026');
+    } finally {
+      ahora = original;
+    }
+  });
+});
+
+describe('lo que Hacienda no tiene no canjea nada (0138)', { timeout: 30_000 }, () => {
+  it('una factura rechazada por los datos deja el ticket libre para hacerla bien', async () => {
+    const ticket = await unTicket();
+    verifacti.emitirAsi('rechazar');
+    const mala = losDatos<Hecho>(
+      await api.ejecutar(pablo, 'hacer_factura_de_tickets', {
+        ticket_ids: [ticket.documentoId],
+        cliente: EMPRESA,
+      }),
+    );
+    verifacti.emitirAsi('normal');
+    expect((await elDocumento(mala.documentoId)).estado).toBe('rechazado_por_datos');
+    const libre = await elDocumento(ticket.documentoId);
+    expect(libre.factura).toBeNull();
+    expect(libre.chapa.texto).not.toBe('Canjeado');
+    expect(libre.porQueNoSeCanjea).toBeNull();
+    const buena = losDatos<Hecho>(
+      await api.ejecutar(pablo, 'hacer_factura_de_tickets', {
+        ticket_ids: [ticket.documentoId],
+        cliente: EMPRESA,
+      }),
+    );
+    expect((await elDocumento(ticket.documentoId)).factura?.id).toBe(buena.documentoId);
+    // Y ya con la buena, no se puede una tercera.
+    expect(
+      elFallo(
+        await api.ejecutar(pablo, 'hacer_factura_de_tickets', {
+          ticket_ids: [ticket.documentoId],
+          cliente: EMPRESA,
+        }),
+      ),
+    ).toBe('faltan_datos');
+  });
+
+  it('una que rechaza Hacienda, igual; y no se imprime ni se manda', async () => {
+    const ticket = await unTicket();
+    const hecha = losDatos<Hecho>(
+      await api.ejecutar(pablo, 'hacer_factura_de_tickets', {
+        ticket_ids: [ticket.documentoId],
+        cliente: EMPRESA,
+      }),
+    );
+    expect((await elDocumento(ticket.documentoId)).chapa.texto).toBe('Canjeado');
+    await comoDuena(
+      `insert into facturacion.registro (documento_id, en, uuid, estado, por)
+       values ($1, $2, 'un-uuid', 'Incorrecto', 'aviso')`,
+      [hecha.documentoId, new Date(ahora.getTime() + 1000).toISOString()],
+    );
+    const rechazada = await elDocumento(hecha.documentoId);
+    expect(rechazada.estado).toBe('rechazado');
+    expect(rechazada.seEntrega).toBe(false);
+    expect(rechazada.papel).not.toBeNull();
+    expect((await elDocumento(ticket.documentoId)).factura).toBeNull();
+    expect(
+      elFallo(
+        await api.ejecutar(pablo, 'reimprimir_el_documento', { documento_id: hecha.documentoId }),
+      ),
+    ).toBe('faltan_datos');
+    const mandada = await api.ejecutar(pablo, 'mandar_el_documento', {
+      documento_id: hecha.documentoId,
+      para: 'cliente@ejemplo.es',
+    });
+    expect(elFallo(mandada)).toBe('faltan_datos');
+    expect(JSON.stringify(mandada)).toContain('Hacienda no lo tiene');
+    expect(correo.mandados).toHaveLength(0);
+  });
+
+  it('una factura no sustituye un ticket de otro entorno: ni uno de pruebas con una de verdad', async () => {
+    // La empresa de pruebas no puede pasar a real: se mira al revés, que para la base es lo mismo.
+    const ticket = await unTicket();
+    const [otro] = await comoDuena<{ id: string }>(
+      `insert into facturacion.documento (
+         empresa_id, local_id, serie_id, entorno, modalidad, tipo, serie, numero, fecha_operacion,
+         descripcion, lineas, desglose, base, cuota, total, empresa_copia, origen, preparado_en
+       )
+       select empresa_id, local_id, serie_id, 'real', modalidad, tipo, 'T-DE-VERDAD-', 1,
+              fecha_operacion, descripcion, lineas, desglose, base, cuota, total, empresa_copia,
+              'cobro', preparado_en
+         from facturacion.documento where id = $1
+       returning id`,
+      [ticket.documentoId],
+    );
+    await comoDuena(
+      `insert into facturacion.registro (documento_id, en, uuid, estado, por)
+       values ($1, $2, 'uuid-de-verdad', 'Correcto', 'consulta')`,
+      [otro?.id, ahora.toISOString()],
+    );
+    const antes = verifacti.registros.length;
+    expect(
+      elFallo(
+        await api.ejecutar(pablo, 'hacer_factura_de_tickets', {
+          ticket_ids: [otro?.id],
+          cliente: EMPRESA,
+        }),
+      ),
+    ).toBe('faltan_datos');
+    expect(verifacti.registros.length).toBe(antes);
+    const [{ canjes }] = (await comoDuena<{ canjes: string }>(
+      `select count(*)::text as canjes from facturacion.canje where ticket_id = $1`,
+      [otro?.id],
+    )) as [{ canjes: string }];
+    expect(canjes).toBe('0');
+  });
+});
+
+describe('las cuentas de la lista (0138)', { timeout: 30_000 }, () => {
+  interface Lista {
+    documentos: { id: string }[];
+    cuantos: number;
+    total: number;
+    correctos: number;
+  }
+  const laLista = async (parametros: Record<string, string>) =>
+    losDatos<Lista>(await api.consultar(pablo, 'tickets_y_facturas', parametros));
+
+  const unDia = async <T>(instante: string, hacer: () => Promise<T>): Promise<T> => {
+    const original = ahora;
+    ahora = new Date(instante);
+    try {
+      return await hacer();
+    } finally {
+      ahora = original;
+    }
+  };
+
+  it('un ticket canjeado y su factura son una sola venta; solos, cada uno suma', async () => {
+    await unDia('2026-11-25T12:00:00Z', async () => {
+      const ticket = await unTicket();
+      losDatos<Hecho>(
+        await api.ejecutar(pablo, 'hacer_factura_de_tickets', {
+          ticket_ids: [ticket.documentoId],
+          cliente: EMPRESA,
+        }),
+      );
+      const todos = await laLista({});
+      expect(todos.cuantos).toBe(2);
+      expect(todos.total).toBe(270);
+      expect((await laLista({ que: 'tickets' })).total).toBe(270);
+      expect((await laLista({ que: 'facturas' })).total).toBe(270);
+    });
+  });
+
+  it('una factura rechazada no suma, y su ticket sí', async () => {
+    await unDia('2026-11-26T12:00:00Z', async () => {
+      const ticket = await unTicket();
+      verifacti.emitirAsi('rechazar');
+      losDatos<Hecho>(
+        await api.ejecutar(pablo, 'hacer_factura_de_tickets', {
+          ticket_ids: [ticket.documentoId],
+          cliente: EMPRESA,
+        }),
+      );
+      verifacti.emitirAsi('normal');
+      const todos = await laLista({});
+      expect(todos.cuantos).toBe(2);
+      expect(todos.total).toBe(270);
+    });
+  });
+
+  it('«Con algo pendiente» no deja fuera nada, y lo que está bien no sale', async () => {
+    await unDia('2026-11-27T12:00:00Z', async () => {
+      const pendiente = await unTicket();
+      const bien = await unTicket();
+      await comoDuena(
+        `insert into facturacion.registro (documento_id, en, uuid, estado, por)
+         values ($1, '2026-11-27T12:01:00Z', 'otro-uuid', 'Correcto', 'aviso')`,
+        [bien.documentoId],
+      );
+      const lista = await laLista({ que: 'pendiente' });
+      expect(lista.documentos.map((d) => d.id)).toEqual([pendiente.documentoId]);
+      expect((await laLista({})).correctos).toBe(1);
+    });
+  });
+
+  it('con más de quinientos, las cifras son de todos aunque la lista enseñe los últimos', async () => {
+    const ticket = await unDia('2026-11-28T12:00:00Z', unTicket);
+    await comoDuena(
+      `insert into facturacion.documento (
+         empresa_id, local_id, serie_id, entorno, modalidad, tipo, serie, numero, fecha_operacion,
+         descripcion, lineas, desglose, base, cuota, total, empresa_copia, origen, preparado_en
+       )
+       select empresa_id, local_id, serie_id, entorno, 'fuera_sii', tipo, 'T-MUCHOS-', n, fecha_operacion,
+              descripcion, lineas, desglose, base, cuota, total, empresa_copia, origen,
+              '2026-11-29T12:00:00Z'::timestamptz + (n || ' seconds')::interval
+         from facturacion.documento, generate_series(1, 505) n
+        where id = $1`,
+      [ticket.documentoId],
+    );
+    const lista = await laLista({ desde: '2026-11-29', hasta: '2026-11-29' });
+    expect(lista.documentos).toHaveLength(500);
+    expect(lista.cuantos).toBe(505);
+    expect(lista.total).toBe(505 * 270);
+    expect(lista.correctos).toBe(505);
+  });
+
+  it('una fecha que no existe no llega a la base', async () => {
+    const r = await api.consultar(pablo, 'tickets_y_facturas', {
+      desde: '2026-02-31',
+      hasta: '2026-03-01',
+    });
+    expect(elFallo(r)).toBe('faltan_datos');
+  });
+});
+
+describe('lo que se manda otro día (Anexo 4.11; 0138)', { timeout: 30_000 }, () => {
+  it('se pregunta con la fecha de la operación, y el papel lleva la fecha que tiene Hacienda', async () => {
+    const original = ahora;
+    ahora = new Date('2026-12-02T12:00:00Z');
+    try {
+      await comoDuena(
+        `update plataforma.reloj set huella = encode(sha256(convert_to($1, 'UTF8')), 'hex')`,
+        ['el-secreto-del-reloj-de-las-facturas'],
+      );
+      verifacti.emitirAsi('caido');
+      const hecha = losDatos<Hecho>(
+        await api.ejecutar(pablo, 'hacer_factura_a_mano', {
+          cliente: EMPRESA,
+          lineas: [{ nombre: 'Comida', cantidad: 1, importe: 1_000, tipo: 0.1 }],
+          fecha_operacion: '2026-11-30',
+          cobrada: true,
+        }),
+      );
+      verifacti.emitirAsi('normal');
+      ahora = new Date('2026-12-03T12:00:00Z');
+      await api.despachador.repasarDocumentos(
+        { tokenDeSesion: null, correlacionId: crypto.randomUUID() },
+        'el-secreto-del-reloj-de-las-facturas',
+      );
+      expect(
+        verifacti.llamadas.some(
+          (l) => l.includes(hecha.numero.slice(-6)) && l.includes('operación 30-11-2026'),
+        ),
+      ).toBe(true);
+      const { estado, papel } = await elDocumento(hecha.documentoId);
+      expect(estado).toBe('pendiente');
+      expect(elCuerpo(hecha.numero)?.['fecha_expedicion']).toBe('03-12-2026');
+      const texto = JSON.stringify(papel);
+      expect(texto).toContain('03/12/2026');
+      expect(texto).toContain('30/11/2026');
+      expect(texto).not.toContain('02/12/2026');
     } finally {
       ahora = original;
     }

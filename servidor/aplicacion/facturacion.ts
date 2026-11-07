@@ -64,6 +64,8 @@ const LO_QUE_SE_EXPLICA: Readonly<Record<string, string>> = {
   no_es_un_ticket: 'Solo se puede hacer factura de un ticket.',
   ticket_sin_registrar: 'Uno de esos tickets todavía se está enviando. Prueba en un momento.',
   ticket_no_valido: 'Hacienda no tiene uno de esos tickets: no se puede sustituir.',
+  ticket_de_otro_entorno:
+    'Uno de esos tickets es de pruebas o de otra empresa: no se puede sustituir con esta factura.',
   el_importe_no_cuadra: 'El importe tiene que ser exactamente el de los tickets.',
   sin_tickets: 'Elige al menos un ticket.',
   fecha_futura: 'La fecha de la comida no puede ser de mañana en adelante.',

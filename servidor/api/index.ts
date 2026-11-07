@@ -428,6 +428,17 @@ export function crearApi(despachador: Despachador) {
     return respuestaConDatos(hecho, correlacionId, 200, {});
   });
 
+  // El reloj de los documentos (0138): el minuto en que la base ve algo sin terminar.
+  api.post('/tareas/documentos', async (c) => {
+    const correlacionId = c.get('correlacionId');
+    const hecho = await despachador.repasarDocumentos(
+      quienLlama(undefined, correlacionId, c.req.header(CABECERA_DIRECCION)),
+      c.req.header('x-reloj') ?? null,
+    );
+    if (hecho === null) return respuestaDeError('sin_permiso', correlacionId);
+    return respuestaConDatos(hecho, correlacionId, 200, {});
+  });
+
   return api;
 }
 

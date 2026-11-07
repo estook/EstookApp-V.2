@@ -6,7 +6,7 @@ import { catalogo } from './catalogo.ts';
 import { reaccionar } from './reacciones.ts';
 import { laFirmaEsDeStripe } from '../infraestructura/stripe.ts';
 import { aplicarElAviso, enNombreDelSistema, porQueNoPasaElPago } from './pago.ts';
-import { latidoDelMovil, latir, type LoQueHizoElReloj } from './reloj.ts';
+import { esElReloj, latidoDelMovil, latir, type LoQueHizoElReloj } from './reloj.ts';
 import { dejoCorreos, dejoMoviles, mandarLosCorreosDeLosAvisos } from './avisos.ts';
 import { mandarLoDelMovil, type LoQueHizoElMovil } from './al-movil.ts';
 import { darLosToques } from './al-segundo.ts';
@@ -170,6 +170,14 @@ export interface Despachador {
    * en que hay algo que mandar al móvil.
    */
   alMovil(quien: QuienLlama, secreto: string | null): Promise<LoQueHizoElMovil | null>;
+  /**
+   * El reloj de los documentos (0138): `pg_cron` lo llama, con el mismo secreto, el minuto en que
+   * hay algo en `facturacion.por_repasar`. Cuántos ha mirado; nulo si el secreto no vale.
+   */
+  repasarDocumentos(
+    quien: QuienLlama,
+    secreto: string | null,
+  ): Promise<{ readonly repasados: number } | null>;
   /**
    * Si las claves de los avisos al móvil están puestas (0070). Lo dice `/salud` para
    * que `bd:comprobar-api` salga en rojo si se olvidaron: no enseña ninguna clave.
@@ -621,22 +629,25 @@ export function crearDespachador(puertos: Puertos): Despachador {
     },
 
     async alMovil(quien, secreto): Promise<LoQueHizoElMovil | null> {
-      const hecho = await puertos.enTransaccion(quien, (contexto) =>
-        latidoDelMovil(contexto, secreto),
-      );
-      // Y cada minuto, lo fiscal que se quedó a medias (T6 · 2 · 1, 0136; Anexo 4.9, paso 7):
-      // con el secreto del reloj ya comprobado, y fuera de su transacción.
-      if (hecho !== null) {
-        try {
-          await repasarLosDocumentos((hacer) => puertos.enTransaccion(quien, hacer));
-        } catch (fallo) {
-          await apuntarUnFallo(fallo, {
-            mensaje: 'el repaso de los documentos fiscales ha fallado',
-            correlacionId: quien.correlacionId,
-          });
-        }
+      return puertos.enTransaccion(quien, (contexto) => latidoDelMovil(contexto, secreto));
+    },
+
+    // Lo fiscal que se quedó a medias (0138; Anexo 4.9, paso 7): con el secreto del reloj ya
+    // comprobado, y fuera de su transacción. Lo apunta aparte: un móvil sin claves no lo para.
+    async repasarDocumentos(quien, secreto) {
+      if (!(await puertos.enTransaccion(quien, (contexto) => esElReloj(contexto, secreto)))) {
+        return null;
       }
-      return hecho;
+      try {
+        const hechos = await repasarLosDocumentos((hacer) => puertos.enTransaccion(quien, hacer));
+        return { repasados: hechos.length };
+      } catch (fallo) {
+        await apuntarUnFallo(fallo, {
+          mensaje: 'el repaso de los documentos fiscales ha fallado',
+          correlacionId: quien.correlacionId,
+        });
+        return { repasados: 0 };
+      }
     },
 
     async avisoDeVerifacti(quien, cuerpo, firma, id) {
@@ -648,8 +659,9 @@ export function crearDespachador(puertos: Puertos): Despachador {
       } catch {
         return { firmaValida: true, apuntados: 0 };
       }
+      // Sin su id, la firma: es de este cuerpo. Con «» el segundo aviso se daría por repetido.
       const apuntados = await puertos.enTransaccion(quien, (contexto) =>
-        aplicarElAvisoDeVerifacti(contexto, id ?? '', leido),
+        aplicarElAvisoDeVerifacti(contexto, id ?? firma ?? '', leido),
       );
       return { firmaValida: true, apuntados };
     },

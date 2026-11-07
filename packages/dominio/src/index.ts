@@ -1347,10 +1347,12 @@ export {
   LA_CHAPA,
   LIMITE_DEL_TICKET,
   LINEAS_DE_DESGLOSE,
+  LO_QUE_TARDA,
   NOMBRE_DEL_DOCUMENTO,
   PENDIENTE_DEMASIADO_MS,
   POR_QUE_NO_SE_CANJEA,
   POR_QUE_NO_SE_EMITE,
+  TARDA_DEMASIADO_MS,
   elCuerpoParaVerifacti,
   elDesglose,
   elEstadoDeVerifacti,
@@ -1368,6 +1370,7 @@ export {
   numeroEnTexto,
   porQueNoSeCanjea,
   porQueNoSeEmite,
+  sePuedeEntregar,
   tipoParaVerifacti,
 } from './emitir.ts';
 export type {

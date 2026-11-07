@@ -134,10 +134,22 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
   await expect(aMano).toContainText('150,00 €');
   await aMano.getByRole('radio', { name: 'Por cobrar' }).click();
   await aMano.getByLabel('Vence').fill('2030-12-15');
+  await aMano.getByLabel('Correo, para mandársela (si quiere)').fill('administracion@ejemplo.es');
   await pasar('4-a-mano');
+  // El correo no sale: la factura está hecha, y quien la hace no se queda creyendo que ha llegado.
+  await page.route('**/comandos/mandar_el_documento', (ruta) =>
+    ruta.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: { codigo: 'fallo_nuestro' } }),
+    }),
+  );
   await aMano.getByRole('button', { name: 'Hacer la factura' }).click();
   const hecha = page.getByRole('dialog', { name: 'El documento' });
   await expect(hecha).toContainText('Vence: 15/12/2030');
+  await expect(hecha).toContainText('El correo no ha salido');
+  await pasar('4b-el-correo-no-salio');
+  await page.unroute('**/comandos/mandar_el_documento');
   await expect(hecha.getByRole('button', { name: 'Marcar cobrada' })).toBeVisible();
   await hecha.getByRole('button', { name: 'Marcar cobrada' }).click();
   await expect(hecha).toContainText('Marcada como cobrada');

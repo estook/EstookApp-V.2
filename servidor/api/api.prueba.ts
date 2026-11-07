@@ -470,6 +470,15 @@ describe('las dos puertas que no traen persona (0048)', () => {
     expect(respuesta.status).toBe(403);
   });
 
+  it('ni el reloj de los documentos, que existe y está cerrado (0138)', async () => {
+    const { app } = api();
+    const respuesta = await app.request('/api/tareas/documentos', {
+      method: 'POST',
+      headers: { 'x-reloj': 'me lo invento' },
+    });
+    expect(respuesta.status).toBe(403);
+  });
+
   it('y las dos viven fuera de `/v1`, sin tapar las rutas de siempre', async () => {
     // Una ruta más que empezaba por `/v…` dejaba al enrutador sin encontrar ninguna.
     const { app } = api();

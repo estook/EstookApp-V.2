@@ -4,6 +4,7 @@ import {
   fechaEnElLocal,
   juntarLasLineas,
   leerElResultado,
+  sePuedeEntregar,
   type ElDestinatario,
   type FechaOperativa,
   type LineaVendida,
@@ -15,7 +16,9 @@ import { correoConElDocumento } from '../correos.ts';
 import { elRelojYElFisco, elTipoDeRestauracion } from '../desviacion.ts';
 import { hacerElPdf, hechoEl, laMarcaDelLocal, type UnPdf } from '../documentos.ts';
 import {
+  comoEsta,
   fechaLegible,
+  laFechaDeExpedicion,
   lasHistorias,
   losDocumentos,
   prepararUnDocumento,
@@ -441,15 +444,10 @@ export const hacerFacturaAMano = comando<
     .object({
       cliente: elCliente,
       lineas: z.array(unConcepto).min(1).max(200),
-      fecha_operacion: z
-        .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/)
-        .optional(),
+      // `date()` rechaza también las que no existen, como el 31 de febrero.
+      fecha_operacion: z.string().date().optional(),
       cobrada: z.boolean(),
-      vencimiento: z
-        .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/)
-        .optional(),
+      vencimiento: z.string().date().optional(),
       correo: z.string().trim().email().max(254).optional(),
     })
     .strict(),
@@ -530,25 +528,29 @@ async function elPdfDelDocumento(contexto: Contexto, documentoId: string): Promi
   const [doc] = await losDocumentos(contexto, [documentoId]);
   if (doc === undefined || doc.localId !== localId) throw new FalloDeAplicacion('no_existe');
   const h = (await lasHistorias(contexto, [doc.id])).get(doc.id) ?? SIN_HISTORIA;
-  const registrado = h.registros.find((r) => r.qr !== null || r.url !== null);
+  // Con la imagen del QR: un PDF de VERI*FACTU sin su QR no vale (0138). Sale del alta o de una
+  // consulta, y las dos la traen.
+  const registrado = h.registros.find((r) => r.qr !== null);
   if (doc.modalidad !== 'fuera_sii' && registrado === undefined) {
     throw new FalloDeAplicacion('faltan_datos', {
-      porque: 'Todavía se está enviando: en un momento se podrá descargar.',
+      porque:
+        comoEsta(doc, h) === 'rechazado_por_datos'
+          ? 'No se ha emitido: Verifacti no lo mandó a Hacienda. Mira qué dice arriba.'
+          : 'Todavía se está enviando: en un momento se podrá descargar.',
     });
   }
   const marca = await laMarcaDelLocal(contexto, localId);
   const numero = `${doc.serie}${String(doc.numero).padStart(6, '0')}`;
+  const expedicion = laFechaDeExpedicion(doc, h);
   const html = documentoDeLaFactura(
     {
       tipo: doc.tipo,
       numero,
       empresa: doc.empresa,
       destinatario: doc.destinatario,
-      fecha: fechaLegible(fechaEnElLocal(new Date(doc.preparadoEn), doc.zonaHoraria)),
-      fechaOperacion:
-        doc.fechaOperacion === fechaEnElLocal(new Date(doc.preparadoEn), doc.zonaHoraria)
-          ? null
-          : fechaLegible(doc.fechaOperacion),
+      // La fecha que tiene Hacienda, la de su QR.
+      fecha: fechaLegible(expedicion),
+      fechaOperacion: doc.fechaOperacion === expedicion ? null : fechaLegible(doc.fechaOperacion),
       vence: doc.vencimiento === null ? null : fechaLegible(doc.vencimiento),
       sustituye: h.sustituye.map((t) => t.numero),
       lineas: doc.lineas,
@@ -598,9 +600,15 @@ export const mandarElDocumento = comando<
         porque: 'El correo no está encendido todavía. Puedes descargarla y mandarla tú.',
       });
     }
-    const pdf = await elPdfDelDocumento(contexto, entrada.documento_id);
     const [doc] = await losDocumentos(contexto, [entrada.documento_id]);
     if (doc === undefined) throw new FalloDeAplicacion('no_existe');
+    const h = (await lasHistorias(contexto, [doc.id])).get(doc.id) ?? SIN_HISTORIA;
+    if (!sePuedeEntregar(comoEsta(doc, h))) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Hacienda no lo tiene: hay que corregirlo antes de mandárselo a nadie.',
+      });
+    }
+    const pdf = await elPdfDelDocumento(contexto, entrada.documento_id);
     await correo.mandar(
       correoConElDocumento(entrada.para, doc.empresa.local, pdf.nombre.replace(/\.pdf$/, ''), {
         nombre: pdf.nombre,

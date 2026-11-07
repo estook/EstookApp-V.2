@@ -90,3 +90,4 @@
 - Ordenar lo viejo en `docs/historia/` (con `pasos/` y `modulos/`), que ya existía, en vez de abrir una carpeta «pasados» nueva; y qué papeles se mueven: los pasos de entregas que ESTADO ya no pide y los planes de módulos terminados (28-oct).
 - Que el botón de Estook TPV en Ajustes lo vean gerente y dirección, los que ya vinculan los aparatos, y que en el móvil abra Estook TPV sin hoja intermedia ni la descarga de Windows (la maqueta del 28-oct).
 - Los cuatro de «Lo que decidió la IA al construirlo» de la [0120](decisiones/0120-estook-tpv-es-de-pro.md), como la migración 0094 para leer el plan sin sesión, o que sin el dato del plan el botón se pinte como con Pro (28-oct).
+- Los diez de «Lo que decidió la IA» de la [0140](decisiones/0140-t6-2-2-2-las-correcciones.md), como no construir la aprobación con el PIN de un encargado (quien puede entra con su PIN y lo hace a su nombre), o que una corrección de datos se pueda devolver y volver a corregir (7-nov).

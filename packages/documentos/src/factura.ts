@@ -26,6 +26,11 @@ export interface LaFacturaEnA4 {
   readonly fechaOperacion: string | null;
   readonly vence: string | null;
   readonly sustituye: readonly string[];
+  /** Si es una rectificativa: «F-IKA-2026-000007, del 14/11/2026», y por qué. */
+  readonly rectifica?: string | undefined;
+  readonly motivo?: string | undefined;
+  /** Las señales que descuenta. */
+  readonly descuenta?: readonly string[] | undefined;
   readonly lineas: readonly LineaVendida[];
   readonly desglose: ElDesglose;
   /** La imagen que da Verifacti, sin tocar (Anexo 4.7). Nula por el SII. */
@@ -67,6 +72,9 @@ export function documentoDeLaFactura(
     ...(f.fechaOperacion === null ? [] : [`Fecha de la operación: ${f.fechaOperacion}`]),
     ...(f.vence === null ? [] : [`Vence: ${f.vence}`]),
     ...f.sustituye.map((s) => `Sustituye a la factura simplificada ${s}`),
+    ...(f.rectifica === undefined ? [] : [`Rectifica: ${f.rectifica}`]),
+    ...(f.motivo === undefined ? [] : [`Motivo: ${f.motivo}`]),
+    ...(f.descuenta ?? []).map((s) => `Descuenta la señal ${s}`),
   ]
     .map((d) => `<div>${escapar(d)}</div>`)
     .join('');
@@ -94,7 +102,12 @@ export function documentoDeLaFactura(
     `<div class="totales">${impuestos}<div class="total"><span>Total</span><span>${euros(f.desglose.total)}</span></div></div>`,
   ].join('');
   return paginaDelDocumento({
-    titulo: f.destinatario === null ? 'Factura simplificada' : 'Factura',
+    titulo:
+      f.tipo === 'R1' || f.tipo === 'R4' || f.tipo === 'R5'
+        ? 'Factura rectificativa'
+        : f.destinatario === null
+          ? 'Factura simplificada'
+          : 'Factura',
     numero: f.numero,
     subtitulo: f.empresa.nombre,
     marca,

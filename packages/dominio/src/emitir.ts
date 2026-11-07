@@ -1,4 +1,4 @@
-import { centimos, enEuros, entreFactor } from './dinero.ts';
+import { centimos, enEuros, entreFactor, porFraccion } from './dinero.ts';
 import { desglosar } from './fiscal/desglose.ts';
 import type { Regimen } from './fiscal/vocabulario.ts';
 import type { FechaOperativa } from './tiempo.ts';
@@ -24,7 +24,7 @@ export const NOMBRE_DEL_DOCUMENTO: Readonly<Record<TipoDeDocumento, string>> = {
   F1: 'Factura',
   F3: 'Factura de un ticket',
   R1: 'Devolución',
-  R4: 'Corrección',
+  R4: 'Corrección de datos',
   R5: 'Devolución',
 };
 
@@ -193,6 +193,17 @@ export interface DocumentoSustituido {
   readonly fechaExpedicion: FechaOperativa;
 }
 
+/**
+ * **Lo que rectifica una rectificativa** (Anexo 4.5; Verifacti, `tipo_rectificativa`). Una devolución
+ * va por diferencias (`I`): lo devuelto, en negativo. Corregir los datos, por sustitución (`S`): el
+ * documento entero otra vez, más lo que había antes, que Verifacti solo admite con `S`.
+ */
+export interface LoQueRectifica {
+  readonly tipo: 'I' | 'S';
+  readonly facturas: readonly DocumentoSustituido[];
+  readonly importe?: { readonly base: number; readonly cuota: number } | undefined;
+}
+
 /** Lo que guarda el documento de sí mismo al prepararse: no cambia nunca más. */
 export interface DocumentoParaEmitir {
   readonly tipo: TipoDeDocumento;
@@ -207,6 +218,8 @@ export interface DocumentoParaEmitir {
   readonly destinatario?: ElDestinatario | null | undefined;
   /** Los tickets que sustituye una F3. */
   readonly sustituidas?: readonly DocumentoSustituido[] | undefined;
+  /** Lo que rectifica una R1, R4 o R5. */
+  readonly rectifica?: LoQueRectifica | undefined;
 }
 
 export interface CuerpoParaVerifacti {
@@ -236,6 +249,16 @@ export interface CuerpoParaVerifacti {
     readonly numero: string;
     readonly fecha_expedicion: string;
   }[];
+  readonly tipo_rectificativa?: 'I' | 'S';
+  readonly facturas_rectificadas?: readonly {
+    readonly serie: string;
+    readonly numero: string;
+    readonly fecha_expedicion: string;
+  }[];
+  readonly importe_rectificativa?: {
+    readonly base_rectificada: string;
+    readonly cuota_rectificada: string;
+  };
 }
 
 /**
@@ -277,6 +300,25 @@ export function elCuerpoParaVerifacti(
             numero: numeroEnTexto(t.numero),
             fecha_expedicion: fechaParaVerifacti(t.fechaExpedicion),
           })),
+        }),
+    ...(doc.rectifica === undefined
+      ? {}
+      : {
+          tipo_rectificativa: doc.rectifica.tipo,
+          facturas_rectificadas: doc.rectifica.facturas.map((t) => ({
+            serie: t.serie,
+            numero: numeroEnTexto(t.numero),
+            fecha_expedicion: fechaParaVerifacti(t.fechaExpedicion),
+          })),
+          // Verifacti lo exige con `S` y lo rechaza con `I`.
+          ...(doc.rectifica.tipo === 'S' && doc.rectifica.importe !== undefined
+            ? {
+                importe_rectificativa: {
+                  base_rectificada: importeParaVerifacti(doc.rectifica.importe.base),
+                  cuota_rectificada: importeParaVerifacti(doc.rectifica.importe.cuota),
+                },
+              }
+            : {}),
         }),
   };
 }
@@ -341,6 +383,26 @@ const DE_VERIFACTI: Readonly<Record<string, EstadoDelDocumento>> = {
   // Un fallo de Hacienda que Verifacti reintenta solo.
   'error servidor aeat': 'pendiente',
 };
+
+const DEL_DUPLICADO: Readonly<Record<string, string>> = {
+  correcto: 'Correcto',
+  correcta: 'Correcto',
+  aceptadoconerrores: 'Aceptado con errores',
+  aceptadaconerrores: 'Aceptado con errores',
+  anulado: 'Anulado',
+  anulada: 'Anulado',
+  incorrecto: 'Incorrecto',
+};
+
+/**
+ * **«Duplicado» dice que Hacienda ya tiene ese número, y `estado_registro_duplicado` cómo lo tiene**
+ * (su especificación). Sin mirarlo, uno anulado o con errores se daría por correcto (0140). Un valor
+ * que no se conoce se queda en «Duplicado»: Verifacti no da una lista cerrada.
+ */
+export function elEstadoConSuDuplicado(estado: string, duplicado: string | null): string {
+  if (estado.trim().toLowerCase() !== 'duplicado' || duplicado === null) return estado;
+  return DEL_DUPLICADO[duplicado.replace(/\s+/g, '').toLowerCase()] ?? estado;
+}
 
 /** Un estado de Verifacti, al nuestro. Uno que no se conoce, «pendiente»: se volverá a mirar. */
 export function elEstadoDeVerifacti(estado: string): EstadoDelDocumento {
@@ -541,16 +603,27 @@ export function elPlazoDeLaFactura(
   return { hasta, pasado: hoy > hasta };
 }
 
-export type PorQueNoSeCanjea = 'ya_tiene_factura' | 'no_es_un_ticket' | 'sin_registrar' | 'no_vale';
+export type PorQueNoSeCanjea =
+  | 'ya_tiene_factura'
+  | 'no_es_un_ticket'
+  | 'sin_registrar'
+  | 'no_vale'
+  | 'tiene_devolucion'
+  | 'se_esta_anulando';
 
 /** Si un documento se puede juntar en una factura (Anexo 5.3, prueba 11), y por qué no. */
 export function porQueNoSeCanjea(
   tipo: TipoDeDocumento,
   estado: EstadoDelDocumento | 'fuera_sii',
   tieneFactura: boolean,
+  /** Con una devolución, el importe ya no sería el suyo (Anexo 5.3). */
+  tieneDevolucion = false,
+  anulando = false,
 ): PorQueNoSeCanjea | null {
   if (tipo !== 'F2') return 'no_es_un_ticket';
   if (tieneFactura) return 'ya_tiene_factura';
+  if (tieneDevolucion) return 'tiene_devolucion';
+  if (anulando) return 'se_esta_anulando';
   if (estado === 'preparado' || estado === 'enviando') return 'sin_registrar';
   if (estado === 'rechazado' || estado === 'rechazado_por_datos' || estado === 'anulado') {
     return 'no_vale';
@@ -563,7 +636,199 @@ export const POR_QUE_NO_SE_CANJEA: Readonly<Record<PorQueNoSeCanjea, string>> = 
   no_es_un_ticket: 'no es un ticket',
   sin_registrar: 'todavía se está enviando',
   no_vale: 'Hacienda no lo tiene',
+  tiene_devolucion: 'tiene una devolución',
+  se_esta_anulando: 'se está anulando',
 };
+
+// ── Devolver (Anexo 5.4; maqueta de T6 · 2 · 2, 5) ───────────────────────────────
+
+export type MotivoDeDevolucion = 'mal_hecho' | 'de_mas' | 'no_lo_quiso' | 'otro';
+
+export const MOTIVO_DE_DEVOLUCION: Readonly<Record<MotivoDeDevolucion, string>> = {
+  mal_hecho: 'Mal hecho',
+  de_mas: 'Se cobró de más',
+  no_lo_quiso: 'No lo quiso',
+  otro: 'Otro',
+};
+
+/** Lo que una devolución saca de una línea. Con cantidad 0 si solo es dinero («se cobró de más»). */
+export interface LoDevueltoDeUnaLinea {
+  readonly linea: number;
+  readonly cantidad: number;
+  readonly importe: number;
+}
+
+/** Lo que queda de una línea, después de lo que ya se ha devuelto. */
+export interface LoQueQuedaDeUnaLinea extends LineaVendida {
+  readonly indice: number;
+}
+
+export function loQueQuedaDeCadaLinea(
+  lineas: readonly LineaVendida[],
+  devuelto: readonly LoDevueltoDeUnaLinea[],
+): LoQueQuedaDeUnaLinea[] {
+  return lineas.map((l, indice) => {
+    const suyo = devuelto.filter((d) => d.linea === indice);
+    return {
+      ...l,
+      indice,
+      cantidad: l.cantidad - suyo.reduce((s, d) => s + d.cantidad, 0),
+      importe: l.importe - suyo.reduce((s, d) => s + d.importe, 0),
+    };
+  });
+}
+
+/**
+ * **Lo que vale una parte de lo que queda**: una de dos raciones. Se reparte sobre lo que queda y
+ * no sobre el precio de una: si lo último se devuelve entero, sale exacto y no sobra ningún céntimo.
+ */
+export function loQueValeUnaParte(queda: LoQueQuedaDeUnaLinea, cantidad: number): number {
+  if (cantidad >= queda.cantidad) return queda.importe;
+  return porFraccion(centimos(queda.importe), cantidad / queda.cantidad);
+}
+
+export type LoQueSePideDevolver =
+  | { readonly que: 'todo' }
+  | {
+      readonly que: 'partes';
+      readonly partes: readonly { readonly linea: number; readonly cantidad: number }[];
+    }
+  | { readonly que: 'de_mas'; readonly linea: number; readonly importe: number };
+
+export type LaDevolucion =
+  | {
+      /** Las líneas de la rectificativa: lo devuelto, en negativo. */
+      readonly lineas: readonly LineaVendida[];
+      readonly apuntes: readonly LoDevueltoDeUnaLinea[];
+      /** Lo que se le devuelve, en positivo. */
+      readonly total: number;
+    }
+  | { readonly porque: string };
+
+/**
+ * **Qué lleva una devolución**, sin base ni red: la pantalla enseña lo mismo que emite la API. Lo
+ * vuelve a mirar la base con el candado del documento, porque otro aparato pudo devolver a la vez.
+ *
+ * Las líneas en negativo de una factura (su señal ya descontada) solo salen con «Todo»: devolver una
+ * parte no devuelve la señal, y lo que se devuelve no pasa nunca de lo que queda del documento.
+ */
+export function laDevolucion(
+  queda: readonly LoQueQuedaDeUnaLinea[],
+  pedida: LoQueSePideDevolver,
+): LaDevolucion {
+  const delTodo = queda.reduce((s, l) => s + l.importe, 0);
+  const apuntes: LoDevueltoDeUnaLinea[] = [];
+  const lineas: LineaVendida[] = [];
+  const sacar = (l: LoQueQuedaDeUnaLinea, cantidad: number, importe: number, nombre = l.nombre) => {
+    apuntes.push({ linea: l.indice, cantidad, importe });
+    lineas.push({
+      nombre,
+      cantidad: Math.max(cantidad, 1),
+      importe: -importe,
+      regimen: l.regimen,
+      tipo: l.tipo,
+    });
+  };
+  if (pedida.que === 'todo') {
+    for (const l of queda) if (l.importe !== 0) sacar(l, l.cantidad, l.importe);
+  } else if (pedida.que === 'de_mas') {
+    const l = queda[pedida.linea];
+    if (l === undefined || l.importe <= 0) return { porque: 'De esa línea no queda nada.' };
+    if (!Number.isInteger(pedida.importe) || pedida.importe < 1) {
+      return { porque: 'Di cuánto se cobró de más.' };
+    }
+    if (pedida.importe > l.importe) {
+      return { porque: 'Es más de lo que queda por devolver de esa línea.' };
+    }
+    sacar(l, 0, pedida.importe, `${l.nombre} (se cobró de más)`);
+  } else {
+    for (const p of pedida.partes) {
+      const l = queda[p.linea];
+      if (l === undefined || l.importe <= 0 || l.cantidad <= 0) {
+        return { porque: 'De esa línea no queda nada.' };
+      }
+      if (!Number.isInteger(p.cantidad) || p.cantidad < 1 || p.cantidad > l.cantidad) {
+        return { porque: 'Es más de lo que queda por devolver de esa línea.' };
+      }
+      sacar(l, p.cantidad, loQueValeUnaParte(l, p.cantidad));
+    }
+  }
+  const total = apuntes.reduce((s, a) => s + a.importe, 0);
+  if (apuntes.length === 0 || total <= 0) return { porque: 'No hay nada que devolver.' };
+  if (total > delTodo) {
+    return { porque: 'Es más de lo que queda de este documento: ya descontó una señal.' };
+  }
+  return { lineas, apuntes, total };
+}
+
+/** Lo que queda de un documento, como líneas: lo que recoge una corrección de sus datos. */
+export function lasLineasQueQuedan(queda: readonly LoQueQuedaDeUnaLinea[]): LineaVendida[] {
+  return queda
+    .filter((l) => l.importe !== 0)
+    .map(({ nombre, cantidad, importe, regimen, tipo }) => ({
+      nombre,
+      cantidad: Math.max(cantidad, 1),
+      importe,
+      regimen,
+      tipo,
+    }));
+}
+
+// ── Anular (Anexo 4.5) ────────────────────────────────────────────────────────────
+
+/** Lo que queda de una anulación: `no_salio` deja el documento como estaba, que sigue valiendo. */
+export type ComoQuedaLaAnulacion = 'sigue' | 'anulada' | 'no_salio';
+
+const DE_LA_ANULACION: Readonly<Record<string, ComoQuedaLaAnulacion>> = {
+  anulado: 'anulada',
+  correcto: 'anulada',
+  pendiente: 'sigue',
+  'error servidor aeat': 'sigue',
+  incorrecto: 'no_salio',
+  'no registrado': 'no_salio',
+  'factura inexistente': 'no_salio',
+  duplicado: 'no_salio',
+  'aceptado con errores': 'no_salio',
+};
+
+/**
+ * **Lo que dice Hacienda de un registro de anulación**, que es otro que el de su alta (su uuid, su
+ * estado). Lo que no se conoce, `sigue`: se vuelve a preguntar, como con el alta (0138).
+ */
+export function comoQuedaLaAnulacion(estado: string): ComoQuedaLaAnulacion {
+  return DE_LA_ANULACION[estado.trim().toLowerCase()] ?? 'sigue';
+}
+
+// ── La señal (Ley del IVA, art. 75.Dos; lo investigado, A22) ──────────────────────
+
+/** Lo que resta la final por cada señal: **en su mismo tipo de impuesto**, con lo que le queda. */
+export function lasLineasDeLaSenal(queda: readonly LoQueQuedaDeUnaLinea[]): LineaVendida[] {
+  return queda
+    .filter((l) => l.importe !== 0)
+    .map(({ importe, regimen, tipo }) => ({
+      nombre: 'Señal ya facturada',
+      cantidad: 1,
+      importe: -importe,
+      regimen,
+      tipo,
+    }));
+}
+
+/**
+ * **Si la señal es mayor que la comida**, por cada tipo de impuesto: Estook lo dice antes de emitir
+ * (maqueta de T6 · 2 · 2, 4), y nunca sale una factura con un tipo en negativo. Nulo si cabe.
+ */
+export function porQueNoCabeLaSenal(lineas: readonly LineaVendida[]): string | null {
+  const porTipo = new Map<number, number>();
+  for (const l of lineas) porTipo.set(l.tipo, (porTipo.get(l.tipo) ?? 0) + l.importe);
+  for (const [tipo, suma] of porTipo) {
+    if (suma < 0) {
+      const texto = String(Number((tipo * 100).toFixed(2))).replace('.', ',');
+      return `La señal es mayor que lo que se factura al ${texto} %: añade la comida antes.`;
+    }
+  }
+  return null;
+}
 
 // ── Para la pantalla ──────────────────────────────────────────────────────────────
 

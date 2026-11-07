@@ -396,6 +396,8 @@ export interface ElTicketQueSeImprime {
   readonly qr: string | null;
   readonly pruebas: boolean;
   readonly copia: boolean;
+  /** Si es una devolución (R5): qué ticket rectifica y por qué (maqueta de T6, 6). */
+  readonly rectifica?: { readonly numero: string; readonly motivo: string } | undefined;
 }
 
 const MARCA_DE_PRUEBAS = texto(` ${PRUEBA_SIN_VALIDEZ} `, { alinear: 'centro', negativo: true });
@@ -435,11 +437,23 @@ export function elTicketEnPapel(t: ElTicketQueSeImprime): PapelCompuesto {
   }
   piezas.push(...empresaEnPapel(t.empresa));
   piezas.push(RAYA);
-  piezas.push(texto('Factura simplificada', { alinear: 'centro', negrita: true }));
+  piezas.push(
+    texto(
+      t.rectifica === undefined ? 'Factura simplificada' : 'Factura rectificativa (devolución)',
+      {
+        alinear: 'centro',
+        negrita: true,
+      },
+    ),
+  );
   if (t.copia) piezas.push(texto(' COPIA ', { negativo: true, alinear: 'centro' }));
   piezas.push(texto(t.numero, { alinear: 'centro', negrita: true }));
   piezas.push(texto(t.cuando, { alinear: 'centro' }));
   if (t.donde !== null && t.donde !== '') piezas.push(texto(t.donde, { alinear: 'centro' }));
+  if (t.rectifica !== undefined) {
+    piezas.push(texto(`Rectifica: ${t.rectifica.numero}`, { alinear: 'centro' }));
+    piezas.push(texto(`Motivo: ${t.rectifica.motivo}`, { alinear: 'centro' }));
+  }
   piezas.push(RAYA);
   piezas.push(...lineasEnPapel(t.lineas));
   piezas.push(RAYA);
@@ -462,7 +476,10 @@ export function elTicketEnPapel(t: ElTicketQueSeImprime): PapelCompuesto {
     });
   }
   piezas.push(RAYA);
-  piezas.push(texto('¿Quieres factura? Pídela en la barra.', { alinear: 'centro' }));
+  // Una devolución no se canjea por una factura: no se invita a pedirla.
+  if (t.rectifica === undefined) {
+    piezas.push(texto('¿Quieres factura? Pídela en la barra.', { alinear: 'centro' }));
+  }
   if (t.pruebas) piezas.push(MARCA_DE_PRUEBAS);
   piezas.push(CORTAR);
   return papel(piezas);
@@ -477,6 +494,11 @@ export interface LaFacturaQueSeImprime {
   readonly fechaDeLaOperacion: string | null;
   /** «T-IKA-2026-000037». */
   readonly sustituye: readonly string[];
+  /** Si es una rectificativa: «F-IKA-2026-000007, del 14/11/2026». */
+  readonly rectifica?: string | undefined;
+  readonly motivo?: string | undefined;
+  /** Las señales que descuenta. */
+  readonly descuenta?: readonly string[] | undefined;
   readonly vence: string | null;
   readonly para: {
     readonly nombre: string;
@@ -516,6 +538,9 @@ export function laFacturaEnPapel(f: LaFacturaQueSeImprime): PapelCompuesto {
   piezas.push(texto(f.cuando));
   if (f.fechaDeLaOperacion !== null) piezas.push(texto(`Operación: ${f.fechaDeLaOperacion}`));
   for (const s of f.sustituye) piezas.push(texto(`Sustituye a ${s}`));
+  if (f.rectifica !== undefined) piezas.push(texto(`Rectifica: ${f.rectifica}`));
+  if (f.motivo !== undefined) piezas.push(texto(`Motivo: ${f.motivo}`));
+  for (const s of f.descuenta ?? []) piezas.push(texto(`Descuenta la señal ${s}`));
   if (f.vence !== null) piezas.push(texto(`Vence: ${f.vence}`));
   piezas.push(RAYA);
   piezas.push(texto('Para:', { negrita: true }));

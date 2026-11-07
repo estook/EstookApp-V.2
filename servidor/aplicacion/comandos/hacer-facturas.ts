@@ -4,6 +4,7 @@ import {
   fechaEnElLocal,
   juntarLasLineas,
   leerElResultado,
+  porQueNoCabeLaSenal,
   sePuedeEntregar,
   type ElDestinatario,
   type FechaOperativa,
@@ -20,6 +21,8 @@ import {
   fechaLegible,
   laFechaDeExpedicion,
   lasHistorias,
+  lasReferencias,
+  lasSenalesConSusLineas,
   losDocumentos,
   prepararUnDocumento,
   SIN_HISTORIA,
@@ -44,7 +47,7 @@ import { enLaBase } from '../facturacion.ts';
  * 6-nov). Lo que hace falta lo mira la API y lo vuelve a mirar la base.
  */
 
-const elCliente = z
+export const elCliente = z
   .object({
     clase: z.enum(['empresa', 'particular', 'de_fuera']),
     nombre: z.string().trim().max(120),
@@ -60,7 +63,7 @@ const elCliente = z
   })
   .strict();
 
-type ElClienteQueLlega = z.infer<typeof elCliente>;
+export type ElClienteQueLlega = z.infer<typeof elCliente>;
 
 export interface ElClienteComprobado {
   readonly vale: boolean;
@@ -145,7 +148,7 @@ async function comprobarElCliente(
 }
 
 /** El cliente que se manda a emitir: comprobado, y con el nombre que tiene Hacienda. */
-async function elDestinatarioComprobado(
+export async function elDestinatarioComprobado(
   contexto: Contexto,
   c: ElClienteQueLlega,
 ): Promise<ElDestinatario> {
@@ -236,7 +239,7 @@ export interface LoQueSePuedeFacturar {
   }[];
 }
 
-async function losTiposDelLocal(
+export async function losTiposDelLocal(
   contexto: Contexto,
   fisco: Awaited<ReturnType<typeof elRelojYElFisco>>,
   hoy: FechaOperativa,
@@ -368,6 +371,7 @@ export const hacerFacturaAMano = comando<
     fecha_operacion?: string | undefined;
     cobrada: boolean;
     vencimiento?: string | undefined;
+    senales?: string[] | undefined;
   },
   FacturaHecha
 >({
@@ -380,6 +384,8 @@ export const hacerFacturaAMano = comando<
       fecha_operacion: z.string().date().optional(),
       cobrada: z.boolean(),
       vencimiento: z.string().date().optional(),
+      // Las señales que descuenta (maqueta de T6 · 2 · 2, 4): lo vuelve a mirar la base.
+      senales: z.array(z.string().uuid()).min(1).max(20).optional(),
     })
     .strict(),
   exige: 'accion.factura_a_mano',
@@ -402,11 +408,29 @@ export const hacerFacturaAMano = comando<
     }
     const destinatario = await elDestinatarioComprobado(contexto, entrada.cliente);
     const regimen = fisco.regimen as LineaVendida['regimen'];
-    const lineas: LineaVendida[] = entrada.lineas.map((l) => ({ ...l, regimen }));
+    const conceptos: LineaVendida[] = entrada.lineas.map((l) => ({ ...l, regimen }));
+    // **Lo que resta la señal**: lo que le queda, en su mismo tipo. Si otro aparato la descuenta a la
+    // vez, lo para la base con su candado.
+    const lasSenales = [...new Set(entrada.senales ?? [])];
+    const filas =
+      lasSenales.length === 0
+        ? []
+        : await contexto.sql<{ id: string; queda: number }[]>`
+            select id::text as id, facturacion.lo_que_queda(id) as queda
+              from unnest(${lasSenales}::uuid[]) as id
+          `;
+    const senales = await lasSenalesConSusLineas(
+      contexto,
+      filas.map((f) => ({ id: f.id, fecha: hoy, queda: f.queda })),
+    );
+    if (senales.length !== lasSenales.length) throw new FalloDeAplicacion('no_existe');
+    const lineas: LineaVendida[] = [...conceptos, ...senales.flatMap((s) => [...s.lineas])];
+    const noCabe = porQueNoCabeLaSenal(lineas);
+    if (noCabe !== null) throw new FalloDeAplicacion('faltan_datos', { porque: noCabe });
     const hecho = await prepararUnDocumento(contexto, {
       localId,
       tipo: 'F1',
-      descripcion: lineas
+      descripcion: conceptos
         .map((l) => l.nombre)
         .join(', ')
         .slice(0, 500),
@@ -419,6 +443,16 @@ export const hacerFacturaAMano = comando<
       destinatario,
       vencimiento: entrada.cobrada ? null : (entrada.vencimiento as FechaOperativa),
     });
+    if (lasSenales.length > 0) {
+      await enLaBase(
+        () => contexto.sql`
+          select facturacion.apuntar_los_descuentos(
+            ${localId}::uuid, ${hecho.id}::uuid, ${lasSenales}::uuid[],
+            ${contexto.ahora.toISOString()}::timestamptz
+          )
+        `,
+      );
+    }
     if (entrada.cobrada) {
       await enLaBase(
         () => contexto.sql`
@@ -483,6 +517,7 @@ async function elPdfDelDocumento(contexto: Contexto, documentoId: string): Promi
       fechaOperacion: doc.fechaOperacion === expedicion ? null : fechaLegible(doc.fechaOperacion),
       vence: doc.vencimiento === null ? null : fechaLegible(doc.vencimiento),
       sustituye: h.sustituye.map((t) => t.numero),
+      ...lasReferencias(h),
       lineas: doc.lineas,
       desglose: doc.desglose,
       qrEnBase64: doc.modalidad === 'fuera_sii' ? null : (registrado?.qr ?? null),
@@ -567,6 +602,9 @@ export interface QuienHaceQue {
   readonly deUnTicket: boolean;
   readonly aMano: boolean;
   readonly consultar: boolean;
+  readonly devolver: boolean;
+  readonly corregir: boolean;
+  readonly anular: boolean;
   readonly cambiados: readonly string[];
 }
 
@@ -587,11 +625,14 @@ export const quienHaceQue = consulta<Record<string, never>, readonly QuienHaceQu
           de_un_ticket: boolean;
           a_mano: boolean;
           consultar: boolean;
+          devolver: boolean;
+          corregir: boolean;
+          anular: boolean;
           cambiados: string[];
         }[]
       >`
         select persona_id::text as persona_id, nombre, rol, siempre, de_un_ticket, a_mano, consultar,
-               cambiados
+               devolver, corregir, anular, cambiados
           from estook.quien_hace_que(${localId}::uuid)
       `,
     );
@@ -603,6 +644,9 @@ export const quienHaceQue = consulta<Record<string, never>, readonly QuienHaceQu
       deUnTicket: f.de_un_ticket,
       aMano: f.a_mano,
       consultar: f.consultar,
+      devolver: f.devolver,
+      corregir: f.corregir,
+      anular: f.anular,
       cambiados: f.cambiados,
     }));
   },
@@ -611,7 +655,13 @@ export const quienHaceQue = consulta<Record<string, never>, readonly QuienHaceQu
 export const darUnPermiso = comando<
   {
     persona_id: string;
-    permiso: 'accion.factura_de_un_ticket' | 'accion.factura_a_mano' | 'accion.ver_documentos';
+    permiso:
+      | 'accion.factura_de_un_ticket'
+      | 'accion.factura_a_mano'
+      | 'accion.ver_documentos'
+      | 'accion.devolver'
+      | 'accion.corregir_datos'
+      | 'accion.anular';
     tiene: boolean;
   },
   { readonly hecho: true }
@@ -624,6 +674,9 @@ export const darUnPermiso = comando<
         'accion.factura_de_un_ticket',
         'accion.factura_a_mano',
         'accion.ver_documentos',
+        'accion.devolver',
+        'accion.corregir_datos',
+        'accion.anular',
       ]),
       tiene: z.boolean(),
     })

@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { importeDelDocumento, type PapelCompuesto, type TipoDeDocumento } from '@estook/dominio';
+import {
+  importeDelDocumento,
+  type ElDestinatario,
+  type LoQueQuedaDeUnaLinea,
+  type PapelCompuesto,
+  type TipoDeDocumento,
+} from '@estook/dominio';
 import { Aviso, ErrorEnCristiano, type ErrorDeLaApi } from '../Aviso.tsx';
 import { Boton } from '../Boton.tsx';
 import { Campo } from '../Campo.tsx';
@@ -10,6 +16,13 @@ import { Hoja } from '../Hoja.tsx';
 import { Tabla, type Columna } from '../Tabla.tsx';
 import { PapelEnPantalla } from '../PapelEnPantalla.tsx';
 import { clases } from '../../clases.ts';
+import {
+  Anular,
+  CorregirLoRechazado,
+  CorregirLosDatos,
+  Devolver,
+  HacerSenal,
+} from './CorregirDocumento.tsx';
 import { HacerFactura, type TicketParaFacturar } from './HacerFactura.tsx';
 import { usarConPausa, usarLectura, type ClienteDeFacturas } from '../../ganchos/usarLectura.ts';
 
@@ -40,12 +53,20 @@ interface LoQueFalla {
   readonly numero: string;
   readonly que: string;
   readonly hacer: string;
+  /** Si lo rechazó Hacienda: se corrige con otro documento, y sale el botón. */
+  readonly seCorrige: boolean;
 }
 
 interface LoQuePuede {
   readonly todo: boolean;
   readonly deUnTicket: boolean;
   readonly aMano: boolean;
+  readonly corregir: boolean;
+}
+
+interface OtroDocumento {
+  readonly id: string;
+  readonly numero: string;
 }
 
 interface LaLista {
@@ -70,13 +91,29 @@ interface UnDocumento extends UnoDeLaLista {
   readonly papel: PapelCompuesto | null;
   readonly url: string | null;
   readonly loQueFalla: LoQueFalla | null;
-  readonly factura: { readonly id: string; readonly numero: string } | null;
-  readonly sustituye: readonly { readonly id: string; readonly numero: string }[];
+  readonly factura: OtroDocumento | null;
+  readonly sustituye: readonly OtroDocumento[];
   readonly seEntrega: boolean;
   readonly puede: LoQuePuede;
+  readonly destinatario: ElDestinatario | null;
+  readonly sePuede: {
+    readonly devolver: boolean;
+    readonly corregirDatos: boolean;
+    readonly anular: boolean;
+    readonly corregirLoRechazado: boolean;
+  };
+  readonly lineas: readonly LoQueQuedaDeUnaLinea[];
+  readonly queda: number;
+  readonly rectifica: OtroDocumento | null;
+  readonly corregidaPor: OtroDocumento | null;
+  readonly devoluciones: readonly (OtroDocumento & { readonly total: number })[];
+  readonly anulado: { readonly quien: string | null; readonly motivo: string } | null;
+  readonly anulacionQueNoSalio: { readonly dice: string | null } | null;
+  readonly descuenta: readonly (OtroDocumento & { readonly importe: number })[];
+  readonly descontadaEn: OtroDocumento | null;
 }
 
-type Que = 'todos' | 'tickets' | 'facturas' | 'por_cobrar' | 'pendiente';
+type Que = 'todos' | 'tickets' | 'facturas' | 'devoluciones' | 'por_cobrar' | 'pendiente';
 type Cuando = 'hoy' | 'ayer' | 'fechas';
 
 const LOS_DIAS: readonly { readonly valor: Cuando; readonly texto: string }[] = [
@@ -87,6 +124,7 @@ const LO_QUE_SE_FILTRA: readonly { readonly valor: Que; readonly texto: string }
   { valor: 'todos', texto: 'Todos' },
   { valor: 'tickets', texto: 'Tickets' },
   { valor: 'facturas', texto: 'Facturas' },
+  { valor: 'devoluciones', texto: 'Devoluciones' },
   { valor: 'por_cobrar', texto: 'Por cobrar' },
   { valor: 'pendiente', texto: 'Con algo pendiente' },
 ];
@@ -94,7 +132,18 @@ const LO_QUE_SE_FILTRA: readonly { readonly valor: Que; readonly texto: string }
 type Abierta =
   | { readonly que: 'documento'; readonly id: string; readonly correoNoSalio?: boolean }
   | { readonly que: 'factura'; readonly tickets: readonly TicketParaFacturar[] | null }
+  | { readonly que: 'senal' }
+  | { readonly que: 'devolver' | 'corregir' | 'anular' | 'rechazado'; readonly id: string }
   | null;
+
+const LOS_TITULOS = {
+  documento: 'El documento',
+  senal: 'Factura de la señal',
+  devolver: 'Devolver',
+  corregir: 'Corregir los datos del cliente',
+  anular: 'Anular',
+  rechazado: 'Corregir',
+} as const;
 
 function UnFiltro({
   elegido,
@@ -205,7 +254,15 @@ export function TicketsYFacturas({
   return (
     <div className="flex flex-col gap-e4">
       {l.puede.aMano && (
-        <div className="flex justify-end">
+        <div className="flex flex-wrap justify-end gap-e2">
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              setAbierta({ que: 'senal' });
+            }}
+          >
+            Factura de una señal
+          </Boton>
           <Boton
             tono="principal"
             onClick={() => {
@@ -223,14 +280,26 @@ export function TicketsYFacturas({
           tono="mal"
           titulo={f.numero}
           accion={
-            <Boton
-              tono="secundario"
-              onClick={() => {
-                setAbierta({ que: 'documento', id: f.id });
-              }}
-            >
-              Ver el documento
-            </Boton>
+            <span className="flex flex-wrap gap-e2">
+              {f.seCorrige && l.puede.corregir && (
+                <Boton
+                  tono="principal"
+                  onClick={() => {
+                    setAbierta({ que: 'rechazado', id: f.id });
+                  }}
+                >
+                  Corregir
+                </Boton>
+              )}
+              <Boton
+                tono="secundario"
+                onClick={() => {
+                  setAbierta({ que: 'documento', id: f.id });
+                }}
+              >
+                Ver el documento
+              </Boton>
+            </span>
           }
         >
           {f.que} <strong>Qué hacer:</strong> {f.hacer}
@@ -293,7 +362,11 @@ export function TicketsYFacturas({
         </span>
         {LO_QUE_SE_FILTRA.filter(
           (f) =>
-            l.puede.todo || f.valor === 'todos' || f.valor === 'tickets' || f.valor === 'facturas',
+            l.puede.todo ||
+            f.valor === 'todos' ||
+            f.valor === 'tickets' ||
+            f.valor === 'facturas' ||
+            f.valor === 'devoluciones',
         ).map((f) => (
           <UnFiltro
             key={f.valor}
@@ -387,11 +460,13 @@ export function TicketsYFacturas({
           void lista.otraVez();
         }}
         titulo={
-          abierta?.que === 'factura'
-            ? abierta.tickets === null
-              ? 'Hacer una factura'
-              : 'Hacer factura'
-            : 'El documento'
+          abierta === null
+            ? LOS_TITULOS.documento
+            : abierta.que === 'factura'
+              ? abierta.tickets === null
+                ? 'Hacer una factura'
+                : 'Hacer factura'
+              : LOS_TITULOS[abierta.que]
         }
         amplia
       >
@@ -408,6 +483,33 @@ export function TicketsYFacturas({
             alFacturar={(t) => {
               setAbierta({ que: 'factura', tickets: [t] });
             }}
+            alCorregir={(que) => {
+              setAbierta({ que, id: abierta.id });
+            }}
+          />
+        )}
+        {abierta?.que === 'senal' && (
+          <HacerSenal
+            cliente={cliente}
+            alHecho={(id, correoNoSalio) => {
+              setAbierta({ que: 'documento', id, correoNoSalio });
+              void lista.otraVez();
+            }}
+          />
+        )}
+        {(abierta?.que === 'devolver' ||
+          abierta?.que === 'corregir' ||
+          abierta?.que === 'anular' ||
+          abierta?.que === 'rechazado') && (
+          <LoQueSeHaceSobreEl
+            key={`${abierta.que}|${abierta.id}`}
+            que={abierta.que}
+            id={abierta.id}
+            cliente={cliente}
+            alHecho={(id) => {
+              setAbierta({ que: 'documento', id });
+              void lista.otraVez();
+            }}
           />
         )}
         {abierta?.que === 'factura' && (
@@ -422,6 +524,80 @@ export function TicketsYFacturas({
           />
         )}
       </Hoja>
+    </div>
+  );
+}
+
+/** Devolver, corregir, anular o rehacer: lee el documento al abrirse y va a lo que sale. */
+function LoQueSeHaceSobreEl({
+  que,
+  id,
+  cliente,
+  alHecho,
+}: {
+  readonly que: 'devolver' | 'corregir' | 'anular' | 'rechazado';
+  readonly id: string;
+  readonly cliente: ClienteDeFacturas;
+  readonly alHecho: (id: string) => void;
+}) {
+  const doc = usarLectura<UnDocumento>(
+    () => cliente.consultar('un_documento', { documento_id: id }),
+    id,
+  );
+  if (doc.datos === undefined) {
+    return doc.error === null ? (
+      <Cargando que="el documento" lineas={3} />
+    ) : (
+      <ErrorEnCristiano error={doc.error} />
+    );
+  }
+  const documento = doc.datos;
+  if (que === 'devolver') {
+    return <Devolver cliente={cliente} documento={documento} alHecho={alHecho} />;
+  }
+  if (que === 'corregir') {
+    return <CorregirLosDatos cliente={cliente} documento={documento} alHecho={alHecho} />;
+  }
+  if (que === 'anular') {
+    return (
+      <Anular
+        cliente={cliente}
+        documento={documento}
+        alHecho={() => {
+          alHecho(id);
+        }}
+      />
+    );
+  }
+  return <CorregirLoRechazado cliente={cliente} documento={documento} alHecho={alHecho} />;
+}
+
+/** Los documentos que van con este, para ir a ellos con un toque. Si no hay, no sale nada. */
+function LosQueVan({
+  titulo,
+  documentos,
+  alAbrir,
+}: {
+  readonly titulo: string;
+  readonly documentos: readonly OtroDocumento[];
+  readonly alAbrir: (id: string) => void;
+}) {
+  if (documentos.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-e1">
+      <p className="text-etiqueta font-semibold text-texto-suave">{titulo}</p>
+      {documentos.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          onClick={() => {
+            alAbrir(t.id);
+          }}
+          className="min-h-toque text-left text-secundario tabular-nums text-info underline"
+        >
+          {t.numero}
+        </button>
+      ))}
     </div>
   );
 }
@@ -457,6 +633,7 @@ function ElDocumento({
   conLaImpresora,
   alAbrir,
   alFacturar,
+  alCorregir,
 }: {
   readonly id: string;
   readonly correoNoSalio: boolean;
@@ -464,6 +641,7 @@ function ElDocumento({
   readonly conLaImpresora: boolean;
   readonly alAbrir: (id: string) => void;
   readonly alFacturar: (t: TicketParaFacturar) => void;
+  readonly alCorregir: (que: 'devolver' | 'corregir' | 'anular' | 'rechazado') => void;
 }) {
   const doc = usarLectura<UnDocumento>(
     () => cliente.consultar('un_documento', { documento_id: id }),
@@ -521,7 +699,8 @@ function ElDocumento({
       {esFactura ? 'Imprimir' : 'Reimprimir'}
     </Boton>
   );
-  const descargar = d.papel !== null && (
+  // Anulado: solo mirar, con quién y por qué (maqueta de T6 · 2 · 2, 6).
+  const descargar = d.papel !== null && d.estado !== 'anulado' && (
     <Boton
       tono="secundario"
       cargando={haciendo === 'descargar'}
@@ -567,6 +746,23 @@ function ElDocumento({
         </Aviso>
       )}
 
+      {d.anulado !== null && (
+        <Aviso tono="info" titulo="Anulado">
+          {d.anulado.quien === null ? '' : `${d.anulado.quien}: `}
+          {d.anulado.motivo}
+        </Aviso>
+      )}
+
+      {d.anulacionQueNoSalio !== null && (
+        <Aviso tono="atencion" titulo="La anulación no ha salido">
+          Sigue valiendo.
+          {d.anulacionQueNoSalio.dice === null
+            ? ''
+            : ` Hacienda dice: «${d.anulacionQueNoSalio.dice}».`}{' '}
+          <strong>Qué hacer:</strong> si el cliente lo tiene, devuélvelo.
+        </Aviso>
+      )}
+
       {correoNoSalio && d.loQueFalla === null && (
         <Aviso tono="atencion" titulo="El correo no ha salido">
           La factura está hecha, pero al cliente no le ha llegado. Prueba otra vez con «Mandar por
@@ -575,6 +771,16 @@ function ElDocumento({
       )}
 
       <div className="flex flex-wrap gap-e2">
+        {d.sePuede.corregirLoRechazado && (
+          <Boton
+            tono="principal"
+            onClick={() => {
+              alCorregir('rechazado');
+            }}
+          >
+            Corregir
+          </Boton>
+        )}
         {puedeFacturar && (
           <Boton
             tono="principal"
@@ -630,6 +836,56 @@ function ElDocumento({
             }}
           >
             Marcar cobrada
+          </Boton>
+        )}
+        {d.sePuede.devolver && (
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              alCorregir('devolver');
+            }}
+          >
+            {d.devoluciones.length > 0 ? 'Devolver lo que queda' : 'Devolver'}
+          </Boton>
+        )}
+        {d.sePuede.corregirDatos && (
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              alCorregir('corregir');
+            }}
+          >
+            Corregir los datos
+          </Boton>
+        )}
+        {d.sePuede.anular && (
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              alCorregir('anular');
+            }}
+          >
+            Anular
+          </Boton>
+        )}
+        {d.corregidaPor !== null && (
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              if (d.corregidaPor !== null) alAbrir(d.corregidaPor.id);
+            }}
+          >
+            Ir a su corrección
+          </Boton>
+        )}
+        {d.descontadaEn !== null && (
+          <Boton
+            tono="secundario"
+            onClick={() => {
+              if (d.descontadaEn !== null) alAbrir(d.descontadaEn.id);
+            }}
+          >
+            Ir a la factura que la descuenta
           </Boton>
         )}
       </div>
@@ -696,23 +952,14 @@ function ElDocumento({
               </li>
             ))}
           </ol>
-          {d.sustituye.length > 0 && (
-            <div className="flex flex-col gap-e1">
-              <p className="text-etiqueta font-semibold text-texto-suave">Sustituye a</p>
-              {d.sustituye.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => {
-                    alAbrir(t.id);
-                  }}
-                  className="min-h-toque text-left text-secundario tabular-nums text-info underline"
-                >
-                  {t.numero}
-                </button>
-              ))}
-            </div>
-          )}
+          <LosQueVan titulo="Sustituye a" documentos={d.sustituye} alAbrir={alAbrir} />
+          <LosQueVan
+            titulo="Rectifica"
+            documentos={d.rectifica === null ? [] : [d.rectifica]}
+            alAbrir={alAbrir}
+          />
+          <LosQueVan titulo="Sus devoluciones" documentos={d.devoluciones} alAbrir={alAbrir} />
+          <LosQueVan titulo="Descuenta las señales" documentos={d.descuenta} alAbrir={alAbrir} />
         </div>
       </div>
     </div>

@@ -73,6 +73,26 @@ const LO_QUE_SE_EXPLICA: Readonly<Record<string, string>> = {
   la_direccion_siempre: 'La dirección siempre puede: no se le quita.',
   la_gestoria_solo_mira: 'La gestoría solo mira: ese permiso no se le da.',
   permiso_desconocido: 'Ese permiso no se cambia desde aquí.',
+  // Las correcciones (0140).
+  ya_no_vale: 'Hacienda no tiene este documento: no se puede rectificar. Corrígelo con otro.',
+  sin_registrar: 'Todavía se está enviando a Hacienda. Prueba en un momento.',
+  se_esta_anulando: 'Se está anulando: espera a saber qué dice Hacienda.',
+  ya_devuelto: 'Ya no queda tanto por devolver: alguien acaba de hacer otra devolución.',
+  ya_corregida: 'Ya está corregida: hazlo sobre su corrección.',
+  senal_descontada: 'Esta señal ya está descontada en una factura: hazlo sobre esa factura.',
+  linea_que_no_existe: 'Esa línea no está en este documento.',
+  sin_lineas: 'Elige qué se devuelve.',
+  no_se_puede_devolver: 'Esto no se devuelve.',
+  no_se_puede_corregir: 'Este documento no lleva datos de cliente que corregir.',
+  no_se_puede_anular: 'Esto no se anula.',
+  falta_el_motivo: 'Di por qué lo anulas.',
+  es_una_senal: 'Una señal no se anula: se devuelve.',
+  tiene_una_devolucion: 'Tiene una devolución encima: el importe ya no es el suyo.',
+  todavia_en_hacienda: 'Hacienda todavía no ha contestado: prueba cuando salga «Correcto».',
+  no_es_una_senal: 'Eso no es una señal.',
+  senal_de_otro_cliente: 'Esa señal es de otro cliente.',
+  senal_sin_nada: 'A esa señal no le queda nada que descontar.',
+  no_esta_rechazado: 'Este documento no está rechazado: no hay que volver a hacerlo.',
 };
 
 function esElNifRepetido(fallo: unknown): boolean {

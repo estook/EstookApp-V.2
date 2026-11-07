@@ -2,8 +2,10 @@ import {
   A_MEDIAS_DESDE_MS,
   PENDIENTE_DEMASIADO_MS,
   POR_QUE_NO_SE_EMITE,
+  comoQuedaLaAnulacion,
   elCuerpoParaVerifacti,
   elDesglose,
+  elEstadoConSuDuplicado,
   elEstadoDeVerifacti,
   elEstadoDelDocumento,
   elJustificanteEnPapel,
@@ -12,16 +14,21 @@ import {
   fechaEnElLocal,
   fechaParaVerifacti,
   laFacturaEnPapel,
+  lasLineasDeLaSenal,
   lineasDeLaFactura,
+  loQueQuedaDeCadaLinea,
   numeroEnTexto,
   porQueNoSeEmite,
   type ApunteDelDocumento,
+  type ComoQuedaLaAnulacion,
   type DocumentoSustituido,
   type ElDesglose,
   type ElDestinatario,
   type EstadoDelDocumento,
   type FechaOperativa,
   type LineaVendida,
+  type LoDevueltoDeUnaLinea,
+  type LoQueRectifica,
   type PapelCompuesto,
   type TipoDeDocumento,
 } from '@estook/dominio';
@@ -76,7 +83,8 @@ export interface LaEmpresaDelDocumento {
   readonly de_pruebas?: boolean;
 }
 
-export type OrigenDelDocumento = 'ticket_de_prueba' | 'cobro' | 'a_mano' | 'canje';
+export type OrigenDelDocumento =
+  'ticket_de_prueba' | 'cobro' | 'a_mano' | 'canje' | 'devolucion' | 'correccion' | 'senal';
 
 export interface ElDocumento {
   readonly id: string;
@@ -121,6 +129,47 @@ export interface UnRegistro {
   readonly por: 'alta' | 'consulta' | 'aviso';
 }
 
+/** Lo que va pasando con una anulación ante Hacienda (0140). */
+export interface UnPasoDeAnular {
+  readonly en: string;
+  readonly uuid: string | null;
+  readonly estado: string;
+  readonly mensaje: string | null;
+  readonly queda: ComoQuedaLaAnulacion;
+}
+
+export interface UnaAnulacion {
+  readonly id: string;
+  readonly motivo: string;
+  readonly en: string;
+  readonly quien: string | null;
+  readonly pasos: readonly UnPasoDeAnular[];
+}
+
+/** Una rectificativa de este documento. */
+export interface UnaRectificacion {
+  readonly id: string;
+  readonly numero: string;
+  readonly clase: 'devolucion' | 'datos';
+  readonly motivo: string;
+  readonly en: string;
+  readonly quien: string | null;
+  readonly total: number;
+  readonly lineas: readonly LoDevueltoDeUnaLinea[];
+  /** Si Hacienda la tiene: la rechazada no cuenta y lo devuelto vuelve a quedar. */
+  readonly enPie: boolean;
+}
+
+/** Lo que rectifica este documento, si es una rectificativa. */
+export interface LoQueRectificaEste {
+  readonly id: string;
+  readonly numero: string;
+  readonly clase: 'devolucion' | 'datos';
+  readonly motivo: string;
+  readonly fecha: FechaOperativa;
+  readonly deSenal: boolean;
+}
+
 export interface LaHistoria {
   readonly envios: readonly UnEnvio[];
   readonly registros: readonly UnRegistro[];
@@ -133,6 +182,26 @@ export interface LaHistoria {
   readonly cobradaEn: string | null;
   /** A quién se le ha mandado por correo. */
   readonly copias: readonly { readonly para: string; readonly en: string }[];
+  /** Si es una rectificativa, lo que rectifica. */
+  readonly rectifica: LoQueRectificaEste | null;
+  /** Las rectificativas que tiene encima, en pie o no. */
+  readonly rectificaciones: readonly UnaRectificacion[];
+  readonly anulaciones: readonly UnaAnulacion[];
+  /** Lo que lo corrige si lo rechazó Hacienda, y lo que corrige él. */
+  readonly rehechoPor: { readonly id: string; readonly numero: string; readonly en: string } | null;
+  readonly rehaceA: { readonly id: string; readonly numero: string } | null;
+  /** Las señales que descuenta esta factura. */
+  readonly descuenta: readonly {
+    readonly id: string;
+    readonly numero: string;
+    readonly importe: number;
+  }[];
+  /** La factura que descuenta esta señal, si sigue en pie y le queda algo. */
+  readonly descontadaEn: {
+    readonly id: string;
+    readonly numero: string;
+    readonly en: string;
+  } | null;
 }
 
 /** La historia de un documento al que todavía no se le ha añadido nada. */
@@ -144,6 +213,13 @@ export const SIN_HISTORIA: LaHistoria = {
   factura: null,
   cobradaEn: null,
   copias: [],
+  rectifica: null,
+  rectificaciones: [],
+  anulaciones: [],
+  rehechoPor: null,
+  rehaceA: null,
+  descuenta: [],
+  descontadaEn: null,
 };
 
 interface FilaDelDocumento {
@@ -228,6 +304,13 @@ export async function lasHistorias(
       factura: { id: string; numero: string; en: string } | null;
       cobradaEn: string | null;
       copias: { para: string; en: string }[];
+      rectifica: LoQueRectificaEste | null;
+      rectificaciones: UnaRectificacion[];
+      anulaciones: UnaAnulacion[];
+      rehechoPor: { id: string; numero: string; en: string } | null;
+      rehaceA: { id: string; numero: string } | null;
+      descuenta: { id: string; numero: string; importe: number }[];
+      descontadaEn: { id: string; numero: string; en: string } | null;
     }
   >(
     ids.map((id) => [
@@ -240,6 +323,13 @@ export async function lasHistorias(
         factura: null,
         cobradaEn: null,
         copias: [],
+        rectifica: null,
+        rectificaciones: [],
+        anulaciones: [],
+        rehechoPor: null,
+        rehaceA: null,
+        descuenta: [],
+        descontadaEn: null,
       },
     ]),
   );
@@ -362,7 +452,298 @@ export async function lasHistorias(
   for (const c of copias) {
     historias.get(c.documento_id)?.copias.push({ para: c.para, en: new Date(c.en).toISOString() });
   }
+  const rectificaciones = await contexto.sql<
+    {
+      rectificativa_id: string;
+      documento_id: string;
+      clase: 'devolucion' | 'datos';
+      motivo: string;
+      lineas: LoDevueltoDeUnaLinea[];
+      de_senal: boolean;
+      en: string;
+      quien: string | null;
+      total: number;
+      de_la_rectificativa: string;
+      del_documento: string;
+      fecha: string;
+      en_pie: boolean;
+    }[]
+  >`
+    select r.rectificativa_id::text as rectificativa_id, r.documento_id::text as documento_id,
+           r.clase, r.motivo, r.lineas, r.de_senal, r.en::text as en,
+           btrim(p.nombre || ' ' || coalesce(p.apellidos, '')) as quien, d.total,
+           d.serie || lpad(d.numero::text, 6, '0') as de_la_rectificativa,
+           o.serie || lpad(o.numero::text, 6, '0') as del_documento,
+           coalesce(
+             (select to_char(e.fecha_expedicion, 'YYYY-MM-DD') from facturacion.envio e
+               where e.documento_id = o.id and e.resultado = 'aceptado'
+               order by e.en desc, e.id desc limit 1),
+             to_char(o.fecha_operacion, 'YYYY-MM-DD')
+           ) as fecha,
+           facturacion.sigue_en_pie(r.rectificativa_id) as en_pie
+      from facturacion.rectificacion r
+      join facturacion.documento d on d.id = r.rectificativa_id
+      join facturacion.documento o on o.id = r.documento_id
+      left join estook.persona p on p.id = r.por
+     where r.rectificativa_id = any (${ids as string[]}::uuid[])
+        or r.documento_id = any (${ids as string[]}::uuid[])
+     order by r.en
+  `;
+  for (const r of rectificaciones) {
+    const laRectificativa = historias.get(r.rectificativa_id);
+    if (laRectificativa !== undefined) {
+      laRectificativa.rectifica = {
+        id: r.documento_id,
+        numero: r.del_documento,
+        clase: r.clase,
+        motivo: r.motivo,
+        fecha: r.fecha as FechaOperativa,
+        deSenal: r.de_senal,
+      };
+    }
+    historias.get(r.documento_id)?.rectificaciones.push({
+      id: r.rectificativa_id,
+      numero: r.de_la_rectificativa,
+      clase: r.clase,
+      motivo: r.motivo,
+      en: new Date(r.en).toISOString(),
+      quien: r.quien,
+      total: r.total,
+      lineas: r.lineas,
+      enPie: r.en_pie,
+    });
+  }
+  const anulaciones = await contexto.sql<
+    {
+      id: string;
+      documento_id: string;
+      motivo: string;
+      en: string;
+      quien: string | null;
+    }[]
+  >`
+    select a.id::text as id, a.documento_id::text as documento_id, a.motivo, a.en::text as en,
+           btrim(p.nombre || ' ' || coalesce(p.apellidos, '')) as quien
+      from facturacion.anulacion a
+      left join estook.persona p on p.id = a.por
+     where a.documento_id = any (${ids as string[]}::uuid[])
+     order by a.en
+  `;
+  if (anulaciones.length > 0) {
+    const pasos = await contexto.sql<
+      {
+        anulacion_id: string;
+        en: string;
+        uuid: string | null;
+        estado: string;
+        mensaje: string | null;
+        queda: ComoQuedaLaAnulacion;
+      }[]
+    >`
+      select anulacion_id::text as anulacion_id, en::text as en, uuid, estado, mensaje, queda
+        from facturacion.paso_de_anulacion
+       where anulacion_id = any (${anulaciones.map((a) => a.id)}::uuid[])
+       order by en, id
+    `;
+    for (const a of anulaciones) {
+      historias.get(a.documento_id)?.anulaciones.push({
+        id: a.id,
+        motivo: a.motivo,
+        en: new Date(a.en).toISOString(),
+        quien: a.quien,
+        pasos: pasos
+          .filter((p) => p.anulacion_id === a.id)
+          .map((p) => ({
+            en: new Date(p.en).toISOString(),
+            uuid: p.uuid,
+            estado: p.estado,
+            mensaje: p.mensaje,
+            queda: p.queda,
+          })),
+      });
+    }
+  }
+  const rehechos = await contexto.sql<
+    { original_id: string; nuevo_id: string; en: string; del_original: string; del_nuevo: string }[]
+  >`
+    select h.original_id::text as original_id, h.nuevo_id::text as nuevo_id, h.en::text as en,
+           o.serie || lpad(o.numero::text, 6, '0') as del_original,
+           n.serie || lpad(n.numero::text, 6, '0') as del_nuevo
+      from facturacion.rehecho h
+      join facturacion.documento o on o.id = h.original_id
+      join facturacion.documento n on n.id = h.nuevo_id
+     where h.original_id = any (${ids as string[]}::uuid[])
+        or h.nuevo_id = any (${ids as string[]}::uuid[])
+  `;
+  for (const r of rehechos) {
+    const original = historias.get(r.original_id);
+    if (original !== undefined) {
+      original.rehechoPor = {
+        id: r.nuevo_id,
+        numero: r.del_nuevo,
+        en: new Date(r.en).toISOString(),
+      };
+    }
+    const nuevo = historias.get(r.nuevo_id);
+    if (nuevo !== undefined) nuevo.rehaceA = { id: r.original_id, numero: r.del_original };
+  }
+  const descuentos = await contexto.sql<
+    {
+      senal_id: string;
+      factura_id: string;
+      importe: number;
+      en: string;
+      de_la_senal: string;
+      de_la_factura: string;
+      cuenta: boolean;
+    }[]
+  >`
+    select d.senal_id::text as senal_id, d.factura_id::text as factura_id, d.importe, d.en::text as en,
+           s.serie || lpad(s.numero::text, 6, '0') as de_la_senal,
+           f.serie || lpad(f.numero::text, 6, '0') as de_la_factura,
+           (facturacion.sigue_en_pie(d.factura_id) and facturacion.lo_que_queda(d.factura_id) <> 0) as cuenta
+      from facturacion.descuento_de_senal d
+      join facturacion.documento s on s.id = d.senal_id
+      join facturacion.documento f on f.id = d.factura_id
+     where d.senal_id = any (${ids as string[]}::uuid[])
+        or d.factura_id = any (${ids as string[]}::uuid[])
+     order by d.en
+  `;
+  for (const d of descuentos) {
+    historias
+      .get(d.factura_id)
+      ?.descuenta.push({ id: d.senal_id, numero: d.de_la_senal, importe: d.importe });
+    const laSenal = historias.get(d.senal_id);
+    if (laSenal !== undefined && d.cuenta) {
+      laSenal.descontadaEn = {
+        id: d.factura_id,
+        numero: d.de_la_factura,
+        en: new Date(d.en).toISOString(),
+      };
+    }
+  }
   return historias;
+}
+
+/** La anulación que todavía no ha terminado, si la hay: mientras, Hacienda tiene la palabra. */
+export function laAnulacionEnCurso(h: LaHistoria): UnaAnulacion | null {
+  return (
+    h.anulaciones.find(
+      (a) => !a.pasos.some((p) => p.queda === 'anulada' || p.queda === 'no_salio'),
+    ) ?? null
+  );
+}
+
+/** Lo que ya se ha devuelto de cada línea, sin lo que Hacienda no tiene. */
+export function loDevuelto(h: LaHistoria): LoDevueltoDeUnaLinea[] {
+  return h.rectificaciones
+    .filter((r) => r.enPie && r.clase === 'devolucion')
+    .flatMap((r) => r.lineas);
+}
+
+/** Lo que le queda a un documento: lo que vale menos lo devuelto. */
+export function loQueLeQueda(doc: ElDocumento, h: LaHistoria): number {
+  return (
+    doc.total +
+    h.rectificaciones
+      .filter((r) => r.enPie && r.clase === 'devolucion')
+      .reduce((s, r) => s + r.total, 0)
+  );
+}
+
+/** La corrección de datos en vigor, si tiene una: es la que vale y la anterior queda «Corregida». */
+export function suCorreccion(h: LaHistoria): UnaRectificacion | null {
+  return h.rectificaciones.find((r) => r.enPie && r.clase === 'datos') ?? null;
+}
+
+export function esUnaSenal(doc: ElDocumento, h: LaHistoria): boolean {
+  return doc.origen === 'senal' || h.rectifica?.deSenal === true;
+}
+
+export interface UnaSenal {
+  readonly id: string;
+  readonly numero: string;
+  /** El día que se cobró. */
+  readonly fecha: FechaOperativa;
+  /** Lo que resta de la factura final: lo que le queda, en positivo. */
+  readonly importe: number;
+  /** Lo que la final le pone, en negativo y en su mismo tipo. */
+  readonly lineas: readonly LineaVendida[];
+}
+
+/** Cada señal con lo que le queda, en líneas: para enseñarla y para la factura final. */
+export async function lasSenalesConSusLineas(
+  contexto: Contexto,
+  senales: readonly {
+    readonly id: string;
+    readonly fecha: FechaOperativa;
+    readonly queda: number;
+  }[],
+): Promise<UnaSenal[]> {
+  const ids = senales.map((s) => s.id);
+  const docs = await losDocumentos(contexto, ids);
+  const historias = await lasHistorias(contexto, ids);
+  return senales.flatMap((s) => {
+    const doc = docs.find((d) => d.id === s.id);
+    const h = historias.get(s.id);
+    if (doc === undefined || h === undefined) return [];
+    return [
+      {
+        id: s.id,
+        numero: elNumeroEntero(doc.serie, doc.numero),
+        fecha: s.fecha,
+        importe: s.queda,
+        lineas: lasLineasDeLaSenal(loQueQuedaDeCadaLinea(doc.lineas, loDevuelto(h))),
+      },
+    ];
+  });
+}
+
+/**
+ * **Lo que rectifica una rectificativa, para Verifacti** (0140): por diferencias si es una devolución y
+ * por sustitución si corrige datos, cada documento con la fecha que tiene Hacienda.
+ */
+export async function laRectificacionParaVerifacti(
+  contexto: Contexto,
+  rectificativaId: string,
+): Promise<LoQueRectifica | undefined> {
+  const [r] = await contexto.sql<
+    {
+      clase: 'devolucion' | 'datos';
+      documento_id: string;
+      tambien: string[];
+      base_rectificada: number | null;
+      cuota_rectificada: number | null;
+    }[]
+  >`
+    select clase, documento_id::text as documento_id, tambien::text[] as tambien,
+           base_rectificada, cuota_rectificada
+      from facturacion.rectificacion where rectificativa_id = ${rectificativaId}::uuid
+  `;
+  if (r === undefined) return undefined;
+  const ids = [r.documento_id, ...r.tambien];
+  const filas = await contexto.sql<
+    { id: string; serie: string; numero: number; fecha: string; expedicion: string | null }[]
+  >`
+    select d.id::text as id, d.serie, d.numero, to_char(d.fecha_operacion, 'YYYY-MM-DD') as fecha,
+           (select to_char(e.fecha_expedicion, 'YYYY-MM-DD') from facturacion.envio e
+             where e.documento_id = d.id and e.resultado = 'aceptado'
+             order by e.en desc, e.id desc limit 1) as expedicion
+      from facturacion.documento d
+     where d.id = any (${ids}::uuid[])
+     order by d.preparado_en
+  `;
+  return {
+    tipo: r.clase === 'datos' ? 'S' : 'I',
+    facturas: filas.map((f) => ({
+      serie: f.serie,
+      numero: f.numero,
+      fechaExpedicion: (f.expedicion ?? f.fecha) as FechaOperativa,
+    })),
+    ...(r.base_rectificada === null || r.cuota_rectificada === null
+      ? {}
+      : { importe: { base: r.base_rectificada, cuota: r.cuota_rectificada } }),
+  };
 }
 
 /**
@@ -410,7 +791,11 @@ export function losApuntes(h: LaHistoria): ApunteDelDocumento[] {
 
 /** Cómo está. Fuera de VERI*FACTU, por el SII, no va a Verifacti y está emitido al prepararse. */
 export function comoEsta(doc: ElDocumento, h: LaHistoria): EstadoDelDocumento | 'fuera_sii' {
-  if (doc.modalidad === 'fuera_sii') return 'fuera_sii';
+  if (doc.modalidad === 'fuera_sii') {
+    return h.registros.some((r) => r.estado.trim().toLowerCase() === 'anulado')
+      ? 'anulado'
+      : 'fuera_sii';
+  }
   return elEstadoDelDocumento(losApuntes(h));
 }
 
@@ -435,11 +820,14 @@ export interface LoQueSeEmite {
   readonly regimenDelLocal: LineaVendida['regimen'];
   readonly zonaHoraria: string;
   readonly donde: string | null;
-  readonly origen: Exclude<OrigenDelDocumento, 'cobro'>;
+  /** El cobro llega con T7: hoy solo vuelve a salir al corregir uno rechazado, y lo mira la base. */
+  readonly origen: OrigenDelDocumento;
   /** La fecha de la comida, si fue antes. Sin ella, hoy. */
   readonly fechaOperacion?: FechaOperativa | undefined;
   readonly destinatario?: ElDestinatario | undefined;
   readonly vencimiento?: FechaOperativa | null | undefined;
+  /** El documento rechazado que corrige (0140): lo prepara quien corrige, sea el origen que sea. */
+  readonly rehace?: string | undefined;
 }
 
 /**
@@ -464,7 +852,7 @@ export async function prepararUnDocumento(
           ${que.donde}, ${que.origen}, ${contexto.sesion?.aparato?.terminalId ?? null}::uuid,
           ${contexto.ahora.toISOString()}::timestamptz,
           ${que.destinatario === undefined ? null : JSON.stringify(que.destinatario)}::text::jsonb,
-          ${que.vencimiento ?? null}::date
+          ${que.vencimiento ?? null}::date, ${que.rehace ?? null}::uuid
         )
     `,
   );
@@ -538,7 +926,16 @@ export type ElPlan =
       readonly fechaExpedicion: FechaOperativa;
       readonly incidencia: boolean;
       readonly idempotencia: string;
-    };
+    }
+  /** Pedirle a Hacienda que lo anule (0140). Con la fecha que tiene, la de su registro. */
+  | {
+      readonly que: 'anular';
+      readonly anulacionId: string;
+      readonly fechaExpedicion: FechaOperativa;
+      readonly idempotencia: string;
+    }
+  /** Preguntar cómo va la anulación, por **su** uuid, que es otro que el del alta. */
+  | { readonly que: 'consultar_la_anulacion'; readonly anulacionId: string; readonly uuid: string };
 
 /**
  * **Qué toca con un documento ahora** (Anexo 4.9, pasos 6 y 7; 4.10 y 4.11). Sin red y sin base.
@@ -561,10 +958,28 @@ export function elPlan(
 ): ElPlan {
   const estado = comoEsta(doc, h);
   if (estado === 'fuera_sii') return { que: 'nada' };
+  const hace = (en: string) => ahora.getTime() - new Date(en).getTime();
+  // Lo que se está anulando manda sobre lo demás: su alta ya terminó (0140).
+  const anulando = laAnulacionEnCurso(h);
+  if (anulando !== null) {
+    const elUltimo = anulando.pasos.at(-1);
+    const suUuid = anulando.pasos.findLast((p) => p.uuid !== null)?.uuid ?? null;
+    if (suUuid !== null) {
+      return tocaPreguntar(hace(elUltimo?.en ?? anulando.en))
+        ? { que: 'consultar_la_anulacion', anulacionId: anulando.id, uuid: suUuid }
+        : { que: 'nada' };
+    }
+    if (!alMomento && hace(elUltimo?.en ?? anulando.en) < A_MEDIAS_DESDE_MS) return { que: 'nada' };
+    return {
+      que: 'anular',
+      anulacionId: anulando.id,
+      fechaExpedicion: laFechaDeExpedicion(doc, h),
+      idempotencia: anulando.id,
+    };
+  }
   if (estado !== 'preparado' && estado !== 'enviando' && estado !== 'pendiente') {
     return { que: 'nada' };
   }
-  const hace = (en: string) => ahora.getTime() - new Date(en).getTime();
   const ultimoRegistro = h.registros.at(-1);
   if (ultimoRegistro !== undefined) {
     return tocaPreguntar(hace(ultimoRegistro.en))
@@ -618,7 +1033,78 @@ type LoQueSeSupo =
       readonly incidencia: boolean;
       readonly idempotencia: string;
       readonly paso: LoQuePasoAlEmitir;
-    };
+    }
+  | { readonly que: 'paso_de_anular'; readonly anulacionId: string; readonly paso: ElPasoDeAnular };
+
+/** Lo que se sabe de una anulación, para apuntarlo. */
+export interface ElPasoDeAnular {
+  readonly uuid: string | null;
+  readonly estado: string;
+  readonly codigo: string | null;
+  readonly mensaje: string | null;
+  readonly queda: ComoQuedaLaAnulacion;
+  readonly por: 'alta' | 'consulta' | 'aviso';
+}
+
+/** Lo que pasó al pedirla, como un paso: un 400 no llega a Hacienda y el documento sigue valiendo. */
+function elPasoAlPedirla(p: LoQuePasoAlEmitir): ElPasoDeAnular {
+  switch (p.resultado) {
+    case 'aceptado':
+      return {
+        uuid: p.uuid,
+        estado: p.estado,
+        codigo: null,
+        mensaje: null,
+        queda: comoQuedaLaAnulacion(p.estado),
+        por: 'alta',
+      };
+    case 'rechazado_por_datos':
+      return {
+        uuid: null,
+        estado: 'No aceptada por Verifacti',
+        codigo: p.codigo,
+        mensaje: p.mensaje,
+        queda: 'no_salio',
+        por: 'alta',
+      };
+    case 'en_curso':
+      return {
+        uuid: null,
+        estado: 'En curso',
+        codigo: null,
+        mensaje: null,
+        queda: 'sigue',
+        por: 'alta',
+      };
+    case 'sin_respuesta':
+      return {
+        uuid: null,
+        estado: 'Sin respuesta',
+        codigo: null,
+        mensaje: p.mensaje,
+        queda: 'sigue',
+        por: 'alta',
+      };
+  }
+}
+
+/** Lo apunta y, si no ha salido, se lo dice a quien lleva la facturación. Devuelve si era nuevo. */
+export async function apuntarElPasoDeAnular(
+  contexto: Contexto,
+  doc: ElDocumento,
+  anulacionId: string,
+  p: ElPasoDeAnular,
+): Promise<boolean> {
+  const [fila] = await contexto.sql<{ nuevo: boolean }[]>`
+    select facturacion.apuntar_el_paso_de_anular(
+      ${anulacionId}::uuid, ${p.uuid}, ${p.estado}, ${p.codigo}, ${p.mensaje}, ${p.queda}, ${p.por},
+      ${contexto.ahora.toISOString()}::timestamptz
+    ) as nuevo
+  `;
+  const nuevo = fila?.nuevo === true;
+  if (nuevo && p.queda === 'no_salio') await avisarDeLaAnulacion(contexto, doc, anulacionId);
+  return nuevo;
+}
 
 async function apuntarElEnvio(
   contexto: Contexto,
@@ -682,10 +1168,40 @@ async function hacerElPlan(
   doc: ElDocumento,
   plan: ElPlan,
   sustituidas: readonly DocumentoSustituido[],
+  rectifica: LoQueRectifica | undefined,
 ): Promise<LoQueSeSupo> {
   const entorno = elEntorno(doc);
   const nif = doc.empresa.nif;
   if (plan.que === 'nada') return { que: 'nada' };
+  if (plan.que === 'anular') {
+    const paso = await verifacti.anular(
+      nif,
+      entorno,
+      {
+        serie: doc.serie,
+        numero: numeroEnTexto(doc.numero),
+        fecha_expedicion: fechaParaVerifacti(plan.fechaExpedicion),
+      },
+      plan.idempotencia,
+    );
+    return { que: 'paso_de_anular', anulacionId: plan.anulacionId, paso: elPasoAlPedirla(paso) };
+  }
+  if (plan.que === 'consultar_la_anulacion') {
+    const r = await verifacti.elRegistro(nif, entorno, plan.uuid);
+    if (r === null) return { que: 'nada' };
+    return {
+      que: 'paso_de_anular',
+      anulacionId: plan.anulacionId,
+      paso: {
+        uuid: plan.uuid,
+        estado: r.estado,
+        codigo: r.codigoError,
+        mensaje: r.mensajeError,
+        queda: comoQuedaLaAnulacion(r.estado),
+        por: 'consulta',
+      },
+    };
+  }
   if (plan.que === 'consultar') {
     const r = await verifacti.elRegistro(nif, entorno, plan.uuid);
     if (r === null) return { que: 'nada' };
@@ -735,7 +1251,7 @@ async function hacerElPlan(
     }
   }
   const cuerpo = elCuerpoParaVerifacti(
-    { ...doc, sustituidas },
+    { ...doc, sustituidas, rectifica },
     {
       fechaExpedicion: plan.fechaExpedicion,
       incidencia: plan.incidencia,
@@ -788,6 +1304,10 @@ export async function mandarLosDocumentos(
             doc,
             antes: comoEsta(doc, h),
             sustituidas: doc.tipo === 'F3' ? await lasSustituidas(contexto, id) : [],
+            rectifica:
+              doc.tipo === 'R1' || doc.tipo === 'R4' || doc.tipo === 'R5'
+                ? await laRectificacionParaVerifacti(contexto, id)
+                : undefined,
             plan: elPlan(doc, h, hoy, contexto.ahora, como.alMomento),
             verifacti: contexto.facturacion ?? null,
             primeraVez: h.envios.length === 0,
@@ -795,16 +1315,19 @@ export async function mandarLosDocumentos(
         }),
       );
       if (leido === null) continue;
-      const { doc, antes, sustituidas, plan, verifacti, primeraVez } = leido;
+      const { doc, antes, sustituidas, rectifica, plan, verifacti, primeraVez } = leido;
       const supo =
         verifacti === null || plan.que === 'nada'
           ? ({ que: 'nada' } as const)
-          : await hacerElPlan(verifacti, doc, plan, sustituidas);
+          : await hacerElPlan(verifacti, doc, plan, sustituidas, rectifica);
 
       const estado = await enTransaccion((contexto) =>
         enNombreDelSistema(contexto, async () => {
           if (supo.que === 'envio') await apuntarElEnvio(contexto, id, supo);
           if (supo.que === 'registro') await apuntarElRegistro(contexto, id, supo.registro);
+          if (supo.que === 'paso_de_anular') {
+            await apuntarElPasoDeAnular(contexto, doc, supo.anulacionId, supo.paso);
+          }
           const h = (await lasHistorias(contexto, [id])).get(id);
           if (h === undefined) return 'preparado' as const;
           const ahora = comoEsta(doc, h);
@@ -861,8 +1384,16 @@ export async function repasarLosDocumentos(enTransaccion: EnUnaTransaccion): Pro
         select p.documento_id::text as id, p.desde::text as desde,
                (select min(e.en)::text from facturacion.envio e
                  where e.documento_id = p.documento_id) as primer_envio,
-               (select max(r.en)::text from facturacion.registro r
-                 where r.documento_id = p.documento_id) as ultimo_registro
+               greatest(
+                 (select max(r.en) from facturacion.registro r
+                   where r.documento_id = p.documento_id),
+                 -- Lo que se está anulando se mira por la anulación, no por su alta de hace días.
+                 (select max(a.en) from facturacion.anulacion a
+                   where a.documento_id = p.documento_id),
+                 (select max(pa.en) from facturacion.paso_de_anulacion pa
+                    join facturacion.anulacion a on a.id = pa.anulacion_id
+                   where a.documento_id = p.documento_id)
+               )::text as ultimo_registro
           from facturacion.por_repasar p
          where p.desde > ${contexto.ahora.toISOString()}::timestamptz - interval '30 days'
          order by p.desde
@@ -949,6 +1480,46 @@ async function avisarSiHayQueHacerAlgo(
   }
 }
 
+/** Una anulación que Hacienda no aceptó: el documento sigue valiendo, y alguien tiene que saberlo. */
+async function avisarDeLaAnulacion(
+  contexto: Contexto,
+  doc: ElDocumento,
+  anulacionId: string,
+): Promise<void> {
+  try {
+    const [local] = await contexto.sql<{ organizacion_id: string }[]>`
+      select organizacion_id::text as organizacion_id from estook.local where id = ${doc.localId}::uuid
+    `;
+    if (local === undefined) return;
+    const numero = elNumeroEntero(doc.serie, doc.numero);
+    await avisar(
+      contexto,
+      {
+        tipo: 'documento.rechazado',
+        organizacionId: local.organizacion_id,
+        localId: doc.localId,
+        clave: anulacionId,
+        texto: () => ({
+          titulo: `La anulación de ${numero} no ha salido`,
+          detalle: 'Sigue valiendo. Mira en Tickets y facturas qué dice Hacienda.',
+        }),
+        ir: '/servicio/ventas/tickets-y-facturas',
+        quien: null,
+      },
+      await losQueLoQuieren(
+        contexto,
+        'documento.rechazado',
+        await quienesPuedenRecibir(contexto, doc.localId, 'documento.rechazado'),
+      ),
+    );
+  } catch (fallo) {
+    await apuntarUnFallo(fallo, {
+      mensaje: 'no se ha podido avisar de una anulación que no ha salido',
+      correlacionId: contexto.correlacionId,
+    });
+  }
+}
+
 // ── Los avisos de Verifacti (4.10) ────────────────────────────────────────────────
 
 /** El secreto con el que Verifacti firma sus avisos. Sin él, no se piden ni se aceptan. */
@@ -1014,8 +1585,37 @@ export async function aplicarElAvisoDeVerifacti(
     for (const item of lista) {
       const c = (item ?? {}) as Record<string, unknown>;
       const uuid = typeof c.uuid === 'string' ? c.uuid : '';
-      const estado = typeof c.estado === 'string' ? c.estado : '';
+      const estado = elEstadoConSuDuplicado(
+        typeof c.estado === 'string' ? c.estado : '',
+        typeof c.estado_registro_duplicado === 'string' ? c.estado_registro_duplicado : null,
+      );
       if (uuid === '' || estado === '') continue;
+      // **El de una anulación es otro registro** (0140): no dice nada de su alta, y si no sale, el
+      // documento sigue valiendo. Por eso se mira primero.
+      const [deAnular] = await contexto.sql<{ anulacion_id: string; documento_id: string }[]>`
+        select pa.anulacion_id::text as anulacion_id, a.documento_id::text as documento_id
+          from facturacion.paso_de_anulacion pa
+          join facturacion.anulacion a on a.id = pa.anulacion_id
+         where pa.uuid = ${uuid}
+         order by pa.en limit 1
+      `;
+      if (deAnular !== undefined) {
+        const [elDoc] = await losDocumentos(contexto, [deAnular.documento_id]);
+        if (elDoc === undefined) continue;
+        const nuevo = await apuntarElPasoDeAnular(contexto, elDoc, deAnular.anulacion_id, {
+          uuid,
+          estado,
+          codigo:
+            typeof c.codigo_error === 'string' || typeof c.codigo_error === 'number'
+              ? String(c.codigo_error)
+              : null,
+          mensaje: typeof c.mensaje_error === 'string' ? c.mensaje_error : null,
+          queda: comoQuedaLaAnulacion(estado),
+          por: 'aviso',
+        });
+        if (nuevo) apuntados += 1;
+        continue;
+      }
       const [doc] = await contexto.sql<{ documento_id: string }[]>`
         select documento_id::text as documento_id from facturacion.registro
          where uuid = ${uuid} order by en limit 1
@@ -1119,6 +1719,23 @@ function porciento(tipo: number): string {
   return `${String(Number((tipo * 100).toFixed(2))).replace('.', ',')} %`;
 }
 
+/** Lo que dice el papel de lo que rectifica y de las señales que descuenta. Igual en A4 y en ticket. */
+export function lasReferencias(h: LaHistoria): {
+  readonly rectifica?: string;
+  readonly motivo?: string;
+  readonly descuenta?: readonly string[];
+} {
+  return {
+    ...(h.rectifica === null
+      ? {}
+      : {
+          rectifica: `${h.rectifica.numero}, del ${fechaLegible(h.rectifica.fecha)}`,
+          motivo: h.rectifica.motivo,
+        }),
+    ...(h.descuenta.length === 0 ? {} : { descuenta: h.descuenta.map((s) => s.numero) }),
+  };
+}
+
 /**
  * **El papel de un documento**, igual que salió: el ticket con su QR cuando Verifacti lo ha
  * aceptado, o el justificante si se dio uno y todavía no está registrado. Nulo si no hay nada
@@ -1152,7 +1769,7 @@ export function elPapelDelDocumento(
     const expedicion = laFechaDeExpedicion(doc, h);
     return laFacturaEnPapel({
       empresa,
-      titulo: `Factura ${elNumeroEntero(doc.serie, doc.numero)}`,
+      titulo: `${doc.tipo === 'R1' || doc.tipo === 'R4' ? 'Factura rectificativa' : 'Factura'} ${elNumeroEntero(doc.serie, doc.numero)}`,
       // La fecha que tiene Hacienda: si se mandó otro día, la hora de prepararla ya no es su fecha.
       cuando:
         expedicion === fechaEnElLocal(new Date(doc.preparadoEn), doc.zonaHoraria)
@@ -1161,6 +1778,7 @@ export function elPapelDelDocumento(
       fechaDeLaOperacion:
         doc.fechaOperacion === expedicion ? null : fechaLegible(doc.fechaOperacion),
       sustituye: h.sustituye.map((t) => t.numero),
+      ...lasReferencias(h),
       vence: doc.vencimiento === null ? null : fechaLegible(doc.vencimiento),
       para: {
         nombre: doc.destinatario.nombre,
@@ -1192,6 +1810,9 @@ export function elPapelDelDocumento(
       qr: doc.modalidad === 'fuera_sii' ? null : (conQr?.url ?? null),
       pruebas: doc.entorno === 'pruebas',
       copia,
+      ...(h.rectifica === null
+        ? {}
+        : { rectifica: { numero: h.rectifica.numero, motivo: h.rectifica.motivo } }),
     });
   }
   if (h.justificante !== null) {

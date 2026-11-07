@@ -1372,6 +1372,15 @@ export {
   porQueNoSeEmite,
   sePuedeEntregar,
   tipoParaVerifacti,
+  MOTIVO_DE_DEVOLUCION,
+  comoQuedaLaAnulacion,
+  elEstadoConSuDuplicado,
+  laDevolucion,
+  lasLineasDeLaSenal,
+  lasLineasQueQuedan,
+  loQueQuedaDeCadaLinea,
+  loQueValeUnaParte,
+  porQueNoCabeLaSenal,
 } from './emitir.ts';
 export type {
   ApunteDelDocumento,
@@ -1389,4 +1398,11 @@ export type {
   PorQueNoSeCanjea,
   PorQueNoSeEmite,
   TipoDeDocumento,
+  ComoQuedaLaAnulacion,
+  LaDevolucion,
+  LoDevueltoDeUnaLinea,
+  LoQueQuedaDeUnaLinea,
+  LoQueRectifica,
+  LoQueSePideDevolver,
+  MotivoDeDevolucion,
 } from './emitir.ts';

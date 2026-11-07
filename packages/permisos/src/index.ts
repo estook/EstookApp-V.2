@@ -87,6 +87,10 @@ export const PERMISOS_DE_ACCION = [
   'accion.factura_de_un_ticket',
   'accion.factura_a_mano',
   'accion.ver_documentos',
+  // T6 · 2 · 2 · 2 (0140): cada corrección, con su permiso y su motivo.
+  'accion.devolver',
+  'accion.corregir_datos',
+  'accion.anular',
 ] as const;
 
 export const PERMISOS = [...PERMISOS_DE_APP, ...PERMISOS_DE_DATO, ...PERMISOS_DE_ACCION] as const;

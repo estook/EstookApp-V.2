@@ -447,7 +447,8 @@ _Los motivos de rectificativa se comprobaron el 20 de septiembre de 2026 contra 
 - Sobre un ticket, la rectificativa es **R5**, no R1. Usar R1 es declarar mal el documento aunque las cifras cuadren.
 - **R2 y R3 no se programan** en la v1. Son concurso e incobrables: un restaurante que cobra al contado no los usa, y ofrecerlos en un desplegable es invitar a elegir mal. Si un día hacen falta, se añaden.
 - **El canje no es una rectificativa.** La factura F3 referencia al ticket sustituido; **el ticket no se anula ni se rectifica** y sigue en su cadena. Confundirlo anula un documento que debía quedarse.
-- **Anular es excepcional**, solo para lo emitido por error y no entregado al cliente. Un número anulado **no se reutiliza**.
+- **Anular es excepcional**, solo para lo emitido por error y no entregado al cliente. Un número anulado **no se reutiliza**. Su registro es otro que el del alta, con su uuid: **si Hacienda no acepta la anulación, el documento sigue valiendo** ([0140](../decisiones/0140-t6-2-2-2-las-correcciones.md)).
+- **Lo que hace Estook, desde T6 · 2 · 2 · 2**: la devolución, por diferencias (`I`), en negativo; corregir los datos, R4 por sustitución (`S`), con lo que Hacienda tenía antes en `importe_rectificativa`.
 - **Subsanar** solo vale para un campo sin implicación fiscal, como la descripción.
 
 ## 4.6 Qué lleva cada documento
@@ -535,7 +536,7 @@ FUERA DE LA TRANSACCION
 
 **Webhooks del proveedor:** se registra un endpoint por entorno. Cada notificación trae `X-Webhook-Id`, **que es la clave de idempotencia**: la misma notificación dos veces no cambia nada. El proveedor reintenta hasta tres veces, con esperas de 1, 6 y 30 minutos, no reintenta los 4xx y **desactiva el webhook si falla mucho**, avisando por correo, sin reactivarlo solo.
 
-Por eso, además del webhook, **el reloj pregunta** por los registros en «pendiente»: en cada latido hasta los cinco minutos, cada cinco hasta la hora y después cada hora, con su propio reloj, que no depende de los avisos al móvil ([0138](../decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md)). **Un webhook no es una garantía de entrega.** Lo que lleva más de un día sale arriba, y si algo lleva más de dos horas, Estook se entera por su cuenta. Y **con un registro «Incorrecto» Verifacti ofrece dos caminos**, subsanar con el mismo número (`rechazo_previo`) o una rectificativa: **[VERIFICAR con el asesor]**; hasta entonces, corregir con otro documento.
+Por eso, además del webhook, **el reloj pregunta** por los registros en «pendiente»: en cada latido hasta los cinco minutos, cada cinco hasta la hora y después cada hora, con su propio reloj, que no depende de los avisos al móvil ([0138](../decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md)). **Un webhook no es una garantía de entrega.** Lo que lleva más de un día sale arriba, y si algo lleva más de dos horas, Estook se entera por su cuenta. Y **con un registro «Incorrecto» Verifacti ofrece dos caminos**, subsanar con el mismo número (`rechazo_previo`) o una rectificativa: **[VERIFICAR con el asesor]**; hasta entonces, corregir con otro documento: **igual, con otro número**, y lo que iba con él pasa al nuevo ([0140](../decisiones/0140-t6-2-2-2-las-correcciones.md)). **«Duplicado» se lee con `estado_registro_duplicado`**: uno que Hacienda tiene anulado no se da por correcto.
 
 **Pantalla de registros con error** (gerente y dirección): qué documento, qué dijo la AEAT traducido a lenguaje normal, y el botón de la corrección que toca. **Nunca se corrige tocando el original.**
 
@@ -660,6 +661,8 @@ Desde el ticket, en un toque: nombre o razón social, NIF y domicilio. Se emite 
 ## 5.4 Devoluciones
 
 Rectificativa R5 sobre el ticket, en la serie de rectificativas, con su registro. Salida de caja con motivo. **El género vuelve al libro de movimientos solo si vuelve de verdad**, y lo dice quien hace la devolución: un plato ya servido no vuelve a la cámara.
+
+**Desde T6 · 2 · 2 · 2** ([0140](../decisiones/0140-t6-2-2-2-las-correcciones.md)): todo, una parte (una de dos raciones) o lo cobrado de más, R5 sobre un ticket y R1 sobre una factura, y **la base no deja devolver más de lo que queda de cada línea**. **La salida de caja y el género llegan con el cobro, T7.**
 
 ## 5.5 Caja
 
@@ -899,6 +902,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 ## 7.6 Facturación (esquema `facturacion`, solo inserción)
 
 - `serie` — local, empresa, tipo y **prefijo**, solo de inserción: la de ahora es la última de su local y su tipo (T6 · 1). **El ejercicio y el número los pone emitir** (T6 · 2), y pruebas y real numeran aparte
+- `rectificacion` — qué rectifica cada rectificativa, por qué y de qué líneas; `anulacion` y `paso_de_anulacion` — quién pidió anular, por qué y qué dice Hacienda; `descuento_de_senal` — qué señales descuenta cada factura; `rehecho` — qué documento corrige a otro rechazado (T6 · 2 · 2 · 2, 0140)
 - `canje` — qué tickets sustituye cada F3; `cobro_de_factura` — cuándo se cobró una hecha a mano; `copia_mandada` — a quién se le mandó y quién (T6 · 2 · 2 · 1, 0137). **No hay clientes guardados** ([0139](../decisiones/0139-sin-lista-de-clientes.md)): quien vuelve se rellena, al escribir su número entero, desde su última factura.
 - `documento` — empresa, serie, número, tipo, fecha de expedición, fecha de operación, destinatario si lo hay, base, cuota, total, **copia congelada de las líneas y del desglose**, **copia de los datos de la empresa del momento**, `sustituye_a` (F3), `rectifica_a` (R), referencia al cobro, y su identificador, que es **la clave de idempotencia** ante el proveedor ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)). **Nace preparado y no cambia nunca más**
 - `registro` — documento, lo que devolvió el proveedor al registrarlo (`uuid`, **QR**, **huella**), y cada estado ante la AEAT que llegue después, **una fila por novedad**
@@ -984,7 +988,7 @@ Todas automáticas, contra el entorno de pruebas. Cada una se rompe a propósito
 
 10. Ticket con dos tipos de IVA: dos líneas de desglose, y la suma cuadra al céntimo.
 11. Canje F3: importe igual al ticket, ticket marcado como canjeado, segundo canje bloqueado, ticket original intacto. Una factura que Hacienda no tiene deja el ticket libre, y nunca sustituye uno de otro entorno ni de otra empresa (0138).
-12. Devolución con R5 en su serie, con su registro, con salida de caja.
+12. Devolución con R5 en su serie, con su registro, con salida de caja. **Lo fiscal, desde T6 · 2 · 2 · 2 (0140); la salida de caja, con T7.**
 13. Anulación solo disponible para el rol que puede y con motivo.
 
 **Fallos**
@@ -1526,7 +1530,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
   - **Reimprimir**: sale marcado como copia y no genera nada fiscal (6.7).
   - **Factura**: el canje F3 con los datos del cliente (5.3).
   - **Cambiar la forma de pago** (efectivo por tarjeta, o al revés), con permiso, motivo y rastro: mueve la caja y no toca el ticket **[VERIFICAR con el asesor]** (0107, 6.8).
-  - **Devolver**: la rectificativa (5.4), entera o por platos, con permiso y motivo. **Un ticket emitido no se reabre**: se devuelve y, si hace falta, se vuelve a cobrar.
+  - **Devolver**: la rectificativa (5.4), entera, por platos o lo cobrado de más, con permiso y motivo. **Un ticket emitido no se reabre**: se devuelve y, si hace falta, se vuelve a cobrar.
 - **Tickets y facturas**, ya en Estook TPV desde T6 · 2 · 2 · 1 ([0137](../decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md)): la misma pantalla que en Estook, a un toque desde la sala y en cualquier aparato. **El camarero ve lo de hoy y ayer, y lo demás por su número exacto**, sin la lista de clientes (Roles 1.12); el jefe de sala y el gerente, todo. Los totales, los filtros por forma de pago y cambiar la forma de pago llegan con el cobro (T7).
 
 ## 11.8 Las mesas

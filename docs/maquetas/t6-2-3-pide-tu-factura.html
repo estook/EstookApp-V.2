@@ -1,0 +1,929 @@
+<title>T6 · 2 · 3 · Pide tu factura</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Courier+Prime:wght@400;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Los colores y la letra de Estook, con su tema claro y oscuro; el papel, siempre blanco. Filas de
+     móviles, porque esta página la abre el cliente en el suyo. Los nombres y los NIF son de ejemplo. */
+  :root {
+    --pagina: #e7e3dc;
+    --fondo: #f1efea;
+    --superficie: #ffffff;
+    --borde: #e0dcd4;
+    --texto: #111c1f;
+    --suave: #5a6568;
+    --charcoal: #111c1f;
+    --sobre-charcoal: #f1efea;
+    --naranja: #ff7a00;
+    --sobre-naranja: #111c1f;
+    --naranja-suave: #fff1e5;
+    --bien: #187648;
+    --bien-suave: #e3f3ea;
+    --aviso: #8a5a00;
+    --aviso-suave: #fdf1d8;
+    --mal: #b3261e;
+    --mal-suave: #fbe6e4;
+    --info: #1f5f8b;
+    --info-suave: #e3eff8;
+    --papel: #fbfaf6;
+    --tinta: #141414;
+    --letra: Montserrat, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --letra-papel: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --pagina: #0b1113;
+      --fondo: #0f1719;
+      --superficie: #18252a;
+      --borde: #2c4047;
+      --texto: #f1efea;
+      --suave: #9fb0b3;
+      --charcoal: #22343a;
+      --sobre-charcoal: #f1efea;
+      --naranja-suave: #3a2410;
+      --bien: #4ec98a;
+      --bien-suave: #12301f;
+      --aviso: #f0ae4e;
+      --aviso-suave: #352708;
+      --mal: #f0796c;
+      --mal-suave: #3a1714;
+      --info: #6fb7e8;
+      --info-suave: #10283a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --pagina: #0b1113;
+    --fondo: #0f1719;
+    --superficie: #18252a;
+    --borde: #2c4047;
+    --texto: #f1efea;
+    --suave: #9fb0b3;
+    --charcoal: #22343a;
+    --sobre-charcoal: #f1efea;
+    --naranja-suave: #3a2410;
+    --bien: #4ec98a;
+    --bien-suave: #12301f;
+    --aviso: #f0ae4e;
+    --aviso-suave: #352708;
+    --mal: #f0796c;
+    --mal-suave: #3a1714;
+    --info: #6fb7e8;
+    --info-suave: #10283a;
+    color-scheme: dark;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--pagina);
+    color: var(--texto);
+    font-family: var(--letra);
+    font-size: 15px;
+    line-height: 1.45;
+    padding-block: 28px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .hoja-entera {
+    max-width: 1140px;
+    margin: 0 auto;
+    display: grid;
+    gap: 44px;
+  }
+  h1 {
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+    text-wrap: balance;
+  }
+  p {
+    margin: 0;
+  }
+  .rotulo {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--naranja);
+  }
+  .seccion {
+    display: grid;
+    gap: 14px;
+  }
+  .cabecera {
+    display: grid;
+    gap: 8px;
+  }
+  .lead {
+    color: var(--suave);
+    max-width: 70ch;
+  }
+  .lead b {
+    color: var(--texto);
+  }
+  details.porque {
+    color: var(--suave);
+    max-width: 78ch;
+    font-size: 14px;
+  }
+  details.porque summary {
+    cursor: pointer;
+    color: var(--info);
+    font-weight: 700;
+    width: fit-content;
+  }
+  details.porque > div {
+    padding-top: 8px;
+    display: grid;
+    gap: 6px;
+  }
+  details.porque b {
+    color: var(--texto);
+  }
+  :focus-visible {
+    outline: 3px solid var(--naranja);
+    outline-offset: 2px;
+  }
+
+  /* ── Una fila de móviles ── */
+  .moviles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .figura {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+  .pie-de-figura {
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .sello {
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+  .sello.aprobada {
+    background: var(--bien-suave);
+    color: var(--bien);
+  }
+  .sello.nueva {
+    background: var(--naranja-suave);
+    color: var(--naranja);
+  }
+  .movil {
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 22px;
+    overflow: hidden;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .direccion {
+    background: var(--charcoal);
+    color: var(--sobre-charcoal);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 14px;
+    overflow-wrap: anywhere;
+  }
+  .marca-pruebas {
+    background: var(--aviso-suave);
+    color: var(--aviso);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-align: center;
+    padding: 4px 8px;
+  }
+  .dentro {
+    padding: 16px 14px;
+    display: grid;
+    gap: 12px;
+  }
+  .suave {
+    color: var(--suave);
+  }
+  .pequena {
+    font-size: 13px;
+  }
+  .ayuda {
+    font-size: 12px;
+    color: var(--suave);
+  }
+  .enlace {
+    color: var(--info);
+    font-weight: 700;
+    font-size: 13px;
+    text-decoration: underline;
+  }
+
+  /* ── Las piezas del formulario ── */
+  .eleccion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .eleccion span {
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    color: var(--suave);
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .eleccion span.marcada {
+    border-color: var(--naranja);
+    background: var(--naranja-suave);
+    color: var(--texto);
+  }
+  .campo {
+    display: grid;
+    gap: 3px;
+  }
+  .campo .nombre {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--suave);
+  }
+  .caja-texto {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 9px 11px;
+    font-size: 14px;
+    min-height: 38px;
+    overflow-wrap: anywhere;
+  }
+  .caja-texto.vacia {
+    color: var(--suave);
+  }
+  .bien {
+    color: var(--bien);
+    font-weight: 600;
+    font-size: 12px;
+  }
+  .boton {
+    display: block;
+    text-align: center;
+    border-radius: 12px;
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    color: var(--texto);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  .boton.principal {
+    background: var(--naranja);
+    border-color: var(--naranja);
+    color: var(--sobre-naranja);
+  }
+  .aviso-mal {
+    background: var(--mal-suave);
+    color: var(--mal);
+    border-radius: 10px;
+    padding: 10px 11px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .estado {
+    display: grid;
+    gap: 8px;
+    padding-block: 8px;
+  }
+  .dibujo {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 20px;
+  }
+  .dibujo.bien-dibujo {
+    background: var(--bien-suave);
+    color: var(--bien);
+  }
+  .dibujo.espera {
+    background: var(--info-suave);
+    color: var(--info);
+  }
+  .dibujo.parado {
+    background: var(--aviso-suave);
+    color: var(--aviso);
+  }
+
+  /* ── Dos estados pequeños ── */
+  .dos-pequenas {
+    display: grid;
+    gap: 10px;
+  }
+  .pequena-tarjeta {
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: grid;
+    gap: 3px;
+  }
+
+  /* ── El papel del justificante ── */
+  .papel {
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: var(--letra-papel);
+    font-size: 13px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    padding: 14px 12px;
+    display: grid;
+    gap: 4px;
+    text-align: center;
+  }
+  .papel .negativo {
+    background: var(--tinta);
+    color: var(--papel);
+    font-weight: 700;
+    padding: 1px 4px;
+    width: fit-content;
+    margin: 0 auto;
+  }
+  .papel .raya {
+    border-top: 1px dashed var(--tinta);
+    margin-block: 4px;
+  }
+  .papel .codigo {
+    font-size: 19px;
+    font-weight: 700;
+  }
+  .papel .linea-nueva {
+    background: var(--naranja-suave);
+    color: var(--tinta);
+    outline: 1px dashed var(--naranja);
+    padding: 2px;
+  }
+  .papel .linea-nueva b {
+    color: var(--tinta);
+  }
+
+  /* ── La app ── */
+  .lado-a-lado {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .pantalla {
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .barra {
+    background: var(--charcoal);
+    color: var(--sobre-charcoal);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 9px 14px;
+  }
+  .barra span {
+    opacity: 0.75;
+    font-weight: 500;
+  }
+  .cuerpo {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+  }
+  .tarjeta {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+  .fila {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .chapa {
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 9px;
+    background: var(--bien-suave);
+    color: var(--bien);
+  }
+  .chapa.pedida {
+    background: var(--info-suave);
+    color: var(--info);
+  }
+  .botones {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .botones .boton {
+    font-size: 13px;
+    padding: 7px 10px;
+  }
+  .tarjeta.lo-nuevo {
+    border-color: var(--naranja);
+  }
+  .historia {
+    display: grid;
+    gap: 4px;
+    font-size: 13px;
+  }
+  .historia .nueva-linea {
+    font-weight: 700;
+  }
+</style>
+
+<main class="hoja-entera">
+  <header class="cabecera">
+    <p class="rotulo">Maqueta · T6 · 2 · 3</p>
+    <h1>Pide tu factura</h1>
+    <p class="lead">
+      La página que abre tu cliente en su móvil.
+      <b>Pone sus datos, y la factura le llega al correo</b> sin que nadie del equipo teclee nada.
+      Lo verde ya lo aprobaste el 2-nov; <b>lo naranja es nuevo</b> y es lo que hay que mirar. El QR
+      en el papel llega con el cobro (T7).
+    </p>
+  </header>
+
+  <section class="seccion" aria-labelledby="s1">
+    <div class="cabecera">
+      <h2 id="s1">1 · Sus datos</h2>
+      <p class="lead">Lo mismo que pide la factura que haces tú, y nada más.</p>
+    </div>
+    <div class="moviles">
+      <div class="figura">
+        <p class="pie-de-figura">Empresa o autónomo <span class="sello aprobada">Aprobada</span></p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura/7KQ2-M9XP-4TRD</p>
+          <p class="marca-pruebas">PRUEBA · SIN VALIDEZ</p>
+          <div class="dentro">
+            <div>
+              <h3>Tu factura de IKATZ</h3>
+              <p class="pequena suave">Ticket T-IKA-2026-000037 · 47,50 € · 2-nov-2026</p>
+              <span class="enlace">Descargar el ticket</span>
+            </div>
+            <div class="eleccion">
+              <span class="marcada">Empresa</span><span>Particular</span><span>De fuera</span>
+            </div>
+            <div class="campo">
+              <span class="nombre">Tu NIF</span>
+              <div class="caja-texto">B87654321</div>
+              <span class="bien">✓ Construcciones Ejemplo Norte, S.L.</span>
+            </div>
+            <div class="campo">
+              <span class="nombre">Domicilio</span>
+              <div class="caja-texto">Pol. Ugaldeguren 4, Zamudio</div>
+            </div>
+            <div class="campo">
+              <span class="nombre">Dónde te la mandamos</span>
+              <div class="caja-texto">admin@ejemplo.es</div>
+            </div>
+            <span class="boton principal">Quiero la factura</span>
+            <p class="ayuda">
+              Tus datos los trata IKATZ, que es quien te factura; Estook solo la hace. Se piden solo
+              los que una factura exige.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="figura">
+        <p class="pie-de-figura">Particular <span class="sello nueva">Nueva</span></p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura/7KQ2-M9XP-4TRD</p>
+          <div class="dentro">
+            <div>
+              <h3>Tu factura de IKATZ</h3>
+              <p class="pequena suave">Ticket T-IKA-2026-000037 · 47,50 € · 2-nov-2026</p>
+              <span class="enlace">Descargar el ticket</span>
+            </div>
+            <div class="eleccion">
+              <span>Empresa</span><span class="marcada">Particular</span><span>De fuera</span>
+            </div>
+            <div class="campo">
+              <span class="nombre">DNI o NIE</span>
+              <div class="caja-texto">12345678Z</div>
+            </div>
+            <div class="campo">
+              <span class="nombre">Nombre y apellidos</span>
+              <div class="caja-texto">Ana Ejemplo Ruiz</div>
+              <span class="bien">✓ En Hacienda</span>
+            </div>
+            <div class="campo">
+              <span class="nombre">Domicilio</span>
+              <div class="caja-texto">C/ Mayor 12, Bilbao</div>
+            </div>
+            <div class="campo">
+              <span class="nombre">Dónde te la mandamos</span>
+              <div class="caja-texto">ana@ejemplo.es</div>
+            </div>
+            <span class="boton principal">Quiero la factura</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="figura">
+        <p class="pie-de-figura">De fuera de España <span class="sello nueva">Nueva</span></p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura/7KQ2-M9XP-4TRD</p>
+          <div class="dentro">
+            <div>
+              <h3>Tu factura de IKATZ</h3>
+              <p class="pequena suave">Ticket T-IKA-2026-000037 · 47,50 € · 2-nov-2026</p>
+              <span class="enlace">Descargar el ticket</span>
+            </div>
+            <div class="eleccion">
+              <span>Empresa</span><span>Particular</span><span class="marcada">De fuera</span>
+            </div>
+            <div class="campo">
+              <span class="nombre">País</span>
+              <div class="caja-texto">Francia</div>
+            </div>
+            <div class="eleccion">
+              <span>N.º de IVA</span><span class="marcada">Pasaporte</span>
+            </div>
+            <div class="campo">
+              <span class="nombre">Pasaporte</span>
+              <div class="caja-texto">24AB12345</div>
+            </div>
+            <div class="campo">
+              <span class="nombre">Nombre</span>
+              <div class="caja-texto">Marie Exemple</div>
+            </div>
+            <div class="campo">
+              <span class="nombre">Domicilio</span>
+              <div class="caja-texto">8 rue de la Paix, Bayonne</div>
+            </div>
+            <div class="campo">
+              <span class="nombre">Dónde te la mandamos</span>
+              <div class="caja-texto">marie@ejemplo.fr</div>
+            </div>
+            <span class="boton principal">Quiero la factura</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>Por qué es así</summary>
+      <div>
+        <p>
+          <b>Es lo mismo que «Para quién» de tu factura</b>, con una diferencia: aquí
+          <b>nunca se rellena nada solo</b>. En tu pantalla, un NIF conocido trae su domicilio y su
+          correo; aquí eso enseñaría los datos de otro a quien escriba un NIF ajeno.
+        </p>
+        <p>
+          <b>A un autónomo le sale además «Nombre y apellidos»</b>, porque Hacienda lo pide para
+          mirar a una persona. Si Hacienda no contesta, ese campo sale también y la factura se hace
+          igual.
+        </p>
+        <p>
+          <b>La factura no se descarga desde aquí, solo llega al correo.</b> Quien se encuentre el
+          ticket en una papelera no puede leer los datos de nadie. El ticket sí se puede descargar:
+          no lleva datos de ninguna persona.
+        </p>
+        <p>
+          <b>El enlace no caduca</b>: el reglamento no pone plazo para pedir la factura (A19).
+          <b>El importe no se toca</b>: es el del ticket.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section class="seccion" aria-labelledby="s2">
+    <div class="cabecera">
+      <h2 id="s2">2 · Después de pedirla</h2>
+    </div>
+    <div class="moviles">
+      <div class="figura">
+        <p class="pie-de-figura">Hecha <span class="sello nueva">Nueva</span></p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura/7KQ2-M9XP-4TRD</p>
+          <div class="dentro estado">
+            <span class="dibujo bien-dibujo" aria-hidden="true">✓</span>
+            <h3>Ya está</h3>
+            <p>Tu factura de IKATZ llega en un momento a <b>admin@ejemplo.es</b>.</p>
+            <p class="ayuda">
+              Si no la ves, mira en correo no deseado. ¿El correo está mal? Pregunta en IKATZ, que
+              te la manda a otro.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="figura">
+        <p class="pie-de-figura">Ya la tiene <span class="sello aprobada">Aprobada</span></p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura/7KQ2-M9XP-4TRD</p>
+          <div class="dentro estado">
+            <span class="dibujo bien-dibujo" aria-hidden="true">✓</span>
+            <h3>Este ticket ya tiene factura</h3>
+            <p class="pequena suave">Se manda al correo que se dio, nunca a uno nuevo.</p>
+            <span class="boton">Mandarla otra vez</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="figura">
+        <p class="pie-de-figura">Hacienda no la acepta <span class="sello nueva">Nueva</span></p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura/7KQ2-M9XP-4TRD</p>
+          <div class="dentro">
+            <div>
+              <h3>Tu factura de IKATZ</h3>
+              <p class="pequena suave">Ticket T-IKA-2026-000037 · 47,50 € · 2-nov-2026</p>
+            </div>
+            <p class="aviso-mal">
+              Hacienda no ha aceptado los datos que se dieron. Escríbelos otra vez o pregunta en
+              IKATZ.
+            </p>
+            <div class="eleccion">
+              <span class="marcada">Empresa</span><span>Particular</span><span>De fuera</span>
+            </div>
+            <div class="campo">
+              <span class="nombre">Tu NIF</span>
+              <div class="caja-texto vacia">&nbsp;</div>
+            </div>
+            <span class="boton principal">Quiero la factura</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>Por qué es así</summary>
+      <div>
+        <p>
+          <b>«Ya está» sale aunque Hacienda tarde.</b> El correo se manda cuando Hacienda la tenga;
+          si en ese rato no hay internet, lo reintenta el reloj de los documentos.
+        </p>
+        <p>
+          <b>Si el ticket lo facturasteis vosotros</b> y no se mandó a ningún correo, en vez del
+          botón dice «Esta factura la tiene IKATZ. Pídesela allí».
+        </p>
+        <p>
+          <b>Si Hacienda la rechaza</b>, el ticket queda libre, le llega un correo para que lo
+          intente otra vez y a ti te sale en la campana, como cualquier rechazo. El formulario sale
+          vacío: no enseña lo que se escribió.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section class="seccion" aria-labelledby="s3">
+    <div class="cabecera">
+      <h2 id="s3">3 · Cuando no se puede</h2>
+    </div>
+    <div class="moviles">
+      <div class="figura">
+        <p class="pie-de-figura">Todavía no <span class="sello nueva">Nueva</span></p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura/7KQ2-M9XP-4TRD</p>
+          <div class="dentro estado">
+            <span class="dibujo espera" aria-hidden="true">…</span>
+            <h3>Tu ticket se está registrando</h3>
+            <p class="pequena suave">
+              Suele tardar un minuto. Esta página se pone al día sola, y el enlace no caduca: puedes
+              volver cuando quieras.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="figura">
+        <p class="pie-de-figura">Ya no vale <span class="sello nueva">Nueva</span></p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura/7KQ2-M9XP-4TRD</p>
+          <div class="dentro estado">
+            <span class="dibujo parado" aria-hidden="true">!</span>
+            <h3>Este ticket no se puede facturar</h3>
+            <p class="pequena suave">
+              Se anuló o tiene una devolución. Pregunta en IKATZ y te lo resuelven.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="figura">
+        <p class="pie-de-figura">El local la apagó <span class="sello nueva">Nueva</span></p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura/7KQ2-M9XP-4TRD</p>
+          <div class="dentro estado">
+            <span class="dibujo parado" aria-hidden="true">!</span>
+            <h3>En IKATZ, la factura se pide en el local</h3>
+            <p class="pequena suave">Enseña tu ticket y te la hacen.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="figura">
+        <p class="pie-de-figura">Las dos últimas <span class="sello nueva">Nueva</span></p>
+        <div class="dos-pequenas">
+          <div class="pequena-tarjeta">
+            <b>Este código no es de ningún ticket</b>
+            <p class="pequena suave">Revisa lo que has escrito o vuelve a escanear el papel.</p>
+          </div>
+          <div class="pequena-tarjeta">
+            <b>Demasiados intentos</b>
+            <p class="pequena suave">Espera una hora y vuelve a probar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>Por qué es así</summary>
+      <div>
+        <p>
+          <b>El límite</b>: 10 comprobaciones por ticket y 30 por dirección de internet a la hora.
+          Sin él, cualquiera usaría la página para preguntarle a Hacienda por NIF ajenos.
+        </p>
+        <p>
+          <b>Apagarla</b> ya está en Ajustes › Facturación, encendida de fábrica. Si un ticket ya
+          tenía factura y luego se apaga, sigue pudiendo pedir que se la manden otra vez.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section class="seccion" aria-labelledby="s4">
+    <div class="cabecera">
+      <h2 id="s4">4 · Recoger el ticket con el justificante</h2>
+      <p class="lead">
+        Cuando Hacienda no responde, el cliente se lleva un justificante con un código. Hoy el papel
+        no dice dónde usarlo. <b>Añado una línea, y la misma página le da el ticket.</b>
+      </p>
+    </div>
+    <div class="moviles">
+      <div class="figura">
+        <p class="pie-de-figura">El papel <span class="sello nueva">Una línea nueva</span></p>
+        <div class="papel">
+          <b>IKATZ</b>
+          <span>JUSTIFICANTE PROVISIONAL DE VENTA</span>
+          <span class="negativo">NO ES UNA FACTURA</span>
+          <span class="raya"></span>
+          <b>TOTAL 47,50 EUR</b>
+          <span class="raya"></span>
+          <span
+            >Hacienda no responde ahora. Tu ticket se emite en cuanto vuelva, con este código:</span
+          >
+          <span class="codigo">J-4F7A19C2E0</span>
+          <span class="linea-nueva"><b>Recógelo en estook.com/factura</b></span>
+        </div>
+      </div>
+
+      <div class="figura">
+        <p class="pie-de-figura">
+          Sin código en la dirección <span class="sello nueva">Nueva</span>
+        </p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura</p>
+          <div class="dentro">
+            <h3>Tu ticket o tu factura</h3>
+            <div class="campo">
+              <span class="nombre">El código de tu papel</span>
+              <div class="caja-texto">J-4F7A19C2E0</div>
+            </div>
+            <span class="boton principal">Seguir</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="figura">
+        <p class="pie-de-figura">Con el ticket ya emitido</p>
+        <div class="movil">
+          <p class="direccion">estook.com/factura/J-4F7A19C2E0</p>
+          <div class="dentro">
+            <div>
+              <h3>Tu factura de IKATZ</h3>
+              <p class="pequena suave">Ticket T-IKA-2026-000037 · 47,50 € · 2-nov-2026</p>
+              <span class="enlace">Descargar el ticket</span>
+            </div>
+            <p class="pequena suave">
+              Es la misma pantalla de arriba. Si aún no está emitido, sale «Todavía no».
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion" aria-labelledby="s5">
+    <div class="cabecera">
+      <h2 id="s5">5 · Lo que ves tú, en Tickets y facturas</h2>
+      <p class="lead">No te avisa de nada: la factura se ha hecho sola y queda en su sitio.</p>
+    </div>
+    <div class="lado-a-lado">
+      <div class="figura">
+        <p class="pie-de-figura">
+          En la lista y en la factura <span class="sello nueva">Nueva</span>
+        </p>
+        <div class="pantalla">
+          <p class="barra">Servicio › Ventas <span>· Tickets y facturas</span></p>
+          <div class="cuerpo">
+            <div class="tarjeta">
+              <div class="fila">
+                <b>F-IKA-2026-000012</b>
+                <span class="chapa">Correcto</span>
+              </div>
+              <div class="fila">
+                <span class="pequena suave">Factura de un ticket · 47,50 €</span>
+                <span class="chapa pedida">Pedida por el cliente</span>
+              </div>
+            </div>
+            <div class="tarjeta">
+              <b class="pequena">Su historia</b>
+              <div class="historia">
+                <span class="nueva-linea">18:22 · La pidió el cliente desde su móvil</span>
+                <span class="suave">18:22 · Enviada a Hacienda</span>
+                <span class="suave">18:23 · Correcto</span>
+                <span class="suave">18:23 · Mandada a admin@ejemplo.es</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="figura">
+        <p class="pie-de-figura">En el ticket <span class="sello nueva">Nueva</span></p>
+        <div class="pantalla">
+          <p class="barra">Servicio › Ventas <span>· T-IKA-2026-000037</span></p>
+          <div class="cuerpo">
+            <div class="tarjeta">
+              <div class="fila">
+                <b>T-IKA-2026-000037 · 47,50 €</b>
+                <span class="chapa">Correcto</span>
+              </div>
+              <div class="botones">
+                <span class="boton">Reimprimir</span>
+                <span class="boton">Hacer factura</span>
+                <span class="boton">Devolver</span>
+                <span class="boton">Anular</span>
+              </div>
+            </div>
+            <div class="tarjeta lo-nuevo">
+              <div class="fila">
+                <b class="pequena">Que la pida el cliente</b>
+                <span class="boton">Copiar el enlace</span>
+              </div>
+              <p class="ayuda">
+                Por si te llaman para pedirla. Sale si «Pide tu factura» está encendida.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <details class="porque">
+      <summary>Por qué es así</summary>
+      <div>
+        <p>
+          <b>El enlace sirve hoy y sirve siempre.</b> Hoy es como vas a poder probarla en IKATZ,
+          porque el QR en el papel no llega hasta T7. Y luego es el caso de quien llama al día
+          siguiente: «se me olvidó pedir la factura».
+        </p>
+        <p>
+          <b>Si Hacienda rechaza una factura pedida</b>, te sale arriba y en la campana como las
+          demás, con su «Corregir». Si la corriges tú antes de que la repita el cliente, el ticket
+          queda facturado y a él le llega la tuya al mismo correo.
+        </p>
+      </div>
+    </details>
+  </section>
+</main>

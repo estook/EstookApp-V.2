@@ -564,7 +564,7 @@ abajo:
 3. **T6 · 2 · 3 · «Pide tu factura»**: la página del cliente, con su límite de intentos y su aviso de
    privacidad. El QR en el ticket llega con T7.
 
-**T6 · 2 · 3 · «Pide tu factura»**, en su pull request (migración 0111, [0141](decisiones/0141-t6-2-3-pide-tu-factura.md), [maqueta](maquetas/t6-2-3-pide-tu-factura.html)): la página, sus límites y su aviso de privacidad, «Copiar el enlace» en cada ticket, el correo cuando Hacienda la tiene, y recoger el ticket con el código del justificante. El QR en el papel, con T7.
+**T6 · 2 · 3 · «Pide tu factura»**, en producción y probada en IKATZ el 7-nov (#176, migración 0111, [0141](decisiones/0141-t6-2-3-pide-tu-factura.md), [maqueta](maquetas/t6-2-3-pide-tu-factura.html)): la página, sus límites y su aviso de privacidad, «Copiar el enlace» en cada ticket, el correo cuando Hacienda la tiene, y recoger el ticket con el código del justificante. El QR en el papel, con T7.
 
 **Quitar la empresa de un local** (0129), mientras se está en pruebas, ya está en T6 · 1.
 

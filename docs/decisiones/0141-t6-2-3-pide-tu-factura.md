@@ -1,7 +1,7 @@
 # 0141 · T6 · 2 · 3 · Pide tu factura
 
 **Fecha:** 7 de noviembre de 2026
-**Estado:** construido en la rama `t6-2-3-pide-tu-factura`, **con la migración 0111**. Sin caja nueva:
+**Estado:** en producción con la #176 (7-nov), **migración 0111**, y probado en IKATZ: dos facturas pedidas desde el móvil, «Correcto», con su PDF en el correo. Sin caja nueva:
 la línea nueva del justificante es texto, y la 1.3.0 lo imprime.
 **Sigue:** la [0125](0125-t6-la-facturacion-las-tres-respuestas.md), la
 [0136](0136-t6-2-1-el-motor-y-el-ticket.md) y la [0140](0140-t6-2-2-2-las-correcciones.md).

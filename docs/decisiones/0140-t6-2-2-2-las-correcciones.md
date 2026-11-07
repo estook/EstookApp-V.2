@@ -1,7 +1,7 @@
 # 0140 · T6 · 2 · 2 · 2 · Las correcciones
 
 **Fecha:** 7 de noviembre de 2026
-**Estado:** construido en la rama `t6-2-2-2-las-correcciones`, **con la migración 0110**. Sin caja
+**Estado:** en producción con la #175 (7-nov), **migración 0110**. En IKATZ, una anulación «Anulado» y una devolución de un ticket «Correcto». Sin caja
 nueva: la 1.3.0 ya imprime estos papeles.
 **Sigue:** la [0137](0137-t6-2-2-1-las-facturas-y-quien-hace-que.md), la
 [0138](0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md) y la

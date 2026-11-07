@@ -51,8 +51,8 @@ capítulo 9).
    uno nuevo, y sin enseñar los datos de nadie. Hay un límite de intentos. **El aviso de privacidad
    dice la verdad**: el responsable es el restaurante, Estook es su encargado, y se piden solo los
    datos que la factura exige. **El local la puede apagar**, y viene encendida de fábrica.
-4. **Los clientes de la factura a mano se guardan** para la vez siguiente, como datos del
-   restaurante. Se pueden borrar, pero sus facturas emitidas no se tocan nunca.
+4. ~~**Los clientes de la factura a mano se guardan** para la vez siguiente~~. **Ya no**: Richi lo
+   cambió el 7-nov, no hay lista, y quien vuelve se rellena desde su última factura ([0139](0139-sin-lista-de-clientes.md)).
 5. **Un aviso para T7**: mientras un local esté en pruebas, **no cobra a clientes de verdad con
    Estook TPV**. Un papel «PRUEBA · SIN VALIDEZ» no es el ticket que la ley le obliga a dar. El local
    del amigo de Richi sigue cobrando con su TPV hasta pasar a real.

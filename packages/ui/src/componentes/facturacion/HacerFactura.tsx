@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   LIMITE_DEL_TICKET,
   centimos,
@@ -22,6 +22,9 @@ import { usarConPausa, usarLectura, type ClienteDeFacturas } from '../../ganchos
  * **Hacer una factura** (T6 · 2 · 2 · 1, decisión 0137; maqueta de T6 · 2 · 2, 2 y 3). Dos caminos
  * con el mismo cliente: la de uno o varios tickets (F3), con el importe fijo, que puede hacer toda
  * la sala; y la factura a mano (F1), con conceptos libres, para quien manda en ella.
+ *
+ * **El cliente se escribe directo: no hay lista** (0139, Richi: «esto se peta de personas»). Si su
+ * número ya tiene una factura, lo demás sale de ella.
  */
 
 /** Los países que más vienen. Con el código ISO que pide Verifacti (`codigo_pais`). */
@@ -77,16 +80,12 @@ interface Comprobado {
   readonly correo: string | null;
 }
 
-interface Guardado {
-  readonly id: string;
-  readonly clase: ClaseDeCliente;
-  readonly nombre: string;
-  readonly identificador: string;
-  readonly idTipo: '02' | '03' | null;
-  readonly codigoPais: string | null;
-  readonly domicilio: string;
-  readonly correo: string | null;
-}
+/** Lo que salió solo del número escrito: si se cambia el número, eso ya no vale. */
+const SIN_RELLENAR: {
+  nombre: string | null;
+  domicilio: string | null;
+  correo: string | null;
+} = { nombre: null, domicilio: null, correo: null };
 
 export interface TicketParaFacturar {
   readonly id: string;
@@ -172,14 +171,12 @@ function Elegir<T extends string>({
 export function HacerFactura({
   cliente,
   tickets: ticketsDeSalida,
-  puedeAMano,
   puedeTodo,
   alHecha,
 }: {
   readonly cliente: ClienteDeFacturas;
   /** Con tickets, la de esos tickets. Sin ellos, a mano. */
   readonly tickets: readonly TicketParaFacturar[] | null;
-  readonly puedeAMano: boolean;
   readonly puedeTodo: boolean;
   readonly alHecha: (documentoId: string, correoNoSalio: boolean) => void;
 }) {
@@ -196,8 +193,8 @@ export function HacerFactura({
   const [idTipo, setIdTipo] = useState<'02' | '03'>('02');
   const [comprobado, setComprobado] = useState<Comprobado | null>(null);
   const [comprobando, setComprobando] = useState(false);
-  const [buscar, setBuscar] = useState('');
-  const buscado = usarConPausa(buscar.trim());
+  const [rellenado, setRellenado] = useState(SIN_RELLENAR);
+  const preguntas = useRef(0);
   // La factura a mano.
   const [conceptos, setConceptos] = useState<readonly UnConcepto[]>([]);
   const [fecha, setFecha] = useState('');
@@ -214,13 +211,6 @@ export function HacerFactura({
   const [haciendo, setHaciendo] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
-  const guardados = usarLectura<readonly Guardado[]>(
-    () =>
-      puedeAMano
-        ? cliente.consultar('los_clientes_de_factura', buscado === '' ? {} : { buscar: buscado })
-        : Promise.resolve({ ok: true, datos: [] }),
-    `clientes|${buscado}|${String(puedeAMano)}`,
-  );
   const lo = usarLectura<LoDeLaFactura | null>(
     () =>
       aMano
@@ -242,24 +232,22 @@ export function HacerFactura({
       ? elPlazoDeLaFactura(fecha as FechaOperativa, hoy, clase)
       : null;
 
-  function elegirGuardado(g: Guardado) {
-    setClase(g.clase);
-    setIdentificador(g.identificador);
-    setNombre(g.nombre);
-    setDomicilio(g.domicilio);
-    setCorreo(g.correo ?? '');
-    if (g.codigoPais !== null) setCodigoPais(g.codigoPais);
-    if (g.idTipo !== null) setIdTipo(g.idTipo);
-    setComprobado({ vale: true, dice: null, nombre: g.nombre, domicilio: null, correo: null });
-    setBuscar('');
+  /** Cambia el número: lo que salió del número de antes no vale para este. Lo escrito a mano, sí. */
+  function cambiarElNumero(numero: string) {
+    setIdentificador(numero);
+    setComprobado(null);
+    setComprobando(false);
+    preguntas.current += 1;
+    setNombre((n) => (n === rellenado.nombre ? '' : n));
+    setDomicilio((d) => (d === rellenado.domicilio ? '' : d));
+    setCorreo((c) => (c === rellenado.correo ? '' : c));
+    setRellenado(SIN_RELLENAR);
   }
 
   async function comprobar() {
     if (identificador.trim() === '') return;
-    if (clase === 'de_fuera' && idTipo === '03') {
-      setComprobado(null);
-      return;
-    }
+    preguntas.current += 1;
+    const estaPregunta = preguntas.current;
     setComprobando(true);
     const r = await cliente.ejecutar<Comprobado>('comprobar_al_cliente', {
       clase,
@@ -267,6 +255,8 @@ export function HacerFactura({
       ...(nombre.trim() === '' ? {} : { nombre }),
       ...(clase === 'de_fuera' ? { id_tipo: idTipo, codigo_pais: codigoPais } : {}),
     });
+    // Mientras contestaba se ha cambiado el número: esto es de otro cliente.
+    if (estaPregunta !== preguntas.current) return;
     setComprobando(false);
     if (!r.ok) {
       setError(r.error);
@@ -274,9 +264,20 @@ export function HacerFactura({
     }
     setError(null);
     setComprobado(r.datos);
-    if (r.datos.nombre !== null) setNombre(r.datos.nombre);
-    if (r.datos.domicilio !== null && domicilio === '') setDomicilio(r.datos.domicilio);
-    if (r.datos.correo !== null && correo === '') setCorreo(r.datos.correo);
+    const nuevos = { ...rellenado };
+    if (r.datos.nombre !== null) {
+      setNombre(r.datos.nombre);
+      nuevos.nombre = r.datos.nombre;
+    }
+    if (r.datos.domicilio !== null && domicilio.trim() === '') {
+      setDomicilio(r.datos.domicilio);
+      nuevos.domicilio = r.datos.domicilio;
+    }
+    if (r.datos.correo !== null && correo.trim() === '') {
+      setCorreo(r.datos.correo);
+      nuevos.correo = r.datos.correo;
+    }
+    setRellenado(nuevos);
   }
 
   const elCliente = {
@@ -290,7 +291,6 @@ export function HacerFactura({
   async function hacer() {
     setHaciendo(true);
     setError(null);
-    const conCorreo = correo.trim() === '' ? {} : { correo: correo.trim() };
     const r = aMano
       ? await cliente.ejecutar<{ documentoId: string }>('hacer_factura_a_mano', {
           cliente: elCliente,
@@ -303,12 +303,10 @@ export function HacerFactura({
           ...(fecha === '' ? {} : { fecha_operacion: fecha }),
           cobrada,
           ...(cobrada || vence === '' ? {} : { vencimiento: vence }),
-          ...conCorreo,
         })
       : await cliente.ejecutar<{ documentoId: string }>('hacer_factura_de_tickets', {
           ticket_ids: tickets.map((t) => t.id),
           cliente: elCliente,
-          ...conCorreo,
         });
     if (!r.ok) {
       setHaciendo(false);
@@ -389,52 +387,6 @@ export function HacerFactura({
 
       <section aria-label="Para quién" className="flex flex-col gap-e3">
         <p className="text-cuerpo font-semibold">Para quién</p>
-        {puedeAMano && (
-          <>
-            <Campo
-              etiqueta="Busca un cliente"
-              value={buscar}
-              onChange={(e) => {
-                setBuscar(e.target.value);
-              }}
-            />
-            {(guardados.datos ?? []).length > 0 && (
-              <ul className="flex flex-col gap-e1">
-                {(guardados.datos ?? []).slice(0, 5).map((g) => (
-                  <li key={g.id} className="flex items-center gap-e2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        elegirGuardado(g);
-                      }}
-                      className={clases(
-                        'min-h-toque min-w-0 flex-1 rounded-medio border px-e3 py-e1 text-left',
-                        identificador === g.identificador
-                          ? 'border-naranja bg-naranja-suave'
-                          : 'border-borde bg-superficie',
-                      )}
-                    >
-                      <span className="block truncate text-secundario font-medium">{g.nombre}</span>
-                      <span className="block truncate text-etiqueta text-texto-suave">
-                        {g.identificador} · {g.domicilio}
-                      </span>
-                    </button>
-                    <Boton
-                      tono="secundario"
-                      onClick={() => {
-                        void cliente
-                          .ejecutar('quitar_el_cliente', { cliente_id: g.id })
-                          .then(() => guardados.otraVez());
-                      }}
-                    >
-                      Quitar
-                    </Boton>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
         <Elegir
           nombre="Qué es el cliente"
           opciones={EN_CADA_CLASE}
@@ -445,15 +397,6 @@ export function HacerFactura({
           }}
         />
 
-        {clase === 'particular' && (
-          <Campo
-            etiqueta="Nombre y apellidos"
-            value={nombre}
-            onChange={(e) => {
-              setNombre(e.target.value);
-            }}
-          />
-        )}
         {clase === 'de_fuera' && (
           <div className="grid gap-e3 sm:grid-cols-2">
             <Selector
@@ -499,11 +442,11 @@ export function HacerFactura({
           }
           value={identificador}
           onChange={(e) => {
-            setIdentificador(e.target.value);
-            setComprobado(null);
+            cambiarElNumero(e.target.value);
           }}
           onBlur={() => {
-            void comprobar();
+            // Lo ya mirado, y sin tocar, no se vuelve a preguntar.
+            if (comprobado === null) void comprobar();
           }}
           {...(comprobado !== null && !comprobado.vale && comprobado.dice !== null
             ? { error: comprobado.dice }
@@ -513,22 +456,35 @@ export function HacerFactura({
                 ? { ayuda: 'Mirando en Hacienda…' }
                 : {})}
         />
-        {clase !== 'particular' && (
-          <Campo
-            etiqueta={clase === 'empresa' ? 'Nombre o razón social' : 'Nombre'}
-            value={nombre}
-            onChange={(e) => {
-              setNombre(e.target.value);
-            }}
-            {...(clase === 'empresa' ? { ayuda: 'Sale de Hacienda al escribir el NIF.' } : {})}
-          />
-        )}
+        <Campo
+          etiqueta={
+            clase === 'empresa'
+              ? 'Nombre o razón social'
+              : clase === 'particular'
+                ? 'Nombre y apellidos'
+                : 'Nombre'
+          }
+          value={nombre}
+          onChange={(e) => {
+            setNombre(e.target.value);
+            // Un NIF que no cuadraba con el nombre se vuelve a mirar al salir: no se queda bloqueado.
+            setComprobado(null);
+          }}
+          onBlur={() => {
+            // Lo ya mirado, y sin tocar, no se vuelve a preguntar.
+            if (comprobado === null) void comprobar();
+          }}
+          {...(clase === 'empresa' ? { ayuda: 'Sale de Hacienda al escribir el NIF.' } : {})}
+        />
         <Campo
           etiqueta="Domicilio"
           value={domicilio}
           onChange={(e) => {
             setDomicilio(e.target.value);
           }}
+          {...(rellenado.domicilio !== null && domicilio === rellenado.domicilio
+            ? { ayuda: 'De su última factura. Cámbialo si ya no es este.' }
+            : {})}
         />
       </section>
 

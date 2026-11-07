@@ -1098,3 +1098,12 @@
      decir nada (Richi, 7-nov). **Antes de sumar documentos, se pregunta si dos de ellos son la misma venta, y
      la cuenta se hace en la base, sobre todo lo pedido.** Y cuando algo se puede «volver a hacer», se prueba
      a volver a hacerlo: un ticket con la factura rechazada no se podía facturar de nuevo.
+260. **Lo aprobado para un caso no se extiende solo a otro.** Se aprobó guardar a los clientes de la factura a
+     mano, que son pocos y vuelven; la IA lo extendió a cada factura de un ticket, y en un bar eso es una lista de
+     DNI que no para de crecer (Richi, 7-nov). **Antes de reutilizar lo aprobado, se piensa en el restaurante
+     lleno de un sábado.** Y se busca si el dato ya está en otro sitio antes de guardarlo dos veces: estaba en
+     las facturas, que hay que conservar por ley.
+261. **Un campo que se comprueba al salir tiene que poder volver a comprobarse.** Con un error de Hacienda, el
+     botón se quedaba apagado aunque se corrigiera el nombre, porque solo se miraba al salir del NIF. Y lo que un
+     número rellena solo se tiene que ir al cambiar el número (7-nov). **Por cada dato que se rellena solo, se
+     prueba qué pasa si la persona se equivoca y corrige.**

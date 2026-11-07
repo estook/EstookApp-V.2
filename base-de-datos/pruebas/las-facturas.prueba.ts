@@ -63,6 +63,13 @@ const EMPRESA = {
   domicilio: 'Pol. Ugaldeguren 4, Zamudio',
 } as const;
 
+const PERSONA = {
+  clase: 'particular',
+  nombre: 'Ana García López',
+  identificador: '12345678Z',
+  domicilio: 'Calle Mayor 1, Getxo',
+} as const;
+
 const unTicket = async (): Promise<Hecho> =>
   losDatos(await api.ejecutar(pablo, 'imprimir_un_ticket_de_prueba', {}));
 
@@ -213,7 +220,6 @@ describe('la factura a mano', () => {
         lineas: [unaLinea],
         cobrada: false,
         vencimiento: '2026-12-15',
-        correo: 'admin@ejemplo.es',
       }),
     );
     const factura = await elDocumento(hecha.documentoId);
@@ -221,11 +227,6 @@ describe('la factura a mano', () => {
     expect(factura.porCobrar).toBe('2026-12-15');
     losDatos(await api.ejecutar(pablo, 'marcar_cobrada', { documento_id: hecha.documentoId }));
     expect((await elDocumento(hecha.documentoId)).porCobrar).toBeNull();
-    // El cliente se guarda para la vez siguiente, con su correo.
-    const clientes = losDatos<{ identificador: string; correo: string | null }[]>(
-      await api.consultar(pablo, 'los_clientes_de_factura', {}),
-    );
-    expect(clientes.find((c) => c.identificador === 'B84935048')?.correo).toBe('admin@ejemplo.es');
   });
 
   it('un impuesto que el local no tiene, o una fecha futura, no se numeran', async () => {
@@ -355,7 +356,6 @@ describe('quién hace qué (0137)', () => {
         }),
       ),
     ).toBe('sin_permiso');
-    expect(elFallo(await api.consultar(sara, 'los_clientes_de_factura', {}))).toBe('sin_permiso');
     expect(elFallo(await api.consultar(sara, 'mi_facturacion', {}))).toBe('sin_permiso');
     expect(elFallo(await api.consultar(sara, 'quien_hace_que', {}))).toBe('solo_la_direccion');
   });
@@ -598,6 +598,151 @@ describe('los cambios de hora (prueba 20)', () => {
     } finally {
       ahora = original;
     }
+  });
+});
+
+describe('sin lista de clientes (0139)', { timeout: 30_000 }, () => {
+  interface Comprobado {
+    vale: boolean;
+    dice: string | null;
+    nombre: string | null;
+    domicilio: string | null;
+    correo: string | null;
+  }
+  const comprobar = async (quien: string, identificador: string, nombre?: string) =>
+    losDatos<Comprobado>(
+      await api.ejecutar(quien, 'comprobar_al_cliente', {
+        clase: 'empresa',
+        identificador,
+        ...(nombre === undefined ? {} : { nombre }),
+      }),
+    );
+  const unaFactura = async (cliente: Record<string, unknown>) =>
+    losDatos<Hecho>(
+      await api.ejecutar(pablo, 'hacer_factura_a_mano', {
+        cliente,
+        lineas: [{ nombre: 'Comida', cantidad: 1, importe: 1_000, tipo: 0.1 }],
+        cobrada: true,
+      }),
+    );
+
+  it('no queda ni la tabla, ni la lista, ni borrar', async () => {
+    const [fila] = await comoDuena<{ tabla: string | null }>(
+      `select to_regclass('estook.cliente_de_factura')::text as tabla`,
+    );
+    expect(fila?.tabla).toBeNull();
+    expect(elFallo(await api.consultar(pablo, 'los_clientes_de_factura', {}))).toBe('no_existe');
+    expect(
+      elFallo(await api.ejecutar(pablo, 'quitar_el_cliente', { cliente_id: crypto.randomUUID() })),
+    ).toBe('no_existe');
+  });
+
+  it('hacer facturas a cien personas no deja nada aparte: solo sus facturas', async () => {
+    await unaFactura({ ...PERSONA, identificador: '12345678Z' });
+    const tablas = await comoDuena<{ tabla: string }>(
+      `select table_schema || '.' || table_name as tabla from information_schema.columns
+        where column_name = 'identificador' and table_schema in ('estook', 'plataforma', 'facturacion')`,
+    );
+    expect(tablas).toEqual([]);
+  });
+
+  it('quien no tiene factura: nada que rellenar', async () => {
+    expect(await comprobar(pablo, 'B12345674')).toMatchObject({
+      vale: true,
+      domicilio: null,
+      correo: null,
+    });
+  });
+
+  it('quien vuelve: al escribir su número, lo demás sale de su última factura', async () => {
+    await unaFactura({ ...PERSONA, identificador: '12345678Z', domicilio: 'Calle Vieja 1, Getxo' });
+    const segunda = await unaFactura({
+      ...PERSONA,
+      identificador: '12345678Z',
+      domicilio: 'Calle Nueva 2, Getxo',
+    });
+    await comoDuena(
+      `insert into facturacion.copia_mandada (documento_id, para, en)
+       values ($1, 'ana@ejemplo.es', $2)`,
+      [segunda.documentoId, ahora.toISOString()],
+    );
+    // Sin escribir el nombre: es una persona, y Hacienda lo mira con el de su factura.
+    expect(await comprobar(pablo, ' 12345678z ')).toMatchObject({
+      vale: true,
+      nombre: 'GARCIA LOPEZ ANA',
+      domicilio: 'Calle Nueva 2, Getxo',
+      correo: 'ana@ejemplo.es',
+    });
+  });
+
+  it('una persona que no ha venido nunca: sin nombre todavía no es un error', async () => {
+    const r = await api.ejecutar(pablo, 'comprobar_al_cliente', {
+      clase: 'particular',
+      identificador: '00000000T',
+    });
+    expect(losDatos<Comprobado>(r)).toEqual({
+      vale: true,
+      dice: null,
+      nombre: null,
+      domicilio: null,
+      correo: null,
+    });
+    // Pero sin nombre no se hace la factura.
+    expect(
+      elFallo(
+        await api.ejecutar(pablo, 'hacer_factura_a_mano', {
+          cliente: { ...PERSONA, identificador: '00000000T', nombre: '' },
+          lineas: [{ nombre: 'Comida', cantidad: 1, importe: 1_000, tipo: 0.1 }],
+          cobrada: true,
+        }),
+      ),
+    ).toBe('nif_no_vale');
+  });
+
+  it('lo que se escribe a mano manda: no se pisa el nombre con el de su factura', async () => {
+    const r = await comprobar(pablo, 'B84935048', 'Otro nombre');
+    expect(r.nombre).toBe('EJEMPLO NORTE SL'); // el de Hacienda, que es el que vale
+    const nadie = await api.ejecutar(pablo, 'comprobar_al_cliente', {
+      clase: 'de_fuera',
+      identificador: 'PASAPORTE1',
+      id_tipo: '03',
+      codigo_pais: 'US',
+      nombre: 'Escrito a mano',
+    });
+    expect(losDatos<Comprobado>(nadie).nombre).toBeNull();
+  });
+
+  it('una factura rechazada no rellena: sus datos pueden ser los que estaban mal', async () => {
+    verifacti.emitirAsi('rechazar');
+    await unaFactura({
+      clase: 'de_fuera',
+      nombre: 'Nombre mal escrito',
+      identificador: 'PASAPORTE2',
+      id_tipo: '03',
+      codigo_pais: 'US',
+      domicilio: 'Domicilio mal escrito',
+    });
+    verifacti.emitirAsi('normal');
+    const r = await api.ejecutar(pablo, 'comprobar_al_cliente', {
+      clase: 'de_fuera',
+      identificador: 'PASAPORTE2',
+      id_tipo: '03',
+      codigo_pais: 'US',
+    });
+    expect(losDatos<Comprobado>(r)).toMatchObject({ nombre: null, domicilio: null });
+  });
+
+  it('el camarero no hojea: un trozo no dice nada, y otra empresa tampoco ve nada', async () => {
+    const sara = await api.entrar('sara@ejemplo.estook.com');
+    const trozo = await api.ejecutar(sara, 'comprobar_al_cliente', {
+      clase: 'de_fuera',
+      identificador: '1234567',
+      id_tipo: '03',
+      codigo_pais: 'US',
+    });
+    expect(losDatos<Comprobado>(trozo).domicilio).toBeNull();
+    // Sara trabaja en Bar Centro, que es otra empresa: el cliente de Casa Lola no es suyo.
+    expect((await comprobar(sara, '12345678Z')).domicilio).toBeNull();
   });
 });
 

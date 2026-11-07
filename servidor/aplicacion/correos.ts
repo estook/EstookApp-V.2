@@ -422,6 +422,37 @@ export function correoDeUnAviso(para: string, aviso: AvisoParaElCorreo): CorreoP
  * **La factura, a quien la ha pedido** (0137; lo investigado, A8: por correo, si el cliente lo
  * elige). Sale a nombre del local, que es quien factura, y Estook solo la hace.
  */
+/**
+ * **La factura que pidió el cliente no ha pasado en Hacienda** (0141): se entera por aquí, porque ya no
+ * está mirando la página. Sin repetir sus datos: solo el enlace para volver a escribirlos.
+ */
+export function correoDeLaFacturaNoAceptada(
+  para: string,
+  local: string,
+  enlace: string,
+): CorreoParaMandar {
+  const texto = [
+    'Hola:',
+    '',
+    `Hacienda no ha aceptado los datos que se dieron para tu factura de ${local}.`,
+    '',
+    `Puedes escribirlos otra vez aquí: ${enlace}`,
+    '',
+    `Si tienes cualquier duda, pregunta en ${local}.`,
+  ].join('\n');
+  return {
+    para,
+    asunto: `Tu factura de ${local}: revisa los datos`,
+    texto,
+    html: envolver([
+      'Hola:',
+      `Hacienda no ha aceptado los datos que se dieron para tu factura de ${escapar(local)}.`,
+      `<a href="${escapar(enlace)}">Escríbelos otra vez</a>.`,
+      `Si tienes cualquier duda, pregunta en ${escapar(local)}.`,
+    ]),
+  };
+}
+
 export function correoConElDocumento(
   para: string,
   local: string,

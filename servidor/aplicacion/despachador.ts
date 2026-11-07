@@ -18,7 +18,9 @@ import {
   loQueHayQueMandar,
   mandarLosDocumentos,
   repasarLosDocumentos,
+  type EnUnaTransaccion,
 } from './emitir.ts';
+import { mandarLoPedido } from './pide-tu-factura.ts';
 
 export type { LoQueHizoElMovil } from './al-movil.ts';
 
@@ -639,7 +641,10 @@ export function crearDespachador(puertos: Puertos): Despachador {
         return null;
       }
       try {
-        const hechos = await repasarLosDocumentos((hacer) => puertos.enTransaccion(quien, hacer));
+        const enTransaccion: EnUnaTransaccion = (hacer) => puertos.enTransaccion(quien, hacer);
+        const hechos = await repasarLosDocumentos(enTransaccion);
+        // Lo que pidió el cliente, en cuanto Hacienda lo tiene (0141). Nunca lanza.
+        await mandarLoPedido(enTransaccion);
         return { repasados: hechos.length };
       } catch (fallo) {
         await apuntarUnFallo(fallo, {

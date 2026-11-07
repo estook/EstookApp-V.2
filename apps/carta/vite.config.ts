@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type Connect, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwind from '@tailwindcss/vite';
 import { laPoliticaDeSeguridad } from '../../herramientas/politica-de-seguridad.ts';
@@ -16,6 +16,27 @@ import { laPoliticaDeSeguridad } from '../../herramientas/politica-de-seguridad.
  */
 const RAIZ = fileURLToPath(new URL('../../', import.meta.url));
 
+/**
+ * **`/factura` también en el ordenador** (T6 · 2 · 3, 0141). En estook.com la sirve la `404.html`, que es
+ * esta aplicación (`publicar.yml`). Aquí, que `vite` solo sirve lo que cuelga de `/carta/`, se hace lo
+ * mismo a mano: si no, la página no se podría ni probar ni abrir en local.
+ */
+function laPaginaDeLaFactura(base: string): Plugin {
+  const aLaCarta: Connect.NextHandleFunction = (pedido, _respuesta, seguir) => {
+    if (/^\/factura(\/|\?|$)/.test(pedido.url ?? '')) pedido.url = base;
+    seguir();
+  };
+  return {
+    name: 'la-pagina-de-la-factura',
+    configureServer(servidor) {
+      servidor.middlewares.use(aLaCarta);
+    },
+    configurePreviewServer(servidor) {
+      servidor.middlewares.use(aLaCarta);
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const variables = loadEnv(mode, RAIZ, '');
   const raiz = variables['VITE_BASE'] ?? '/';
@@ -28,6 +49,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwind(),
+      laPaginaDeLaFactura(base),
       // La politica de seguridad de contenido. Se calcula al construir porque
       // depende de donde este la API, que se decide al construir. Vive entera en
       // herramientas/politica-de-seguridad.mjs, que es su unico dueno.

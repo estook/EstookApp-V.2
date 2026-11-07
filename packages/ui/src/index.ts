@@ -282,6 +282,7 @@ export { usarComoSeInstala } from './ganchos/usarComoSeInstala.ts';
 
 // T6 · 2 · 2 · 1 (0137): lo mismo en Estook y en Estook TPV.
 export { PapelEnPantalla } from './componentes/PapelEnPantalla.tsx';
-export { TicketsYFacturas } from './componentes/facturacion/TicketsYFacturas.tsx';
+export { TicketsYFacturas, bajarElPdf } from './componentes/facturacion/TicketsYFacturas.tsx';
+export { DE_LA_UNION, Elegir, PAISES } from './componentes/facturacion/ElClienteDeLaFactura.tsx';
 export { QuienHaceQue } from './componentes/facturacion/QuienHaceQue.tsx';
 export type { ClienteDeFacturas } from './ganchos/usarLectura.ts';

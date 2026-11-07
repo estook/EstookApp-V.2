@@ -75,8 +75,10 @@ export async function consultarEnLaApi<T>(
   peticion: APIRequestContext,
   token: string,
   nombre: string,
+  parametros: Record<string, string> = {},
 ): Promise<T> {
-  const respuesta = await peticion.get(`${API}/v1/consultas/${nombre}`, {
+  const consulta = new URLSearchParams(parametros).toString();
+  const respuesta = await peticion.get(`${API}/v1/consultas/${nombre}?${consulta}`, {
     headers: { authorization: `Bearer ${token}` },
   });
   const cuerpo = (await respuesta.json()) as { datos?: T; error?: unknown };

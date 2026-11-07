@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  direccionParaPedirLaFactura,
   importeDelDocumento,
   type ElDestinatario,
   type LoQueQuedaDeUnaLinea,
@@ -46,6 +47,7 @@ interface UnoDeLaLista extends TicketParaFacturar {
   readonly pruebas: boolean;
   readonly justificante: string | null;
   readonly porCobrar: string | null;
+  readonly pedidaPorElCliente: boolean;
 }
 
 interface LoQueFalla {
@@ -111,6 +113,8 @@ interface UnDocumento extends UnoDeLaLista {
   readonly anulacionQueNoSalio: { readonly dice: string | null } | null;
   readonly descuenta: readonly (OtroDocumento & { readonly importe: number })[];
   readonly descontadaEn: OtroDocumento | null;
+  readonly codigoParaPedirla: string | null;
+  readonly correoDelClienteNoSalio: boolean;
 }
 
 type Que = 'todos' | 'tickets' | 'facturas' | 'devoluciones' | 'por_cobrar' | 'pendiente';
@@ -246,6 +250,7 @@ export function TicketsYFacturas({
         <span className="flex flex-wrap gap-e1">
           <Etiqueta tono={d.chapa.tono}>{d.chapa.texto}</Etiqueta>
           {d.porCobrar !== null && <Etiqueta tono="atencion">Por cobrar</Etiqueta>}
+          {d.pedidaPorElCliente && <Etiqueta tono="info">Pedida por el cliente</Etiqueta>}
         </span>
       ),
     },
@@ -612,7 +617,7 @@ function LaCifra({ valor, que }: { readonly valor: string; readonly que: string 
 }
 
 /** Baja un PDF que llega en base 64: se guarda donde el aparato guarda lo descargado. */
-function bajarElPdf(pdf: {
+export function bajarElPdf(pdf: {
   readonly nombre: string;
   readonly tipo: string;
   readonly base64: string;
@@ -623,6 +628,40 @@ function bajarElPdf(pdf: {
   enlace.download = pdf.nombre;
   enlace.click();
   URL.revokeObjectURL(enlace.href);
+}
+
+/**
+ * **El enlace de «Pide tu factura»** (maqueta del 7-nov, 5), para quien llama al día siguiente y, hasta
+ * que el QR salga en el papel con T7, para probarla. Si el aparato no deja copiar, se enseña.
+ */
+function QueLaPidaElCliente({ codigo }: { readonly codigo: string }) {
+  const [hecho, setHecho] = useState<'copiado' | 'a_mano' | null>(null);
+  const enlace = direccionParaPedirLaFactura(codigo);
+  return (
+    <div className="flex flex-col gap-e2 rounded-medio border border-borde bg-superficie p-e3">
+      <div className="flex flex-wrap items-center justify-between gap-e2">
+        <p className="text-secundario font-semibold">Que la pida el cliente</p>
+        <Boton
+          tono="secundario"
+          onClick={() => {
+            // Donde no hay portapapeles (una página sin https) ni llega a devolver una promesa.
+            void (async () => {
+              try {
+                await navigator.clipboard.writeText(enlace);
+                setHecho('copiado');
+              } catch {
+                setHecho('a_mano');
+              }
+            })();
+          }}
+        >
+          {hecho === 'copiado' ? 'Copiado' : 'Copiar el enlace'}
+        </Boton>
+      </div>
+      <p className="text-etiqueta text-texto-suave">Por si te llaman para pedirla.</p>
+      {hecho === 'a_mano' && <p className="break-all text-secundario">{enlace}</p>}
+    </div>
+  );
 }
 
 /** Como se imprimió, su historia y lo que se puede hacer (maqueta de T6, 4; de T6 · 2 · 2, 6). */
@@ -737,6 +776,7 @@ function ElDocumento({
         <span className="flex flex-wrap gap-e1">
           <Etiqueta tono={d.chapa.tono}>{d.chapa.texto}</Etiqueta>
           {d.porCobrar !== null && <Etiqueta tono="atencion">Por cobrar</Etiqueta>}
+          {d.pedidaPorElCliente && <Etiqueta tono="info">Pedida por el cliente</Etiqueta>}
         </span>
       </div>
 
@@ -763,7 +803,7 @@ function ElDocumento({
         </Aviso>
       )}
 
-      {correoNoSalio && d.loQueFalla === null && (
+      {(correoNoSalio || d.correoDelClienteNoSalio) && d.loQueFalla === null && (
         <Aviso tono="atencion" titulo="El correo no ha salido">
           La factura está hecha, pero al cliente no le ha llegado. Prueba otra vez con «Mandar por
           correo», o descárgala y dásela.
@@ -923,6 +963,8 @@ function ElDocumento({
       )}
       {hecho !== null && <p className="text-secundario text-bien">{hecho}</p>}
       {error !== null && <ErrorEnCristiano error={error} />}
+
+      {d.codigoParaPedirla !== null && <QueLaPidaElCliente codigo={d.codigoParaPedirla} />}
 
       <div className="grid gap-e4 md:grid-cols-2">
         <div className="flex flex-col gap-e2">

@@ -149,7 +149,8 @@ async function codigoDeLasApps(): Promise<string> {
   return trozos.join('\n');
 }
 
-describe('lo que se construye, se usa', () => {
+// Lee todo el código de las aplicaciones: con todas las pruebas a la vez, cinco segundos no siempre dan.
+describe('lo que se construye, se usa', { timeout: 30_000 }, () => {
   it('cada comando lo llama alguien desde una pantalla', async () => {
     const codigo = await codigoDeLasApps();
 

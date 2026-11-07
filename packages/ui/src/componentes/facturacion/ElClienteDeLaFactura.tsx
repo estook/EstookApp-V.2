@@ -11,7 +11,7 @@ import type { ElEstadoDelCliente } from '../../ganchos/usarElCliente.ts';
  */
 
 /** Los países que más vienen. Con el código ISO que pide Verifacti (`codigo_pais`). */
-const PAISES: readonly { readonly valor: string; readonly texto: string }[] = [
+export const PAISES: readonly { readonly valor: string; readonly texto: string }[] = [
   { valor: 'DE', texto: 'Alemania' },
   { valor: 'AT', texto: 'Austria' },
   { valor: 'BE', texto: 'Bélgica' },
@@ -53,7 +53,7 @@ const PAISES: readonly { readonly valor: string; readonly texto: string }[] = [
 ];
 
 /** Los de la Unión: los únicos con número de IVA en el censo europeo. */
-const DE_LA_UNION = new Set(PAISES.slice(0, 26).map((p) => p.valor));
+export const DE_LA_UNION = new Set(PAISES.slice(0, 26).map((p) => p.valor));
 
 const EN_CADA_CLASE: readonly { readonly valor: ClaseDeCliente; readonly texto: string }[] = [
   { valor: 'empresa', texto: 'Empresa o autónomo' },

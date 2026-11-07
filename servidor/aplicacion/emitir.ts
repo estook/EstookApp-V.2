@@ -84,7 +84,15 @@ export interface LaEmpresaDelDocumento {
 }
 
 export type OrigenDelDocumento =
-  'ticket_de_prueba' | 'cobro' | 'a_mano' | 'canje' | 'devolucion' | 'correccion' | 'senal';
+  | 'ticket_de_prueba'
+  | 'cobro'
+  | 'a_mano'
+  | 'canje'
+  | 'devolucion'
+  | 'correccion'
+  | 'senal'
+  /** La pidió el cliente, en su móvil (0141). */
+  | 'pedida';
 
 export interface ElDocumento {
   readonly id: string;

@@ -14,6 +14,7 @@ import {
   loQueQuedaDeCadaLinea,
   masDias,
   porQueNoSeCanjea,
+  queDiceLaPagina,
   sePuedeEntregar,
   type ElDestinatario,
   type EstadoDelDocumento,
@@ -229,6 +230,8 @@ export interface UnoDeLaLista {
   readonly justificante: string | null;
   /** Si se hizo sin cobrar y todavía no se ha cobrado, cuándo vence. */
   readonly porCobrar: string | null;
+  /** La pidió el cliente en su móvil (0141). */
+  readonly pedidaPorElCliente: boolean;
   /** Por qué no se puede juntar en una factura, en llano. Nulo si se puede. */
   readonly porQueNoSeCanjea: string | null;
 }
@@ -325,6 +328,7 @@ function laLinea(
     pruebas: doc.entorno === 'pruebas',
     justificante: h.justificante,
     porCobrar,
+    pedidaPorElCliente: doc.origen === 'pedida',
     porQueNoSeCanjea: noSeCanjea === null ? null : POR_QUE_NO_SE_CANJEA[noSeCanjea],
   };
 }
@@ -581,6 +585,10 @@ export interface UnPasoDeLaHistoria {
 
 export interface UnDocumento extends UnoDeLaLista {
   readonly historia: readonly UnPasoDeLaHistoria[];
+  /** El código para que lo pida el cliente, con «Pide tu factura» encendida y si todavía puede (0141). */
+  readonly codigoParaPedirla: string | null;
+  /** Se le dejó de intentar mandar la factura que pidió, y nadie se la ha mandado después. */
+  readonly correoDelClienteNoSalio: boolean;
   /** El papel igual que salió, para verlo en la pantalla. Nulo si aún no hay nada que imprimir. */
   readonly papel: PapelCompuesto | null;
   /** La dirección de cotejo de la AEAT, la del QR. */
@@ -644,6 +652,43 @@ const EL_REGISTRO_EN_LLANO: Readonly<Record<string, string>> = {
   'error servidor aeat': 'Hacienda no respondía; Verifacti lo reintenta',
 };
 
+/**
+ * **Lo de «Pide tu factura» en Tickets y facturas** (maqueta del 7-nov, 5). El enlace sale mientras el
+ * cliente pueda usarlo, también con el ticket todavía en Hacienda: la página espera sola.
+ */
+async function laPaginaDelCliente(
+  contexto: Contexto,
+  doc: Awaited<ReturnType<typeof losDocumentos>>[number],
+  h: LaHistoria,
+  estado: EstadoEnLaLista,
+): Promise<Pick<UnDocumento, 'codigoParaPedirla' | 'correoDelClienteNoSalio'>> {
+  const [noSalio] = await contexto.sql<{ en: string }[]>`
+    select no_salio_en::text as en from facturacion.correo_por_mandar
+     where factura_id = ${doc.id}::uuid and no_salio_en is not null
+  `;
+  const correoDelClienteNoSalio =
+    noSalio !== undefined &&
+    !h.copias.some((c) => new Date(c.en).getTime() > new Date(noSalio.en).getTime());
+  if (doc.tipo !== 'F2') return { codigoParaPedirla: null, correoDelClienteNoSalio };
+  const [ticket] = await contexto.sql<{ codigo: string; encendida: boolean }[]>`
+    select c.codigo, l.pide_tu_factura as encendida
+      from facturacion.codigo_de_ticket c
+      join estook.local l on l.id = ${doc.localId}::uuid
+     where c.documento_id = ${doc.id}::uuid
+  `;
+  const dice = queDiceLaPagina({
+    estado,
+    tieneFactura: h.factura !== null,
+    tieneDevolucion: h.rectificaciones.some((r) => r.enPie),
+    anulando: laAnulacionEnCurso(h) !== null,
+    encendida: ticket?.encendida === true,
+  });
+  return {
+    codigoParaPedirla: dice === 'puede' || dice === 'todavia' ? (ticket?.codigo ?? null) : null,
+    correoDelClienteNoSalio,
+  };
+}
+
 const DE_DONDE_VIENE = {
   ticket_de_prueba: 'El ticket de prueba de Ajustes',
   cobro: null,
@@ -652,6 +697,7 @@ const DE_DONDE_VIENE = {
   devolucion: null,
   correccion: null,
   senal: 'Señal, cobrada ese día',
+  pedida: null,
 } as const;
 
 export const unDocumento = consulta<{ documento_id: string }, UnDocumento>({
@@ -681,7 +727,10 @@ export const unDocumento = consulta<{ documento_id: string }, UnDocumento>({
       {
         en: doc.preparadoEn,
         hora: hora(doc.preparadoEn),
-        que: 'Preparado con su número',
+        que:
+          doc.origen === 'pedida'
+            ? 'La pidió el cliente desde su móvil'
+            : 'Preparado con su número',
         detalle: DE_DONDE_VIENE[doc.origen],
       },
       ...h.envios.map((e) => ({
@@ -797,6 +846,7 @@ export const unDocumento = consulta<{ documento_id: string }, UnDocumento>({
     }
     const linea = laLinea(doc, h);
     const anulando = laAnulacionEnCurso(h);
+    const suPagina = await laPaginaDelCliente(contexto, doc, h, linea.estado);
     const correccion = suCorreccion(h);
     const queda = loQueLeQueda(doc, h);
     const enVigor =
@@ -839,6 +889,7 @@ export const unDocumento = consulta<{ documento_id: string }, UnDocumento>({
       sustituye: h.sustituye,
       seEntrega: sePuedeEntregar(linea.estado),
       puede,
+      ...suPagina,
       sePuede: {
         devolver: puede.devolver && libre && (doc.tipo === 'F2' || esFactura) && queda > 0,
         corregirDatos: puede.corregir && libre && esFactura && queda > 0,

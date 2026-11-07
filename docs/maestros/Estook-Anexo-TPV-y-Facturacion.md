@@ -563,6 +563,8 @@ Al volver la conexion: se emiten en ese orden
   · fecha_operacion con la fecha real si ha pasado mas de un dia
 ```
 
+**Dónde se usa el código, desde T6 · 2 · 3** ([0141](../decisiones/0141-t6-2-3-pide-tu-factura.md)): el papel dice «Recógelo en estook.com/factura», y esa página da el ticket en cuanto se emite. Mientras, dice que se está registrando.
+
 **Reglas:** el orden es el de los cobros; nada se emite dos veces (4.9); y la sala distingue en pantalla «sin conexión con Estook» (justificante) de «Hacienda no responde» (se emite normal y el envío espera).
 
 **[VERIFICAR con el asesor el texto del justificante y que esta forma de trabajar cumple.]** En el alta se recomienda un router con 4G de respaldo.
@@ -649,7 +651,7 @@ Lo que importa aquí: **el ticket se emite antes de imprimirse.** Si la impresor
 
 ## 5.3 Factura a petición del cliente
 
-Desde el ticket, en un toque: nombre o razón social, NIF y domicilio. Se emite la F3 referenciando al ticket. **También la pide el cliente solo**, con el QR «Pide tu factura» del ticket, que va siempre después del tributario, y **una F3 puede sustituir a varios tickets** del mismo cliente ([0125](../decisiones/0125-t6-la-facturacion-las-tres-respuestas.md)). Si el cliente es de fuera, con su pasaporte o su número de IVA y su país.
+Desde el ticket, en un toque: nombre o razón social, NIF y domicilio. Se emite la F3 referenciando al ticket. **También la pide el cliente solo**, con el QR «Pide tu factura» del ticket, que va siempre después del tributario, y **una F3 puede sustituir a varios tickets** del mismo cliente ([0125](../decisiones/0125-t6-la-facturacion-las-tres-respuestas.md)). Si el cliente es de fuera, con su pasaporte o su número de IVA y su país. **La página, desde T6 · 2 · 3** ([0141](../decisiones/0141-t6-2-3-pide-tu-factura.md)): con el ticket ya en Hacienda, con el código del ticket, sin rellenar nada de lo que Estook sepa de ese número, y **la factura solo llega al correo**, cuando Hacienda la tiene. Con sus límites de intentos a la hora. El QR en el papel, con T7; hasta entonces, «Copiar el enlace» en cada ticket.
 
 - El importe **tiene que coincidir** con el del ticket.
 - El ticket queda **canjeado** y no se puede canjear dos veces.
@@ -903,6 +905,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 
 - `serie` — local, empresa, tipo y **prefijo**, solo de inserción: la de ahora es la última de su local y su tipo (T6 · 1). **El ejercicio y el número los pone emitir** (T6 · 2), y pruebas y real numeran aparte
 - `rectificacion` — qué rectifica cada rectificativa, por qué y de qué líneas; `anulacion` y `paso_de_anulacion` — quién pidió anular, por qué y qué dice Hacienda; `descuento_de_senal` — qué señales descuenta cada factura; `rehecho` — qué documento corrige a otro rechazado (T6 · 2 · 2 · 2, 0140)
+- `codigo_de_ticket` — el código con el que el cliente pide la factura de su ticket; `pedida` — qué factura pidió y a qué correo; `correo_por_mandar` — lo que hay que mandarle cuando Hacienda la tenga, que es trabajo por hacer y no un registro fiscal, como `por_repasar`; `intento_de_la_pagina` — lo intentado en la última hora, que se borra solo (T6 · 2 · 3, [0141](../decisiones/0141-t6-2-3-pide-tu-factura.md)). Esas dos últimas no son de solo inserción, y por eso no guardan nada fiscal.
 - `canje` — qué tickets sustituye cada F3; `cobro_de_factura` — cuándo se cobró una hecha a mano; `copia_mandada` — a quién se le mandó y quién (T6 · 2 · 2 · 1, 0137). **No hay clientes guardados** ([0139](../decisiones/0139-sin-lista-de-clientes.md)): quien vuelve se rellena, al escribir su número entero, desde su última factura.
 - `documento` — empresa, serie, número, tipo, fecha de expedición, fecha de operación, destinatario si lo hay, base, cuota, total, **copia congelada de las líneas y del desglose**, **copia de los datos de la empresa del momento**, `sustituye_a` (F3), `rectifica_a` (R), referencia al cobro, y su identificador, que es **la clave de idempotencia** ante el proveedor ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)). **Nace preparado y no cambia nunca más**
 - `registro` — documento, lo que devolvió el proveedor al registrarlo (`uuid`, **QR**, **huella**), y cada estado ante la AEAT que llegue después, **una fila por novedad**
@@ -911,7 +914,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 - `aviso_recibido` — el identificador único del aviso, contenido, procesado
 - `justificante` — cobro, contenido, **código para descargar el ticket**, documento emitido después
 
-**El estado de un documento no se guarda en el documento: se lee de lo que se le ha ido añadiendo** —preparado, enviando, registrado, pendiente por incidencia, rechazado o aceptado con errores—, con una vista. Así **todo el esquema es de verdad solo de inserción**, sin una sola excepción en los disparadores. **[Se prueba rompiéndolo a propósito.]**
+**El estado de un documento no se guarda en el documento: se lee de lo que se le ha ido añadiendo** —preparado, enviando, registrado, pendiente por incidencia, rechazado o aceptado con errores—, con una vista. Así **todo lo fiscal del esquema es de verdad solo de inserción**, sin una sola excepción en los disparadores. **[Se prueba rompiéndolo a propósito.]**
 
 ## 7.7 Cómo se une con el resto de Estook
 

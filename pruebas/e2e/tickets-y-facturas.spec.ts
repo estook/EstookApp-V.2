@@ -17,6 +17,7 @@ const TPV = 'http://localhost:5178/';
  *   · T6 · 2 · 2 · 1 (0137): la factura de ese ticket, con su NIF comprobado; el ticket queda
  *     canjeado y no se puede canjear otra vez; una factura a mano, por cobrar, con un concepto libre
  *     y el precio sin IVA; y «Quién hace qué» en Ajustes › Facturación
+ *   · T6 · 2 · 3 (0141): el cliente pide su factura en su móvil, y lo que ve el local
  *   · T6 · 2 · 2 · 2 (0140): devolver una de dos raciones y lo cobrado de más, corregir los datos del
  *     cliente, la señal que la factura final descuenta sola, y anular con su motivo
  *
@@ -28,7 +29,7 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
   page,
 }, info) => {
   test.skip(info.project.name !== 'escritorio', 'Bar Faro es uno: se prueba en el escritorio');
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   // Con CAPTURAS_DE_FACTURAS=1 deja una foto de cada paso, en el ordenador y en el móvil.
   const pasar = async (paso: string) => {
     if (process.env['CAPTURAS_DE_FACTURAS'] === undefined) return;
@@ -391,6 +392,96 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
   await expect(quien.getByRole('button', { name: /Corregir los datos del cliente/ })).toBeVisible();
   await expect(quien.getByRole('button', { name: /^Anular/ })).toBeVisible();
   await pasar('6-quien-hace-que');
+
+  // T6 · 2 · 3 (0141): el cliente pide su factura en su móvil, sin sesión.
+  const elTicket = await ejecutarEnLaApi<{ documentoId: string; numero: string }>(
+    page.request,
+    token ?? '',
+    'imprimir_un_ticket_de_prueba',
+    {},
+  );
+  const { codigoParaPedirla } = await consultarEnLaApi<{ codigoParaPedirla: string | null }>(
+    page.request,
+    token ?? '',
+    'un_documento',
+    { documento_id: elTicket.documentoId },
+  );
+  const codigo = codigoParaPedirla ?? '';
+  const movil = await page.context().newPage();
+  await movil.setViewportSize({ width: 390, height: 844 });
+  const LA_PAGINA = 'http://localhost:5175/factura';
+  await movil.goto(`${LA_PAGINA}/${codigo}`);
+  await expect(movil.getByText('Tu ticket se está registrando')).toBeVisible();
+  await decirHacienda(elTicket.numero, 'Correcto');
+  await movil.reload();
+  await expect(movil.getByRole('heading', { name: /^Tu factura de / })).toBeVisible();
+  await expect(movil.getByText('PRUEBA · SIN VALIDEZ')).toBeVisible();
+  await expect(movil.getByText(elTicket.numero)).toBeVisible();
+
+  const laDescarga = movil.waitForEvent('download');
+  await movil.getByRole('button', { name: 'Descargar el ticket' }).click();
+  expect((await laDescarga).suggestedFilename()).toBe(`${elTicket.numero}.pdf`);
+
+  const quiero = movil.getByRole('button', { name: 'Quiero la factura' });
+  await expect(quiero).toBeDisabled();
+  // Un autónomo: Hacienda pide su nombre, y el campo no se va al empezar a escribirlo.
+  await movil.getByLabel('Tu NIF').fill('12345678Z');
+  await movil.getByLabel('Domicilio').click();
+  await movil.getByLabel('Nombre y apellidos').pressSequentially('Ana');
+  await expect(movil.getByLabel('Nombre y apellidos')).toHaveValue('Ana');
+  // Otro cliente: lo de antes no se queda puesto.
+  await movil.getByRole('radio', { name: 'De fuera' }).click();
+  await expect(movil.getByLabel('Pasaporte')).toHaveValue('');
+  await expect(movil.getByLabel('Nombre', { exact: true })).toHaveValue('');
+  await movil.getByRole('radio', { name: 'Empresa' }).click();
+  await movil.getByLabel('Tu NIF').fill('B84935048');
+  await movil.getByLabel('Domicilio').click();
+  await expect(movil.getByText('✓ EJEMPLO NORTE SL')).toBeVisible();
+  await movil.getByLabel('Domicilio').fill('Pol. Ugaldeguren 4, Zamudio');
+  await movil.getByLabel('Dónde te la mandamos').fill('admin@ejemplo.es');
+  await quiero.click();
+  await expect(movil.getByRole('heading', { name: 'Ya está' })).toBeVisible();
+  await expect(movil.getByText('admin@ejemplo.es')).toBeVisible();
+
+  // Una vez hecha, no enseña los datos de nadie, y se manda al mismo correo.
+  await movil.reload();
+  await expect(movil.getByRole('heading', { name: 'Este ticket ya tiene factura' })).toBeVisible();
+  await expect(movil.locator('main')).not.toContainText('admin@ejemplo.es');
+  await expect(movil.locator('main')).not.toContainText('B84935048');
+  await movil.getByRole('button', { name: 'Mandarla otra vez' }).click();
+  await expect(movil.getByText(/^Mandada\./)).toBeVisible();
+
+  // Sin código, se escribe; y el que no es de nadie lo dice.
+  await movil.goto(LA_PAGINA);
+  await movil.getByLabel('El código de tu papel').fill('0000-0000-00AA');
+  await movil.getByRole('button', { name: 'Seguir' }).click();
+  await expect(movil.getByText('Este código no es de ningún ticket')).toBeVisible();
+  await movil.getByLabel('El código de tu papel').fill(codigo.toLowerCase());
+  await movil.getByRole('button', { name: 'Seguir' }).click();
+  await expect(movil.getByRole('heading', { name: 'Este ticket ya tiene factura' })).toBeVisible();
+  await movil.close();
+
+  // Lo que ve el local: la chapa, su historia y el enlace para quien llama.
+  const paraElEnlace = await ejecutarEnLaApi<{ numero: string }>(
+    page.request,
+    token ?? '',
+    'imprimir_un_ticket_de_prueba',
+    {},
+  );
+  await abrirSinQueSeCaiga(page, `${APP}#/servicio/ventas/tickets-y-facturas`);
+  const laPedida = page.getByRole('row').filter({ hasText: 'Pedida por el cliente' }).first();
+  await expect(laPedida).toBeVisible();
+  await laPedida.click();
+  const suHoja = page.getByRole('dialog', { name: 'El documento' });
+  await expect(suHoja).toContainText('La pidió el cliente desde su móvil');
+  await page.keyboard.press('Escape');
+  await page.getByRole('row').filter({ hasText: paraElEnlace.numero }).click();
+  await suHoja.getByRole('button', { name: 'Copiar el enlace' }).click();
+  // Si el navegador no deja copiar, se enseña el enlace para copiarlo a mano.
+  await expect(
+    suHoja.getByText(/^(Copiado|https:\/\/estook\.com\/factura\/)/).first(),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
 
   // Y en Estook TPV, lo mismo a un toque desde la sala (0137).
   const personas = await consultarEnLaApi<readonly { personaId: string; siempre: boolean }[]>(

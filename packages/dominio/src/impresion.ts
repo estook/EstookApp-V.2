@@ -622,6 +622,8 @@ export function elJustificanteEnPapel(j: ElJustificanteQueSeImprime): PapelCompu
     }),
   );
   piezas.push(texto(j.codigo, { alinear: 'centro', tamano: 'doble', negrita: true }));
+  // Sin esto el código no servía de nada: nadie sabía dónde usarlo (maqueta del 7-nov, 4).
+  piezas.push(texto('Recógelo en estook.com/factura', { alinear: 'centro', negrita: true }));
   if (j.pruebas) piezas.push(MARCA_DE_PRUEBAS);
   piezas.push(CORTAR);
   return papel(piezas);

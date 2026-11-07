@@ -440,6 +440,13 @@ import {
   lasSenalesDelCliente,
 } from './comandos/corregir-documentos.ts';
 import {
+  abrirPideTuFactura,
+  comprobarEnPideTuFactura,
+  descargarMiTicket,
+  mandarOtraVezMiFactura,
+  pedirMiFactura,
+} from './comandos/pide-tu-factura.ts';
+import {
   comprobarUnNif,
   contestarDondeTributa,
   darDeAltaEnVerifacti,
@@ -1220,6 +1227,13 @@ export const catalogo = {
     [corregirLosDatos.nombre]: corregirLosDatos,
     [anularElDocumento.nombre]: anularElDocumento,
     [corregirLoRechazado.nombre]: corregirLoRechazado,
+
+    // ── T6 · 2 · 3 · Pide tu factura (0141): el cliente, sin sesión ───────────
+    [abrirPideTuFactura.nombre]: abrirPideTuFactura,
+    [comprobarEnPideTuFactura.nombre]: comprobarEnPideTuFactura,
+    [pedirMiFactura.nombre]: pedirMiFactura,
+    [mandarOtraVezMiFactura.nombre]: mandarOtraVezMiFactura,
+    [descargarMiTicket.nombre]: descargarMiTicket,
     [hacerFacturaDeSenal.nombre]: hacerFacturaDeSenal,
     [mandarElDocumento.nombre]: mandarElDocumento,
     [darUnPermiso.nombre]: darUnPermiso,

@@ -422,6 +422,13 @@ describe('las puertas se cierran solas', () => {
         // Entrega O (0047) · la carta de un local: quien escanea el QR de la mesa
         // no ha entrado en ningún sitio. Solo devuelve lo que el local ya enseña.
         'la_carta',
+        // T6 · 2 · 3 (0141) · «Pide tu factura»: quien abre el enlace de su ticket no ha entrado en
+        // ningún sitio. Lo que abre la puerta es el código del ticket, con su límite de intentos.
+        'abrir_pide_tu_factura',
+        'comprobar_en_pide_tu_factura',
+        'pedir_mi_factura',
+        'mandar_otra_vez_mi_factura',
+        'descargar_mi_ticket',
         // A2 (0049) · los dos enlaces del cambio de correo de acceso: confirmar el nuevo
         // y pararlo desde el de ahora. Valen por el token del enlace, de un solo uso y
         // con caducidad, y la base solo guarda su huella.
@@ -822,11 +829,16 @@ describe('los secretos no se guardan para repetirlos', () => {
     // T6 · 1 (0126) · comprobar un NIF en Hacienda y descargar el modelo para firmar: no
     // cambian nada, y guardar el PDF del modelo en una tabla sería guardarlo para nada.
     // T6 · 2 · 2 · 1 (0137) · comprobar al cliente, por lo mismo que un NIF.
+    // T6 · 2 · 3 (0141) · «Pide tu factura»: sin sesión no hay de quién recordar nada, y lo que no
+    // debe hacerse dos veces lo para el canje, con el candado del ticket.
     expect(sinRecordar).toEqual([
+      'abrir_pide_tu_factura',
       'apuntar_lo_impreso',
       'bloquear',
       'comprobar_al_cliente',
+      'comprobar_en_pide_tu_factura',
       'comprobar_un_nif',
+      'descargar_mi_ticket',
       'destachar_en_la_pantalla',
       'el_modelo_para_firmar',
       'fichar_aqui',
@@ -837,6 +849,8 @@ describe('los secretos no se guardan para repetirlos', () => {
       'latir_el_aparato',
       'leer_el_canal',
       'llamar_al_camarero',
+      'mandar_otra_vez_mi_factura',
+      'pedir_mi_factura',
       'preparar_el_aparato_sin_conexion',
       'probar_mi_movil',
       'quien_ficha_aqui',

@@ -61,6 +61,7 @@ const LO_QUE_DICE_LA_BASE: Readonly<Record<string, CodigoDeError>> = {
 /** Lo que dice la base al hacer una factura, con su frase (0137). */
 const LO_QUE_SE_EXPLICA: Readonly<Record<string, string>> = {
   ya_tiene_factura: 'Uno de esos tickets ya tiene factura: cada ticket, una sola vez.',
+  pide_tu_factura_apagada: 'Este restaurante hace las facturas en el local.',
   no_es_un_ticket: 'Solo se puede hacer factura de un ticket.',
   ticket_sin_registrar: 'Uno de esos tickets todavía se está enviando. Prueba en un momento.',
   ticket_no_valido: 'Hacienda no tiene uno de esos tickets: no se puede sustituir.',

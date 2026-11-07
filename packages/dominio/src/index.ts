@@ -208,6 +208,20 @@ export type {
 // ── Entrega O · la dirección de la carta, la del QR (0047) ──────────────────
 export { DIRECCION_DE_ESTOOK, direccionDeLaCarta, laCartaDeLaDireccion } from './carta.ts';
 
+// ── T6 · 2 · 3 · Pide tu factura (0141): la página del cliente ────────────────
+export {
+  CAMINO_DE_LA_FACTURA,
+  INTENTOS_DE_LA_PAGINA,
+  direccionParaPedirLaFactura,
+  elCodigoEscrito,
+  elCodigoParaEnsenar,
+  fechaDelTicket,
+  laFacturaDeLaDireccion,
+  queDiceLaPagina,
+  seDescargaElTicket,
+} from './pide-tu-factura.ts';
+export type { ClaseDeIntento, LoQueDiceLaPagina } from './pide-tu-factura.ts';
+
 // ── M9 · 1 · los canales de venta (0086) ─────────────────────────────────────
 export {
   CANALES_DE_VENTA,

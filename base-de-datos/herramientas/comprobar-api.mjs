@@ -1434,6 +1434,25 @@ try {
           ? ''
           : `${atascados[0].cuantos} sin terminar: ¿está desplegada la API con la 0108?`,
     );
+    // Lo que pidió un cliente y no le llega (0141): Hacienda ya lo tiene y el correo no sale.
+    const correos = await conexion`
+      select count(*)::int as cuantos from facturacion.correo_por_mandar c
+       where c.no_salio_en is not null and c.desde > now() - interval '30 days'
+         -- Si después se la ha mandado alguien desde Tickets y facturas, ya le ha llegado.
+         and not exists (
+           select 1 from facturacion.copia_mandada m
+            where m.documento_id = c.factura_id and m.en > c.no_salio_en
+         )
+    `.catch(() => null);
+    comprobar(
+      'y a ningún cliente le ha dejado de llegar la factura que pidió',
+      correos?.[0]?.cuantos === 0,
+      correos === null
+        ? 'falta la 0111'
+        : correos[0].cuantos === 0
+          ? ''
+          : `${correos[0].cuantos} sin mandar: míralo en Sentry y en Tickets y facturas`,
+    );
     comprobar(
       'y ha latido en las dos últimas horas',
       reloj.reciente === true,

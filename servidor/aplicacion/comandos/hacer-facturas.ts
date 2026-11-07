@@ -26,6 +26,8 @@ import {
   losDocumentos,
   prepararUnDocumento,
   SIN_HISTORIA,
+  type ElDocumento,
+  type LaHistoria,
 } from '../emitir.ts';
 import { enLaBase } from '../facturacion.ts';
 
@@ -82,7 +84,7 @@ const limpiar = (identificador: string) => identificador.replace(/\s+/g, '').toU
  * **Lo que Hacienda rechazaría, antes de numerar** (Anexo 5.3): un rechazo de Verifacti gasta un
  * número (0136). Sin conexión con Verifacti no se para: la factura sale igual y lo termina el reloj.
  */
-async function comprobarElCliente(
+export async function comprobarElCliente(
   contexto: Contexto,
   c: Pick<ElClienteQueLlega, 'clase' | 'nombre' | 'identificador' | 'id_tipo' | 'codigo_pais'>,
 ): Promise<{
@@ -314,38 +316,53 @@ export const hacerFacturaDeTickets = comando<
       throw new FalloDeAplicacion('no_existe');
     }
     const destinatario = await elDestinatarioComprobado(contexto, entrada.cliente);
-    const fisco = await elRelojYElFisco(contexto, localId);
-    const lineas: LineaVendida[] = juntarLasLineas(tickets.flatMap((t) => [...t.lineas]));
-    const unoSolo = tickets.length === 1 ? tickets[0] : undefined;
-    // La última de las operaciones: con varias del mismo cliente, va una sola fecha (art. 13).
-    const fechaOperacion = tickets.map((t) => t.fechaOperacion).reduce((a, b) => (a > b ? a : b));
-    const hecho = await prepararUnDocumento(contexto, {
-      localId,
-      tipo: 'F3',
-      descripcion:
-        unoSolo === undefined
-          ? `Factura de ${String(tickets.length)} tickets`
-          : `Factura del ticket ${unoSolo.serie}${String(unoSolo.numero).padStart(6, '0')}`,
-      lineas,
-      regimenDelLocal: fisco.regimen as LineaVendida['regimen'],
-      zonaHoraria: fisco.zonaHoraria,
-      donde: unoSolo?.donde ?? null,
-      origen: 'canje',
-      fechaOperacion,
-      destinatario,
-    });
-    const total = tickets.reduce((s, t) => s + t.total, 0);
-    await enLaBase(
-      () => contexto.sql`
-        select facturacion.apuntar_el_canje(
-          ${localId}::uuid, ${hecho.id}::uuid, ${ids}::uuid[], ${total}::integer,
-          ${contexto.ahora.toISOString()}::timestamptz
-        )
-      `,
-    );
-    return { documentoId: hecho.id, numero: hecho.numero };
+    return elCanjeDeLosTickets(contexto, localId, tickets, destinatario, 'canje');
   },
 });
+
+/**
+ * **La F3 de esos tickets**, la haga el equipo o la pida el cliente en su móvil (0141): prepara la
+ * factura con su número y apunta el canje, que lo vuelve a mirar todo con el candado de cada ticket.
+ */
+export async function elCanjeDeLosTickets(
+  contexto: Contexto,
+  localId: string,
+  tickets: readonly ElDocumento[],
+  destinatario: ElDestinatario,
+  origen: 'canje' | 'pedida',
+): Promise<FacturaHecha> {
+  const ids = tickets.map((t) => t.id);
+  const fisco = await elRelojYElFisco(contexto, localId);
+  const lineas: LineaVendida[] = juntarLasLineas(tickets.flatMap((t) => [...t.lineas]));
+  const unoSolo = tickets.length === 1 ? tickets[0] : undefined;
+  // La última de las operaciones: con varias del mismo cliente, va una sola fecha (art. 13).
+  const fechaOperacion = tickets.map((t) => t.fechaOperacion).reduce((a, b) => (a > b ? a : b));
+  const hecho = await prepararUnDocumento(contexto, {
+    localId,
+    tipo: 'F3',
+    descripcion:
+      unoSolo === undefined
+        ? `Factura de ${String(tickets.length)} tickets`
+        : `Factura del ticket ${unoSolo.serie}${String(unoSolo.numero).padStart(6, '0')}`,
+    lineas,
+    regimenDelLocal: fisco.regimen as LineaVendida['regimen'],
+    zonaHoraria: fisco.zonaHoraria,
+    donde: unoSolo?.donde ?? null,
+    origen,
+    fechaOperacion,
+    destinatario,
+  });
+  const total = tickets.reduce((s, t) => s + t.total, 0);
+  await enLaBase(
+    () => contexto.sql`
+      select facturacion.apuntar_el_canje(
+        ${localId}::uuid, ${hecho.id}::uuid, ${ids}::uuid[], ${total}::integer,
+        ${contexto.ahora.toISOString()}::timestamptz
+      )
+    `,
+  );
+  return { documentoId: hecho.id, numero: hecho.numero };
+}
 
 // ── La factura a mano (F1) ────────────────────────────────────────────────────────
 
@@ -492,6 +509,15 @@ async function elPdfDelDocumento(contexto: Contexto, documentoId: string): Promi
   const [doc] = await losDocumentos(contexto, [documentoId]);
   if (doc === undefined || doc.localId !== localId) throw new FalloDeAplicacion('no_existe');
   const h = (await lasHistorias(contexto, [doc.id])).get(doc.id) ?? SIN_HISTORIA;
+  return elPdfDeEsteDocumento(contexto, doc, h);
+}
+
+/** Sin mirar de qué local es: quien llama ya lo sabe. Lo usa también «Pide tu factura» (0141). */
+export async function elPdfDeEsteDocumento(
+  contexto: Contexto,
+  doc: ElDocumento,
+  h: LaHistoria,
+): Promise<UnPdf> {
   // Con la imagen del QR: un PDF de VERI*FACTU sin su QR no vale (0138). Sale del alta o de una
   // consulta, y las dos la traen.
   const registrado = h.registros.find((r) => r.qr !== null);
@@ -503,7 +529,7 @@ async function elPdfDelDocumento(contexto: Contexto, documentoId: string): Promi
           : 'Todavía se está enviando: en un momento se podrá descargar.',
     });
   }
-  const marca = await laMarcaDelLocal(contexto, localId);
+  const marca = await laMarcaDelLocal(contexto, doc.localId);
   const numero = `${doc.serie}${String(doc.numero).padStart(6, '0')}`;
   const expedicion = laFechaDeExpedicion(doc, h);
   const html = documentoDeLaFactura(

@@ -29,10 +29,8 @@ import { enLaBase } from '../facturacion.ts';
 /**
  * **Hacer facturas** (T6 · 2 · 2 · 1, decisión 0137; Anexo 4.5 y 5.3; RD 1619/2012, art. 6).
  *
- *   comprobar_al_cliente       su NIF en Hacienda, o su IVA en el censo europeo, al escribirlo
- *   el_cliente_por_su_numero   escribir un NIF conocido rellena lo demás, sin hojear a nadie
- *   los_clientes_de_factura    la lista, para quien hace facturas a mano
- *   quitar_el_cliente          lo emitido lleva su copia: no lo toca
+ *   comprobar_al_cliente       su NIF en Hacienda, o su IVA en el censo europeo, al escribirlo; y si
+ *                              ya tiene una factura, lo demás sale de ella, sin hojear a nadie (0139)
  *   lo_que_se_puede_facturar   los platos de la carta y los tipos del local
  *   hacer_factura_de_tickets   el canje (F3): uno o varios tickets, con su importe exacto
  *   hacer_factura_a_mano       la factura (F1), con conceptos libres
@@ -70,7 +68,7 @@ export interface ElClienteComprobado {
   readonly dice: string | null;
   /** El nombre que tiene Hacienda: es el que vale, o rechazan la factura. */
   readonly nombre: string | null;
-  /** Lo guardado de la vez anterior, si ya era cliente. */
+  /** Lo de su última factura, si ya tiene alguna. */
   readonly domicilio: string | null;
   readonly correo: string | null;
 }
@@ -198,91 +196,28 @@ export const comprobarAlCliente = comando<
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaSesion(contexto);
-    const comprobado = await comprobarElCliente(contexto, {
-      ...entrada,
-      nombre: entrada.nombre ?? '',
-    });
-    const [guardado] = await enLaBase(
+    const [suUltima] = await enLaBase(
       () => contexto.sql<{ domicilio: string; correo: string | null; nombre: string }[]>`
         select domicilio, correo, nombre
           from estook.el_cliente_por_su_numero(${localId}::uuid, ${entrada.identificador})
       `,
     );
+    const escrito = entrada.nombre?.trim() ?? '';
+    const nombre = escrito === '' ? (suUltima?.nombre ?? '') : escrito;
+    const lo = { domicilio: suUltima?.domicilio ?? null, correo: suUltima?.correo ?? null };
+    // Una persona sin nombre todavía: no es un error, es que lo va a escribir ahora. Hacienda no
+    // puede mirarla sin él, y se comprueba al salir de ese campo.
+    const forma = entrada.clase === 'de_fuera' ? null : comoEsElNif(limpiar(entrada.identificador));
+    if (forma?.valido === true && forma.persona === 'fisica' && nombre === '') {
+      return { vale: true, dice: null, nombre: null, ...lo };
+    }
+    const comprobado = await comprobarElCliente(contexto, { ...entrada, nombre });
     return {
       ...comprobado,
-      nombre: comprobado.nombre ?? guardado?.nombre ?? null,
-      domicilio: guardado?.domicilio ?? null,
-      correo: guardado?.correo ?? null,
+      // Lo que dice Hacienda es lo que vale. Lo de su última factura, solo si no ha escrito nada.
+      nombre: comprobado.nombre ?? (escrito === '' ? (suUltima?.nombre ?? null) : null),
+      ...lo,
     };
-  },
-});
-
-export interface UnClienteGuardado {
-  readonly id: string;
-  readonly clase: 'empresa' | 'particular' | 'de_fuera';
-  readonly nombre: string;
-  readonly identificador: string;
-  readonly idTipo: '02' | '03' | null;
-  readonly codigoPais: string | null;
-  readonly domicilio: string;
-  readonly correo: string | null;
-}
-
-export const losClientesDeFactura = consulta<
-  { buscar?: string | undefined },
-  readonly UnClienteGuardado[]
->({
-  nombre: 'los_clientes_de_factura',
-  entrada: z.object({ buscar: z.string().trim().max(60).optional() }).strict(),
-  exige: 'accion.factura_a_mano',
-  enElTpv: 'tambien',
-
-  async ejecutar(contexto, entrada) {
-    const localId = elLocalDeLaSesion(contexto);
-    const filas = await enLaBase(
-      () => contexto.sql<
-        {
-          id: string;
-          clase: UnClienteGuardado['clase'];
-          nombre: string;
-          identificador: string;
-          id_tipo: '02' | '03' | null;
-          codigo_pais: string | null;
-          domicilio: string;
-          correo: string | null;
-        }[]
-      >`
-        select id::text as id, clase, nombre, identificador, id_tipo, codigo_pais, domicilio, correo
-          from estook.los_clientes_de_factura(${localId}::uuid, ${entrada.buscar ?? null})
-      `,
-    );
-    return filas.map((f) => ({
-      id: f.id,
-      clase: f.clase,
-      nombre: f.nombre,
-      identificador: f.identificador,
-      idTipo: f.id_tipo,
-      codigoPais: f.codigo_pais,
-      domicilio: f.domicilio,
-      correo: f.correo,
-    }));
-  },
-});
-
-export const quitarElCliente = comando<{ cliente_id: string }, { readonly quitado: true }>({
-  nombre: 'quitar_el_cliente',
-  entrada: z.object({ cliente_id: z.string().uuid() }).strict(),
-  exige: 'accion.factura_a_mano',
-  enElTpv: 'tambien',
-
-  async ejecutar(contexto, entrada) {
-    const localId = elLocalDeLaSesion(contexto);
-    await enLaBase(
-      () => contexto.sql`
-        select estook.quitar_el_cliente_de_factura(${localId}::uuid, ${entrada.cliente_id}::uuid)
-      `,
-    );
-    return { quitado: true };
   },
 });
 
@@ -355,7 +290,7 @@ export interface FacturaHecha {
  * lo intentan a la vez. No mueve la caja ni el almacén: la venta ya se registró.
  */
 export const hacerFacturaDeTickets = comando<
-  { ticket_ids: string[]; cliente: ElClienteQueLlega; correo?: string | undefined },
+  { ticket_ids: string[]; cliente: ElClienteQueLlega },
   FacturaHecha
 >({
   nombre: 'hacer_factura_de_tickets',
@@ -363,7 +298,6 @@ export const hacerFacturaDeTickets = comando<
     .object({
       ticket_ids: z.array(z.string().uuid()).min(1).max(200),
       cliente: elCliente,
-      correo: z.string().trim().email().max(254).optional(),
     })
     .strict(),
   exige: 'accion.factura_de_un_ticket',
@@ -396,7 +330,6 @@ export const hacerFacturaDeTickets = comando<
       origen: 'canje',
       fechaOperacion,
       destinatario,
-      correo: entrada.correo,
     });
     const total = tickets.reduce((s, t) => s + t.total, 0);
     await enLaBase(
@@ -435,7 +368,6 @@ export const hacerFacturaAMano = comando<
     fecha_operacion?: string | undefined;
     cobrada: boolean;
     vencimiento?: string | undefined;
-    correo?: string | undefined;
   },
   FacturaHecha
 >({
@@ -448,7 +380,6 @@ export const hacerFacturaAMano = comando<
       fecha_operacion: z.string().date().optional(),
       cobrada: z.boolean(),
       vencimiento: z.string().date().optional(),
-      correo: z.string().trim().email().max(254).optional(),
     })
     .strict(),
   exige: 'accion.factura_a_mano',
@@ -487,7 +418,6 @@ export const hacerFacturaAMano = comando<
       fechaOperacion: (entrada.fecha_operacion ?? hoy) as FechaOperativa,
       destinatario,
       vencimiento: entrada.cobrada ? null : (entrada.vencimiento as FechaOperativa),
-      correo: entrada.correo,
     });
     if (entrada.cobrada) {
       await enLaBase(

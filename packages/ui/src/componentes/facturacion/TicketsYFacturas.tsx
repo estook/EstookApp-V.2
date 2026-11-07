@@ -414,7 +414,6 @@ export function TicketsYFacturas({
           <HacerFactura
             cliente={cliente}
             tickets={abierta.tickets}
-            puedeAMano={l.puede.aMano}
             puedeTodo={l.puede.todo}
             alHecha={(id, correoNoSalio) => {
               setAbierta({ que: 'documento', id, correoNoSalio });

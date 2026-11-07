@@ -119,10 +119,22 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
   await expect(factura).toContainText(`Canjeado por la factura F-BF`);
   await page.keyboard.press('Escape');
 
-  // A mano: el cliente de antes ya está guardado, un concepto libre y por cobrar.
+  // A mano: sin lista de clientes (0139). Al escribir su NIF, lo demás sale de su última factura;
+  // con otro número, eso se va; y un concepto libre, por cobrar.
   await page.getByRole('button', { name: 'Hacer una factura' }).click();
   const aMano = page.getByRole('dialog', { name: 'Hacer una factura' });
-  await aMano.getByRole('button', { name: /EJEMPLO NORTE SL/ }).click();
+  await expect(aMano.getByText('Busca un cliente')).toHaveCount(0);
+  const suNif = aMano.getByLabel('NIF', { exact: true });
+  await suNif.fill('B84935048');
+  await aMano.getByLabel('Nombre o razón social').click();
+  await expect(aMano.getByLabel('Domicilio')).toHaveValue('Pol. Ugaldeguren 4, Zamudio');
+  await expect(aMano).toContainText('De su última factura');
+  await expect(aMano.getByLabel('Nombre o razón social')).toHaveValue('EJEMPLO NORTE SL');
+  await suNif.fill('B12345674');
+  await expect(aMano.getByLabel('Domicilio')).toHaveValue('');
+  await expect(aMano.getByLabel('Nombre o razón social')).toHaveValue('');
+  await suNif.fill('B84935048');
+  await aMano.getByLabel('Nombre o razón social').click();
   await expect(aMano.getByLabel('Domicilio')).toHaveValue('Pol. Ugaldeguren 4, Zamudio');
   await aMano.getByRole('button', { name: 'Concepto libre' }).click();
   await aMano.getByLabel('Qué es', { exact: true }).fill('Alquiler del comedor');

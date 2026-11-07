@@ -43,7 +43,7 @@ const LAS_ACCIONES: readonly {
   {
     permiso: 'accion.factura_a_mano',
     nombre: 'Factura a mano',
-    explica: 'Con conceptos libres, y ver los clientes guardados.',
+    explica: 'Con conceptos libres, y marcar lo cobrado.',
     lee: (p) => p.aMano,
   },
   {

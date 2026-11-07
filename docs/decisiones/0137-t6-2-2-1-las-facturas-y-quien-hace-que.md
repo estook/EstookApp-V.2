@@ -44,7 +44,7 @@ Todo se puede cambiar con un interruptor, por eso no se paró a preguntar:
 
 1. **La factura a mano no es de los camareros de fábrica.** La de un ticket tiene el importe fijo y no
    puede inventar nada; la de a mano puede facturar lo que nunca se vendió.
-2. **El camarero ve hoy y ayer, y lo demás por su número exacto**, y no ve la lista de clientes: si
+2. **El camarero ve hoy y ayer, y lo demás por su número exacto**, y no ve la lista de clientes (que ya no existe, [0139](0139-sin-lista-de-clientes.md)): si
    escribe un NIF conocido, se rellena solo. Atiende al cliente que vuelve con su ticket sin poder
    hojear DNI y domicilios (RGPD, art. 5, datos mínimos).
 3. **El jefe de sala**, que su lista no nombraba, va como el gerente en facturas y consultar: suele ser
@@ -64,7 +64,7 @@ Todo se puede cambiar con un interruptor, por eso no se paró a preguntar:
   las reglas vigentes del local, la fecha de la comida, **el aviso del plazo** si es una empresa (art.
   11), y cobrada o por cobrar con su vencimiento y «Marcar cobrada». No mueve la caja ni el almacén.
 - **El cliente**: empresa o autónomo (el NIF trae el nombre de Hacienda), particular (nombre y DNI) o
-  de fuera (su número de IVA, mirado en el censo europeo, o su pasaporte). **Se guarda** para la vez
+  de fuera (su número de IVA, mirado en el censo europeo, o su pasaporte). **Se guardaba** ([ya no, 0139](0139-sin-lista-de-clientes.md)) para la vez
   siguiente; se puede quitar, y lo emitido lleva su copia y no cambia.
 - **El papel**: el A4 en PDF (Descargar y mandar por correo, que queda en su historia) y el de ticket.
   Los dos llevan **el precio unitario sin impuesto**.

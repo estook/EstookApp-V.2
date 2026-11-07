@@ -899,7 +899,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 ## 7.6 Facturación (esquema `facturacion`, solo inserción)
 
 - `serie` — local, empresa, tipo y **prefijo**, solo de inserción: la de ahora es la última de su local y su tipo (T6 · 1). **El ejercicio y el número los pone emitir** (T6 · 2), y pruebas y real numeran aparte
-- `canje` — qué tickets sustituye cada F3; `cobro_de_factura` — cuándo se cobró una hecha a mano; `copia_mandada` — a quién se le mandó y quién (T6 · 2 · 2 · 1, 0137). **Los clientes guardados no son fiscales** (`estook.cliente_de_factura`): se pueden quitar, y lo emitido lleva su copia
+- `canje` — qué tickets sustituye cada F3; `cobro_de_factura` — cuándo se cobró una hecha a mano; `copia_mandada` — a quién se le mandó y quién (T6 · 2 · 2 · 1, 0137). **No hay clientes guardados** ([0139](../decisiones/0139-sin-lista-de-clientes.md)): quien vuelve se rellena, al escribir su número entero, desde su última factura.
 - `documento` — empresa, serie, número, tipo, fecha de expedición, fecha de operación, destinatario si lo hay, base, cuota, total, **copia congelada de las líneas y del desglose**, **copia de los datos de la empresa del momento**, `sustituye_a` (F3), `rectifica_a` (R), referencia al cobro, y su identificador, que es **la clave de idempotencia** ante el proveedor ([0059](../decisiones/0059-emitir-un-documento-fiscal.md)). **Nace preparado y no cambia nunca más**
 - `registro` — documento, lo que devolvió el proveedor al registrarlo (`uuid`, **QR**, **huella**), y cada estado ante la AEAT que llegue después, **una fila por novedad**
 - `envio` — documento, **cada intento**: cuándo, qué se mandó, qué contestó, código

@@ -440,8 +440,6 @@ export interface LoQueSeEmite {
   readonly fechaOperacion?: FechaOperativa | undefined;
   readonly destinatario?: ElDestinatario | undefined;
   readonly vencimiento?: FechaOperativa | null | undefined;
-  /** Se guarda en el cliente, para la vez siguiente; no va en el documento. */
-  readonly correo?: string | null | undefined;
 }
 
 /**
@@ -466,7 +464,7 @@ export async function prepararUnDocumento(
           ${que.donde}, ${que.origen}, ${contexto.sesion?.aparato?.terminalId ?? null}::uuid,
           ${contexto.ahora.toISOString()}::timestamptz,
           ${que.destinatario === undefined ? null : JSON.stringify(que.destinatario)}::text::jsonb,
-          ${que.vencimiento ?? null}::date, ${que.correo ?? null}
+          ${que.vencimiento ?? null}::date
         )
     `,
   );

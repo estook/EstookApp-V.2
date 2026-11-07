@@ -1082,3 +1082,19 @@
      unitario sin impuesto, que pide el art. 6.1.f del RD 1619/2012, y nadie lo vio hasta leer el
      artículo entero antes de programarlo (6-nov). **Antes de programar un documento fiscal, se lee el
      artículo que dice qué lleva, y se compara línea a línea con lo dibujado.**
+257. **Una prueba que llama a la función por dentro no prueba que alguien la llame.** El repaso de los
+     documentos colgaba de un latido que `pg_cron` solo llama si hay algo para el móvil, y todas las
+     pruebas lo llamaban directamente: en verde, y en producción nada salía de «En Hacienda» (Richi, 7-nov).
+     **Lo que depende de un reloj se comprueba por los dos lados**: la función, y qué programa de verdad
+     la base (la migración y `bd:comprobar-api`). **Y se vigila el resultado, no solo que el reloj
+     exista**: el del móvil estaba programado y sonando. Si no se puede leer la causa de un fallo, se dice
+     que es una suposición y se comprueba al desplegar: la lección 255 arregló algo que no era.
+258. **Lo que corre por primera vez en producción no está probado por haber pasado contra una mentira.**
+     Al leer otra vez la especificación de Verifacti salieron un 409 sin tratar, una fecha que exige y no se
+     mandaba, y que su respuesta no trae el uuid. **El adaptador de un servicio de fuera lleva sus propias
+     pruebas, con lo que dice su especificación**, además del doble que usan las demás (7-nov).
+259. **Una suma en la pantalla sale de lo que representa, no de lo que se ve.** El total sumaba cada fila de
+     la lista: contaba dos veces un ticket y su factura, y con más de quinientos documentos salía corto sin
+     decir nada (Richi, 7-nov). **Antes de sumar documentos, se pregunta si dos de ellos son la misma venta, y
+     la cuenta se hace en la base, sobre todo lo pedido.** Y cuando algo se puede «volver a hacer», se prueba
+     a volver a hacerlo: un ticket con la factura rechazada no se podía facturar de nuevo.

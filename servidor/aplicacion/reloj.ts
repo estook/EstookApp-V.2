@@ -25,6 +25,7 @@ import { mandarElCorreoDelLunes, traerLoCobradoDeAntes } from './ventas.ts';
 import { loQueAvisaElReloj } from './lo-que-avisa-el-reloj.ts';
 import type { Contexto } from './contrato.ts';
 import { correoDeLaCuenta } from './correos.ts';
+import { losQueLlevanDemasiado } from './emitir.ts';
 import {
   aplicarLoDeStripe,
   conStripe,
@@ -235,6 +236,21 @@ export async function latir(
     await sinPararElReloj(contexto, 'limpiar lo del móvil', () => limpiarLoDelMovil(contexto));
     await sinPararElReloj(contexto, 'mandar lo del móvil', () => mandarLoDelMovil(contexto));
 
+    // Cada hora, si algún documento fiscal lleva demasiado sin terminar (0138). Este latido no
+    // depende del reloj de los documentos: si ese se para, se sabe por aquí.
+    await sinPararElReloj(contexto, 'mirar los documentos atascados', async () => {
+      const cuantos = await losQueLlevanDemasiado(contexto);
+      if (cuantos > 0) {
+        await apuntarUnFallo(
+          new Error(`${String(cuantos)} documentos fiscales llevan más de dos horas sin terminar`),
+          {
+            mensaje: 'hay documentos fiscales sin terminar: mira el reloj de los documentos',
+            correlacionId: contexto.correlacionId,
+          },
+        );
+      }
+    });
+
     // La noche del domingo al lunes, Fogón revisa los datos de los locales que lo tienen
     // encendido, unos pocos por latido (0098). Fuera de esa noche no hace nada.
     await sinPararElReloj(contexto, 'revisar los datos con Fogón', () =>
@@ -273,6 +289,18 @@ export async function latir(
       });
     }
     return { diario: true, ...hecho, programados };
+  });
+}
+
+/** Si quien llama es el reloj: lo mismo que miran los otros latidos, sin hacer nada más. */
+export async function esElReloj(contexto: Contexto, secreto: string | null): Promise<boolean> {
+  if (secreto === null || secreto === '') return false;
+  const huella = await huellaDe(secreto);
+  return enNombreDelSistema(contexto, async () => {
+    const reloj = await contexto.sql<{ unica: boolean }[]>`
+      select unica from plataforma.reloj where unica and huella = ${huella}
+    `;
+    return reloj[0] !== undefined;
   });
 }
 

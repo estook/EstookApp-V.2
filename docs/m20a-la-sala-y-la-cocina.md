@@ -580,6 +580,7 @@ justificante** llega con la página de «Pide tu factura» (T6 · 2 · 3).
   [maqueta](maquetas/t6-2-2-las-facturas.html)): la factura a mano (F1), el canje de uno o varios
   tickets (F3), los clientes guardados, el A4 y el papel de ticket, el correo, la lista con fechas y
   buscador, y **los permisos acción por acción**, en Estook y en Estook TPV. Pruebas 2, 6, 11 y 20.
+- **El reloj de los documentos y la auditoría de las facturas, hecho** (migración 0108, [0138](decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md)): lo que Richi vio al probar la primera parte en IKATZ. Nada salía de «En Hacienda» y el total contaba dos veces. **Va antes de lo siguiente**: devolver y anular se apoyan en ese estado.
 - **T6 · 2 · 2 · 2**, lo siguiente: las devoluciones (R5 y R1), corregir los datos del cliente (R4),
   anular y la señal de un evento, cada uno con su permiso y su motivo. Pruebas 13 y la R5 de la 12.
 

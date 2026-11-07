@@ -43,8 +43,9 @@ import { enNombreDelSistema, laApiPublica } from './pago.ts';
  *      la clave de idempotencia del documento. Lo que contesta se apunta en otra transacción
  *      corta. Ningún aparato espera a Verifacti para numerar, y una respuesta perdida no deja
  *      un número libre (0059).
- *   3. **Repasar**, cada minuto con el reloj: lo que se quedó a medias se termina con la misma
- *      clave, y lo que lleva una hora «Pendiente» se pregunta solo.
+ *   3. **Repasar**, con su propio reloj (`estook-documentos`, 0138): `pg_cron` mira cada minuto si
+ *      hay algo en `facturacion.por_repasar` y llama a `/tareas/documentos`. Lo que se quedó a medias
+ *      se termina con la misma clave, y lo que sigue «Pendiente» se pregunta solo.
  *
  * Lo que decide qué toca con cada documento es `elPlan`, sin red: así se prueba solo.
  */
@@ -319,20 +320,24 @@ export async function lasHistorias(
       en: string;
       del_ticket: string;
       de_la_factura: string;
+      sigue_en_pie: boolean;
     }[]
   >`
     select c.ticket_id::text as ticket_id, c.factura_id::text as factura_id, c.en::text as en,
            t.serie || lpad(t.numero::text, 6, '0') as del_ticket,
-           f.serie || lpad(f.numero::text, 6, '0') as de_la_factura
+           f.serie || lpad(f.numero::text, 6, '0') as de_la_factura,
+           facturacion.sigue_en_pie(c.factura_id) as sigue_en_pie
       from facturacion.canje c
       join facturacion.documento t on t.id = c.ticket_id
       join facturacion.documento f on f.id = c.factura_id
      where c.ticket_id = any (${ids as string[]}::uuid[])
         or c.factura_id = any (${ids as string[]}::uuid[])
+     order by c.en
   `;
   for (const c of canjes) {
     const delTicket = historias.get(c.ticket_id);
-    if (delTicket !== undefined) {
+    // Una factura que Hacienda no tiene no canjea nada: el ticket se puede volver a facturar (0138).
+    if (delTicket !== undefined && c.sigue_en_pie) {
       delTicket.factura = {
         id: c.factura_id,
         numero: c.de_la_factura,
@@ -409,6 +414,17 @@ export function comoEsta(doc: ElDocumento, h: LaHistoria): EstadoDelDocumento | 
   return elEstadoDelDocumento(losApuntes(h));
 }
 
+/**
+ * **La fecha que tiene Hacienda** (la del envío aceptado): es la del documento, la de su QR. Solo es
+ * otra que la de prepararlo si se mandó otro día, al volver la conexión (Anexo 4.11).
+ */
+export function laFechaDeExpedicion(doc: ElDocumento, h: LaHistoria): FechaOperativa {
+  return (
+    h.envios.findLast((e) => e.resultado === 'aceptado')?.fechaExpedicion ??
+    fechaEnElLocal(new Date(doc.preparadoEn), doc.zonaHoraria)
+  );
+}
+
 // ── Preparar (Anexo 4.9, pasos 1 a 4) ─────────────────────────────────────────────
 
 export interface LoQueSeEmite {
@@ -477,6 +493,37 @@ export function tocaPreguntar(edadMs: number): boolean {
   const cadaHora = Math.floor(PENDIENTE_DEMASIADO_MS / 60_000);
   if (minutos < cadaHora) return minutos % 5 === 0;
   return minutos % cadaHora <= 1;
+}
+
+/** Lo de la cola, con lo que hace falta para saber si toca esta vez. */
+export interface PorRepasar {
+  readonly id: string;
+  readonly preparadoEn: string;
+  readonly primerEnvio: string | null;
+  readonly ultimoRegistro: string | null;
+}
+
+/**
+ * **Qué toca repasar en este latido** (0138): cada uno cuando le toca, y los que todavía no están
+ * registrados, primero. Lo que no toca no ocupa sitio: cincuenta atascados no tapan a los demás. Y
+ * lo que no llega a Verifacti se reintenta cada vez menos, porque cada intento queda apuntado para
+ * siempre (solo inserción): con Verifacti caído una tarde no se llena la tabla.
+ */
+export function loQueTocaRepasar(
+  filas: readonly PorRepasar[],
+  ahora: Date,
+  deUnaVez = 50,
+): readonly string[] {
+  const edad = (en: string) => ahora.getTime() - new Date(en).getTime();
+  const tocan = filas.filter((f) =>
+    tocaPreguntar(edad(f.ultimoRegistro ?? f.primerEnvio ?? f.preparadoEn)),
+  );
+  return [
+    ...tocan.filter((f) => f.ultimoRegistro === null),
+    ...tocan.filter((f) => f.ultimoRegistro !== null),
+  ]
+    .slice(0, deUnaVez)
+    .map((f) => f.id);
 }
 
 export type ElPlan =
@@ -664,6 +711,11 @@ async function hacerElPlan(
       serie: doc.serie,
       numero: numeroEnTexto(doc.numero),
       fecha: fechaParaVerifacti(fecha),
+      // Verifacti la exige si fue en el registro original, y va cuando es otra (0138): sin ella no
+      // lo encontraría y se registraría dos veces.
+      ...(doc.fechaOperacion === fecha
+        ? {}
+        : { fechaOperacion: fechaParaVerifacti(doc.fechaOperacion) }),
     });
     if (uuid !== null) {
       // Ya lo tenía: aquel envío llegó. Se lee su registro y no se manda otro.
@@ -716,10 +768,17 @@ export interface ComoQuedo {
 export async function mandarLosDocumentos(
   enTransaccion: EnUnaTransaccion,
   ids: readonly string[],
-  como: { readonly alMomento: boolean; readonly imprimir: boolean },
+  como: {
+    readonly alMomento: boolean;
+    readonly imprimir: boolean;
+    /** Pasado esto no se empieza otro: lo que quede va en el latido siguiente. */
+    readonly plazoMs?: number;
+  },
 ): Promise<ComoQuedo[]> {
   const quedaron: ComoQuedo[] = [];
+  const empezo = Date.now();
   for (const id of ids) {
+    if (como.plazoMs !== undefined && Date.now() - empezo > como.plazoMs) break;
     try {
       const leido = await enTransaccion((contexto) =>
         enNombreDelSistema(contexto, async () => {
@@ -784,38 +843,65 @@ export async function mandarLosDocumentos(
 }
 
 /**
- * **Lo que se quedó a medias** (4.9, paso 7; prueba 8 y 17): los documentos de los últimos
- * treinta días que no han terminado. Lo llama el reloj cada minuto, como el sistema.
+ * **Lo que se quedó a medias** (4.9, paso 7; pruebas 8 y 17): lo que hay en la cola de los últimos
+ * treinta días, cuando le toca. Lo llama su propio reloj (`estook-documentos`, 0138), como el sistema,
+ * y **tiene menos de un minuto**: pasado el plazo, lo que falta espera al latido siguiente.
  */
+const PLAZO_DEL_REPASO_MS = 40_000;
+
 export async function repasarLosDocumentos(enTransaccion: EnUnaTransaccion): Promise<ComoQuedo[]> {
   const ids = await enTransaccion((contexto) =>
     enNombreDelSistema(contexto, async () => {
-      const filas = await contexto.sql<{ id: string }[]>`
-        select d.id::text as id
-          from facturacion.documento d
-         where d.modalidad = 'verifactu'
-           and d.preparado_en > ${contexto.ahora.toISOString()}::timestamptz - interval '30 days'
-           and not exists (
-             select 1 from facturacion.registro r
-              where r.documento_id = d.id
-                and lower(r.estado) not in ('pendiente', 'error servidor aeat')
-           )
-           and not exists (
-             select 1 from facturacion.envio e
-              where e.documento_id = d.id and e.resultado = 'rechazado_por_datos'
-           )
-         order by d.preparado_en
-         limit 50
+      const filas = await contexto.sql<
+        {
+          id: string;
+          desde: string;
+          primer_envio: string | null;
+          ultimo_registro: string | null;
+        }[]
+      >`
+        select p.documento_id::text as id, p.desde::text as desde,
+               (select min(e.en)::text from facturacion.envio e
+                 where e.documento_id = p.documento_id) as primer_envio,
+               (select max(r.en)::text from facturacion.registro r
+                 where r.documento_id = p.documento_id) as ultimo_registro
+          from facturacion.por_repasar p
+         where p.desde > ${contexto.ahora.toISOString()}::timestamptz - interval '30 days'
+         order by p.desde
+         limit 2000
       `;
-      return filas.map((f) => f.id);
+      return loQueTocaRepasar(
+        filas.map((f) => ({
+          id: f.id,
+          preparadoEn: f.desde,
+          primerEnvio: f.primer_envio,
+          ultimoRegistro: f.ultimo_registro,
+        })),
+        contexto.ahora,
+      );
     }),
   );
   const hechos = await mandarLosDocumentos(enTransaccion, ids, {
     alMomento: false,
     imprimir: false,
+    plazoMs: PLAZO_DEL_REPASO_MS,
   });
   await escucharLosAvisos(enTransaccion);
   return hechos;
+}
+
+/**
+ * **Lo que lleva demasiado sin terminar**, de cualquier cuenta. Lo mira el latido de cada hora, que
+ * no depende de este reloj: si el repaso se para otra vez, se sabe por Sentry y no porque lo vea un
+ * cliente (lección 257).
+ */
+export async function losQueLlevanDemasiado(contexto: Contexto): Promise<number> {
+  const [fila] = await contexto.sql<{ cuantos: number }[]>`
+    select count(*)::int as cuantos from facturacion.por_repasar p
+     where p.desde < ${contexto.ahora.toISOString()}::timestamptz - interval '2 hours'
+       and p.desde > ${contexto.ahora.toISOString()}::timestamptz - interval '30 days'
+  `;
+  return fila?.cuantos ?? 0;
 }
 
 // ── La campana ────────────────────────────────────────────────────────────────────
@@ -966,7 +1052,7 @@ export async function aplicarElAvisoDeVerifacti(
 /**
  * Que los avisos de cada NIF que emite lleguen (4.10): con el secreto puesto, el reloj da de
  * alta el aviso del entorno en Verifacti y le añade los NIF que falten. **No es una garantía**:
- * el repaso pregunta igual lo que lleve una hora pendiente.
+ * el repaso pregunta igual lo que siga pendiente.
  */
 async function escucharLosAvisos(enTransaccion: EnUnaTransaccion): Promise<void> {
   const secreto = elSecretoDeLosAvisos();
@@ -989,13 +1075,16 @@ async function escucharLosAvisos(enTransaccion: EnUnaTransaccion): Promise<void>
       }),
     );
     if (faltan.verifacti === null) return;
+    // El aviso que se acaba de crear vale para el NIF siguiente: dos NIF, un solo aviso.
+    const yaCreados = new Map<EntornoDeVerifacti, string>();
     for (const f of faltan.filas) {
       const entorno: EntornoDeVerifacti = f.entorno === 'real' ? 'prod' : 'test';
       const aviso = await faltan.verifacti.escucharElNif(entorno, f.nif, {
-        id: f.aviso,
+        id: yaCreados.get(entorno) ?? f.aviso,
         url: dondeLleganLosAvisos(),
         secreto,
       });
+      yaCreados.set(entorno, aviso);
       await enTransaccion((contexto) =>
         enNombreDelSistema(
           contexto,
@@ -1062,14 +1151,17 @@ export function elPapelDelDocumento(
   }));
   if (doc.destinatario !== null) {
     if (doc.modalidad !== 'fuera_sii' && conQr === undefined) return null;
+    const expedicion = laFechaDeExpedicion(doc, h);
     return laFacturaEnPapel({
       empresa,
       titulo: `Factura ${elNumeroEntero(doc.serie, doc.numero)}`,
-      cuando,
+      // La fecha que tiene Hacienda: si se mandó otro día, la hora de prepararla ya no es su fecha.
+      cuando:
+        expedicion === fechaEnElLocal(new Date(doc.preparadoEn), doc.zonaHoraria)
+          ? cuando
+          : fechaLegible(expedicion),
       fechaDeLaOperacion:
-        doc.fechaOperacion === fechaEnElLocal(new Date(doc.preparadoEn), doc.zonaHoraria)
-          ? null
-          : fechaLegible(doc.fechaOperacion),
+        doc.fechaOperacion === expedicion ? null : fechaLegible(doc.fechaOperacion),
       sustituye: h.sustituye.map((t) => t.numero),
       vence: doc.vencimiento === null ? null : fechaLegible(doc.vencimiento),
       para: {

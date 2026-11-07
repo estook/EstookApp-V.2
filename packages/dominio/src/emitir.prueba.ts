@@ -13,6 +13,7 @@ import {
   elPlazoDeLaFactura,
   juntarLasLineas,
   lineasDeLaFactura,
+  sePuedeEntregar,
   porQueNoSeCanjea,
 } from './emitir.ts';
 import { elJustificanteEnPapel, elTicketEnPapel, esPapelCompuesto } from './impresion.ts';
@@ -234,6 +235,40 @@ describe('la factura (T6 · 2 · 2 · 1, 0137)', () => {
     expect(lineasDeLaFactura([linea('Alquiler', 1, 15_000, 0.21)])[0]?.precioSinImpuesto).toBe(
       '123,97',
     );
+  });
+
+  it('las bases de las líneas suman la del desglose, también al céntimo (0138)', () => {
+    // Una a una suman 2,73 de 3 × 0,91; el impuesto sobre el grupo da 2,72 de base... o al revés:
+    // sea cual sea, en la factura no pueden salir dos sumas distintas.
+    const casos: LineaVendida[][] = [
+      [linea('A', 1, 100), linea('B', 1, 100), linea('C', 1, 100)],
+      [linea('A', 1, 105), linea('B', 1, 105), linea('C', 1, 105), linea('D', 1, 105)],
+      [linea('A', 5, 750), linea('B', 3, 450), linea('C', 1, 19), linea('D', 1, 19)],
+      [linea('A', 1, 121, 0.21), linea('B', 1, 133, 0.21), linea('C', 1, 110), linea('D', 1, 17)],
+      Array.from({ length: 40 }, (_, i) => linea(`Plato ${String(i)}`, 1, 95 + i)),
+    ];
+    for (const lineas of casos) {
+      const facturadas = lineasDeLaFactura(lineas);
+      const d = elDesglose(lineas);
+      expect(facturadas.reduce((s, l) => s + l.base, 0)).toBe(d.base);
+      for (const g of d.lineas) {
+        const suyas = facturadas.filter((_, i) => lineas[i]?.tipo === g.tipo);
+        expect(suyas.reduce((s, l) => s + l.base, 0)).toBe(g.base);
+      }
+    }
+  });
+
+  it('una factura sin líneas no rompe nada', () => {
+    expect(lineasDeLaFactura([])).toEqual([]);
+  });
+
+  it('lo que Hacienda no tiene no se entrega; lo demás, sí (0138)', () => {
+    expect(sePuedeEntregar('rechazado')).toBe(false);
+    expect(sePuedeEntregar('rechazado_por_datos')).toBe(false);
+    expect(sePuedeEntregar('anulado')).toBe(false);
+    for (const estado of ['pendiente', 'correcto', 'aceptado_con_errores', 'fuera_sii'] as const) {
+      expect(sePuedeEntregar(estado)).toBe(true);
+    }
   });
 
   it('los platos iguales se juntan y el total no cambia; los distintos, no', () => {

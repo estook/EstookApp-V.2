@@ -46,6 +46,9 @@ export const PENDIENTE_DEMASIADO_MS = 60 * 60 * 1000;
 /** Lo que espera el trabajo antes de terminar un documento que se quedó a medias (4.9, paso 7). */
 export const A_MEDIAS_DESDE_MS = 2 * 60 * 1000;
 
+/** Pasado esto sin saber nada de Hacienda, se dice arriba de la lista: lo normal es un minuto. */
+export const TARDA_DEMASIADO_MS = 24 * 60 * 60 * 1000;
+
 // ── El número ─────────────────────────────────────────────────────────────────────
 
 /** El número, con seis cifras: 37 → «000037». Hacienda lo recibe como texto. */
@@ -377,6 +380,14 @@ export function hayQueHacerAlgo(estado: EstadoDelDocumento): boolean {
   );
 }
 
+/**
+ * **Si se le puede dar a alguien** (0138): lo que Hacienda no tiene no se reimprime ni se manda por
+ * correo, porque su QR no llevaría a ningún sitio. Se puede seguir mirando y descargando.
+ */
+export function sePuedeEntregar(estado: EstadoDelDocumento | 'fuera_sii'): boolean {
+  return estado !== 'rechazado' && estado !== 'rechazado_por_datos' && estado !== 'anulado';
+}
+
 /** La chapa de la lista, como en la maqueta aprobada (0125). */
 export const LA_CHAPA: Readonly<
   Record<
@@ -435,11 +446,21 @@ export function loQueDiceEnLlano(
   }
 }
 
+/** Lo que lleva más de un día sin que Hacienda diga nada: no hay que hacer nada, pero se dice. */
+export const LO_QUE_TARDA: LoQueDiceEnLlano = {
+  que: 'Hacienda lleva más de un día sin contestar a este documento.',
+  hacer: 'Estook sigue preguntando solo. Si mañana sigue igual, escríbenos y lo miramos.',
+};
+
 // ── La factura ────────────────────────────────────────────────────────────────────
 
 /**
  * **Lo que lleva cada línea de una factura completa** (RD 1619/2012, art. 6.1.f, g): el precio
  * unitario sin impuesto, el tipo y su base. Lo vendido viene con el impuesto dentro, como la carta.
+ *
+ * **Las bases de las líneas suman la base del desglose**, que es la que va a Hacienda (0138): el
+ * impuesto se calcula sobre el total de cada grupo, y sacar la base línea a línea puede diferir en
+ * algún céntimo. Una factura no puede enseñar dos sumas distintas: lo que sobra va a su línea mayor.
  */
 export interface LineaDeLaFactura {
   readonly nombre: string;
@@ -453,8 +474,22 @@ export interface LineaDeLaFactura {
 }
 
 export function lineasDeLaFactura(lineas: readonly LineaVendida[]): LineaDeLaFactura[] {
-  return lineas.map((l) => {
-    const base: number = entreFactor(centimos(l.importe), 1 + l.tipo);
+  const bases = lineas.map((l): number => entreFactor(centimos(l.importe), 1 + l.tipo));
+  if (lineas.length > 0) {
+    for (const grupo of elDesglose(lineas).lineas) {
+      const suyas = lineas.flatMap((l, i) =>
+        l.regimen === grupo.regimen && l.tipo === grupo.tipo ? [i] : [],
+      );
+      const sobra = grupo.base - suyas.reduce((s, i) => s + (bases[i] ?? 0), 0);
+      const mayor = suyas.reduce(
+        (m, i) => (Math.abs(bases[i] ?? 0) > Math.abs(bases[m] ?? 0) ? i : m),
+        suyas[0] ?? 0,
+      );
+      bases[mayor] = (bases[mayor] ?? 0) + sobra;
+    }
+  }
+  return lineas.map((l, i) => {
+    const base = bases[i] ?? 0;
     const unidad = base / 100 / l.cantidad;
     const conDos = unidad.toFixed(2);
     const exacto = Math.abs(Number(conDos) * l.cantidad * 100 - base) < 0.5;

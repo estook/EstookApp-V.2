@@ -1305,6 +1305,15 @@ try {
         tarea === 'sin_permiso',
         tarea === 'sin_permiso' ? '' : `contesta «${tarea}»`,
       );
+      // Y el del reloj de los documentos (0138).
+      const repaso = await fetch(`${raiz}/tareas/documentos`, { method: 'POST', body: '{}' })
+        .then(async (r) => (await r.json())?.error?.codigo ?? 'la_conoce')
+        .catch(() => 'no_contesta');
+      comprobar(
+        'y conoce /tareas/documentos, cerrada sin el secreto del reloj',
+        repaso === 'sin_permiso',
+        repaso === 'sin_permiso' ? '' : `contesta «${repaso}»`,
+      );
 
       // Todas las consultas del catalogo, que es la lista de verdad y no una
       // copia: si manana se anade una y no se despliega, esto lo dice solo.
@@ -1391,6 +1400,7 @@ try {
   // tabla solo la ve «el sistema», y esta herramienta no se hace pasar por él.
   const [reloj] = await conexion`
     select programado, to_jsonb(r) -> 'movil_programado' as movil_programado,
+           to_jsonb(r) -> 'documentos_programado' as documentos_programado,
            ultimo_latido, ultimo_diario::text as ultimo_diario,
            now() - ultimo_latido < interval '2 hours' as reciente
       from plataforma.reloj r where unica
@@ -1403,6 +1413,26 @@ try {
       'y el de los avisos al móvil, cada minuto (0070)',
       reloj.movil_programado === true,
       reloj.movil_programado === undefined ? 'falta la 0054' : '',
+    );
+    comprobar(
+      'y el de los documentos fiscales, cada minuto (0138)',
+      reloj.documentos_programado === true,
+      reloj.documentos_programado === undefined ? 'falta la 0108' : '',
+    );
+    // Lo que de verdad importa: que no se quede nada a medias. Tener el reloj programado no lo
+    // garantiza: el del móvil lo estaba, y nada salía de «En Hacienda» (lección 257).
+    const atascados = await conexion`
+      select count(*)::int as cuantos from facturacion.por_repasar
+       where desde < now() - interval '2 hours' and desde > now() - interval '30 days'
+    `.catch(() => null);
+    comprobar(
+      'y ningún documento lleva más de dos horas sin saber de Hacienda',
+      atascados?.[0]?.cuantos === 0,
+      atascados === null
+        ? 'falta la 0108'
+        : atascados[0].cuantos === 0
+          ? ''
+          : `${atascados[0].cuantos} sin terminar: ¿está desplegada la API con la 0108?`,
     );
     comprobar(
       'y ha latido en las dos últimas horas',

@@ -1,15 +1,19 @@
 import { z } from 'zod';
 import {
   LA_CHAPA,
+  LO_QUE_TARDA,
   NOMBRE_DEL_DOCUMENTO,
   POR_QUE_NO_SE_CANJEA,
+  TARDA_DEMASIADO_MS,
   elNumeroEntero,
+  faltaAlgo,
   fechaEnElLocal,
   hayQueHacerAlgo,
   horaEnElLocal,
   loQueDiceEnLlano,
   masDias,
   porQueNoSeCanjea,
+  sePuedeEntregar,
   type ElDestinatario,
   type EstadoDelDocumento,
   type FechaOperativa,
@@ -133,6 +137,11 @@ export const reimprimirElDocumento = comando<
         porque: 'Todavía no hay nada que imprimir: está esperando a Hacienda.',
       });
     }
+    if (!sePuedeEntregar(comoEsta(doc, h))) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Hacienda no lo tiene: hay que corregirlo antes de dárselo a nadie.',
+      });
+    }
     if ((await laImpresoraDe(contexto, localId, 'caja')) === null) {
       throw new FalloDeAplicacion('faltan_datos', {
         porque: 'Tu local no tiene impresora de caja. Se pone en Ajustes del TPV › Impresoras.',
@@ -206,7 +215,11 @@ export interface TicketsYFacturas {
   readonly documentos: readonly UnoDeLaLista[];
   /** Lo que alguien tiene que mirar, arriba y en llano, **sea del día que sea** (Anexo 4.10). */
   readonly loQueFalla: readonly LoQueFalla[];
+  /** Cuántos llevan más de un día sin que Hacienda conteste, sean del día que sean. */
+  readonly tardan: number;
+  /** **De todo lo que se ha pedido**, aunque la lista enseñe solo los últimos quinientos. */
   readonly cuantos: number;
+  /** Sin contar dos veces: el ticket canjeado no suma si su factura también está (0138). */
   readonly total: number;
   readonly correctos: number;
   /** Si la facturación del local está en pruebas: todo lleva «PRUEBA · SIN VALIDEZ». */
@@ -245,8 +258,13 @@ function laLinea(
   };
 }
 
-function loQueFallaDe(linea: UnoDeLaLista, h: LaHistoria): LoQueFalla | null {
-  if (linea.estado === 'fuera_sii' || !hayQueHacerAlgo(linea.estado)) return null;
+function loQueFallaDe(linea: UnoDeLaLista, h: LaHistoria, edadMs: number): LoQueFalla | null {
+  if (linea.estado === 'fuera_sii') return null;
+  // Sin saber nada de Hacienda más de un día: que nadie se crea que «En Hacienda» es que está bien.
+  if (faltaAlgo(linea.estado) && edadMs > TARDA_DEMASIADO_MS) {
+    return { id: linea.id, numero: linea.numero, ...LO_QUE_TARDA };
+  }
+  if (!hayQueHacerAlgo(linea.estado)) return null;
   const ultimo = h.registros.at(-1);
   const rechazo = h.envios.findLast((e) => e.resultado === 'rechazado_por_datos');
   const mensaje =
@@ -265,10 +283,8 @@ async function laZonaDelLocal(contexto: Contexto, localId: string): Promise<stri
   return l?.zona_horaria ?? 'Europe/Madrid';
 }
 
-const unaFecha = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .optional();
+// `date()` rechaza también las que no existen, como el 31 de febrero: no llegan a la base.
+const unaFecha = z.string().date().optional();
 
 /** Los documentos de la lista, ya leídos y en orden. */
 async function leerLosDocumentos(contexto: Contexto, ids: readonly string[]) {
@@ -321,44 +337,70 @@ export const ticketsYFacturas = consulta<
     const que = entrada.que ?? 'todos';
     const exacto = buscar.replace(/\s+/g, '').toUpperCase();
     const parecido = `%${buscar}%`;
-    const filas = await contexto.sql<{ id: string }[]>`
-      select d.id::text as id from facturacion.documento d
-       where d.local_id = ${localId}::uuid
-         and (
-           ${buscar === ''}
-             and (d.preparado_en at time zone ${zona})::date between ${desde}::date and ${hasta}::date
-           or ${buscar !== ''} and (
-             d.serie || lpad(d.numero::text, 6, '0') = ${exacto}
-             or ${puede.todo} and (
-               d.serie || lpad(d.numero::text, 6, '0') ilike ${parecido}
-               or d.destinatario ->> 'nombre' ilike ${parecido}
-               or d.destinatario ->> 'identificador' ilike ${parecido}
+    // **Las cuentas salen de todo lo pedido, en la base**: con fechas largas se pueden pasar de los
+    // quinientos que enseña la lista, y un total sacado de la lista saldría mal sin decir nada. Un
+    // ticket canjeado no suma si su factura está también, porque es la misma venta, y lo que Hacienda
+    // no tiene no suma (0138). «Con algo pendiente» es todo lo que no está bien ni anulado, que es
+    // como lo lee `elEstadoDelDocumento`.
+    const filas = await contexto.sql<
+      { id: string; cuantos: number; total: number; correctos: number }[]
+    >`
+      with los as (
+        select d.id, d.total, d.modalidad, d.preparado_en,
+               (select lower(btrim(r.estado)) from facturacion.registro r
+                 where r.documento_id = d.id
+                 order by r.en desc, r.id desc limit 1) as ultimo
+          from facturacion.documento d
+         where d.local_id = ${localId}::uuid
+           and (
+             ${buscar === ''}
+               and (d.preparado_en at time zone ${zona})::date between ${desde}::date and ${hasta}::date
+             or ${buscar !== ''} and (
+               d.serie || lpad(d.numero::text, 6, '0') = ${exacto}
+               or ${puede.todo} and (
+                 d.serie || lpad(d.numero::text, 6, '0') ilike ${parecido}
+                 or d.destinatario ->> 'nombre' ilike ${parecido}
+                 or d.destinatario ->> 'identificador' ilike ${parecido}
+               )
              )
            )
-         )
-         and (${que !== 'tickets'} or d.tipo = 'F2')
-         and (${que !== 'facturas'} or d.tipo in ('F1', 'F3'))
-         and (${que !== 'por_cobrar'} or (
-           d.vencimiento is not null
-           and not exists (select 1 from facturacion.cobro_de_factura c where c.documento_id = d.id)
-         ))
-       order by d.preparado_en desc
+           and (${que !== 'tickets'} or d.tipo = 'F2')
+           and (${que !== 'facturas'} or d.tipo in ('F1', 'F3'))
+           and (${que !== 'por_cobrar'} or (
+             d.vencimiento is not null
+             and not exists (select 1 from facturacion.cobro_de_factura c where c.documento_id = d.id)
+           ))
+      ),
+      pedidos as (
+        select * from los
+         where ${que !== 'pendiente'}
+            or (modalidad = 'verifactu' and coalesce(ultimo, '') not in ('correcto', 'duplicado', 'anulado'))
+      ),
+      con_lo_que_suma as (
+        select p.*,
+               case when not facturacion.sigue_en_pie(p.id) then 0
+                    when exists (
+                      select 1 from facturacion.canje c
+                       where c.ticket_id = p.id
+                         and c.factura_id in (select id from pedidos)
+                         and facturacion.sigue_en_pie(c.factura_id)
+                    ) then 0
+                    else p.total end as suma
+          from pedidos p
+      )
+      select id::text as id,
+             (count(*) over ())::int as cuantos,
+             (sum(suma) over ())::int as total,
+             (count(*) filter (where modalidad = 'fuera_sii' or ultimo in ('correcto', 'duplicado')) over ())::int as correctos
+        from con_lo_que_suma
+       order by preparado_en desc
        limit 500
     `;
     const leidos = await leerLosDocumentos(
       contexto,
       filas.map((f) => f.id),
     );
-    const documentos = leidos
-      .map((l) => l.linea)
-      .filter(
-        (l) =>
-          que !== 'pendiente' ||
-          l.estado === 'preparado' ||
-          l.estado === 'enviando' ||
-          l.estado === 'pendiente' ||
-          (l.estado !== 'fuera_sii' && hayQueHacerAlgo(l.estado)),
-      );
+    const documentos = leidos.map((l) => l.linea);
 
     // Lo que falla, **sea del día que sea**: un rechazo de hace tres días sigue por corregir.
     const loQueFalla: LoQueFalla[] = [];
@@ -385,9 +427,30 @@ export const ticketsYFacturas = consulta<
         contexto,
         conProblemas.map((f) => f.id),
       )) {
-        const falla = loQueFallaDe(linea, h);
+        const falla = loQueFallaDe(linea, h, 0);
         if (falla !== null) loQueFalla.push(falla);
       }
+    }
+    // Lo que lleva más de un día sin contestar, **en una sola frase**: con Verifacti caído un día
+    // serían todos los tickets, y aquí no hay nada que hacer con cada uno (Un compañero, no un policía).
+    let tardan = 0;
+    if (puede.todo) {
+      const [fila] = await contexto.sql<{ cuantos: number }[]>`
+        select count(*)::int as cuantos from facturacion.documento d
+         where d.local_id = ${localId}::uuid
+           and d.modalidad = 'verifactu'
+           and d.preparado_en > ${contexto.ahora.toISOString()}::timestamptz - interval '90 days'
+           and d.preparado_en < ${new Date(contexto.ahora.getTime() - TARDA_DEMASIADO_MS).toISOString()}::timestamptz
+           and not exists (
+             select 1 from facturacion.envio e
+              where e.documento_id = d.id and e.resultado = 'rechazado_por_datos'
+           )
+           and coalesce((
+             select lower(btrim(r.estado)) from facturacion.registro r
+              where r.documento_id = d.id order by r.en desc, r.id desc limit 1
+           ), 'pendiente') in ('pendiente', 'error servidor aeat')
+      `;
+      tardan = fila?.cuantos ?? 0;
     }
     const [empresa] = await contexto.sql<{ entorno: string }[]>`
       select e.entorno from estook.local l join estook.empresa e on e.id = l.empresa_id
@@ -398,10 +461,10 @@ export const ticketsYFacturas = consulta<
       hasta,
       documentos,
       loQueFalla,
-      cuantos: documentos.length,
-      total: documentos.reduce((s, d) => s + d.total, 0),
-      correctos: documentos.filter((d) => d.estado === 'correcto' || d.estado === 'fuera_sii')
-        .length,
+      tardan,
+      cuantos: filas[0]?.cuantos ?? 0,
+      total: filas[0]?.total ?? 0,
+      correctos: filas[0]?.correctos ?? 0,
       enPruebas: empresa === undefined || empresa.entorno === 'pruebas',
       puede,
     };
@@ -427,6 +490,8 @@ export interface UnDocumento extends UnoDeLaLista {
   readonly destinatario: ElDestinatario | null;
   readonly factura: { readonly id: string; readonly numero: string } | null;
   readonly sustituye: readonly { readonly id: string; readonly numero: string }[];
+  /** Si se puede imprimir o mandar: lo que Hacienda no tiene, no (0138). */
+  readonly seEntrega: boolean;
   readonly puede: LoQuePuede;
 }
 
@@ -534,10 +599,15 @@ export const unDocumento = consulta<{ documento_id: string }, UnDocumento>({
       historia,
       papel: elPapelDelDocumento(doc, h, false),
       url: h.registros.find((r) => r.url !== null)?.url ?? null,
-      loQueFalla: loQueFallaDe(linea, h),
+      loQueFalla: loQueFallaDe(
+        linea,
+        h,
+        contexto.ahora.getTime() - new Date(doc.preparadoEn).getTime(),
+      ),
       destinatario: doc.destinatario,
       factura: h.factura === null ? null : { id: h.factura.id, numero: h.factura.numero },
       sustituye: h.sustituye,
+      seEntrega: sePuedeEntregar(linea.estado),
       puede,
     };
   },

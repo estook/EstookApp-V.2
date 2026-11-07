@@ -53,6 +53,7 @@ interface LaLista {
   readonly hasta: string;
   readonly documentos: readonly UnoDeLaLista[];
   readonly loQueFalla: readonly LoQueFalla[];
+  readonly tardan: number;
   readonly cuantos: number;
   readonly total: number;
   readonly correctos: number;
@@ -71,6 +72,7 @@ interface UnDocumento extends UnoDeLaLista {
   readonly loQueFalla: LoQueFalla | null;
   readonly factura: { readonly id: string; readonly numero: string } | null;
   readonly sustituye: readonly { readonly id: string; readonly numero: string }[];
+  readonly seEntrega: boolean;
   readonly puede: LoQuePuede;
 }
 
@@ -90,7 +92,7 @@ const LO_QUE_SE_FILTRA: readonly { readonly valor: Que; readonly texto: string }
 ];
 
 type Abierta =
-  | { readonly que: 'documento'; readonly id: string }
+  | { readonly que: 'documento'; readonly id: string; readonly correoNoSalio?: boolean }
   | { readonly que: 'factura'; readonly tickets: readonly TicketParaFacturar[] | null }
   | null;
 
@@ -235,6 +237,19 @@ export function TicketsYFacturas({
         </Aviso>
       ))}
 
+      {l.tardan > 0 && (
+        <Aviso
+          tono="info"
+          titulo={
+            l.tardan === 1
+              ? 'Un documento lleva más de un día sin que conteste Hacienda'
+              : `${String(l.tardan)} documentos llevan más de un día sin que conteste Hacienda`
+          }
+        >
+          Estook sigue preguntando solo. Si mañana sigue igual, escríbenos y lo miramos.
+        </Aviso>
+      )}
+
       <div className="grid grid-cols-3 gap-e3">
         <LaCifra valor={String(l.cuantos)} que={l.cuantos === 1 ? 'documento' : 'documentos'} />
         <LaCifra valor={importeDelDocumento(l.total)} que="en total" />
@@ -351,6 +366,13 @@ export function TicketsYFacturas({
         }
       />
 
+      {l.cuantos > l.documentos.length && (
+        <p className="text-secundario text-texto-suave">
+          Salen los {l.documentos.length} últimos de {l.cuantos}. Las cifras de arriba son de todos;
+          para ver los demás, acorta las fechas.
+        </p>
+      )}
+
       {l.enPruebas && (
         <p className="text-etiqueta text-texto-suave">
           En pruebas: nada de esto llega a Hacienda de verdad, y cada papel lleva «PRUEBA · SIN
@@ -377,6 +399,7 @@ export function TicketsYFacturas({
           <ElDocumento
             key={abierta.id}
             id={abierta.id}
+            correoNoSalio={abierta.correoNoSalio === true}
             cliente={cliente}
             conLaImpresora={conLaImpresora === true}
             alAbrir={(id) => {
@@ -393,8 +416,8 @@ export function TicketsYFacturas({
             tickets={abierta.tickets}
             puedeAMano={l.puede.aMano}
             puedeTodo={l.puede.todo}
-            alHecha={(id) => {
-              setAbierta({ que: 'documento', id });
+            alHecha={(id, correoNoSalio) => {
+              setAbierta({ que: 'documento', id, correoNoSalio });
               void lista.otraVez();
             }}
           />
@@ -430,12 +453,14 @@ function bajarElPdf(pdf: {
 /** Como se imprimió, su historia y lo que se puede hacer (maqueta de T6, 4; de T6 · 2 · 2, 6). */
 function ElDocumento({
   id,
+  correoNoSalio,
   cliente,
   conLaImpresora,
   alAbrir,
   alFacturar,
 }: {
   readonly id: string;
+  readonly correoNoSalio: boolean;
   readonly cliente: ClienteDeFacturas;
   readonly conLaImpresora: boolean;
   readonly alAbrir: (id: string) => void;
@@ -477,7 +502,7 @@ function ElDocumento({
   const d = doc.datos;
   const esFactura = d.cliente !== null;
   const puedeFacturar = d.puede.deUnTicket && d.tipo === 'F2' && d.porQueNoSeCanjea === null;
-  const puedeImprimir = d.puede.deUnTicket && d.papel !== null;
+  const puedeImprimir = d.puede.deUnTicket && d.papel !== null && d.seEntrega;
 
   const imprimir = puedeImprimir && (
     <Boton
@@ -543,6 +568,13 @@ function ElDocumento({
         </Aviso>
       )}
 
+      {correoNoSalio && d.loQueFalla === null && (
+        <Aviso tono="atencion" titulo="El correo no ha salido">
+          La factura está hecha, pero al cliente no le ha llegado. Prueba otra vez con «Mandar por
+          correo», o descárgala y dásela.
+        </Aviso>
+      )}
+
       <div className="flex flex-wrap gap-e2">
         {puedeFacturar && (
           <Boton
@@ -575,7 +607,7 @@ function ElDocumento({
             {imprimir}
           </>
         )}
-        {d.puede.deUnTicket && d.papel !== null && (
+        {d.puede.deUnTicket && d.papel !== null && d.seEntrega && (
           <Boton
             tono="secundario"
             onClick={() => {

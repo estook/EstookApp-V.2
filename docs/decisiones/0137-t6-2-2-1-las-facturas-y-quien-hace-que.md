@@ -77,7 +77,8 @@ Todo se puede cambiar con un interruptor, por eso no se paró a preguntar:
    preguntaba solo en el minuto 2 y en cada hora: si Hacienda contestaba en el minuto 3 y el aviso no
    llegaba, se quedaba una hora. Ahora, **en cada latido hasta los cinco minutos, cada cinco hasta la
    hora y cada hora**, con dos latidos de margen (`tocaPreguntar`). **La causa exacta en IKATZ no se ha
-   podido leer**; el aviso de Verifacti hay que verlo en su panel.
+   podido leer**; el aviso de Verifacti hay que verlo en su panel. **Esto no lo arregló**: la causa era otra, y
+   está en la [0138](0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md).
 2. **El A4 aprobado el 2-nov no llevaba el precio unitario sin impuesto**, que pide el RD 1619/2012,
    art. 6.1.f (leído en el BOE el 6-nov).
 3. **El año de la serie salía de la fecha de la operación**: una factura de enero por una comida de

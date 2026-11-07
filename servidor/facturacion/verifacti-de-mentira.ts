@@ -193,7 +193,11 @@ export function verifactiDeMentira(): VerifactiDeMentira {
     },
 
     buscarEnHacienda(nif, entorno, factura) {
-      apuntar(`buscar ${entorno} ${factura.serie}${factura.numero}`);
+      apuntar(
+        `buscar ${entorno} ${factura.serie}${factura.numero}${
+          factura.fechaOperacion === undefined ? '' : ` operación ${factura.fechaOperacion}`
+        }`,
+      );
       const r = registros.find(
         (x) =>
           x.nif === nif &&

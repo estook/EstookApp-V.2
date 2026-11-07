@@ -35,7 +35,7 @@ hasta las once condiciones del capítulo 9 del Anexo.
    milisegundos: ningún aparato espera a Verifacti para numerar.
 2. **Mandar, con el comando ya guardado y sin ninguna transacción abierta**, con la clave de
    idempotencia del documento. Lo que contesta, en otra transacción corta.
-3. **Repasar, cada minuto con el reloj**: lo que se quedó «enviando» se termina con la misma clave,
+3. **Repasar, cada minuto con el reloj** (**no era verdad**: colgaba del latido del móvil, que solo suena con avisos; lo arregla la [0138](0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md)): lo que se quedó «enviando» se termina con la misma clave,
    y lo «pendiente» se pregunta a Verifacti.
 4. **Los avisos de Verifacti** entran en `/avisos/verifacti`, firmados con un secreto y una sola
    vez por su `X-Webhook-Id`.

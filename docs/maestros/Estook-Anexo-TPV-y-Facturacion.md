@@ -509,8 +509,8 @@ FUERA DE LA TRANSACCION
    ├─ 429 → se reintenta con espera creciente y la MISMA clave
    └─ sin respuesta (timeout, 5xx, sin red) → se pregunta el estado
             (/verifactu/status); si Verifacti no contesta, justificante (4.11)
-7. Un trabajo repasa cada pocos minutos los documentos ENVIANDO o
-   pendientes, y los termina con la misma clave
+7. Un reloj propio mira cada minuto la cola de lo que no ha terminado, y
+   los termina con la misma clave (0138)
 8. La respuesta de la AEAT llega despues (4.10)
 ```
 
@@ -535,7 +535,7 @@ FUERA DE LA TRANSACCION
 
 **Webhooks del proveedor:** se registra un endpoint por entorno. Cada notificación trae `X-Webhook-Id`, **que es la clave de idempotencia**: la misma notificación dos veces no cambia nada. El proveedor reintenta hasta tres veces, con esperas de 1, 6 y 30 minutos, no reintenta los 4xx y **desactiva el webhook si falla mucho**, avisando por correo, sin reactivarlo solo.
 
-Por eso, además del webhook, **el reloj pregunta** por los registros en «pendiente»: en cada latido hasta los cinco minutos, cada cinco hasta la hora y después cada hora ([0137](../decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md)). **Un webhook no es una garantía de entrega.** Y **con un registro «Incorrecto» Verifacti ofrece dos caminos**, subsanar con el mismo número (`rechazo_previo`) o una rectificativa: **[VERIFICAR con el asesor]**; hasta entonces, corregir con otro documento.
+Por eso, además del webhook, **el reloj pregunta** por los registros en «pendiente»: en cada latido hasta los cinco minutos, cada cinco hasta la hora y después cada hora, con su propio reloj, que no depende de los avisos al móvil ([0138](../decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md)). **Un webhook no es una garantía de entrega.** Lo que lleva más de un día sale arriba, y si algo lleva más de dos horas, Estook se entera por su cuenta. Y **con un registro «Incorrecto» Verifacti ofrece dos caminos**, subsanar con el mismo número (`rechazo_previo`) o una rectificativa: **[VERIFICAR con el asesor]**; hasta entonces, corregir con otro documento.
 
 **Pantalla de registros con error** (gerente y dirección): qué documento, qué dijo la AEAT traducido a lenguaje normal, y el botón de la corrección que toca. **Nunca se corrige tocando el original.**
 
@@ -983,7 +983,7 @@ Todas automáticas, contra el entorno de pruebas. Cada una se rompe a propósito
 **Documentos**
 
 10. Ticket con dos tipos de IVA: dos líneas de desglose, y la suma cuadra al céntimo.
-11. Canje F3: importe igual al ticket, ticket marcado como canjeado, segundo canje bloqueado, ticket original intacto.
+11. Canje F3: importe igual al ticket, ticket marcado como canjeado, segundo canje bloqueado, ticket original intacto. Una factura que Hacienda no tiene deja el ticket libre, y nunca sustituye uno de otro entorno ni de otra empresa (0138).
 12. Devolución con R5 en su serie, con su registro, con salida de caja.
 13. Anulación solo disponible para el rol que puede y con motivo.
 
@@ -992,7 +992,7 @@ Todas automáticas, contra el entorno de pruebas. Cada una se rompe a propósito
 14. Caída del proveedor durante 30 minutos: se cobra con justificante, **la venta y el almacén se mueven al momento**, y al volver salen los tickets en orden, con la incidencia, y **se pueden descargar con el código del justificante**.
 15. Rechazo simulado de la AEAT: aparece en registros con error y se corrige sin tocar el original.
 16. El mismo webhook dos veces no cambia nada.
-17. Un registro que lleva más de una hora pendiente se consulta solo.
+17. Un registro pendiente se consulta solo, por su propio reloj: la prueba no vale si llama a la función sin mirar qué programa la base (0138, lección 257).
 18. La impresora no responde: el ticket sigue emitido y se puede reimprimir.
 
 **Reloj y regímenes**

@@ -181,7 +181,7 @@ export function HacerFactura({
   readonly tickets: readonly TicketParaFacturar[] | null;
   readonly puedeAMano: boolean;
   readonly puedeTodo: boolean;
-  readonly alHecha: (documentoId: string) => void;
+  readonly alHecha: (documentoId: string, correoNoSalio: boolean) => void;
 }) {
   const aMano = ticketsDeSalida === null;
   const [tickets, setTickets] = useState<readonly TicketParaFacturar[]>(ticketsDeSalida ?? []);
@@ -315,15 +315,18 @@ export function HacerFactura({
       setError(r.error);
       return;
     }
-    // Si dio su correo, se le manda al momento. Si falla, la factura está hecha: se manda luego.
+    // Si dio su correo, se le manda al momento. Si falla, la factura está hecha, y se dice: quien
+    // la hace no puede quedarse creyendo que le ha llegado al cliente.
+    let correoNoSalio = false;
     if (correo.trim() !== '') {
-      await cliente.ejecutar('mandar_el_documento', {
+      const mandado = await cliente.ejecutar('mandar_el_documento', {
         documento_id: r.datos.documentoId,
         para: correo.trim(),
       });
+      correoNoSalio = !mandado.ok;
     }
     setHaciendo(false);
-    alHecha(r.datos.documentoId);
+    alHecha(r.datos.documentoId, correoNoSalio);
   }
 
   const faltaCliente =

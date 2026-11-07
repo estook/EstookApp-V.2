@@ -203,7 +203,8 @@ export function HacerFactura({
   const [libre, setLibre] = useState<{
     nombre: string;
     importe: Centimos | null;
-    tipo: number;
+    /** Sin elegir hasta que se elige: un alquiler no va al mismo IVA que una comida (0139). */
+    tipo: number | null;
   } | null>(null);
   const [delaCarta, setDelaCarta] = useState(false);
   const [buscarPlato, setBuscarPlato] = useState('');
@@ -556,7 +557,11 @@ export function HacerFactura({
                 tono="secundario"
                 onClick={() => {
                   setDelaCarta(false);
-                  setLibre({ nombre: '', importe: null, tipo: datos.tipos[0] ?? 0 });
+                  setLibre({
+                    nombre: '',
+                    importe: null,
+                    tipo: datos.tipos.length === 1 ? (datos.tipos[0] ?? null) : null,
+                  });
                 }}
               >
                 Concepto libre
@@ -624,28 +629,34 @@ export function HacerFactura({
                     <Elegir
                       nombre={`Qué ${datos.impuesto} lleva`}
                       opciones={datos.tipos.map((t) => ({ valor: String(t), texto: porciento(t) }))}
-                      valor={String(libre.tipo)}
+                      valor={libre.tipo === null ? '' : String(libre.tipo)}
                       alElegir={(v) => {
                         setLibre({ ...libre, tipo: Number(v) });
                       }}
                     />
+                    <p className="text-etiqueta text-texto-suave">
+                      Si dudas de cuál lleva, pregúntaselo a tu gestoría.
+                    </p>
                   </div>
                 </div>
                 <div>
                   <Boton
                     tono="secundario"
-                    disabled={libre.nombre.trim() === '' || libre.importe === null}
+                    disabled={
+                      libre.nombre.trim() === '' || libre.importe === null || libre.tipo === null
+                    }
                     onClick={() => {
-                      if (libre.importe === null) return;
+                      const { importe, tipo } = libre;
+                      if (importe === null || tipo === null) return;
                       setConceptos((ya) => [
                         ...ya,
                         {
                           clave: crypto.randomUUID(),
                           nombre: libre.nombre.trim(),
                           cantidad: 1,
-                          unidad: libre.importe ?? 0,
-                          importe: libre.importe ?? 0,
-                          tipo: libre.tipo,
+                          unidad: importe,
+                          importe,
+                          tipo,
                         },
                       ]);
                       setLibre(null);

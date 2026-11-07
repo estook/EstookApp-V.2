@@ -94,7 +94,8 @@ export function documentoDeLaFactura(
     `<div class="totales">${impuestos}<div class="total"><span>Total</span><span>${euros(f.desglose.total)}</span></div></div>`,
   ].join('');
   return paginaDelDocumento({
-    titulo: f.destinatario === null ? `Factura simplificada ${f.numero}` : `Factura ${f.numero}`,
+    titulo: f.destinatario === null ? 'Factura simplificada' : 'Factura',
+    numero: f.numero,
     subtitulo: f.empresa.nombre,
     marca,
     hechoEl,

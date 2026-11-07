@@ -61,3 +61,19 @@ comprobar al cliente ni mandar copias: sale el aviso de sin permiso. La factura 
 
 `las-facturas.prueba.ts`, «sin lista de clientes»; y `tickets-y-facturas.spec.ts`, en la pantalla: rellenar,
 cambiar de número y que se vaya, y volver. La API pasa a **124 consultas y 344 comandos**.
+
+## Lo último antes de T6 · 2 · 2 · 2
+
+Richi probó la factura a mano y mandó su Sentry, el 7-nov. **La factura a mano fue a Hacienda y volvió
+«Correcto»**, y sus céntimos cuadran con la base del total. De esa revisión salieron cuatro cosas:
+
+1. **El IVA de un concepto libre venía puesto al primero, el 10 %**, y un alquiler de sala se facturó a ese
+   tipo sin que nadie lo eligiera. **Ahora se elige**, salvo que el local tenga uno solo. Qué lleva cada
+   concepto no lo decide Estook: va al asesor (A11).
+2. **El PDF de un ticket partía su número en dos líneas.** Ahora va entero.
+3. **Lo que se ve en Sentry.** «2 documentos fiscales llevan más de dos horas» fue **el vigilante nuevo avisando
+   bien** de los dos tickets antiguos, una vez, a las 13:07. «s.caja», en la sala del TPV, era una pestaña vieja con
+   una API nueva: **la sala ya no se cae** por un estado que no conoce. «Ba[n].punto» salió de un código que ya no
+   está (lo quitó la R3).
+4. **Sin ver en IKATZ: un camarero**, porque no hay ninguno dado de alta. Está probado por la API y en pantalla
+   (`las-facturas.prueba.ts`, `tickets-y-facturas.spec.ts`).

@@ -11,6 +11,7 @@ import {
   hayQueHacerAlgo,
   horaEnElLocal,
   loQueDiceEnLlano,
+  loQueQuedaDeCadaLinea,
   masDias,
   porQueNoSeCanjea,
   sePuedeEntregar,
@@ -18,6 +19,7 @@ import {
   type EstadoDelDocumento,
   type FechaOperativa,
   type LineaVendida,
+  type LoQueQuedaDeUnaLinea,
   type PapelCompuesto,
   type TipoDeDocumento,
 } from '@estook/dominio';
@@ -27,11 +29,16 @@ import { elRelojYElFisco, elTipoDeRestauracion } from '../desviacion.ts';
 import {
   comoEsta,
   elPapelDelDocumento,
+  esUnaSenal,
   imprimirElDocumento,
+  laAnulacionEnCurso,
   lasHistorias,
+  loDevuelto,
+  loQueLeQueda,
   losDocumentos,
   prepararUnDocumento,
   SIN_HISTORIA,
+  suCorreccion,
   type LaHistoria,
 } from '../emitir.ts';
 import { laImpresoraDe } from '../impresion.ts';
@@ -130,8 +137,9 @@ export const reimprimirElDocumento = comando<
     const [doc] = await losDocumentos(contexto, [entrada.documento_id]);
     if (doc === undefined || doc.localId !== localId) throw new FalloDeAplicacion('no_existe');
     const h = (await lasHistorias(contexto, [doc.id])).get(doc.id);
-    // Un ticket reimpreso es copia. Una factura se imprime cuando la pide el cliente: es la misma.
-    const copia = doc.destinatario === null;
+    // Un ticket reimpreso es copia. Una factura o una devolución se imprimen cuando hacen falta: son
+    // las mismas, y la devolución no sale sola con el comando.
+    const copia = doc.tipo === 'F2';
     if (h === undefined || elPapelDelDocumento(doc, h, copia) === null) {
       throw new FalloDeAplicacion('faltan_datos', {
         porque: 'Todavía no hay nada que imprimir: está esperando a Hacienda.',
@@ -158,21 +166,44 @@ interface LoQuePuede {
   readonly todo: boolean;
   readonly deUnTicket: boolean;
   readonly aMano: boolean;
+  readonly devolver: boolean;
+  readonly corregir: boolean;
+  readonly anular: boolean;
 }
 
 async function loQuePuede(contexto: Contexto, localId: string): Promise<LoQuePuede> {
   const [p] = await contexto.sql<
-    { lleva: boolean; consulta: boolean; de_un_ticket: boolean; a_mano: boolean }[]
+    {
+      lleva: boolean;
+      consulta: boolean;
+      de_un_ticket: boolean;
+      a_mano: boolean;
+      devolver: boolean;
+      corregir: boolean;
+      anular: boolean;
+    }[]
   >`
     select estook.puede_editar('accion.alta_de_facturacion', ${localId}::uuid) as lleva,
            estook.nivel_de_permiso(estook.persona_actual(), ${localId}::uuid, 'accion.ver_documentos') <> 'sin_acceso' as consulta,
            estook.puede_editar('accion.factura_de_un_ticket', ${localId}::uuid) as de_un_ticket,
-           estook.puede_editar('accion.factura_a_mano', ${localId}::uuid) as a_mano
+           estook.puede_editar('accion.factura_a_mano', ${localId}::uuid) as a_mano,
+           estook.puede_editar('accion.devolver', ${localId}::uuid) as devolver,
+           estook.puede_editar('accion.corregir_datos', ${localId}::uuid) as corregir,
+           estook.puede_editar('accion.anular', ${localId}::uuid) as anular
   `;
   if (p === undefined) throw new FalloDeAplicacion('sin_permiso');
   const todo = p.lleva || p.consulta;
-  if (!todo && !p.de_un_ticket && !p.a_mano) throw new FalloDeAplicacion('sin_permiso');
-  return { todo, deUnTicket: p.de_un_ticket, aMano: p.a_mano };
+  if (!todo && !p.de_un_ticket && !p.a_mano && !p.devolver && !p.corregir && !p.anular) {
+    throw new FalloDeAplicacion('sin_permiso');
+  }
+  return {
+    todo,
+    deUnTicket: p.de_un_ticket,
+    aMano: p.a_mano,
+    devolver: p.devolver,
+    corregir: p.corregir,
+    anular: p.anular,
+  };
 }
 
 // ── La lista ──────────────────────────────────────────────────────────────────────
@@ -207,6 +238,8 @@ export interface LoQueFalla {
   readonly numero: string;
   readonly que: string;
   readonly hacer: string;
+  /** Si lo rechazó Hacienda: se corrige con otro documento, y sale el botón. */
+  readonly seCorrige: boolean;
 }
 
 export interface TicketsYFacturas {
@@ -227,30 +260,68 @@ export interface TicketsYFacturas {
   readonly puede: LoQuePuede;
 }
 
+/**
+ * **La chapa dice lo que importa de un documento ahora** (maqueta de T6 · 2 · 2, 1): lo que ya no está
+ * en vigor o está a medias va por delante de lo que diga Hacienda de su alta, que sale en su historia.
+ */
+function laChapaDelDocumento(
+  doc: Awaited<ReturnType<typeof losDocumentos>>[number],
+  h: LaHistoria,
+  estado: EstadoEnLaLista,
+): { texto: string; tono: TonoDeLaChapa } {
+  if (estado === 'anulado') return laChapa(estado);
+  if (laAnulacionEnCurso(h) !== null) return { texto: 'Anulando', tono: 'info' };
+  if (h.rehechoPor !== null || suCorreccion(h) !== null) {
+    return { texto: 'Corregida', tono: 'neutro' };
+  }
+  if (h.factura !== null) return { texto: 'Canjeado', tono: 'neutro' };
+  if (h.descontadaEn !== null) return { texto: 'Descontada', tono: 'neutro' };
+  if (loDevuelto(h).length > 0) {
+    const ticket = doc.tipo === 'F2';
+    return loQueLeQueda(doc, h) === 0
+      ? { texto: ticket ? 'Devuelto' : 'Devuelta', tono: 'neutro' }
+      : { texto: ticket ? 'Devuelto en parte' : 'Devuelta en parte', tono: 'neutro' };
+  }
+  if (h.justificante !== null && (estado === 'preparado' || estado === 'enviando')) {
+    return { texto: 'Se emite al volver', tono: 'atencion' };
+  }
+  return laChapa(estado);
+}
+
 function laLinea(
   doc: Awaited<ReturnType<typeof losDocumentos>>[number],
   h: LaHistoria,
 ): UnoDeLaLista {
   const estado = comoEsta(doc, h);
-  const noSeCanjea = porQueNoSeCanjea(doc.tipo, estado, h.factura !== null);
-  const porCobrar = doc.vencimiento !== null && h.cobradaEn === null ? doc.vencimiento : null;
+  const noSeCanjea = porQueNoSeCanjea(
+    doc.tipo,
+    estado,
+    h.factura !== null,
+    h.rectificaciones.some((r) => r.enPie),
+    laAnulacionEnCurso(h) !== null,
+  );
+  // Lo que ya no está en vigor no se cobra: se cobra el que lo sustituye.
+  const porCobrar =
+    doc.vencimiento !== null &&
+    h.cobradaEn === null &&
+    estado !== 'anulado' &&
+    estado !== 'rechazado' &&
+    estado !== 'rechazado_por_datos' &&
+    suCorreccion(h) === null
+      ? doc.vencimiento
+      : null;
   return {
     id: doc.id,
     hora: horaEnElLocal(new Date(doc.preparadoEn), doc.zonaHoraria),
     dia: fechaEnElLocal(new Date(doc.preparadoEn), doc.zonaHoraria),
     numero: elNumeroEntero(doc.serie, doc.numero),
     tipo: doc.tipo,
-    que: NOMBRE_DEL_DOCUMENTO[doc.tipo],
+    que: doc.origen === 'senal' ? 'Señal' : NOMBRE_DEL_DOCUMENTO[doc.tipo],
     donde: doc.donde,
     cliente: doc.destinatario?.nombre ?? null,
     total: doc.total,
     estado,
-    chapa:
-      h.factura !== null
-        ? { texto: 'Canjeado', tono: 'neutro' }
-        : h.justificante !== null && (estado === 'preparado' || estado === 'enviando')
-          ? { texto: 'Se emite al volver', tono: 'atencion' }
-          : laChapa(estado),
+    chapa: laChapaDelDocumento(doc, h, estado),
     pruebas: doc.entorno === 'pruebas',
     justificante: h.justificante,
     porCobrar,
@@ -260,9 +331,11 @@ function laLinea(
 
 function loQueFallaDe(linea: UnoDeLaLista, h: LaHistoria, edadMs: number): LoQueFalla | null {
   if (linea.estado === 'fuera_sii') return null;
+  // Ya corregido con otro documento: deja de salir arriba (maqueta de T6 · 2 · 2, 1).
+  if (h.rehechoPor !== null || suCorreccion(h) !== null) return null;
   // Sin saber nada de Hacienda más de un día: que nadie se crea que «En Hacienda» es que está bien.
   if (faltaAlgo(linea.estado) && edadMs > TARDA_DEMASIADO_MS) {
-    return { id: linea.id, numero: linea.numero, ...LO_QUE_TARDA };
+    return { id: linea.id, numero: linea.numero, ...LO_QUE_TARDA, seCorrige: false };
   }
   if (!hayQueHacerAlgo(linea.estado)) return null;
   const ultimo = h.registros.at(-1);
@@ -272,7 +345,14 @@ function loQueFallaDe(linea: UnoDeLaLista, h: LaHistoria, edadMs: number): LoQue
       ? (rechazo?.mensaje ?? null)
       : (ultimo?.mensajeError ?? null);
   const dice = loQueDiceEnLlano(linea.estado, mensaje);
-  return dice === null ? null : { id: linea.id, numero: linea.numero, ...dice };
+  return dice === null
+    ? null
+    : {
+        id: linea.id,
+        numero: linea.numero,
+        ...dice,
+        seCorrige: linea.estado === 'rechazado' || linea.estado === 'rechazado_por_datos',
+      };
 }
 
 /** El local de la sesión, con su zona: lo de cada día va en la hora del local. */
@@ -303,7 +383,8 @@ export const ticketsYFacturas = consulta<
     dia?: 'hoy' | 'ayer' | undefined;
     desde?: string | undefined;
     hasta?: string | undefined;
-    que?: 'todos' | 'tickets' | 'facturas' | 'por_cobrar' | 'pendiente' | undefined;
+    que?:
+      'todos' | 'tickets' | 'facturas' | 'devoluciones' | 'por_cobrar' | 'pendiente' | undefined;
     buscar?: string | undefined;
   },
   TicketsYFacturas
@@ -314,7 +395,9 @@ export const ticketsYFacturas = consulta<
       dia: z.enum(['hoy', 'ayer']).optional(),
       desde: unaFecha,
       hasta: unaFecha,
-      que: z.enum(['todos', 'tickets', 'facturas', 'por_cobrar', 'pendiente']).optional(),
+      que: z
+        .enum(['todos', 'tickets', 'facturas', 'devoluciones', 'por_cobrar', 'pendiente'])
+        .optional(),
       buscar: z.string().trim().max(60).optional(),
     })
     .strict(),
@@ -346,7 +429,7 @@ export const ticketsYFacturas = consulta<
       { id: string; cuantos: number; total: number; correctos: number }[]
     >`
       with los as (
-        select d.id, d.total, d.modalidad, d.preparado_en,
+        select d.id, d.tipo, d.total, d.modalidad, d.preparado_en,
                (select lower(btrim(r.estado)) from facturacion.registro r
                  where r.documento_id = d.id
                  order by r.en desc, r.id desc limit 1) as ultimo
@@ -365,10 +448,17 @@ export const ticketsYFacturas = consulta<
              )
            )
            and (${que !== 'tickets'} or d.tipo = 'F2')
-           and (${que !== 'facturas'} or d.tipo in ('F1', 'F3'))
+           and (${que !== 'facturas'} or d.tipo in ('F1', 'F3', 'R4'))
+           and (${que !== 'devoluciones'} or d.tipo in ('R1', 'R5'))
            and (${que !== 'por_cobrar'} or (
              d.vencimiento is not null
              and not exists (select 1 from facturacion.cobro_de_factura c where c.documento_id = d.id)
+             and facturacion.sigue_en_pie(d.id)
+             and not exists (
+               select 1 from facturacion.rectificacion r
+                where r.documento_id = d.id and r.clase = 'datos'
+                  and facturacion.sigue_en_pie(r.rectificativa_id)
+             )
            ))
       ),
       pedidos as (
@@ -379,6 +469,8 @@ export const ticketsYFacturas = consulta<
       con_lo_que_suma as (
         select p.*,
                case when not facturacion.sigue_en_pie(p.id) then 0
+                    -- Una corrección de datos sustituye a la que ya sumó: el dinero no cambia.
+                    when p.tipo = 'R4' then 0
                     when exists (
                       select 1 from facturacion.canje c
                        where c.ticket_id = p.id
@@ -419,6 +511,13 @@ export const ticketsYFacturas = consulta<
                select lower(r.estado) from facturacion.registro r
                 where r.documento_id = d.id order by r.en desc, r.id desc limit 1
              ) in ('incorrecto', 'no registrado', 'factura inexistente', 'aceptado con errores')
+           )
+           -- Lo que ya está corregido con otro documento no sale arriba (maqueta de T6 · 2 · 2, 1).
+           and not exists (select 1 from facturacion.rehecho h where h.original_id = d.id)
+           and not exists (
+             select 1 from facturacion.rectificacion r
+              where r.documento_id = d.id and r.clase = 'datos'
+                and facturacion.sigue_en_pie(r.rectificativa_id)
            )
          order by d.preparado_en desc
          limit 50
@@ -493,6 +592,38 @@ export interface UnDocumento extends UnoDeLaLista {
   /** Si se puede imprimir o mandar: lo que Hacienda no tiene, no (0138). */
   readonly seEntrega: boolean;
   readonly puede: LoQuePuede;
+  /** **Los botones que salen** (maqueta de T6 · 2 · 2, 6): con su permiso y según cómo esté. */
+  readonly sePuede: {
+    readonly devolver: boolean;
+    readonly corregirDatos: boolean;
+    readonly anular: boolean;
+    readonly corregirLoRechazado: boolean;
+  };
+  /** Lo que queda de cada línea, para devolver. */
+  readonly lineas: readonly LoQueQuedaDeUnaLinea[];
+  /** Lo que le queda al documento: lo que vale menos lo devuelto. */
+  readonly queda: number;
+  /** Lo que rectifica, si es una rectificativa. */
+  readonly rectifica: { readonly id: string; readonly numero: string } | null;
+  /** Su corrección de datos o la que corrige lo rechazado: la que está en vigor. */
+  readonly corregidaPor: { readonly id: string; readonly numero: string } | null;
+  readonly devoluciones: readonly {
+    readonly id: string;
+    readonly numero: string;
+    readonly total: number;
+  }[];
+  /** Quién lo anuló y por qué. */
+  readonly anulado: { readonly quien: string | null; readonly motivo: string } | null;
+  /** La anulación que Hacienda no aceptó, si es lo último que pasó: el documento sigue valiendo. */
+  readonly anulacionQueNoSalio: { readonly dice: string | null } | null;
+  /** La señal que descuenta esta factura, o la factura que descuenta esta señal. */
+  readonly descuenta: readonly {
+    readonly id: string;
+    readonly numero: string;
+    readonly importe: number;
+  }[];
+  readonly descontadaEn: { readonly id: string; readonly numero: string } | null;
+  readonly esSenal: boolean;
 }
 
 const EL_ENVIO_EN_LLANO = {
@@ -518,6 +649,9 @@ const DE_DONDE_VIENE = {
   cobro: null,
   a_mano: 'Hecha a mano',
   canje: null,
+  devolucion: null,
+  correccion: null,
+  senal: 'Señal, cobrada ese día',
 } as const;
 
 export const unDocumento = consulta<{ documento_id: string }, UnDocumento>({
@@ -575,6 +709,74 @@ export const unDocumento = consulta<{ documento_id: string }, UnDocumento>({
       ...(h.cobradaEn === null
         ? []
         : [{ en: h.cobradaEn, hora: hora(h.cobradaEn), que: 'Cobrada', detalle: null }]),
+      ...(h.rectifica === null
+        ? []
+        : [
+            {
+              en: doc.preparadoEn,
+              hora: hora(doc.preparadoEn),
+              que: `${h.rectifica.clase === 'datos' ? 'Corrige' : 'Rectifica'} ${h.rectifica.numero}`,
+              detalle: h.rectifica.motivo,
+            },
+          ]),
+      ...h.rectificaciones.map((r) => ({
+        en: r.en,
+        hora: hora(r.en),
+        que: `${r.clase === 'datos' ? 'Corregida con' : 'Devolución'} ${r.numero}${r.enPie ? '' : ', que Hacienda no tiene'}`,
+        detalle: [r.quien, r.motivo].filter((x) => x !== null).join(' · '),
+      })),
+      ...h.anulaciones.flatMap((a) => [
+        {
+          en: a.en,
+          hora: hora(a.en),
+          que: 'Se pidió anularlo',
+          detalle: [a.quien, a.motivo].filter((x) => x !== null).join(' · '),
+        },
+        ...a.pasos
+          .filter((p) => p.queda === 'no_salio')
+          .map((p) => ({
+            en: p.en,
+            hora: hora(p.en),
+            que: 'La anulación no ha salido: sigue valiendo',
+            detalle: p.mensaje ?? p.estado,
+          })),
+      ]),
+      ...(h.rehechoPor === null
+        ? []
+        : [
+            {
+              en: h.rehechoPor.en,
+              hora: hora(h.rehechoPor.en),
+              que: `Corregido con ${h.rehechoPor.numero}`,
+              detalle: null,
+            },
+          ]),
+      ...(h.rehaceA === null
+        ? []
+        : [
+            {
+              en: doc.preparadoEn,
+              hora: hora(doc.preparadoEn),
+              que: `Corrige ${h.rehaceA.numero}, que rechazó Hacienda`,
+              detalle: null,
+            },
+          ]),
+      ...h.descuenta.map((s) => ({
+        en: doc.preparadoEn,
+        hora: hora(doc.preparadoEn),
+        que: `Descuenta la señal ${s.numero}`,
+        detalle: null,
+      })),
+      ...(h.descontadaEn === null
+        ? []
+        : [
+            {
+              en: h.descontadaEn.en,
+              hora: hora(h.descontadaEn.en),
+              que: `Descontada en ${h.descontadaEn.numero}`,
+              detalle: null,
+            },
+          ]),
       ...h.copias.map((c) => ({
         en: c.en,
         hora: hora(c.en),
@@ -594,6 +796,34 @@ export const unDocumento = consulta<{ documento_id: string }, UnDocumento>({
       });
     }
     const linea = laLinea(doc, h);
+    const anulando = laAnulacionEnCurso(h);
+    const correccion = suCorreccion(h);
+    const queda = loQueLeQueda(doc, h);
+    const enVigor =
+      linea.estado === 'pendiente' ||
+      linea.estado === 'correcto' ||
+      linea.estado === 'aceptado_con_errores' ||
+      linea.estado === 'fuera_sii';
+    // Lo que tiene encima otro documento se hace sobre ese, y lo que se está anulando, espera.
+    const libre =
+      enVigor &&
+      anulando === null &&
+      correccion === null &&
+      h.factura === null &&
+      h.descontadaEn === null;
+    const esFactura = doc.tipo === 'F1' || doc.tipo === 'F3' || doc.tipo === 'R4';
+    const laUltimaAnulacion = h.anulaciones.at(-1);
+    const pasoQueNoSalio = laUltimaAnulacion?.pasos.find((p) => p.queda === 'no_salio');
+    const anuladoPor =
+      linea.estado === 'anulado'
+        ? (h.anulaciones.findLast((a) => a.pasos.some((p) => p.queda === 'anulada')) ?? null)
+        : null;
+    const corregidaPor =
+      correccion === null
+        ? h.rehechoPor === null
+          ? null
+          : { id: h.rehechoPor.id, numero: h.rehechoPor.numero }
+        : { id: correccion.id, numero: correccion.numero };
     return {
       ...linea,
       historia,
@@ -609,6 +839,37 @@ export const unDocumento = consulta<{ documento_id: string }, UnDocumento>({
       sustituye: h.sustituye,
       seEntrega: sePuedeEntregar(linea.estado),
       puede,
+      sePuede: {
+        devolver: puede.devolver && libre && (doc.tipo === 'F2' || esFactura) && queda > 0,
+        corregirDatos: puede.corregir && libre && esFactura && queda > 0,
+        anular:
+          puede.anular &&
+          libre &&
+          (doc.tipo === 'F2' || doc.tipo === 'F1' || doc.tipo === 'F3') &&
+          linea.estado !== 'pendiente' &&
+          !esUnaSenal(doc, h) &&
+          !h.rectificaciones.some((r) => r.enPie),
+        corregirLoRechazado:
+          puede.corregir &&
+          (linea.estado === 'rechazado' || linea.estado === 'rechazado_por_datos') &&
+          h.rehechoPor === null,
+      },
+      lineas: loQueQuedaDeCadaLinea(doc.lineas, loDevuelto(h)),
+      queda,
+      rectifica: h.rectifica === null ? null : { id: h.rectifica.id, numero: h.rectifica.numero },
+      corregidaPor,
+      devoluciones: h.rectificaciones
+        .filter((r) => r.enPie && r.clase === 'devolucion')
+        .map((r) => ({ id: r.id, numero: r.numero, total: r.total })),
+      anulado: anuladoPor === null ? null : { quien: anuladoPor.quien, motivo: anuladoPor.motivo },
+      anulacionQueNoSalio:
+        pasoQueNoSalio === undefined || linea.estado === 'anulado'
+          ? null
+          : { dice: pasoQueNoSalio.mensaje },
+      descuenta: h.descuenta,
+      descontadaEn:
+        h.descontadaEn === null ? null : { id: h.descontadaEn.id, numero: h.descontadaEn.numero },
+      esSenal: esUnaSenal(doc, h),
     };
   },
 });

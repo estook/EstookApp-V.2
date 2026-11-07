@@ -42,6 +42,8 @@ export interface UnRegistroDeMentira {
   readonly numero: string;
   readonly fecha: string;
   readonly cuerpo: unknown;
+  /** «Alta» o «Anulación»: una anulación es otro registro, con su uuid. */
+  readonly operacion: string;
   estado: string;
   codigoError: string | null;
   mensajeError: string | null;
@@ -84,7 +86,7 @@ export function verifactiDeMentira(): VerifactiDeMentira {
       qr: 'iVBORw0KGgo-qr-de-mentira',
       codigoError: r.codigoError,
       mensajeError: r.mensajeError,
-      operacion: 'Alta',
+      operacion: r.operacion,
       serie: r.serie,
       numero: r.numero,
     };
@@ -119,6 +121,66 @@ export function verifactiDeMentira(): VerifactiDeMentira {
       r.estado = estado;
       r.codigoError = codigo ?? null;
       r.mensajeError = mensaje ?? null;
+    },
+
+    anular(nif, entorno, cuerpo, idempotencia) {
+      llamadas.push(`anular ${entorno} ${nif} ${idempotencia}`);
+      const texto = JSON.stringify(cuerpo);
+      const recordada = claves.get(`${nif}/${idempotencia}`);
+      if (recordada !== undefined && comoEmite !== 'caido' && comoEmite !== 'perder_respuesta') {
+        return Promise.resolve(recordada.respuesta);
+      }
+      if (callado || comoEmite === 'caido') {
+        return Promise.resolve({
+          resultado: 'sin_respuesta',
+          codigoHttp: null,
+          mensaje: 'TimeoutError',
+        });
+      }
+      if (comoEmite === 'en_curso') {
+        return Promise.resolve({ resultado: 'en_curso', codigoHttp: 409 });
+      }
+      if (comoEmite === 'rechazar') {
+        const respuesta: LoQuePasoAlEmitir = {
+          resultado: 'rechazado_por_datos',
+          codigoHttp: 400,
+          codigo: 'vf-verifactu-registro_no_existe',
+          mensaje: 'No existe el registro de facturacion.',
+        };
+        claves.set(`${nif}/${idempotencia}`, { cuerpo: texto, respuesta });
+        return Promise.resolve(respuesta);
+      }
+      const r: UnRegistroDeMentira = {
+        uuid: crypto.randomUUID(),
+        nif,
+        serie: cuerpo.serie,
+        numero: cuerpo.numero,
+        fecha: cuerpo.fecha_expedicion,
+        cuerpo,
+        operacion: 'Anulación',
+        estado: 'Pendiente',
+        codigoError: null,
+        mensajeError: null,
+      };
+      registros.push(r);
+      // Sin QR ni dirección: una anulación no los lleva (su especificación).
+      const respuesta: LoQuePasoAlEmitir = {
+        resultado: 'aceptado',
+        uuid: r.uuid,
+        estado: 'Pendiente',
+        url: null,
+        qr: null,
+        huella: 'B11F3A015173AD99075E2720F61E2DE1FF08CBFEDD85C6F73C77AD835301B2A3',
+      };
+      claves.set(`${nif}/${idempotencia}`, { cuerpo: texto, respuesta });
+      if (comoEmite === 'perder_respuesta') {
+        return Promise.resolve({
+          resultado: 'sin_respuesta',
+          codigoHttp: null,
+          mensaje: 'TimeoutError',
+        });
+      }
+      return Promise.resolve(respuesta);
     },
 
     emitir(nif, entorno, cuerpo, idempotencia) {
@@ -161,6 +223,7 @@ export function verifactiDeMentira(): VerifactiDeMentira {
         numero: c.numero,
         fecha: c.fecha_expedicion,
         cuerpo,
+        operacion: 'Alta',
         estado: 'Pendiente',
         codigoError: null,
         mensajeError: null,
@@ -204,6 +267,7 @@ export function verifactiDeMentira(): VerifactiDeMentira {
           x.serie === factura.serie &&
           x.numero === factura.numero &&
           x.fecha === factura.fecha &&
+          x.operacion === 'Alta' &&
           x.estado !== 'Pendiente',
       );
       return Promise.resolve(r?.uuid ?? null);

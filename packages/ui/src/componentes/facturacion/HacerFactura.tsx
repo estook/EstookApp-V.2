@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   LIMITE_DEL_TICKET,
   centimos,
@@ -6,17 +6,18 @@ import {
   elPlazoDeLaFactura,
   enEuros,
   importeDelDocumento,
+  porQueNoCabeLaSenal,
   type Centimos,
-  type ClaseDeCliente,
   type FechaOperativa,
   type LineaVendida,
 } from '@estook/dominio';
 import { Aviso, ErrorEnCristiano, type ErrorDeLaApi } from '../Aviso.tsx';
 import { Boton } from '../Boton.tsx';
 import { Campo, CampoMoneda } from '../Campo.tsx';
-import { Selector } from '../Selector.tsx';
 import { clases } from '../../clases.ts';
 import { usarConPausa, usarLectura, type ClienteDeFacturas } from '../../ganchos/usarLectura.ts';
+import { usarElCliente } from '../../ganchos/usarElCliente.ts';
+import { Elegir, ParaQuien } from './ElClienteDeLaFactura.tsx';
 
 /**
  * **Hacer una factura** (T6 · 2 · 2 · 1, decisión 0137; maqueta de T6 · 2 · 2, 2 y 3). Dos caminos
@@ -26,66 +27,6 @@ import { usarConPausa, usarLectura, type ClienteDeFacturas } from '../../ganchos
  * **El cliente se escribe directo: no hay lista** (0139, Richi: «esto se peta de personas»). Si su
  * número ya tiene una factura, lo demás sale de ella.
  */
-
-/** Los países que más vienen. Con el código ISO que pide Verifacti (`codigo_pais`). */
-const PAISES: readonly { readonly valor: string; readonly texto: string }[] = [
-  { valor: 'DE', texto: 'Alemania' },
-  { valor: 'AT', texto: 'Austria' },
-  { valor: 'BE', texto: 'Bélgica' },
-  { valor: 'BG', texto: 'Bulgaria' },
-  { valor: 'CY', texto: 'Chipre' },
-  { valor: 'HR', texto: 'Croacia' },
-  { valor: 'DK', texto: 'Dinamarca' },
-  { valor: 'SK', texto: 'Eslovaquia' },
-  { valor: 'SI', texto: 'Eslovenia' },
-  { valor: 'EE', texto: 'Estonia' },
-  { valor: 'FI', texto: 'Finlandia' },
-  { valor: 'FR', texto: 'Francia' },
-  { valor: 'GR', texto: 'Grecia' },
-  { valor: 'HU', texto: 'Hungría' },
-  { valor: 'IE', texto: 'Irlanda' },
-  { valor: 'IT', texto: 'Italia' },
-  { valor: 'LV', texto: 'Letonia' },
-  { valor: 'LT', texto: 'Lituania' },
-  { valor: 'LU', texto: 'Luxemburgo' },
-  { valor: 'MT', texto: 'Malta' },
-  { valor: 'NL', texto: 'Países Bajos' },
-  { valor: 'PL', texto: 'Polonia' },
-  { valor: 'PT', texto: 'Portugal' },
-  { valor: 'CZ', texto: 'República Checa' },
-  { valor: 'RO', texto: 'Rumanía' },
-  { valor: 'SE', texto: 'Suecia' },
-  { valor: 'AD', texto: 'Andorra' },
-  { valor: 'AR', texto: 'Argentina' },
-  { valor: 'BR', texto: 'Brasil' },
-  { valor: 'CA', texto: 'Canadá' },
-  { valor: 'CN', texto: 'China' },
-  { valor: 'US', texto: 'Estados Unidos' },
-  { valor: 'JP', texto: 'Japón' },
-  { valor: 'MA', texto: 'Marruecos' },
-  { valor: 'MX', texto: 'México' },
-  { valor: 'NO', texto: 'Noruega' },
-  { valor: 'GB', texto: 'Reino Unido' },
-  { valor: 'CH', texto: 'Suiza' },
-];
-
-/** Los de la Unión: los únicos con número de IVA en el censo europeo. */
-const DE_LA_UNION = new Set(PAISES.slice(0, 26).map((p) => p.valor));
-
-interface Comprobado {
-  readonly vale: boolean;
-  readonly dice: string | null;
-  readonly nombre: string | null;
-  readonly domicilio: string | null;
-  readonly correo: string | null;
-}
-
-/** Lo que salió solo del número escrito: si se cambia el número, eso ya no vale. */
-const SIN_RELLENAR: {
-  nombre: string | null;
-  domicilio: string | null;
-  correo: string | null;
-} = { nombre: null, domicilio: null, correo: null };
 
 export interface TicketParaFacturar {
   readonly id: string;
@@ -123,50 +64,17 @@ interface UnConcepto {
   readonly tipo: number;
 }
 
-const EN_CADA_CLASE: readonly { readonly valor: ClaseDeCliente; readonly texto: string }[] = [
-  { valor: 'empresa', texto: 'Empresa o autónomo' },
-  { valor: 'particular', texto: 'Particular' },
-  { valor: 'de_fuera', texto: 'De fuera de España' },
-];
+/** Una señal de ese cliente: lo que la factura final le descuenta (maqueta de T6 · 2 · 2, 4). */
+interface UnaSenal {
+  readonly id: string;
+  readonly numero: string;
+  readonly fecha: string;
+  readonly importe: number;
+  readonly lineas: readonly LineaVendida[];
+}
 
 const porciento = (tipo: number) =>
   `${String(Number((tipo * 100).toFixed(2))).replace('.', ',')} %`;
-
-function Elegir<T extends string>({
-  opciones,
-  valor,
-  alElegir,
-  nombre,
-}: {
-  readonly opciones: readonly { readonly valor: T; readonly texto: string }[];
-  readonly valor: T;
-  readonly alElegir: (v: T) => void;
-  readonly nombre: string;
-}) {
-  return (
-    <div role="radiogroup" aria-label={nombre} className="flex flex-wrap gap-e1">
-      {opciones.map((o) => (
-        <button
-          key={o.valor}
-          type="button"
-          role="radio"
-          aria-checked={valor === o.valor}
-          onClick={() => {
-            alElegir(o.valor);
-          }}
-          className={clases(
-            'min-h-toque rounded-medio border px-e3 text-secundario font-medium',
-            valor === o.valor
-              ? 'border-naranja bg-naranja-suave text-texto'
-              : 'border-borde bg-superficie text-texto-suave',
-          )}
-        >
-          {o.texto}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 export function HacerFactura({
   cliente,
@@ -184,17 +92,8 @@ export function HacerFactura({
   const [tickets, setTickets] = useState<readonly TicketParaFacturar[]>(ticketsDeSalida ?? []);
   const [anadiendo, setAnadiendo] = useState(false);
   // El cliente.
-  const [clase, setClase] = useState<ClaseDeCliente>('empresa');
-  const [identificador, setIdentificador] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [domicilio, setDomicilio] = useState('');
-  const [correo, setCorreo] = useState('');
-  const [codigoPais, setCodigoPais] = useState('DE');
-  const [idTipo, setIdTipo] = useState<'02' | '03'>('02');
-  const [comprobado, setComprobado] = useState<Comprobado | null>(null);
-  const [comprobando, setComprobando] = useState(false);
-  const [rellenado, setRellenado] = useState(SIN_RELLENAR);
-  const preguntas = useRef(0);
+  const c = usarElCliente(cliente);
+  const { clase, correo, setCorreo, elCliente, faltaCliente, noVale } = c;
   // La factura a mano.
   const [conceptos, setConceptos] = useState<readonly UnConcepto[]>([]);
   const [fecha, setFecha] = useState('');
@@ -220,74 +119,34 @@ export function HacerFactura({
     `lo|${String(aMano)}`,
   );
   const datos = lo.datos ?? null;
+  // Las señales de ese cliente, en cuanto Hacienda lo da por bueno. **Salen marcadas solas.**
+  const senales = usarLectura<readonly UnaSenal[]>(
+    () =>
+      aMano && c.numeroComprobado !== ''
+        ? cliente.consultar('las_senales_del_cliente', { identificador: c.numeroComprobado })
+        : Promise.resolve({ ok: true, datos: [] }),
+    `senales|${String(aMano)}|${c.numeroComprobado}`,
+  );
+  const [sinDescontar, setSinDescontar] = useState<readonly string[]>([]);
+  const lasSenales = senales.datos ?? [];
+  const lasMarcadas = lasSenales.filter((s) => !sinDescontar.includes(s.id));
 
   const totalDeTickets = tickets.reduce((s, t) => s + t.total, 0);
   const lineasParaVer: LineaVendida[] = useMemo(
-    () => conceptos.map((c) => ({ ...c, regimen: 'iva' as const })),
+    () => conceptos.map((l) => ({ ...l, regimen: 'iva' as const })),
     [conceptos],
   );
-  const desglose = lineasParaVer.length === 0 ? null : elDesglose(lineasParaVer);
+  const conLaSenal = useMemo(
+    () => [...lineasParaVer, ...lasMarcadas.flatMap((s) => [...s.lineas])],
+    [lineasParaVer, lasMarcadas],
+  );
+  const desglose = lineasParaVer.length === 0 ? null : elDesglose(conLaSenal);
+  const noCabeLaSenal = lasMarcadas.length === 0 ? null : porQueNoCabeLaSenal(conLaSenal);
   const hoy = (datos?.hoy ?? '') as FechaOperativa;
   const plazo =
     aMano && fecha !== '' && hoy !== ''
       ? elPlazoDeLaFactura(fecha as FechaOperativa, hoy, clase)
       : null;
-
-  /** Cambia el número: lo que salió del número de antes no vale para este. Lo escrito a mano, sí. */
-  function cambiarElNumero(numero: string) {
-    setIdentificador(numero);
-    setComprobado(null);
-    setComprobando(false);
-    preguntas.current += 1;
-    setNombre((n) => (n === rellenado.nombre ? '' : n));
-    setDomicilio((d) => (d === rellenado.domicilio ? '' : d));
-    setCorreo((c) => (c === rellenado.correo ? '' : c));
-    setRellenado(SIN_RELLENAR);
-  }
-
-  async function comprobar() {
-    if (identificador.trim() === '') return;
-    preguntas.current += 1;
-    const estaPregunta = preguntas.current;
-    setComprobando(true);
-    const r = await cliente.ejecutar<Comprobado>('comprobar_al_cliente', {
-      clase,
-      identificador,
-      ...(nombre.trim() === '' ? {} : { nombre }),
-      ...(clase === 'de_fuera' ? { id_tipo: idTipo, codigo_pais: codigoPais } : {}),
-    });
-    // Mientras contestaba se ha cambiado el número: esto es de otro cliente.
-    if (estaPregunta !== preguntas.current) return;
-    setComprobando(false);
-    if (!r.ok) {
-      setError(r.error);
-      return;
-    }
-    setError(null);
-    setComprobado(r.datos);
-    const nuevos = { ...rellenado };
-    if (r.datos.nombre !== null) {
-      setNombre(r.datos.nombre);
-      nuevos.nombre = r.datos.nombre;
-    }
-    if (r.datos.domicilio !== null && domicilio.trim() === '') {
-      setDomicilio(r.datos.domicilio);
-      nuevos.domicilio = r.datos.domicilio;
-    }
-    if (r.datos.correo !== null && correo.trim() === '') {
-      setCorreo(r.datos.correo);
-      nuevos.correo = r.datos.correo;
-    }
-    setRellenado(nuevos);
-  }
-
-  const elCliente = {
-    clase,
-    nombre,
-    identificador,
-    domicilio,
-    ...(clase === 'de_fuera' ? { id_tipo: idTipo, codigo_pais: codigoPais } : {}),
-  };
 
   async function hacer() {
     setHaciendo(true);
@@ -304,6 +163,7 @@ export function HacerFactura({
           ...(fecha === '' ? {} : { fecha_operacion: fecha }),
           cobrada,
           ...(cobrada || vence === '' ? {} : { vencimiento: vence }),
+          ...(lasMarcadas.length === 0 ? {} : { senales: lasMarcadas.map((s) => s.id) }),
         })
       : await cliente.ejecutar<{ documentoId: string }>('hacer_factura_de_tickets', {
           ticket_ids: tickets.map((t) => t.id),
@@ -328,12 +188,10 @@ export function HacerFactura({
     alHecha(r.datos.documentoId, correoNoSalio);
   }
 
-  const faltaCliente =
-    identificador.trim() === '' || nombre.trim() === '' || domicilio.trim().length < 5;
-  const noVale = comprobado !== null && !comprobado.vale;
   const faltaAlgo =
     faltaCliente ||
     noVale ||
+    noCabeLaSenal !== null ||
     (aMano ? conceptos.length === 0 || (!cobrada && vence === '') : tickets.length === 0);
 
   if (anadiendo) {
@@ -386,108 +244,7 @@ export function HacerFactura({
         </div>
       )}
 
-      <section aria-label="Para quién" className="flex flex-col gap-e3">
-        <p className="text-cuerpo font-semibold">Para quién</p>
-        <Elegir
-          nombre="Qué es el cliente"
-          opciones={EN_CADA_CLASE}
-          valor={clase}
-          alElegir={(c) => {
-            setClase(c);
-            setComprobado(null);
-          }}
-        />
-
-        {clase === 'de_fuera' && (
-          <div className="grid gap-e3 sm:grid-cols-2">
-            <Selector
-              etiqueta="País"
-              opciones={PAISES.map((p) => ({ valor: p.valor, texto: p.texto }))}
-              value={codigoPais}
-              onChange={(e) => {
-                setCodigoPais(e.target.value);
-                if (!DE_LA_UNION.has(e.target.value)) setIdTipo('03');
-                setComprobado(null);
-              }}
-            />
-            <div className="flex flex-col gap-e1">
-              <p className="text-secundario font-medium text-texto-suave">Con qué</p>
-              <Elegir
-                nombre="Con qué se identifica"
-                opciones={
-                  DE_LA_UNION.has(codigoPais)
-                    ? [
-                        { valor: '02' as const, texto: 'N.º de IVA' },
-                        { valor: '03' as const, texto: 'Pasaporte' },
-                      ]
-                    : [{ valor: '03' as const, texto: 'Pasaporte' }]
-                }
-                valor={idTipo}
-                alElegir={(v) => {
-                  setIdTipo(v);
-                  setComprobado(null);
-                }}
-              />
-            </div>
-          </div>
-        )}
-        <Campo
-          etiqueta={
-            clase === 'empresa'
-              ? 'NIF'
-              : clase === 'particular'
-                ? 'DNI o NIE'
-                : idTipo === '02'
-                  ? 'Número de IVA'
-                  : 'Pasaporte'
-          }
-          value={identificador}
-          onChange={(e) => {
-            cambiarElNumero(e.target.value);
-          }}
-          onBlur={() => {
-            // Lo ya mirado, y sin tocar, no se vuelve a preguntar.
-            if (comprobado === null) void comprobar();
-          }}
-          {...(comprobado !== null && !comprobado.vale && comprobado.dice !== null
-            ? { error: comprobado.dice }
-            : comprobado?.dice != null
-              ? { ayuda: `✓ ${comprobado.dice}` }
-              : comprobando
-                ? { ayuda: 'Mirando en Hacienda…' }
-                : {})}
-        />
-        <Campo
-          etiqueta={
-            clase === 'empresa'
-              ? 'Nombre o razón social'
-              : clase === 'particular'
-                ? 'Nombre y apellidos'
-                : 'Nombre'
-          }
-          value={nombre}
-          onChange={(e) => {
-            setNombre(e.target.value);
-            // Un NIF que no cuadraba con el nombre se vuelve a mirar al salir: no se queda bloqueado.
-            setComprobado(null);
-          }}
-          onBlur={() => {
-            // Lo ya mirado, y sin tocar, no se vuelve a preguntar.
-            if (comprobado === null) void comprobar();
-          }}
-          {...(clase === 'empresa' ? { ayuda: 'Sale de Hacienda al escribir el NIF.' } : {})}
-        />
-        <Campo
-          etiqueta="Domicilio"
-          value={domicilio}
-          onChange={(e) => {
-            setDomicilio(e.target.value);
-          }}
-          {...(rellenado.domicilio !== null && domicilio === rellenado.domicilio
-            ? { ayuda: 'De su última factura. Cámbialo si ya no es este.' }
-            : {})}
-        />
-      </section>
+      <ParaQuien c={c} />
 
       {aMano && datos !== null && (
         <>
@@ -667,6 +424,50 @@ export function HacerFactura({
                 </div>
               </div>
             )}
+            {lasSenales.length > 0 && (
+              <ul className="flex flex-col gap-e1">
+                {lasSenales.map((s) => {
+                  const marcada = !sinDescontar.includes(s.id);
+                  return (
+                    <li key={s.id}>
+                      <button
+                        type="button"
+                        role="checkbox"
+                        aria-checked={marcada}
+                        onClick={() => {
+                          setSinDescontar((ya) =>
+                            marcada ? [...ya, s.id] : ya.filter((x) => x !== s.id),
+                          );
+                        }}
+                        className={clases(
+                          'flex min-h-toque w-full items-center gap-e2 rounded-medio border px-e3 py-e1 text-left',
+                          marcada
+                            ? 'border-naranja bg-naranja-suave'
+                            : 'border-borde bg-superficie',
+                        )}
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-secundario font-medium">
+                            Descontar su señal
+                          </span>
+                          <span className="block truncate text-etiqueta text-texto-suave tabular-nums">
+                            {s.numero} · {s.fecha.slice(8, 10)}/{s.fecha.slice(5, 7)}
+                          </span>
+                        </span>
+                        <span className="tabular-nums text-secundario">
+                          {importeDelDocumento(-s.importe)}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {noCabeLaSenal !== null && (
+              <Aviso tono="atencion" titulo="La señal no cabe">
+                {noCabeLaSenal}
+              </Aviso>
+            )}
             {desglose !== null && (
               <div className="flex flex-col gap-e1 rounded-grande border border-borde bg-superficie p-e3 tabular-nums">
                 <p className="flex justify-between text-secundario text-texto-suave">
@@ -744,6 +545,7 @@ export function HacerFactura({
         }}
       />
       {error !== null && <ErrorEnCristiano error={error} />}
+      {c.errorAlComprobar !== null && <ErrorEnCristiano error={c.errorAlComprobar} />}
       <Boton
         tono="principal"
         disabled={faltaAlgo}

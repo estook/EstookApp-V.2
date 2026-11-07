@@ -1107,3 +1107,4 @@
      botón se quedaba apagado aunque se corrigiera el nombre, porque solo se miraba al salir del NIF. Y lo que un
      número rellena solo se tiene que ir al cambiar el número (7-nov). **Por cada dato que se rellena solo, se
      prueba qué pasa si la persona se equivoca y corrige.**
+262. **Lo que se lee en muchos sitios no se puede usar para otra cosa.** El estado de un documento se lee del último registro, en cinco sitios; apuntar ahí los estados de una anulación habría convertido en «Rechazada» una factura válida cuando Hacienda no aceptara anularla. Y lo que salió de una cola no vuelve solo: lo que se está anulando se habría quedado «Anulando» para siempre (7-nov). **Antes de añadir un estado, se busca quién lee ese dato y qué creería.**

@@ -5,6 +5,7 @@ import {
   COLOR_DE_ESTOOK,
   MONTSERRAT_WOFF2_BASE64,
   colorSeguro,
+  documentoDeLaFactura,
   documentoDeLaFicha,
   documentoDelHorario,
   documentoDelMenu,
@@ -211,6 +212,81 @@ describe('la ficha técnica en PDF (0087)', () => {
 
   it('y ni un euro', () => {
     expect(pagina).not.toMatch(/€|EUR/);
+  });
+});
+
+describe('la factura rectificativa en A4 (0140)', () => {
+  const desglose = {
+    lineas: [{ regimen: 'iva' as const, tipo: 0.1, base: -6364, cuota: -636, total: -7000 }],
+    base: -6364,
+    cuota: -636,
+    total: -7000,
+  };
+  const laRectificativa = documentoDeLaFactura(
+    {
+      tipo: 'R1',
+      numero: 'R-IKA-2026-000004',
+      empresa: { nombre: 'Ikatz, S.L.', nif: 'B12345678', domicilio: 'Calle Mayor 12, Bilbao' },
+      destinatario: {
+        clase: 'empresa',
+        nombre: 'Construcciones Ejemplo',
+        identificador: 'B87654321',
+        id_tipo: null,
+        codigo_pais: null,
+        domicilio: 'Pol. Ugaldeguren 4, Zamudio',
+      },
+      fecha: '14/11/2026',
+      fechaOperacion: null,
+      vence: null,
+      sustituye: [],
+      rectifica: 'F-IKA-2026-000007, del 14/11/2026',
+      motivo: 'Se cobró de más',
+      lineas: [{ nombre: 'Menú de grupo', cantidad: 2, importe: -7000, regimen: 'iva', tipo: 0.1 }],
+      desglose,
+      qrEnBase64: 'iVBOR',
+      pruebas: true,
+    },
+    MARCA,
+    '14/11/2026',
+  );
+
+  it('dice que es rectificativa, qué rectifica y por qué', () => {
+    expect(laRectificativa).toContain('Factura rectificativa');
+    expect(laRectificativa).toContain('Rectifica: F-IKA-2026-000007, del 14/11/2026');
+    expect(laRectificativa).toContain('Motivo: Se cobró de más');
+  });
+
+  it('lo devuelto, en negativo, y el total también', () => {
+    expect(laRectificativa).toContain('−70,00 €');
+    expect(laRectificativa).toContain('−63,64 €');
+  });
+
+  it('una factura final dice qué señal descuenta', () => {
+    const final = documentoDeLaFactura(
+      {
+        tipo: 'F1',
+        numero: 'F-IKA-2026-000007',
+        empresa: { nombre: 'Ikatz, S.L.', nif: 'B12345678', domicilio: 'Calle Mayor 12, Bilbao' },
+        destinatario: null,
+        fecha: '14/11/2026',
+        fechaOperacion: null,
+        vence: null,
+        sustituye: [],
+        descuenta: ['F-IKA-2026-000005'],
+        lineas: [{ nombre: 'Comida', cantidad: 1, importe: 7000, regimen: 'iva', tipo: 0.1 }],
+        desglose: {
+          lineas: [{ regimen: 'iva', tipo: 0.1, base: 6364, cuota: 636, total: 7000 }],
+          base: 6364,
+          cuota: 636,
+          total: 7000,
+        },
+        qrEnBase64: null,
+        pruebas: false,
+      },
+      MARCA,
+      '14/11/2026',
+    );
+    expect(final).toContain('Descuenta la señal F-IKA-2026-000005');
   });
 });
 

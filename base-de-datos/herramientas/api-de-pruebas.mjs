@@ -54,6 +54,7 @@ import { movilDeMentira } from '../../servidor/infraestructura/movil.ts';
 import { alSegundoDeMentira } from '../../servidor/infraestructura/al-segundo.ts';
 import { modeloDeMentira } from '../../servidor/ia/modelo.ts';
 import { verifactiDeMentira } from '../../servidor/facturacion/verifacti-de-mentira.ts';
+import { laFirmaDelAviso } from '../../servidor/aplicacion/emitir.ts';
 import { anotar, recordar } from '../../servidor/infraestructura/idempotencia.ts';
 import { resolverLaSesion } from '../../servidor/infraestructura/quien-llama.ts';
 import { sembrarAcceso } from '../semillas/acceso.ts';
@@ -186,6 +187,9 @@ const fogon = modeloDeMentira();
 
 // 0126 · Verifacti, de mentira: Hacienda conoce unos pocos NIF y la firma espera a firmarse.
 const facturacion = verifactiDeMentira();
+// El secreto de los avisos: sin él no se aceptaría el que manda `/api/pruebas/hacienda`.
+const SECRETO_DE_LOS_AVISOS = 'el-secreto-de-los-avisos-de-pruebas';
+process.env['VERIFACTI_SECRETO_DE_LOS_AVISOS'] = SECRETO_DE_LOS_AVISOS;
 
 /**
  * El Stripe de mentira (0048): guarda en memoria y avisa firmado, por el mismo
@@ -401,6 +405,60 @@ const servidor = createServer((peticion, respuesta) => {
         .then(() => {
           respuesta.writeHead(200, { 'content-type': 'application/json' });
           respuesta.end(JSON.stringify({ encendido }));
+        })
+        .catch((fallo) => {
+          respuesta.writeHead(500, { 'content-type': 'application/json' });
+          respuesta.end(JSON.stringify({ error: String(fallo) }));
+        });
+      return;
+    }
+
+    // 0140 · lo que dice Hacienda de un documento, **por el mismo camino que de verdad**: un aviso
+    // firmado de Verifacti. Sin esto, en la pantalla no se podría ver nunca un «Correcto», un
+    // rechazo ni una anulación. **Solo existe aquí.**
+    if (pedido.pathname === '/api/pruebas/hacienda') {
+      const numero = pedido.searchParams.get('numero') ?? '';
+      const operacion = pedido.searchParams.get('operacion') ?? 'Alta';
+      const estado = pedido.searchParams.get('estado') ?? 'Correcto';
+      const mensaje = pedido.searchParams.get('mensaje');
+      const registro = facturacion.registros.findLast(
+        (r) => `${r.serie}${r.numero}` === numero && r.operacion === operacion,
+      );
+      if (registro === undefined) {
+        respuesta.writeHead(404, { 'content-type': 'application/json' });
+        respuesta.end(JSON.stringify({ error: `Verifacti no tiene ${operacion} de ${numero}` }));
+        return;
+      }
+      facturacion.decirHacienda(
+        registro.uuid,
+        estado,
+        mensaje === null ? undefined : '1100',
+        mensaje ?? undefined,
+      );
+      const aviso = JSON.stringify([
+        {
+          uuid: registro.uuid,
+          estado,
+          ...(mensaje === null ? {} : { codigo_error: '1100', mensaje_error: mensaje }),
+        },
+      ]);
+      laFirmaDelAviso(aviso, SECRETO_DE_LOS_AVISOS)
+        .then((firma) =>
+          api.fetch(
+            new Request(`http://localhost:${PUERTO}/api/avisos/verifacti`, {
+              method: 'POST',
+              headers: {
+                'x-webhook-signature': firma,
+                'x-webhook-id': crypto.randomUUID(),
+                'content-type': 'application/json',
+              },
+              body: aviso,
+            }),
+          ),
+        )
+        .then(async (salida) => {
+          respuesta.writeHead(salida.status, { 'content-type': 'application/json' });
+          respuesta.end(await salida.text());
         })
         .catch((fallo) => {
           respuesta.writeHead(500, { 'content-type': 'application/json' });

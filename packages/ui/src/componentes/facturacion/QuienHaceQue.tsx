@@ -11,8 +11,8 @@ import { usarLectura, type ClienteDeFacturas } from '../../ganchos/usarLectura.t
  * facturas no da acceso a la empresa ni a las series**. De fábrica, por su puesto; cada línea se
  * abre y la dirección cambia a una persona con un interruptor. Queda en la auditoría.
  *
- * **Solo la dirección**: a quien no lo es no le sale nada. Las devoluciones, las correcciones y
- * anular entran aquí en cuanto existan (T6 · 2 · 2 · 2): lo que todavía no existe no se enseña.
+ * **Solo la dirección**: a quien no lo es no le sale nada. Devolver, corregir y anular, cada uno con
+ * su línea (T6 · 2 · 2 · 2, decisión 0140).
  */
 
 interface Persona {
@@ -23,10 +23,19 @@ interface Persona {
   readonly deUnTicket: boolean;
   readonly aMano: boolean;
   readonly consultar: boolean;
+  readonly devolver: boolean;
+  readonly corregir: boolean;
+  readonly anular: boolean;
   readonly cambiados: readonly string[];
 }
 
-type Permiso = 'accion.factura_de_un_ticket' | 'accion.factura_a_mano' | 'accion.ver_documentos';
+type Permiso =
+  | 'accion.factura_de_un_ticket'
+  | 'accion.factura_a_mano'
+  | 'accion.ver_documentos'
+  | 'accion.devolver'
+  | 'accion.corregir_datos'
+  | 'accion.anular';
 
 const LAS_ACCIONES: readonly {
   readonly permiso: Permiso;
@@ -42,8 +51,8 @@ const LAS_ACCIONES: readonly {
   },
   {
     permiso: 'accion.factura_a_mano',
-    nombre: 'Factura a mano',
-    explica: 'Con conceptos libres, y marcar lo cobrado.',
+    nombre: 'Factura a mano y señal',
+    explica: 'Con conceptos libres, la señal de un evento, y marcar lo cobrado.',
     lee: (p) => p.aMano,
   },
   {
@@ -51,6 +60,24 @@ const LAS_ACCIONES: readonly {
     nombre: 'Consultar todo',
     explica: 'Cualquier fecha. Sin esto, hoy y ayer, y lo demás por su número.',
     lee: (p) => p.consultar,
+  },
+  {
+    permiso: 'accion.devolver',
+    nombre: 'Devolver',
+    explica: 'Un ticket o una factura, entera o una parte, con su motivo.',
+    lee: (p) => p.devolver,
+  },
+  {
+    permiso: 'accion.corregir_datos',
+    nombre: 'Corregir los datos del cliente',
+    explica: 'El NIF, el nombre o el domicilio, y lo que rechaza Hacienda.',
+    lee: (p) => p.corregir,
+  },
+  {
+    permiso: 'accion.anular',
+    nombre: 'Anular',
+    explica: 'Lo que nunca debió existir, con su motivo.',
+    lee: (p) => p.anular,
   },
 ];
 

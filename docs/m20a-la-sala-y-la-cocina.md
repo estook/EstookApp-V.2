@@ -582,8 +582,7 @@ justificante** llega con la página de «Pide tu factura» (T6 · 2 · 3).
   buscador, y **los permisos acción por acción**, en Estook y en Estook TPV. Pruebas 2, 6, 11 y 20.
 - **El reloj de los documentos y la auditoría de las facturas, en producción** (migración 0108, [0138](decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md)): lo que Richi vio al probar la primera parte en IKATZ. Nada salía de «En Hacienda» y el total contaba dos veces. **Va antes de lo siguiente**: devolver y anular se apoyan en ese estado.
 - **Sin lista de clientes, en producción y comprobado en IKATZ el 7-nov** (migración 0109, [0139](decisiones/0139-sin-lista-de-clientes.md)): lo que Richi vio al hacer facturas en IKATZ.
-- **T6 · 2 · 2 · 2**, lo siguiente: las devoluciones (R5 y R1), corregir los datos del cliente (R4),
-  anular y la señal de un evento, cada uno con su permiso y su motivo. Pruebas 13 y la R5 de la 12.
+- **T6 · 2 · 2 · 2 · Las correcciones**, en su pull request (migración 0110, [0140](decisiones/0140-t6-2-2-2-las-correcciones.md)): las devoluciones (R5 y R1), corregir los datos del cliente (R4), anular y la señal de un evento, cada uno con su permiso y su motivo, y corregir lo que rechaza Hacienda. Pruebas 13 y la R5 de la 12; **la salida de caja y el almacén, con T7**.
 
 **Antes de T6 · 2 · 1, la pausa del 5-nov** ([0130](decisiones/0130-la-pausa-del-5-nov-r1-lo-rapido.md)):
 cuatro entregas con lo que Richi vio usando el TPV en IKATZ. **R1 · Lo rápido** (tachar, mandar, el

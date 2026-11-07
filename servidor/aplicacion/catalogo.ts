@@ -432,6 +432,14 @@ import {
   quienHaceQue,
 } from './comandos/hacer-facturas.ts';
 import {
+  anularElDocumento,
+  corregirLoRechazado,
+  corregirLosDatos,
+  devolverElDocumento,
+  hacerFacturaDeSenal,
+  lasSenalesDelCliente,
+} from './comandos/corregir-documentos.ts';
+import {
   comprobarUnNif,
   contestarDondeTributa,
   darDeAltaEnVerifacti,
@@ -704,6 +712,7 @@ export const catalogo = {
     // T6 · 2 · 1 · El motor y el ticket (0136): lo emitido, con su estado ante Hacienda.
     [ticketsYFacturas.nombre]: ticketsYFacturas,
     [loQueSePuedeFacturar.nombre]: loQueSePuedeFacturar,
+    [lasSenalesDelCliente.nombre]: lasSenalesDelCliente,
     [elDocumentoEnPdf.nombre]: elDocumentoEnPdf,
     [quienHaceQue.nombre]: quienHaceQue,
     [unDocumento.nombre]: unDocumento,
@@ -1207,6 +1216,11 @@ export const catalogo = {
     [hacerFacturaDeTickets.nombre]: hacerFacturaDeTickets,
     [hacerFacturaAMano.nombre]: hacerFacturaAMano,
     [marcarCobrada.nombre]: marcarCobrada,
+    [devolverElDocumento.nombre]: devolverElDocumento,
+    [corregirLosDatos.nombre]: corregirLosDatos,
+    [anularElDocumento.nombre]: anularElDocumento,
+    [corregirLoRechazado.nombre]: corregirLoRechazado,
+    [hacerFacturaDeSenal.nombre]: hacerFacturaDeSenal,
     [mandarElDocumento.nombre]: mandarElDocumento,
     [darUnPermiso.nombre]: darUnPermiso,
     [reimprimirElDocumento.nombre]: reimprimirElDocumento,

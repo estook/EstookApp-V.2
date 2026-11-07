@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  comoQuedaLaAnulacion,
+  elEstadoConSuDuplicado,
+  laDevolucion,
+  lasLineasDeLaSenal,
+  lasLineasQueQuedan,
+  loQueQuedaDeCadaLinea,
+  loQueValeUnaParte,
+  porQueNoCabeLaSenal,
   elCuerpoParaVerifacti,
   elDesglose,
   elEstadoDelDocumento,
@@ -359,5 +367,190 @@ describe('la factura (T6 · 2 · 2 · 1, 0137)', () => {
     );
     expect(deFuera.nif).toBeUndefined();
     expect(deFuera.id_otro).toEqual({ codigo_pais: 'DE', id_type: '03', id: 'C01X00T47' });
+  });
+});
+
+describe('devolver (T6 · 2 · 2 · 2, 0140)', () => {
+  const LINEAS = [
+    { nombre: 'Croquetas', cantidad: 2, importe: 1800, regimen: 'iva' as const, tipo: 0.1 },
+    { nombre: 'Merluza', cantidad: 1, importe: 1950, regimen: 'iva' as const, tipo: 0.1 },
+  ];
+  const nada = loQueQuedaDeCadaLinea(LINEAS, []);
+
+  it('una de dos raciones: lo devuelto, en negativo, y queda lo demás', () => {
+    const d = laDevolucion(nada, { que: 'partes', partes: [{ linea: 0, cantidad: 1 }] });
+    if ('porque' in d) throw new Error(d.porque);
+    expect(d.total).toBe(900);
+    expect(d.lineas[0]).toMatchObject({ nombre: 'Croquetas', cantidad: 1, importe: -900 });
+    const queda = loQueQuedaDeCadaLinea(LINEAS, d.apuntes);
+    expect(queda[0]).toMatchObject({ cantidad: 1, importe: 900 });
+  });
+
+  it('el precio que no se divide: la última ración recoge lo que queda, sin perder un céntimo', () => {
+    const tres = [
+      { nombre: 'Menú', cantidad: 3, importe: 1000, regimen: 'iva' as const, tipo: 0.1 },
+    ];
+    const una = loQueQuedaDeCadaLinea(tres, []);
+    const primera = una[0];
+    if (primera === undefined) throw new Error('sin línea');
+    expect(loQueValeUnaParte(primera, 1)).toBe(333);
+    const segunda = loQueQuedaDeCadaLinea(tres, [{ linea: 0, cantidad: 1, importe: 333 }])[0];
+    if (segunda === undefined) throw new Error('sin línea');
+    expect(loQueValeUnaParte(segunda, 2)).toBe(667);
+  });
+
+  it('se cobró de más: dinero de una línea, sin devolver la ración', () => {
+    const d = laDevolucion(nada, { que: 'de_mas', linea: 1, importe: 250 });
+    if ('porque' in d) throw new Error(d.porque);
+    expect(d.apuntes).toEqual([{ linea: 1, cantidad: 0, importe: 250 }]);
+    expect(d.lineas[0]).toMatchObject({
+      nombre: 'Merluza (se cobró de más)',
+      cantidad: 1,
+      importe: -250,
+    });
+    expect(loQueQuedaDeCadaLinea(LINEAS, d.apuntes)[1]).toMatchObject({
+      cantidad: 1,
+      importe: 1700,
+    });
+    expect(laDevolucion(nada, { que: 'de_mas', linea: 1, importe: 1951 })).toHaveProperty('porque');
+  });
+
+  it('lo ya devuelto no se vuelve a devolver', () => {
+    const queda = loQueQuedaDeCadaLinea(LINEAS, [{ linea: 1, cantidad: 1, importe: 1950 }]);
+    expect(
+      laDevolucion(queda, { que: 'partes', partes: [{ linea: 1, cantidad: 1 }] }),
+    ).toHaveProperty('porque');
+    const todo = laDevolucion(queda, { que: 'todo' });
+    if ('porque' in todo) throw new Error(todo.porque);
+    expect(todo.total).toBe(1800);
+  });
+
+  it('con una señal descontada, una parte no pasa de lo que queda y «Todo» la deshace', () => {
+    const conSenal = loQueQuedaDeCadaLinea(
+      [
+        { nombre: 'Comida', cantidad: 1, importe: 30_000, regimen: 'iva' as const, tipo: 0.1 },
+        {
+          nombre: 'Señal ya facturada',
+          cantidad: 1,
+          importe: -10_000,
+          regimen: 'iva' as const,
+          tipo: 0.1,
+        },
+      ],
+      [],
+    );
+    expect(
+      laDevolucion(conSenal, { que: 'partes', partes: [{ linea: 0, cantidad: 1 }] }),
+    ).toHaveProperty('porque');
+    const todo = laDevolucion(conSenal, { que: 'todo' });
+    if ('porque' in todo) throw new Error(todo.porque);
+    expect(todo.total).toBe(20_000);
+    expect(todo.lineas.map((l) => l.importe)).toEqual([-30_000, 10_000]);
+  });
+
+  it('una corrección recoge lo que queda y deja fuera lo devuelto entero', () => {
+    const queda = loQueQuedaDeCadaLinea(LINEAS, [{ linea: 1, cantidad: 1, importe: 1950 }]);
+    expect(lasLineasQueQuedan(queda).map((l) => l.nombre)).toEqual(['Croquetas']);
+  });
+});
+
+describe('lo que va a Verifacti de una rectificativa (0140)', () => {
+  const BASE = {
+    serie: 'R-IKA-2026-',
+    numero: 1,
+    fechaOperacion: '2026-11-06' as FechaOperativa,
+    descripcion: 'Devolución',
+    desglose: elDesglose([
+      { nombre: 'Merluza', cantidad: 1, importe: -1950, regimen: 'iva', tipo: 0.1 },
+    ]),
+  };
+  const ENVIO = { fechaExpedicion: '2026-11-06' as FechaOperativa, incidencia: false };
+  const FACTURA = {
+    serie: 'T-IKA-2026-',
+    numero: 35,
+    fechaExpedicion: '2026-11-02' as FechaOperativa,
+  };
+
+  it('por diferencias (R5): en negativo, sin destinatario ni importe_rectificativa', () => {
+    const c = elCuerpoParaVerifacti(
+      { ...BASE, tipo: 'R5', rectifica: { tipo: 'I', facturas: [FACTURA] } },
+      ENVIO,
+    );
+    expect(c.tipo_rectificativa).toBe('I');
+    expect(c.importe_total).toBe('-19.50');
+    expect(c.lineas[0]?.base_imponible).toBe('-17.73');
+    expect(c.lineas[0]?.cuota_repercutida).toBe('-1.77');
+    expect(c.importe_rectificativa).toBeUndefined();
+    expect(c.nif).toBeUndefined();
+    expect(c.facturas_rectificadas).toEqual([
+      { serie: 'T-IKA-2026-', numero: '000035', fecha_expedicion: '02-11-2026' },
+    ]);
+  });
+
+  it('por sustitución (R4): con lo que había antes', () => {
+    const c = elCuerpoParaVerifacti(
+      {
+        ...BASE,
+        tipo: 'R4',
+        rectifica: { tipo: 'S', facturas: [FACTURA], importe: { base: 10_000, cuota: 1_000 } },
+      },
+      ENVIO,
+    );
+    expect(c.tipo_rectificativa).toBe('S');
+    expect(c.importe_rectificativa).toEqual({
+      base_rectificada: '100.00',
+      cuota_rectificada: '10.00',
+    });
+  });
+});
+
+describe('anular y lo duplicado (0140)', () => {
+  it('lo que dice Hacienda de una anulación: si no sale, el documento sigue valiendo', () => {
+    expect(comoQuedaLaAnulacion('Anulado')).toBe('anulada');
+    expect(comoQuedaLaAnulacion('Pendiente')).toBe('sigue');
+    expect(comoQuedaLaAnulacion('Error servidor AEAT')).toBe('sigue');
+    expect(comoQuedaLaAnulacion('Factura inexistente')).toBe('no_salio');
+    expect(comoQuedaLaAnulacion('No registrado')).toBe('no_salio');
+    // Lo que no se conoce se vuelve a mirar: no se da por anulado ni por fallido.
+    expect(comoQuedaLaAnulacion('Algo nuevo')).toBe('sigue');
+  });
+
+  it('«Duplicado» se lee con cómo lo tiene Hacienda: uno anulado no se da por correcto', () => {
+    expect(elEstadoConSuDuplicado('Duplicado', 'Anulada')).toBe('Anulado');
+    expect(elEstadoConSuDuplicado('Duplicado', 'AceptadaConErrores')).toBe('Aceptado con errores');
+    expect(elEstadoConSuDuplicado('Duplicado', 'Correcta')).toBe('Correcto');
+    expect(elEstadoConSuDuplicado('Duplicado', null)).toBe('Duplicado');
+    expect(elEstadoConSuDuplicado('Duplicado', 'Lo que sea')).toBe('Duplicado');
+    expect(elEstadoConSuDuplicado('Correcto', 'Anulada')).toBe('Correcto');
+  });
+});
+
+describe('la señal (0140)', () => {
+  const senal = loQueQuedaDeCadaLinea(
+    [{ nombre: 'Señal', cantidad: 1, importe: 30_000, regimen: 'iva' as const, tipo: 0.1 }],
+    [],
+  );
+
+  it('la final la resta en su mismo tipo', () => {
+    expect(lasLineasDeLaSenal(senal)).toEqual([
+      { nombre: 'Señal ya facturada', cantidad: 1, importe: -30_000, regimen: 'iva', tipo: 0.1 },
+    ]);
+  });
+
+  it('no cabe si es mayor que lo que se factura a ese tipo, aunque el total salga bien', () => {
+    const comida = { nombre: 'Comida', cantidad: 1, regimen: 'iva' as const };
+    const lasDeLaSenal = lasLineasDeLaSenal(senal);
+    expect(
+      porQueNoCabeLaSenal([{ ...comida, importe: 100_000, tipo: 0.1 }, ...lasDeLaSenal]),
+    ).toBeNull();
+    expect(
+      porQueNoCabeLaSenal([{ ...comida, importe: 30_000, tipo: 0.1 }, ...lasDeLaSenal]),
+    ).toBeNull();
+    expect(
+      porQueNoCabeLaSenal([{ ...comida, importe: 20_000, tipo: 0.1 }, ...lasDeLaSenal]),
+    ).toContain('10 %');
+    expect(
+      porQueNoCabeLaSenal([{ ...comida, importe: 100_000, tipo: 0.21 }, ...lasDeLaSenal]),
+    ).toContain('10 %');
   });
 });

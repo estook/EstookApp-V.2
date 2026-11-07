@@ -1,3 +1,4 @@
+import { elEstadoConSuDuplicado } from '@estook/dominio';
 import { variable } from '@estook/utiles';
 
 /**
@@ -44,6 +45,8 @@ import { variable } from '@estook/utiles';
  *                                           codigo_error, mensaje_error, operacion
  *   POST /verifactu/status                serie, numero, fecha_expedicion → la factura en
  *                                           Hacienda, con el uuid de su último registro aceptado
+ *   POST /verifactu/cancel                serie, numero, fecha_expedicion, con `Idempotency-Key`
+ *                                           → **su propio** uuid, huella y estado, sin QR (0140)
  *   GET/POST /webhooks, PUT /webhooks/{id}, POST /webhooks/{id}/nifs/{nif}   los avisos (url,
  *                                           entorno, secret, activo, nifs); 409 si ya hay uno con
  *                                           esa dirección
@@ -196,6 +199,16 @@ export interface Verifacti {
     cuerpo: unknown,
     idempotencia: string,
   ): Promise<LoQuePasoAlEmitir>;
+  /**
+   * **Anula un documento** (`POST /verifactu/cancel`, 0140). Su registro es otro que el del alta, con
+   * su uuid, y se pregunta igual. **No lanza**, como `emitir`.
+   */
+  anular(
+    nif: string,
+    entorno: EntornoDeVerifacti,
+    cuerpo: { readonly serie: string; readonly numero: string; readonly fecha_expedicion: string },
+    idempotencia: string,
+  ): Promise<LoQuePasoAlEmitir>;
   /** El estado de un registro por su uuid. Nulo si no existe (404). */
   elRegistro(
     nif: string,
@@ -295,7 +308,8 @@ export function leerElRegistro(cuerpo: unknown): ElRegistroEnVerifacti | null {
   if (estado === '') return null;
   return {
     uuid,
-    estado,
+    // «Duplicado» con cómo lo tiene Hacienda: uno anulado no se da por bueno (0140).
+    estado: elEstadoConSuDuplicado(estado, textoONulo(c.estado_registro_duplicado)),
     url: textoONulo(c.url),
     qr: textoONulo(c.qr),
     codigoError: textoONulo(
@@ -411,55 +425,70 @@ export function verifactiDeVerdad(
     return laClave;
   }
 
+  /** Lo que se le manda con la clave de un NIF: dar de alta o anular. Contestan igual. */
+  async function mandarAlRegistro(
+    camino: string,
+    nif: string,
+    entorno: EntornoDeVerifacti,
+    cuerpo: unknown,
+    idempotencia: string,
+  ): Promise<LoQuePasoAlEmitir> {
+    let clave: string;
+    try {
+      clave = await laClaveDelNif(entorno, nif);
+    } catch (fallo) {
+      return {
+        resultado: 'sin_respuesta',
+        codigoHttp: fallo instanceof VerifactiNoContesta ? fallo.estado : null,
+        mensaje: 'Sin la clave del NIF',
+      };
+    }
+    let respuesta: Response;
+    try {
+      respuesta = await conClave('POST', camino, clave, cuerpo, idempotencia);
+    } catch (fallo) {
+      return {
+        resultado: 'sin_respuesta',
+        codigoHttp: null,
+        mensaje: fallo instanceof VerifactiNoContesta ? fallo.detalle : 'sin respuesta',
+      };
+    }
+    const leido = ((await respuesta.json().catch(() => null)) ?? {}) as Record<string, unknown>;
+    if (respuesta.status === 200) {
+      return {
+        resultado: 'aceptado',
+        uuid: texto(leido.uuid),
+        estado: texto(leido.estado) || 'Pendiente',
+        url: textoONulo(leido.url),
+        qr: textoONulo(leido.qr),
+        huella: textoONulo(leido.huella),
+      };
+    }
+    if (respuesta.status === 400) {
+      return {
+        resultado: 'rechazado_por_datos',
+        codigoHttp: 400,
+        codigo: textoONulo(leido.codigo),
+        mensaje: texto(leido.error).slice(0, 500),
+      };
+    }
+    if (respuesta.status === 409) return { resultado: 'en_curso', codigoHttp: 409 };
+    return {
+      resultado: 'sin_respuesta',
+      codigoHttp: respuesta.status,
+      mensaje: (texto(leido.error) || texto(leido.message)).slice(0, 500),
+    };
+  }
+
   return {
     quien: 'verifacti',
 
-    async emitir(nif, entorno, cuerpo, idempotencia) {
-      let clave: string;
-      try {
-        clave = await laClaveDelNif(entorno, nif);
-      } catch (fallo) {
-        return {
-          resultado: 'sin_respuesta',
-          codigoHttp: fallo instanceof VerifactiNoContesta ? fallo.estado : null,
-          mensaje: 'Sin la clave del NIF',
-        };
-      }
-      let respuesta: Response;
-      try {
-        respuesta = await conClave('POST', '/verifactu/create', clave, cuerpo, idempotencia);
-      } catch (fallo) {
-        return {
-          resultado: 'sin_respuesta',
-          codigoHttp: null,
-          mensaje: fallo instanceof VerifactiNoContesta ? fallo.detalle : 'sin respuesta',
-        };
-      }
-      const leido = ((await respuesta.json().catch(() => null)) ?? {}) as Record<string, unknown>;
-      if (respuesta.status === 200) {
-        return {
-          resultado: 'aceptado',
-          uuid: texto(leido.uuid),
-          estado: texto(leido.estado) || 'Pendiente',
-          url: textoONulo(leido.url),
-          qr: textoONulo(leido.qr),
-          huella: textoONulo(leido.huella),
-        };
-      }
-      if (respuesta.status === 400) {
-        return {
-          resultado: 'rechazado_por_datos',
-          codigoHttp: 400,
-          codigo: textoONulo(leido.codigo),
-          mensaje: texto(leido.error).slice(0, 500),
-        };
-      }
-      if (respuesta.status === 409) return { resultado: 'en_curso', codigoHttp: 409 };
-      return {
-        resultado: 'sin_respuesta',
-        codigoHttp: respuesta.status,
-        mensaje: (texto(leido.error) || texto(leido.message)).slice(0, 500),
-      };
+    emitir(nif, entorno, cuerpo, idempotencia) {
+      return mandarAlRegistro('/verifactu/create', nif, entorno, cuerpo, idempotencia);
+    },
+
+    anular(nif, entorno, cuerpo, idempotencia) {
+      return mandarAlRegistro('/verifactu/cancel', nif, entorno, cuerpo, idempotencia);
     },
 
     async elRegistro(nif, entorno, uuid) {

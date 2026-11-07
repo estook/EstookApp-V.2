@@ -17,6 +17,8 @@ const TPV = 'http://localhost:5178/';
  *   · T6 · 2 · 2 · 1 (0137): la factura de ese ticket, con su NIF comprobado; el ticket queda
  *     canjeado y no se puede canjear otra vez; una factura a mano, por cobrar, con un concepto libre
  *     y el precio sin IVA; y «Quién hace qué» en Ajustes › Facturación
+ *   · T6 · 2 · 2 · 2 (0140): devolver una de dos raciones y lo cobrado de más, corregir los datos del
+ *     cliente, la señal que la factura final descuenta sola, y anular con su motivo
  *
  * **Bar Faro no lo usa ninguna otra prueba**, y esta corre en el escritorio: la empresa de
  * pruebas es una por local.
@@ -175,6 +177,207 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
   await expect(page.getByRole('row').filter({ hasText: 'EJEMPLO NORTE SL' }).first()).toBeVisible();
   await pasar('5-la-lista');
 
+  // T6 · 2 · 2 · 2 (0140): lo emitido se corrige con otro documento. Dos raciones y un café.
+  const conDos = await ejecutarEnLaApi<{ documentoId: string; numero: string }>(
+    page.request,
+    token ?? '',
+    'hacer_factura_a_mano',
+    {
+      cliente: {
+        clase: 'empresa',
+        nombre: 'EJEMPLO NORTE SL',
+        identificador: 'B84935048',
+        domicilio: 'Pol. Ugaldeguren 4, Zamudio',
+      },
+      lineas: [
+        { nombre: 'Menú de grupo', cantidad: 2, importe: 7000, tipo: 0.1 },
+        { nombre: 'Café', cantidad: 1, importe: 150, tipo: 0.1 },
+      ],
+      cobrada: true,
+    },
+  );
+  await page.getByRole('button', { name: 'Todos', exact: true }).click();
+  await page.getByLabel('Buscar por número, cliente o NIF').fill(conDos.numero);
+  await page.getByRole('row').filter({ hasText: conDos.numero }).click();
+  const laDos = page.getByRole('dialog', { name: 'El documento' });
+  await expect(laDos.getByRole('button', { name: 'Corregir los datos' })).toBeVisible();
+  // Hacienda todavía no ha contestado: anular no sale, y devolver sí.
+  await expect(laDos.getByRole('button', { name: 'Anular', exact: true })).toHaveCount(0);
+  await laDos.getByRole('button', { name: 'Devolver', exact: true }).click();
+
+  // Una de las dos raciones: «1 de 2», y el importe es el de una.
+  const devolver = page.getByRole('dialog', { name: 'Devolver' });
+  await devolver.getByRole('radio', { name: 'Solo algunos' }).click();
+  await devolver.getByRole('checkbox', { name: 'Devolver Menú de grupo' }).click();
+  await devolver.getByLabel('Cuántos de Menú de grupo').fill('1');
+  await expect(devolver.getByRole('button', { name: 'Devolver 35,00 €' })).toBeEnabled();
+  await pasar('10-devolver-una-de-dos');
+  await devolver.getByRole('button', { name: 'Devolver 35,00 €' }).click();
+
+  const laDevolucion = page.getByRole('dialog', { name: 'El documento' });
+  await expect(laDevolucion).toContainText(/R-BF-\d{4}-\d{6}/);
+  await expect(laDevolucion).toContainText('Factura rectificativa');
+  await expect(laDevolucion).toContainText(`Rectifica: ${conDos.numero}`);
+  await expect(laDevolucion).toContainText('Motivo: Mal hecho');
+  await expect(laDevolucion).toContainText('-35,00 EUR');
+  // Una devolución ni se devuelve ni se corrige: solo reimprimir, descargar y mandar.
+  await expect(laDevolucion.getByRole('button', { name: /^Devolver/ })).toHaveCount(0);
+  await pasar('11-la-devolucion');
+
+  // Lo cobrado de más: dinero de una línea, sin devolver ninguna ración.
+  await laDevolucion.getByRole('button', { name: conDos.numero }).click();
+  await expect(laDevolucion).toContainText('Devuelta en parte');
+  await laDevolucion.getByRole('button', { name: 'Devolver lo que queda' }).click();
+  const deMas = page.getByRole('dialog', { name: 'Devolver' });
+  await deMas.getByRole('radio', { name: 'Se cobró de más' }).click();
+  await deMas.getByRole('checkbox', { name: 'Devolver Café' }).click();
+  await deMas.getByLabel('¿Cuánto de más?').fill('0,50');
+  await deMas.getByLabel('¿Cuánto de más?').blur();
+  await pasar('12-se-cobro-de-mas');
+  await deMas.getByRole('button', { name: 'Devolver 0,50 €' }).click();
+  const otra = page.getByRole('dialog', { name: 'El documento' });
+  await expect(otra).toContainText('Motivo: Se cobró de más');
+  await expect(otra).toContainText('-0,50 EUR');
+
+  // Corregir los datos: la anterior se queda, marcada «Corregida», y lleva a la nueva.
+  await otra.getByRole('button', { name: conDos.numero }).click();
+  await otra.getByRole('button', { name: 'Corregir los datos' }).click();
+  const corregir = page.getByRole('dialog', { name: 'Corregir los datos del cliente' });
+  await expect(corregir.getByLabel('NIF', { exact: true })).toHaveValue('B84935048');
+  await expect(corregir.getByRole('button', { name: 'Hacer la factura corregida' })).toBeDisabled();
+  await corregir.getByLabel('Domicilio').fill('Polígono Ugaldeguren III, 4, 48170 Zamudio');
+  await pasar('13-corregir-los-datos');
+  await corregir.getByRole('button', { name: 'Hacer la factura corregida' }).click();
+  const corregida = page.getByRole('dialog', { name: 'El documento' });
+  await expect(corregida).toContainText('Corrección de datos');
+  await expect(corregida).toContainText('Polígono Ugaldeguren III, 4, 48170 Zamudio');
+  await expect(corregida).toContainText('Motivo: Corrige el domicilio');
+  await corregida.getByRole('button', { name: conDos.numero }).click();
+  await expect(corregida).toContainText('Corregida');
+  await expect(corregida.getByRole('button', { name: 'Ir a su corrección' })).toBeVisible();
+  await expect(corregida.getByRole('button', { name: /^Devolver/ })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await page.getByLabel('Buscar por número, cliente o NIF').fill('');
+
+  // La señal, y la factura final la descuenta sola.
+  await page.getByRole('button', { name: 'Factura de una señal' }).click();
+  const senal = page.getByRole('dialog', { name: 'Factura de la señal' });
+  await senal.getByLabel('NIF', { exact: true }).fill('B12345674');
+  await senal.getByLabel('Nombre o razón social').click();
+  await expect(senal.getByLabel('Nombre o razón social')).toHaveValue('IKATZ RESTAURACION SL');
+  await senal.getByLabel('Domicilio').fill('Calle Mayor 12, Bilbao');
+  await senal.getByLabel('Para qué es').fill('Señal de la comida del 14-nov');
+  await senal.getByLabel(/Cobrado, con IVA/).fill('300');
+  await senal.getByLabel(/Cobrado, con IVA/).blur();
+  await pasar('14-la-senal');
+  await senal.getByRole('button', { name: 'Hacer la factura de la señal' }).click();
+  const laSenal = page.getByRole('dialog', { name: 'El documento' });
+  await expect(laSenal).toContainText('Señal');
+  await expect(laSenal).toContainText('300,00 EUR');
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', { name: 'Hacer una factura' }).click();
+  const laFinal = page.getByRole('dialog', { name: 'Hacer una factura' });
+  await laFinal.getByLabel('NIF', { exact: true }).fill('B12345674');
+  await laFinal.getByLabel('Nombre o razón social').click();
+  await expect(laFinal.getByRole('checkbox', { name: /Descontar su señal/ })).toBeChecked();
+  await laFinal.getByRole('button', { name: 'Concepto libre' }).click();
+  await laFinal.getByLabel('Qué es', { exact: true }).fill('Comida de empresa');
+  await laFinal.getByLabel(/Importe, con IVA/).fill('1000');
+  await laFinal.getByLabel(/Importe, con IVA/).blur();
+  await laFinal.getByRole('radio', { name: '10 %' }).click();
+  await laFinal.getByRole('button', { name: 'Añadirlo' }).click();
+  await expect(laFinal).toContainText('700,00 €');
+  await pasar('15-descontar-la-senal');
+  await laFinal.getByRole('button', { name: 'Hacer la factura' }).click();
+  const conSenal = page.getByRole('dialog', { name: 'El documento' });
+  await expect(conSenal).toContainText('Descuenta la señal F-BF');
+  await expect(conSenal).toContainText('Señal ya facturada');
+  await page.keyboard.press('Escape');
+
+  // Anular. Lo que dice Hacienda llega por un aviso firmado, por el mismo camino que de verdad.
+  const decirHacienda = async (
+    numero: string,
+    estado: string,
+    mas: Record<string, string> = {},
+  ) => {
+    const r = await page.request.post(
+      `http://localhost:5177/api/pruebas/hacienda?${new URLSearchParams({ numero, estado, ...mas }).toString()}`,
+    );
+    expect(r.ok()).toBe(true);
+  };
+  const otroTicket = await ejecutarEnLaApi<{ documentoId: string; numero: string }>(
+    page.request,
+    token ?? '',
+    'imprimir_un_ticket_de_prueba',
+    {},
+  );
+  await decirHacienda(otroTicket.numero, 'Correcto');
+  await recargarSinQueSeCaiga(page);
+  await page.getByRole('row').filter({ hasText: otroTicket.numero }).click();
+  await page
+    .getByRole('dialog', { name: 'El documento' })
+    .getByRole('button', { name: 'Anular', exact: true })
+    .click();
+  const paraAnular = page.getByRole('dialog', { name: 'Anular' });
+  await expect(paraAnular).toContainText('Anular es solo para lo que nunca debió existir');
+  const anularlo = paraAnular.getByRole('button', { name: `Anular ${otroTicket.numero}` });
+  await expect(anularlo).toBeDisabled();
+  await paraAnular.getByLabel('Por qué lo anulas').fill('Salió repetido al probar la impresora');
+  await pasar('16-anular');
+  await anularlo.click();
+  const anulandolo = page.getByRole('dialog', { name: 'El documento' });
+  await expect(anulandolo).toContainText('Anulando');
+  await expect(anulandolo).toContainText('Se pidió anularlo');
+  await pasar('17-anulando');
+  await decirHacienda(otroTicket.numero, 'Anulado', { operacion: 'Anulación' });
+  await recargarSinQueSeCaiga(page);
+  await page.getByRole('row').filter({ hasText: otroTicket.numero }).click();
+  const anulado = page.getByRole('dialog', { name: 'El documento' });
+  await expect(anulado).toContainText('Salió repetido al probar la impresora');
+  await expect(anulado).toContainText('Hacienda: anulado');
+  // Solo mirar, con quién y por qué.
+  await expect(anulado.getByRole('button', { name: 'Descargar' })).toHaveCount(0);
+  await expect(anulado.getByRole('button', { name: 'Reimprimir' })).toHaveCount(0);
+  await expect(anulado.getByRole('button', { name: 'Mandar por correo' })).toHaveCount(0);
+  await pasar('18-anulado');
+  await page.keyboard.press('Escape');
+
+  // Lo que rechaza Hacienda: sale arriba con «Corregir», y al corregirlo deja de salir.
+  const rechazada = await ejecutarEnLaApi<{ documentoId: string; numero: string }>(
+    page.request,
+    token ?? '',
+    'hacer_factura_a_mano',
+    {
+      cliente: {
+        clase: 'empresa',
+        nombre: 'EJEMPLO NORTE SL',
+        identificador: 'B84935048',
+        domicilio: 'Domicilio que estaba mal',
+      },
+      lineas: [{ nombre: 'Comida', cantidad: 1, importe: 5000, tipo: 0.1 }],
+      cobrada: true,
+    },
+  );
+  await decirHacienda(rechazada.numero, 'Incorrecto', { mensaje: 'Un dato no cuadra' });
+  await recargarSinQueSeCaiga(page);
+  await expect(page.getByText('Un dato no cuadra')).toBeVisible();
+  await page.getByRole('button', { name: 'Corregir', exact: true }).click();
+  const paraCorregir = page.getByRole('dialog', { name: 'Corregir' });
+  await paraCorregir.getByLabel('Domicilio').fill('Pol. Ugaldeguren 4, Zamudio');
+  await pasar('19-corregir-lo-rechazado');
+  await paraCorregir.getByRole('button', { name: 'Hacer la factura corregida' }).click();
+  await expect(page.getByRole('dialog', { name: 'El documento' })).toContainText(
+    `Corrige ${rechazada.numero}, que rechazó Hacienda`,
+  );
+  await page.keyboard.press('Escape');
+  await expect(page.getByText('Un dato no cuadra')).toHaveCount(0);
+
+  // Las devoluciones, en su filtro.
+  await page.getByRole('button', { name: 'Devoluciones', exact: true }).click();
+  await expect(page.getByRole('row').filter({ hasText: 'Devolución' }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Todos', exact: true }).click();
+
   // Ajustes › Facturación › Quién hace qué: hacer facturas, sin lo fiscal.
   await abrirSinQueSeCaiga(page, `${APP}#/ajustes/facturacion`);
   const quien = page
@@ -184,6 +387,9 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
   await expect(quien).toContainText('Hacer facturas no da acceso a la empresa ni a las series');
   await quien.getByRole('button', { name: /Factura a mano/ }).click();
   await expect(quien).toContainText('Con conceptos libres');
+  await expect(quien.getByRole('button', { name: /Devolver/ })).toBeVisible();
+  await expect(quien.getByRole('button', { name: /Corregir los datos del cliente/ })).toBeVisible();
+  await expect(quien.getByRole('button', { name: /^Anular/ })).toBeVisible();
   await pasar('6-quien-hace-que');
 
   // Y en Estook TPV, lo mismo a un toque desde la sala (0137).

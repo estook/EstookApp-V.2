@@ -10,6 +10,7 @@ import {
   Etiqueta,
   Hoja,
   Interruptor,
+  QuienHaceQue,
   Tarjeta,
 } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -230,7 +231,8 @@ export function TuFacturacion() {
 
           {lo.como.estado === 'lista' ? (
             <Aviso tono="bien" titulo="Lista">
-              El alta está terminada. Emitir tickets y facturas llega en la siguiente entrega.
+              El alta está terminada. Las facturas se hacen en Servicio › Ventas › Tickets y
+              facturas.
             </Aviso>
           ) : (
             lo.como.estado === 'en_marcha' && (
@@ -290,6 +292,8 @@ export function TuFacturacion() {
           </ol>
         </div>
       </Tarjeta>
+
+      <QuienHaceQue cliente={cliente} />
 
       {lo.quienLaLleva !== null && (
         <QuienLaLleva

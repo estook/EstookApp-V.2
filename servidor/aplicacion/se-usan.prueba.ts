@@ -143,6 +143,8 @@ async function codigoDeLasApps(): Promise<string> {
   for (const app of ['app', 'admin', 'carta', 'web', 'tpv', 'caja-windows']) {
     await recorrer(join(RAIZ, 'apps', app, 'src'));
   }
+  // Lo que comparten Estook y Estook TPV: Tickets y facturas y Quién hace qué (0137).
+  await recorrer(join(RAIZ, 'packages', 'ui', 'src'));
 
   return trozos.join('\n');
 }

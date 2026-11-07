@@ -82,6 +82,11 @@ export const PERMISOS_DE_ACCION = [
   // T6 · 1 (Roles 1.12, 0126): el alta de facturación del local, el gerente, la dirección y el
   // administrador de cuenta. La autorización ante Hacienda, además, solo su titular.
   'accion.alta_de_facturacion',
+  // T6 · 2 · 2 · 1 (0137, Richi, 6-nov): hacer facturas no da acceso a lo fiscal. La de un ticket y
+  // sus copias, también la sala; a mano, quien manda en ella; consultar todo, también la gestoría.
+  'accion.factura_de_un_ticket',
+  'accion.factura_a_mano',
+  'accion.ver_documentos',
 ] as const;
 
 export const PERMISOS = [...PERMISOS_DE_APP, ...PERMISOS_DE_DATO, ...PERMISOS_DE_ACCION] as const;
@@ -328,6 +333,8 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   'plato.raya': ['app.escandallos', 'dato.coste_de_plato'],
   // A quien tiene Fogón y lleva el almacén: es quien puede arreglar lo que encuentra (0098).
   'fogon.revision': ['app.fogon', 'app.almacen'],
+  // A quien lleva la facturación: es quien puede corregirlo (0137).
+  'documento.rechazado': ['accion.alta_de_facturacion'],
 };
 
 export function puedeRecibirElAviso(

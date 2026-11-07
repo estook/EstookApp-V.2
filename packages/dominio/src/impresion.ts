@@ -468,6 +468,93 @@ export function elTicketEnPapel(t: ElTicketQueSeImprime): PapelCompuesto {
   return papel(piezas);
 }
 
+export interface LaFacturaQueSeImprime {
+  readonly empresa: LaEmpresaEnElPapel;
+  /** «Factura F-IKA-2026-000005». */
+  readonly titulo: string;
+  readonly cuando: string;
+  /** La fecha de la comida, si es otra que la de expedición (art. 6.1.i). */
+  readonly fechaDeLaOperacion: string | null;
+  /** «T-IKA-2026-000037». */
+  readonly sustituye: readonly string[];
+  readonly vence: string | null;
+  readonly para: {
+    readonly nombre: string;
+    readonly identificador: string;
+    readonly domicilio: string;
+  };
+  readonly lineas: readonly {
+    readonly cantidad: number;
+    readonly nombre: string;
+    readonly precioSinImpuesto: string;
+    readonly tipo: string;
+    readonly baseCentimos: number;
+  }[];
+  readonly impuestos: readonly ImpuestoDelTicket[];
+  readonly totalCentimos: number;
+  readonly qr: string | null;
+  readonly pruebas: boolean;
+}
+
+/**
+ * **La factura en el papel de ticket** (0137): lo mismo que el A4, para dársela al cliente en el
+ * momento desde el TPV. La ley no pide un tamaño de papel, sino lo que lleva (RD 1619/2012, art.
+ * 6.1): por eso cada línea dice su precio sin impuesto y su tipo, y el impuesto va separado.
+ */
+export function laFacturaEnPapel(f: LaFacturaQueSeImprime): PapelCompuesto {
+  const piezas: PiezaDelPapel[] = [];
+  if (f.pruebas) piezas.push(MARCA_DE_PRUEBAS);
+  if (f.qr !== null) {
+    piezas.push(texto('QR tributario:', { alinear: 'centro' }));
+    piezas.push({ tipo: 'qr', contenido: f.qr, milimetros: MILIMETROS_DEL_QR });
+    piezas.push(texto('VERI*FACTU', { alinear: 'centro', negrita: true }));
+    piezas.push(RAYA);
+  }
+  piezas.push(...empresaEnPapel(f.empresa));
+  piezas.push(RAYA);
+  piezas.push(texto(f.titulo, { negrita: true }));
+  piezas.push(texto(f.cuando));
+  if (f.fechaDeLaOperacion !== null) piezas.push(texto(`Operación: ${f.fechaDeLaOperacion}`));
+  for (const s of f.sustituye) piezas.push(texto(`Sustituye a ${s}`));
+  if (f.vence !== null) piezas.push(texto(`Vence: ${f.vence}`));
+  piezas.push(RAYA);
+  piezas.push(texto('Para:', { negrita: true }));
+  piezas.push(texto(f.para.nombre));
+  piezas.push(texto(f.para.identificador));
+  piezas.push(texto(f.para.domicilio));
+  piezas.push(RAYA);
+  for (const l of f.lineas) {
+    piezas.push(texto(`${String(l.cantidad)} ${l.nombre}`));
+    piezas.push({
+      tipo: 'dos_columnas',
+      izquierda: `  ${l.precioSinImpuesto} sin imp. · ${l.tipo}`,
+      derecha: importeEnElPapel(l.baseCentimos),
+    });
+  }
+  piezas.push(RAYA);
+  for (const i of f.impuestos) {
+    piezas.push({
+      tipo: 'dos_columnas',
+      izquierda: `Base ${i.nombre}`,
+      derecha: importeEnElPapel(i.baseCentimos),
+    });
+    piezas.push({
+      tipo: 'dos_columnas',
+      izquierda: i.nombre,
+      derecha: importeEnElPapel(i.cuotaCentimos),
+    });
+  }
+  piezas.push({
+    tipo: 'dos_columnas',
+    izquierda: 'TOTAL',
+    derecha: `${importeEnElPapel(f.totalCentimos)} EUR`,
+    negrita: true,
+  });
+  if (f.pruebas) piezas.push(MARCA_DE_PRUEBAS);
+  piezas.push(CORTAR);
+  return papel(piezas);
+}
+
 export interface ElJustificanteQueSeImprime {
   readonly empresa: LaEmpresaEnElPapel;
   readonly cuando: string;

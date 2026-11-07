@@ -783,7 +783,6 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'anotar_intento_en_terminal',
       'aparato_por_llave',
       'apuntar_como_esta_la_impresora',
-      // 0099 (0126): los pasos del alta de facturación.
       'apuntar_el_alta_en_verifacti',
       'apuntar_la_autorizacion',
       'apuntar_lo_impreso',
@@ -801,8 +800,9 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'cuentas_con_fogon',
       'dar_de_alta_persona',
       'dar_la_facturacion',
+      'dar_un_permiso_de_los_documentos',
       'direccion_libre_para_la_carta',
-      // 0094 (0120): el plan, para la API, sin sesión; Estook TPV es de Pro.
+      'el_cliente_por_su_numero',
       'el_plan_de',
       'el_plato_entra_en_la_botonera',
       'el_uso_de',
@@ -823,9 +823,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'la_pantalla_apunta_en',
       'las_cuentas',
       'las_impresoras_de_la_caja',
-      // 0097 (0123): lo que imprime la caja de centro sin internet.
       'las_impresoras_del_centro',
-      // 0105 (0135): las cuentas en Pausa, para el reloj; solo las lee el sistema.
       'las_pausas',
       'lleva_la_facturacion',
       'lo_gastado_en_fogon',
@@ -833,8 +831,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'locales_revisados_de_noche',
       'locales_visibles',
       'los_clientes',
+      'los_clientes_de_factura',
       'los_nombres_de_la_sala',
-      // 0098 (0124): los PIN del local, para la caja de centro sin internet.
       'los_pin_del_centro',
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',
@@ -850,11 +848,13 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'poner_de_la_casa',
       'poner_pide_tu_factura',
       'puede_ver_el_canal',
+      'quien_hace_que',
       'quien_lleva_el_servicio',
       'quien_lleva_la_facturacion',
       'quien_recibe',
       'quien_trabaja_ahora',
       'quien_ve_el_canal',
+      'quitar_el_cliente_de_factura',
       'quitar_la_empresa',
       'reconocer_dispositivo',
       'registro_pendiente_de',

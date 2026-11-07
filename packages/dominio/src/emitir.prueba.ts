@@ -10,6 +10,10 @@ import {
   porQueNoSeEmite,
   tipoParaVerifacti,
   type LineaVendida,
+  elPlazoDeLaFactura,
+  juntarLasLineas,
+  lineasDeLaFactura,
+  porQueNoSeCanjea,
 } from './emitir.ts';
 import { elJustificanteEnPapel, elTicketEnPapel, esPapelCompuesto } from './impresion.ts';
 import type { FechaOperativa } from './tiempo.ts';
@@ -207,5 +211,118 @@ describe('el papel (Anexo 4.7)', () => {
     expect(
       justificante.piezas.some((p) => p.tipo === 'texto' && p.texto.includes('NO ES UNA FACTURA')),
     ).toBe(true);
+  });
+});
+
+describe('la factura (T6 · 2 · 2 · 1, 0137)', () => {
+  const linea = (nombre: string, cantidad: number, importe: number, tipo = 0.1): LineaVendida => ({
+    nombre,
+    cantidad,
+    importe,
+    regimen: 'iva',
+    tipo,
+  });
+
+  it('cada línea lleva su precio sin impuesto (RD 1619/2012, art. 6.1.f)', () => {
+    expect(lineasDeLaFactura([linea('Menú de grupo', 30, 105_000)])[0]).toEqual({
+      nombre: 'Menú de grupo',
+      cantidad: 30,
+      precioSinImpuesto: '31,8183',
+      tipo: '10 %',
+      base: 95_455,
+    });
+    expect(lineasDeLaFactura([linea('Alquiler', 1, 15_000, 0.21)])[0]?.precioSinImpuesto).toBe(
+      '123,97',
+    );
+  });
+
+  it('los platos iguales se juntan y el total no cambia; los distintos, no', () => {
+    const juntas = juntarLasLineas([
+      linea('Café', 1, 150),
+      linea('Café', 2, 300),
+      linea('Café', 1, 170),
+      linea('Café', 1, 150, 0.21),
+    ]);
+    expect(juntas.map((l) => [l.cantidad, l.importe])).toEqual([
+      [3, 450],
+      [1, 170],
+      [1, 150],
+    ]);
+  });
+
+  it('el plazo: a una empresa, antes del 16 del mes siguiente; a un particular, sin aviso', () => {
+    const hoy = '2026-11-06' as FechaOperativa;
+    expect(elPlazoDeLaFactura('2026-11-02' as FechaOperativa, hoy, 'empresa')).toBeNull();
+    expect(elPlazoDeLaFactura('2026-10-14' as FechaOperativa, hoy, 'particular')).toBeNull();
+    expect(elPlazoDeLaFactura('2026-10-14' as FechaOperativa, hoy, 'empresa')).toEqual({
+      hasta: '2026-11-15',
+      pasado: false,
+    });
+    expect(elPlazoDeLaFactura('2026-09-14' as FechaOperativa, hoy, 'empresa')?.pasado).toBe(true);
+    expect(
+      elPlazoDeLaFactura('2026-12-20' as FechaOperativa, '2027-01-10' as FechaOperativa, 'empresa'),
+    ).toEqual({ hasta: '2027-01-15', pasado: false });
+  });
+
+  it('qué ticket se puede juntar en una factura, y qué no', () => {
+    expect(porQueNoSeCanjea('F2', 'pendiente', false)).toBeNull();
+    expect(porQueNoSeCanjea('F2', 'correcto', false)).toBeNull();
+    expect(porQueNoSeCanjea('F2', 'fuera_sii', false)).toBeNull();
+    expect(porQueNoSeCanjea('F2', 'correcto', true)).toBe('ya_tiene_factura');
+    expect(porQueNoSeCanjea('F2', 'enviando', false)).toBe('sin_registrar');
+    expect(porQueNoSeCanjea('F2', 'rechazado', false)).toBe('no_vale');
+    expect(porQueNoSeCanjea('F1', 'correcto', false)).toBe('no_es_un_ticket');
+  });
+
+  it('el cuerpo: con NIF, o con su id_otro si es de fuera, y lo que sustituye', () => {
+    const base = {
+      tipo: 'F3' as const,
+      serie: 'F-IKA-2026-',
+      numero: 5,
+      fechaOperacion: '2026-11-06' as FechaOperativa,
+      descripcion: 'Factura de un ticket',
+      desglose: elDesglose([linea('Café', 1, 150)]),
+    };
+    const envio = { fechaExpedicion: '2026-11-06' as FechaOperativa, incidencia: false };
+    const conNif = elCuerpoParaVerifacti(
+      {
+        ...base,
+        destinatario: {
+          clase: 'empresa',
+          nombre: 'EJEMPLO NORTE SL',
+          identificador: 'B84935048',
+          id_tipo: null,
+          codigo_pais: null,
+          domicilio: 'No va a Verifacti',
+        },
+        sustituidas: [
+          { serie: 'T-IKA-2026-', numero: 37, fechaExpedicion: '2026-11-02' as FechaOperativa },
+        ],
+      },
+      envio,
+    );
+    expect(conNif.nif).toBe('B84935048');
+    expect(conNif.nombre).toBe('EJEMPLO NORTE SL');
+    expect(conNif.facturas_sustituidas).toEqual([
+      { serie: 'T-IKA-2026-', numero: '000037', fecha_expedicion: '02-11-2026' },
+    ]);
+    expect(JSON.stringify(conNif)).not.toContain('No va a Verifacti');
+    const deFuera = elCuerpoParaVerifacti(
+      {
+        ...base,
+        tipo: 'F1',
+        destinatario: {
+          clase: 'de_fuera',
+          nombre: 'Ana Müller',
+          identificador: 'C01X00T47',
+          id_tipo: '03',
+          codigo_pais: 'DE',
+          domicilio: 'Hauptstr. 1, Berlín',
+        },
+      },
+      envio,
+    );
+    expect(deFuera.nif).toBeUndefined();
+    expect(deFuera.id_otro).toEqual({ codigo_pais: 'DE', id_type: '03', id: 'C01X00T47' });
   });
 });

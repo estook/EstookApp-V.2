@@ -9,6 +9,7 @@ import { LaMesa } from './mesa/LaMesa.tsx';
 import { Fichar } from './inicio/Fichar.tsx';
 import { Agotados } from './inicio/Agotados.tsx';
 import { AjustesDelTpv } from './ajustes/AjustesDelTpv.tsx';
+import { TicketsYFacturasDelTpv } from './facturas/TicketsYFacturasDelTpv.tsx';
 import { EditorDeLaSala } from './sala/EditorDeLaSala.tsx';
 import { LaBarraDeArriba } from './inicio/LaBarraDeArriba.tsx';
 import { escucharLaDireccion, laDireccion } from './navegar.ts';
@@ -39,8 +40,14 @@ function Dentro() {
   const dibuja = puedeEditar(yo.permisos, 'accion.ajustes_del_tpv');
   const mesa = /^mesa\/([0-9a-f-]{36})$/.exec(direccion)?.[1];
 
+  // La operativa de facturar, en cualquier aparato de sala (0137): no solo en la caja.
+  const factura =
+    puedeEditar(yo.permisos, 'accion.factura_de_un_ticket') ||
+    puedeEditar(yo.permisos, 'accion.factura_a_mano');
+
   let pantalla;
-  if (enLaCaja && direccion === 'fichar') pantalla = <Fichar />;
+  if (direccion === 'facturas' && factura) pantalla = <TicketsYFacturasDelTpv />;
+  else if (enLaCaja && direccion === 'fichar') pantalla = <Fichar />;
   else if (enLaCaja && direccion === 'agotados') pantalla = <Agotados />;
   else if (enLaCaja && (direccion === 'ajustes' || direccion.startsWith('ajustes/'))) {
     pantalla = <AjustesDelTpv direccion={direccion} />;

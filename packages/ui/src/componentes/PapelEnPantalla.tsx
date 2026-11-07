@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { PapelCompuesto, PiezaDelPapel } from '@estook/dominio';
-import { clases } from '@estook/ui';
+import { clases } from '../clases.ts';
 
 /**
  * **El papel, como sale de la impresora**, para verlo en la pantalla (T6 · 2 · 1, decisión 0136;
@@ -73,7 +73,7 @@ function ElQr({ contenido }: { readonly contenido: string }) {
   const [camino, setCamino] = useState<{ d: string; lado: number } | null>(null);
   useEffect(() => {
     let vivo = true;
-    void import('@estook/ui/qr').then(async ({ laMatriz, elCaminoDelQr }) => {
+    void import('../../qr/elQr.ts').then(async ({ laMatriz, elCaminoDelQr }) => {
       const matriz = await laMatriz(contenido, 'M');
       if (vivo) setCamino({ d: elCaminoDelQr(matriz, 2), lado: matriz.length + 4 });
     });

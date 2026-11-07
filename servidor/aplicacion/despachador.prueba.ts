@@ -821,9 +821,11 @@ describe('los secretos no se guardan para repetirlos', () => {
     //
     // T6 · 1 (0126) · comprobar un NIF en Hacienda y descargar el modelo para firmar: no
     // cambian nada, y guardar el PDF del modelo en una tabla sería guardarlo para nada.
+    // T6 · 2 · 2 · 1 (0137) · comprobar al cliente, por lo mismo que un NIF.
     expect(sinRecordar).toEqual([
       'apuntar_lo_impreso',
       'bloquear',
+      'comprobar_al_cliente',
       'comprobar_un_nif',
       'destachar_en_la_pantalla',
       'el_modelo_para_firmar',
@@ -975,11 +977,26 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
   it('lo que vale desde un aparato está tasado, y lo que solo vale desde uno, también', () => {
     const operaciones = [...Object.values(catalogo.consultas), ...Object.values(catalogo.comandos)];
     const tambien = operaciones.filter((o) => o.enElTpv === 'tambien').map((o) => o.nombre);
+    // T6 · 2 · 2 · 1 (0137): la operativa de facturar, desde cualquier TPV autorizado.
     expect(tambien.sort()).toEqual(
       [
         // La cocina (T4 tendrá su pantalla) y los agotados, desde la app y desde el TPV.
         'la_cocina',
         'tachar',
+        'tickets_y_facturas',
+        'un_documento',
+        'los_clientes_de_factura',
+        'lo_que_se_puede_facturar',
+        'el_documento_en_pdf',
+        'quien_hace_que',
+        'reimprimir_el_documento',
+        'comprobar_al_cliente',
+        'quitar_el_cliente',
+        'hacer_factura_de_tickets',
+        'hacer_factura_a_mano',
+        'marcar_cobrada',
+        'mandar_el_documento',
+        'dar_un_permiso',
         'destachar',
         'todo_fuera',
         'recuperar',

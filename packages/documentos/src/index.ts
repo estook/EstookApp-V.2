@@ -60,3 +60,4 @@ export { documentoDeLaDeclaracion, type DeclaracionResponsable } from './declara
 export { MONTSERRAT_WOFF2_BASE64 } from './letra.ts';
 
 export const PAQUETE = '@estook/documentos' as const;
+export { documentoDeLaFactura, type LaFacturaEnA4 } from './factura.ts';

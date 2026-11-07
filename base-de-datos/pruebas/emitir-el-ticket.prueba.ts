@@ -23,7 +23,8 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  *   · 14      Verifacti caído: el justificante con su código, y se emite al volver, en orden
  *   · 15      lo que rechaza Hacienda sale arriba, en llano, y el original no se toca
  *   · 16      el mismo aviso dos veces no cambia nada
- *   · 17      lo que lleva una hora pendiente se pregunta solo
+ *   · 17      lo que sigue pendiente se pregunta solo: en cada latido hasta los cinco minutos, y
+ *             después cada cinco y cada hora
  *   · 19      a las 02:30, la fecha es la del día real, no la de la jornada
  */
 
@@ -170,12 +171,13 @@ describe('el ticket de prueba', () => {
     });
   });
 
-  it('quien no lleva la facturación no lo pide, ni ve lo emitido', async () => {
+  it('quien no lleva la facturación no pide el de prueba; la cocina, además, no ve lo emitido', async () => {
     const sara = await api.entrar('sara@ejemplo.estook.com');
     expect(elFallo(await api.ejecutar(sara, 'imprimir_un_ticket_de_prueba', {}))).toBe(
       'sin_permiso',
     );
-    expect(elFallo(await api.consultar(sara, 'tickets_y_facturas'))).toBe('sin_permiso');
+    const marcos = await api.entrar('marcos@ejemplo.estook.com');
+    expect(elFallo(await api.consultar(marcos, 'tickets_y_facturas'))).toBe('sin_permiso');
   });
 
   it('las claves de Verifacti no salen en ninguna respuesta (prueba 3)', async () => {
@@ -341,13 +343,11 @@ describe('los avisos de Verifacti (4.10)', () => {
     const preparado = ahora.getTime();
     ahora = new Date(preparado + 2.5 * UN_MINUTO);
     await elReloj();
-    verifacti.decirHacienda(registro?.uuid ?? '', 'Correcto');
-    // Un rato después no se vuelve a preguntar…
-    ahora = new Date(preparado + 12.5 * UN_MINUTO);
-    await elReloj();
     expect((await elDocumento(hecho.documentoId)).estado).toBe('pendiente');
-    // …y a la hora, sí.
-    ahora = new Date(preparado + 60.5 * UN_MINUTO);
+    // Hacienda contesta en el minuto 3, sin aviso de por medio: lo que vio Richi el 6-nov. Antes se
+    // quedaba una hora en «En Hacienda»; ahora se sabe al latido siguiente.
+    verifacti.decirHacienda(registro?.uuid ?? '', 'Correcto');
+    ahora = new Date(preparado + 3.5 * UN_MINUTO);
     await elReloj();
     expect((await elDocumento(hecho.documentoId)).estado).toBe('correcto');
   });

@@ -109,7 +109,7 @@ El programa que se descarga en el PC de la caja (Richi, 27-oct): Estook TPV tal 
 
 ### M20B · Facturación VeriFactu
 
-El esquema aislado y de solo inserción, el alta fiscal del local, los tipos de documento, el QR, la cola de envío y el justificante provisional. **No se enciende en producción sin el asesor.** **T6 · 1, el alta**, en producción; **T6 · 2 · 1, el motor y el ticket**, hecho ([0136](decisiones/0136-t6-2-1-el-motor-y-el-ticket.md)): el ticket de prueba de Ajustes, con su QR, y Servicio › Ventas › Tickets y facturas, con su estado ante Hacienda y su historia. Después, las facturas y las correcciones (T6 · 2 · 2) y «Pide tu factura» (T6 · 2 · 3).
+El esquema aislado y de solo inserción, el alta fiscal del local, los tipos de documento, el QR, la cola de envío y el justificante provisional. **No se enciende en producción sin el asesor.** **T6 · 1, el alta**, en producción; **T6 · 2 · 2 · 1, las facturas y quién hace qué**, hecho ([0137](decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md)); **T6 · 2 · 1, el motor y el ticket**, en producción ([0136](decisiones/0136-t6-2-1-el-motor-y-el-ticket.md)): el ticket de prueba de Ajustes, con su QR, y Servicio › Ventas › Tickets y facturas, con su estado ante Hacienda y su historia. Después, las facturas y las correcciones (T6 · 2 · 2) y «Pide tu factura» (T6 · 2 · 3).
 
 ### M20C · Cobro y caja
 

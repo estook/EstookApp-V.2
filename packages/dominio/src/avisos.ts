@@ -67,6 +67,8 @@ export const TIPOS_DE_AVISO = [
   'plato.raya',
   // ── Fogón 1 · 3 (decisión 0098) ─────────────────────────────────────────
   'fogon.revision',
+  // ── T6 · 2 · 2 · 1 (decisión 0137) ─────────────────────────────────────
+  'documento.rechazado',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -411,6 +413,14 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     nombre: 'Fogón ha revisado tus datos',
     explica: 'Los lunes, si encuentra algo que mirar: productos repetidos, platos sin escandallo…',
     grupo: 'Almacén',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: false,
+  },
+  'documento.rechazado': {
+    nombre: 'Hacienda ha rechazado un ticket o una factura',
+    explica: 'Sale arriba en Tickets y facturas, con qué hacer. A quien lleva la facturación.',
+    grupo: 'Negocio',
     deTuEquipo: false,
     correoDeFabrica: false,
     movilDeFabrica: false,

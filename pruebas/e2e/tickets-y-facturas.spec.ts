@@ -140,6 +140,8 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
   await aMano.getByLabel('Qué es', { exact: true }).fill('Alquiler del comedor');
   await aMano.getByLabel(/Importe, con IVA/).fill('150');
   await aMano.getByLabel(/Importe, con IVA/).blur();
+  // El IVA de un concepto libre se elige: no viene puesto (0139).
+  await expect(aMano.getByRole('button', { name: 'Añadirlo' })).toBeDisabled();
   await aMano.getByRole('radio', { name: '21 %' }).click();
   await aMano.getByRole('button', { name: 'Añadirlo' }).click();
   await expect(aMano).toContainText('IVA 21 %');

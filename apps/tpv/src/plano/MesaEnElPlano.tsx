@@ -88,8 +88,20 @@ const ESPERANDO: Readonly<Record<ColorDelTiempo | 'sin_color', ComoSeVe>> = {
   },
 };
 
-function comoSeVe(estado: EstadoDeLaMesa, color: ColorDelTiempo | null | undefined): ComoSeVe {
-  return estado === 'esperando' ? ESPERANDO[color ?? 'sin_color'] : DE_SIEMPRE[estado];
+/**
+ * **Lo que no conoce no tumba la sala** (Sentry, 5-nov, «s.caja»): una pestaña abierta con la versión
+ * de antes y una API que ya manda un estado nuevo dejaban la pantalla en blanco en pleno servicio.
+ * Se ve como una mesa abierta, y al recargar ya lo conoce.
+ */
+export function comoSeVe(
+  estado: EstadoDeLaMesa,
+  color: ColorDelTiempo | null | undefined,
+): ComoSeVe {
+  // Lo que llega de la API puede ser más nuevo que esta pestaña: aquí no se da por conocido.
+  const conocidos: Readonly<Partial<Record<string, ComoSeVe>>> =
+    estado === 'esperando' ? ESPERANDO : DE_SIEMPRE;
+  const clave: string = estado === 'esperando' ? (color ?? 'sin_color') : estado;
+  return conocidos[clave] ?? DE_SIEMPRE.sin_pedir;
 }
 
 /** Lo que dice la mesa debajo de su nombre. */

@@ -576,12 +576,12 @@ justificante** llega con la página de «Pide tu factura» (T6 · 2 · 3).
 
 **T6 · 2 · 2 se entrega en dos** ([0137](decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md), 7-nov):
 
-- **T6 · 2 · 2 · 1 · Las facturas y quién hace qué, hecho** (migración 0107, sin caja nueva,
+- **T6 · 2 · 2 · 1 · Las facturas y quién hace qué, en producción** (migración 0107, sin caja nueva,
   [maqueta](maquetas/t6-2-2-las-facturas.html)): la factura a mano (F1), el canje de uno o varios
   tickets (F3), el A4 y el papel de ticket, el correo, la lista con fechas y
   buscador, y **los permisos acción por acción**, en Estook y en Estook TPV. Pruebas 2, 6, 11 y 20.
-- **El reloj de los documentos y la auditoría de las facturas, hecho** (migración 0108, [0138](decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md)): lo que Richi vio al probar la primera parte en IKATZ. Nada salía de «En Hacienda» y el total contaba dos veces. **Va antes de lo siguiente**: devolver y anular se apoyan en ese estado.
-- **Sin lista de clientes, hecho** (migración 0109, [0139](decisiones/0139-sin-lista-de-clientes.md)): lo que Richi vio al hacer facturas en IKATZ.
+- **El reloj de los documentos y la auditoría de las facturas, en producción** (migración 0108, [0138](decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md)): lo que Richi vio al probar la primera parte en IKATZ. Nada salía de «En Hacienda» y el total contaba dos veces. **Va antes de lo siguiente**: devolver y anular se apoyan en ese estado.
+- **Sin lista de clientes, en producción y comprobado en IKATZ el 7-nov** (migración 0109, [0139](decisiones/0139-sin-lista-de-clientes.md)): lo que Richi vio al hacer facturas en IKATZ.
 - **T6 · 2 · 2 · 2**, lo siguiente: las devoluciones (R5 y R1), corregir los datos del cliente (R4),
   anular y la señal de un evento, cada uno con su permiso y su motivo. Pruebas 13 y la R5 de la 12.
 

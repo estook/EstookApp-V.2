@@ -30,6 +30,8 @@ export interface MarcaDelDocumento {
 export interface Documento {
   /** El nombre del documento, arriba: «Tu semana», «Registro de jornada». */
   readonly titulo: string;
+  /** El número del documento: va entero, sin partirse en dos líneas (0139). */
+  readonly numero?: string;
   /** Debajo del título: el periodo, lo que abarca. */
   readonly subtitulo: string;
   readonly marca: MarcaDelDocumento;
@@ -104,7 +106,7 @@ export function paginaDelDocumento(doc: Documento): string {
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>${escapar(doc.titulo)} · ${escapar(doc.marca.nombreDelLocal)}</title>
+<title>${escapar(doc.titulo)}${doc.numero === undefined ? '' : ` ${escapar(doc.numero)}`} · ${escapar(doc.marca.nombreDelLocal)}</title>
 <style>
   @font-face {
     font-family: 'Montserrat';
@@ -126,7 +128,7 @@ export function paginaDelDocumento(doc: Documento): string {
              font-weight: 700; font-size: 18pt; display: flex; align-items: center; justify-content: center; }
   .titulo { font-size: 17pt; font-weight: 700; letter-spacing: -0.01em; margin: 0; line-height: 1.15; }
   .subtitulo { color: ${SUAVE}; margin: 2px 0 0; }
-  .derecha { margin-left: auto; text-align: right; color: ${SUAVE}; font-size: 8pt; }
+  .derecha { margin-left: auto; flex-shrink: 0; white-space: nowrap; text-align: right; color: ${SUAVE}; font-size: 8pt; }
   h2 { font-size: 9pt; font-weight: 700; color: ${color}; text-transform: uppercase; letter-spacing: 0.07em;
        margin: 18px 0 6px; }
   p { margin: 0 0 6px; }
@@ -163,7 +165,7 @@ ${doc.estilo ?? ''}
 <header class="cabecera">
   ${logo === null ? `<div class="inicial">${escapar(inicial(doc.marca.nombreDelLocal))}</div>` : `<img class="logo" src="${escapar(logo)}" alt="">`}
   <div>
-    <p class="titulo">${escapar(doc.titulo)}</p>
+    <p class="titulo">${escapar(doc.titulo)}${doc.numero === undefined ? '' : ` <span class="entero">${escapar(doc.numero)}</span>`}</p>
     <p class="subtitulo">${escapar(doc.marca.nombreDelLocal)} · ${escapar(doc.subtitulo)}</p>
   </div>
   <div class="derecha">${escapar(doc.hechoEl)}<br>Hecho con Estook</div>

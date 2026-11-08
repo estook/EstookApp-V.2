@@ -134,3 +134,42 @@ describe('Estook TPV es de Pro (0120)', () => {
     expect((await api.consultar(enLaCaja, 'yo_en_el_tpv')).estado).toBe('ok');
   });
 });
+
+describe('el código, sacado desde Estook (0142)', () => {
+  it('quien lleva el local lo saca en su móvil, y el aparato se vincula con él', async () => {
+    await conElPlan('pro');
+    const rosa = await api.entrar(ROSA);
+    const { codigo } = losDatos<{ codigo: string }>(
+      await api.ejecutar(rosa, 'sacar_codigo_desde_estook', {
+        funcion: 'comandero',
+        nombre: 'Tablet de la terraza',
+      }),
+    );
+    expect(codigo).toMatch(/^\d{6}$/);
+    const vinculado = losDatos<{ aparato: { nombre: string; funcion: string } }>(
+      await api.ejecutar(null, 'vincular_con_codigo', { codigo }),
+    );
+    expect(vinculado.aparato).toMatchObject({
+      nombre: 'Tablet de la terraza',
+      funcion: 'comandero',
+    });
+  });
+
+  it('una caja lleva su cajón, y sin Pro no sale ninguno', async () => {
+    const rosa = await api.entrar(ROSA);
+    losDatos(
+      await api.ejecutar(rosa, 'sacar_codigo_desde_estook', {
+        funcion: 'caja',
+        nombre: 'Caja del PC',
+        cajon_nuevo: 'Cajón 2',
+      }),
+    );
+    await conElPlan('esencial');
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'sacar_codigo_desde_estook', { funcion: 'caja', nombre: 'Otra' }),
+      ),
+    ).toBe('estook_tpv_es_de_pro');
+    await conElPlan('pro');
+  });
+});

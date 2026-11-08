@@ -206,15 +206,13 @@ export const cambiarNombreDelNegocio = comando<
 
     const cambiada = cambiadas[0];
     if (!cambiada) {
-      if (antes[0]) {
-        const existe = await sql<{ version: number }[]>`
-          select version from estook.organizacion where id = ${entrada.organizacion_id}
-        `;
-        if (existe[0]) {
-          throw new FalloDeAplicacion('lo_cambio_otra_persona', {
-            version_actual: existe[0].version,
-          });
-        }
+      // Se ve la fila y no se cambia: o la cambió otra persona (otra versión), o no se puede.
+      const existe = await sql<{ version: number }[]>`
+        select version from estook.organizacion where id = ${entrada.organizacion_id}
+      `;
+      const actual = existe[0]?.version;
+      if (actual !== undefined && actual !== entrada.version) {
+        throw new FalloDeAplicacion('lo_cambio_otra_persona', { version_actual: actual });
       }
       throw new FalloDeAplicacion('sin_permiso');
     }

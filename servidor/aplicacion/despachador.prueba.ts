@@ -779,6 +779,8 @@ describe('los secretos no se guardan para repetirlos', () => {
         'sacar_codigo_para_pasar_a_la_app',
         // 28-oct · el de «Volver a vincular» un aparato que ya existe (el móvil que borró la app).
         'sacar_codigo_para_volver_a_vincular',
+        // 0142 · el mismo código, sacado desde Estook por quien entra con Google.
+        'sacar_codigo_desde_estook',
         // C1 (0073) · el tema secreto por el que llega el toque al segundo del chat.
         'abrir_el_chat',
         // 0109 · el PIN nuevo que da el enlace del correo, una sola vez.

@@ -88,9 +88,18 @@ async function suscripcionDe(para: string) {
 }
 
 /** Pagar como se paga: pedir la página de pago y abrirla (en el de mentira, abrirla es pagar). */
-async function pagar(token: string, plan = 'esencial', intervalo = 'mes'): Promise<void> {
+async function pagar(
+  token: string,
+  plan = 'esencial',
+  intervalo = 'mes',
+  locales?: number,
+): Promise<void> {
   const { url } = losDatos<{ url: string }>(
-    await api.ejecutar(token, 'empezar_a_pagar', { plan, intervalo }),
+    await api.ejecutar(token, 'empezar_a_pagar', {
+      plan,
+      intervalo,
+      ...(locales === undefined ? {} : { locales }),
+    }),
   );
   const sesion = new URL(url).searchParams.get('sesion') ?? '';
   const vuelta = await pagos.pagar(sesion);
@@ -339,6 +348,48 @@ describe('la cuota sigue a los locales', () => {
 
     losDatos(await api.ejecutar(token, 'crear_local', { nombre: 'Segundo local' }));
     expect(await suscripcionDe(para)).toMatchObject({ plan: 'cadena', locales_pagados: 2 });
+  });
+});
+
+describe('los locales se dicen al pagar (0142)', () => {
+  it('se pagan tres, crear el segundo no cambia la cuota, y «Solo tengo dos» la baja', async () => {
+    const para = 'tres-locales@correo-de-prueba.com';
+    const token = await cuentaNueva(para, 'Grupo De Tres');
+    // Pro con tres es Cadena: lo decide el servidor, no la pantalla.
+    await pagar(token, 'pro', 'mes', 3);
+    expect(await suscripcionDe(para)).toMatchObject({ plan: 'cadena', locales_pagados: 3 });
+
+    // El segundo ya está pagado: la cuota no se mueve, y no se avisa de nada.
+    const antes = losDatos<{ conUnLocalMas: unknown }>(
+      await api.consultar(token, 'mi_suscripcion'),
+    );
+    expect(antes.conUnLocalMas).toBeNull();
+    losDatos(await api.ejecutar(token, 'crear_local', { nombre: 'Segundo local' }));
+    expect(await suscripcionDe(para)).toMatchObject({ plan: 'cadena', locales_pagados: 3 });
+
+    // Al final son dos: la cuota baja a los que hay, cuando lo pide quien paga.
+    expect(
+      losDatos<{ locales: number }>(
+        await api.ejecutar(token, 'ajustar_mi_cuota_a_mis_locales', {}),
+      ),
+    ).toEqual({ locales: 2 });
+    expect(await suscripcionDe(para)).toMatchObject({ plan: 'cadena', locales_pagados: 2 });
+  });
+
+  it('nunca se pagan menos de los que ya hay, ni más de diez', async () => {
+    const para = 'diez@correo-de-prueba.com';
+    const token = await cuentaNueva(para, 'Grupo Grande');
+    expect(
+      elFallo(
+        await api.ejecutar(token, 'empezar_a_pagar', {
+          plan: 'pro',
+          intervalo: 'mes',
+          locales: 11,
+        }),
+      ),
+    ).toBe('faltan_datos');
+    await pagar(token, 'esencial', 'mes', 1);
+    expect(await suscripcionDe(para)).toMatchObject({ plan: 'esencial', locales_pagados: 1 });
   });
 });
 

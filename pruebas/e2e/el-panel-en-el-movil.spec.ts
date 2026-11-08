@@ -133,9 +133,12 @@ test('el «+» se aparta al bajar y vuelve al subir, solo en el móvil', async (
   await expect(mas).toBeVisible();
   // Que haya por dónde bajar: nada más entrar, los widgets todavía no han llegado y
   // la página no da para 500 px. Sin esto la prueba bajaba 30 y se quedaba ahí.
+  // En el escritorio basta con poco: con Pro el Panel ya no lleva «¿Cómo entran tus ventas?»
+  // (0142) y es más corto; lo que se mira ahí es que el «+» no se mueva al bajar.
+  const cuanto = esMovil(page) ? 500 : 150;
   await page.waitForFunction(
-    () => document.documentElement.scrollHeight > window.innerHeight + 600,
-    null,
+    (bajar) => document.documentElement.scrollHeight > window.innerHeight + bajar + 100,
+    cuanto,
     { timeout: 15_000 },
   );
   // Y que el Panel haya llegado entero: sin siluetas de carga. Si «Hoy» o un widget
@@ -145,9 +148,9 @@ test('el «+» se aparta al bajar y vuelve al subir, solo en el móvil', async (
   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
 
   // `scrollBy` y no la rueda: en el Safari de móvil de las pruebas no hay rueda.
-  await page.evaluate(() => {
-    window.scrollBy(0, 500);
-  });
+  await page.evaluate((bajar) => {
+    window.scrollBy(0, bajar);
+  }, cuanto);
   if (esMovil(page)) {
     await expect.poll(opacidad).toBe('0');
     await page.evaluate(() => {

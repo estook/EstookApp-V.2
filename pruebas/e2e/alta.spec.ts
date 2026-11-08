@@ -138,9 +138,10 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     await page.getByLabel('Dirección').fill('Calle del Pez, 8');
     await page.getByLabel('Código postal').fill('28004');
     await page.getByLabel('Población').fill('Madrid');
-    // La hora de cierre, que es la que decide a qué jornada pertenece una venta de
-    // madrugada. No es un adorno: sin ella, el cierre acaba en el día equivocado.
-    await page.getByLabel('¿A qué hora cierras?').fill('03:30');
+    // La hora de corte ya no se pregunta (la pausa del 8-nov, 0142): se pone sola a las cinco,
+    // y se cambia plegada. Sigue decidiendo a qué jornada pertenece una venta de madrugada.
+    await expect(page.getByText('Tu día en Estook acaba a las')).toBeVisible();
+    await expect(page.getByLabel('Tu día acaba a las')).toBeHidden();
     await page.getByRole('button', { name: 'Continuar' }).click();
 
     // Paso 5 · la marca. El logo se salta: subir un fichero no es lo que se está
@@ -177,13 +178,15 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     );
     await page.getByRole('button', { name: 'Saltar el paseo' }).click();
 
-    // Y el final, con la única pregunta que no hace falta para empezar: cómo
-    // entran las ventas. «Al registrarse y en Ajustes», se pidió, y aquí está la
-    // primera mitad. Elegir **es** contestar, y se ve marcado al instante.
+    // Y el final. Casa Lola es de ejemplo, que lleva Pro, así que **no se pregunta cómo entran
+    // las ventas** (la pausa del 8-nov, 0142): son de Estook TPV, y sale cómo ponerlo, con la
+    // descarga para Windows. Con Esencial se sigue preguntando (pantalla.spec).
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ya está');
-    const aMano = page.getByRole('radio', { name: /^Lo apunto yo/ });
-    await aMano.click();
-    await expect(aMano).toHaveAttribute('aria-checked', 'true');
+    await expect(
+      page.getByRole('heading', { name: 'Tus ventas entran solas con Estook TPV' }),
+    ).toBeVisible();
+    await expect(page.getByRole('link', { name: /Descargar para Windows/ })).toBeVisible();
+    await expect(page.getByRole('radio', { name: /^Lo apunto yo/ })).toHaveCount(0);
     await page.getByRole('button', { name: /Entrar en/ }).click();
 
     // El Panel de su local. La quinta comprobación deja de mandar al alta.
@@ -216,7 +219,8 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     };
 
     expect(guardado.datos.ficha.tipo).toBe('bar_de_tapas');
-    expect(guardado.datos.ficha.horaDeCorte).toBe('03:30');
+    // Sin preguntarla (0142): la de fábrica, que es la que se queda si nadie la toca.
+    expect(guardado.datos.ficha.horaDeCorte).toBe('05:00');
     expect(guardado.datos.ficha.colorDeMarca).toBe('#0d5c63');
 
     // El objetivo que se cambió a mano deja de ser «de partida»: es suyo.

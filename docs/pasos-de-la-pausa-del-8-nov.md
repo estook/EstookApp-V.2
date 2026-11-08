@@ -4,7 +4,7 @@
 >
 > | Qué              | Cómo está                                                                     |
 > | ---------------- | ----------------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P1 · Lo del alta y Ajustes»                             |
+> | El pull request  | «La pausa del 8-nov · P1 · Lo del alta y Ajustes», la **#178**                |
 > | La base de datos | **No hay que migrar**: sigue en 111                                           |
 > | La API           | **Hay que desplegarla**: 125 consultas y **357 comandos** (tres nuevos)       |
 > | Google           | **Hecho por Richi el 8-nov**: las dos direcciones del TPV, apuntadas (paso 4) |
@@ -95,11 +95,11 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
 
 # P2 · Información e Informes
 
-> | Qué              | Cómo está                                                                        |
-> | ---------------- | -------------------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P2 · Información e Informes», encima del de P1             |
-> | La base de datos | **Hay que migrar**: pasa de 111 a **112** (la 0112, dos funciones que solo leen) |
-> | La API           | Hay que desplegarla **después de migrar**: **127 consultas** y 357 comandos      |
+> | Qué              | Cómo está                                                                          |
+> | ---------------- | ---------------------------------------------------------------------------------- |
+> | El pull request  | «La pausa del 8-nov · P2 · Información e Informes», la **#179**, encima de la #178 |
+> | La base de datos | **Hay que migrar**: pasa de 111 a **112** (la 0112, dos funciones que solo leen)   |
+> | La API           | Hay que desplegarla **después de migrar**: **127 consultas** y 357 comandos        |
 
 ## Lo que cambia para ti
 
@@ -144,7 +144,7 @@ git pull
 
 > | Qué              | Cómo está                                                                   |
 > | ---------------- | --------------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P3 · Empleados», encima del de P2                     |
+> | El pull request  | «La pausa del 8-nov · P3 · Empleados», la **#180**, encima de la #179       |
 > | La base de datos | **Hay que migrar**: pasa de 112 a **113** (la 0113, los objetivos de venta) |
 > | La API           | Hay que desplegarla **después de migrar**: **128 consultas y 358 comandos** |
 

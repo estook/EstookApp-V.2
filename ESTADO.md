@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 8 de noviembre de 2026 · **En producción todo hasta la #177**: 111 migraciones y la API con 125 consultas y 354 comandos (leído el 8-nov), y **la caja para Windows 1.3.0**. **La pausa del 8-nov** ([0142](docs/decisiones/0142-la-pausa-del-8-nov.md)), aprobada con su maqueta: **entera en tres pull requests encadenados**: **P1** (#178, sin migración), **P2** (#179, migración 0112) y **P3** (migración 0113), API 128/358. **Luego T7, y T6 · 3 detrás**
+Última actualización: 8 de noviembre de 2026 · **En producción todo hasta la #177**: 111 migraciones y la API con 125 consultas y 354 comandos (leído el 8-nov), y **la caja para Windows 1.3.0**. **La pausa del 8-nov** ([0142](docs/decisiones/0142-la-pausa-del-8-nov.md)), aprobada con su maqueta: **entera en tres pull requests encadenados**: **P1** (#178, sin migración), **P2** (#179, migración 0112) y **P3** (#180, migración 0113), API 128/358. **Luego T7, y T6 · 3 detrás**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -31,7 +31,7 @@
 Desde el 17-oct trabajan **dos cuentas de la IA por turnos, nunca a la vez**, en el mismo ordenador y el mismo repositorio. La que entra lee esto primero.
 
 - **T6 · 2 · Emitir, entero en producción** (#170 a #177, 111 migraciones, API 125/354, leído el 8-nov): el ticket, las facturas, las correcciones y «Pide tu factura» ([0141](docs/decisiones/0141-t6-2-3-pide-tu-factura.md)). **Decidido: M20D · Estook TPV para Android**, detrás de T7 ([0134](docs/decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)).
-- **La pausa del 8-nov, entre T6 y T7** ([0142](docs/decisiones/0142-la-pausa-del-8-nov.md), [la maqueta](docs/maquetas/la-pausa-del-8-nov.html), aprobada por Richi el 8-nov): **P1 · Lo del alta y Ajustes** (#178, `la-pausa-del-8-nov`), **P2 · Información e Informes** (#179, `la-pausa-del-8-nov-p2`, migración 0112) y **P3 · Empleados** (`la-pausa-del-8-nov-p3`, migración 0113), cada una encima de la anterior: se fusionan en ese orden. API 128/358. **La caja y los cierres van con T7**, y **T7 va antes que T6 · 3**.
+- **La pausa del 8-nov, entre T6 y T7** ([0142](docs/decisiones/0142-la-pausa-del-8-nov.md), [la maqueta](docs/maquetas/la-pausa-del-8-nov.html), aprobada por Richi el 8-nov): **P1 · Lo del alta y Ajustes** (#178, `la-pausa-del-8-nov`), **P2 · Información e Informes** (#179, `la-pausa-del-8-nov-p2`, migración 0112) y **P3 · Empleados** (#180, `la-pausa-del-8-nov-p3`, migración 0113), cada una encima de la anterior: se fusionan en ese orden. API 128/358. **La caja y los cierres van con T7**, y **T7 va antes que T6 · 3**.
 - **Al entrar:** `git status`, `git fetch`, las ramas y los pull requests abiertos. Si hay cambios sin guardar o una rama a medias, **no se borra, no se deshace y no se cambia de rama encima**: se le pregunta a Richi.
 - **Al salir, o con poco límite:** todo en un commit **subido a su rama, sin fusionar**; esta sección dice qué falta exactamente y en qué fichero; y lo aprendido de Richi, en las notas de memoria de la IA (se actualizan, no se duplican).
 - **No son de ninguna cuenta y no se tocan sin preguntar:** `.claude/worktrees/`, `C:\Users\rixy-\estook-repaso`, las carpetas `capturas-*` y `pruebas/e2e/capturas-del-repaso-temporal.spec.ts` (sin subir).
@@ -88,7 +88,7 @@ HECHO         El reloj de los documentos y la auditoría de las facturas (0138, 
 HECHO         Sin lista de clientes (0139, migración 0109, #173)
 HECHO         T6 · 2 · 2 · 2 · Las correcciones (0140, migración 0110, #175)
 HECHO         T6 · 2 · 3 · Pide tu factura (0141, migración 0111, #176)
-AHORA         La pausa del 8-nov (0142): P1 (#178) → P2 · Información e Informes (#179, 0112) → P3 · Empleados (0113)
+AHORA         La pausa del 8-nov (0142): P1 (#178) → P2 · Información e Informes (#179, 0112) → P3 · Empleados (#180, 0113)
 ESTOOK TPV    → T7 · M20C con M20 (0107), empezando por la caja (0142) → T6 · 3 · Sin envío → T8 · M20D · Android (0134)
 DESPUÉS       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b → Fases 5, 6 y 7
 ```
@@ -231,6 +231,6 @@ Las quince reglas, en el Plan (A1); el porqué de cada costumbre, en [`docs/lecc
 
 ## 6 · El siguiente paso
 
-**T6 · 1**, **la pausa del 5-nov** y **T6 · 2 · Emitir entero**, en producción y probados en IKATZ el 7-nov. **Ahora, la pausa del 8-nov** ([0142](docs/decisiones/0142-la-pausa-del-8-nov.md)): P1 (#178), **P2 · Información e Informes** (#179) y **P3 · Empleados**, en sus pull requests encadenados. **Después T7**, empezando por la caja que pidió Richi (botón al lado de Fichar, cerrar a ciegas y «Cierres de caja» en Estook), y **luego T6 · 3 · Sin envío**, con la respuesta del certificado (sección 2, punto 2). **Decidido: M20D · Android** ([0134](docs/decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)), detrás de T7.
+**T6 · 1**, **la pausa del 5-nov** y **T6 · 2 · Emitir entero**, en producción y probados en IKATZ el 7-nov. **Ahora, la pausa del 8-nov** ([0142](docs/decisiones/0142-la-pausa-del-8-nov.md)): P1 (#178), **P2 · Información e Informes** (#179) y **P3 · Empleados** (#180), en sus pull requests encadenados. **Después T7**, empezando por la caja que pidió Richi (botón al lado de Fichar, cerrar a ciegas y «Cierres de caja» en Estook), y **luego T6 · 3 · Sin envío**, con la respuesta del certificado (sección 2, punto 2). **Decidido: M20D · Android** ([0134](docs/decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)), detrás de T7.
 
 **Lo que decidió la IA por su cuenta**, para que Richi lo sepa: los de P1 a P3, en la [0142](docs/decisiones/0142-la-pausa-del-8-nov.md), secciones 5 a 7; los de la [0141](docs/decisiones/0141-t6-2-3-pide-tu-factura.md), los de la [0140](docs/decisiones/0140-t6-2-2-2-las-correcciones.md) (como no construir la aprobación con el PIN de un encargado), los de la [0139](docs/decisiones/0139-sin-lista-de-clientes.md) y los de la [0138](docs/decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md). **Todo lo anterior**, entrega a entrega, en [`docs/lo-que-decidio-la-ia.md`](docs/lo-que-decidio-la-ia.md).

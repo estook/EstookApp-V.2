@@ -5,7 +5,7 @@ import { elAparato, hayApi } from '../datos/cliente.ts';
 import { olvidarLosAplazamientos } from '../pantallas/recordatorios.ts';
 import { BotonDeGoogle, MarcoDeLaPuerta, Separador, type ComoSeEntra } from './Formas.tsx';
 import { OlvideLaContrasena } from './OlvideLaContrasena.tsx';
-import { irAGoogle } from './google.ts';
+import { irAGoogle } from '@estook/cliente-api/con-google';
 import { usarSesion } from './Sesion.tsx';
 
 /**

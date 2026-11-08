@@ -8,7 +8,7 @@ import { olvidarLosAplazamientos } from '../pantallas/recordatorios.ts';
 import { CrearCuenta } from './CrearCuenta.tsx';
 import { Entrar } from './Entrar.tsx';
 import type { ComoSeEntra } from './Formas.tsx';
-import { laVueltaDeGoogle, type VueltaDeGoogle } from './google.ts';
+import { laVueltaDeGoogle, type VueltaDeGoogle } from '@estook/cliente-api/con-google';
 import { usarSesion } from './Sesion.tsx';
 
 /**

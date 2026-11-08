@@ -301,12 +301,15 @@ function VentasWidget() {
 /** Sin cajas cerradas: lo dice, y deja cerrarla a quien puede. */
 function SinCajaCerrada() {
   const navegar = useNavigate();
+  const { yo } = usarSesion();
+  // Con Pro no se elige cómo entran las ventas (0142): son de Estook TPV.
+  const conPro = yo?.cuenta?.conEstookTpv === true;
   // La misma que la tarjeta de «¿Cómo entran tus ventas?», que ya viene en el lote.
   const datos = usarComoSeCierra().data;
   return (
     <div className="flex flex-col items-start gap-e3">
       <Tranquilo>
-        {datos?.comoSeCierra === 'sin_decidir'
+        {datos?.comoSeCierra === 'sin_decidir' && !conPro
           ? 'Todavía no has elegido cómo entran tus ventas.'
           : datos?.comoSeCierra === 'tpv'
             ? 'Tu TPV traerá las ventas. Hasta entonces, se apuntan al cerrar.'

@@ -116,6 +116,7 @@ import {
   sacarCodigoParaPasarALaApp,
   sacarCodigoParaVolverAVincular,
   sacarCodigoParaVincular,
+  sacarCodigoDesdeEstook,
   vincularConCodigo,
   vincularElPrimerAparato,
   yoEnElTpv,
@@ -1076,6 +1077,8 @@ export const catalogo = {
     // PIN y bloqueo.
     [vincularElPrimerAparato.nombre]: vincularElPrimerAparato,
     [sacarCodigoParaVincular.nombre]: sacarCodigoParaVincular,
+    // La pausa del 8-nov (0142): el código desde Estook, para quien entra con Google.
+    [sacarCodigoDesdeEstook.nombre]: sacarCodigoDesdeEstook,
     [vincularConCodigo.nombre]: vincularConCodigo,
     // T5 · 1 (0119): «Pasar a la app», imprimir, el cajón, y la cola de la caja con su llave.
     [sacarCodigoParaPasarALaApp.nombre]: sacarCodigoParaPasarALaApp,

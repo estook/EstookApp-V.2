@@ -5,6 +5,7 @@ import { DONDE_SE_DESCARGA_LA_CAJA, centimos, conSimbolo, planPorCodigo } from '
 import { puedeEditar } from '@estook/permisos';
 import { Boton, Hoja, clases, usarEsEscritorio } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { DIRECCION_DE_ESTOOK_TPV } from './direccionDeEstookTpv.ts';
 
 /**
  * **El botón de Estook TPV en Ajustes** (0120; Richi, 28-oct: «un botón que se diferencie de
@@ -22,7 +23,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * Abrir Estook TPV no entra con la sesión de Estook (0107): lleva a su puerta, donde se vincula
  * ese aparato. Lo que decide si se puede es la API (`queLleveEstookTpv`); esto solo lo pinta.
  */
-const DIRECCION_DE_ESTOOK_TPV = `${import.meta.env.BASE_URL}../tpv/`;
+
 
 /**
  * **«Aprende más»** lleva a la web, que se hace la última (Richi, 28-oct). Hasta entonces, a

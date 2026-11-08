@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { elAparato as elNavegador, type ErrorDeLaApi } from '@estook/cliente-api';
+import { irAGoogle, laVueltaDeGoogle, type VueltaDeGoogle } from '@estook/cliente-api/con-google';
 import { CODIGO_PARA_VINCULAR, elCodigoDeLaDireccion } from '@estook/dominio';
 import { ErrorEnCristiano } from '@estook/ui';
 import { crearClienteDelTpv, LA_VERSION } from '../datos/cliente.ts';
@@ -19,12 +20,19 @@ import { ElegirQueSera, Pastilla } from './ElegirQueSera.tsx';
  *     aparato. Elige qué es, y **su sesión se cierra al acabar**: lo que se queda es la
  *     llave del aparato.
  *
+ * **Con Google** (la pausa del 8-nov, 0142): quien creó la cuenta con Google no tiene contraseña, y
+ * no podía vincular el primero. Debajo de «Entrar», «Continuar con Google». En la caja para
+ * Windows Google no deja entrar desde dentro de un programa, así que ahí explica cómo sacar el
+ * código en Estook, desde el móvil, y escribirlo aquí.
+ *
  * **Si el local ya tiene aparatos, primero «¿Es uno que ya tenías?»** (Richi, 28-oct: entrar
  * con el correo creaba «Caja 2» en el mismo ordenador). Elegido, vuelve ese mismo, con otra
  * llave, y la de antes deja de valer; «Es uno nuevo» sigue como siempre.
  */
 export function Vincular({ alVincular }: { readonly alVincular: (v: AparatoVinculado) => void }) {
-  const [conCorreo, setConCorreo] = useState(false);
+  // La vuelta de Google, si se llega de allí: se lee una vez y se quita de la dirección (0142).
+  const [vueltaDeGoogle] = useState<VueltaDeGoogle | null>(() => laVueltaDeGoogle());
+  const [conCorreo, setConCorreo] = useState(vueltaDeGoogle !== null);
   // **Dentro de la caja para Windows** (0119): lo normal es pasarle la caja del navegador.
   const enLaApp = laCajaParaWindows() !== null;
   return (
@@ -111,7 +119,14 @@ export function Vincular({ alVincular }: { readonly alVincular: (v: AparatoVincu
       </section>
       <section className="flex flex-1 flex-col items-center justify-center gap-e5 p-e5">
         {conCorreo ? (
-          <ConMiCorreo alVincular={alVincular} />
+          <ConMiCorreo
+            alVincular={alVincular}
+            vueltaDeGoogle={vueltaDeGoogle}
+            enLaApp={enLaApp}
+            alTenerUnCodigo={() => {
+              setConCorreo(false);
+            }}
+          />
         ) : (
           <ConCodigo alVincular={alVincular} />
         )}
@@ -244,6 +259,38 @@ type Paso =
     };
 
 type ElLocal = DondeSePuedeVincular['locales'][number];
+
+/** Lo que devuelven `entrar` y `entrar_con_google`: la sesión, solo para vincular. */
+interface Entrado {
+  readonly token: string;
+  readonly faltaDobleFactor: boolean;
+  readonly debeActivarDobleFactor: boolean;
+  readonly debeCambiarClave: boolean;
+}
+
+/** La «G» de Google con sus colores, como piden sus normas para el botón. */
+function LaGDeGoogle() {
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden className="size-5 shrink-0">
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.8c4.3-4 6.9-9.9 6.9-17.2z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.6 28.6c-.5-1.4-.8-2.9-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.8c-2.1 1.4-4.8 2.2-8.5 2.2-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"
+      />
+    </svg>
+  );
+}
 type AparatoDeAntes = NonNullable<ElLocal['deAntes']>[number];
 
 /** Con aparatos en el local, primero «¿Es uno que ya tenías?»; sin ninguno, qué es. */
@@ -251,7 +298,17 @@ function primerPaso(local: ElLocal): Paso {
   return (local.deAntes ?? []).length > 0 ? { que: 'cual_es', local } : { que: 'que_sera', local };
 }
 
-function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado) => void }) {
+function ConMiCorreo({
+  alVincular,
+  vueltaDeGoogle,
+  enLaApp,
+  alTenerUnCodigo,
+}: {
+  readonly alVincular: (v: AparatoVinculado) => void;
+  readonly vueltaDeGoogle: VueltaDeGoogle | null;
+  readonly enLaApp: boolean;
+  readonly alTenerUnCodigo: () => void;
+}) {
   // **La sesión vive solo en la memoria y solo para esto**: no se guarda en el aparato,
   // y la API la cierra al vincular (Anexo 11.3).
   const token = useRef<string | null>(null);
@@ -265,6 +322,10 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
   const [aviso, setAviso] = useState<string | null>(null);
   /** «No recuerdo mi PIN»: quien vincula saca uno nuevo para este local (0109). */
   const [pinNuevo, setPinNuevo] = useState(false);
+  /** El cliente de Google de Estook, si el servidor lo tiene (0142). Sin él, no sale el botón. */
+  const [clienteDeGoogle, setClienteDeGoogle] = useState<string | null>(null);
+  const [googleEnLaCaja, setGoogleEnLaCaja] = useState(false);
+  const vueltaGastada = useRef(false);
 
   async function dondeSePuede() {
     const respuesta = await cliente.consultar<DondeSePuedeVincular>('donde_puedo_vincular');
@@ -288,29 +349,90 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
     setOcupado(true);
     setError(null);
     setAviso(null);
-    const respuesta = await cliente.ejecutar<{
-      token: string;
-      faltaDobleFactor: boolean;
-      debeActivarDobleFactor: boolean;
-      debeCambiarClave: boolean;
-    }>('entrar', { correo: correo.trim(), contrasena, aparato: elNavegador() ?? undefined });
+    const respuesta = await cliente.ejecutar<Entrado>('entrar', {
+      correo: correo.trim(),
+      contrasena,
+      aparato: elNavegador() ?? undefined,
+    });
     setOcupado(false);
     setContrasena('');
     if (!respuesta.ok) {
       setError(respuesta.error);
       return;
     }
-    token.current = respuesta.datos.token;
-    if (respuesta.datos.debeCambiarClave || respuesta.datos.debeActivarDobleFactor) {
+    await trasEntrar(respuesta.datos);
+  }
+
+  // ── Con Google (0142) ─────────────────────────────────────────────────────
+  useEffect(() => {
+    void cliente
+      .ejecutar<{ google: { clienteId: string } | null }>('como_se_entra', {})
+      .then((respuesta) => {
+        if (respuesta.ok) setClienteDeGoogle(respuesta.datos.google?.clienteId ?? null);
+      });
+  }, [cliente]);
+
+  async function irConGoogle() {
+    if (clienteDeGoogle === null) return;
+    if (enLaApp) {
+      setGoogleEnLaCaja(true);
+      return;
+    }
+    setOcupado(true);
+    try {
+      await irAGoogle(
+        clienteDeGoogle,
+        { intencion: 'entrar' },
+        `${window.location.origin}${import.meta.env.BASE_URL}`,
+      );
+    } catch {
+      setOcupado(false);
+      setAviso('Este navegador no deja entrar con Google. Entra con tu correo y tu contraseña.');
+    }
+  }
+
+  // Al volver de Google se canjea una vez, y sigue como con el correo.
+  useEffect(() => {
+    if (vueltaDeGoogle === null || vueltaGastada.current) return;
+    vueltaGastada.current = true;
+    if ('fallo' in vueltaDeGoogle) {
+      setAviso(vueltaDeGoogle.fallo);
+      return;
+    }
+    void (async () => {
+      setOcupado(true);
+      const navegador = elNavegador();
+      const respuesta = await cliente.ejecutar<Entrado>('entrar_con_google', {
+        codigo: vueltaDeGoogle.codigo,
+        verificador: vueltaDeGoogle.verificador,
+        redireccion: vueltaDeGoogle.redireccion,
+        intencion: 'entrar',
+        ...(navegador === null ? {} : { aparato: navegador }),
+      });
+      setOcupado(false);
+      if (!respuesta.ok) {
+        setError(respuesta.error);
+        return;
+      }
+      await trasEntrar(respuesta.datos);
+    })();
+    // La vuelta se gasta una sola vez; trasEntrar cambia en cada pintado.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vueltaDeGoogle, cliente]);
+
+  /** Tras entrar con el correo o con Google: lo que falte, y dónde se puede vincular. */
+  async function trasEntrar(datos: Entrado) {
+    token.current = datos.token;
+    if (datos.debeCambiarClave || datos.debeActivarDobleFactor) {
       setAviso(
-        respuesta.datos.debeCambiarClave
+        datos.debeCambiarClave
           ? 'Antes tienes que poner tu propia contraseña: entra en Estook, cámbiala y vuelve aquí.'
           : 'Tu cuenta tiene que activar el segundo factor: hazlo en Estook › Mi acceso y vuelve aquí.',
       );
       token.current = null;
       return;
     }
-    if (respuesta.datos.faltaDobleFactor) {
+    if (datos.faltaDobleFactor) {
       setPaso({ que: 'doble_factor' });
       return;
     }
@@ -419,6 +541,47 @@ function ConMiCorreo({ alVincular }: { readonly alVincular: (v: AparatoVinculado
           >
             {ocupado ? 'Entrando…' : 'Entrar'}
           </button>
+          {clienteDeGoogle !== null && (
+            <>
+              <div className="flex items-center gap-e3 text-secundario text-texto-tenue">
+                <span className="h-px flex-1 bg-borde" />o<span className="h-px flex-1 bg-borde" />
+              </div>
+              <button
+                type="button"
+                disabled={ocupado}
+                onClick={() => {
+                  void irConGoogle();
+                }}
+                className="flex min-h-toque-cocina items-center justify-center gap-e3 rounded-grande border-2 border-borde bg-white text-seccion font-semibold text-[#1f1f1f] disabled:opacity-60"
+              >
+                <LaGDeGoogle />
+                Continuar con Google
+              </button>
+            </>
+          )}
+          {googleEnLaCaja && (
+            <div
+              role="status"
+              className="flex flex-col gap-e3 rounded-grande bg-superficie p-e4 text-cuerpo"
+            >
+              <b>En la caja para Windows, Google no deja entrar desde dentro de un programa.</b>
+              <ol className="flex list-decimal flex-col gap-e1 pl-e5 text-texto-suave">
+                <li>En tu móvil, entra en Estook (también con Google).</li>
+                <li>
+                  Ve a <b className="text-texto">Ajustes › Conexiones › «Vincular un aparato»</b> y
+                  elige «Caja».
+                </li>
+                <li>Sale un código de 6 cifras: escríbelo aquí.</li>
+              </ol>
+              <button
+                type="button"
+                onClick={alTenerUnCodigo}
+                className="min-h-toque-cocina rounded-grande bg-naranja text-seccion font-bold text-sobre-naranja"
+              >
+                Ya tengo el código
+              </button>
+            </div>
+          )}
           <p className="text-secundario text-texto-tenue">
             Tu sesión no se queda en este aparato: al vincularlo se cierra, y cada uno entra con su
             PIN.

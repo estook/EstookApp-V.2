@@ -60,6 +60,10 @@ export const Informacion = perezosa(
   async () => (await import('../servicio/Informacion.tsx')).Informacion,
 );
 export const Ventas = perezosa(async () => (await import('../servicio/Ventas.tsx')).Ventas);
+// P3 (0142): lo que vende cada uno, y sus objetivos.
+export const Empleados = perezosa(
+  async () => (await import('../servicio/Empleados.tsx')).Empleados,
+);
 export const TicketsYFacturas = perezosa(
   async () => (await import('../facturacion/TicketsYFacturas.tsx')).TicketsYFacturas,
 );

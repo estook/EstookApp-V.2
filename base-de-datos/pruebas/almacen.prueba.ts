@@ -764,7 +764,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
     // Noventa y una. **Y la 0102 (0129) añade una**: `quitar_la_empresa`, que suelta la empresa
     // del local, solo en pruebas. Noventa y dos. **Y la 0112 (0142, la pausa del 8-nov) añade dos:**
     // `las_lineas_vendidas` y `las_mesas_del_servicio` dan las mesas a quien ve las ventas del local
-    // —la dirección, un area manager— aunque no tome nota: solo leen, y solo de ese local.
+    // —la dirección, un area manager— aunque no tome nota: solo leen, y solo de ese local. **Y la
+    // 0113 añade una**: `lo_que_he_vendido`, lo vendido por quien pregunta, sumado, para su objetivo.
     const nombres = (
       await comoDuena<{ proname: string }>(
         `select p.proname from pg_proc p
@@ -832,6 +833,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'lleva_la_facturacion',
       'lo_gastado_en_fogon',
       'lo_que_hacen_los_clientes',
+      'lo_que_he_vendido',
       'locales_revisados_de_noche',
       'locales_visibles',
       'los_clientes',

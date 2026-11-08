@@ -24,6 +24,7 @@ import {
   Almacen,
   CierreDeCaja,
   Informacion,
+  Empleados,
   Carta,
   Escandallos,
   Delivery,
@@ -309,6 +310,7 @@ function Contenido({
   if (app.id === 'servicio' && destino.id === 'jornada' && vista?.id === 'informacion') {
     return <Informacion />;
   }
+  if (app.id === 'servicio' && destino.id === 'empleados') return <Empleados />;
   if (app.id === 'negocio' && destino.id === 'ventas') return <Ventas />;
   // T6 · 2 · 1 (0136): lo emitido, con su estado ante Hacienda.
   if (app.id === 'servicio' && destino.id === 'ventas' && vista?.id === 'tickets-y-facturas') {

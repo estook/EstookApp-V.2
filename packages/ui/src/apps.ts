@@ -583,6 +583,16 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         vistas: vistas('Información', 'Cierre'),
       },
       {
+        // **La pausa del 8-nov, P3 (0142)**: lo que vende cada uno y por hora fichada, con su
+        // objetivo. Entre Jornadas y Ventas, como pidió Richi. La lista, solo para quien ve las
+        // ventas; cada camarero ve el suyo, si el gerente lo deja. Solo con Estook TPV.
+        id: 'empleados',
+        nombre: 'Empleados',
+        icono: IconoEquipo,
+        queContesta: '¿Quién vende más, por hora, y cómo va cada uno con su objetivo?',
+        vistas: [],
+      },
+      {
         id: 'ventas',
         nombre: 'Ventas',
         icono: IconoNegocio,

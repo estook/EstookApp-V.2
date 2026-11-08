@@ -4,7 +4,7 @@
 >
 > | Qué              | Cómo está                                                                     |
 > | ---------------- | ----------------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P1 · Lo del alta y Ajustes»                             |
+> | El pull request  | «La pausa del 8-nov · P1 · Lo del alta y Ajustes», la **#178**                |
 > | La base de datos | **No hay que migrar**: sigue en 111                                           |
 > | La API           | **Hay que desplegarla**: 125 consultas y **357 comandos** (tres nuevos)       |
 > | Google           | **Hecho por Richi el 8-nov**: las dos direcciones del TPV, apuntadas (paso 4) |
@@ -95,11 +95,11 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
 
 # P2 · Información e Informes
 
-> | Qué              | Cómo está                                                                        |
-> | ---------------- | -------------------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P2 · Información e Informes», encima del de P1             |
-> | La base de datos | **Hay que migrar**: pasa de 111 a **112** (la 0112, dos funciones que solo leen) |
-> | La API           | Hay que desplegarla **después de migrar**: **127 consultas** y 357 comandos      |
+> | Qué              | Cómo está                                                                          |
+> | ---------------- | ---------------------------------------------------------------------------------- |
+> | El pull request  | «La pausa del 8-nov · P2 · Información e Informes», la **#179**, encima de la #178 |
+> | La base de datos | **Hay que migrar**: pasa de 111 a **112** (la 0112, dos funciones que solo leen)   |
+> | La API           | Hay que desplegarla **después de migrar**: **127 consultas** y 357 comandos        |
 
 ## Lo que cambia para ti
 
@@ -137,3 +137,48 @@ git pull
 3. **Negocio › Informes › Semana**: con mesas en el TPV, las cuatro tarjetas; **La cocina** solo tiene tiempos si la
    cocina tacha en la pantalla de cocina.
 4. **En Estook TPV**, abre una mesa de prueba, «···» → «Anular la mesa»: **tienen que salir** los tres motivos.
+
+---
+
+# P3 · Empleados
+
+> | Qué              | Cómo está                                                                   |
+> | ---------------- | --------------------------------------------------------------------------- |
+> | El pull request  | «La pausa del 8-nov · P3 · Empleados», la **#180**, encima de la #179       |
+> | La base de datos | **Hay que migrar**: pasa de 112 a **113** (la 0113, los objetivos de venta) |
+> | La API           | Hay que desplegarla **después de migrar**: **128 consultas y 358 comandos** |
+
+## Lo que cambia para ti
+
+- **Servicio › Empleados**: quién vende más, por semana o por mes, y **por € la hora** (lo justo entre quien hace 20
+  horas y quien hace 40). Toca a alguien para ver lo que más vende.
+- **«Objetivos»**: el general en € por hora, uno distinto para quien quieras, y si cada uno ve el suyo.
+- **Cada camarero ve solo lo suyo** en Servicio › Empleados, si lo dejas encendido.
+
+## Lo que te toca
+
+**Después de P1 y P2**, igual: **Merge pull request** del de P3; en PowerShell, uno por uno:
+
+```powershell
+git checkout main
+```
+
+```powershell
+git pull
+```
+
+```powershell
+.\estook.cmd bd:migrar
+```
+
+**Tiene que decir** que aplica la `0113_los_objetivos_de_venta`. Y en GitHub, **Actions** → **Desplegar la API** →
+**Run workflow**.
+
+## Lo que hay que probar
+
+1. **En IKATZ, Servicio › Empleados**: con mesas de Estook TPV en la semana, sale cada camarero con lo suyo. Toca
+   **Por € la hora**.
+2. **«Objetivos»** → **General**: sube a 40 €/h y **Guardar**. Las barras cambian.
+3. **Por empleado**: toca a alguien, ponle otro y **Guardar**: sale «Uno suyo».
+4. **Con la cuenta de un camarero**, entra en Servicio › Empleados: **tiene que ver solo lo suyo**. Apaga «Que cada uno
+   vea el suyo» con la tuya y mira que ya no lo ve.

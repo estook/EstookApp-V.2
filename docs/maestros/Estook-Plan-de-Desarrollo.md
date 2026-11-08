@@ -288,7 +288,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | Carta       | Carta · Canales · Menús · Análisis                   |
 | Calendario  | Calendario · Tareas · Turnos                         |
 | Equipo      | Resumen · Personas · Fichajes · Incidencias          |
-| Servicio    | Jornadas · Ventas · Delivery · APPCC                 |
+| Servicio    | Jornadas · Empleados · Ventas · Delivery · APPCC     |
 | Negocio     | Ventas · Informes · Pulse · Costes · Reseñas         |
 | Cuaderno    | Incidencias · Notas · Equipos                        |
 

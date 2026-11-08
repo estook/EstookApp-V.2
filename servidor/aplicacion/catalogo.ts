@@ -390,6 +390,7 @@ import {
 } from './comandos/pago.ts';
 import { miLocalEnGoogle, miNotaEnGoogle } from './consultas/local-en-google.ts';
 import { elServicioPorDentro, loQueSeVende } from './consultas/lo-que-se-vende.ts';
+import { guardarLosObjetivosDeVenta, laVentaDeCadaUno } from './consultas/empleados.ts';
 import {
   actualizarMiFichaDeGoogle,
   buscarMiLocalEnGoogle,
@@ -536,6 +537,8 @@ export const catalogo = {
     // La pausa del 8-nov (0142): Información e Informes, de las mesas de Estook TPV.
     [loQueSeVende.nombre]: loQueSeVende,
     [elServicioPorDentro.nombre]: elServicioPorDentro,
+    // P3 (0142): Servicio › Empleados.
+    [laVentaDeCadaUno.nombre]: laVentaDeCadaUno,
     // La puerta del admin (0041): quién soy ahí, quién más entra y lo que se ha hecho.
     [yoEnElAdmin.nombre]: yoEnElAdmin,
     [accesosAlAdmin.nombre]: accesosAlAdmin,
@@ -733,6 +736,8 @@ export const catalogo = {
   } as Record<string, Consulta<never, unknown>>,
 
   comandos: {
+    // P3 (0142): los objetivos de venta, general y por persona.
+    [guardarLosObjetivosDeVenta.nombre]: guardarLosObjetivosDeVenta,
     [empezarAPagar.nombre]: empezarAPagar,
     [ajustarMiCuotaAMisLocales.nombre]: ajustarMiCuotaAMisLocales,
     [volverDelPago.nombre]: volverDelPago,

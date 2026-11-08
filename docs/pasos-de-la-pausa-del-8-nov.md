@@ -142,9 +142,9 @@ git pull
 
 # P3 · Empleados
 
-> | Qué              | Cómo está                                                                  |
-> | ---------------- | -------------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P3 · Empleados», encima del de P2                      |
+> | Qué              | Cómo está                                                                   |
+> | ---------------- | --------------------------------------------------------------------------- |
+> | El pull request  | «La pausa del 8-nov · P3 · Empleados», encima del de P2                     |
 > | La base de datos | **Hay que migrar**: pasa de 112 a **113** (la 0113, los objetivos de venta) |
 > | La API           | Hay que desplegarla **después de migrar**: **128 consultas y 358 comandos** |
 

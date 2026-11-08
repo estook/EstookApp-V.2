@@ -1109,3 +1109,8 @@
      prueba qué pasa si la persona se equivoca y corrige.**
 262. **Lo que hace que un campo se vea no puede depender de algo que se olvida al escribir en él.** En «Pide tu factura», el nombre de un autónomo se enseñaba si Hacienda no lo había dado, pero lo comprobado se olvida con cada letra: el campo habría desaparecido con la primera. No lo vio ninguna prueba: salió al revisar el código, y una prueba de pantalla que escribe de letra en letra lo vigila. Y en una prueba de pantalla, **una página servida con `route.fulfill` no cuenta como local**: el navegador le corta las llamadas a `localhost` por el permiso de la red local, y parece un fallo de la API (7-nov). **Se sirve de verdad, como en producción.**
 263. **Lo que se lee en muchos sitios no se puede usar para otra cosa.** El estado de un documento se lee del último registro, en cinco sitios; apuntar ahí los estados de una anulación habría convertido en «Rechazada» una factura válida cuando Hacienda no aceptara anularla. Y lo que salió de una cola no vuelve solo: lo que se está anulando se habría quedado «Anulando» para siempre (7-nov). **Antes de añadir un estado, se busca quién lee ese dato y qué creería.**
+264. **Un pull request encadenado se fusiona en su rama, no en `main`.** En la pausa del 8-nov, la #179 apuntaba a
+     la rama de P1 y la #180 a la de P2. Richi los fusionó en orden, pero GitHub solo cambia la base sola si se
+     borra la rama de debajo: P2 y P3 se quedaron fuera de `main`, y `bd:migrar` decía «ya estaba al día» (8-nov).
+     **Todo pull request apunta a `main`.** Si una entrega necesita la anterior, se abre cuando la anterior ya
+     está fusionada, o se cambia su base a `main` antes de dar los pasos a Richi.

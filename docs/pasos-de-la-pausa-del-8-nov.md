@@ -4,7 +4,7 @@
 >
 > | Qué              | Cómo está                                                                     |
 > | ---------------- | ----------------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P1 · Lo del alta y Ajustes», la **#178**                |
+> | El pull request  | «La pausa del 8-nov · P1 · Lo del alta y Ajustes», la **#178**, ya fusionada  |
 > | La base de datos | **No hay que migrar**: sigue en 111                                           |
 > | La API           | **Hay que desplegarla**: 125 consultas y **357 comandos** (tres nuevos)       |
 > | Google           | **Hecho por Richi el 8-nov**: las dos direcciones del TPV, apuntadas (paso 4) |
@@ -95,11 +95,11 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
 
 # P2 · Información e Informes
 
-> | Qué              | Cómo está                                                                          |
-> | ---------------- | ---------------------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P2 · Información e Informes», la **#179**, encima de la #178 |
-> | La base de datos | **Hay que migrar**: pasa de 111 a **112** (la 0112, dos funciones que solo leen)   |
-> | La API           | Hay que desplegarla **después de migrar**: **127 consultas** y 357 comandos        |
+> | Qué              | Cómo está                                                                           |
+> | ---------------- | ----------------------------------------------------------------------------------- |
+> | El pull request  | La **#181**, con P2 y P3 juntas (la #179 se fusionó en la rama de P1, no en `main`) |
+> | La base de datos | **Hay que migrar**: pasa de 111 a **112** (la 0112, dos funciones que solo leen)    |
+> | La API           | Hay que desplegarla **después de migrar**: **127 consultas** y 357 comandos         |
 
 ## Lo que cambia para ti
 
@@ -112,7 +112,7 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
 
 ## Lo que te toca
 
-**Primero P1** (arriba). Después, igual: en GitHub, **Merge pull request** del de P2; en PowerShell, uno por uno:
+**P2 y P3 van juntas en la #181**: se fusiona una vez, se migran las dos (0112 y 0113) y se despliega una vez. En GitHub, **Merge pull request** de la #181; en PowerShell, uno por uno:
 
 ```powershell
 git checkout main
@@ -126,7 +126,7 @@ git pull
 .\estook.cmd bd:migrar
 ```
 
-**Tiene que decir** que aplica la `0112_lo_que_se_vende`. Y en GitHub, **Actions** → **Desplegar la API** →
+**Tiene que decir** que aplica la `0112_lo_que_se_vende` y la `0113_los_objetivos_de_venta`. Y en GitHub, **Actions** → **Desplegar la API** →
 **Run workflow**.
 
 ## Lo que hay que probar
@@ -142,11 +142,11 @@ git pull
 
 # P3 · Empleados
 
-> | Qué              | Cómo está                                                                   |
-> | ---------------- | --------------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P3 · Empleados», la **#180**, encima de la #179       |
-> | La base de datos | **Hay que migrar**: pasa de 112 a **113** (la 0113, los objetivos de venta) |
-> | La API           | Hay que desplegarla **después de migrar**: **128 consultas y 358 comandos** |
+> | Qué              | Cómo está                                                                       |
+> | ---------------- | ------------------------------------------------------------------------------- |
+> | El pull request  | La **#181**, la misma de P2 (la #180 se fusionó en la rama de P2, no en `main`) |
+> | La base de datos | **Hay que migrar**: pasa de 112 a **113** (la 0113, los objetivos de venta)     |
+> | La API           | Hay que desplegarla **después de migrar**: **128 consultas y 358 comandos**     |
 
 ## Lo que cambia para ti
 
@@ -157,22 +157,7 @@ git pull
 
 ## Lo que te toca
 
-**Después de P1 y P2**, igual: **Merge pull request** del de P3; en PowerShell, uno por uno:
-
-```powershell
-git checkout main
-```
-
-```powershell
-git pull
-```
-
-```powershell
-.\estook.cmd bd:migrar
-```
-
-**Tiene que decir** que aplica la `0113_los_objetivos_de_venta`. Y en GitHub, **Actions** → **Desplegar la API** →
-**Run workflow**.
+**Nada más**: va en la misma #181 que P2, con su fusión, su migración y su despliegue (arriba).
 
 ## Lo que hay que probar
 

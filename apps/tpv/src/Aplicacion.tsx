@@ -91,7 +91,7 @@ export function Aplicacion() {
   useEffect(() => {
     document.documentElement.dataset['tema'] = 'tpv';
   }, []);
-  usarTamanoDeLetra();
+  usarTamanoDeLetra('normal');
   const cache = useMemo(
     () =>
       new QueryClient({

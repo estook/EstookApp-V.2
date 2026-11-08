@@ -47,10 +47,26 @@
    * bien. Los botones no bajan de 44 px: se hace más pequeña la letra, no el dedo.
    */
   @media (max-width: 639px) {
-    :root[data-letra='pequena'] {
+    :root[data-letra='pequena'],
+    :root[data-letra='auto'] {
       --escala-del-aparato: 0.82;
     }
+
+    /*
+     * Las cifras grandes de los widgets, un escalón menos en el teléfono (la pausa del 8-nov,
+     * 0142): Richi, «en móvil se ven demasiado grandes los números y cuadrados de widgets». En
+     * una tarjeta de media pantalla, 34 px eran media tarjeta. Sigue leyéndose de lejos.
+     */
+    :root {
+      --text-cifra: calc(29px * var(--escala));
+      --text-cifra-media: calc(23px * var(--escala));
+    }
   }
+  /*
+   * «Automática», la de fábrica desde la pausa del 8-nov (0142): pequeña en el teléfono (arriba)
+   * y normal en la tablet y el ordenador, que es lo que pidió Richi sin dejar la tablet de cocina
+   * con la letra pequeña. Es CSS y no JavaScript: girar la tablet no tiene que avisar a nadie.
+   */
   :root[data-letra='grande'] {
     --escala-del-aparato: 1.15;
   }

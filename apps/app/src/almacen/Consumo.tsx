@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { comoPorcentaje, comoSeDiceElTipo } from '@estook/dominio';
 import { puedeEditar, puedeVer } from '@estook/permisos';
+import { IconoFlechaDerecha, IconoFlechaIzquierda } from '@estook/iconos';
 import {
   Aviso,
   Boton,
   Cargando,
   EstadoVacio,
   Etiqueta,
-  Selector,
+  Segmentado,
   Tabla,
   Tarjeta,
   type Columna,
@@ -29,7 +30,8 @@ import {
  * Dos respuestas, de arriba abajo:
  *
  *   · **El food cost real**: de cada 100 € que se venden sin IVA, cuántos se van en
- *     género. Entre los dos últimos inventarios o en un mes, frente a tu objetivo.
+ *     género. Por semana, mes o trimestre (la pausa del 8-nov, 0142), o entre los dos
+ *     últimos inventarios, frente a tu objetivo, con flechas para ir atrás.
  *   · **Lo gastado de verdad**, de cada producto contado dos veces.
  *
  * ── Por qué ya no hay «Lo que se vende tal cual» (Richi eligió la A, 9-oct) ──────
@@ -102,17 +104,51 @@ const TONO_DEL_SEMAFORO = {
   sin_dato: 'neutro',
 } as const;
 
+type PeriodoDelFoodCost = ElFoodCostReal['periodo'];
+
+const NOMBRE_DEL_PERIODO: Readonly<Record<PeriodoDelFoodCost, string>> = {
+  semana: 'Semana',
+  mes: 'Mes',
+  trimestre: 'Trimestre',
+  inventarios: 'Inventarios',
+};
+
+/**
+ * El día que se mira, movido un periodo hacia atrás o hacia delante. Es el día de referencia
+ * y no «cuántos atrás»: el servidor saca de él la semana, el mes o el trimestre (0142).
+ */
+function moverElDia(dia: string, periodo: PeriodoDelFoodCost, paso: -1 | 1): string {
+  const [a, m, d] = dia.split('-').map(Number) as [number, number, number];
+  if (periodo === 'semana') {
+    return new Date(Date.UTC(a, m - 1, d + 7 * paso)).toISOString().slice(0, 10);
+  }
+  const meses = periodo === 'trimestre' ? 3 : 1;
+  return new Date(Date.UTC(a, m - 1 + meses * paso, 15)).toISOString().slice(0, 10);
+}
+
 function FoodCostReal() {
   const navegar = useNavigate();
-  const [periodo, setPeriodo] = useState<'' | 'inventarios' | 'mes'>('');
-  const [mes, setMes] = useState('');
+  const [periodo, setPeriodo] = useState<PeriodoDelFoodCost | ''>('');
+  const [dia, setDia] = useState<string | null>(null);
   const lectura = usarLectura<ElFoodCostReal>('el_food_cost_real', {
     ...(periodo === '' ? {} : { periodo }),
-    ...(periodo === 'mes' && mes !== '' ? { mes } : {}),
+    ...(dia === null || periodo === '' || periodo === 'inventarios'
+      ? {}
+      : periodo === 'semana'
+        ? { dia }
+        : { mes: dia.slice(0, 7) }),
   });
 
   const f = lectura.data;
-  const elegido = periodo === '' ? (f?.periodo ?? 'mes') : periodo;
+  const elegido: PeriodoDelFoodCost = periodo === '' ? (f?.periodo ?? 'mes') : periodo;
+  const conFlechas = elegido !== 'inventarios' && f !== undefined;
+  const hayDespues = f !== undefined && f.hasta < f.hoy;
+
+  function mover(paso: -1 | 1) {
+    if (f === undefined) return;
+    setPeriodo(elegido);
+    setDia(moverElDia(dia ?? f.hoy, elegido, paso));
+  }
 
   return (
     <Tarjeta
@@ -120,30 +156,35 @@ function FoodCostReal() {
       origen="(lo que había + lo comprado − lo que queda) ÷ lo vendido sin IVA"
     >
       <div className="flex flex-col gap-e3">
-        <div className="flex flex-wrap items-end gap-e3">
-          <div className="min-w-[13rem]">
-            <Selector
-              etiqueta="Periodo"
-              opciones={[
-                ...(f?.inventarios === null || f === undefined
-                  ? []
-                  : [{ valor: 'inventarios', texto: 'Entre los dos últimos inventarios' }]),
-                { valor: 'mes', texto: 'Un mes' },
-              ]}
-              value={elegido}
-              onChange={(e) => {
-                setPeriodo(e.currentTarget.value as 'inventarios' | 'mes');
-              }}
-            />
-          </div>
-          {elegido === 'mes' && f !== undefined && (
-            <div className="min-w-[11rem]">
-              <Selector
-                etiqueta="El mes"
-                opciones={losUltimosMeses(f.hoy)}
-                value={mes === '' ? f.desde.slice(0, 7) : mes}
-                onChange={(e) => {
-                  setMes(e.currentTarget.value);
+        <div className="flex flex-wrap items-center gap-e2">
+          <Segmentado
+            etiqueta="Periodo"
+            opciones={(['semana', 'mes', 'trimestre', 'inventarios'] as const)
+              .filter((p) => p !== 'inventarios' || (f !== undefined && f.inventarios !== null))
+              .map((p) => ({ valor: p, texto: NOMBRE_DEL_PERIODO[p] }))}
+            valor={elegido}
+            alElegir={(p) => {
+              setPeriodo(p);
+              setDia(null);
+            }}
+          />
+          {conFlechas && (
+            <div className="flex items-center gap-e1">
+              <Boton
+                tono="texto"
+                icono={<IconoFlechaIzquierda size={18} />}
+                aria-label="El periodo anterior"
+                onClick={() => {
+                  mover(-1);
+                }}
+              />
+              <Boton
+                tono="texto"
+                icono={<IconoFlechaDerecha size={18} />}
+                aria-label="El periodo siguiente"
+                disabled={!hayDespues}
+                onClick={() => {
+                  mover(1);
                 }}
               />
             </div>
@@ -154,7 +195,7 @@ function FoodCostReal() {
           <p className="text-secundario text-texto-suave">Calculando…</p>
         ) : f === undefined ? (
           <Aviso tono="mal" titulo="No he podido calcularlo">
-            Elige otro mes, o vuelve a intentarlo.
+            Elige otro periodo, o vuelve a intentarlo.
           </Aviso>
         ) : (
           <>
@@ -259,18 +300,6 @@ function FoodCostReal() {
       </div>
     </Tarjeta>
   );
-}
-
-/** Este mes y los once de antes: «octubre de 2026». */
-function losUltimosMeses(hoy: string): { valor: string; texto: string }[] {
-  const [anio, mes] = hoy.split('-').map(Number) as [number, number];
-  return Array.from({ length: 12 }, (_, i) => {
-    const fecha = new Date(Date.UTC(anio, mes - 1 - i, 15));
-    return {
-      valor: fecha.toISOString().slice(0, 7),
-      texto: fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
-    };
-  });
 }
 
 function diasEnLetra(cuantos: number): string {

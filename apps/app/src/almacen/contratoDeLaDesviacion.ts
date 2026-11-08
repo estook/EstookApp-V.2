@@ -58,7 +58,7 @@ export interface LaDesviacion {
 }
 
 export interface ElFoodCostReal {
-  readonly periodo: 'inventarios' | 'mes';
+  readonly periodo: 'inventarios' | 'semana' | 'mes' | 'trimestre';
   readonly desde: string;
   readonly hasta: string;
   readonly hoy: string;

@@ -3,7 +3,7 @@
 **Fecha:** 8 de noviembre de 2026
 **Estado:** aprobada por Richi el 8-nov con la maqueta; **en tres entregas (P1 a P3)**, y la caja con T7.
 **Sigue:** la [0105](0105-m16a-la-jornada.md) (la jornada), la [0120](0120-estook-tpv-es-de-pro.md) (Estook TPV es
-de Pro), la [0121](0121-la-pausa-del-tpv.md) (la caja de Richi) y la [0103](0103-m10-1-las-respuestas.md) (estrella,
+de Pro), la [0121](0121-la-pausa-del-tpv.md) (la caja de Richi) y la [0103](0103-las-respuestas-de-m10-2.md) (estrella,
 caballo, puzzle y perro, «no te olvides»).
 **Maqueta:** [la pausa del 8-nov](../maquetas/la-pausa-del-8-nov.html), aprobada el 8-nov.
 **Cambia:** el orden (T7 antes que T6 · 3), el Anexo (11.5 y 11.6), el Plan (M16, M20 y M21), el mapa y ESTADO.

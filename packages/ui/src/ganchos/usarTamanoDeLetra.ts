@@ -25,10 +25,11 @@ import { useCallback, useEffect, useState } from 'react';
  * Y por eso tampoco necesita conexion ni permiso: es una preferencia del
  * cristal que se esta mirando.
  */
-export const TAMANOS = ['pequena', 'normal', 'grande'] as const;
+export const TAMANOS = ['auto', 'pequena', 'normal', 'grande'] as const;
 export type TamanoDeLetra = (typeof TAMANOS)[number];
 
 export const COMO_SE_LLAMA: Record<TamanoDeLetra, string> = {
+  auto: 'Automática',
   pequena: 'Pequeña',
   normal: 'Normal',
   grande: 'Grande',
@@ -36,6 +37,8 @@ export const COMO_SE_LLAMA: Record<TamanoDeLetra, string> = {
 
 /** Lo que multiplica cada uno, tal cual B2. Se exporta para poder probarlo. */
 export const CUANTO_MULTIPLICA: Record<TamanoDeLetra, number> = {
+  // La del ordenador: en el teléfono, la de «Pequeña» (base.css).
+  auto: 1,
   pequena: 0.9,
   normal: 1,
   grande: 1.15,
@@ -47,23 +50,28 @@ export function esTamanoDeLetra(valor: unknown): valor is TamanoDeLetra {
   return typeof valor === 'string' && (TAMANOS as readonly string[]).includes(valor);
 }
 
-function leerGuardado(): TamanoDeLetra {
-  if (typeof window === 'undefined') return 'normal';
+/**
+ * La de fábrica, si este aparato no ha elegido ninguna. En Estook es «Automática» desde la
+ * pausa del 8-nov (0142); Estook TPV se queda en «Normal», que es con la que se probó el
+ * servicio en el móvil (R2). Quien ya eligió un tamaño lo conserva.
+ */
+function leerGuardado(deFabrica: TamanoDeLetra): TamanoDeLetra {
+  if (typeof window === 'undefined') return deFabrica;
   try {
     const guardado = window.localStorage.getItem(DONDE_SE_GUARDA);
-    return esTamanoDeLetra(guardado) ? guardado : 'normal';
+    return esTamanoDeLetra(guardado) ? guardado : deFabrica;
   } catch {
     // Navegacion privada, o almacenamiento bloqueado. No es un error: es que hoy
     // no se puede recordar, y la aplicacion sigue funcionando igual.
-    return 'normal';
+    return deFabrica;
   }
 }
 
-export function usarTamanoDeLetra(): {
+export function usarTamanoDeLetra(deFabrica: TamanoDeLetra = 'auto'): {
   readonly tamano: TamanoDeLetra;
   readonly poner: (tamano: TamanoDeLetra) => void;
 } {
-  const [tamano, setTamano] = useState<TamanoDeLetra>(leerGuardado);
+  const [tamano, setTamano] = useState<TamanoDeLetra>(() => leerGuardado(deFabrica));
 
   // El atributo se pone tambien en el primer pintado, para que no se vea la
   // letra normal un instante antes de crecer.

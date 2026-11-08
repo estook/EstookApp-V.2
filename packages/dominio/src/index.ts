@@ -69,6 +69,7 @@ export {
   TRAMOS_QUE_SE_MIRAN,
   DIAS_DEL_TRAMO,
   NOMBRE_DEL_TRAMO,
+  NOMBRE_CORTO_DEL_TRAMO,
   esTramoQueSeMira,
   desdeCuandoMira,
 } from './tiempo.ts';

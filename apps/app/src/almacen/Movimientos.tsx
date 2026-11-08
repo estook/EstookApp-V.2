@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
+  NOMBRE_CORTO_DEL_TRAMO,
   NOMBRE_DEL_TRAMO,
   TRAMOS_QUE_SE_MIRAN,
   desdeCuandoMira,
@@ -15,7 +16,7 @@ import {
   EstadoVacio,
   Etiqueta,
   NadaConEso,
-  Selector,
+  Segmentado,
   Tarjeta,
   clases,
 } from '@estook/ui';
@@ -198,25 +199,24 @@ export function Movimientos({
             }}
           />
         </div>
-        <div className="min-w-[12rem]">
+        <div className="max-w-full">
           {/*
             ── Y el tramo, que es lo que acota de verdad ────────────────────
             Un libro crece todos los días y no para. Antes esto decía «se enseñan
             los cien últimos» y el buscador filtraba **esas cien**, así que buscar
             algo de hace tres meses contestaba «nada con eso». Ahora se elige
             hasta dónde se mira, se busca en todo ese tramo y «Ver más» trae lo
-            siguiente sin volver a empezar.
+            siguiente sin volver a empezar. Desde la pausa del 8-nov (0142), en botones y con la
+            semana, que pidió Richi: el mes llega tarde para corregir nada.
           */}
-          <Selector
+          <Segmentado
             etiqueta="Hasta dónde miro"
             opciones={TRAMOS_QUE_SE_MIRAN.map((t) => ({
               valor: t,
-              texto: NOMBRE_DEL_TRAMO[t],
+              texto: NOMBRE_CORTO_DEL_TRAMO[t],
             }))}
-            value={tramo}
-            onChange={(e) => {
-              setTramo(e.currentTarget.value as TramoQueSeMira);
-            }}
+            valor={tramo}
+            alElegir={setTramo}
           />
         </div>
       </div>

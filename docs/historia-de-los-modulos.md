@@ -3434,6 +3434,22 @@ producto** para agotarlo o pedirlo con una nota.
 Las pruebas: `la-entrada-del-tpv.spec.ts`, `la-puerta.spec.ts`, `la-puerta.prueba.ts` y
 `comanda.prueba.ts`.
 
+### La pausa del 8-nov, entre T6 y T7
+
+_8 y 9 de noviembre de 2026._ Decisión [0142](decisiones/0142-la-pausa-del-8-nov.md), con
+[su maqueta](maquetas/la-pausa-del-8-nov.html). Los nueve puntos de Richi, en tres entregas:
+
+- **P1 · Lo del alta y Ajustes** (sin migración): la semana en el almacén, la letra automática, los datos del
+  local editables y buscados en Google, la hora de corte sin preguntar, los locales al pagar, Pro sin «¿cómo
+  entran tus ventas?», Google en Estook TPV y el código para vincular sacado desde Estook.
+- **P2 · Información e Informes** (migración 0112): Servicio › Jornadas › Información, que sustituye a «En
+  marcha», con tu carta en cuatro; Negocio › Informes con cuándo se vende, la cocina, lo que se tuerce y las
+  semanas; y los motivos de anular de un toque.
+- **P3 · Empleados** (migración 0113): lo que vende cada uno y por hora fichada, con sus objetivos.
+
+**La caja y sus cierres van con T7**, que pasa por delante de T6 · 3. Las pruebas: `la-pausa-del-8-nov.prueba.ts`,
+`lo-que-se-vende.prueba.ts`, `los-empleados.prueba.ts`, `informacion-e-informes.spec.ts` y `empleados.spec.ts`.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

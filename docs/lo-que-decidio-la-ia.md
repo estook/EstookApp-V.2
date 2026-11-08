@@ -8,6 +8,7 @@
 >
 > **Al cerrar una entrega**, lo suyo se añade **arriba del todo**, con el mismo formato.
 
+- De la [0142](decisiones/0142-la-pausa-del-8-nov.md), la pausa del 8-nov, en sus secciones 5 a 7: Google en la caja para Windows con el código sacado en Estook (no un QR); «Solo tengo estos» descuenta en la siguiente cuota; la hora de corte de fábrica a las cinco; lo vendido es lo pedido hasta T7; «tarde» son 20 minutos fijos; el objetivo de cada uno sale de sus horas fichadas; y solo se pone objetivo a gente del local.
 - De la [0139](decisiones/0139-sin-lista-de-clientes.md): que al escribir un número ya facturado se rellene desde su última factura (Richi lo aceptó); y que eso no salga nunca de una factura rechazada, ni de otro entorno.
 - De la [0138](decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md), todo por la auditoría que pidió Richi: un reloj y una cola aparte para los documentos; lo rechazado por Hacienda no se reimprime ni se manda, pero se descarga; lo que lleva más de un día sin contestar sale arriba de la lista; lo que no llega a Verifacti se reintenta cada vez menos; y el total de la lista cuenta una vez un ticket y su factura si salen los dos.
 - Los cuatro de «Lo que propuso la IA» de la [0137](decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md), T6 · 2 · 2 · 1: la factura a mano no es de los camareros de fábrica, el camarero ve hoy y ayer y lo demás por número, el jefe de sala como el gerente en facturas, y la factura también en el papel de ticket.

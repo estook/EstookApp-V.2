@@ -96,3 +96,17 @@ vea, que Pro no pregunte lo que no tiene sentido, y cinco fallos del alta y de A
 7. **De «En marcha» se queda lo que no estaba en el Panel**, en una línea arriba de Información cuando se mira hoy: si el día está abierto o cerrado, cuánto queda, el día de antes sin cerrar y «Cerrar el día».
 8. **En Informes, las tres frases solo van en el correo de los lunes**, y sin mesas de Estook TPV, una sola tarjeta lo dice y quedan las semanas, que salen de los cierres.
 9. **«Los que más tardan»**, solo con platos que han salido al menos tres veces: con uno solo, una noche mala no es un plato lento.
+
+## 7 · P3 · Empleados, construido (rama `la-pausa-del-8-nov-p3`, migración 0113)
+
+**Servicio › Empleados**, entre Jornadas y Ventas: el equipo de mayor a menor **por ventas o por € la hora**, con horas fichadas, lo vendido y su objetivo en una barra; al tocar a alguien, su ficha con lo que más vende. **Los objetivos, en su botón**, con **General** (los € por hora de la sala) y **Por empleado** (uno distinto para quien haga falta), y **«Que cada uno vea el suyo»**. La lista solo la ve quien ve las ventas; **cada camarero, solo lo suyo**, y nada si el gerente lo apaga.
+
+**Por dentro**: la tabla `objetivo_de_venta` y la función `lo_que_he_vendido` (0113); la consulta `la_venta_de_cada_uno` y el comando `guardar_los_objetivos_de_venta`. API 128/358.
+
+### Lo que decidió la IA al construirlo
+
+1. **El objetivo de cada uno sale de sus horas fichadas**, no de las del horario como decía la maqueta: así una baja o un cambio de turno no le cuentan en contra, y la barra avanza con lo que de verdad ha trabajado.
+2. **Las ventas de cada uno son las de las mesas que lleva** (de quien la lleva al final; si se la pasan, del nuevo), sin IVA. Con el cobro (T7), lo que cobra.
+3. **El general, 45 €/h al abrirlo la primera vez**, el de la maqueta: es solo lo que sale escrito hasta que se guarda.
+4. **Solo se pone objetivo a gente de ese local**: lo cazó la prueba que ataca la API desde otro negocio, que podía poner uno, en su local, a nombre de alguien de Bar Centro. Lo cierran el comando y la base.
+5. **Sin Estook TPV, Empleados dice que es de Pro** en vez de enseñar una lista vacía.

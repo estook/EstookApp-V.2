@@ -2,8 +2,7 @@ import { useState } from 'react';
 import {
   CUADRANTES,
   QUE_ES_CADA_CUADRANTE,
-  centimos,
-  conSimbolo,
+  enDinero,
   laCartaEnCuatro,
   type Cuadrante,
 } from '@estook/dominio';
@@ -90,7 +89,7 @@ export function TuCartaEnCuatro({ platos }: { readonly platos: readonly PlatoVen
                   fontSize="11"
                   fill="var(--color-texto-suave)"
                 >
-                  {conSimbolo(centimos(Math.round(valor)))}
+                  {enDinero(valor)}
                 </text>
               </g>
             );
@@ -140,14 +139,14 @@ export function TuCartaEnCuatro({ platos }: { readonly platos: readonly PlatoVen
                 setEncima(p.id);
               }}
             >
-              <title>{`${p.nombre}: ${String(p.uds)} vendidos, deja ${conSimbolo(centimos(p.margenPorUnidad))} cada uno`}</title>
+              <title>{`${p.nombre}: ${String(p.uds)} vendidos, deja ${enDinero(p.margenPorUnidad)} cada uno`}</title>
             </circle>
           ))}
         </svg>
         <p className="min-h-[1.5rem] text-secundario text-texto-suave" aria-live="polite">
           {elDeEncima === undefined
             ? 'Toca un punto para ver el plato.'
-            : `${elDeEncima.nombre}: ${String(elDeEncima.uds)} vendidos, deja ${conSimbolo(centimos(elDeEncima.margenPorUnidad))} cada uno · ${QUE_ES_CADA_CUADRANTE[elDeEncima.cuadrante].nombre.toLowerCase()}`}
+            : `${elDeEncima.nombre}: ${String(elDeEncima.uds)} vendidos, deja ${enDinero(elDeEncima.margenPorUnidad)} cada uno · ${QUE_ES_CADA_CUADRANTE[elDeEncima.cuadrante].nombre.toLowerCase()}`}
         </p>
       </div>
       <ul className="flex flex-col gap-e3">

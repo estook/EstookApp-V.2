@@ -1,4 +1,4 @@
-import { aCentimos, costeDeLaReceta, porRacion } from '@estook/dominio';
+import { aCentimos, costeDeLaReceta, porRacion, sinElIva } from '@estook/dominio';
 import { FalloDeAplicacion, type Contexto } from './contrato.ts';
 import { elLibroDelLocal } from './escandallos.ts';
 
@@ -99,8 +99,8 @@ export async function lasLineasVendidas(
       nombre: f.nombre,
       seccion: f.seccion,
       destino: f.destino,
-      cantidad: Number(f.cantidad),
-      precioCentimos: Number(f.precio_centimos),
+      cantidad: f.cantidad,
+      precioCentimos: f.precio_centimos,
       pedidaEn: enTexto(f.pedida_en) ?? '',
       mandadaEn: enTexto(f.mandada_en),
       marchadoEn: enTexto(f.marchado_en),
@@ -113,8 +113,8 @@ export async function lasLineasVendidas(
       motivoDeVuelve: f.motivo_de_vuelve,
       camareroId: f.camarero_id,
       jornada: (enTexto(f.jornada) ?? '').slice(0, 10),
-      hora: Number(f.hora),
-      diaDeSemana: Number(f.dia_de_semana),
+      hora: f.hora,
+      diaDeSemana: f.dia_de_semana,
     }));
   } catch (fallo) {
     throw sinPermisoSiLoEs(fallo);
@@ -146,7 +146,7 @@ export async function lasMesasDelServicio(
     return filas.map((f) => ({
       cuentaId: f.cuenta_id,
       tipo: f.tipo,
-      personas: f.personas === null ? null : Number(f.personas),
+      personas: f.personas === null ? null : f.personas,
       camareroId: f.camarero_id,
       liberadaEn: enTexto(f.liberada_en),
       anuladaEn: enTexto(f.anulada_en),
@@ -176,7 +176,7 @@ export function importeDe(l: LineaVendida): number {
 
 /** Sin IVA, con el tipo del local (el de restauración, 0,10 de fábrica si no se sabe). */
 export function sinIva(conIva: number, tipo: number | null): number {
-  return Math.round(conIva / (1 + (tipo ?? 0.1)));
+  return sinElIva(conIva, tipo);
 }
 
 /**

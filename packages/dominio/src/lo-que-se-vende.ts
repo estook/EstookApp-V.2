@@ -210,3 +210,39 @@ export function elPeriodoDelServicio(
     siguienteDel: siguiente > hoy ? null : siguiente,
   };
 }
+
+// ── Cómo se dicen las cifras ─────────────────────────────────────────────────
+
+/**
+ * Un importe que puede llegar con decimales (una media, un eje de gráfica) dicho en euros: aquí se
+ * redondea al céntimo, y solo aquí (regla 9).
+ */
+export function enDinero(centimosConDecimales: number): string {
+  return `${(Math.round(centimosConDecimales) / 100).toLocaleString('es-ES', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: 'always',
+  })} €`;
+}
+
+/** Cuánto cambia algo frente a antes, en %, con un decimal. Nulo sin nada con qué comparar. */
+export function cuantoCambia(ahora: number | null, antes: number | null): number | null {
+  if (ahora === null || antes === null || antes === 0) return null;
+  return Math.round(((ahora - antes) / antes) * 1000) / 10;
+}
+
+/** Lo vendido sin IVA, con el tipo del local (el de restauración, 0,10 si no se sabe), al céntimo. */
+export function sinElIva(conIva: number, tipo: number | null): number {
+  return Math.round(conIva / (1 + (tipo ?? 0.1)));
+}
+
+/** Un importe partido (un ticket medio, lo que deja una ración), al céntimo. */
+export function alCentimo(centimosConDecimales: number): number {
+  return Math.round(centimosConDecimales);
+}
+
+/** La media de unos minutos, con un decimal. Nula sin ninguno. */
+export function mediaConUnDecimal(valores: readonly number[]): number | null {
+  if (valores.length === 0) return null;
+  return Math.round((valores.reduce((s, v) => s + v, 0) / valores.length) * 10) / 10;
+}

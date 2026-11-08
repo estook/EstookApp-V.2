@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import {
   MINUTOS_PARA_IR_TARDE,
+  alCentimo,
+  mediaConUnDecimal,
   PERIODOS_DEL_SERVICIO,
   elPeriodoDelServicio,
   jornadaDe,
@@ -151,7 +153,7 @@ async function lasCifras(
       ventas: sinIva(conIva, iva),
       platos,
       // Con IVA, como lo paga el cliente: «la mesa sale a 27 €».
-      ticketMedio: servidas.length === 0 ? null : Math.round(conIva / servidas.length),
+      ticketMedio: servidas.length === 0 ? null : alCentimo(conIva / servidas.length),
       personas: personas === 0 ? null : personas,
     };
   }
@@ -192,8 +194,8 @@ async function lasCifras(
     lineas,
     mesas,
     ventas: sinIva(total, iva),
-    platos: fila.platos === null ? null : Math.round(Number(fila.platos)),
-    ticketMedio: tickets === null || tickets === 0 ? null : Math.round(total / tickets),
+    platos: fila.platos === null ? null : alCentimo(Number(fila.platos)),
+    ticketMedio: tickets === null || tickets === 0 ? null : alCentimo(total / tickets),
     personas: fila.comensales === null ? null : Number(fila.comensales),
   };
 }
@@ -265,7 +267,7 @@ function losPlatosVendidos(
       uds: p.uds,
       ventas,
       margen,
-      margenPorUnidad: margen === null || p.uds === 0 ? null : Math.round(margen / p.uds),
+      margenPorUnidad: margen === null || p.uds === 0 ? null : alCentimo(margen / p.uds),
     };
   });
 }
@@ -313,7 +315,7 @@ export const loQueSeVende = consulta<Entrada, LoQueSeVende>({
         nombre: f.concepto,
         seccion: null,
         bebida: false,
-        uds: Math.round(Number(f.uds)),
+        uds: alCentimo(Number(f.uds)),
         ventas: f.importe === null ? 0 : sinIva(Number(f.importe), iva),
         margen: null,
         margenPorUnidad: null,
@@ -345,7 +347,7 @@ export const loQueSeVende = consulta<Entrada, LoQueSeVende>({
         minutosDeCocina:
           tiempos.length === 0
             ? null
-            : Math.round(tiempos.reduce((s, m) => s + m, 0) / tiempos.length),
+            : alCentimo(tiempos.reduce((s, m) => s + m, 0) / tiempos.length),
       };
     }
 
@@ -465,10 +467,7 @@ function lasCuentasDeLaCocina(lineas: readonly LineaVendida[]) {
   return tiempos;
 }
 
-const media = (valores: readonly number[]): number | null =>
-  valores.length === 0
-    ? null
-    : Math.round((valores.reduce((s, v) => s + v, 0) / valores.length) * 10) / 10;
+const media = mediaConUnDecimal;
 
 export const elServicioPorDentro = consulta<Entrada, ElServicioPorDentro>({
   nombre: 'el_servicio_por_dentro',

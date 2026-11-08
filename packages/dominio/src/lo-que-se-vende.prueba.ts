@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  cuantoCambia,
   elPeriodoDelServicio,
+  enDinero,
   laCartaEnCuatro,
   loQueDeberiaVender,
   minutosDeCocina,
@@ -99,5 +101,16 @@ describe('los periodos de Información e Informes', () => {
       antesDesde: '2026-10-01',
       antesHasta: '2026-10-08',
     });
+  });
+});
+
+describe('cómo se dicen las cifras', () => {
+  it('el dinero, redondeado al céntimo y con su punto de miles', () => {
+    expect(enDinero(123456.6)).toBe('1.234,57 €');
+  });
+  it('el cambio, con un decimal, y nada sin con qué comparar', () => {
+    expect(cuantoCambia(4800, 4580)).toBe(4.8);
+    expect(cuantoCambia(10, 0)).toBeNull();
+    expect(cuantoCambia(null, 10)).toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { centimos, conSimbolo } from '@estook/dominio';
+import { comoPorcentaje, enDinero } from '@estook/dominio';
 import { puedeVer } from '@estook/permisos';
 import {
   Aviso,
@@ -15,13 +15,8 @@ import {
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import type { LoQueSeVende, PlatoVendido } from './contratoDeLoQueSeVende.ts';
-import {
-  ElCambio,
-  ElegirElPeriodo,
-  comoSeLlamaElPeriodo,
-  frenteA,
-  usarElPeriodo,
-} from './elPeriodo.tsx';
+import { usarElPeriodo } from '../ganchos/usarElPeriodo.ts';
+import { ElCambio, ElegirElPeriodo, comoSeLlamaElPeriodo, frenteA } from './elPeriodo.tsx';
 import { CuantosDeCadaUno, TuCartaEnCuatro } from './TuCartaEnCuatro.tsx';
 
 /**
@@ -37,7 +32,7 @@ import { CuantosDeCadaUno, TuCartaEnCuatro } from './TuCartaEnCuatro.tsx';
  */
 const ACENTO = 'var(--color-app-servicio)';
 
-const dinero = (c: number) => conSimbolo(centimos(c));
+const dinero = enDinero;
 const entero = (n: number) => n.toLocaleString('es-ES');
 
 type Que = 'uds' | 'ventas' | 'margen';
@@ -89,8 +84,9 @@ export function Informacion() {
         <div className="flex flex-wrap items-center gap-x-e4 gap-y-e1 rounded-mayor border border-borde bg-superficie px-e4 py-e3 text-cuerpo [box-shadow:var(--sombra-tarjeta)]">
           <Etiqueta tono="bien">Ahora</Etiqueta>
           <span>
-            <b>{d.ahoraMismo.mesas}</b> {d.ahoraMismo.mesas === 1 ? 'mesa abierta' : 'mesas abiertas'}{' '}
-            · <b>{d.ahoraMismo.personas}</b> personas
+            <b>{d.ahoraMismo.mesas}</b>{' '}
+            {d.ahoraMismo.mesas === 1 ? 'mesa abierta' : 'mesas abiertas'} ·{' '}
+            <b>{d.ahoraMismo.personas}</b> personas
           </span>
           <span>
             <b>{d.ahoraMismo.enCocina}</b> en cocina
@@ -119,12 +115,7 @@ export function Informacion() {
           <div className="grid grid-cols-2 gap-e3 md:grid-cols-4">
             <Cifra que="Ventas sin IVA" cifra={d.cifras.ventas} como={dinero} frente={frente} />
             <Cifra que="Platos de comida" cifra={d.cifras.platos} como={entero} frente={frente} />
-            <Cifra
-              que="Ticket medio"
-              cifra={d.cifras.ticketMedio}
-              como={dinero}
-              frente={frente}
-            />
+            <Cifra que="Ticket medio" cifra={d.cifras.ticketMedio} como={dinero} frente={frente} />
             <Cifra que="Personas" cifra={d.cifras.personas} como={entero} frente={frente} />
           </div>
 
@@ -355,7 +346,10 @@ function PorSeccion({
   const grandes = secciones.slice(0, 4);
   const resto = secciones.slice(4).reduce((s, x) => s + x.ventas, 0);
   const todas = resto > 0 ? [...grandes, { nombre: 'Lo demás', ventas: resto }] : grandes;
-  const total = Math.max(1, todas.reduce((s, x) => s + x.ventas, 0));
+  const total = Math.max(
+    1,
+    todas.reduce((s, x) => s + x.ventas, 0),
+  );
   return (
     <Tarjeta titulo="Por sección" origen="De lo vendido, sin IVA">
       <div className="flex flex-col gap-e3">
@@ -379,7 +373,7 @@ function PorSeccion({
                 />
                 <span className="truncate">{s.nombre}</span>
               </span>
-              <b className="tabular-nums">{Math.round((s.ventas / total) * 100)} %</b>
+              <b className="tabular-nums">{comoPorcentaje(s.ventas / total)}</b>
             </li>
           ))}
         </ul>

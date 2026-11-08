@@ -53,8 +53,16 @@ export interface LoQueSeVende extends ElPeriodoQueSeMira {
 
 export interface ElServicioPorDentro extends ElPeriodoQueSeMira {
   readonly conTpv: boolean;
-  readonly porHora: readonly { readonly hora: number; readonly ahora: number; readonly antes: number }[];
-  readonly porDiaYHora: readonly { readonly dia: number; readonly hora: number; readonly ventas: number }[];
+  readonly porHora: readonly {
+    readonly hora: number;
+    readonly ahora: number;
+    readonly antes: number;
+  }[];
+  readonly porDiaYHora: readonly {
+    readonly dia: number;
+    readonly hora: number;
+    readonly ventas: number;
+  }[];
   readonly cocina: {
     readonly conTiempo: number;
     readonly media: number | null;

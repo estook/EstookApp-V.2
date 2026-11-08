@@ -1443,6 +1443,11 @@ export {
   PERIODOS_DEL_SERVICIO,
   esPeriodoDelServicio,
   elPeriodoDelServicio,
+  enDinero,
+  cuantoCambia,
+  sinElIva,
+  alCentimo,
+  mediaConUnDecimal,
 } from './lo-que-se-vende.ts';
 export type {
   Cuadrante,

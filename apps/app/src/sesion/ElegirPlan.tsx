@@ -198,7 +198,7 @@ export function ElegirPlan() {
         </div>
         {locales >= MAS_DE_ESTOS_SE_HABLA && (
           <p className="w-full text-secundario text-texto-suave">
-            ¿Más de {MAS_DE_ESTOS_SE_HABLA}? Escríbenos a hola@estook.com y lo preparamos contigo.
+            Al empezar, hasta {MAS_DE_ESTOS_SE_HABLA} locales.
           </p>
         )}
       </div>

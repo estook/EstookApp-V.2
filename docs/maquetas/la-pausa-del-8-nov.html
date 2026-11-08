@@ -698,7 +698,7 @@
       <h2>Servicio › Empleados: quién vende y cuánto, por hora</h2>
       <p class="propongo">
         El equipo de mayor a menor, por <b>ventas</b> o por <b>€ por hora</b> (lo justo: no es lo mismo 500 € en 20 h que en 40).
-        El objetivo se pone <b>una vez, en € por hora</b>, y Estook lo convierte en el de la semana de cada uno con sus horas.
+        Los <b>objetivos</b>, aparte, en su botón: uno general en € por hora, que Estook convierte en el de la semana de cada uno con sus horas, y otro distinto para quien quieras.
       </p>
     </header>
     <div class="lienzo">
@@ -715,32 +715,49 @@
             </div>
             <div class="vistas" id="orden-equipo"><button data-o="ventas" class="si">Por ventas</button><button data-o="hora">Por € la hora</button></div>
           </div>
-          <div class="mosaico" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); grid-template-columns: minmax(0, 2.4fr) minmax(240px, 1fr)">
-            <div class="tarjeta" style="overflow-x: auto">
-              <table class="tabla-equipo">
-                <thead><tr><th>Quién</th><th class="der ocultar">Horas</th><th class="der">Ventas</th><th class="der">€ / hora</th><th>Su objetivo</th></tr></thead>
-                <tbody id="filas-equipo"></tbody>
-              </table>
-              <p class="mini suave" style="margin-top: 10px" id="frase-equipo"></p>
+          <div class="tarjeta" style="overflow-x: auto">
+            <table class="tabla-equipo">
+              <thead><tr><th>Quién</th><th class="der ocultar">Horas</th><th class="der">Ventas</th><th class="der">€ / hora</th><th>Su objetivo</th></tr></thead>
+              <tbody id="filas-equipo"></tbody>
+            </table>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap">
+              <p class="mini suave" id="frase-equipo"></p>
+              <button class="boton secundario">◎ Objetivos</button>
             </div>
-            <div class="tarjeta">
-              <div class="cab"><h3>El objetivo</h3></div>
-              <p class="peq suave">Lo que debería traer cada hora de sala. Lo de cada uno sale solo de sus horas del horario.</p>
-              <div style="display: flex; align-items: center; gap: 12px; margin: 14px 0">
+          </div>
+        </div>
+      </div>
+
+      <div class="movil">
+        <div class="reloj"><span>10:12</span><span>●●● 5G</span></div>
+        <div class="titulo-movil"><span class="suave">✕</span><h3>Objetivos</h3></div>
+        <div class="dentro">
+          <div class="vistas" id="pestanas-objetivo" style="display: grid; grid-template-columns: 1fr 1fr"><button data-g="general" class="si">General</button><button data-g="persona">Por empleado</button></div>
+          <div id="objetivo-general" style="display: grid; gap: 12px">
+            <div class="tarjeta" style="display: grid; gap: 10px">
+              <span class="negrita">¿Cuánto debería vender cada hora de sala?</span>
+              <div style="display: flex; align-items: center; gap: 12px">
                 <div class="stepper"><button id="obj-menos">−</button><output id="obj-valor">45</output><button id="obj-mas">+</button></div>
                 <span class="negrita">€ por hora</span>
               </div>
-              <div class="c-gris" style="font-size: 12px; padding: 10px 12px; border-radius: 12px">Con 45 €/h: Sara, 38 h → <b>&nbsp;1.710 €</b>; Ana, 20 h → <b>&nbsp;900 €</b> esta semana.</div>
-              <details class="desplegable">
-                <summary>Uno distinto para alguien</summary>
-                <p class="peq suave" style="margin-top: 8px">Iker está en barra: ponle 35 €/h. Toca su fila › «Su objetivo».</p>
-              </details>
-              <details class="desplegable">
-                <summary>Quién ve esto</summary>
-                <p class="peq suave" style="margin-top: 8px">La lista entera, quien lleva el local. Cada camarero, solo lo suyo y su objetivo, en Estook › Mi día: nunca la lista de los demás.</p>
-              </details>
+              <p class="peq suave" id="obj-ejemplo"></p>
+            </div>
+            <div class="tarjeta" style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+              <div><span class="negrita">Que cada uno vea el suyo</span><p class="mini suave">En Estook › Mi día. Solo el suyo, nunca el de los demás.</p></div>
+              <span style="width: 46px; height: 28px; border-radius: 999px; background: var(--naranja); position: relative; flex: 0 0 auto"><i style="position: absolute; right: 3px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff"></i></span>
             </div>
           </div>
+          <div id="objetivo-persona" class="tarjeta" style="display: none">
+            <p class="mini suave" style="margin-bottom: 6px">Toca a alguien para ponerle uno distinto.</p>
+            <div class="lista">
+              <div class="fila" style="grid-template-columns: 34px 1fr auto"><span class="avatar">SA</span><span class="nombre">Sara<small>El general</small></span><span class="valor num">45 €/h</span></div>
+              <div class="fila" style="grid-template-columns: 34px 1fr auto"><span class="avatar">MA</span><span class="nombre">Marcos<small>El general</small></span><span class="valor num">45 €/h</span></div>
+              <div class="fila" style="grid-template-columns: 34px 1fr auto"><span class="avatar">IK</span><span class="nombre">Iker<small>Suyo · está en barra</small></span><span class="valor num" style="color: var(--naranja-fuerte)">35 €/h</span></div>
+              <div class="fila" style="grid-template-columns: 34px 1fr auto"><span class="avatar">AN</span><span class="nombre">Ana<small>El general</small></span><span class="valor num">45 €/h</span></div>
+              <div class="fila" style="grid-template-columns: 34px 1fr auto"><span class="avatar">LU</span><span class="nombre">Lucía<small>El general</small></span><span class="valor num">45 €/h</span></div>
+            </div>
+          </div>
+          <button class="boton primario ancho">Guardar</button>
         </div>
       </div>
 
@@ -771,7 +788,7 @@
             <p class="mini suave" style="margin-top: 8px">«Lo que empuja»: los puzzles de tu carta que ha vendido (los que dejan mucho y salen poco).</p>
           </div>
           <div class="tarjeta" style="padding: 12px 14px; display: flex; justify-content: space-between; align-items: center">
-            <span class="negrita">Su objetivo · 45 €/h, el de todos</span><span class="enlace">Cambiar</span>
+            <span class="negrita">Su objetivo · 45 €/h, el general</span><span class="enlace">Cambiar</span>
           </div>
         </div>
       </div>
@@ -782,7 +799,8 @@
         <li><b>Las ventas de cada uno</b> son las de sus mesas (de quien la lleva al final, como manda el Anexo 3.4: si se la pasan, lo que se venda después es del nuevo). Con el cobro (T7), de lo que cobró.</li>
         <li><b>Las horas son las fichadas</b> en el periodo; el objetivo de la semana usa las del horario publicado, para que se sepa el lunes y no cambie con un fichaje olvidado.</li>
         <li><b>Un objetivo en € por hora</b> en vez de uno en euros por persona: es lo que pediste con «hacer una proporción», y así nadie tiene que recalcular nada cuando alguien hace más o menos horas.</li>
-        <li><b>«Un compañero, no un policía»</b>: el ranking solo lo ve quien lleva el local. Cada camarero ve lo suyo, en verde cuando va bien, y nunca su puesto frente a los demás.</li>
+        <li><b>«Un compañero, no un policía»</b>: la lista solo la ve quien lleva el local. Cada camarero ve su objetivo y nada más, en verde cuando va bien; y el gerente puede apagarlo para que no lo vea nadie (Richi, 8-nov).</li>
+        <li><b>Los objetivos, por partes</b> (Richi, 8-nov): no en la misma página, sino en su botón, con dos pestañas, General y Por empleado.</li>
         <li><b>Solo con Pro</b>: sin Estook TPV no hay camarero en cada venta. Con Esencial la pestaña no sale.</li>
       </ul>
     </details>
@@ -1282,12 +1300,12 @@
 
   <!-- ═══ Lo que te pregunto ═══════════════════════════════════════════ -->
   <section class="preguntas">
-    <span class="rotulo" style="color: var(--naranja)">Lo que decides tú (las mismas preguntas van en el chat)</span>
+    <span class="rotulo" style="color: var(--naranja)">Lo que contestó Richi el 8-nov · aprobada</span>
     <ol>
-      <li>La caja y los cierres (punto 4): ¿la dejamos aprobada aquí y la construimos como lo primero de T7, con el cobro?</li>
-      <li>El orden después de esta pausa: ¿T7 antes que T6 · 3?</li>
-      <li>Empleados: ¿el objetivo en € por hora, igual para todos y cambiable a alguien?</li>
-      <li>Empleados: ¿el ranking solo para quien lleva el local, y cada camarero solo lo suyo?</li>
+      <li><b>La caja y los cierres</b> quedan aprobados y se construyen con el cobro, como lo primero de T7.</li>
+      <li><b>T7 va antes que T6 · 3</b>, bien apuntado para no dejarse nada.</li>
+      <li><b>Los objetivos, por partes</b>: un botón «Objetivos» con «General» y «Por empleado», no todo en la misma página.</li>
+      <li><b>La lista, solo para quien lleva el local</b>; cada camarero ve solo su objetivo, y el gerente puede ocultárselo.</li>
     </ol>
   </section>
 </main>
@@ -1558,6 +1576,7 @@
         <td><div style="display:flex;gap:8px;align-items:center"><div class="progreso" style="flex:1"><i style="width:${Math.min(pct, 1) * 100}%;background:${color}"></i></div><span class="chip ${chip} num">${Math.round(pct * 100)} %</span></div><div class="mini suave num">de ${euros(e.meta)}</div></td></tr>`;
     }).join('');
     document.getElementById('obj-valor').textContent = objetivo;
+    document.getElementById('obj-ejemplo').innerHTML = 'Con ' + objetivo + ' €/h, Sara (38 h) tiene <b>' + euros(objetivo * 38) + '</b> esta semana y Ana (20 h), <b>' + euros(objetivo * 20) + '</b>. Sale solo de sus horas del horario.';
     document.getElementById('frase-equipo').innerHTML = orden === 'hora'
       ? '<b>Ana</b> vende menos en total, pero trabaja 20 h: por hora es la que más trae.'
       : 'Toca a alguien para ver lo que más vende y cambiar su objetivo.';
@@ -1566,6 +1585,10 @@
   document.getElementById('obj-menos').onclick = () => { objetivo = Math.max(10, objetivo - 1); pintarEquipo(); };
   document.getElementById('obj-mas').onclick = () => { objetivo = Math.min(60, objetivo + 1); pintarEquipo(); };
   pintarEquipo();
+  conectarVistas('pestanas-objetivo', 'g', (v) => {
+    document.getElementById('objetivo-general').style.display = v === 'general' ? 'grid' : 'none';
+    document.getElementById('objetivo-persona').style.display = v === 'persona' ? 'block' : 'none';
+  });
 
   // ── Contar el cajón ──────────────────────────────────────────────────────
   const DINERO = [[50, 14], [20, 22], [10, 18], [5, 5], [2, 4], [1, 2], [0.5, 2], [0.2, 1], [0.1, 1]];

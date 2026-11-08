@@ -59,11 +59,8 @@ test('Negocio → Informes: Tu día frente al mismo día de la semana anterior, 
 
   await expect(page.getByRole('heading', { level: 2, name: 'Tu día' })).toBeVisible();
   await expect(page.getByText(`El lunes ${enLetra}`, { exact: true })).toBeVisible();
-  const frases = page.getByRole('list', { name: 'Lo mejor, lo peor y lo que mirar' });
-  await expect(frases).toContainText(
-    'Lo mejor: las ventas, 1.234,00 €, un 23,4 % más que el lunes anterior.',
-  );
-  // La tarjeta de las ventas, con su flecha: la misma cifra que la frase.
+  // Desde la pausa del 8-nov (0142) las tres frases solo van en el correo de los lunes: en la
+  // pantalla, la cifra de las ventas con su flecha, frente al lunes anterior.
   await expect(page.getByText('1.234,00 €', { exact: true })).toBeVisible();
 
   // Hacia atrás, **un día**: el domingo de antes, no el lunes con el que se compara

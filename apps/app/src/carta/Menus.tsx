@@ -165,8 +165,12 @@ function SirvesMenus({ datos }: { readonly datos: MisMenus }) {
       <EstadoVacio
         dibujo="platos"
         acento="var(--color-app-carta)"
-        titulo={noLosSirve ? 'Tu local no sirve menús' : '¿Tu local sirve menús?'}
-        frase="El menú del día con su precio, sus platos de cada día y lo que te deja. Para imprimirlo o mandarlo en un toque."
+        titulo={noLosSirve ? 'No sirves menús' : '¿Sirves menú del día?'}
+        frase={
+          noLosSirve
+            ? 'Si empiezas a servirlo, enciéndelo aquí o en Ajustes › Tu local.'
+            : 'Lo montas una vez y lo cambias cada día en un minuto.'
+        }
         {...(datos.puedeEditar
           ? {
               accion: (
@@ -178,7 +182,7 @@ function SirvesMenus({ datos }: { readonly datos: MisMenus }) {
                       void contestar(true);
                     }}
                   >
-                    {noLosSirve ? 'Encender los menús' : 'Sí, sirvo menús'}
+                    {noLosSirve ? 'Encender los menús' : 'Sí, crear el menú'}
                   </Boton>
                   {!noLosSirve && (
                     <Boton
@@ -188,7 +192,7 @@ function SirvesMenus({ datos }: { readonly datos: MisMenus }) {
                         void contestar(false);
                       }}
                     >
-                      No
+                      No sirvo menús
                     </Boton>
                   )}
                 </div>
@@ -196,11 +200,6 @@ function SirvesMenus({ datos }: { readonly datos: MisMenus }) {
             }
           : { sinAccionPorque: 'Lo dice quien lleva el local.' })}
       />
-      {!noLosSirve && datos.puedeEditar && (
-        <p className="px-e4 pb-e4 text-center text-secundario text-texto-suave">
-          Con «No», esta pestaña se esconde. Se vuelve a encender en Ajustes › Tu local.
-        </p>
-      )}
     </Tarjeta>
   );
 }

@@ -10,8 +10,11 @@ import {
   IconoFogon,
   IconoImprimir,
   IconoMovil,
+  IconoPersona,
   IconoRejilla,
   IconoReloj,
+  IconoSalir,
+  IconoSol,
   IconoTableta,
   type Icono as IconoDeLucide,
 } from '@estook/iconos';
@@ -39,7 +42,10 @@ export type Dibujo =
   | 'reloj'
   | 'impresora'
   | 'documento'
-  | 'declaracion';
+  | 'declaracion'
+  | 'persona'
+  | 'tema'
+  | 'salir';
 
 const DE_LUCIDE: Readonly<Record<Dibujo, IconoDeLucide>> = {
   ajustes: IconoAjustes,
@@ -56,6 +62,9 @@ const DE_LUCIDE: Readonly<Record<Dibujo, IconoDeLucide>> = {
   impresora: IconoImprimir,
   documento: IconoDocumento,
   declaracion: IconoDeclaracion,
+  persona: IconoPersona,
+  tema: IconoSol,
+  salir: IconoSalir,
 };
 
 export function Icono({ dibujo, lado = 24 }: { readonly dibujo: Dibujo; readonly lado?: number }) {

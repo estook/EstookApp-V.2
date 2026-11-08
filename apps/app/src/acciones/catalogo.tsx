@@ -254,7 +254,7 @@ export const ACCIONES: readonly Accion[] = [
     // primeras): el PDF o las fotos de la carta, y Estook dice qué cambia.
     id: 'leer-la-carta',
     app: 'carta',
-    nombre: 'Leer tu carta',
+    nombre: 'Importar tu carta',
     queHace: 'Del PDF o las fotos de tu carta: platos nuevos y precios distintos',
     icono: IconoDocumento,
     permiso: { cual: 'app.carta', como: 'editar' },

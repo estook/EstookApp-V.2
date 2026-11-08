@@ -150,7 +150,7 @@ export function LaCarta({ vista }: { readonly vista: string }) {
               setLeyendo(true);
             }}
           >
-            Leer tu carta
+            Importar tu carta
           </Boton>
         </div>
       )}
@@ -193,7 +193,7 @@ export function LaCarta({ vista }: { readonly vista: string }) {
                           setLeyendo(true);
                         }}
                       >
-                        Leer tu carta
+                        Importar tu carta
                       </Boton>
                     </div>
                   ),

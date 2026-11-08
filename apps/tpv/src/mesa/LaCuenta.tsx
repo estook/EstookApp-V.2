@@ -540,7 +540,7 @@ function Pestana({
       onClick={onClick}
       className={[
         'min-h-toque flex-1 rounded-medio px-e3 font-semibold',
-        puesta ? 'bg-charcoal text-white' : 'border border-borde bg-superficie',
+        puesta ? 'bg-texto text-superficie' : 'border border-borde bg-superficie',
       ].join(' ')}
     >
       {children}
@@ -619,7 +619,7 @@ export function ElegirPase({
           }}
           className={[
             'min-h-toque min-w-[3.5rem] rounded-medio px-e3 font-bold',
-            elegido === n ? 'bg-charcoal text-white' : 'border border-borde bg-superficie',
+            elegido === n ? 'bg-texto text-superficie' : 'border border-borde bg-superficie',
           ].join(' ')}
         >
           {elPase(n)}

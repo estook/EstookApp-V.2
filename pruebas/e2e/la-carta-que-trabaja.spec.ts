@@ -55,8 +55,8 @@ test('agotados, leer tu carta en PDF y el equilibrio', async ({ page, request },
 
   // ── Leer tu carta, en PDF ──
   await abrirSinQueSeCaiga(page, `${APP}#/carta/carta/por-secciones`);
-  await page.getByRole('button', { name: 'Leer tu carta' }).click();
-  const leer = page.getByRole('dialog', { name: 'Leer tu carta' });
+  await page.getByRole('button', { name: 'Importar tu carta' }).click();
+  const leer = page.getByRole('dialog', { name: 'Importar tu carta' });
   await leer.getByLabel('El PDF o las fotos de tu carta').setInputFiles({
     name: 'carta.pdf',
     mimeType: 'application/pdf',
@@ -114,7 +114,7 @@ test('una foto de la carta la lee Fogón, y Estook propone lo mismo', async ({
   expect(encendido.status()).toBe(200);
 
   await abrirSinQueSeCaiga(page, `${APP}#/carta/carta/por-secciones?hacer=leer`);
-  const leer = page.getByRole('dialog', { name: 'Leer tu carta' });
+  const leer = page.getByRole('dialog', { name: 'Importar tu carta' });
   await leer.getByLabel('El PDF o las fotos de tu carta').setInputFiles(await unaFoto(page));
   // El Fogón de pruebas pasa la foto a cinco líneas: dos secciones y tres platos.
   await expect(leer.getByRole('heading', { name: '3 platos nuevos' })).toBeVisible({

@@ -13,8 +13,9 @@ import { COMO_SE_VE_LA_FUNCION } from '../logica/comoSeVeElAparato.ts';
  * (en la sala, las zonas y «Mías»); y a la derecha solo lo de todos los días: **Fichar en
  * naranja** (0115), **el engranaje** y quién está con **Bloquear**.
  *
- * Fichar y el engranaje, **solo en la caja**: un comandero solo pide (0115). El engranaje, solo
- * a quien puede tocar algo de dentro. La caja (abrir y cerrar) se pone aquí con el cobro (T7).
+ * Fichar, **solo en la caja**: un comandero solo pide (0115). **El engranaje, en todos** (0143):
+ * dentro está «Tu sesión» con el tema, y lo demás solo en la caja y a quien puede tocarlo. La
+ * caja (abrir y cerrar) se pone aquí con el cobro (T7).
  */
 export function LaBarraDeArriba({
   titulo,
@@ -29,11 +30,6 @@ export function LaBarraDeArriba({
   const factura =
     puedeEditar(yo.permisos, 'accion.factura_de_un_ticket') ||
     puedeEditar(yo.permisos, 'accion.factura_a_mano');
-  const ajusta =
-    enLaCaja &&
-    (puedeEditar(yo.permisos, 'accion.ajustes_del_tpv') ||
-      puedeEditar(yo.permisos, 'accion.vincular_aparatos') ||
-      puedeEditar(yo.permisos, 'accion.marcar_agotado'));
   return (
     <header className="flex flex-wrap items-center gap-e3 border-b border-borde bg-superficie px-e4 py-e2 md:px-e5">
       <button
@@ -92,19 +88,19 @@ export function LaBarraDeArriba({
           <span className="max-sm:hidden">Fichar</span>
         </button>
       )}
-      {ajusta && (
-        <button
-          type="button"
-          aria-label="Ajustes"
-          title="Ajustes"
-          onClick={() => {
-            irA('ajustes');
-          }}
-          className="flex size-11 shrink-0 items-center justify-center rounded-redondo bg-charcoal"
-        >
-          <Icono dibujo="ajustes" lado={22} />
-        </button>
-      )}
+      {/* El engranaje, en todos los aparatos (0143): dentro está «Tu sesión», con el tema; lo
+          demás, solo en la caja y a quien puede tocarlo. */}
+      <button
+        type="button"
+        aria-label="Ajustes"
+        title="Ajustes"
+        onClick={() => {
+          irA('ajustes');
+        }}
+        className="flex size-11 shrink-0 items-center justify-center rounded-redondo bg-charcoal"
+      >
+        <Icono dibujo="ajustes" lado={22} />
+      </button>
       <button
         type="button"
         onClick={bloquear}

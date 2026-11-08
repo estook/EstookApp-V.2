@@ -158,7 +158,7 @@ export function AbrirMesa({
                   className={[
                     'min-h-toque-cocina rounded-grande text-seccion font-bold',
                     cuantos === n
-                      ? 'bg-charcoal text-white'
+                      ? 'bg-texto text-superficie'
                       : 'border border-borde bg-superficie text-texto',
                   ].join(' ')}
                 >
@@ -227,7 +227,7 @@ function LaHora({
             className={[
               'min-h-toque-cocina rounded-grande font-bold tabular-nums',
               elegida?.getTime() === c.getTime()
-                ? 'bg-charcoal text-white'
+                ? 'bg-texto text-superficie'
                 : 'border border-borde bg-superficie text-texto',
             ].join(' ')}
           >
@@ -278,7 +278,7 @@ export function Eleccion({
             className={[
               'flex min-h-toque-cocina flex-col items-start justify-center rounded-grande px-e4 py-e2 text-left',
               elegida === o.valor
-                ? 'bg-charcoal text-white'
+                ? 'bg-texto text-superficie'
                 : 'border border-borde bg-superficie text-texto',
             ].join(' ')}
           >
@@ -287,7 +287,7 @@ export function Eleccion({
               <span
                 className={[
                   'text-secundario',
-                  elegida === o.valor ? 'text-white/80' : 'text-texto-suave',
+                  elegida === o.valor ? 'text-superficie/80' : 'text-texto-suave',
                 ].join(' ')}
               >
                 {o.ayuda}

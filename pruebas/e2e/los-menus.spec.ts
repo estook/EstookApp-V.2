@@ -36,8 +36,8 @@ test('el menú del día: montarlo, lo que deja, descargarlo y apagarlo', async (
 
   // ── La primera vez, la pregunta ──
   await abrirSinQueSeCaiga(page, `${APP}#/carta/menus`);
-  await expect(page.getByText('¿Tu local sirve menús?')).toBeVisible();
-  await page.getByRole('button', { name: 'Sí, sirvo menús' }).click();
+  await expect(page.getByText('¿Sirves menú del día?')).toBeVisible();
+  await page.getByRole('button', { name: 'Sí, crear el menú' }).click();
   await expect(page.getByRole('heading', { name: 'Menú del día' })).toBeVisible();
 
   // La semana siguiente: el lunes se abre solo.

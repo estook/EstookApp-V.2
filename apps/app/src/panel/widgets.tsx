@@ -641,51 +641,40 @@ function Caducidades() {
       ) : caducan.length === 0 ? (
         <Tranquilo>Nada caduca en los próximos siete días.</Tranquilo>
       ) : (
-        <ul className="grid gap-e2 @min-[26rem]:grid-cols-2">
-          {caducan.slice(0, 6).map((lote) => {
-            const urgente = lote.dias <= 1;
-            return (
-              <li key={lote.loteId}>
-                {/* A su producto, que es donde se quita o se congela el lote. */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    navegar(`/almacen/productos/todo?producto=${lote.productoId}`);
-                  }}
-                  className="flex w-full items-center gap-e3 rounded-grande border border-borde bg-fondo/40 p-e2 text-left transition-colors duration-[--rapido] hover:border-borde-fuerte"
+        // **Filas de una línea** (el repaso del 8-nov, 0143): la pastilla y el nombre, cuatro
+        // como mucho. El resto, en el almacén (la flecha de arriba).
+        <ul className="grid gap-x-e4 @min-[26rem]:grid-cols-2">
+          {caducan.slice(0, 4).map((lote) => (
+            <li key={lote.loteId}>
+              {/* A su producto, que es donde se quita o se congela el lote. */}
+              <button
+                type="button"
+                onClick={() => {
+                  navegar(`/almacen/productos/todo?producto=${lote.productoId}`);
+                }}
+                className="flex min-h-[40px] w-full items-center gap-e3 rounded-medio px-e1 text-left hover:bg-fondo"
+              >
+                <span
+                  className={clases(
+                    'w-[3.25rem] shrink-0 rounded-redondo py-[2px] text-center text-etiqueta font-bold',
+                    lote.dias < 0 ? 'bg-mal-suave text-mal' : 'bg-atencion-suave text-atencion',
+                  )}
                 >
-                  <span
-                    className={clases(
-                      'grid size-11 shrink-0 place-items-center rounded-medio text-center leading-none',
-                      urgente ? 'bg-mal-suave text-mal' : 'bg-atencion-suave text-atencion',
-                    )}
-                  >
-                    {/* Lo que caduca hoy todavía no ha caducado: «hoy», como dice lo de hoy. */}
-                    {lote.dias < 0 ? (
-                      <span className="text-etiqueta font-bold">Ya</span>
-                    ) : lote.dias === 0 ? (
-                      <span className="text-etiqueta font-bold">Hoy</span>
-                    ) : (
-                      <span>
-                        <span className="block text-seccion font-bold">{lote.dias}</span>
-                        <span className="block text-[10px] font-semibold">
-                          {lote.dias === 1 ? 'día' : 'días'}
-                        </span>
-                      </span>
-                    )}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-secundario font-medium">
-                    {lote.producto}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-          {caducan.length > 6 && (
-            <li className="self-center text-secundario text-texto-suave">
-              y {caducan.length - 6} más
+                  {/* Lo que caduca hoy todavía no ha caducado: «hoy», como dice lo de hoy. */}
+                  {lote.dias < 0
+                    ? 'Ya'
+                    : lote.dias === 0
+                      ? 'Hoy'
+                      : lote.dias === 1
+                        ? 'Mañana'
+                        : `${String(lote.dias)} días`}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-secundario font-medium">
+                  {lote.producto}
+                </span>
+              </button>
             </li>
-          )}
+          ))}
         </ul>
       )}
     </Marco>
@@ -864,6 +853,16 @@ function LoQueVieneWidget() {
 
 // ── Equipo ahora · las caras de quien está dentro ────────────────────────────
 
+/**
+ * Cuánto lleva dentro, **como se dice** (0143): minutos y horas como siempre, y desde dos días,
+ * en días. «333 h 19 min» es un fichaje que se quedó abierto, y así no se lee.
+ */
+function cuantoLleva(minutos: number): string {
+  const dias = Math.floor(minutos / (24 * 60));
+  if (dias >= 2) return `${String(dias)} días`;
+  return comoSeLeenMinutos(minutos);
+}
+
 function EquipoAhora() {
   const { cliente, permisos, yo } = usarSesion();
   const invitar = usarAccion('invitar');
@@ -891,7 +890,16 @@ function EquipoAhora() {
       titulo="Equipo ahora"
       leyendo={consulta}
       ir="/equipo/resumen"
-      {...(datos === undefined ? {} : { derecha: <Contador>{datos.horaDelLocal}</Contador> })}
+      {...(datos === undefined || gente.length === 0
+        ? {}
+        : {
+            derecha: (
+              <span className="flex shrink-0 items-baseline gap-e1">
+                <span className="text-pantalla font-bold tabular-nums">{dentro.length}</span>
+                <span className="text-etiqueta text-texto-suave">dentro</span>
+              </span>
+            ),
+          })}
     >
       {datos === undefined ? (
         <Cargando que="los fichajes" forma="caras" />
@@ -907,36 +915,12 @@ function EquipoAhora() {
             : { accion: <BotonDeAccion accion={invitar} texto="Dar acceso a alguien" /> })}
         />
       ) : (
-        <div className="flex flex-col gap-e3">
-          <div className="flex items-center gap-e3">
-            <p className="text-[calc(30px*var(--escala))] font-bold leading-none">
-              {dentro.length}
-            </p>
-            <div className="min-w-0 flex-1">
-              <p className="text-secundario font-semibold">
-                {dentro.length === 1 ? 'persona dentro' : 'personas dentro'}
-              </p>
-              <p className="text-etiqueta text-texto-tenue">
-                {conTurno.length === 0
-                  ? `de ${gente.length} en el equipo`
-                  : `${conTurno.length} con turno hoy sin fichar`}
-              </p>
-            </div>
-            {/* Las caras, unas encima de otras. */}
-            <div className="flex -space-x-2">
-              {dentro.slice(0, 5).map((quien) => (
-                <span key={quien.personaId} className="rounded-[11px] ring-2 ring-superficie">
-                  <Avatar
-                    nombre={`${quien.nombre} ${quien.apellidos ?? ''}`.trim()}
-                    tamano={32}
-                    foto={quien.foto ?? null}
-                  />
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {dentro.length > 0 && (
+        // **Sin huecos** (el repaso del 8-nov, 0143): nombre y puesto a la izquierda, cuánto
+        // lleva a la derecha, y quien lleva días dentro dice que se olvidó de salir.
+        <div className="flex flex-col gap-e1">
+          {dentro.length === 0 ? (
+            <p className="text-secundario text-texto-suave">Nadie dentro ahora.</p>
+          ) : (
             <ul className="flex flex-col">
               {dentro.slice(0, 4).map((quien) => (
                 <li key={quien.personaId}>
@@ -945,23 +929,39 @@ function EquipoAhora() {
                     onClick={() => {
                       navegar(`/equipo/personas/con-acceso?persona=${quien.personaId}`);
                     }}
-                    className="flex min-h-[40px] w-full items-center gap-e2 rounded-medio px-e1 text-left hover:bg-fondo"
+                    className="flex min-h-[44px] w-full items-center gap-e3 rounded-medio px-e1 text-left hover:bg-fondo"
                   >
-                    <span aria-hidden className="size-2 shrink-0 rounded-redondo bg-bien" />
-                    <span className="min-w-0 flex-1 truncate text-secundario font-medium">
-                      {quien.nombre}
+                    <Avatar
+                      nombre={`${quien.nombre} ${quien.apellidos ?? ''}`.trim()}
+                      tamano={30}
+                      foto={quien.foto ?? null}
+                    />
+                    <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                      <span className="truncate text-secundario font-semibold">{quien.nombre}</span>
+                      <span className="truncate text-etiqueta text-texto-tenue">
+                        {quien.rolNombre}
+                      </span>
                     </span>
-                    <span className="shrink-0 text-etiqueta text-texto-tenue">
-                      {quien.rolNombre}
-                    </span>
-                    <span className="w-16 shrink-0 text-right text-secundario tabular-nums text-texto-suave">
-                      {comoSeLeenMinutos(quien.minutos ?? 0)}
-                    </span>
-                    {quien.turnoSospechoso && <Etiqueta tono="atencion">revisar</Etiqueta>}
+                    {quien.turnoSospechoso ? (
+                      <Etiqueta tono="atencion">
+                        {cuantoLleva(quien.minutos ?? 0)} · ¿olvidó salir?
+                      </Etiqueta>
+                    ) : (
+                      <span className="shrink-0 text-secundario font-semibold tabular-nums">
+                        {cuantoLleva(quien.minutos ?? 0)}
+                      </span>
+                    )}
                   </button>
                 </li>
               ))}
             </ul>
+          )}
+          {conTurno.length > 0 && (
+            <p className="border-t border-borde pt-e2 text-etiqueta text-texto-suave">
+              {conTurno.length === 1
+                ? '1 con turno hoy sin fichar'
+                : `${String(conTurno.length)} con turno hoy sin fichar`}
+            </p>
           )}
         </div>
       )}

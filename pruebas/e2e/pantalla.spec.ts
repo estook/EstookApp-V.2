@@ -420,9 +420,7 @@ test.describe('las tarjetas del Panel', () => {
     await expect(page.getByRole('heading', { name: '¿Cómo entran tus ventas?' })).toHaveCount(0);
 
     await abrirSinQueSeCaiga(page, `${APP}#/ajustes/conexiones`);
-    await expect(
-      page.getByRole('heading', { name: 'Tus ventas entran solas con Estook TPV' }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Estook TPV', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Vincular un aparato' })).toBeVisible();
   });
 });

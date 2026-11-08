@@ -176,8 +176,8 @@ export function LaFichaDelLocal({
         </summary>
         <div className="mt-e2 flex flex-col gap-e2">
           <p className="text-texto-suave">
-            Lo que se venda antes de esa hora cuenta para el día anterior: la 1:30 del sábado es
-            del viernes. Cámbiala solo si cierras más tarde de las cinco.
+            Lo que se venda antes de esa hora cuenta para el día anterior: la 1:30 del sábado es del
+            viernes. Cámbiala solo si cierras más tarde de las cinco.
           </p>
           <Campo
             etiqueta="Tu día acaba a las"

@@ -82,7 +82,10 @@ export const miSuscripcion = consulta<Record<string, never>, MiSuscripcion>({
     const intervalo = fila.intervalo ?? 'mes';
     // Un local más **que ya está pagado** no cambia la cuota (0142): no se dice nada.
     const siguiente =
-      fila.plan === null || fila.plan === 'pausa' || fila.deLaCasa || fila.localesActivos + 1 <= locales
+      fila.plan === null ||
+      fila.plan === 'pausa' ||
+      fila.deLaCasa ||
+      fila.localesActivos + 1 <= locales
         ? null
         : elPlanPorLosLocales(fila.plan, fila.localesActivos + 1);
     const todaviaSinCobrar =

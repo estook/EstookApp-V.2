@@ -178,7 +178,10 @@ export function ElegirPlan() {
           >
             −
           </button>
-          <output aria-live="polite" className="min-w-[2.5rem] text-center text-pantalla font-semibold tabular-nums">
+          <output
+            aria-live="polite"
+            className="min-w-[2.5rem] text-center text-pantalla font-semibold tabular-nums"
+          >
             {locales}
           </output>
           <button

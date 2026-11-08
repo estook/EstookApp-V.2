@@ -24,7 +24,6 @@ import { DIRECCION_DE_ESTOOK_TPV } from './direccionDeEstookTpv.ts';
  * ese aparato. Lo que decide si se puede es la API (`queLleveEstookTpv`); esto solo lo pinta.
  */
 
-
 /**
  * **«Aprende más»** lleva a la web, que se hace la última (Richi, 28-oct). Hasta entonces, a
  * estook.com tal cual: nadie lo verá antes de que todo esté al 100 %, que es cuando se vende.

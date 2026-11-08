@@ -132,8 +132,8 @@ export function CuantosLocales({ alta, cliente, alGuardar, alFallar }: PropsDeUn
             {sobranPagados > 0
               ? `Has pagado ${String(pagados)} locales. Ponles nombre: ${faltan === 1 ? 'te falta uno' : `te faltan ${String(faltan)}`}.`
               : faltan === 1
-              ? 'Te falta uno por dar de alta. Puedes hacerlo ahora o más tarde.'
-              : `Te faltan ${faltan} por dar de alta. Puedes hacerlo ahora o más tarde.`}
+                ? 'Te falta uno por dar de alta. Puedes hacerlo ahora o más tarde.'
+                : `Te faltan ${faltan} por dar de alta. Puedes hacerlo ahora o más tarde.`}
           </p>
 
           <Campo

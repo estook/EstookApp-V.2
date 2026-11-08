@@ -63,7 +63,10 @@ export function VincularUnAparato() {
           ? {}
           : cajon !== ''
             ? { cajon_id: cajon }
-            : { cajon_nuevo: cajones.length === 0 ? 'Cajón 1' : `Cajón ${String(cajones.length + 1)}` }),
+            : {
+                cajon_nuevo:
+                  cajones.length === 0 ? 'Cajón 1' : `Cajón ${String(cajones.length + 1)}`,
+              }),
       },
     );
     setSacando(false);
@@ -129,7 +132,14 @@ export function VincularUnAparato() {
         ancho
         opciones={(['caja', 'comandero', 'cocina', 'barra'] as const).map((f) => ({
           valor: f,
-          texto: f === 'caja' ? 'Caja' : f === 'comandero' ? 'Comandero' : f === 'cocina' ? 'Cocina' : 'Barra',
+          texto:
+            f === 'caja'
+              ? 'Caja'
+              : f === 'comandero'
+                ? 'Comandero'
+                : f === 'cocina'
+                  ? 'Cocina'
+                  : 'Barra',
         }))}
         valor={funcion}
         alElegir={(f) => {

@@ -204,7 +204,12 @@ export function lugaresDeGoogle(
           d.regularOpeningHours?.periods?.flatMap((t) =>
             t.open === undefined
               ? []
-              : [{ abre: elPunto(t.open), cierra: t.close === undefined ? null : elPunto(t.close) }],
+              : [
+                  {
+                    abre: elPunto(t.open),
+                    cierra: t.close === undefined ? null : elPunto(t.close),
+                  },
+                ],
           ) ?? null,
       };
     },

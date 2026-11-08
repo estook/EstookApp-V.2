@@ -114,88 +114,88 @@ export function AjustesDeOrganizacion() {
 
   return (
     <div className="flex flex-col gap-e4">
-    <Tarjeta titulo="Nombre del negocio" origen="El que ven tus locales y tu equipo">
-      <div className="flex flex-col gap-e2">
-        <Campo
-          etiqueta="Cómo se llama tu negocio"
-          value={nombreEscrito}
-          onChange={(evento) => {
-            setNombre(evento.target.value);
-            setNombreGuardado(false);
-          }}
-          ayuda="Cada local tiene además su nombre, en Ajustes › Tu local. La razón social de tus facturas está en Facturación."
-        />
-        <div className="flex flex-wrap items-center gap-e3">
-          <Boton
-            cargando={cambiando}
-            disabled={nombreEscrito.trim() === '' || nombreEscrito.trim() === organizacion.nombre}
-            onClick={() => {
-              void guardarNombre();
-            }}
-          >
-            Guardar el nombre
-          </Boton>
-          {nombreGuardado && <span className="text-secundario text-texto-suave">Guardado</span>}
-        </div>
-      </div>
-    </Tarjeta>
-    <Tarjeta
-      titulo={`Acceso de ${organizacion.nombre}`}
-      origen="Afecta a todo el equipo, no solo a ti"
-    >
-      {error && (
-        <div className="mb-e3">
-          <ErrorEnCristiano error={error} />
-        </div>
-      )}
-
-      <div className="flex flex-col gap-e4">
-        <div>
-          <Interruptor
-            etiqueta="Exigir el doble factor a todo el mundo"
-            puesto={organizacion.exigeDobleFactor}
-            disabled={cambiando}
-            alCambiar={(puesto) => {
-              void exigirDobleFactor(puesto);
-            }}
-          />
-          <p className="mt-e1 text-secundario text-texto-suave">
-            Con esto puesto, nadie del negocio entra sin el código de su aplicación de
-            autenticación. A quien todavía no lo tenga <strong>se le deja entrar</strong>, porque
-            desde fuera no podría activarlo, y la aplicación se lo pide nada más entrar.
-          </p>
-          {aQuienLeFalta !== null && aQuienLeFalta > 0 && (
-            <div className="mt-e2">
-              <Aviso tono="atencion" titulo={`Le falta a ${aQuienLeFalta} personas`}>
-                Mañana te van a preguntar. Merece la pena avisarlas antes.
-              </Aviso>
-            </div>
-          )}
-        </div>
-
-        <div className="border-t border-borde pt-e3">
+      <Tarjeta titulo="Nombre del negocio" origen="El que ven tus locales y tu equipo">
+        <div className="flex flex-col gap-e2">
           <Campo
-            etiqueta="Correo de recuperación"
-            tipo="correo"
-            value={escrito}
+            etiqueta="Cómo se llama tu negocio"
+            value={nombreEscrito}
             onChange={(evento) => {
-              setCorreo(evento.target.value);
+              setNombre(evento.target.value);
+              setNombreGuardado(false);
             }}
-            ayuda="Para volver a entrar si el negocio se queda sin nadie que pueda administrarlo. Se puede quitar si hay una segunda persona con ese acceso."
+            ayuda="Cada local tiene además su nombre, en Ajustes › Tu local. La razón social de tus facturas está en Facturación."
           />
-          <div className="mt-e2">
+          <div className="flex flex-wrap items-center gap-e3">
             <Boton
               cargando={cambiando}
+              disabled={nombreEscrito.trim() === '' || nombreEscrito.trim() === organizacion.nombre}
               onClick={() => {
-                void guardarCorreo();
+                void guardarNombre();
               }}
             >
-              Guardar
+              Guardar el nombre
             </Boton>
+            {nombreGuardado && <span className="text-secundario text-texto-suave">Guardado</span>}
           </div>
         </div>
-      </div>
-    </Tarjeta>
+      </Tarjeta>
+      <Tarjeta
+        titulo={`Acceso de ${organizacion.nombre}`}
+        origen="Afecta a todo el equipo, no solo a ti"
+      >
+        {error && (
+          <div className="mb-e3">
+            <ErrorEnCristiano error={error} />
+          </div>
+        )}
+
+        <div className="flex flex-col gap-e4">
+          <div>
+            <Interruptor
+              etiqueta="Exigir el doble factor a todo el mundo"
+              puesto={organizacion.exigeDobleFactor}
+              disabled={cambiando}
+              alCambiar={(puesto) => {
+                void exigirDobleFactor(puesto);
+              }}
+            />
+            <p className="mt-e1 text-secundario text-texto-suave">
+              Con esto puesto, nadie del negocio entra sin el código de su aplicación de
+              autenticación. A quien todavía no lo tenga <strong>se le deja entrar</strong>, porque
+              desde fuera no podría activarlo, y la aplicación se lo pide nada más entrar.
+            </p>
+            {aQuienLeFalta !== null && aQuienLeFalta > 0 && (
+              <div className="mt-e2">
+                <Aviso tono="atencion" titulo={`Le falta a ${aQuienLeFalta} personas`}>
+                  Mañana te van a preguntar. Merece la pena avisarlas antes.
+                </Aviso>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-borde pt-e3">
+            <Campo
+              etiqueta="Correo de recuperación"
+              tipo="correo"
+              value={escrito}
+              onChange={(evento) => {
+                setCorreo(evento.target.value);
+              }}
+              ayuda="Para volver a entrar si el negocio se queda sin nadie que pueda administrarlo. Se puede quitar si hay una segunda persona con ese acceso."
+            />
+            <div className="mt-e2">
+              <Boton
+                cargando={cambiando}
+                onClick={() => {
+                  void guardarCorreo();
+                }}
+              >
+                Guardar
+              </Boton>
+            </div>
+          </div>
+        </div>
+      </Tarjeta>
     </div>
   );
 }

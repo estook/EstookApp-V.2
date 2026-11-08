@@ -27,7 +27,12 @@ describe('partir la dirección de Google (0142)', () => {
         { texto: 'Madrid', tipos: ['administrative_area_level_1'] },
         { texto: '2800', tipos: ['postal_code'] },
       ]),
-    ).toEqual({ direccion: 'Plaza Mayor', codigoPostal: null, poblacion: null, provincia: 'Madrid' });
+    ).toEqual({
+      direccion: 'Plaza Mayor',
+      codigoPostal: null,
+      poblacion: null,
+      provincia: 'Madrid',
+    });
     expect(partirLaDireccion([])).toEqual({
       direccion: null,
       codigoPostal: null,
@@ -58,9 +63,9 @@ describe('la hora de corte, sin preguntarla (0142)', () => {
   });
 
   it('abierto las 24 horas, o un turno que acaba al mediodía siguiente, no mueven nada', () => {
-    expect(
-      horaDeCorteDelHorario([{ abre: { dia: 0, hora: 0, minuto: 0 }, cierra: null }]),
-    ).toBe('05:00');
+    expect(horaDeCorteDelHorario([{ abre: { dia: 0, hora: 0, minuto: 0 }, cierra: null }])).toBe(
+      '05:00',
+    );
     expect(horaDeCorteDelHorario([tramo(1, 22, 2, 14)])).toBe('05:00');
   });
 });

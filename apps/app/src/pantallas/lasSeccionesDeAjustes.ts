@@ -114,7 +114,8 @@ export const AJUSTES: readonly Ajuste[] = [
     id: 'datos-del-local',
     seccion: 'local',
     nombre: 'Nombre, dirección y teléfono del local',
-    palabras: 'nombre local dirección calle teléfono código postal población provincia hora corte cierre editar cambiar',
+    palabras:
+      'nombre local dirección calle teléfono código postal población provincia hora corte cierre editar cambiar',
   },
   { id: 'tu-marca', seccion: 'local', nombre: 'Logo y color', palabras: 'logo marca color imagen' },
   {

@@ -141,7 +141,7 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 
 **Ahora:**
 
-1. **La pausa del 8-nov · P1**: fusionar, desplegar la API, **apuntar en Google las dos vueltas de Estook TPV** y probar ([sus pasos](docs/pasos-de-la-pausa-del-8-nov.md)).
+1. **La pausa del 8-nov · P1**: fusionar, desplegar la API y probar (las dos vueltas de Google ya las apuntó Richi) ([sus pasos](docs/pasos-de-la-pausa-del-8-nov.md)).
 2. **T6 · 2, probado en IKATZ** (Richi, 7-nov). En producción constan dos facturas pedidas desde el móvil y con su PDF recibido, una anulación y una devolución de un ticket, todas «Correcto» o «Anulado»; **de corregir los datos, de devolver una factura y de la señal no hay todavía ningún documento** ([sus pasos](docs/pasos-de-t6-2-2-2-las-correcciones.md)). **Y con una impresora, leer el QR en papel** (prueba 24 del Anexo; en pantalla ya se leyó el 6-nov: la AEAT lo encuentra). **R4**, en producción: probar la Pausa con una cuenta nueva de prueba, si no se hizo ([sus pasos](docs/pasos-de-r4-precios-ia-y-papeles.md)). **Y decir cuánto dura el logo al abrir Estook** (0130).
 3. **Quitar la empresa**, ya en producción: probar en el admin y en IKATZ que se quita y se vuelve a poner ([sus pasos](docs/pasos-de-quitar-la-empresa.md)). **Y contestar, sin prisa, con qué certificado firmaría Estook «sin envío»** (T6 · 3), con el asesor.
 4. **Probar en casa las dos partes de T5 · 2 · 2** con el router sin internet ([sus pasos](docs/pasos-de-t5-2-2.md); tu red de casa sale en Windows como **pública**: el paso 2 lo arregla). Y **probar en IKATZ sin internet** con el iPhone en modo avión ([sus pasos](docs/pasos-de-t5-2-1.md)).

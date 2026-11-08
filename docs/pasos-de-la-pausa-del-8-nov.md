@@ -2,13 +2,13 @@
 
 > ## Cómo está
 >
-> | Qué              | Cómo está                                                               |
-> | ---------------- | ----------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P1 · Lo del alta y Ajustes»                       |
-> | La base de datos | **No hay que migrar**: sigue en 111                                     |
-> | La API           | **Hay que desplegarla**: 125 consultas y **357 comandos** (tres nuevos) |
-> | Google           | **Hay que apuntar dos direcciones** en el cliente de OAuth (paso 4)     |
-> | La caja          | **No hay caja nueva**                                                   |
+> | Qué              | Cómo está                                                                     |
+> | ---------------- | ----------------------------------------------------------------------------- |
+> | El pull request  | «La pausa del 8-nov · P1 · Lo del alta y Ajustes»                             |
+> | La base de datos | **No hay que migrar**: sigue en 111                                           |
+> | La API           | **Hay que desplegarla**: 125 consultas y **357 comandos** (tres nuevos)       |
+> | Google           | **Hecho por Richi el 8-nov**: las dos direcciones del TPV, apuntadas (paso 4) |
+> | La caja          | **No hay caja nueva**                                                         |
 >
 > Lo decidido, en la [0142](decisiones/0142-la-pausa-del-8-nov.md); lo que se ve, en
 > [la maqueta](maquetas/la-pausa-del-8-nov.html). P2 (Información e Informes) y P3 (Empleados) van detrás.
@@ -49,7 +49,7 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
 
 3. **En GitHub**: pestaña **Actions** → **Desplegar la API** → **Run workflow** → **Run workflow**, y espera a que
    salga en verde.
-4. **En Google Cloud** (console.cloud.google.com), con la cuenta de Estook: **APIs y servicios** → **Credenciales**
+4. **Ya hecho por ti el 8-nov.** Para saber dónde está: **en Google Cloud** (console.cloud.google.com), con la cuenta de Estook: **APIs y servicios** → **Credenciales**
    → el cliente de OAuth de Estook (el de «Continuar con Google») → **URI de redireccionamiento autorizados** →
    **Añadir URI**, y añade estas dos, tal cual, con la barra del final:
 

@@ -74,3 +74,25 @@ vea, que Pro no pregunte lo que no tiene sentido, y cinco fallos del alta y de A
 8. **La gráfica de las ocho semanas del food cost** que enseñaba la maqueta **no se ha hecho**: cada semana es el cálculo entero del almacén. La de las semanas de ventas va en Informes (P2).
 
 **Para Richi**: apuntar en el cliente de OAuth de Google las vueltas de Estook TPV (`https://estook.com/tpv/` y `https://www.estook.com/tpv/`); sin eso, «Continuar con Google» en el TPV dice que Google no deja. Los pasos, en [`pasos-de-la-pausa-del-8-nov.md`](../pasos-de-la-pausa-del-8-nov.md).
+
+## 6 · P2 · Información e Informes, construido (rama `la-pausa-del-8-nov-p2`, migración 0112)
+
+| Punto | Lo que hay                                                                                                                                                                                                                                                           |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3     | **Servicio › Jornadas › Información** (antes «En marcha»): Día · Semana · Mes con flechas; cuatro cifras frente a lo de antes; **Sale más · Factura más · Deja más**, de comida, bebida o todo; por sección; lo que pide atención; y plegada, **tu carta en cuatro** |
+| 3.1   | **Negocio › Informes**: cuatro cifras arriba (sin sus líneas); los objetivos, plegados; **cuándo se vende** (por hora o por día y hora), **la cocina**, **lo que se tuerce** y **las semanas**                                                                       |
+| —     | En el TPV, **anular una mesa ofrece tres motivos de un toque**: «Se fueron sin pedir», «Se fueron esperando», «Se abrió por error»                                                                                                                                   |
+
+**Por dentro**: dos funciones de solo lectura de la migración 0112 (`las_lineas_vendidas` y `las_mesas_del_servicio`), que dan las mesas a quien ve las ventas de ese local, y dos consultas, `lo_que_se_vende` y `el_servicio_por_dentro`. API 127/357.
+
+### Lo que decidió la IA al construirlo
+
+1. **Hasta T7, lo vendido es lo pedido y no quitado de las mesas que no se anularon**, en la jornada en que se liberó la mesa. Con el cobro, lo cobrado.
+2. **De dónde sale**: de las mesas si las hay en el periodo; si no, de los cierres de caja (sus totales y, si el CSV los trae, sus platos). La pantalla lo dice.
+3. **Sin IVA con el tipo de restauración del local** (el 10 % si no se sabe); **el ticket medio, con IVA**, por mesa servida, que es como lo paga el cliente.
+4. **Un menú cuenta como un plato**, con el coste de los platos que lleva dentro; esos platos suman sus raciones y su suplemento.
+5. **Tu carta en cuatro, como Kasavana y Smith**: popular desde el 70 % de lo que toca a cada plato, y «deja mucho» desde el margen medio ponderado; **sin escandallo, el plato no se clasifica**, y con menos de cuatro no se compara.
+6. **«Tarde» son más de 20 minutos, fijo.** La maqueta decía que se cambiaba con un toque en la tarjeta: no se ha hecho, para no añadir un ajuste más (un compañero, no un policía). Si Richi quiere otro número, es una línea.
+7. **De «En marcha» se queda lo que no estaba en el Panel**, en una línea arriba de Información cuando se mira hoy: si el día está abierto o cerrado, cuánto queda, el día de antes sin cerrar y «Cerrar el día».
+8. **En Informes, las tres frases solo van en el correo de los lunes**, y sin mesas de Estook TPV, una sola tarjeta lo dice y quedan las semanas, que salen de los cierres.
+9. **«Los que más tardan»**, solo con platos que han salido al menos tres veces: con uno solo, una noche mala no es un plato lento.

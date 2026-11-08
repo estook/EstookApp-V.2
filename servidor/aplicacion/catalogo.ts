@@ -380,6 +380,7 @@ import {
 } from './comandos/clientes.ts';
 import {
   abrirElPortal,
+  ajustarMiCuotaAMisLocales,
   cambiarDePlan,
   cancelarLaSuscripcion,
   empezarAPagar,
@@ -728,6 +729,7 @@ export const catalogo = {
 
   comandos: {
     [empezarAPagar.nombre]: empezarAPagar,
+    [ajustarMiCuotaAMisLocales.nombre]: ajustarMiCuotaAMisLocales,
     [volverDelPago.nombre]: volverDelPago,
     [abrirElPortal.nombre]: abrirElPortal,
     [cambiarDePlan.nombre]: cambiarDePlan,

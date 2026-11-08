@@ -366,7 +366,7 @@ function ConMiCorreo({
   // ── Con Google (0142) ─────────────────────────────────────────────────────
   useEffect(() => {
     void cliente
-      .ejecutar<{ google: { clienteId: string } | null }>('como_se_entra', {})
+      .consultar<{ google: { clienteId: string } | null }>('como_se_entra')
       .then((respuesta) => {
         if (respuesta.ok) setClienteDeGoogle(respuesta.datos.google?.clienteId ?? null);
       });

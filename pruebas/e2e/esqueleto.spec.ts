@@ -34,7 +34,7 @@ const LAS_OCHO = [
   // H2 (0069): con el Calendario entero en M14, entra en Turnos, que es lo construido.
   { id: 'calendario', nombre: 'Calendario', entra: 'Turnos' },
   { id: 'equipo', nombre: 'Equipo', entra: 'Resumen' },
-  { id: 'servicio', nombre: 'Servicio', entra: 'Jornada' },
+  { id: 'servicio', nombre: 'Servicio', entra: 'Jornadas' },
   { id: 'negocio', nombre: 'Negocio', entra: 'Ventas' },
   { id: 'cuaderno', nombre: 'Cuaderno', entra: 'Incidencias' },
 ];

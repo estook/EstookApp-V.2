@@ -1429,3 +1429,25 @@ export type {
   LoQueSePideDevolver,
   MotivoDeDevolucion,
 } from './emitir.ts';
+
+// ── La pausa del 8-nov (0142) · lo que se vende, la cocina y los objetivos ──
+export {
+  CUADRANTES,
+  PARTE_PARA_SER_POPULAR,
+  PLATOS_PARA_CLASIFICAR,
+  QUE_ES_CADA_CUADRANTE,
+  MINUTOS_PARA_IR_TARDE,
+  laCartaEnCuatro,
+  minutosDeCocina,
+  loQueDeberiaVender,
+  PERIODOS_DEL_SERVICIO,
+  esPeriodoDelServicio,
+  elPeriodoDelServicio,
+} from './lo-que-se-vende.ts';
+export type {
+  Cuadrante,
+  PlatoParaClasificar,
+  LaCartaEnCuatro,
+  PeriodoDelServicio,
+  UnPeriodoDelServicio,
+} from './lo-que-se-vende.ts';

@@ -12,6 +12,12 @@
  * Devuelve `null` si la dirección no es de las de antes.
  */
 export function laDireccionDeAhora(ruta: string): string | null {
+  // «En marcha» es «Información» desde la pausa del 8-nov (0142); y los carteles de Ventas salen.
+  if (/^\/servicio\/jornada\/en-marcha\/?$/.test(ruta)) return '/servicio/jornada/informacion';
+  if (/^\/servicio\/jornada\/caja\/?$/.test(ruta)) return '/servicio/jornada/cierre';
+  if (/^\/servicio\/ventas\/(del-turno|del-dia|por-producto)\/?$/.test(ruta)) {
+    return '/servicio/jornada/informacion';
+  }
   // Escandallos (repaso del 16-oct, 0090): las elaboraciones ya no tienen pestaña.
   if (/^\/escandallos\/elaboraciones\/?$/.test(ruta)) return '/escandallos/escandallos';
   // Compras en tres (la experiencia, 0083): lo que ha llegado es «Llegado» dentro de

@@ -23,7 +23,8 @@ import {
 import {
   Almacen,
   CierreDeCaja,
-  EnMarcha,
+  Informacion,
+  Empleados,
   Carta,
   Escandallos,
   Delivery,
@@ -301,14 +302,15 @@ function Contenido({
   // todo el equipo, y quien lo publica tiene además «Montarlo».
   if (app.id === 'calendario' && destino.id === 'turnos') return <ElHorario conTitulo={false} />;
 
-  // El cierre es una **vista** de la jornada, y «En marcha» la otra (M16a, 0105). La
-  // caja, M20C, cae abajo, a su cartel.
+  // El cierre es una **vista** de la jornada, e «Información» la otra: lo que se vende, que
+  // sustituye a «En marcha» desde la pausa del 8-nov (0142). La caja vive en Estook TPV (T7).
   if (app.id === 'servicio' && destino.id === 'jornada' && vista?.id === 'cierre') {
     return <CierreDeCaja />;
   }
-  if (app.id === 'servicio' && destino.id === 'jornada' && vista?.id === 'en-marcha') {
-    return <EnMarcha />;
+  if (app.id === 'servicio' && destino.id === 'jornada' && vista?.id === 'informacion') {
+    return <Informacion />;
   }
+  if (app.id === 'servicio' && destino.id === 'empleados') return <Empleados />;
   if (app.id === 'negocio' && destino.id === 'ventas') return <Ventas />;
   // T6 · 2 · 1 (0136): lo emitido, con su estado ante Hacienda.
   if (app.id === 'servicio' && destino.id === 'ventas' && vista?.id === 'tickets-y-facturas') {

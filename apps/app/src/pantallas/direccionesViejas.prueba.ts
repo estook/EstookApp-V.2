@@ -53,3 +53,14 @@ describe('las direcciones de antes del 25-sep', () => {
     expect(laDireccionDeAhora('/')).toBeNull();
   });
 });
+
+describe('las direcciones de antes de la pausa del 8-nov (0142)', () => {
+  it('«En marcha» lleva a Información, y los carteles de Ventas también', () => {
+    expect(laDireccionDeAhora('/servicio/jornada/en-marcha')).toBe('/servicio/jornada/informacion');
+    expect(laDireccionDeAhora('/servicio/jornada/caja')).toBe('/servicio/jornada/cierre');
+    expect(laDireccionDeAhora('/servicio/ventas/por-producto')).toBe(
+      '/servicio/jornada/informacion',
+    );
+    expect(laDireccionDeAhora('/servicio/ventas/tickets-y-facturas')).toBeNull();
+  });
+});

@@ -4,7 +4,7 @@
 >
 > | Qué              | Cómo está                                                                     |
 > | ---------------- | ----------------------------------------------------------------------------- |
-> | El pull request  | «La pausa del 8-nov · P1 · Lo del alta y Ajustes»                             |
+> | El pull request  | «La pausa del 8-nov · P1 · Lo del alta y Ajustes», la **#178**, ya fusionada  |
 > | La base de datos | **No hay que migrar**: sigue en 111                                           |
 > | La API           | **Hay que desplegarla**: 125 consultas y **357 comandos** (tres nuevos)       |
 > | Google           | **Hecho por Richi el 8-nov**: las dos direcciones del TPV, apuntadas (paso 4) |
@@ -90,3 +90,80 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
   (espera diez minutos).
 - **No sale «Busca tu local en Google»** en el alta: el servidor no tiene la clave de Google, o se acabó el tope del
   mes de ese local. Se escribe a mano, como antes.
+
+---
+
+# P2 · Información e Informes
+
+> | Qué              | Cómo está                                                                           |
+> | ---------------- | ----------------------------------------------------------------------------------- |
+> | El pull request  | La **#181**, con P2 y P3 juntas (la #179 se fusionó en la rama de P1, no en `main`) |
+> | La base de datos | **Hay que migrar**: pasa de 111 a **112** (la 0112, dos funciones que solo leen)    |
+> | La API           | Hay que desplegarla **después de migrar**: **127 consultas** y 357 comandos         |
+
+## Lo que cambia para ti
+
+- **Servicio › Jornadas › Información**, donde estaba «En marcha»: lo que más sale, lo que más factura y lo que más
+  te deja, por sección y, plegada, **tu carta en cuatro** (estrellas, caballos, puzzles y perros). En «Hoy», arriba,
+  si el día está abierto, las mesas que hay y «Cerrar el día».
+- **Negocio › Informes**: cuándo se vende (por hora, o por día y hora), la cocina (el tiempo de salida y lo que sale
+  tarde), lo que se tuerce (devueltos, cambiados, quitados y mesas anuladas) y las ocho últimas semanas.
+- **En Estook TPV, al anular una mesa**: tres motivos de un toque.
+
+## Lo que te toca
+
+**P2 y P3 van juntas en la #181**: se fusiona una vez, se migran las dos (0112 y 0113) y se despliega una vez. En GitHub, **Merge pull request** de la #181; en PowerShell, uno por uno:
+
+```powershell
+git checkout main
+```
+
+```powershell
+git pull
+```
+
+```powershell
+.\estook.cmd bd:migrar
+```
+
+**Tiene que decir** que aplica la `0112_lo_que_se_vende` y la `0113_los_objetivos_de_venta`. Y en GitHub, **Actions** → **Desplegar la API** →
+**Run workflow**.
+
+## Lo que hay que probar
+
+1. **En IKATZ, Servicio › Jornadas**: entra en **Información**. Si ese día hubo mesas en Estook TPV, salen los platos;
+   si no, lo de tus cierres. Toca **Semana** y la flecha de la izquierda.
+2. **«Deja más»** y, abajo, **«Tu carta en cuatro»**: los platos con escandallo salen en su cuadrante.
+3. **Negocio › Informes › Semana**: con mesas en el TPV, las cuatro tarjetas; **La cocina** solo tiene tiempos si la
+   cocina tacha en la pantalla de cocina.
+4. **En Estook TPV**, abre una mesa de prueba, «···» → «Anular la mesa»: **tienen que salir** los tres motivos.
+
+---
+
+# P3 · Empleados
+
+> | Qué              | Cómo está                                                                       |
+> | ---------------- | ------------------------------------------------------------------------------- |
+> | El pull request  | La **#181**, la misma de P2 (la #180 se fusionó en la rama de P2, no en `main`) |
+> | La base de datos | **Hay que migrar**: pasa de 112 a **113** (la 0113, los objetivos de venta)     |
+> | La API           | Hay que desplegarla **después de migrar**: **128 consultas y 358 comandos**     |
+
+## Lo que cambia para ti
+
+- **Servicio › Empleados**: quién vende más, por semana o por mes, y **por € la hora** (lo justo entre quien hace 20
+  horas y quien hace 40). Toca a alguien para ver lo que más vende.
+- **«Objetivos»**: el general en € por hora, uno distinto para quien quieras, y si cada uno ve el suyo.
+- **Cada camarero ve solo lo suyo** en Servicio › Empleados, si lo dejas encendido.
+
+## Lo que te toca
+
+**Nada más**: va en la misma #181 que P2, con su fusión, su migración y su despliegue (arriba).
+
+## Lo que hay que probar
+
+1. **En IKATZ, Servicio › Empleados**: con mesas de Estook TPV en la semana, sale cada camarero con lo suyo. Toca
+   **Por € la hora**.
+2. **«Objetivos»** → **General**: sube a 40 €/h y **Guardar**. Las barras cambian.
+3. **Por empleado**: toca a alguien, ponle otro y **Guardar**: sale «Uno suyo».
+4. **Con la cuenta de un camarero**, entra en Servicio › Empleados: **tiene que ver solo lo suyo**. Apaga «Que cada uno
+   vea el suyo» con la tuya y mira que ya no lo ve.

@@ -7,45 +7,30 @@ import {
   hayDatos,
   type TipoDeInforme,
 } from '@estook/dominio';
-import {
-  Aviso,
-  Boton,
-  Cargando,
-  EstadoVacio,
-  Mosaico,
-  Pieza,
-  Tarjeta,
-  Tendencia,
-  Tira,
-  Variacion,
-  clases,
-  comoSeEscribe,
-} from '@estook/ui';
+import { Aviso, Boton, Cargando, Tarjeta, Variacion, comoSeEscribe } from '@estook/ui';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { ListaDelSemaforo } from '../objetivos/Semaforo.tsx';
 import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
+import { ElServicioPorDentro } from './ElServicioPorDentro.tsx';
 import type { CifraDelInforme, ElInforme } from './contrato.ts';
 
 /**
  * Negocio → Informes · Tu día, Tu semana y Tu mes (entrega R2, mejora 16 · 0053).
  *
  * «Por correo al gerente: ventas, food cost, merma y horas.» Esta es la pantalla, y
- * el correo es su resumen con un enlace aquí. Lo esencial arriba —el periodo y las
- * tres frases— y debajo las cifras con su flecha, cada una contada como su tarjeta.
- * En la semana, además, los objetivos.
+ * el correo es su resumen con un enlace aquí.
+ *
+ * **Rehecha en la pausa del 8-nov (0142)**: Richi, «la info que damos es muy redundante, mejor
+ * poner ahí datos del negocio importantes». Arriba quedan **cuatro cifras** con su flecha, sin sus
+ * líneas (ya están en el Panel); los objetivos de la semana, plegados; y debajo, **cuándo se
+ * vende, la cocina, lo que se tuerce y las semanas** (`ElServicioPorDentro`). Las tres frases
+ * siguen en el correo de los lunes, que es donde se leen.
  *
  * El periodo va en la dirección (`?del=2026-09-21`) y no «cuántos atrás»: el
  * enlace del correo del lunes, abierto el jueves, sigue enseñando esa semana.
  */
-const ACENTO = 'var(--color-app-negocio)';
-
-/** «12 sep», para cada barra. La fecha llega hecha del servidor (regla 10). */
-function comoSeLeeElDia(fecha: string): string {
-  return new Date(`${fecha}T12:00:00Z`).toLocaleDateString('es-ES', {
-    day: 'numeric',
-    month: 'short',
-  });
-}
+/** Las cuatro de arriba, en este orden: lo demás ya está en el Panel. */
+const LAS_DE_ARRIBA = ['ventas', 'ticket-medio', 'food-cost', 'coste-personal'] as const;
 
 /** «Del 21 al 27 de septiembre», con mayúscula al empezar. */
 function conMayuscula(texto: string): string {
@@ -91,7 +76,7 @@ export function Informes({ vista }: { readonly vista: string }) {
   }
 
   const informe = consulta.data;
-  const { periodo, frases } = informe;
+  const { periodo } = informe;
   const conDatos = hayDatos(informe.cifras);
 
   return (
@@ -143,72 +128,37 @@ export function Informes({ vista }: { readonly vista: string }) {
         </div>
       )}
 
-      {!conDatos ? (
-        <Tarjeta acento={ACENTO}>
-          <EstadoVacio
-            compacto
-            dibujo="caja"
-            acento={ACENTO}
-            titulo="Todavía no hay datos de este periodo"
-            frase="Con la caja cerrada y el género apuntado, aquí verás cómo fue, frente al periodo anterior."
-            sinAccionPorque="Los informes salen solos de lo que se apunta cada día."
-          />
-        </Tarjeta>
-      ) : (
-        // Dos por fila también en el móvil, como las cifras de cada app: una tarjeta
-        // pequeña por fila convierte siete cifras en una escalera.
-        <Mosaico columnas="grid-cols-2 xl:grid-cols-4">
-          <Pieza entera>
-            <Tarjeta titulo="En tres frases" acento={ACENTO}>
-              <ul className="flex flex-col gap-e2" aria-label="Lo mejor, lo peor y lo que mirar">
-                {frases.mejor !== null && <Frase tono="bien" texto={frases.mejor} />}
-                {frases.peor !== null && <Frase tono="mal" texto={frases.peor} />}
-                <Frase tono="mirar" texto={frases.mirar} />
-              </ul>
-            </Tarjeta>
-          </Pieza>
-
-          {informe.cifras.map((cifra) => (
-            <UnaCifra
-              key={cifra.indicador}
-              cifra={cifra}
-              dias={periodo.dias}
-              comparado={periodo.comparado}
-              conLinea={tipo !== 'dia'}
-            />
-          ))}
-
-          {informe.semaforo !== null && (
-            <Pieza entera>
-              <Tarjeta titulo="Tus objetivos esa semana" acento={ACENTO}>
-                <ListaDelSemaforo cifras={informe.semaforo} />
-              </Tarjeta>
-            </Pieza>
-          )}
-        </Mosaico>
+      {conDatos && (
+        <div className="grid grid-cols-2 gap-e3 xl:grid-cols-4">
+          {LAS_DE_ARRIBA.flatMap((indicador) => {
+            const cifra = informe.cifras.find((c) => c.indicador === indicador);
+            return cifra === undefined
+              ? []
+              : [
+                  <UnaCifra
+                    key={indicador}
+                    cifra={cifra}
+                    dias={periodo.dias}
+                    comparado={periodo.comparado}
+                  />,
+                ];
+          })}
+        </div>
       )}
-    </div>
-  );
-}
 
-function Frase({
-  tono,
-  texto,
-}: {
-  readonly tono: 'bien' | 'mal' | 'mirar';
-  readonly texto: string;
-}) {
-  return (
-    <li className="flex items-start gap-e2">
-      <span
-        aria-hidden
-        className={clases(
-          'mt-[7px] size-[10px] shrink-0 rounded-redondo',
-          tono === 'bien' ? 'bg-bien' : tono === 'mal' ? 'bg-mal' : 'bg-naranja',
-        )}
-      />
-      <span className="text-cuerpo">{texto}</span>
-    </li>
+      {informe.semaforo !== null && (
+        <details className="rounded-mayor border border-borde bg-superficie px-e4 [box-shadow:var(--sombra-tarjeta)]">
+          <summary className="min-h-toque cursor-pointer py-e3 text-cuerpo font-semibold">
+            Tus objetivos esa semana
+          </summary>
+          <div className="pb-e4">
+            <ListaDelSemaforo cifras={informe.semaforo} />
+          </div>
+        </details>
+      )}
+
+      <ElServicioPorDentro tipo={tipo} del={periodo.desde} />
+    </div>
   );
 }
 
@@ -216,12 +166,10 @@ function UnaCifra({
   cifra,
   dias,
   comparado,
-  conLinea,
 }: {
   readonly cifra: CifraDelInforme;
   readonly dias: number;
   readonly comparado: string;
-  readonly conLinea: boolean;
 }) {
   const como = COMO_ES_EL_INDICADOR[cifra.indicador];
   const cambio =
@@ -251,27 +199,6 @@ function UnaCifra({
               />
             )}
           </div>
-          {conLinea &&
-            (como.grafica === 'barras' ? (
-              <Tira
-                titulo={como.nombre}
-                puntos={cifra.serie.map((dia) => ({
-                  valor: dia.valor ?? 0,
-                  cuando: comoSeLeeElDia(dia.fecha),
-                }))}
-                formato={(v) => comoSeEscribe(cifra.indicador, v)}
-                color={ACENTO}
-                alto={32}
-              />
-            ) : (
-              <Tendencia
-                valores={cifra.serie.map((d) => d.valor)}
-                titulo={como.nombre}
-                color={ACENTO}
-                alto={32}
-                formato={(v) => comoSeEscribe(cifra.indicador, v)}
-              />
-            ))}
         </div>
       )}
     </Tarjeta>

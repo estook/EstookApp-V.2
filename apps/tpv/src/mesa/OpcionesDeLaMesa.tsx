@@ -607,12 +607,13 @@ export function OpcionesDeLaMesa({
           etiqueta="¿Por qué se anula?"
           valor={texto}
           alCambiar={setTexto}
-          ejemplo="Se fueron sin pedir · se abrió por error…"
+          ejemplo="O escríbelo"
           alVolver={volver}
           haciendo={haciendo}
           boton="Anular la mesa"
           peligro
           minimo={3}
+          sugerencias={MOTIVOS_DE_ANULAR}
           alGuardar={() => {
             void hacer('anular_mesa', { cuenta_id: cuenta.cuentaId, motivo: texto.trim() }, () => {
               alCerrar();
@@ -823,6 +824,12 @@ function Elegir({
   );
 }
 
+/**
+ * Por qué se anula una mesa, de un toque (la pausa del 8-nov, 0142): así Negocio › Informes puede
+ * contar las mesas que se fueron, y el camarero no teclea en pleno servicio. Se puede escribir otro.
+ */
+const MOTIVOS_DE_ANULAR = ['Se fueron sin pedir', 'Se fueron esperando', 'Se abrió por error'];
+
 function Escribir({
   etiqueta,
   valor,
@@ -834,6 +841,7 @@ function Escribir({
   boton,
   peligro = false,
   minimo = 0,
+  sugerencias = [],
 }: {
   readonly etiqueta: string;
   readonly valor: string;
@@ -845,9 +853,33 @@ function Escribir({
   readonly boton: string;
   readonly peligro?: boolean;
   readonly minimo?: number;
+  /** Los motivos de siempre, de un toque: lo escrito se puede cambiar después. */
+  readonly sugerencias?: readonly string[];
 }) {
   return (
     <div className="flex flex-col gap-e4">
+      {sugerencias.length > 0 && (
+        <div className="flex flex-wrap gap-e2" role="group" aria-label="Los motivos de siempre">
+          {sugerencias.map((motivo) => (
+            <button
+              key={motivo}
+              type="button"
+              aria-pressed={valor === motivo}
+              onClick={() => {
+                alCambiar(motivo);
+              }}
+              className={[
+                'min-h-toque rounded-redondo border px-e4 text-cuerpo font-semibold',
+                valor === motivo
+                  ? 'border-naranja bg-naranja-suave text-texto'
+                  : 'border-borde bg-superficie text-texto-suave',
+              ].join(' ')}
+            >
+              {motivo}
+            </button>
+          ))}
+        </div>
+      )}
       <Envoltorio id="texto-de-la-mesa" etiqueta={etiqueta}>
         <textarea
           id="texto-de-la-mesa"

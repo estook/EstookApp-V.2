@@ -6,12 +6,12 @@ import { APP } from './en-la-app.ts';
 /**
  * M16a · La jornada (decisión 0105), en la pantalla y con una cuenta nueva:
  *
- *   · Servicio entra por «En marcha»: el día abierto solo, con lo que le queda
+ *   · Servicio entra por «Información» (antes «En marcha», 0142): el día abierto solo, con lo que le queda
  *   · «Cerrar el día» lleva al cierre, en tres pasos: las ventas, las mermas y el repaso
  *   · cerrado, ya no se corrige sin más: «Reabrir» pide el motivo, y se ve
  *   · cerrarlo otra vez lo deja cerrado, con la reapertura a la vista
  */
-test('el día: en marcha, cerrarlo en tres pasos, reabrirlo con motivo y volver a cerrarlo', async ({
+test('el día: abierto, cerrarlo en tres pasos, reabrirlo con motivo y volver a cerrarlo', async ({
   page,
   request,
 }, info) => {
@@ -20,11 +20,10 @@ test('el día: en marcha, cerrarlo en tres pasos, reabrirlo con motivo y volver 
   await pagarEsencial(page);
   await sinElAlta(page);
 
-  // ── En marcha ──
+  // ── Información, arriba: el día abierto solo, con lo que le queda (0142; antes «En marcha») ──
   await abrirSinQueSeCaiga(page, `${APP}#/servicio/jornada`);
-  await expect(page.getByText(/^La jornada · /)).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText('Abierta', { exact: true })).toBeVisible();
-  await expect(page.getByText(/Se abrió sola a las/)).toBeVisible();
+  await expect(page).toHaveURL(/#\/servicio\/jornada\/informacion/);
+  await expect(page.getByText(/^Abierto · quedan \d+ h/)).toBeVisible({ timeout: 15_000 });
   // Estook TPV no se abre desde Estook (T1, 0107): «Abrir la sala» ya no está.
   await expect(page.getByText('Abrir la sala')).toHaveCount(0);
   await page.getByRole('button', { name: 'Cerrar el día' }).click();
@@ -57,8 +56,8 @@ test('el día: en marcha, cerrarlo en tres pasos, reabrirlo con motivo y volver 
   await expect(page.getByText(/^Día cerrado · /)).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(/Reabierto por .*«Faltaba una mesa de 40 €»/)).toBeVisible();
 
-  // ── En marcha lo dice ──
-  await abrirSinQueSeCaiga(page, `${APP}#/servicio/jornada/en-marcha`);
-  await expect(page.getByText(/^Cerrada a las/)).toBeVisible({ timeout: 15_000 });
+  // ── Información lo dice, arriba (0142; antes, «En marcha») ──
+  await abrirSinQueSeCaiga(page, `${APP}#/servicio/jornada/informacion`);
+  await expect(page.getByText(/^Cerrado a las/)).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole('button', { name: 'Ver el cierre' })).toBeVisible();
 });

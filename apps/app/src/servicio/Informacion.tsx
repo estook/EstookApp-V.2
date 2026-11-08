@@ -7,7 +7,6 @@ import {
   Boton,
   Cargando,
   EstadoVacio,
-  Etiqueta,
   Segmentado,
   Tarjeta,
   clases,
@@ -18,6 +17,7 @@ import type { LoQueSeVende, PlatoVendido } from './contratoDeLoQueSeVende.ts';
 import { usarElPeriodo } from '../ganchos/usarElPeriodo.ts';
 import { ElCambio, ElegirElPeriodo, comoSeLlamaElPeriodo, frenteA } from './elPeriodo.tsx';
 import { CuantosDeCadaUno, TuCartaEnCuatro } from './TuCartaEnCuatro.tsx';
+import { ElDiaDeHoy } from './ElDiaDeHoy.tsx';
 
 /**
  * Servicio › Jornadas › Información (la pausa del 8-nov, decisión 0142, con su maqueta aprobada).
@@ -80,24 +80,7 @@ export function Informacion() {
         alIr={elPeriodo.irA}
       />
 
-      {d.ahoraMismo !== null && (
-        <div className="flex flex-wrap items-center gap-x-e4 gap-y-e1 rounded-mayor border border-borde bg-superficie px-e4 py-e3 text-cuerpo [box-shadow:var(--sombra-tarjeta)]">
-          <Etiqueta tono="bien">Ahora</Etiqueta>
-          <span>
-            <b>{d.ahoraMismo.mesas}</b>{' '}
-            {d.ahoraMismo.mesas === 1 ? 'mesa abierta' : 'mesas abiertas'} ·{' '}
-            <b>{d.ahoraMismo.personas}</b> personas
-          </span>
-          <span>
-            <b>{d.ahoraMismo.enCocina}</b> en cocina
-          </span>
-          {d.ahoraMismo.minutosDeCocina !== null && (
-            <span>
-              La cocina, a <b>{d.ahoraMismo.minutosDeCocina} min</b> de media hoy
-            </span>
-          )}
-        </div>
-      )}
+      {d.periodo === 'dia' && d.desde === d.hoy && <ElDiaDeHoy ahoraMismo={d.ahoraMismo} />}
 
       {d.origen === 'nada' ? (
         <Tarjeta>

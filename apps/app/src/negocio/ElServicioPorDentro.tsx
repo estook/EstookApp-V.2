@@ -17,6 +17,9 @@ const ACENTO = 'var(--color-app-negocio)';
 const ANTES = 'var(--color-texto-tenue)';
 const DIAS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
 const dinero = enDinero;
+/** En el eje, en euros y sin céntimos: «1.800 €» cabe; «1.800,00 €» se partía en dos. */
+const enElEje = (euros: number) =>
+  `${euros.toLocaleString('es-ES', { maximumFractionDigits: 0, useGrouping: 'always' })} €`;
 const frenteA = (tipo: string) =>
   tipo === 'dia'
     ? 'el mismo día de la semana pasada'
@@ -34,6 +37,17 @@ export function ElServicioPorDentro({
   const lectura = usarLectura<Datos>('el_servicio_por_dentro', { periodo: tipo, del }, true, true);
   const d = lectura.data;
   if (d === undefined) return null;
+  // Sin mesas de Estook TPV, una sola tarjeta que lo dice, y las semanas, que salen de los cierres.
+  if (!d.conTpv) {
+    return (
+      <Mosaico columnas="grid-cols-1 lg:grid-cols-2">
+        <Tarjeta titulo="Cuándo se vende, la cocina y lo que se tuerce" acento={ACENTO}>
+          <SinTpv que="Las horas fuertes, los tiempos de cocina, lo devuelto y las mesas que se van" />
+        </Tarjeta>
+        <LasSemanas d={d} />
+      </Mosaico>
+    );
+  }
   return (
     <Mosaico columnas="grid-cols-1 lg:grid-cols-2">
       <CuandoSeVende d={d} />
@@ -114,7 +128,7 @@ function CuandoSeVende({ d }: { readonly d: Datos }) {
               { clave: 'antes', nombre: `Antes (${frenteA(d.periodo)})`, color: ANTES },
             ]}
             alto={200}
-            formato={(v) => dinero(v * 100)}
+            formato={enElEje}
             cuandoNoHay={null}
           />
         ) : (
@@ -459,7 +473,7 @@ function LasSemanas({ d }: { readonly d: Datos }) {
             forma="barras"
             series={[{ clave: 'ventas', nombre: 'Ventas', color: ACENTO }]}
             alto={170}
-            formato={(v) => dinero(v * 100)}
+            formato={enElEje}
             cuandoNoHay={null}
           />
         )}

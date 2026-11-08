@@ -628,3 +628,69 @@ describe('B8 en Estook TPV', () => {
     expect(contraste(delTpv('charcoal'), delTpv('fondo'))).toBeGreaterThan(1.2);
   });
 });
+
+/*
+ * ── Estook TPV en claro (el repaso del 8-nov, 0143) ──────────────────────────
+ *
+ * Los mismos mínimos. Aquí «lo marcado» es un escalón claro con texto oscuro encima, y lo
+ * elegido va en `bg-texto text-superficie`.
+ */
+function delTpvClaro(nombre: string): string {
+  const bloque = TEMAS.slice(TEMAS.indexOf(":root[data-tema='tpv-claro']"));
+  const encontrado = new RegExp(`--color-${nombre}:\\s*(#[0-9a-fA-F]{6})`).exec(bloque);
+  if (!encontrado?.[1]) throw new Error(`No esta declarado --color-${nombre} en el TPV claro`);
+  return encontrado[1];
+}
+
+describe('B8 en Estook TPV claro', () => {
+  it('los tres tonos de texto se leen sobre el fondo, la tarjeta y lo marcado', () => {
+    for (const tono of ['texto', 'texto-suave', 'texto-tenue']) {
+      for (const sobre of ['fondo', 'superficie', 'charcoal']) {
+        expect(
+          contraste(delTpvClaro(tono), delTpvClaro(sobre)),
+          `${tono} sobre ${sobre}`,
+        ).toBeGreaterThanOrEqual(TEXTO);
+      }
+    }
+  });
+
+  it('los cuatro estados se leen, y también sobre su propio fondo', () => {
+    for (const estado of ['bien', 'atencion', 'mal', 'info']) {
+      expect(
+        contraste(delTpvClaro(estado), delTpvClaro('superficie')),
+        estado,
+      ).toBeGreaterThanOrEqual(TEXTO);
+      expect(
+        contraste(delTpvClaro(estado), delTpvClaro(`${estado}-suave`)),
+        `${estado} sobre su fondo`,
+      ).toBeGreaterThanOrEqual(TEXTO);
+    }
+  });
+
+  it('lo elegido (bg-texto text-superficie) se lee, y lo marcado se separa del fondo', () => {
+    expect(contraste(delTpvClaro('superficie'), delTpvClaro('texto'))).toBeGreaterThanOrEqual(
+      TEXTO,
+    );
+    expect(contraste(delTpvClaro('charcoal'), delTpvClaro('superficie'))).toBeGreaterThan(1.15);
+  });
+
+  it('las baldosas de sección llevan el texto del fondo legible encima', () => {
+    for (const fondo of [
+      'bien',
+      'atencion',
+      'mal',
+      'info',
+      'app-carta',
+      'app-equipo',
+      'app-servicio',
+      'app-cuaderno',
+      'seccion-amarillo',
+      'seccion-marron',
+    ]) {
+      expect(
+        contraste(delTpvClaro('fondo'), delTpvClaro(fondo)),
+        `fondo sobre ${fondo}`,
+      ).toBeGreaterThanOrEqual(ICONO);
+    }
+  });
+});

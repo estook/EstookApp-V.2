@@ -148,6 +148,8 @@ const POR_EL_NOMBRE: readonly (readonly [RegExp, IconoDeLaSeccion, ColorDeLaBoto
   [/fruta/, 'cherry', 'rojo'],
   [/(entrante|para picar|picoteo|tapa|racion|ensalada|primero|compartir)/, 'salad', 'verde'],
   [/(menu|del dia|chef|degustacion)/, 'chef-hat', 'naranja'],
+  // Lo principal de la carta (0143): «Principales» salía en gris y sin nada que lo distinguiera.
+  [/(principal|segundo|plato fuerte|especialidad|de la casa)/, 'utensils-crossed', 'morado'],
 ];
 
 /**

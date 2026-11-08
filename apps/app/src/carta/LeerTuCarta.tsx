@@ -251,7 +251,7 @@ export function LeerTuCarta({
     ) : null;
 
   return (
-    <Hoja abierta alCerrar={alCerrar} titulo="Leer tu carta" {...(pie === null ? {} : { pie })}>
+    <Hoja abierta alCerrar={alCerrar} titulo="Importar tu carta" {...(pie === null ? {} : { pie })}>
       <div className="flex flex-col gap-e3 pt-e3">
         {error !== null && <ErrorEnCristiano error={error} />}
         {problema !== null && (

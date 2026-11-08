@@ -134,7 +134,7 @@ export function ElMenuDelDia({
               }}
               className={[
                 'min-h-toque rounded-redondo px-e4 font-semibold',
-                m.id === menu.id ? 'bg-charcoal text-white' : 'border border-borde bg-superficie',
+                m.id === menu.id ? 'bg-texto text-superficie' : 'border border-borde bg-superficie',
               ].join(' ')}
             >
               {m.nombre} · {euros(m.precioCentimos)}

@@ -21,7 +21,8 @@ import { elPaseDeFabrica } from '../logica/laCuenta.ts';
 import { elNumeroDelPase, laPestanaDelPase, type PestanaDelPase } from '../logica/losPases.ts';
 import { elAlergeno, euros } from '../logica/texto.ts';
 import { irA } from '../navegar.ts';
-import { COMO_SE_VE_EL_COLOR } from '../productos/colores.ts';
+import { COMO_SE_VE_EL_COLOR, laBaldosa } from '../productos/colores.ts';
+import { EL_ICONO } from '../productos/iconosDeLaSeccion.ts';
 import { LaBaldosaDeLaSeccion } from '../productos/LaBaldosaDeLaSeccion.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ElMenuDelDia } from './ElMenuDelDia.tsx';
@@ -182,6 +183,18 @@ export function LoQueSePide({
     alCambiarElBorrador(nuevo);
   }
 
+  // El icono y el color de la sección de cada plato: un botón sin foto lleva los suyos
+  // (0143). Lo encontrado y «Lo más pedido» vienen de varias secciones.
+  const deSuSeccion = useMemo(() => {
+    const mapa = new Map<string, LaSeccionDelPlato>();
+    for (const g of paginas) {
+      const icono = g.icono ?? comoSeVeElNombre(g.nombre).icono;
+      for (const p of g.platos) if (!mapa.has(p.id)) mapa.set(p.id, { icono, color: g.color });
+    }
+    return (p: PlatoDeLaSala): LaSeccionDelPlato =>
+      mapa.get(p.id) ?? { icono: comoSeVeElNombre(p.nombre).icono, color: p.color };
+  }, [paginas]);
+
   const sinNada = paginas.length === 0;
   const montaLaBotonera = puedeEditar(yo.permisos, 'accion.ajustes_del_tpv');
 
@@ -271,6 +284,7 @@ export function LoQueSePide({
             <LosProductos
               platos={encontradas}
               cuantos={cuantos}
+              deSuSeccion={deSuSeccion}
               alergias={alergias}
               alPedir={pedir}
               alMantener={setPulsado}
@@ -290,6 +304,7 @@ export function LoQueSePide({
           <LosProductos
             platos={masPedido}
             cuantos={cuantos}
+            deSuSeccion={deSuSeccion}
             alergias={alergias}
             alPedir={pedir}
             alMantener={setPulsado}
@@ -333,6 +348,7 @@ export function LoQueSePide({
           <LosProductos
             platos={laDeAhora.platos}
             cuantos={cuantos}
+            deSuSeccion={deSuSeccion}
             alergias={alergias}
             alPedir={pedir}
             alMantener={setPulsado}
@@ -429,26 +445,34 @@ function BotonDeSeccion({
   );
 }
 
+interface LaSeccionDelPlato {
+  readonly icono: IconoDeLaSeccion;
+  readonly color: ColorDeLaBotonera | null;
+}
+
 function LosProductos({
   platos,
   cuantos,
+  deSuSeccion,
   alergias,
   alPedir,
   alMantener,
 }: {
   readonly platos: readonly PlatoDeLaSala[];
   readonly cuantos: (p: PlatoDeLaSala) => number;
+  readonly deSuSeccion: (p: PlatoDeLaSala) => LaSeccionDelPlato;
   readonly alergias: readonly string[];
   readonly alPedir: (p: PlatoDeLaSala) => void;
   readonly alMantener: (p: PlatoDeLaSala) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-e2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-e2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {platos.map((p) => (
         <Producto
           key={p.id}
           plato={p}
           cuantos={cuantos(p)}
+          seccion={deSuSeccion(p)}
           alergias={alergias}
           alPedir={() => {
             alPedir(p);
@@ -462,15 +486,23 @@ function LosProductos({
   );
 }
 
+/**
+ * **Un producto** (el repaso del 8-nov, 0143): **la foto arriba**, la que se sube en Estook ›
+ * Carta, y debajo su nombre y su precio; sin foto, **el icono de su sección sobre su color**,
+ * nunca un hueco. El color de la sección, en una línea abajo; con alergia en la mesa, el
+ * borde en rojo; lo que ya hay en la cuenta, su número en naranja.
+ */
 function Producto({
   plato,
   cuantos,
+  seccion,
   alergias,
   alPedir,
   alMantener,
 }: {
   readonly plato: PlatoDeLaSala;
   readonly cuantos: number;
+  readonly seccion: LaSeccionDelPlato;
   readonly alergias: readonly string[];
   readonly alPedir: () => void;
   readonly alMantener: () => void;
@@ -482,31 +514,42 @@ function Producto({
   const pulsar = usarPulsacionLarga(alMantener, () => {
     if (!plato.agotado) alPedir();
   });
+  const color = plato.color ?? seccion.color;
+  const ElIcono = EL_ICONO[seccion.icono];
   return (
     <button
       type="button"
       {...pulsar}
       aria-label={`${plato.nombre}, ${euros(plato.precioCentimos)} €${plato.agotado ? ', agotado' : ''}`}
       className={[
-        'relative flex min-h-[4.5rem] items-stretch gap-e2 overflow-hidden rounded-grande border bg-superficie text-left transition-transform active:scale-[0.98] sm:min-h-[5.5rem]',
-        cuantos > 0 ? 'border-naranja' : lleva ? 'border-mal' : 'border-borde',
-        plato.color === null ? '' : `border-l-[6px] ${COMO_SE_VE_EL_COLOR[plato.color].franja}`,
+        'relative flex flex-col overflow-hidden rounded-grande border-2 bg-superficie text-left transition-transform active:scale-[0.98]',
+        cuantos > 0 ? 'border-naranja' : lleva ? 'border-mal' : 'border-transparent',
         plato.agotado ? 'opacity-50' : '',
       ].join(' ')}
     >
-      {plato.miniatura !== null && (
+      {plato.miniatura !== null ? (
         <img
           src={plato.miniatura}
           alt=""
-          className="w-[3.5rem] shrink-0 object-cover sm:w-[4.5rem]"
+          className={[
+            'h-[4.25rem] w-full object-cover sm:h-[5.25rem]',
+            plato.agotado ? 'grayscale' : '',
+          ].join(' ')}
           loading="lazy"
         />
+      ) : (
+        <span
+          aria-hidden="true"
+          className={`flex h-[4.25rem] w-full items-center justify-center sm:h-[5.25rem] ${laBaldosa(color)}`}
+        >
+          <ElIcono size={30} strokeWidth={2} />
+        </span>
       )}
-      <span className="flex min-w-0 flex-1 flex-col justify-center gap-[2px] py-e2 pl-e3 pr-e2">
+      <span className="flex min-h-[3.25rem] flex-1 flex-col gap-[2px] px-e3 pb-e2 pt-e2">
         <span className="line-clamp-2 font-semibold leading-tight [overflow-wrap:anywhere]">
           {plato.nombre}
         </span>
-        <span className="text-secundario text-texto-suave">
+        <span className="text-secundario font-semibold text-texto-suave">
           {plato.agotado
             ? 'Agotado'
             : `${euros(plato.precioCentimos)}${plato.aPeso === true ? ' el kilo' : ''}`}
@@ -523,8 +566,11 @@ function Producto({
           </span>
         )}
       </span>
+      {color !== null && (
+        <span aria-hidden="true" className={`h-[4px] w-full ${COMO_SE_VE_EL_COLOR[color].punto}`} />
+      )}
       {cuantos > 0 && (
-        <span className="absolute right-e1 top-e1 rounded-redondo bg-naranja px-e2 text-etiqueta font-bold text-sobre-naranja">
+        <span className="absolute right-e1 top-e1 flex min-w-[1.75rem] items-center justify-center rounded-redondo bg-naranja px-e2 py-[2px] text-secundario font-bold text-sobre-naranja shadow">
           {cuantos}
         </span>
       )}

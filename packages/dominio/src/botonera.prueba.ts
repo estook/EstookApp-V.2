@@ -145,6 +145,9 @@ describe('el icono y el color de cada sección, por su nombre (R3, 0133)', () =>
     expect(ve('Hamburguesas')).toBe('sandwich arena');
     expect(ve('Postres')).toBe('cake-slice rosa');
     expect(ve('Pan y agua')).toBe('wheat arena');
+    // El repaso del 8-nov (0143): lo principal ya no sale en gris.
+    expect(ve('Principales')).toBe('utensils-crossed morado');
+    expect(ve('Segundos')).toBe('utensils-crossed morado');
   });
 
   it('las palabras cortas no se cuelan dentro de otras', () => {

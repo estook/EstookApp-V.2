@@ -27,8 +27,12 @@ test('Empleados: la semana, y los objetivos en su hoja', async ({ page }) => {
     'aria-checked',
     'true',
   );
+  // Lo de antes se lee, no se da por hecho: la base de las pruebas es una para escritorio,
+  // móvil y Safari, y si otro tamaño ya guardó, aquí no empieza en 45 (el repaso del 8-nov).
+  const cifra = hoja.getByText(/^\d+$/).first();
+  const antes = Number(await cifra.textContent());
   await hoja.getByRole('button', { name: 'Un euro más' }).click();
-  await expect(hoja.getByText('46', { exact: true })).toBeVisible();
+  await expect(hoja.getByText(String(antes + 1), { exact: true })).toBeVisible();
   await hoja.getByRole('radio', { name: 'Por empleado' }).click();
   await hoja.getByRole('radio', { name: 'General' }).click();
   await hoja.getByRole('button', { name: 'Guardar' }).click();

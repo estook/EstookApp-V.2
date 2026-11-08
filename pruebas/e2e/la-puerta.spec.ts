@@ -48,6 +48,9 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
     timeout: 15_000,
   });
   await page.getByRole('button', { name: 'Entrar con mi correo' }).click();
+  // «Continuar con Google» (0142): no salía porque se pedía `como_se_entra` como comando, y
+  // es una consulta (Richi, 8-nov).
+  await expect(page.getByRole('button', { name: 'Continuar con Google' })).toBeVisible();
   await page.getByLabel('Correo').fill(correo);
   await page.getByLabel('Contraseña').fill(CLAVE);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();

@@ -187,7 +187,7 @@ export function ElPlano() {
           }}
           className={[
             'ml-auto flex min-h-toque shrink-0 items-center gap-e1 rounded-redondo border-2 px-e3 font-semibold md:ml-0',
-            soloMias ? 'border-charcoal bg-charcoal text-white' : 'border-borde bg-transparent',
+            soloMias ? 'border-texto bg-texto text-superficie' : 'border-borde bg-transparent',
           ].join(' ')}
         >
           <IconoPersona size={16} aria-hidden />
@@ -396,7 +396,7 @@ function BotonDeZona({
       onClick={onClick}
       className={[
         'min-h-toque shrink-0 rounded-redondo px-e4 font-semibold',
-        puesto ? 'bg-charcoal text-white' : 'bg-transparent text-texto',
+        puesto ? 'bg-texto text-superficie' : 'bg-transparent text-texto',
       ].join(' ')}
     >
       {children}

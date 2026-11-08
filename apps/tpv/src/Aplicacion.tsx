@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useSyncExternalStore } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { puedeEditar } from '@estook/permisos';
 import { Boton, EstadoVacio, usarTamanoDeLetra } from '@estook/ui';
+import { usarElTemaDelTpv } from './ganchos/usarElTema.ts';
 import { LaPuerta } from './puerta/LaPuerta.tsx';
 import { InstalaEstookTpv } from './puerta/InstalaEstookTpv.tsx';
 import { ElPlano } from './plano/ElPlano.tsx';
@@ -87,10 +88,8 @@ function Dentro() {
 }
 
 export function Aplicacion() {
-  // **Solo oscuro** (respuesta 8 de la 0107, Anexo 11.12): las fichas de Estook TPV.
-  useEffect(() => {
-    document.documentElement.dataset['tema'] = 'tpv';
-  }, []);
+  // Oscuro de fábrica (0107, Anexo 11.12); claro o automático, si se elige en Ajustes (0143).
+  usarElTemaDelTpv();
   usarTamanoDeLetra('normal');
   const cache = useMemo(
     () =>

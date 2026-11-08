@@ -182,9 +182,7 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     // las ventas** (la pausa del 8-nov, 0142): son de Estook TPV, y sale cómo ponerlo, con la
     // descarga para Windows. Con Esencial se sigue preguntando (pantalla.spec).
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ya está');
-    await expect(
-      page.getByRole('heading', { name: 'Tus ventas entran solas con Estook TPV' }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Estook TPV', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: /Descargar para Windows/ })).toBeVisible();
     await expect(page.getByRole('radio', { name: /^Lo apunto yo/ })).toHaveCount(0);
     await page.getByRole('button', { name: /Entrar en/ }).click();

@@ -52,7 +52,9 @@ test('Google y el punto exacto van juntos en Tu local, y Conexiones es solo de v
   await expect(page.getByText('Marcar a mano el punto exacto')).toBeVisible();
 
   await abrirSinQueSeCaiga(page, `${APP}#/ajustes/conexiones`);
-  await expect(page.getByRole('heading', { level: 2, name: 'Tus ventas' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Estook TPV', exact: true }),
+  ).toBeVisible();
   await expect(page.getByRole('heading', { level: 2, name: 'Dónde está tu local' })).toHaveCount(0);
 });
 

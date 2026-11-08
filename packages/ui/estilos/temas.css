@@ -203,6 +203,57 @@
   }
 
   /*
+   * **Estook TPV en claro** (el repaso del 8-nov, 0143): Richi lo pidió para la barra con
+   * sol y para quien trabaja con luz. Es el claro de la app con dos cambios: «lo marcado»
+   * (`charcoal`) es un escalón **claro** por encima de la tarjeta, no un negro, porque en el
+   * TPV se usa como superficie de los botones secundarios; y el texto tenue es un punto más
+   * oscuro para leerse también encima de ese escalón. Lo elegido va en `bg-texto
+   * text-superficie`, que se lee en los dos. Lo mide `contraste.prueba.ts`.
+   */
+  :root[data-tema='tpv-claro'] {
+    --color-fondo: #f1efea;
+    --color-superficie: #ffffff;
+    --color-borde: #e0dcd4;
+    --color-borde-fuerte: #a49b8c;
+
+    --color-texto: #111c1f;
+    --color-texto-suave: #4f5a5d;
+    --color-texto-tenue: #576063;
+
+    --color-charcoal: #ebe7e0;
+
+    --color-bien: #187648;
+    --color-atencion: #8a5200;
+    --color-mal: #b3261e;
+    --color-info: #2c6e9b;
+
+    --color-bien-suave: #e7f4ee;
+    --color-atencion-suave: #fdf1de;
+    --color-mal-suave: #fbeae8;
+    --color-info-suave: #e8f0f6;
+
+    --color-naranja-suave: #fff1e5;
+
+    --color-app-panel: #111c1f;
+    --color-app-almacen: #c77700;
+    --color-app-escandallos: #1e8e5a;
+    --color-app-carta: #b23a6e;
+    --color-app-calendario: #2c6e9b;
+    --color-app-equipo: #6b4fbb;
+    --color-app-servicio: #0f8b8d;
+    --color-app-negocio: #c4372b;
+    --color-app-cuaderno: #7a6a56;
+
+    --color-seccion-amarillo: #9a7400;
+    --color-seccion-marron: #8a5a36;
+
+    --sombra-tarjeta: 0 1px 2px rgba(17, 28, 31, 0.06), 0 6px 18px -10px rgba(17, 28, 31, 0.18);
+    --relleno-tarjeta: none;
+
+    color-scheme: light;
+  }
+
+  /*
    * «El del sistema» solo es oscuro **cuando el sistema lo es**. Sin esto, elegir
    * «el del sistema» dejaria la aplicacion siempre oscura, que es lo contrario de
    * lo que dice la opcion.

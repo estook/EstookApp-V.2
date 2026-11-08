@@ -16,6 +16,7 @@ import { ImpresorasYCajon } from './ImpresorasYCajon.tsx';
 import { Productos } from '../productos/Productos.tsx';
 import { LaDeclaracion } from './LaDeclaracion.tsx';
 import { ComoFacturaEnUnaLinea, LaFacturacion } from './LaFacturacion.tsx';
+import { ponerElTema, usarElTemaElegido, type TemaDelTpv } from '../ganchos/usarElTema.ts';
 
 /**
  * **Ajustes del TPV**, detrás del engranaje (la entrada nueva, maqueta 2; Anexo 11.13): todo lo
@@ -168,20 +169,26 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
   // La sala y los agotados son pantallas enteras: aquí dentro, solo los otros cuatro.
   const puede = (id: string) => DE_AQUI_DENTRO.includes(id) && apartados.some((a) => a.id === id);
 
+  // **«Tu sesión», en todos los aparatos** (0143): cambiar de persona y el tema se tocan
+  // también en el comandero; lo demás, solo en la caja (0115).
   if (aparato.funcion !== 'caja' || apartados.length === 0) {
     return (
       <div className="flex min-h-pantalla flex-col bg-fondo text-texto">
         <LaBarraDeArriba titulo="Ajustes" />
-        <main className="p-e5">
+        <main className="flex w-full max-w-[40rem] flex-col gap-e5 p-e4 md:p-e5">
+          <TuSesion desvincular={false} />
           <EstadoVacio
-            titulo="Aquí no se tocan los ajustes"
+            compacto
+            titulo={
+              aparato.funcion !== 'caja' ? 'Lo demás, en la caja' : 'Lo demás, quien lleva el local'
+            }
             frase={
               aparato.funcion !== 'caja'
-                ? 'Los ajustes del TPV se tocan en la caja.'
-                : 'Los ajustes del TPV los toca quien lleva el local.'
+                ? 'La sala, los productos, las impresoras y los aparatos se ajustan en la caja.'
+                : 'La sala, los productos, las impresoras y los aparatos los ajusta quien lleva el local.'
             }
             dibujo="candado"
-            sinAccionPorque="No hay nada que hacer aquí."
+            sinAccionPorque="No hay nada más que hacer aquí."
           />
         </main>
       </div>
@@ -196,6 +203,9 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
         <LaBarraDeArriba titulo="Ajustes" />
         <main className="flex flex-col gap-e4 p-e4 md:p-e5">
           <div className="gap-e5 md:columns-2">
+            <div className="mb-e5 break-inside-avoid">
+              <TuSesion desvincular={puedeEditar(yo.permisos, 'accion.vincular_aparatos')} />
+            </div>
             {GRUPOS.map((grupo) => {
               const suyos = apartados.filter((a) => a.grupo === grupo);
               if (suyos.length === 0) return null;
@@ -205,7 +215,7 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
                   aria-label={grupo}
                   className="mb-e5 flex break-inside-avoid flex-col gap-e2"
                 >
-                  <h2 className="text-seccion font-bold">{grupo}</h2>
+                  <h2 className="text-pantalla font-bold">{grupo}</h2>
                   <div className="flex flex-col overflow-hidden rounded-mayor bg-superficie">
                     {suyos.map((a) => (
                       <Fila key={a.id} apartado={a} />
@@ -215,9 +225,6 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
               );
             })}
           </div>
-          <p className="text-secundario text-texto-tenue">
-            Lo de vender. La carta, los precios y el equipo, en Estook.
-          </p>
         </main>
       </div>
     );
@@ -289,17 +296,101 @@ function Fila({ apartado: a }: { readonly apartado: Apartado }) {
       onClick={() => {
         irA(a.ir);
       }}
-      className="flex min-h-toque-cocina items-center gap-e3 border-b border-borde px-e3 py-e2 text-left last:border-b-0 active:bg-charcoal"
+      className="flex min-h-[4.5rem] items-center gap-e4 border-b border-borde px-e4 py-e3 text-left last:border-b-0 active:bg-charcoal"
     >
-      <IconoEnSuColor dibujo={a.dibujo} tono={a.tono} lado={36} />
+      <IconoEnSuColor dibujo={a.dibujo} tono={a.tono} lado={44} />
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="font-bold">{a.nombre}</span>
-        <span className="truncate text-secundario text-texto-suave">
+        <span className="text-seccion font-bold">{a.nombre}</span>
+        <span className="truncate text-cuerpo text-texto-suave">
           <ComoEsta id={a.id} />
         </span>
       </span>
-      <IconoFlechaDerecha size={20} className="shrink-0 text-texto-tenue" />
+      <IconoFlechaDerecha size={22} className="shrink-0 text-texto-tenue" />
     </button>
+  );
+}
+
+const LOS_TEMAS: readonly { readonly valor: TemaDelTpv; readonly texto: string }[] = [
+  { valor: 'claro', texto: 'Claro' },
+  { valor: 'oscuro', texto: 'Oscuro' },
+  { valor: 'auto', texto: 'Auto' },
+];
+
+/**
+ * **Tu sesión** (el repaso del 8-nov, 0143): **cambiar de persona** (vuelve al PIN y deja el
+ * aparato listo para el siguiente), **el tema** de este aparato y, a quien vincula aparatos en
+ * la caja, **desvincular este aparato**, que lleva a su ficha y pide confirmar allí.
+ */
+function TuSesion({ desvincular }: { readonly desvincular: boolean }) {
+  const { yo, aparato, bloquear } = usarSesion();
+  const tema = usarElTemaElegido();
+  return (
+    <section aria-label="Tu sesión" className="flex flex-col gap-e2">
+      <h2 className="text-pantalla font-bold">Tu sesión</h2>
+      <div className="flex flex-col overflow-hidden rounded-mayor bg-superficie">
+        <button
+          type="button"
+          onClick={bloquear}
+          className="flex min-h-[4.5rem] items-center gap-e4 border-b border-borde px-e4 py-e3 text-left active:bg-charcoal"
+        >
+          <IconoEnSuColor dibujo="persona" tono="azul" lado={44} />
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="text-seccion font-bold">Cambiar de persona</span>
+            <span className="truncate text-cuerpo text-texto-suave">
+              Ahora {yo.nombre} · vuelve al PIN
+            </span>
+          </span>
+          <IconoFlechaDerecha size={22} className="shrink-0 text-texto-tenue" />
+        </button>
+        <div className="flex min-h-[4.5rem] flex-wrap items-center gap-e4 px-e4 py-e3">
+          <IconoEnSuColor dibujo="tema" tono="ambar" lado={44} />
+          <span id="el-tema" className="flex-1 text-seccion font-bold">
+            Tema
+          </span>
+          <div
+            role="radiogroup"
+            aria-labelledby="el-tema"
+            className="flex rounded-grande bg-charcoal p-[3px]"
+          >
+            {LOS_TEMAS.map((t) => (
+              <button
+                key={t.valor}
+                type="button"
+                role="radio"
+                aria-checked={tema === t.valor}
+                onClick={() => {
+                  ponerElTema(t.valor);
+                }}
+                className={[
+                  'min-h-toque rounded-medio px-e4 font-bold',
+                  tema === t.valor ? 'bg-superficie text-texto shadow' : 'text-texto-suave',
+                ].join(' ')}
+              >
+                {t.texto}
+              </button>
+            ))}
+          </div>
+        </div>
+        {desvincular && (
+          <button
+            type="button"
+            onClick={() => {
+              irA(`ajustes/aparatos/${aparato.terminalId}`);
+            }}
+            className="flex min-h-[4.5rem] items-center gap-e4 border-t border-borde px-e4 py-e3 text-left active:bg-charcoal"
+          >
+            <IconoEnSuColor dibujo="salir" tono="rojo" lado={44} />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-seccion font-bold text-mal">Desvincular este aparato</span>
+              <span className="truncate text-cuerpo text-texto-suave">
+                {aparato.nombre} deja de valer · se vuelve con un código
+              </span>
+            </span>
+            <IconoFlechaDerecha size={22} className="shrink-0 text-texto-tenue" />
+          </button>
+        )}
+      </div>
+    </section>
   );
 }
 

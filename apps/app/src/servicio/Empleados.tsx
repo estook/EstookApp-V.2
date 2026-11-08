@@ -170,9 +170,9 @@ export function Empleados() {
             compacto
             dibujo="libro"
             acento={ACENTO}
-            titulo="Todavía no hay ventas de nadie en este periodo"
-            frase="Salen de las mesas de Estook TPV: lo que se vende es de quien lleva la mesa."
-            sinAccionPorque="Sale de las mesas de Estook TPV."
+            titulo="Sin ventas en este periodo"
+            frase="Cada uno suma lo que se vende en las mesas que lleva en Estook TPV."
+            sinAccionPorque="Llegan solas."
           />
         </Tarjeta>
       ) : (

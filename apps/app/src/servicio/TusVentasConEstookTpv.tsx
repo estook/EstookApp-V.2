@@ -21,12 +21,12 @@ export function TusVentasConEstookTpv({ modo }: { readonly modo: 'alta' | 'ajust
     >
       <div>
         <h2 id="tus-ventas-con-estook-tpv" className="text-seccion font-semibold">
-          Tus ventas entran solas con Estook TPV
+          Estook TPV
         </h2>
         <p className="text-secundario text-texto-suave">
           {modo === 'alta'
-            ? 'Viene con tu plan. Instálalo en la caja y vincúlala con tu correo o con Google: cinco minutos.'
-            : 'Viene con tu plan: lo que se vende en la sala entra solo en Estook, sin subir nada.'}
+            ? 'Instálalo en la caja y vincúlala con tu correo o con Google.'
+            : 'Instálalo en la caja.'}
         </p>
       </div>
 

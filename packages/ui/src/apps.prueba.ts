@@ -391,8 +391,8 @@ describe('lo construido y lo que llega', () => {
     expect(dondeEntra(laApp('almacen'))?.id).toBe('resumen');
     // Equipo entra en su Resumen, que ya no es un cartel: quién ha fichado y quién no.
     expect(dondeEntra(laApp('equipo'))?.id).toBe('resumen');
-    // Y Servicio entra en la jornada por «En marcha», lo que pasa ahora (M16a, 0105).
-    expect(rutaDe(laApp('servicio'))).toBe('/servicio/jornada/en-marcha');
+    // Y Servicio entra en Jornadas por «Información», lo que se vende (0142; antes «En marcha»).
+    expect(rutaDe(laApp('servicio'))).toBe('/servicio/jornada/informacion');
   });
 
   it('la ruta lleva la vista de entrada cuando el destino tiene vistas', () => {
@@ -420,16 +420,19 @@ describe('lo construido y lo que llega', () => {
 
     // El orden de la tabla del Plan se respeta tal cual: no se reordena el
     // catálogo para esquivar el problema.
-    expect(jornada.vistas.map((v) => v.nombre)).toEqual(['En marcha', 'Caja', 'Cierre']);
-    // Con M16a «En marcha» ya existe, y se entra por ella; la caja sigue esperando a M20C.
-    expect(dondeEntraEnElDestino(jornada)?.id).toBe('en-marcha');
-    expect(vistasConstruidas(jornada).map((v) => v.id)).toEqual(['en-marcha', 'cierre']);
+    expect(jornada.vistas.map((v) => v.nombre)).toEqual(['Información', 'Cierre']);
+    // Desde la 0142 se entra por «Información»; la caja vive en Estook TPV.
+    expect(dondeEntraEnElDestino(jornada)?.id).toBe('informacion');
+    expect(vistasConstruidas(jornada).map((v) => v.id)).toEqual(['informacion', 'cierre']);
 
     // Y la regla, con un destino cuya primera vista está por construir: hasta M16a era
     // la jornada misma, y la pantalla que funcionaba no puede quedar detrás del cartel.
     const conLaPrimeraPendiente = {
       ...jornada,
-      vistas: [{ id: 'en-marcha', nombre: 'En marcha', modulo: 'M16' }, ...jornada.vistas.slice(1)],
+      vistas: [
+        { id: 'informacion', nombre: 'Información', modulo: 'M16' },
+        ...jornada.vistas.slice(1),
+      ],
     };
     expect(dondeEntraEnElDestino(conLaPrimeraPendiente)?.id).toBe('cierre');
   });
@@ -444,7 +447,7 @@ describe('lo construido y lo que llega', () => {
       vistas: ventas.vistas.map((v) => ({ ...v, modulo: v.modulo ?? 'M99' })),
     };
     expect(vistasConstruidas(nadaHecho)).toHaveLength(0);
-    expect(dondeEntraEnElDestino(nadaHecho)?.id).toBe('del-turno');
+    expect(dondeEntraEnElDestino(nadaHecho)?.id).toBe('tickets-y-facturas');
   });
 
   it('Servicio · Ventas entra por «Tickets y facturas», que es lo construido (0136)', () => {

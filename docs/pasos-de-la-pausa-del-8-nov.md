@@ -90,3 +90,50 @@ Si algo falla, no sigas y pásame una foto de lo que dice la pantalla.
   (espera diez minutos).
 - **No sale «Busca tu local en Google»** en el alta: el servidor no tiene la clave de Google, o se acabó el tope del
   mes de ese local. Se escribe a mano, como antes.
+
+---
+
+# P2 · Información e Informes
+
+> | Qué              | Cómo está                                                                        |
+> | ---------------- | -------------------------------------------------------------------------------- |
+> | El pull request  | «La pausa del 8-nov · P2 · Información e Informes», encima del de P1             |
+> | La base de datos | **Hay que migrar**: pasa de 111 a **112** (la 0112, dos funciones que solo leen) |
+> | La API           | Hay que desplegarla **después de migrar**: **127 consultas** y 357 comandos      |
+
+## Lo que cambia para ti
+
+- **Servicio › Jornadas › Información**, donde estaba «En marcha»: lo que más sale, lo que más factura y lo que más
+  te deja, por sección y, plegada, **tu carta en cuatro** (estrellas, caballos, puzzles y perros). En «Hoy», arriba,
+  si el día está abierto, las mesas que hay y «Cerrar el día».
+- **Negocio › Informes**: cuándo se vende (por hora, o por día y hora), la cocina (el tiempo de salida y lo que sale
+  tarde), lo que se tuerce (devueltos, cambiados, quitados y mesas anuladas) y las ocho últimas semanas.
+- **En Estook TPV, al anular una mesa**: tres motivos de un toque.
+
+## Lo que te toca
+
+**Primero P1** (arriba). Después, igual: en GitHub, **Merge pull request** del de P2; en PowerShell, uno por uno:
+
+```powershell
+git checkout main
+```
+
+```powershell
+git pull
+```
+
+```powershell
+.\estook.cmd bd:migrar
+```
+
+**Tiene que decir** que aplica la `0112_lo_que_se_vende`. Y en GitHub, **Actions** → **Desplegar la API** →
+**Run workflow**.
+
+## Lo que hay que probar
+
+1. **En IKATZ, Servicio › Jornadas**: entra en **Información**. Si ese día hubo mesas en Estook TPV, salen los platos;
+   si no, lo de tus cierres. Toca **Semana** y la flecha de la izquierda.
+2. **«Deja más»** y, abajo, **«Tu carta en cuatro»**: los platos con escandallo salen en su cuadrante.
+3. **Negocio › Informes › Semana**: con mesas en el TPV, las cuatro tarjetas; **La cocina** solo tiene tiempos si la
+   cocina tacha en la pantalla de cocina.
+4. **En Estook TPV**, abre una mesa de prueba, «···» → «Anular la mesa»: **tienen que salir** los tres motivos.

@@ -196,10 +196,6 @@ export const MODULOS: Readonly<Record<string, string>> = {
   M16: 'M16 · Servicio, APPCC y trazabilidad',
   M17: 'M17 · Cuaderno',
   M20: 'M20 · Ventas, emparejamiento y consumo',
-  // La caja y los tickets del TPV de Estook. Es M20C y no M20 a secas: son dos
-  // fichas distintas del Plan, y decir «M20» donde va «M20C» le promete a quien
-  // lee la pantalla un modulo que llega antes de lo que llega de verdad.
-  M20C: 'M20C · Cobro y caja',
   M21: 'M21 · Negocio, analítica y Estook Pulse',
   M29: 'M29 · Canales de reparto e integraciones',
 };
@@ -557,7 +553,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     destinos: [
       {
         id: 'jornada',
-        nombre: 'Jornada',
+        nombre: 'Jornadas',
         icono: IconoServicio,
         queContesta: '¿Qué está pasando ahora mismo en el local?',
         // **El cierre es una vista de la jornada, no un destino.** Cerrar la
@@ -580,7 +576,11 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // la caja mientras se sirve, y el cierre al final. **No es el orden en el
         // que se han construido**, y por eso se entra por `dondeEntraEnElDestino`
         // y no por la primera. Con M16a, la primera ya es la que funciona.
-        vistas: vistas('En marcha', ['Caja', 'M20C'], 'Cierre'),
+        //
+        // **Desde la pausa del 8-nov (0142)**: «En marcha» pasa a **Información** —lo que se
+        // vende, con una línea en vivo arriba si es hoy— y la vista «Caja» sale: la caja se abre
+        // y se cierra en Estook TPV (T7), y aquí se ven sus cierres, en «Cierre».
+        vistas: vistas('Información', 'Cierre'),
       },
       {
         id: 'ventas',
@@ -593,12 +593,9 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // conector o TPV— y llegan con M20. La ve quien hace facturas, también la sala (0137):
         // hacer una factura no pide acceso a la parte fiscal. Quien solo consulta, como la
         // gestoría, tiene su permiso, y lo que puede cada uno lo vuelve a mirar la API.
-        vistas: vistas(
-          ['Del turno', 'M20'],
-          ['Del día', 'M20'],
-          ['Por producto', 'M20'],
-          'Tickets y facturas',
-        ),
+        // «Del turno», «Del día» y «Por producto» eran carteles de M20 que nunca se llenaron:
+        // lo que iban a decir está en Jornadas › Información desde la 0142.
+        vistas: vistas('Tickets y facturas'),
         permiso: 'accion.factura_de_un_ticket',
       },
       {

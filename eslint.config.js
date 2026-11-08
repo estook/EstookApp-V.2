@@ -84,6 +84,8 @@ export default tseslint.config(
       'packages/dominio/src/cierre.ts',
       // M9 · 2 (0087): el escandallo suma en milésimas y redondea una vez, al final.
       'packages/dominio/src/escandallo.ts',
+      // La pausa del 8-nov (0142): lo que se vende, por plato y por hora, redondea al decirlo.
+      'packages/dominio/src/lo-que-se-vende.ts',
     ],
     rules: { 'no-restricted-syntax': 'off' },
   },

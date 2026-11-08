@@ -389,6 +389,7 @@ import {
   volverDelPago,
 } from './comandos/pago.ts';
 import { miLocalEnGoogle, miNotaEnGoogle } from './consultas/local-en-google.ts';
+import { elServicioPorDentro, loQueSeVende } from './consultas/lo-que-se-vende.ts';
 import {
   actualizarMiFichaDeGoogle,
   buscarMiLocalEnGoogle,
@@ -532,6 +533,9 @@ import {
  */
 export const catalogo = {
   consultas: {
+    // La pausa del 8-nov (0142): Información e Informes, de las mesas de Estook TPV.
+    [loQueSeVende.nombre]: loQueSeVende,
+    [elServicioPorDentro.nombre]: elServicioPorDentro,
     // La puerta del admin (0041): quién soy ahí, quién más entra y lo que se ha hecho.
     [yoEnElAdmin.nombre]: yoEnElAdmin,
     [accesosAlAdmin.nombre]: accesosAlAdmin,

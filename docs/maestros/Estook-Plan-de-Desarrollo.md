@@ -279,7 +279,7 @@ Ahora hay dos niveles, y cada uno tiene un trabajo:
 
 Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres niveles. La vista es un filtro de la pantalla del medio, no un piso más. Y **ninguna app vuelve a tener un «Más»**: lo que antes se metía ahí es una vista de un destino que sí contesta algo.
 
-> **Y por qué vista se entra a un destino: por la primera que esté construida.** No por la primera de la tabla. Las vistas se escriben aquí **en el orden en el que se entienden** —«En marcha · Caja · Cierre» es el orden de un día—, y ese orden casi nunca coincide con el orden en el que se construyen. Entrar por la primera de la lista dejaría la pantalla que de verdad funciona escondida detrás de un cartel de «todavía no», que es la pestaña muerta de arriba un piso más abajo. Una vista pendiente **sí se enseña** en el control segmentado, con su módulo: ahí no le quita el sitio a nada y contesta «¿y la caja, dónde está?» antes de que nadie la busque. Si ninguna está construida, se entra por la primera, porque la dirección tiene que seguir siendo copiable.
+> **Y por qué vista se entra a un destino: por la primera que esté construida.** No por la primera de la tabla. Las vistas se escriben aquí **en el orden en el que se entienden** —«Información · Cierre» es el orden de un día—, y ese orden casi nunca coincide con el orden en el que se construyen. Entrar por la primera de la lista dejaría la pantalla que de verdad funciona escondida detrás de un cartel de «todavía no», que es la pestaña muerta de arriba un piso más abajo. Una vista pendiente **sí se enseña** en el control segmentado, con su módulo: ahí no le quita el sitio a nada y contesta «¿y la caja, dónde está?» antes de que nadie la busque. Si ninguna está construida, se entra por la primera, porque la dirección tiene que seguir siendo copiable.
 
 | App         | Sus destinos                                         |
 | ----------- | ---------------------------------------------------- |
@@ -288,7 +288,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | Carta       | Carta · Canales · Menús · Análisis                   |
 | Calendario  | Calendario · Tareas · Turnos                         |
 | Equipo      | Resumen · Personas · Fichajes · Incidencias          |
-| Servicio    | Jornada · Ventas · Delivery · APPCC                  |
+| Servicio    | Jornadas · Ventas · Delivery · APPCC                 |
 | Negocio     | Ventas · Informes · Pulse · Costes · Reseñas         |
 | Cuaderno    | Incidencias · Notas · Equipos                        |
 
@@ -307,8 +307,8 @@ Y sus vistas, donde las hay:
 | Calendario · Tareas       | Pendientes · Periódicas · Hechas                                    |
 | Equipo · Personas         | Con acceso · Sin entrar todavía · Retirados                         |
 | Equipo · Incidencias      | Todas · Faltas · Retrasos · Fichajes                                |
-| Servicio · Jornada        | En marcha · Caja · Cierre                                           |
-| Servicio · Ventas         | Del turno · Del día · Por producto · Tickets y facturas             |
+| Servicio · Jornadas       | Información · Cierre                                                |
+| Servicio · Ventas         | Tickets y facturas                                                  |
 | Negocio · Informes        | Día · Semana · Mes                                                  |
 | Cuaderno · Incidencias    | Abiertas · Cerradas                                                 |
 
@@ -720,7 +720,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Se entrega en dos partes: M16a va delante del TPV y M16b se queda aquí** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)): lo que el TPV necesita de este módulo es la jornada, no el APPCC.
 
-**M16a · La jornada** (**en producción desde el 22-oct**, [0105](../decisiones/0105-m16a-la-jornada.md): lo reabre quien puede cerrar la caja, sin PIN en el propio móvil, y el cierre va en tres pasos hasta que M16b traiga el APPCC). Apertura automática de jornada · **fecha operativa en el servidor**, incluida la noche del cambio de hora · panel en vivo · cierre del día en cuatro pasos y sesenta segundos · reapertura con motivo. **Terminado cuando** un cierre real se completa en menos de sesenta segundos, y la jornada de la noche del cambio de hora dura lo que tiene que durar, probada con `pnpm prueba:semana`.
+**M16a · La jornada** (**en producción desde el 22-oct**, [0105](../decisiones/0105-m16a-la-jornada.md): lo reabre quien puede cerrar la caja, sin PIN en el propio móvil, y el cierre va en tres pasos hasta que M16b traiga el APPCC). Apertura automática de jornada · **fecha operativa en el servidor**, incluida la noche del cambio de hora · panel en vivo (desde la pausa del 8-nov, [0142](../decisiones/0142-la-pausa-del-8-nov.md), «En marcha» es **Información**: lo que se vende, con lo de hoy en una línea arriba) · cierre del día en cuatro pasos y sesenta segundos · reapertura con motivo. **Terminado cuando** un cierre real se completa en menos de sesenta segundos, y la jornada de la noche del cambio de hora dura lo que tiene que durar, probada con `pnpm prueba:semana`.
 
 **M16b · APPCC y trazabilidad.** Plan de APPCC versionado con plantillas · registro en dos toques, que queda a nombre de quien lo hace con su PIN, y **acción correctiva obligatoria** · `NO REGISTRADO` en rojo · informe de trazabilidad de lote. **Terminado cuando** un mes de APPCC se exporta listo para inspección, y de un lote sale el listado de días y platos en que se sirvió.
 

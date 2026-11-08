@@ -23,9 +23,10 @@ import { comoLista } from '../listas.ts';
 /**
  * Servicio › Empleados (la pausa del 8-nov, P3, decisión 0142).
  *
- *   la_venta_de_cada_uno           quien ve las ventas: todo el equipo, de mayor a menor, con lo que
- *                                  vende, por hora fichada y frente a su objetivo. Quien no las ve:
- *                                  solo lo suyo, y solo si el gerente deja que cada uno lo vea
+ *   la_venta_de_cada_uno           quien lleva el local (ve las ventas y pone los objetivos): todo
+ *                                  el equipo, de mayor a menor, con lo que vende, por hora fichada y
+ *                                  frente a su objetivo. Los demás, también un jefe de cocina o la
+ *                                  gestoría: solo lo suyo, y solo si el gerente deja que cada uno lo vea
  *   guardar_los_objetivos_de_venta el general en € por hora, uno distinto para quien haga falta, y
  *                                  si cada uno ve el suyo
  *
@@ -126,6 +127,11 @@ export const laVentaDeCadaUno = consulta<z.infer<typeof entrada>, LaVentaDeCadaU
     const iva = await elTipoDeRestauracion(contexto, local, hoy);
     const puede = await loQuePuede(contexto, localId, ['dato.ventas', 'accion.poner_objetivos']);
     const objetivos = await losObjetivos(contexto, localId);
+    // **La lista de todos, solo para quien lleva el local** (Richi, 0142): ver las ventas no basta,
+    // que también las ven el jefe de cocina, el de sala o la gestoría. Lo de cada persona lo ve quien
+    // pone los objetivos (gerente, area manager, dirección), y nadie más.
+    const veATodos = puede.ver('dato.ventas') && puede.editar('accion.poner_objetivos');
+    const puedeCambiar = puede.editar('accion.poner_objetivos');
     const comun = {
       periodo: pedido.periodo,
       desde: periodo.desde,
@@ -133,9 +139,10 @@ export const laVentaDeCadaUno = consulta<z.infer<typeof entrada>, LaVentaDeCadaU
       hoy,
       anteriorDel: periodo.anteriorDel,
       siguienteDel: periodo.siguienteDel,
-      puedeCambiar: puede.editar('accion.poner_objetivos'),
-      general: objetivos.general,
-      distintos: puede.ver('dato.ventas') ? objetivos.distintos : [],
+      puedeCambiar,
+      // Los objetivos de los demás, solo para quien los pone.
+      general: puedeCambiar ? objetivos.general : null,
+      distintos: puedeCambiar ? objetivos.distintos : [],
     };
     const objetivoDe = (personaId: string) => {
       const suyo = objetivos.distintos.find((d) => d.personaId === personaId);
@@ -145,8 +152,8 @@ export const laVentaDeCadaUno = consulta<z.infer<typeof entrada>, LaVentaDeCadaU
       };
     };
 
-    // ── Quien no ve las ventas: lo suyo, si el gerente lo deja ──
-    if (!puede.ver('dato.ventas')) {
+    // ── Quien no lleva el local: lo suyo, si el gerente lo deja ──
+    if (!veATodos) {
       const personaId = contexto.personaId;
       if (personaId === null) throw new FalloDeAplicacion('sin_sesion');
       const [vendido] = await contexto.sql<
@@ -189,7 +196,7 @@ export const laVentaDeCadaUno = consulta<z.infer<typeof entrada>, LaVentaDeCadaU
       };
     }
 
-    // ── Quien ve las ventas: todo el equipo ──
+    // ── Quien lleva el local: todo el equipo ──
     const [lineas, mesas, horas] = await Promise.all([
       lasLineasVendidas(contexto, localId, periodo.desde, periodo.hasta),
       lasMesasDelServicio(contexto, localId, periodo.desde, periodo.hasta),

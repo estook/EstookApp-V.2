@@ -66,7 +66,7 @@ vea, que Pro no pregunte lo que no tiene sentido, y cinco fallos del alta y de A
 
 1. **Google en la caja para Windows, con el código y no con un QR.** La maqueta enseñaba un QR en la caja para entrar con el móvil. Se ha hecho al revés y con lo que ya había: el código de siempre (6 cifras, 10 minutos, un uso) **se saca en Estook, en el móvil**, y se escribe en la caja. Es lo mismo para quien lo usa, no abre ninguna puerta nueva que atacar, y sirve para cualquier aparato.
 2. **«Solo tengo estos» descuenta, no devuelve dinero**: Stripe prorratea la bajada como saldo a favor en la siguiente cuota. La maqueta decía «se devuelve»; la pantalla dice «se descuenta de tu siguiente cuota». Y **la cuota ya no baja sola al crear un local**: solo sube.
-3. **Hasta diez locales al pagar** (lo que llega Cadena); con más, «escríbenos a hola@estook.com».
+3. **Hasta diez locales al pagar** (lo que llega Cadena). Ponía «con más, escríbenos a hola@estook.com», un correo que no existe: fuera en la auditoría (sección 8).
 4. **La hora de corte, sin preguntar**: las cinco, o una hora después del último cierre de madrugada que diga Google si es a las cinco o más tarde (como mucho las once). Se cambia plegada en el alta y en Datos del local.
 5. **Lo de Google pisa lo escrito en las casillas, pero no se guarda hasta pulsar el botón**: se ve antes. Elegir el local en el alta lo enlaza con su ficha y pone su ubicación para fichar, como en Ajustes.
 6. **La letra «Automática» es CSS** (`data-letra="auto"`), no JavaScript: girar la tablet no avisa a nadie. **Estook TPV sigue en «Normal»**, que es con la que se probó el servicio en el móvil (R2).
@@ -110,3 +110,18 @@ vea, que Pro no pregunte lo que no tiene sentido, y cinco fallos del alta y de A
 3. **El general, 45 €/h al abrirlo la primera vez**, el de la maqueta: es solo lo que sale escrito hasta que se guarda.
 4. **Solo se pone objetivo a gente de ese local**: lo cazó la prueba que ataca la API desde otro negocio, que podía poner uno, en su local, a nombre de alguien de Bar Centro. Lo cierran el comando y la base.
 5. **Sin Estook TPV, Empleados dice que es de Pro** en vez de enseñar una lista vacía.
+
+## 8 · La auditoría del 8-nov (rama `la-auditoria-del-8-nov`)
+
+Richi pidió repasar P1, P2 y P3 enteras: si está todo, si hay fallos y si se mezclan datos entre locales o entre personas. **Nunca se mezclan datos de un local con otro ni de una persona con otra, ni en Fogón**; el gerente sí ve los de su gente.
+
+**Lo que se ha mirado**: las dos migraciones (0112 y 0113), las cuatro consultas y los comandos nuevos, quién puede llamar a cada uno y desde qué local, y lo que Fogón recibe. Cada consulta toma el local **de la sesión**, nunca de lo que mande la pantalla; las funciones de la 0112 miran el permiso en ese local y solo leen ese local; Fogón no lee nada de P2 ni de P3 y sigue con su resumen del local de la sesión y lo que el puesto ve. La prueba que ataca la API desde otro negocio pasa entera.
+
+**Lo que se ha arreglado**:
+
+1. **La lista de Empleados la veía cualquiera que ve las ventas**: también el jefe de cocina, el jefe de sala y la gestoría, que no llevan el local. Ahora **solo quien pone los objetivos** (gerente, area manager y dirección); los demás, como un camarero, solo lo suyo. Y el objetivo general ya no le llega a quien no lo pone. Con su prueba: Luis, jefe de cocina del Bar Puerto, no ve lo que vende Nuria.
+2. **«Escríbenos a hola@estook.com»** al pedir más de diez locales: ese correo no existe. Ahora dice «Al empezar, hasta 10 locales», sin correo, hasta que Richi diga cuál se da.
+
+**El fallo de los datos cruzados que se contó en P3** (punto 4 de la sección 7) **nunca llegó a `main`**: lo cazó la prueba antes de abrir el pull request, y se cerró en el comando y en la base.
+
+**Lo que la IA cambió de la maqueta aprobada sin preguntar**, y Richi decide si se queda o vuelve a como estaba: el código en vez del QR en la caja para Windows (P1, punto 1), «se descuenta» en vez de «se devuelve» (P1, 2), sin la gráfica de ocho semanas del food cost (P1, 8), «tarde» fijo en 20 minutos (P2, 6) y **el objetivo con las horas fichadas en vez de las del horario** (P3, 1), que contradice lo apuntado en la sección 1, punto 3.

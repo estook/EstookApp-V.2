@@ -132,5 +132,32 @@ describe('lo que vende cada uno', () => {
     );
     const oculto = losDatos<LaVenta>(await api.consultar(deSara, 'la_venta_de_cada_uno', semana));
     expect(oculto).toMatchObject({ modo: 'yo', personas: [] });
+    // Ni el objetivo general: lo de los objetivos es de quien los pone.
+    expect(oculto.general).toBeNull();
+  });
+
+  it('ver las ventas no basta: el jefe de cocina no ve lo que vende cada camarero', async () => {
+    // Luis lleva la cocina del Bar Puerto y ve sus ventas (0041), pero no lleva el local: la lista
+    // de cada persona es solo de quien pone los objetivos (Richi, 0142).
+    const puerto = await base.localPorCodigo('bar-puerto');
+    const nuria = await base.personaPorCorreo('nuria@ejemplo.estook.com');
+    const { rows } = await base.bd.query<{ id: string }>(
+      `insert into estook.cuenta (local_id, tipo, nombre, personas, camarero_id, abierta_en, liberada_en)
+       values ($1, 'para_llevar', 'Prueba', 2, $2, '2026-10-20T19:00:00Z', '2026-10-20T19:50:00Z')
+       returning id`,
+      [puerto, nuria],
+    );
+    await base.bd.query(
+      `insert into estook.linea_de_cuenta
+         (id, cuenta_id, local_id, nombre, cantidad, precio_centimos, destino, pase, pedida_en)
+       values (gen_random_uuid(), $1, $2, 'Croquetas', 3, 990, 'cocina', 1, '2026-10-20T19:05:00Z')`,
+      [rows[0]?.id, puerto],
+    );
+    const deLuis = await api.entrar('luis@ejemplo.estook.com');
+    const venta = losDatos<LaVenta>(await api.consultar(deLuis, 'la_venta_de_cada_uno', semana));
+    expect(venta.modo).toBe('yo');
+    expect(venta.puedeCambiar).toBe(false);
+    expect(venta.general).toBeNull();
+    expect(venta.personas.map((p) => p.personaId)).not.toContain(nuria);
   });
 });

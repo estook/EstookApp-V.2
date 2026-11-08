@@ -694,8 +694,16 @@ export {
   topeDeGoogle,
   quedanDeGoogle,
   mesDe,
+  partirLaDireccion,
+  horaDeCorteDelHorario,
+  HORA_DE_CORTE_DE_FABRICA,
 } from './google.ts';
-export type { UsoDeGoogle } from './google.ts';
+export type {
+  UsoDeGoogle,
+  ParteDeLaDireccion,
+  DireccionPartida,
+  TramoDelHorario,
+} from './google.ts';
 
 // ── 0042 · crear cuenta, la oferta de prueba y los planes ────────────────────
 export {

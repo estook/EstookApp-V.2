@@ -1,4 +1,5 @@
 import {
+  cambiarNombreDelNegocio,
   exigirDobleFactor,
   ponerCorreoDeRecuperacion,
 } from './comandos/ajustes-de-organizacion.ts';
@@ -770,6 +771,8 @@ export const catalogo = {
     // M4 · lo que decide la organizacion.
     [exigirDobleFactor.nombre]: exigirDobleFactor,
     [ponerCorreoDeRecuperacion.nombre]: ponerCorreoDeRecuperacion,
+    // La pausa del 8-nov (0142): el nombre del negocio, por fin editable.
+    [cambiarNombreDelNegocio.nombre]: cambiarNombreDelNegocio,
 
     // ── M5 · el alta de un local ───────────────────────────────────────────
     //

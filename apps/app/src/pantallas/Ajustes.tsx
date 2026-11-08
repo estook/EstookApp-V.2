@@ -56,6 +56,7 @@ import { TuMarca } from '../marca/TuMarca.tsx';
 import { AjustesDeOrganizacion } from './AjustesDeOrganizacion.tsx';
 import { MiAcceso } from './MiAcceso.tsx';
 import { TuLocalEnGoogle } from './TuLocalEnGoogle.tsx';
+import { DatosDelLocal } from './DatosDelLocal.tsx';
 import { CuandoEsLlegarTarde } from './CuandoEsLlegarTarde.tsx';
 import { LasPausas } from './LasPausas.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -354,6 +355,18 @@ function LaSeccion({
   ];
 
   const delLocal: readonly AjusteEnTarjeta[] = [
+    // La pausa del 8-nov (0142): lo del alta, por fin editable, y lo primero de Tu local.
+    ...(llevaElLocal
+      ? [
+          {
+            id: 'datos-del-local',
+            titulo: 'Datos del local',
+            frase: 'Nombre, dirección, teléfono y cuándo acaba tu día',
+            icono: IconoLocal,
+            contenido: <DatosDelLocal />,
+          },
+        ]
+      : []),
     {
       id: 'tu-marca',
       titulo: 'Tu marca',
@@ -494,8 +507,10 @@ function LaSeccion({
       )}
 
       {id === 'organizacion' && (
-        <Ancla id="acceso-de-la-organizacion">
-          <AjustesDeOrganizacion />
+        <Ancla id="nombre-del-negocio">
+          <Ancla id="acceso-de-la-organizacion">
+            <AjustesDeOrganizacion />
+          </Ancla>
         </Ancla>
       )}
     </section>

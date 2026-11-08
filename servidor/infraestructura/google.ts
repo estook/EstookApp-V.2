@@ -1,3 +1,4 @@
+import type { ParteDeLaDireccion, TramoDelHorario } from '@estook/dominio';
 import { variable } from '@estook/utiles';
 
 /**
@@ -36,6 +37,10 @@ export interface FichaDeGoogle {
   readonly resenas: number | null;
   /** Una línea por día, en castellano: «lunes: 8:00–16:00». */
   readonly horario: readonly string[] | null;
+  /** La dirección por trozos, para las casillas del alta y de Ajustes (0142). */
+  readonly partes: readonly ParteDeLaDireccion[] | null;
+  /** El horario por tramos, para proponer la hora de corte sin preguntarla (0142). */
+  readonly tramos: readonly TramoDelHorario[] | null;
 }
 
 export interface LugaresDeGoogle {
@@ -71,6 +76,10 @@ const CAMPOS_DE_LA_FICHA = [
   'rating',
   'userRatingCount',
   'regularOpeningHours.weekdayDescriptions',
+  // La pausa del 8-nov (0142): la dirección por trozos y el horario por tramos. Son del mismo
+  // escalón que lo que ya se pedía (el horario es Enterprise), así que la ficha no cuesta más.
+  'addressComponents',
+  'regularOpeningHours.periods',
 ].join(',');
 
 /** Lo que devuelve Google, solo lo que se lee. */
@@ -97,7 +106,28 @@ interface RespuestaDeFicha {
   readonly googleMapsUri?: string;
   readonly rating?: number;
   readonly userRatingCount?: number;
-  readonly regularOpeningHours?: { readonly weekdayDescriptions?: readonly string[] };
+  readonly regularOpeningHours?: {
+    readonly weekdayDescriptions?: readonly string[];
+    readonly periods?: readonly {
+      readonly open?: PuntoDeGoogle;
+      readonly close?: PuntoDeGoogle;
+    }[];
+  };
+  readonly addressComponents?: readonly {
+    readonly longText?: string;
+    readonly types?: readonly string[];
+  }[];
+}
+
+/** Un momento del horario de Google: el día de la semana (0 es domingo), la hora y el minuto. */
+interface PuntoDeGoogle {
+  readonly day?: number;
+  readonly hour?: number;
+  readonly minute?: number;
+}
+
+function elPunto(p: PuntoDeGoogle): { dia: number; hora: number; minuto: number } {
+  return { dia: p.day ?? 0, hora: p.hour ?? 0, minuto: p.minute ?? 0 };
 }
 
 /**
@@ -167,6 +197,15 @@ export function lugaresDeGoogle(
         valoracion: d.rating ?? null,
         resenas: d.userRatingCount ?? null,
         horario: d.regularOpeningHours?.weekdayDescriptions ?? null,
+        partes:
+          d.addressComponents?.map((p) => ({ texto: p.longText ?? '', tipos: p.types ?? [] })) ??
+          null,
+        tramos:
+          d.regularOpeningHours?.periods?.flatMap((t) =>
+            t.open === undefined
+              ? []
+              : [{ abre: elPunto(t.open), cierra: t.close === undefined ? null : elPunto(t.close) }],
+          ) ?? null,
       };
     },
   };
@@ -195,6 +234,17 @@ export function lugaresDeMentira(): LugaresDeGoogle & {
     valoracion: 4.4,
     resenas: 212,
     horario: ['lunes: 8:00–16:00', 'martes: 8:00–16:00'],
+    partes: [
+      { texto: '1', tipos: ['street_number'] },
+      { texto: 'Calle Mayor', tipos: ['route'] },
+      { texto: 'Donostia', tipos: ['locality', 'political'] },
+      { texto: 'Gipuzkoa', tipos: ['administrative_area_level_2', 'political'] },
+      { texto: '20001', tipos: ['postal_code'] },
+    ],
+    tramos: [
+      { abre: { dia: 1, hora: 8, minuto: 0 }, cierra: { dia: 1, hora: 16, minuto: 0 } },
+      { abre: { dia: 2, hora: 8, minuto: 0 }, cierra: { dia: 2, hora: 16, minuto: 0 } },
+    ],
   };
   return {
     llamadas,

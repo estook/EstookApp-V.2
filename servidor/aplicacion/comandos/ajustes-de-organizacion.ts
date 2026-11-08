@@ -165,3 +165,69 @@ export const ponerCorreoDeRecuperacion = comando<
     return { version: cambiada.version };
   },
 });
+
+// ── El nombre del negocio (la pausa del 8-nov, 0142) ─────────────────────────
+
+/**
+ * «Grupo Giulietta»: el nombre que se puso al crear la cuenta, y que hasta la 0142 no se podía
+ * cambiar. Es el de la organización, no el de un local (cada local cambia el suyo en Ajustes ›
+ * Tu local). Lo emitido no cambia: los tickets y las facturas llevan la razón social de su
+ * empresa, que está en Facturación.
+ */
+export const entradaNombreDelNegocio = z
+  .object({
+    organizacion_id: z.string().uuid(),
+    nombre: z.string().trim().min(1).max(120),
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export type EntradaNombreDelNegocio = z.infer<typeof entradaNombreDelNegocio>;
+
+export const cambiarNombreDelNegocio = comando<
+  EntradaNombreDelNegocio,
+  { readonly version: number }
+>({
+  nombre: 'cambiar_nombre_del_negocio',
+  entrada: entradaNombreDelNegocio,
+
+  async ejecutar({ sql, sesion }, entrada) {
+    if (sesion === null) throw new FalloDeAplicacion('sin_sesion');
+
+    const antes = await sql<{ nombre: string }[]>`
+      select nombre from estook.organizacion where id = ${entrada.organizacion_id}
+    `;
+    const cambiadas = await sql<{ version: number }[]>`
+      update estook.organizacion
+         set nombre = ${entrada.nombre}
+       where id = ${entrada.organizacion_id} and version = ${entrada.version}
+      returning version
+    `;
+
+    const cambiada = cambiadas[0];
+    if (!cambiada) {
+      if (antes[0]) {
+        const existe = await sql<{ version: number }[]>`
+          select version from estook.organizacion where id = ${entrada.organizacion_id}
+        `;
+        if (existe[0]) {
+          throw new FalloDeAplicacion('lo_cambio_otra_persona', {
+            version_actual: existe[0].version,
+          });
+        }
+      }
+      throw new FalloDeAplicacion('sin_permiso');
+    }
+
+    await sql`
+      select estook.anotar(
+        ${entrada.organizacion_id}::uuid, 'modificar', 'organizacion',
+        ${entrada.organizacion_id}, null,
+        ${JSON.stringify({ nombre: antes[0]?.nombre ?? null })}::text::jsonb,
+        ${JSON.stringify({ nombre: entrada.nombre })}::text::jsonb, null
+      )
+    `;
+
+    return { version: cambiada.version };
+  },
+});

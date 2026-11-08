@@ -1,0 +1,4124 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>El repaso del 8-nov</title>
+    <meta name="claude:viewport-fit-sides" content="cover" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Los colores y la letra de Estook (packages/ui/estilos), con su tema claro y oscuro.
+         Las pantallas van dentro de marcos de móvil y de tablet; el TPV tiene su propio
+         interruptor claro/oscuro. Platos, nombres y cifras son de ejemplo. */
+      :root {
+        --pagina: #e7e3dc;
+        --fondo: #f1efea;
+        --superficie: #ffffff;
+        --hundido: #f6f4f0;
+        --borde: #e0dcd4;
+        --texto: #111c1f;
+        --suave: #5a6568;
+        --tenue: #8a9497;
+        --charcoal: #111c1f;
+        --sobre-charcoal: #f1efea;
+        --naranja: #ff7a00;
+        --naranja-texto: #b45600;
+        --naranja-suave: #fff1e5;
+        --bien: #187648;
+        --bien-suave: #e3f3ea;
+        --atencion: #9a5c00;
+        --atencion-suave: #fdf1de;
+        --mal: #b3261e;
+        --mal-suave: #fbe6e4;
+        --info: #1d5fa8;
+        --info-suave: #e3eefa;
+        --sombra: 0 1px 2px rgb(17 28 31 / 6%), 0 6px 18px rgb(17 28 31 / 7%);
+        --marco: #111c1f;
+        --letra: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        /* Los nueve colores de sección, los mismos en Estook y en el TPV */
+        --s-naranja: #ff7a00;
+        --s-verde: #2e9e5b;
+        --s-azul: #2f74d0;
+        --s-ambar: #e0a100;
+        --s-rojo: #d6453d;
+        --s-rosa: #d94f8a;
+        --s-morado: #7a55d6;
+        --s-turquesa: #13a3a3;
+        --s-arena: #b08a5a;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --pagina: #0e1114;
+          --fondo: #15181c;
+          --superficie: #1f2328;
+          --hundido: #191d21;
+          --borde: #2d333a;
+          --texto: #eef1f3;
+          --suave: #b8c0c7;
+          --tenue: #8d979f;
+          --charcoal: #2b3137;
+          --sobre-charcoal: #eef1f3;
+          --naranja-texto: #ffa252;
+          --naranja-suave: #33220f;
+          --bien: #5fd394;
+          --bien-suave: #12291d;
+          --atencion: #f0ae4e;
+          --atencion-suave: #2c2312;
+          --mal: #ff8a80;
+          --mal-suave: #33191a;
+          --info: #8cbcf5;
+          --info-suave: #142335;
+          --sombra: 0 1px 2px rgb(0 0 0 / 30%), 0 6px 18px rgb(0 0 0 / 30%);
+          --marco: #000;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme='dark'] {
+        --pagina: #0e1114;
+        --fondo: #15181c;
+        --superficie: #1f2328;
+        --hundido: #191d21;
+        --borde: #2d333a;
+        --texto: #eef1f3;
+        --suave: #b8c0c7;
+        --tenue: #8d979f;
+        --charcoal: #2b3137;
+        --sobre-charcoal: #eef1f3;
+        --naranja-texto: #ffa252;
+        --naranja-suave: #33220f;
+        --bien: #5fd394;
+        --bien-suave: #12291d;
+        --atencion: #f0ae4e;
+        --atencion-suave: #2c2312;
+        --mal: #ff8a80;
+        --mal-suave: #33191a;
+        --info: #8cbcf5;
+        --info-suave: #142335;
+        --sombra: 0 1px 2px rgb(0 0 0 / 30%), 0 6px 18px rgb(0 0 0 / 30%);
+        --marco: #000;
+        color-scheme: dark;
+      }
+
+      /* El TPV lleva su tema aparte: oscuro de serie, claro con el interruptor. */
+      .tpv {
+        --t-fondo: #15181c;
+        --t-sup: #1f2328;
+        --t-sup2: #2b3137;
+        --t-borde: #2d333a;
+        --t-texto: #eef1f3;
+        --t-suave: #b8c0c7;
+        --t-tenue: #8d979f;
+        --t-bien: #5fd394;
+        --t-atencion: #f0ae4e;
+        --t-mal: #ff8a80;
+      }
+      .tpv.claro {
+        --t-fondo: #f1efea;
+        --t-sup: #ffffff;
+        --t-sup2: #ebe7e0;
+        --t-borde: #e0dcd4;
+        --t-texto: #111c1f;
+        --t-suave: #5a6568;
+        --t-tenue: #7c8588;
+        --t-bien: #187648;
+        --t-atencion: #9a5c00;
+        --t-mal: #b3261e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--pagina);
+        color: var(--texto);
+        font-family: var(--letra);
+        font-size: 15px;
+        line-height: 1.45;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+      }
+      .tabular {
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ── La cabecera y las pestañas ── */
+      .cab {
+        padding-block: 28px 8px;
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+        max-width: 1180px;
+        margin: 0 auto;
+      }
+      .cab h1 {
+        margin: 0;
+        font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.1rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+      }
+      .cab p {
+        margin: 6px 0 0;
+        color: var(--suave);
+        max-width: 62ch;
+      }
+      nav.pestanas {
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        z-index: 5;
+        background: var(--pagina);
+        padding-block: 10px;
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0 0 auto;
+        height: env(safe-area-inset-top, 0px);
+        z-index: 10;
+        background: var(--pagina);
+      }
+      .pestanas-dentro {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .pestanas-dentro a {
+        flex: none;
+        text-decoration: none;
+        color: var(--suave);
+        font-weight: 600;
+        font-size: 14px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: var(--superficie);
+        box-shadow: var(--sombra);
+        white-space: nowrap;
+      }
+      .pestanas-dentro a[aria-current='page'] {
+        background: var(--charcoal);
+        color: var(--sobre-charcoal);
+      }
+      .pestanas-dentro a .num {
+        opacity: 0.6;
+        margin-right: 4px;
+      }
+      .pestanas-dentro a:focus-visible,
+      button:focus-visible {
+        outline: 3px solid var(--naranja);
+        outline-offset: 2px;
+      }
+
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding-block: 12px 64px;
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+      }
+      section.vista {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      .intro {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-width: 72ch;
+      }
+      .intro h2 {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+      }
+      .intro p {
+        margin: 0;
+        color: var(--suave);
+      }
+      .aviso {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        background: var(--info-suave);
+        color: var(--texto);
+        padding: 12px 14px;
+        border-radius: 14px;
+        max-width: 80ch;
+      }
+      .aviso b {
+        color: var(--info);
+      }
+      .aviso.importante {
+        background: var(--atencion-suave);
+      }
+      .aviso.importante b {
+        color: var(--atencion);
+      }
+
+      /* ── Las filas de pantallas ── */
+      .fila {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 22px;
+        padding-bottom: 10px;
+        align-items: flex-start;
+      }
+      .pie {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: none;
+      }
+      .pie > .titulo {
+        font-weight: 700;
+        font-size: 14px;
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+      }
+      .pie > .titulo .n {
+        color: var(--naranja-texto);
+        font-weight: 800;
+      }
+      .pie > .nota {
+        font-size: 13px;
+        color: var(--suave);
+        max-width: 300px;
+      }
+
+      /* ── El marco del móvil ── */
+      .movil {
+        width: 300px;
+        height: 610px;
+        flex: none;
+        border-radius: 38px;
+        background: var(--marco);
+        padding: 8px;
+        box-shadow: var(--sombra);
+      }
+      .movil > .pantalla {
+        width: 100%;
+        height: 100%;
+        border-radius: 31px;
+        overflow: hidden;
+        background: var(--fondo);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        font-size: 12.5px;
+      }
+      .estado {
+        height: 26px;
+        flex: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .barra-app {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 12px 8px;
+      }
+      .barra-app .logo {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        background: #2b1d15;
+        color: #f3c27a;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 10px;
+      }
+      .barra-app .nombre {
+        font-weight: 700;
+        flex: 1;
+      }
+      .barra-app .ic {
+        width: 18px;
+        height: 18px;
+        color: var(--suave);
+      }
+      .cuerpo {
+        flex: 1;
+        overflow: hidden;
+        padding: 0 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .abajo {
+        flex: none;
+        height: 54px;
+        border-top: 1px solid var(--borde);
+        background: var(--superficie);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--tenue);
+      }
+      .abajo span {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+      .abajo span.aqui {
+        color: var(--texto);
+      }
+      .abajo svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* Piezas de la app */
+      .h-pant {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .h-pant h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        flex: 1;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 0;
+        border-radius: 999px;
+        padding: 8px 13px;
+        font-weight: 700;
+        font-size: 12px;
+        background: var(--naranja);
+        color: #111c1f;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+      .btn.sec {
+        background: var(--superficie);
+        color: var(--texto);
+        box-shadow: inset 0 0 0 1px var(--borde);
+      }
+      .btn.redondo {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        background: var(--superficie);
+        box-shadow: inset 0 0 0 1px var(--borde);
+        color: var(--texto);
+      }
+      .btn svg {
+        width: 15px;
+        height: 15px;
+      }
+      .buscador {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--superficie);
+        border-radius: 12px;
+        padding: 8px 10px;
+        color: var(--tenue);
+        box-shadow: inset 0 0 0 1px var(--borde);
+      }
+      .buscador svg {
+        width: 14px;
+        height: 14px;
+      }
+      .chips {
+        display: flex;
+        gap: 6px;
+        overflow: hidden;
+        flex: none;
+      }
+      .chip {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px 5px 5px;
+        border-radius: 999px;
+        background: var(--superficie);
+        box-shadow: inset 0 0 0 1px var(--borde);
+        font-weight: 600;
+        font-size: 11.5px;
+      }
+      .chip.solo {
+        padding: 5px 10px;
+      }
+      .chip.puesto {
+        background: var(--charcoal);
+        color: var(--sobre-charcoal);
+        box-shadow: none;
+      }
+      .chip .cuenta {
+        color: var(--tenue);
+        font-weight: 600;
+      }
+      .chip.puesto .cuenta {
+        color: inherit;
+        opacity: 0.7;
+      }
+      .baldosa {
+        width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        flex: none;
+      }
+      .baldosa svg {
+        width: 12px;
+        height: 12px;
+      }
+      .baldosa.g {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+      }
+      .baldosa.g svg {
+        width: 16px;
+        height: 16px;
+      }
+      .tarjeta {
+        background: var(--superficie);
+        border-radius: 18px;
+        box-shadow: var(--sombra);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .tarjeta.sin-relleno {
+        padding: 4px 0;
+        gap: 0;
+      }
+      .t-cab {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px 4px;
+      }
+      .t-cab b {
+        flex: 1;
+        font-size: 13.5px;
+      }
+      .t-cab .mas {
+        color: var(--tenue);
+        font-weight: 600;
+        font-size: 11px;
+      }
+      .plato {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 12px;
+      }
+      .plato + .plato {
+        border-top: 1px solid var(--borde);
+      }
+      .plato .foto {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        flex: none;
+      }
+      .plato .que {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .plato .que b {
+        font-weight: 600;
+        font-size: 12.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .plato .que small {
+        color: var(--tenue);
+        font-size: 10.5px;
+      }
+      .plato .precio {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .plato.agotado .foto {
+        filter: grayscale(1);
+        opacity: 0.5;
+      }
+      .plato.agotado b {
+        color: var(--tenue);
+      }
+      .pastilla {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 999px;
+        padding: 2px 7px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .p-bien {
+        background: var(--bien-suave);
+        color: var(--bien);
+      }
+      .p-atencion {
+        background: var(--atencion-suave);
+        color: var(--atencion);
+      }
+      .p-mal {
+        background: var(--mal-suave);
+        color: var(--mal);
+      }
+      .p-info {
+        background: var(--info-suave);
+        color: var(--info);
+      }
+      .p-tenue {
+        background: var(--hundido);
+        color: var(--suave);
+      }
+
+      /* Fotos de ejemplo: el local sube las suyas en Carta */
+      .f1 {
+        background:
+          radial-gradient(circle at 35% 40%, #f2c27b 0 22%, #c9802f 23% 40%, transparent 41%),
+          radial-gradient(circle at 65% 62%, #e9b56a 0 20%, #b86c22 21% 38%, transparent 39%),
+          #f4ead9;
+      }
+      .f2 {
+        background:
+          radial-gradient(circle at 50% 50%, #f4d27a 0 18%, #e2603a 19% 44%, transparent 45%),
+          #f6efe3;
+      }
+      .f3 {
+        background:
+          radial-gradient(
+            circle at 50% 50%,
+            #fbfbf6 0 24%,
+            #79a84f 25% 46%,
+            #3e7b35 47% 60%,
+            transparent 61%
+          ),
+          #eef3e6;
+      }
+      .f4 {
+        background: repeating-linear-gradient(135deg, #b5333c 0 6px, #e8a1a5 6px 9px), #b5333c;
+      }
+      .f5 {
+        background:
+          radial-gradient(ellipse at 50% 55%, #7a3a22 0 34%, #b8642f 35% 46%, transparent 47%),
+          #efe6da;
+      }
+      .f6 {
+        background:
+          radial-gradient(ellipse at 50% 50%, #e6e9ec 0 30%, #9fb2bf 31% 46%, transparent 47%),
+          #e4edf1;
+      }
+      .f7 {
+        background:
+          radial-gradient(circle at 50% 50%, #f7e7b8 0 30%, #e6c66e 31% 46%, transparent 47%),
+          #f7f1e1;
+      }
+      .f8 {
+        background:
+          radial-gradient(circle at 50% 50%, #3a2015 0 32%, #6b3a22 33% 46%, transparent 47%),
+          #efe2d2;
+      }
+      .f9 {
+        background:
+          linear-gradient(180deg, transparent 0 22%, #f1c64b 22% 86%, #fff7dc 86%), #e9eef0;
+      }
+      .f10 {
+        background:
+          radial-gradient(ellipse at 50% 60%, #7a1630 0 30%, transparent 31%),
+          linear-gradient(180deg, #eef1f3, #dfe4e7);
+      }
+      .f11 {
+        background:
+          radial-gradient(circle at 50% 50%, #3b2416 0 28%, #fff 29% 40%, transparent 41%), #efe7dc;
+      }
+      .sin-foto {
+        display: grid;
+        place-items: center;
+        color: #fff;
+      }
+      .sin-foto svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* Hoja que sube desde abajo */
+      .velo {
+        position: absolute;
+        inset: 0;
+        background: rgb(17 28 31 / 42%);
+      }
+      .hoja {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--superficie);
+        border-radius: 22px 22px 0 0;
+        padding: 10px 14px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .hoja .asa {
+        width: 36px;
+        height: 4px;
+        border-radius: 4px;
+        background: var(--borde);
+        align-self: center;
+        margin-bottom: 6px;
+      }
+      .opcion {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 4px;
+      }
+      .opcion + .opcion {
+        border-top: 1px solid var(--borde);
+      }
+      .opcion .ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        background: var(--hundido);
+        color: var(--texto);
+        flex: none;
+      }
+      .opcion .ico svg {
+        width: 17px;
+        height: 17px;
+      }
+      .opcion div {
+        display: flex;
+        flex-direction: column;
+      }
+      .opcion b {
+        font-size: 13px;
+      }
+      .opcion small {
+        color: var(--tenue);
+        font-size: 11px;
+      }
+
+      /* Anillo de food cost */
+      .anillo {
+        --v: 28;
+        --c: var(--bien);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: conic-gradient(var(--c) calc(var(--v) * 1%), var(--hundido) 0);
+        display: grid;
+        place-items: center;
+        flex: none;
+      }
+      .anillo span {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--superficie);
+        display: grid;
+        place-items: center;
+        font-size: 10px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+      .barrita {
+        height: 5px;
+        border-radius: 5px;
+        background: var(--hundido);
+        overflow: hidden;
+      }
+      .barrita i {
+        display: block;
+        height: 100%;
+        border-radius: 5px;
+        background: var(--naranja);
+      }
+
+      /* ── El TPV (tablet) ── */
+      .tablet-fila {
+        overflow-x: auto;
+        padding-bottom: 10px;
+      }
+      .tablet {
+        width: 1000px;
+        height: 640px;
+        border-radius: 30px;
+        background: var(--marco);
+        padding: 12px;
+        box-shadow: var(--sombra);
+        flex: none;
+      }
+      .tpv {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        overflow: hidden;
+        background: var(--t-fondo);
+        color: var(--t-texto);
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        font-size: 13px;
+      }
+      .tpv .ticket {
+        background: var(--t-sup);
+        border-right: 1px solid var(--t-borde);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .tpv .ticket-cab {
+        padding: 14px 16px 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .tpv .mesa-num {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--naranja);
+        color: #111c1f;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 18px;
+      }
+      .tpv .ticket-cab div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .tpv .ticket-cab small {
+        color: var(--t-tenue);
+      }
+      .tpv .pases {
+        display: flex;
+        gap: 6px;
+        padding: 0 16px 8px;
+      }
+      .tpv .pases span {
+        flex: 1;
+        text-align: center;
+        padding: 6px 0;
+        border-radius: 10px;
+        background: var(--t-sup2);
+        font-weight: 700;
+        font-size: 12px;
+        color: var(--t-suave);
+      }
+      .tpv .pases span.si {
+        background: var(--t-texto);
+        color: var(--t-fondo);
+      }
+      .tpv .lineas {
+        flex: 1;
+        overflow: hidden;
+        padding: 0 16px;
+      }
+      .tpv .linea {
+        display: grid;
+        grid-template-columns: 26px 1fr auto;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--t-borde);
+        align-items: baseline;
+      }
+      .tpv .linea .uds {
+        font-weight: 800;
+        color: var(--t-suave);
+      }
+      .tpv .linea small {
+        display: block;
+        color: var(--t-tenue);
+        font-size: 11px;
+      }
+      .tpv .linea .imp {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .tpv .linea.nueva {
+        background: linear-gradient(90deg, rgb(255 122 0 / 14%), transparent);
+        margin: 0 -16px;
+        padding: 8px 16px;
+      }
+      .tpv .total {
+        padding: 12px 16px;
+        border-top: 1px solid var(--t-borde);
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      .tpv .total b {
+        font-size: 26px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+      .tpv .acciones {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 0 16px 16px;
+      }
+      .tpv .acciones span {
+        min-height: 56px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 15px;
+      }
+      .tpv .acciones .enviar {
+        background: var(--t-sup2);
+      }
+      .tpv .acciones .cobrar {
+        background: var(--naranja);
+        color: #111c1f;
+      }
+      .tpv .derecha {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        min-width: 0;
+      }
+      .tpv .arriba {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+      }
+      .tpv .arriba .busca {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--t-sup);
+        border-radius: 12px;
+        padding: 10px 12px;
+        color: var(--t-tenue);
+      }
+      .tpv .arriba .busca svg,
+      .tpv .arriba .ic svg {
+        width: 16px;
+        height: 16px;
+      }
+      .tpv .arriba .ic {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: var(--t-sup);
+        display: grid;
+        place-items: center;
+      }
+      .tpv .arriba .quien {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--t-sup);
+        border-radius: 12px;
+        padding: 5px 10px 5px 5px;
+        font-weight: 700;
+      }
+      .tpv .arriba .quien i {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: var(--s-turquesa);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-style: normal;
+      }
+      .tpv .secciones {
+        display: flex;
+        gap: 8px;
+        padding: 0 16px 12px;
+        overflow: hidden;
+      }
+      .tpv .seccion {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px 6px 6px;
+        border-radius: 14px;
+        background: var(--t-sup);
+        font-weight: 700;
+      }
+      .tpv .seccion .baldosa {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+      }
+      .tpv .seccion .baldosa svg {
+        width: 17px;
+        height: 17px;
+      }
+      .tpv .seccion.si {
+        box-shadow: inset 0 0 0 2px var(--c);
+        background: color-mix(in srgb, var(--c) 16%, var(--t-sup));
+      }
+      .tpv .botones {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        padding: 0 16px 16px;
+        align-content: start;
+        overflow: hidden;
+      }
+      .tpv .boton {
+        border-radius: 16px;
+        background: var(--t-sup);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: inset 0 -3px 0 var(--c);
+      }
+      .tpv .boton .foto {
+        height: 78px;
+      }
+      .tpv .boton div {
+        padding: 7px 9px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+      .tpv .boton b {
+        font-size: 12.5px;
+        line-height: 1.2;
+      }
+      .tpv .boton small {
+        color: var(--t-suave);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .tpv .boton .cuantos {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        min-width: 24px;
+        height: 24px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: var(--naranja);
+        color: #111c1f;
+        font-weight: 800;
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+      }
+      .tpv .boton.agotado {
+        opacity: 0.45;
+      }
+      .tpv .boton.agotado .foto {
+        filter: grayscale(1);
+      }
+      .tpv .boton.agotado::after {
+        content: 'Agotado';
+        position: absolute;
+        top: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--t-fondo);
+        color: var(--t-texto);
+        font-weight: 800;
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 999px;
+      }
+      .interruptor {
+        display: inline-flex;
+        background: var(--superficie);
+        border-radius: 999px;
+        padding: 4px;
+        box-shadow: var(--sombra);
+        align-self: flex-start;
+      }
+      .interruptor button {
+        border: 0;
+        background: transparent;
+        padding: 7px 14px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        color: var(--suave);
+      }
+      .interruptor button[aria-pressed='true'] {
+        background: var(--charcoal);
+        color: var(--sobre-charcoal);
+      }
+
+      /* Comandero (móvil con el tema del TPV) */
+      .movil .tpv {
+        display: flex;
+        flex-direction: column;
+        border-radius: 31px;
+        font-size: 12px;
+      }
+      .movil .tpv .estado {
+        color: var(--t-texto);
+      }
+      .com-cab {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 12px 8px;
+      }
+      .com-cab .mesa-num {
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
+        border-radius: 10px;
+      }
+      .com-cab div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .com-cab small {
+        color: var(--t-tenue);
+        font-size: 10.5px;
+      }
+      .movil .tpv .secciones {
+        padding: 0 12px 8px;
+        gap: 6px;
+      }
+      .movil .tpv .seccion {
+        padding: 4px 10px 4px 4px;
+        border-radius: 12px;
+        font-size: 11.5px;
+      }
+      .movil .tpv .seccion .baldosa {
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+      }
+      .movil .tpv .seccion .baldosa svg {
+        width: 13px;
+        height: 13px;
+      }
+      .movil .tpv .botones {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 12px 8px;
+        gap: 8px;
+      }
+      .movil .tpv .boton .foto {
+        height: 62px;
+      }
+      .com-pie {
+        margin: 0 12px 12px;
+        background: var(--naranja);
+        color: #111c1f;
+        border-radius: 16px;
+        padding: 12px 14px;
+        display: flex;
+        justify-content: space-between;
+        font-weight: 800;
+        font-size: 14px;
+      }
+
+      /* Ajustes del TPV */
+      .aj {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        padding: 18px;
+        overflow: hidden;
+        align-content: start;
+      }
+      .aj h4 {
+        margin: 0 0 8px;
+        font-size: 17px;
+        font-weight: 800;
+      }
+      .aj .grupo {
+        background: var(--t-sup);
+        border-radius: 18px;
+        overflow: hidden;
+      }
+      .aj .f {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        min-height: 64px;
+      }
+      .aj .f + .f {
+        border-top: 1px solid var(--t-borde);
+      }
+      .aj .f .baldosa {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+      }
+      .aj .f .baldosa svg {
+        width: 20px;
+        height: 20px;
+      }
+      .aj .f div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .aj .f b {
+        font-size: 16px;
+      }
+      .aj .f small {
+        color: var(--t-suave);
+        font-size: 13px;
+      }
+      .aj .f .flecha {
+        color: var(--t-tenue);
+        width: 18px;
+        height: 18px;
+      }
+      .tema3 {
+        display: flex;
+        background: var(--t-sup2);
+        border-radius: 12px;
+        padding: 3px;
+      }
+      .tema3 span {
+        padding: 6px 10px;
+        border-radius: 9px;
+        font-weight: 700;
+        font-size: 12px;
+        color: var(--t-suave);
+      }
+      .tema3 span.si {
+        background: var(--t-sup);
+        color: var(--t-texto);
+      }
+      .salir b {
+        color: var(--t-mal);
+      }
+
+      /* ── La caja (pantallas del TPV, pequeñas) ── */
+      .caja-p {
+        width: min(420px, calc(100vw - 32px));
+        height: 520px;
+        border-radius: 24px;
+        background: var(--marco);
+        padding: 9px;
+        flex: none;
+        box-shadow: var(--sombra);
+      }
+      .caja-p .tpv {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        gap: 12px;
+        border-radius: 16px;
+      }
+      .caja-p h5 {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 800;
+      }
+      .caja-p .sub {
+        color: var(--t-suave);
+        font-size: 12.5px;
+        margin-top: -6px;
+      }
+      .billetes {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 7px;
+      }
+      .billete {
+        background: var(--t-sup);
+        border-radius: 12px;
+        padding: 6px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .billete .v {
+        font-weight: 800;
+        font-size: 13px;
+      }
+      .billete .ctl {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .billete button {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        border: 0;
+        background: var(--t-sup2);
+        color: var(--t-texto);
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .billete .n {
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+      .suma {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        background: var(--t-sup);
+        border-radius: 14px;
+        padding: 10px 14px;
+      }
+      .suma b {
+        font-size: 24px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+      .gordo {
+        min-height: 52px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 15px;
+        background: var(--naranja);
+        color: #111c1f;
+        border: 0;
+      }
+      .gordo.verde {
+        background: #2e9e5b;
+        color: #fff;
+      }
+      .gordo.ambar {
+        background: #f0ae4e;
+        color: #111c1f;
+      }
+      .gordo.gris {
+        background: var(--t-sup2);
+        color: var(--t-texto);
+      }
+      .pin-teclas {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        width: 220px;
+        align-self: center;
+      }
+      .pin-teclas span {
+        height: 46px;
+        border-radius: 999px;
+        background: var(--t-sup);
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 18px;
+      }
+      .puntos {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
+      .puntos i {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid var(--t-tenue);
+      }
+      .puntos i.l {
+        background: var(--t-texto);
+        border-color: var(--t-texto);
+      }
+      .formas {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .formas span {
+        min-height: 64px;
+        border-radius: 14px;
+        background: var(--t-sup);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        font-weight: 800;
+      }
+      .formas span svg {
+        width: 20px;
+        height: 20px;
+      }
+      .formas span.si {
+        box-shadow: inset 0 0 0 2px var(--naranja);
+      }
+      .rapidos {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .rapidos span {
+        min-height: 44px;
+        border-radius: 12px;
+        background: var(--t-sup);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+      }
+      .rapidos span.si {
+        background: var(--t-texto);
+        color: var(--t-fondo);
+      }
+      .cuentas {
+        background: var(--t-sup);
+        border-radius: 14px;
+        padding: 4px 14px;
+      }
+      .cuentas .c {
+        display: flex;
+        justify-content: space-between;
+        padding: 7px 0;
+        font-variant-numeric: tabular-nums;
+      }
+      .cuentas .c + .c {
+        border-top: 1px solid var(--t-borde);
+      }
+      .cuentas .c span:first-child {
+        color: var(--t-suave);
+      }
+      .cuentas .c.fuerte span {
+        color: var(--t-texto);
+        font-weight: 800;
+      }
+      .dif {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 14px;
+        padding: 10px 14px;
+        font-weight: 800;
+        background: color-mix(in srgb, var(--t-atencion) 18%, var(--t-sup));
+        color: var(--t-atencion);
+      }
+      .dif.bien {
+        background: color-mix(in srgb, var(--t-bien) 16%, var(--t-sup));
+        color: var(--t-bien);
+      }
+      .dif span {
+        flex: 1;
+      }
+      .motivos {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .motivos span {
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: var(--t-sup);
+        font-weight: 700;
+        font-size: 12px;
+      }
+      .motivos span.si {
+        background: var(--t-texto);
+        color: var(--t-fondo);
+      }
+      .campo-t {
+        background: var(--t-sup);
+        border-radius: 12px;
+        padding: 10px 12px;
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+      }
+      .campo-t span:first-child {
+        color: var(--t-suave);
+        font-weight: 600;
+      }
+
+      /* ── Listas de decisiones ── */
+      .reglas {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+      }
+      .regla {
+        background: var(--superficie);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: var(--sombra);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .regla b {
+        font-size: 14px;
+      }
+      .regla span {
+        color: var(--suave);
+        font-size: 13.5px;
+      }
+      .tabla-envoltorio {
+        overflow-x: auto;
+        background: var(--superficie);
+        border-radius: 16px;
+        box-shadow: var(--sombra);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 640px;
+        font-size: 13.5px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 14px;
+        vertical-align: top;
+        border-bottom: 1px solid var(--borde);
+      }
+      th {
+        font-size: 12px;
+        color: var(--suave);
+        font-weight: 700;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      td.antes {
+        color: var(--suave);
+        text-decoration: line-through;
+        text-decoration-color: color-mix(in srgb, var(--mal) 60%, transparent);
+      }
+      td.ahora {
+        font-weight: 600;
+      }
+      .lista-mejoras {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 12px;
+      }
+      .mejora {
+        background: var(--superficie);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: var(--sombra);
+        display: flex;
+        gap: 12px;
+      }
+      .mejora .marca {
+        flex: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 12px;
+      }
+      .mejora div {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+      }
+      .mejora b {
+        font-size: 14px;
+      }
+      .mejora span {
+        color: var(--suave);
+        font-size: 13.5px;
+      }
+      .m-fallo {
+        background: var(--mal-suave);
+        color: var(--mal);
+      }
+      .m-diseno {
+        background: var(--naranja-suave);
+        color: var(--naranja-texto);
+      }
+      .m-idea {
+        background: var(--info-suave);
+        color: var(--info);
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .pestanas-dentro a {
+          transition: background 0.15s;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol
+          id="i-cubiertos"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+          <path d="M7 2v20" />
+          <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+        </symbol>
+        <symbol
+          id="i-hoja"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"
+          />
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+        </symbol>
+        <symbol
+          id="i-carne"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M15.4 15.63a7.88 6 135 1 1 6.23-6.23 4.5 3.43 135 0 0-6.23 6.23" />
+          <path d="m8.29 12.71-2.6 2.6a2.5 2.5 0 1 0-1.65 4.65A2.5 2.5 0 1 0 8.7 18.3l2.59-2.59" />
+        </symbol>
+        <symbol
+          id="i-pez"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z"
+          />
+          <path d="M18 12v.5" />
+          <path
+            d="M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 1.5-1 5 .23 6.5-1.24 1.5-1.24 5-.23 6.5C5.58 18.03 7 16 7 13.33"
+          />
+        </symbol>
+        <symbol
+          id="i-tarta"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8" />
+          <path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1" />
+          <path d="M2 21h20" />
+          <path d="M7 8v3M12 8v3M17 8v3" />
+        </symbol>
+        <symbol
+          id="i-copa"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M8 22h8M7 10h10M12 15v7" />
+          <path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z" />
+        </symbol>
+        <symbol
+          id="i-cafe"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M10 2v2M14 2v2M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"
+          />
+          <path d="M6 2v2" />
+        </symbol>
+        <symbol
+          id="i-cerveza"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M17 11h1a3 3 0 0 1 0 6h-1M9 12v6M13 12v6" />
+          <path
+            d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.72.5-2.5.5a2.5 2.5 0 0 1 0-5c.78 0 1.57.5 2.5.5S9.44 2 11 2s2 1.5 3 1.5 1.72-.5 2.5-.5a2.5 2.5 0 0 1 0 5c-.78 0-1.5-.5-2.5-.5Z"
+          />
+          <path d="M5 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8" />
+        </symbol>
+        <symbol
+          id="i-mas"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="round"
+        >
+          <path d="M12 5v14M5 12h14" />
+        </symbol>
+        <symbol id="i-puntos" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="5" cy="12" r="2" />
+          <circle cx="12" cy="12" r="2" />
+          <circle cx="19" cy="12" r="2" />
+        </symbol>
+        <symbol
+          id="i-lupa"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m21 21-4.3-4.3" />
+        </symbol>
+        <symbol
+          id="i-campana"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+        </symbol>
+        <symbol
+          id="i-carpeta"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 3v12M7 8l5-5 5 5" />
+          <path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+        </symbol>
+        <symbol
+          id="i-capas"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m12 2 10 5-10 5L2 7l10-5Z" />
+          <path d="m2 17 10 5 10-5M2 12l10 5 10-5" />
+        </symbol>
+        <symbol
+          id="i-orden"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M3 6h18M7 12h10M10 18h4" />
+        </symbol>
+        <symbol
+          id="i-prohibido"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="m5.7 5.7 12.6 12.6" />
+        </symbol>
+        <symbol
+          id="i-billete"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <rect x="2" y="6" width="20" height="12" rx="2" />
+          <circle cx="12" cy="12" r="2.5" />
+          <path d="M6 12h.01M18 12h.01" />
+        </symbol>
+        <symbol
+          id="i-tarjeta"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <rect x="2" y="5" width="20" height="14" rx="2" />
+          <path d="M2 10h20" />
+        </symbol>
+        <symbol
+          id="i-dividir"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M16 3h5v5M8 3H3v5M12 22v-8.3a4 4 0 0 0-1.17-2.83L3 3M21 3l-7.83 7.83" />
+        </symbol>
+        <symbol
+          id="i-flecha"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </symbol>
+        <symbol
+          id="i-sala"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+        </symbol>
+        <symbol
+          id="i-impresora"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path
+            d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+          />
+          <rect x="6" y="14" width="12" height="8" />
+        </symbol>
+        <symbol
+          id="i-candado"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </symbol>
+        <symbol
+          id="i-persona"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </symbol>
+        <symbol
+          id="i-salir"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+        </symbol>
+        <symbol
+          id="i-sol"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="12" cy="12" r="4" />
+          <path
+            d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+          />
+        </symbol>
+        <symbol
+          id="i-documento"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+          <path d="M14 2v6h6M8 13h8M8 17h5" />
+        </symbol>
+        <symbol
+          id="i-caja"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <rect x="3" y="12" width="18" height="9" rx="2" />
+          <path d="M7 12V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v7M10 8h4M12 16h.01" />
+        </symbol>
+        <symbol
+          id="i-inicio"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+          <path d="M9 22V12h6v10" />
+        </symbol>
+        <symbol id="i-chispa" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12 2c.6 4.6 2.9 7.4 8 8.2v1.6c-5.1.8-7.4 3.6-8 8.2h-.1c-.6-4.6-2.9-7.4-8-8.2v-1.6c5.1-.8 7.4-3.6 8-8.2Z"
+          />
+        </symbol>
+        <symbol
+          id="i-engranaje"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09c-.66 0-1.25.4-1.51 1Z"
+          />
+        </symbol>
+        <symbol
+          id="i-equipo"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </symbol>
+        <symbol
+          id="i-cubo"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M21 8 12 3 3 8v8l9 5 9-5Z" />
+          <path d="m3 8 9 5 9-5M12 13v8" />
+        </symbol>
+        <symbol
+          id="i-compartir"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="18" cy="5" r="3" />
+          <circle cx="6" cy="12" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
+        </symbol>
+        <symbol
+          id="i-copiar"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <rect x="9" y="9" width="13" height="13" rx="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+        </symbol>
+        <symbol
+          id="i-camara"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path
+            d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3Z"
+          />
+          <circle cx="12" cy="13" r="3" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <header class="cab">
+      <h1>El repaso del 8-nov</h1>
+      <p>
+        La caja y el arqueo, Estook TPV renovado (oscuro y claro, con fotos) y Carta, Escandallos,
+        Menús y el Panel rehechos para el móvil. Nada de esto está construido: es para que lo
+        apruebes o lo corrijas.
+      </p>
+    </header>
+
+    <nav class="pestanas" aria-label="Partes de la maqueta">
+      <div class="pestanas-dentro">
+        <a href="#caja"><span class="num">1</span>La caja</a>
+        <a href="#tpv"><span class="num">2</span>Estook TPV</a>
+        <a href="#carta"><span class="num">3</span>Carta</a>
+        <a href="#escandallos"><span class="num">4</span>Escandallos</a>
+        <a href="#menus"><span class="num">5</span>Menús</a>
+        <a href="#panel"><span class="num">6</span>Panel</a>
+        <a href="#objetivos"><span class="num">7</span>Objetivos</a>
+        <a href="#textos"><span class="num">8</span>Textos</a>
+        <a href="#ademas"><span class="num">9</span>Lo que he visto</a>
+      </div>
+    </nav>
+
+    <main>
+      <!-- ═══════════════════════ 1 · LA CAJA ═══════════════════════ -->
+      <section class="vista" id="v-caja" data-vista="caja">
+        <div class="intro">
+          <h2>La caja: abrir, cobrar, cerrar y cuadrar</h2>
+          <p>
+            Todo se hace en Estook TPV. Se abre contando el cajón, cada cobro dice si fue en
+            efectivo o con tarjeta, y al cerrar se cuenta a ciegas: Estook calcula lo que debería
+            haber y enseña la diferencia.
+          </p>
+        </div>
+        <div class="interruptor" role="group" aria-label="Tema del TPV">
+          <button type="button" data-tema="oscuro" aria-pressed="true">Oscuro</button>
+          <button type="button" data-tema="claro" aria-pressed="false">Claro</button>
+        </div>
+
+        <div class="fila">
+          <div class="pie">
+            <div class="titulo">
+              <span class="n">1</span>La puerta: abrir caja al lado de Fichar
+            </div>
+            <div class="caja-p">
+              <div class="tpv">
+                <div style="text-align: center; display: flex; flex-direction: column; gap: 4px">
+                  <h5>Tu PIN</h5>
+                  <span class="sub" style="margin: 0">Caja 1 · Bar Centro</span>
+                </div>
+                <div class="puntos">
+                  <i class="l"></i><i class="l"></i><i class="l"></i><i></i><i></i><i></i>
+                </div>
+                <div class="pin-teclas">
+                  <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span
+                  ><span>6</span><span>7</span><span>8</span><span>9</span
+                  ><span style="background: transparent"></span><span>0</span
+                  ><span style="background: transparent">⌫</span>
+                </div>
+                <div
+                  style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto"
+                >
+                  <span class="gordo gris">Fichar</span>
+                  <span class="gordo verde">Abrir caja</span>
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              Con la caja abierta, el botón pasa a ámbar: «Cerrar caja». Pide el PIN de un
+              encargado.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">2</span>Abrir: contar el cajón</div>
+            <div class="caja-p">
+              <div class="tpv" data-contar="abrir">
+                <h5>Abrir caja</h5>
+                <div class="sub">Cuenta lo que hay en el cajón.</div>
+                <div class="billetes"></div>
+                <div class="suma">
+                  <span>En el cajón</span><b class="tabular" data-total>0,00 €</b>
+                </div>
+                <div class="dif bien" data-aviso-fondo>
+                  <span>Igual que el fondo de siempre</span>150,00 €
+                </div>
+                <button type="button" class="gordo" data-abrir>Abrir con 0,00 €</button>
+              </div>
+            </div>
+            <div class="nota">
+              Toca + y −: es de verdad. Si no coincide con lo que se dejó ayer, lo dice antes de
+              abrir.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">3</span>Cobrar</div>
+            <div class="caja-p">
+              <div class="tpv">
+                <div style="display: flex; justify-content: space-between; align-items: baseline">
+                  <h5>Mesa 12</h5>
+                  <b style="font-size: 26px; font-weight: 800" class="tabular">48,50 €</b>
+                </div>
+                <div class="formas">
+                  <span class="si"
+                    ><svg><use href="#i-billete" /></svg>Efectivo</span
+                  >
+                  <span
+                    ><svg><use href="#i-tarjeta" /></svg>Tarjeta</span
+                  >
+                  <span
+                    ><svg><use href="#i-dividir" /></svg>Dividir</span
+                  >
+                </div>
+                <div class="sub" style="margin: 0">Te da</div>
+                <div class="rapidos">
+                  <span>Justo</span><span class="si">50 €</span><span>60 €</span><span>100 €</span>
+                </div>
+                <div class="dif bien"><span>Cambio</span>1,50 €</div>
+                <span class="gordo" style="margin-top: auto">Cobrar 48,50 €</span>
+              </div>
+            </div>
+            <div class="nota">
+              «Dividir» parte la cuenta o mezcla efectivo y tarjeta. Todo lo cobrado va a su caja.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">4</span>Meter o sacar dinero</div>
+            <div class="caja-p">
+              <div class="tpv">
+                <h5>Sacar dinero</h5>
+                <div class="sub">Queda apuntado con quién y por qué.</div>
+                <div class="campo-t"><span>Cuánto</span><span class="tabular">35,00 €</span></div>
+                <div class="motivos">
+                  <span class="si">Proveedor</span><span>Cambio</span><span>Propinas</span
+                  ><span>Otro</span>
+                </div>
+                <div class="campo-t"><span>Nota</span><span>Pan de la mañana</span></div>
+                <div class="cuentas" style="margin-top: auto">
+                  <div class="c"><span>Lo hace</span><span>Marta · encargada</span></div>
+                  <div class="c"><span>Hora</span><span>13:42</span></div>
+                </div>
+                <span class="gordo">Sacar 35,00 €</span>
+              </div>
+            </div>
+            <div class="nota">
+              Pagar al proveedor, cambio para el cajón o propinas: sin esto el arqueo nunca cuadra.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">5</span>Cerrar: contar a ciegas</div>
+            <div class="caja-p">
+              <div class="tpv" data-contar="cerrar">
+                <h5>Cerrar caja</h5>
+                <div class="sub">Cuenta el efectivo. Lo que debería haber se ve al terminar.</div>
+                <div class="billetes"></div>
+                <div class="suma"><span>Contado</span><b class="tabular" data-total>0,00 €</b></div>
+                <div class="campo-t">
+                  <span>Total del datáfono (su papel)</span><span class="tabular">1.284,60 €</span>
+                </div>
+                <button type="button" class="gordo ambar" data-ver-arqueo>Ver el arqueo</button>
+              </div>
+            </div>
+            <div class="nota">
+              A ciegas: quien cuenta no sabe cuánto «tiene que» salir. Así se cuenta de verdad.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">6</span>El arqueo</div>
+            <div class="caja-p">
+              <div class="tpv">
+                <h5>Arqueo · Caja 1</h5>
+                <div class="cuentas">
+                  <div class="c"><span>Fondo al abrir</span><span>150,00 €</span></div>
+                  <div class="c"><span>Cobrado en efectivo</span><span>612,40 €</span></div>
+                  <div class="c"><span>Sacado</span><span>−35,00 €</span></div>
+                  <div class="c fuerte">
+                    <span>Debería haber</span><span data-deberia>727,40 €</span>
+                  </div>
+                  <div class="c fuerte"><span>Contado</span><span data-contado>722,40 €</span></div>
+                </div>
+                <div class="dif" data-diferencia><span>Falta</span>5,00 €</div>
+                <div class="dif bien"><span>Tarjeta: TPV y datáfono</span>Cuadra</div>
+                <div class="cuentas">
+                  <div class="c"><span>Dejas para mañana</span><span>150,00 €</span></div>
+                  <div class="c fuerte"><span>Retiras</span><span data-retiras>572,40 €</span></div>
+                </div>
+                <span class="gordo" style="margin-top: auto">Cerrar e imprimir el Z</span>
+              </div>
+            </div>
+            <div class="nota">
+              Si falta o sobra, un motivo de un toque (opcional). Se cierra igual: lo que se cuenta
+              no se discute.
+            </div>
+          </div>
+        </div>
+
+        <div class="fila">
+          <div class="pie">
+            <div class="titulo">
+              <span class="n">7</span>Estook (Pro): Cierres de caja, solo para ver
+            </div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>23:52</span><span>●●● 5G</span></div>
+                <div class="barra-app">
+                  <span class="logo">BC</span><span class="nombre">Bar Centro</span>
+                  <svg class="ic"><use href="#i-lupa" /></svg
+                  ><svg class="ic"><use href="#i-campana" /></svg>
+                </div>
+                <div class="cuerpo">
+                  <div class="h-pant"><h3>Cierres de caja</h3></div>
+                  <div class="tarjeta" style="gap: 6px">
+                    <div style="display: flex; align-items: center; gap: 8px">
+                      <span class="pastilla p-bien">● Abierta</span>
+                      <b style="flex: 1">Hoy · Caja 1</b>
+                      <small style="color: var(--tenue)">desde 12:02</small>
+                    </div>
+                    <div
+                      style="display: flex; justify-content: space-between; align-items: baseline"
+                    >
+                      <span style="color: var(--suave)">Efectivo en el cajón ahora</span>
+                      <b class="tabular" style="font-size: 18px; white-space: nowrap">412,30 €</b>
+                    </div>
+                    <div style="display: flex; gap: 12px; color: var(--suave); font-size: 11.5px">
+                      <span>Tarjeta 838,10 €</span><span>Sacado 35,00 €</span>
+                    </div>
+                  </div>
+                  <div class="chips">
+                    <span class="chip solo puesto">Todos</span
+                    ><span class="chip solo">Con diferencia <span class="cuenta">2</span></span
+                    ><span class="chip solo">Semana</span>
+                  </div>
+                  <div class="tarjeta sin-relleno">
+                    <div class="plato">
+                      <div class="que">
+                        <b>Sáb 7 nov · Caja 1</b><small>Cerró Marta · 23:48</small>
+                      </div>
+                      <span class="pastilla p-atencion">Falta 5,00 €</span>
+                    </div>
+                    <div class="plato">
+                      <div class="que">
+                        <b>Vie 6 nov · Caja 1</b><small>Cerró Iván · 00:12</small>
+                      </div>
+                      <span class="pastilla p-bien">Cuadra</span>
+                    </div>
+                    <div class="plato">
+                      <div class="que">
+                        <b>Jue 5 nov · Caja 1</b><small>Cerró Marta · 23:31</small>
+                      </div>
+                      <span class="pastilla p-info">Sobra 2,30 €</span>
+                    </div>
+                    <div class="plato">
+                      <div class="que">
+                        <b>Mié 4 nov · Caja 1</b><small>Cerró Marta · 23:20</small>
+                      </div>
+                      <span class="pastilla p-bien">Cuadra</span>
+                    </div>
+                    <div class="plato">
+                      <div class="que">
+                        <b>Mar 3 nov · Caja 1</b><small>Cerró Iván · 23:58</small>
+                      </div>
+                      <span class="pastilla p-bien">Cuadra</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="abajo">
+                  <span
+                    ><svg><use href="#i-chispa" /></svg>Apps</span
+                  ><span class="aqui"
+                    ><svg><use href="#i-caja" /></svg>Jornadas</span
+                  ><span
+                    ><svg><use href="#i-equipo" /></svg>Empleados</span
+                  ><span
+                    ><svg><use href="#i-capas" /></svg>Ventas</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              Sin botón de cerrar: con Pro el día se abre y se cierra en el TPV. El gerente ve la
+              caja en vivo.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">8</span>Un cierre por dentro (el Z)</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>23:52</span><span>●●● 5G</span></div>
+                <div class="cuerpo" style="padding-top: 6px">
+                  <div class="h-pant">
+                    <span class="btn redondo" aria-hidden="true" style="transform: rotate(180deg)"
+                      ><svg><use href="#i-flecha" /></svg
+                    ></span>
+                    <h3 style="font-size: 17px">Sáb 7 nov · Caja 1</h3>
+                  </div>
+                  <div class="tarjeta" style="flex-direction: row; align-items: center">
+                    <div style="flex: 1; display: flex; flex-direction: column">
+                      <small style="color: var(--suave)">Diferencia en efectivo</small>
+                      <b style="font-size: 22px; color: var(--atencion)" class="tabular">−5,00 €</b>
+                    </div>
+                    <span class="pastilla p-tenue">Motivo: no se sabe</span>
+                  </div>
+                  <div class="tarjeta" style="gap: 0; padding: 4px 12px">
+                    <div class="plato" style="padding: 7px 0">
+                      <div class="que"><b>Abrió</b></div>
+                      <small>Marta · 12:02 · 150,00 €</small>
+                    </div>
+                    <div class="plato" style="padding: 7px 0">
+                      <div class="que"><b>Efectivo</b></div>
+                      <span class="precio">612,40 €</span>
+                    </div>
+                    <div class="plato" style="padding: 7px 0">
+                      <div class="que"><b>Tarjeta</b></div>
+                      <span class="precio">1.284,60 €</span>
+                    </div>
+                    <div class="plato" style="padding: 7px 0">
+                      <div class="que"><b>Sacado</b><small>Proveedor · pan</small></div>
+                      <span class="precio">−35,00 €</span>
+                    </div>
+                    <div class="plato" style="padding: 7px 0">
+                      <div class="que"><b>Debería haber</b></div>
+                      <span class="precio">727,40 €</span>
+                    </div>
+                    <div class="plato" style="padding: 7px 0">
+                      <div class="que"><b>Contado</b><small>Marta · 23:48</small></div>
+                      <span class="precio">722,40 €</span>
+                    </div>
+                    <div class="plato" style="padding: 7px 0">
+                      <div class="que"><b>Tickets</b></div>
+                      <span class="precio">86</span>
+                    </div>
+                    <div class="plato" style="padding: 7px 0">
+                      <div class="que"><b>Anulaciones</b></div>
+                      <span class="precio">2 · 14,00 €</span>
+                    </div>
+                  </div>
+                  <span class="btn sec" style="align-self: flex-start"
+                    ><svg><use href="#i-documento" /></svg>Ver el Z en papel</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              Las anulaciones van en el Z: es donde se esconde el dinero que no cuadra.
+            </div>
+          </div>
+
+          <div class="pie" style="max-width: 420px; flex: 1 1 320px">
+            <div class="titulo">Cómo funciona</div>
+            <div class="reglas" style="grid-template-columns: 1fr">
+              <div class="regla">
+                <b>Cada caja, su arqueo</b
+                ><span
+                  >Caja 1 y Caja 2 se abren, se cuentan y se cierran por separado. El día se cierra
+                  cuando lo están todas.</span
+                >
+              </div>
+              <div class="regla">
+                <b>El fondo de siempre</b
+                ><span
+                  >Lo pones una vez (150 €). Al cerrar, Estook dice cuánto retirar para dejarlo
+                  listo para mañana.</span
+                >
+              </div>
+              <div class="regla">
+                <b>Un cierre no se edita</b
+                ><span
+                  >Si alguien se equivoca, se reabre con motivo, como ya se hace hoy, y queda a la
+                  vista.</span
+                >
+              </div>
+              <div class="regla">
+                <b>Sin Pro, como hasta ahora</b
+                ><span>Esencial sigue cerrando a mano en Estook, porque su caja es otra.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════ 2 · ESTOOK TPV ═══════════════════════ -->
+      <section class="vista" id="v-tpv" data-vista="tpv" hidden>
+        <div class="intro">
+          <h2>Estook TPV: con fotos, colores y en claro u oscuro</h2>
+          <p>
+            Las secciones llevan el mismo color e icono que en Estook, los platos salen con la foto
+            que subes en Carta, y la cuenta va siempre a la izquierda con «Enviar» y «Cobrar»
+            grandes.
+          </p>
+        </div>
+        <div class="interruptor" role="group" aria-label="Tema del TPV">
+          <button type="button" data-tema="oscuro" aria-pressed="true">Oscuro</button>
+          <button type="button" data-tema="claro" aria-pressed="false">Claro</button>
+        </div>
+
+        <div class="pie">
+          <div class="titulo"><span class="n">1</span>La caja, con una mesa abierta</div>
+          <div class="tablet-fila">
+            <div class="tablet">
+              <div class="tpv">
+                <aside class="ticket">
+                  <div class="ticket-cab">
+                    <span class="mesa-num">12</span>
+                    <div>
+                      <b>Mesa 12 · Terraza</b><small>4 personas · desde 21:14 · Iván</small>
+                    </div>
+                    <svg width="20" height="20" style="color: var(--t-tenue)">
+                      <use href="#i-puntos" />
+                    </svg>
+                  </div>
+                  <div class="pases">
+                    <span>Ya</span><span class="si">1.º</span><span>2.º</span><span>Postre</span>
+                  </div>
+                  <div class="lineas">
+                    <div class="linea">
+                      <span class="uds">2</span
+                      ><span>Croquetas de jamón<small>Ya · enviado 21:16</small></span
+                      ><span class="imp">19,00</span>
+                    </div>
+                    <div class="linea">
+                      <span class="uds">1</span
+                      ><span>Ensalada de burrata<small>1.º · enviado</small></span
+                      ><span class="imp">13,50</span>
+                    </div>
+                    <div class="linea nueva">
+                      <span class="uds">2</span
+                      ><span>Entrecot a la brasa<small>2.º · punto: al punto</small></span
+                      ><span class="imp">49,00</span>
+                    </div>
+                    <div class="linea nueva">
+                      <span class="uds">1</span
+                      ><span>Lubina a la espalda<small>2.º · sin gluten</small></span
+                      ><span class="imp">22,00</span>
+                    </div>
+                    <div class="linea">
+                      <span class="uds">4</span><span>Caña<small>Barra</small></span
+                      ><span class="imp">10,00</span>
+                    </div>
+                  </div>
+                  <div class="total">
+                    <span style="color: var(--t-suave)">Total</span><b>113,50 €</b>
+                  </div>
+                  <div class="acciones">
+                    <span class="enviar">Enviar 3</span><span class="cobrar">Cobrar</span>
+                  </div>
+                </aside>
+                <div class="derecha">
+                  <div class="arriba">
+                    <span class="ic" style="transform: rotate(180deg)"
+                      ><svg><use href="#i-flecha" /></svg
+                    ></span>
+                    <span class="busca"
+                      ><svg><use href="#i-lupa" /></svg>Buscar plato o bebida</span
+                    >
+                    <span class="quien"><i>IV</i>Iván</span>
+                  </div>
+                  <div class="secciones">
+                    <span class="seccion" style="--c: var(--s-ambar)"
+                      ><span class="baldosa" style="background: var(--s-ambar)"
+                        ><svg><use href="#i-chispa" /></svg></span
+                      >Lo más pedido</span
+                    >
+                    <span class="seccion" style="--c: var(--s-verde)"
+                      ><span class="baldosa" style="background: var(--s-verde)"
+                        ><svg><use href="#i-hoja" /></svg></span
+                      >Entrantes</span
+                    >
+                    <span class="seccion si" style="--c: var(--s-rojo)"
+                      ><span class="baldosa" style="background: var(--s-rojo)"
+                        ><svg><use href="#i-carne" /></svg></span
+                      >Principales</span
+                    >
+                    <span class="seccion" style="--c: var(--s-rosa)"
+                      ><span class="baldosa" style="background: var(--s-rosa)"
+                        ><svg><use href="#i-tarta" /></svg></span
+                      >Postres</span
+                    >
+                    <span class="seccion" style="--c: var(--s-azul)"
+                      ><span class="baldosa" style="background: var(--s-azul)"
+                        ><svg><use href="#i-cerveza" /></svg></span
+                      >Bebidas</span
+                    >
+                    <span class="seccion" style="--c: var(--s-arena)"
+                      ><span class="baldosa" style="background: var(--s-arena)"
+                        ><svg><use href="#i-cafe" /></svg></span
+                      >Cafés</span
+                    >
+                  </div>
+                  <div class="botones">
+                    <span class="boton" style="--c: var(--s-rojo)"
+                      ><span class="foto f5"></span>
+                      <div><b>Entrecot a la brasa</b><small>24,50 €</small></div>
+                      <span class="cuantos">2</span></span
+                    >
+                    <span class="boton" style="--c: var(--s-rojo)"
+                      ><span class="foto f6"></span>
+                      <div><b>Lubina a la espalda</b><small>22,00 €</small></div>
+                      <span class="cuantos">1</span></span
+                    >
+                    <span class="boton" style="--c: var(--s-rojo)"
+                      ><span class="foto f7"></span>
+                      <div><b>Risotto de setas</b><small>16,50 €</small></div></span
+                    >
+                    <span class="boton" style="--c: var(--s-rojo)"
+                      ><span class="foto f1"></span>
+                      <div><b>Hamburguesa de la casa</b><small>14,50 €</small></div></span
+                    >
+                    <span class="boton agotado" style="--c: var(--s-rojo)"
+                      ><span class="foto f4"></span>
+                      <div><b>Carrillera al vino</b><small>18,00 €</small></div></span
+                    >
+                    <span class="boton" style="--c: var(--s-rojo)"
+                      ><span class="foto sin-foto" style="background: var(--s-rojo)"
+                        ><svg><use href="#i-carne" /></svg
+                      ></span>
+                      <div><b>Secreto ibérico</b><small>19,50 €</small></div></span
+                    >
+                    <span class="boton" style="--c: var(--s-rojo)"
+                      ><span class="foto sin-foto" style="background: var(--s-rojo)"
+                        ><svg><use href="#i-pez" /></svg
+                      ></span>
+                      <div><b>Pulpo a la brasa</b><small>21,00 €</small></div></span
+                    >
+                    <span class="boton" style="--c: var(--s-rojo)"
+                      ><span class="foto f2"></span>
+                      <div><b>Arroz del señorito</b><small>17,50 €</small></div></span
+                    >
+                    <span class="boton" style="--c: var(--s-rojo)"
+                      ><span class="foto sin-foto" style="background: var(--s-rojo)"
+                        ><svg><use href="#i-carne" /></svg
+                      ></span>
+                      <div><b>Chuletón (1 kg)</b><small>52,00 €</small></div></span
+                    >
+                    <span class="boton" style="--c: var(--s-rojo)"
+                      ><span class="foto f3"></span>
+                      <div><b>Verduras a la brasa</b><small>12,00 €</small></div></span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="nota" style="max-width: 70ch">
+            Sin foto, el botón lleva el icono de su sección sobre su color: nunca un hueco gris. El
+            número naranja es lo que ya hay de ese plato en la cuenta.
+          </div>
+        </div>
+
+        <div class="fila">
+          <div class="pie">
+            <div class="titulo"><span class="n">2</span>El comandero en el móvil</div>
+            <div class="movil">
+              <div class="tpv" style="height: 100%">
+                <div class="estado"><span>21:22</span><span>●●● 5G</span></div>
+                <div class="com-cab">
+                  <span class="mesa-num">12</span>
+                  <div><b>Mesa 12</b><small>2.º · 4 personas</small></div>
+                  <span
+                    class="ic"
+                    style="
+                      width: 32px;
+                      height: 32px;
+                      border-radius: 10px;
+                      background: var(--t-sup);
+                      display: grid;
+                      place-items: center;
+                    "
+                    ><svg width="15" height="15"><use href="#i-lupa" /></svg
+                  ></span>
+                </div>
+                <div class="secciones">
+                  <span class="seccion" style="--c: var(--s-verde)"
+                    ><span class="baldosa" style="background: var(--s-verde)"
+                      ><svg><use href="#i-hoja" /></svg></span
+                    >Entrantes</span
+                  >
+                  <span class="seccion si" style="--c: var(--s-rojo)"
+                    ><span class="baldosa" style="background: var(--s-rojo)"
+                      ><svg><use href="#i-carne" /></svg></span
+                    >Principales</span
+                  >
+                  <span class="seccion" style="--c: var(--s-rosa)"
+                    ><span class="baldosa" style="background: var(--s-rosa)"
+                      ><svg><use href="#i-tarta" /></svg></span
+                    >Postres</span
+                  >
+                </div>
+                <div class="botones" style="flex: 1">
+                  <span class="boton" style="--c: var(--s-rojo)"
+                    ><span class="foto f5"></span>
+                    <div><b>Entrecot a la brasa</b><small>24,50 €</small></div>
+                    <span class="cuantos">2</span></span
+                  >
+                  <span class="boton" style="--c: var(--s-rojo)"
+                    ><span class="foto f6"></span>
+                    <div><b>Lubina a la espalda</b><small>22,00 €</small></div>
+                    <span class="cuantos">1</span></span
+                  >
+                  <span class="boton" style="--c: var(--s-rojo)"
+                    ><span class="foto f7"></span>
+                    <div><b>Risotto de setas</b><small>16,50 €</small></div></span
+                  >
+                  <span class="boton" style="--c: var(--s-rojo)"
+                    ><span class="foto f1"></span>
+                    <div><b>Hamburguesa</b><small>14,50 €</small></div></span
+                  >
+                  <span class="boton" style="--c: var(--s-rojo)"
+                    ><span class="foto f2"></span>
+                    <div><b>Arroz del señorito</b><small>17,50 €</small></div></span
+                  >
+                  <span class="boton" style="--c: var(--s-rojo)"
+                    ><span class="foto f3"></span>
+                    <div><b>Verduras a la brasa</b><small>12,00 €</small></div></span
+                  >
+                </div>
+                <div class="com-pie">
+                  <span>Enviar 3 a cocina</span><span class="tabular">71,00 €</span>
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              Dos columnas con foto, la sección arriba y una sola barra abajo: lo que falta por
+              enviar.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo">
+              <span class="n">3</span>Ajustes del TPV: más grandes, y con «Salir»
+            </div>
+            <div class="tablet-fila">
+              <div class="tablet" style="width: 760px; height: 560px">
+                <div class="tpv" style="display: flex; flex-direction: column">
+                  <div class="arriba">
+                    <span class="ic" style="transform: rotate(180deg)"
+                      ><svg><use href="#i-flecha" /></svg></span
+                    ><b style="font-size: 20px; flex: 1">Ajustes</b
+                    ><span class="quien"><i>MA</i>Marta</span>
+                  </div>
+                  <div class="aj">
+                    <div>
+                      <h4>Lo que se vende</h4>
+                      <div class="grupo">
+                        <div class="f">
+                          <span class="baldosa" style="background: var(--s-rojo)"
+                            ><svg><use href="#i-prohibido" /></svg
+                          ></span>
+                          <div><b>Agotados</b><small>2 hoy</small></div>
+                          <svg class="flecha"><use href="#i-flecha" /></svg>
+                        </div>
+                        <div class="f">
+                          <span class="baldosa" style="background: var(--s-verde)"
+                            ><svg><use href="#i-sala" /></svg
+                          ></span>
+                          <div><b>Sala y mesas</b><small>Terraza y salón · 22 mesas</small></div>
+                          <svg class="flecha"><use href="#i-flecha" /></svg>
+                        </div>
+                        <div class="f">
+                          <span class="baldosa" style="background: var(--s-naranja)"
+                            ><svg><use href="#i-cubo" /></svg
+                          ></span>
+                          <div><b>Productos y precios</b><small>64 botones</small></div>
+                          <svg class="flecha"><use href="#i-flecha" /></svg>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h4>Tu sesión</h4>
+                      <div class="grupo">
+                        <div class="f">
+                          <span class="baldosa" style="background: var(--s-turquesa)"
+                            ><svg><use href="#i-persona" /></svg
+                          ></span>
+                          <div><b>Cambiar de persona</b><small>Vuelve al PIN</small></div>
+                          <svg class="flecha"><use href="#i-flecha" /></svg>
+                        </div>
+                        <div class="f">
+                          <span class="baldosa" style="background: var(--s-morado)"
+                            ><svg><use href="#i-sol" /></svg
+                          ></span>
+                          <div><b>Tema</b></div>
+                          <span class="tema3"
+                            ><span>Claro</span><span class="si">Oscuro</span><span>Auto</span></span
+                          >
+                        </div>
+                        <div class="f salir">
+                          <span class="baldosa" style="background: var(--s-rojo)"
+                            ><svg><use href="#i-salir" /></svg
+                          ></span>
+                          <div>
+                            <b>Desvincular este aparato</b
+                            ><small>Pide confirmar. Se vuelve con un código</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h4>Lo que se conecta</h4>
+                      <div class="grupo">
+                        <div class="f">
+                          <span class="baldosa" style="background: var(--s-azul)"
+                            ><svg><use href="#i-sala" /></svg
+                          ></span>
+                          <div><b>Aparatos</b><small>Caja 1 · 2 comanderos</small></div>
+                          <svg class="flecha"><use href="#i-flecha" /></svg>
+                        </div>
+                        <div class="f">
+                          <span class="baldosa" style="background: var(--s-naranja)"
+                            ><svg><use href="#i-impresora" /></svg
+                          ></span>
+                          <div><b>Impresoras y cajón</b><small>Todo bien</small></div>
+                          <svg class="flecha"><use href="#i-flecha" /></svg>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h4>Seguridad y Hacienda</h4>
+                      <div class="grupo">
+                        <div class="f">
+                          <span class="baldosa" style="background: #6b7479"
+                            ><svg><use href="#i-candado" /></svg
+                          ></span>
+                          <div><b>PIN y bloqueo</b><small>Se bloquea a los 2 min</small></div>
+                          <svg class="flecha"><use href="#i-flecha" /></svg>
+                        </div>
+                        <div class="f">
+                          <span class="baldosa" style="background: var(--s-naranja)"
+                            ><svg><use href="#i-documento" /></svg
+                          ></span>
+                          <div><b>Facturación</b><small>VeriFactu, al día</small></div>
+                          <svg class="flecha"><use href="#i-flecha" /></svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              Letra de 16 px, filas de 64 px. «Cambiar de persona» deja el aparato listo para el
+              siguiente; «Desvincular» lo saca del local.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════ 3 · CARTA ═══════════════════════ -->
+      <section class="vista" id="v-carta" data-vista="carta" hidden>
+        <div class="intro">
+          <h2>Carta: un botón principal y lo demás en su sitio</h2>
+          <p>
+            Arriba solo «+ Plato». Importar la carta, nueva sección y ordenar van en «⋯». Vincular
+            al almacén sale dentro del plato, junto a desgranar, que es donde se usa.
+          </p>
+        </div>
+        <div class="fila">
+          <div class="pie">
+            <div class="titulo"><span class="n">1</span>La carta</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>12:30</span><span>●●● 5G</span></div>
+                <div class="barra-app">
+                  <span class="logo">BC</span><span class="nombre">Bar Centro</span
+                  ><svg class="ic"><use href="#i-lupa" /></svg
+                  ><svg class="ic"><use href="#i-campana" /></svg>
+                </div>
+                <div class="cuerpo">
+                  <div class="h-pant">
+                    <h3>Carta</h3>
+                    <span class="btn redondo"
+                      ><svg><use href="#i-puntos" /></svg
+                    ></span>
+                    <span class="btn"
+                      ><svg><use href="#i-mas" /></svg>Plato</span
+                    >
+                  </div>
+                  <div class="chips">
+                    <span class="chip solo puesto">Todo <span class="cuenta">14</span></span>
+                    <span class="chip"
+                      ><span class="baldosa" style="background: var(--s-verde)"
+                        ><svg><use href="#i-hoja" /></svg></span
+                      >Entrantes</span
+                    >
+                    <span class="chip"
+                      ><span class="baldosa" style="background: var(--s-rojo)"
+                        ><svg><use href="#i-carne" /></svg></span
+                      >Principales</span
+                    >
+                  </div>
+                  <div class="tarjeta sin-relleno">
+                    <div class="t-cab">
+                      <span class="baldosa g" style="background: var(--s-verde)"
+                        ><svg><use href="#i-hoja" /></svg></span
+                      ><b>Entrantes</b><span class="mas">4</span>
+                    </div>
+                    <div class="plato">
+                      <span class="foto f1"></span>
+                      <div class="que"><b>Croquetas de jamón</b><small>Food cost 26 %</small></div>
+                      <span class="precio">9,50 €</span>
+                    </div>
+                    <div class="plato">
+                      <span class="foto f2"></span>
+                      <div class="que"><b>Patatas bravas</b><small>Food cost 18 %</small></div>
+                      <span class="precio">7,50 €</span>
+                    </div>
+                    <div class="plato">
+                      <span class="foto f3"></span>
+                      <div class="que"><b>Ensalada de burrata</b><small>Food cost 34 %</small></div>
+                      <span class="precio">13,50 €</span>
+                    </div>
+                    <div class="plato">
+                      <span class="foto f4"></span>
+                      <div class="que"><b>Tabla de ibéricos</b><small>Sin escandallo</small></div>
+                      <span class="precio">18,90 €</span>
+                    </div>
+                  </div>
+                  <div class="tarjeta sin-relleno">
+                    <div class="t-cab">
+                      <span class="baldosa g" style="background: var(--s-rojo)"
+                        ><svg><use href="#i-carne" /></svg></span
+                      ><b>Principales</b><span class="mas">4</span>
+                    </div>
+                    <div class="plato">
+                      <span class="foto f5"></span>
+                      <div class="que"><b>Entrecot a la brasa</b><small>Food cost 38 %</small></div>
+                      <span class="precio">24,50 €</span>
+                    </div>
+                    <div class="plato agotado">
+                      <span class="foto f6"></span>
+                      <div class="que"><b>Lubina a la espalda</b><small>Agotado hoy</small></div>
+                      <span class="precio">22,00 €</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="abajo">
+                  <span
+                    ><svg><use href="#i-chispa" /></svg>Apps</span
+                  ><span class="aqui"
+                    ><svg><use href="#i-documento" /></svg>Carta</span
+                  ><span
+                    ><svg><use href="#i-compartir" /></svg>Canales</span
+                  ><span
+                    ><svg><use href="#i-capas" /></svg>Menús</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              Cada plato con su foto y su food cost. Sin el «+» flotante: ya hay un botón arriba.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">2</span>«⋯»: lo que se hace pocas veces</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>12:30</span><span>●●● 5G</span></div>
+                <div class="barra-app">
+                  <span class="logo">BC</span><span class="nombre">Bar Centro</span>
+                </div>
+                <div class="cuerpo">
+                  <div class="h-pant"><h3>Carta</h3></div>
+                </div>
+                <div class="velo"></div>
+                <div class="hoja">
+                  <span class="asa"></span>
+                  <div class="opcion">
+                    <span class="ico"
+                      ><svg><use href="#i-carpeta" /></svg
+                    ></span>
+                    <div><b>Importar tu carta</b><small>De una foto o un PDF</small></div>
+                  </div>
+                  <div class="opcion">
+                    <span class="ico"
+                      ><svg><use href="#i-capas" /></svg
+                    ></span>
+                    <div><b>Nueva sección</b><small>Con su color y su icono</small></div>
+                  </div>
+                  <div class="opcion">
+                    <span class="ico"
+                      ><svg><use href="#i-orden" /></svg
+                    ></span>
+                    <div><b>Ordenar</b><small>Secciones y platos</small></div>
+                  </div>
+                  <div class="opcion">
+                    <span class="ico"
+                      ><svg><use href="#i-prohibido" /></svg
+                    ></span>
+                    <div><b>Agotados</b><small>1 hoy</small></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              «Leer tu carta» pasa a «Importar tu carta». Con la carta vacía, importar es el botón
+              grande de la pantalla.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">3</span>Un plato</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>12:31</span><span>●●● 5G</span></div>
+                <div style="height: 150px; flex: none; position: relative" class="f1">
+                  <span class="btn sec" style="position: absolute; right: 10px; bottom: 10px"
+                    ><svg><use href="#i-camara" /></svg>Cambiar foto</span
+                  >
+                </div>
+                <div class="cuerpo" style="padding-top: 10px">
+                  <div style="display: flex; align-items: baseline; gap: 8px">
+                    <h3 style="margin: 0; font-size: 18px; flex: 1">Croquetas de jamón</h3>
+                    <b class="tabular" style="font-size: 18px">9,50 €</b>
+                  </div>
+                  <div class="chips">
+                    <span class="chip puesto"
+                      ><span class="baldosa" style="background: var(--s-verde)"
+                        ><svg><use href="#i-hoja" /></svg></span
+                      >Entrantes</span
+                    >
+                    <span class="chip solo">Gluten</span><span class="chip solo">Leche</span
+                    ><span class="chip solo">Huevo</span>
+                  </div>
+                  <div class="tarjeta" style="flex-direction: row; align-items: center; gap: 12px">
+                    <span class="anillo" style="--v: 26"><span>26 %</span></span>
+                    <div style="flex: 1; display: flex; flex-direction: column">
+                      <b>Escandallo</b
+                      ><small style="color: var(--suave)">Coste 2,47 € · te deja 7,03 €</small>
+                    </div>
+                    <svg width="16" height="16" style="color: var(--tenue)">
+                      <use href="#i-flecha" />
+                    </svg>
+                  </div>
+                  <div class="tarjeta" style="gap: 6px">
+                    <b>¿Lo vendes tal cual del almacén?</b>
+                    <small style="color: var(--suave)"
+                      >Una lata, un refresco, una botella: vincúlalo y descuenta solo.</small
+                    >
+                    <span class="btn sec" style="align-self: flex-start"
+                      >Vincular a un producto</span
+                    >
+                  </div>
+                  <div style="display: flex; gap: 8px; margin-top: auto; padding-bottom: 12px">
+                    <span class="btn sec" style="flex: 1">Agotar hoy</span
+                    ><span class="btn" style="flex: 1">Guardar</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              La foto es la misma que sale en el TPV y en la carta del cliente.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">4</span>Una sección: color e icono</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>12:32</span><span>●●● 5G</span></div>
+                <div class="cuerpo">
+                  <div class="h-pant"><h3>Carta</h3></div>
+                </div>
+                <div class="velo"></div>
+                <div class="hoja" style="gap: 10px">
+                  <span class="asa"></span>
+                  <b style="font-size: 15px">Principales</b>
+                  <small style="color: var(--suave); font-weight: 600">Color</small>
+                  <div style="display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px">
+                    <span
+                      class="baldosa"
+                      style="
+                        background: var(--s-naranja);
+                        width: 100%;
+                        aspect-ratio: 1;
+                        height: auto;
+                      "
+                    ></span>
+                    <span
+                      class="baldosa"
+                      style="background: var(--s-verde); width: 100%; aspect-ratio: 1; height: auto"
+                    ></span>
+                    <span
+                      class="baldosa"
+                      style="background: var(--s-azul); width: 100%; aspect-ratio: 1; height: auto"
+                    ></span>
+                    <span
+                      class="baldosa"
+                      style="background: var(--s-ambar); width: 100%; aspect-ratio: 1; height: auto"
+                    ></span>
+                    <span
+                      class="baldosa"
+                      style="
+                        background: var(--s-rojo);
+                        width: 100%;
+                        aspect-ratio: 1;
+                        height: auto;
+                        box-shadow:
+                          0 0 0 3px var(--superficie),
+                          0 0 0 5px var(--texto);
+                      "
+                    ></span>
+                    <span
+                      class="baldosa"
+                      style="background: var(--s-rosa); width: 100%; aspect-ratio: 1; height: auto"
+                    ></span>
+                    <span
+                      class="baldosa"
+                      style="
+                        background: var(--s-morado);
+                        width: 100%;
+                        aspect-ratio: 1;
+                        height: auto;
+                      "
+                    ></span>
+                    <span
+                      class="baldosa"
+                      style="
+                        background: var(--s-turquesa);
+                        width: 100%;
+                        aspect-ratio: 1;
+                        height: auto;
+                      "
+                    ></span>
+                    <span
+                      class="baldosa"
+                      style="background: var(--s-arena); width: 100%; aspect-ratio: 1; height: auto"
+                    ></span>
+                  </div>
+                  <small style="color: var(--suave); font-weight: 600">Icono</small>
+                  <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px">
+                    <span
+                      class="ico-op"
+                      style="
+                        display: grid;
+                        place-items: center;
+                        height: 38px;
+                        border-radius: 10px;
+                        background: var(--hundido);
+                      "
+                      ><svg width="18" height="18"><use href="#i-hoja" /></svg
+                    ></span>
+                    <span
+                      style="
+                        display: grid;
+                        place-items: center;
+                        height: 38px;
+                        border-radius: 10px;
+                        background: var(--s-rojo);
+                        color: #fff;
+                      "
+                      ><svg width="18" height="18"><use href="#i-carne" /></svg
+                    ></span>
+                    <span
+                      style="
+                        display: grid;
+                        place-items: center;
+                        height: 38px;
+                        border-radius: 10px;
+                        background: var(--hundido);
+                      "
+                      ><svg width="18" height="18"><use href="#i-pez" /></svg
+                    ></span>
+                    <span
+                      style="
+                        display: grid;
+                        place-items: center;
+                        height: 38px;
+                        border-radius: 10px;
+                        background: var(--hundido);
+                      "
+                      ><svg width="18" height="18"><use href="#i-tarta" /></svg
+                    ></span>
+                    <span
+                      style="
+                        display: grid;
+                        place-items: center;
+                        height: 38px;
+                        border-radius: 10px;
+                        background: var(--hundido);
+                      "
+                      ><svg width="18" height="18"><use href="#i-copa" /></svg
+                    ></span>
+                    <span
+                      style="
+                        display: grid;
+                        place-items: center;
+                        height: 38px;
+                        border-radius: 10px;
+                        background: var(--hundido);
+                      "
+                      ><svg width="18" height="18"><use href="#i-cafe" /></svg
+                    ></span>
+                  </div>
+                  <span class="btn" style="padding: 11px">Guardar</span>
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              Una sola lista de secciones para Estook y el TPV: se cambia aquí o allí y vale en los
+              dos.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════ 4 · ESCANDALLOS ═══════════════════════ -->
+      <section class="vista" id="v-escandallos" data-vista="escandallos" hidden>
+        <div class="intro">
+          <h2>Escandallos: primero lo que te cuesta dinero</h2>
+          <p>
+            Arriba el food cost medio y cuántos platos se pasan del objetivo. La lista va de peor a
+            mejor, con su anillo de color, y dentro de cada plato se ve qué ingrediente pesa más.
+          </p>
+        </div>
+        <div class="fila">
+          <div class="pie">
+            <div class="titulo"><span class="n">1</span>La lista</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>12:40</span><span>●●● 5G</span></div>
+                <div class="barra-app">
+                  <span class="logo">BC</span><span class="nombre">Bar Centro</span
+                  ><svg class="ic"><use href="#i-lupa" /></svg>
+                </div>
+                <div class="cuerpo">
+                  <div class="h-pant">
+                    <h3>Escandallos</h3>
+                    <span class="btn"
+                      ><svg><use href="#i-mas" /></svg>Nuevo</span
+                    >
+                  </div>
+                  <div class="tarjeta" style="flex-direction: row; align-items: center; gap: 14px">
+                    <span
+                      class="anillo"
+                      style="--v: 29; --c: var(--bien); width: 58px; height: 58px"
+                      ><span style="width: 44px; height: 44px; font-size: 13px">29 %</span></span
+                    >
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+                      <b>Food cost medio</b>
+                      <small style="color: var(--suave)">Tu objetivo: 30 %</small>
+                      <span style="display: flex; gap: 4px"
+                        ><span class="pastilla p-mal">3 por encima</span
+                        ><span class="pastilla p-tenue">2 sin escandallo</span></span
+                      >
+                    </div>
+                  </div>
+                  <div class="chips">
+                    <span class="chip solo puesto">Platos</span
+                    ><span class="chip solo">Elaboraciones</span
+                    ><span class="chip solo">Por encima</span>
+                  </div>
+                  <div class="tarjeta sin-relleno">
+                    <div class="plato">
+                      <span class="foto f5"></span>
+                      <div class="que">
+                        <b>Entrecot a la brasa</b><small>Coste 9,31 € · precio 24,50 €</small>
+                      </div>
+                      <span class="anillo" style="--v: 38; --c: var(--mal)"><span>38 %</span></span>
+                    </div>
+                    <div class="plato">
+                      <span class="foto f3"></span>
+                      <div class="que">
+                        <b>Ensalada de burrata</b><small>Coste 4,59 € · precio 13,50 €</small>
+                      </div>
+                      <span class="anillo" style="--v: 34; --c: var(--atencion)"
+                        ><span>34 %</span></span
+                      >
+                    </div>
+                    <div class="plato">
+                      <span class="foto f6"></span>
+                      <div class="que">
+                        <b>Lubina a la espalda</b><small>Coste 6,82 € · precio 22,00 €</small>
+                      </div>
+                      <span class="anillo" style="--v: 31; --c: var(--atencion)"
+                        ><span>31 %</span></span
+                      >
+                    </div>
+                    <div class="plato">
+                      <span class="foto f1"></span>
+                      <div class="que">
+                        <b>Croquetas de jamón</b><small>Coste 2,47 € · precio 9,50 €</small>
+                      </div>
+                      <span class="anillo" style="--v: 26"><span>26 %</span></span>
+                    </div>
+                    <div class="plato">
+                      <span class="foto f2"></span>
+                      <div class="que">
+                        <b>Patatas bravas</b><small>Coste 1,35 € · precio 7,50 €</small>
+                      </div>
+                      <span class="anillo" style="--v: 18"><span>18 %</span></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="abajo">
+                  <span
+                    ><svg><use href="#i-chispa" /></svg>Apps</span
+                  ><span
+                    ><svg><use href="#i-sala" /></svg>Resumen</span
+                  ><span class="aqui"
+                    ><svg><use href="#i-documento" /></svg>Escandallos</span
+                  ><span
+                    ><svg><use href="#i-capas" /></svg>Fichas</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              Verde hasta tu objetivo, ámbar hasta 5 puntos más, rojo por encima.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">2</span>Un escandallo por dentro</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>12:41</span><span>●●● 5G</span></div>
+                <div style="height: 110px; flex: none" class="f5"></div>
+                <div class="cuerpo" style="padding-top: 10px">
+                  <h3 style="margin: 0; font-size: 17px">Entrecot a la brasa</h3>
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px">
+                    <div class="tarjeta" style="padding: 8px; gap: 0">
+                      <small style="color: var(--suave)">Coste</small><b class="tabular">9,31 €</b>
+                    </div>
+                    <div class="tarjeta" style="padding: 8px; gap: 0">
+                      <small style="color: var(--suave)">Precio</small
+                      ><b class="tabular">24,50 €</b>
+                    </div>
+                    <div class="tarjeta" style="padding: 8px; gap: 0">
+                      <small style="color: var(--suave)">Te deja</small
+                      ><b class="tabular">15,19 €</b>
+                    </div>
+                  </div>
+                  <div class="tarjeta sin-relleno">
+                    <div class="plato" style="flex-wrap: wrap">
+                      <div class="que">
+                        <b>Lomo alto de vaca</b><small>300 g · 26,90 €/kg</small>
+                      </div>
+                      <span class="precio">8,07 €</span>
+                      <div class="barrita" style="flex-basis: 100%"><i style="width: 87%"></i></div>
+                    </div>
+                    <div class="plato" style="flex-wrap: wrap">
+                      <div class="que"><b>Patata agria</b><small>180 g</small></div>
+                      <span class="precio">0,32 €</span>
+                      <div class="barrita" style="flex-basis: 100%"><i style="width: 4%"></i></div>
+                    </div>
+                    <div class="plato" style="flex-wrap: wrap">
+                      <div class="que"><b>Pimiento de padrón</b><small>60 g</small></div>
+                      <span class="precio">0,54 €</span>
+                      <div class="barrita" style="flex-basis: 100%"><i style="width: 6%"></i></div>
+                    </div>
+                    <div class="plato" style="flex-wrap: wrap">
+                      <div class="que"><b>Sal en escamas, aceite</b><small>Elaboración</small></div>
+                      <span class="precio">0,38 €</span>
+                      <div class="barrita" style="flex-basis: 100%"><i style="width: 4%"></i></div>
+                    </div>
+                  </div>
+                  <div
+                    class="aviso importante"
+                    style="padding: 9px 11px; border-radius: 12px; font-size: 11.5px"
+                  >
+                    <span><b>38 %, tu objetivo es 30 %.</b> A 31,00 € quedaría en 30 %.</span>
+                  </div>
+                  <span class="btn sec" style="align-self: flex-start"
+                    ><svg><use href="#i-mas" /></svg>Ingrediente</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              La barra naranja dice qué pesa: aquí, la carne es el 87 % del coste.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════ 5 · MENÚS ═══════════════════════ -->
+      <section class="vista" id="v-menus" data-vista="menus" hidden>
+        <div class="intro">
+          <h2>Menús: la semana de un vistazo</h2>
+          <p>
+            Los días arriba, el de hoy abierto con sus platos y lo que te deja. Imprimir y compartir
+            a un toque; copiar la semana pasada, en «⋯».
+          </p>
+        </div>
+        <div class="fila">
+          <div class="pie">
+            <div class="titulo"><span class="n">1</span>El menú del día</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>11:05</span><span>●●● 5G</span></div>
+                <div class="barra-app">
+                  <span class="logo">BC</span><span class="nombre">Bar Centro</span
+                  ><svg class="ic"><use href="#i-lupa" /></svg>
+                </div>
+                <div class="cuerpo">
+                  <div class="h-pant">
+                    <h3>Menús</h3>
+                    <span class="btn redondo"
+                      ><svg><use href="#i-puntos" /></svg></span
+                    ><span class="btn"
+                      ><svg><use href="#i-mas" /></svg>Menú</span
+                    >
+                  </div>
+                  <div class="chips">
+                    <span class="chip solo puesto">Menú del día · 14,50 €</span
+                    ><span class="chip solo">Fin de semana</span>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px">
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 3px;
+                        padding: 6px 0;
+                        border-radius: 12px;
+                        background: var(--superficie);
+                      "
+                      ><small style="color: var(--tenue)">L</small><b>9</b
+                      ><i
+                        style="width: 5px; height: 5px; border-radius: 50%; background: var(--bien)"
+                      ></i
+                    ></span>
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 3px;
+                        padding: 6px 0;
+                        border-radius: 12px;
+                        background: var(--charcoal);
+                        color: var(--sobre-charcoal);
+                      "
+                      ><small style="opacity: 0.7">M</small><b>10</b
+                      ><i
+                        style="
+                          width: 5px;
+                          height: 5px;
+                          border-radius: 50%;
+                          background: var(--naranja);
+                        "
+                      ></i
+                    ></span>
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 3px;
+                        padding: 6px 0;
+                        border-radius: 12px;
+                        background: var(--superficie);
+                      "
+                      ><small style="color: var(--tenue)">X</small><b>11</b
+                      ><i
+                        style="width: 5px; height: 5px; border-radius: 50%; background: var(--bien)"
+                      ></i
+                    ></span>
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 3px;
+                        padding: 6px 0;
+                        border-radius: 12px;
+                        background: var(--superficie);
+                      "
+                      ><small style="color: var(--tenue)">J</small><b>12</b
+                      ><i
+                        style="
+                          width: 5px;
+                          height: 5px;
+                          border-radius: 50%;
+                          background: var(--borde);
+                        "
+                      ></i
+                    ></span>
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 3px;
+                        padding: 6px 0;
+                        border-radius: 12px;
+                        background: var(--superficie);
+                      "
+                      ><small style="color: var(--tenue)">V</small><b>13</b
+                      ><i
+                        style="
+                          width: 5px;
+                          height: 5px;
+                          border-radius: 50%;
+                          background: var(--borde);
+                        "
+                      ></i
+                    ></span>
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 3px;
+                        padding: 6px 0;
+                        border-radius: 12px;
+                        background: var(--hundido);
+                        color: var(--tenue);
+                      "
+                      ><small>S</small><b>14</b></span
+                    >
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 3px;
+                        padding: 6px 0;
+                        border-radius: 12px;
+                        background: var(--hundido);
+                        color: var(--tenue);
+                      "
+                      ><small>D</small><b>15</b></span
+                    >
+                  </div>
+                  <div class="tarjeta sin-relleno">
+                    <div class="t-cab"><b>Primeros</b><span class="mas">3</span></div>
+                    <div class="plato">
+                      <span class="foto f3"></span>
+                      <div class="que"><b>Ensalada de la huerta</b></div>
+                    </div>
+                    <div class="plato">
+                      <span class="foto f7"></span>
+                      <div class="que"><b>Crema de calabaza</b></div>
+                    </div>
+                    <div class="plato">
+                      <span class="foto sin-foto" style="background: var(--s-verde)"
+                        ><svg><use href="#i-hoja" /></svg
+                      ></span>
+                      <div class="que"><b>Lentejas estofadas</b></div>
+                    </div>
+                    <div class="t-cab" style="border-top: 1px solid var(--borde); margin-top: 2px">
+                      <b>Segundos</b><span class="mas">3</span>
+                    </div>
+                    <div class="plato">
+                      <span class="foto f1"></span>
+                      <div class="que"><b>Pollo asado al limón</b></div>
+                    </div>
+                    <div class="plato">
+                      <span class="foto f6"></span>
+                      <div class="que"><b>Merluza a la romana</b></div>
+                    </div>
+                  </div>
+                  <div
+                    class="tarjeta"
+                    style="flex-direction: row; justify-content: space-between; align-items: center"
+                  >
+                    <div style="display: flex; flex-direction: column">
+                      <small style="color: var(--suave)">Coste medio</small
+                      ><b class="tabular">4,10 €</b>
+                    </div>
+                    <div style="display: flex; flex-direction: column">
+                      <small style="color: var(--suave)">Te deja</small
+                      ><b class="tabular" style="color: var(--bien)">10,40 €</b>
+                    </div>
+                    <span class="btn sec"
+                      ><svg><use href="#i-compartir" /></svg>Compartir</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              El punto verde es día listo; gris, día sin platos. Sábado y domingo, sin menú.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">2</span>La primera vez</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>11:05</span><span>●●● 5G</span></div>
+                <div class="barra-app">
+                  <span class="logo">BC</span><span class="nombre">Bar Centro</span>
+                </div>
+                <div
+                  class="cuerpo"
+                  style="justify-content: center; text-align: center; gap: 14px; padding: 0 22px"
+                >
+                  <span
+                    class="baldosa g"
+                    style="
+                      background: var(--s-rosa);
+                      width: 56px;
+                      height: 56px;
+                      border-radius: 18px;
+                      align-self: center;
+                    "
+                    ><svg style="width: 28px; height: 28px"><use href="#i-cubiertos" /></svg
+                  ></span>
+                  <h3 style="margin: 0; font-size: 19px">¿Sirves menú del día?</h3>
+                  <span style="color: var(--suave)"
+                    >Lo montas una vez y lo cambias cada día en un minuto.</span
+                  >
+                  <span class="btn" style="padding: 12px">Sí, crear el menú</span>
+                  <span style="color: var(--tenue); font-weight: 600">No sirvo menús</span>
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              Una pregunta, una frase y dos respuestas. Lo de «se vuelve a encender en Ajustes» se
+              dice solo si contestas que no.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════ 6 · PANEL ═══════════════════════ -->
+      <section class="vista" id="v-panel" data-vista="panel" hidden>
+        <div class="intro">
+          <h2>El Panel: lo mismo en la mitad de sitio</h2>
+          <p>
+            Las tarjetas de tu captura, sin huecos: filas de una línea, el tiempo legible («13
+            días», no «333 h 19 min») y lo que hay que mirar, con su botón.
+          </p>
+        </div>
+        <div class="fila">
+          <div class="pie">
+            <div class="titulo"><span class="n">1</span>Equipo ahora y Caduca</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>19:18</span><span>●●● 44%</span></div>
+                <div class="barra-app">
+                  <span class="logo" style="background: #111; color: #d9a85b">IK</span
+                  ><span class="nombre">IKATZ</span><svg class="ic"><use href="#i-lupa" /></svg
+                  ><svg class="ic"><use href="#i-campana" /></svg>
+                </div>
+                <div class="cuerpo">
+                  <div class="tarjeta" style="gap: 6px">
+                    <div style="display: flex; align-items: center; gap: 8px">
+                      <span class="baldosa g" style="background: var(--s-morado)"
+                        ><svg><use href="#i-equipo" /></svg
+                      ></span>
+                      <b style="flex: 1; font-size: 13.5px">Equipo ahora</b>
+                      <b style="font-size: 20px">2</b
+                      ><small style="color: var(--suave)">dentro</small>
+                    </div>
+                    <div
+                      style="
+                        display: grid;
+                        grid-template-columns: 1fr auto;
+                        row-gap: 7px;
+                        column-gap: 8px;
+                        align-items: center;
+                      "
+                    >
+                      <span style="display: flex; flex-direction: column"
+                        ><b>Ricardo</b><small style="color: var(--tenue)">Dirección</small></span
+                      >
+                      <span class="tabular" style="font-weight: 700; justify-self: end"
+                        >30 min</span
+                      >
+                      <span style="display: flex; flex-direction: column"
+                        ><b>Cooker</b><small style="color: var(--tenue)">Cocinero</small></span
+                      >
+                      <span class="pastilla p-atencion">13 días · ¿olvidó salir?</span>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        border-top: 1px solid var(--borde);
+                        padding-top: 7px;
+                      "
+                    >
+                      <small style="color: var(--suave)">5 con turno hoy sin fichar</small>
+                      <span style="color: var(--naranja-texto); font-weight: 700; font-size: 11.5px"
+                        >Ver</span
+                      >
+                    </div>
+                  </div>
+                  <div class="tarjeta" style="gap: 4px">
+                    <div style="display: flex; align-items: center; gap: 8px">
+                      <span class="baldosa g" style="background: var(--s-ambar)"
+                        ><svg><use href="#i-cubo" /></svg
+                      ></span>
+                      <b style="flex: 1; font-size: 13.5px">Caduca</b>
+                      <span style="color: var(--naranja-texto); font-weight: 700; font-size: 11.5px"
+                        >Ver los 5</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        display: grid;
+                        grid-template-columns: auto 1fr;
+                        row-gap: 6px;
+                        column-gap: 8px;
+                        align-items: center;
+                      "
+                    >
+                      <span class="pastilla p-mal">Ya</span><span>Lomo de salmón</span>
+                      <span class="pastilla p-mal">Ya</span><span>Tónica Original</span>
+                      <span class="pastilla p-mal">Ya</span><span>Mollete tradicional</span>
+                      <span class="pastilla p-atencion">Hoy</span><span>Jamón cocido</span>
+                    </div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                    <div class="tarjeta" style="gap: 2px">
+                      <small style="color: var(--suave)">Ventas hoy</small
+                      ><b style="font-size: 17px" class="tabular">1.284 €</b
+                      ><span class="pastilla p-bien" style="align-self: flex-start">▲ 8 %</span>
+                    </div>
+                    <div class="tarjeta" style="gap: 2px">
+                      <small style="color: var(--suave)">Food cost</small
+                      ><b style="font-size: 17px" class="tabular">29 %</b
+                      ><span class="pastilla p-tenue" style="align-self: flex-start"
+                        >objetivo 30 %</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="abajo">
+                  <span class="aqui"
+                    ><svg><use href="#i-inicio" /></svg>Panel</span
+                  ><span
+                    style="
+                      width: 44px;
+                      height: 44px;
+                      border-radius: 50%;
+                      background: var(--naranja);
+                      color: #111;
+                      display: grid;
+                      place-items: center;
+                    "
+                    ><svg><use href="#i-chispa" /></svg></span
+                  ><span
+                    ><svg><use href="#i-engranaje" /></svg>Ajustes</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              En tu captura, Equipo y Caduca ocupaban la pantalla entera. Aquí caben los dos y dos
+              cifras más.
+            </div>
+          </div>
+
+          <div class="pie" style="max-width: 460px; flex: 1 1 320px">
+            <div class="titulo">Lo que cambia en todas las tarjetas</div>
+            <div class="reglas" style="grid-template-columns: 1fr">
+              <div class="regla">
+                <b>Filas de una línea</b
+                ><span
+                  >Una caducidad no necesita una caja de 70 px con borde. Pastilla, nombre y
+                  listo.</span
+                >
+              </div>
+              <div class="regla">
+                <b>El tiempo como se dice</b
+                ><span
+                  >Hasta 99 min en minutos, luego horas, luego días. «333 h 19 min» es un fichaje
+                  olvidado y se dice así.</span
+                >
+              </div>
+              <div class="regla">
+                <b>Columnas que cuadran</b
+                ><span
+                  >Nombre y puesto juntos a la izquierda, la cifra a la derecha. Nada flotando en
+                  medio.</span
+                >
+              </div>
+              <div class="regla">
+                <b>Máximo cuatro filas</b
+                ><span>El resto, en «Ver los 5». El Panel es un resumen.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════ 7 · OBJETIVOS ═══════════════════════ -->
+      <section class="vista" id="v-objetivos" data-vista="objetivos" hidden>
+        <div class="intro">
+          <h2>Objetivos en euros por semana o por mes</h2>
+          <p>
+            Fuera los € por hora. Se elige semana o mes, se pone una cifra y cada barra dice cuánto
+            falta.
+          </p>
+        </div>
+        <div class="fila">
+          <div class="pie">
+            <div class="titulo"><span class="n">1</span>Poner el objetivo</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>10:10</span><span>●●● 5G</span></div>
+                <div class="cuerpo" style="padding-top: 6px">
+                  <div class="h-pant"><h3>Objetivos</h3></div>
+                  <div class="chips">
+                    <span class="chip solo puesto">Para todos</span
+                    ><span class="chip solo">Por empleado</span>
+                  </div>
+                  <div class="tarjeta" style="gap: 10px">
+                    <div class="interruptor" style="box-shadow: inset 0 0 0 1px var(--borde)">
+                      <button type="button" aria-pressed="false" tabindex="-1">Semana</button
+                      ><button type="button" aria-pressed="true" tabindex="-1">Mes</button>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        align-items: baseline;
+                        gap: 6px;
+                        border-bottom: 2px solid var(--naranja);
+                        padding-bottom: 4px;
+                      "
+                    >
+                      <b style="font-size: 30px" class="tabular">4.000</b
+                      ><span style="font-weight: 700; color: var(--suave)"
+                        >€ al mes por persona</span
+                      >
+                    </div>
+                    <small style="color: var(--suave)">Unos 920 € a la semana.</small>
+                  </div>
+                  <div class="tarjeta" style="flex-direction: row; align-items: center">
+                    <div style="flex: 1; display: flex; flex-direction: column">
+                      <b>Que cada uno vea el suyo</b
+                      ><small style="color: var(--suave)">En su móvil, solo lo suyo</small>
+                    </div>
+                    <span
+                      style="
+                        width: 40px;
+                        height: 24px;
+                        border-radius: 999px;
+                        background: var(--bien);
+                        position: relative;
+                      "
+                      ><i
+                        style="
+                          position: absolute;
+                          right: 3px;
+                          top: 3px;
+                          width: 18px;
+                          height: 18px;
+                          border-radius: 50%;
+                          background: #fff;
+                        "
+                      ></i
+                    ></span>
+                  </div>
+                  <span class="btn" style="padding: 12px; margin-top: auto; margin-bottom: 14px"
+                    >Guardar</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              «Por empleado» cambia la cifra a quien haga falta: el de media jornada, 2.000 €.
+            </div>
+          </div>
+
+          <div class="pie">
+            <div class="titulo"><span class="n">2</span>Empleados, este mes</div>
+            <div class="movil">
+              <div class="pantalla">
+                <div class="estado"><span>10:12</span><span>●●● 5G</span></div>
+                <div class="barra-app">
+                  <span class="logo">BC</span><span class="nombre">Bar Centro</span>
+                </div>
+                <div class="cuerpo">
+                  <div class="h-pant">
+                    <h3>Empleados</h3>
+                    <span class="btn sec">Objetivos</span>
+                  </div>
+                  <div class="chips">
+                    <span class="chip solo">Semana</span
+                    ><span class="chip solo puesto">Noviembre</span>
+                  </div>
+                  <div class="tarjeta sin-relleno">
+                    <div class="plato" style="flex-wrap: wrap; row-gap: 5px">
+                      <div class="que"><b>Marta</b><small>3.420 de 4.000 €</small></div>
+                      <b class="tabular">86 %</b>
+                      <div class="barrita" style="flex-basis: 100%">
+                        <i style="width: 86%; background: var(--bien)"></i>
+                      </div>
+                    </div>
+                    <div class="plato" style="flex-wrap: wrap; row-gap: 5px">
+                      <div class="que"><b>Iván</b><small>2.910 de 4.000 €</small></div>
+                      <b class="tabular">73 %</b>
+                      <div class="barrita" style="flex-basis: 100%"><i style="width: 73%"></i></div>
+                    </div>
+                    <div class="plato" style="flex-wrap: wrap; row-gap: 5px">
+                      <div class="que">
+                        <b>Lucía · media jornada</b><small>1.180 de 2.000 €</small>
+                      </div>
+                      <b class="tabular">59 %</b>
+                      <div class="barrita" style="flex-basis: 100%"><i style="width: 59%"></i></div>
+                    </div>
+                    <div class="plato" style="flex-wrap: wrap; row-gap: 5px">
+                      <div class="que"><b>Dani</b><small>1.640 de 4.000 €</small></div>
+                      <b class="tabular">41 %</b>
+                      <div class="barrita" style="flex-basis: 100%">
+                        <i style="width: 41%; background: var(--atencion)"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <small style="color: var(--tenue)">Quedan 22 días del mes.</small>
+                </div>
+              </div>
+            </div>
+            <div class="nota">
+              Verde si va por delante de lo que toca a estas alturas del mes; ámbar si va por
+              detrás.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════ 8 · TEXTOS ═══════════════════════ -->
+      <section class="vista" id="v-textos" data-vista="textos" hidden>
+        <div class="intro">
+          <h2>Textos: decir lo justo</h2>
+          <p>
+            Algunos de los que he encontrado. Al construir se repasan todas las pantallas con la
+            misma regla: si ya se sabe, no se dice.
+          </p>
+        </div>
+        <div class="tabla-envoltorio">
+          <table>
+            <thead>
+              <tr>
+                <th>Dónde</th>
+                <th>Antes</th>
+                <th>Ahora</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Ajustes › Conexiones</td>
+                <td class="antes">
+                  Tus ventas entran solas con Estook TPV. Viene con tu plan: lo que se vende en la
+                  sala entra solo en Estook, sin subir nada.
+                </td>
+                <td class="ahora">Estook TPV · Instálalo en la caja.</td>
+              </tr>
+              <tr>
+                <td>Empleados, sin ventas</td>
+                <td class="antes">
+                  Todavía no hay ventas de nadie en este periodo. Salen de las mesas de Estook TPV:
+                  lo que se vende es de quien lleva la mesa. Sale de las mesas de Estook TPV.
+                </td>
+                <td class="ahora">Sin ventas esta semana.</td>
+              </tr>
+              <tr>
+                <td>Carta</td>
+                <td class="antes">Leer tu carta</td>
+                <td class="ahora">Importar tu carta</td>
+              </tr>
+              <tr>
+                <td>Carta vacía</td>
+                <td class="antes">
+                  Añade tus platos por secciones, con su precio. Se pasan de golpe, fila a fila.
+                </td>
+                <td class="ahora">Importa tu carta de una foto o un PDF.</td>
+              </tr>
+              <tr>
+                <td>Menús</td>
+                <td class="antes">
+                  El menú del día con su precio, sus platos de cada día y lo que te deja. Para
+                  imprimirlo o mandarlo en un toque. Con «No», esta pestaña se esconde…
+                </td>
+                <td class="ahora">Lo montas una vez y lo cambias cada día en un minuto.</td>
+              </tr>
+              <tr>
+                <td>Ajustes del TPV</td>
+                <td class="antes">Lo de vender. La carta, los precios y el equipo, en Estook.</td>
+                <td class="ahora">(fuera)</td>
+              </tr>
+              <tr>
+                <td>Panel · Equipo ahora</td>
+                <td class="antes">333 h 19 min · revisar</td>
+                <td class="ahora">13 días · ¿olvidó salir?</td>
+              </tr>
+              <tr>
+                <td>Cabecera de cada pantalla</td>
+                <td class="antes">Carta / Carta · Escandallos / Escandallos</td>
+                <td class="ahora">Carta · Escandallos (sin repetir)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════ 9 · LO QUE HE VISTO ═══════════════════════ -->
+      <section class="vista" id="v-ademas" data-vista="ademas" hidden>
+        <div class="intro">
+          <h2>Lo que he visto además</h2>
+          <p>
+            Fallos que no me habías dicho y cosas de diseño que se arreglan en la misma entrega si
+            te parecen bien.
+          </p>
+        </div>
+        <div class="lista-mejoras">
+          <div class="mejora">
+            <span class="marca m-fallo">!</span>
+            <div>
+              <b>Google no salía al vincular el TPV</b
+              ><span
+                >El TPV preguntaba mal a la API y el botón nunca aparecía. Ya arreglado, con su
+                prueba.</span
+              >
+            </div>
+          </div>
+          <div class="mejora">
+            <span class="marca m-fallo">!</span>
+            <div>
+              <b>El TPV no enseña las fotos de la carta</b
+              ><span>El código dice que sí y no las pinta. Va con el TPV nuevo.</span>
+            </div>
+          </div>
+          <div class="mejora">
+            <span class="marca m-fallo">!</span>
+            <div>
+              <b>Ajustes del TPV no tiene salida</b
+              ><span>Ni cambiar de persona ni desvincular desde ahí. Va en «Tu sesión».</span>
+            </div>
+          </div>
+          <div class="mejora">
+            <span class="marca m-diseno">D</span>
+            <div>
+              <b>El «+» naranja flotante tapa cosas</b
+              ><span
+                >En Carta tapa precios y en Cierre tapa campos. Fuera donde ya hay botón principal,
+                y hueco abajo donde se quede.</span
+              >
+            </div>
+          </div>
+          <div class="mejora">
+            <span class="marca m-diseno">D</span>
+            <div>
+              <b>Secciones de la carta y páginas del TPV son dos listas</b
+              ><span
+                >Por eso en Estook no salen el color ni el icono. Una sola lista para los dos.</span
+              >
+            </div>
+          </div>
+          <div class="mejora">
+            <span class="marca m-diseno">D</span>
+            <div>
+              <b>Platos con iniciales de colores al azar</b
+              ><span>«CJ», «PB»… no dicen nada. Foto, o el icono de su sección.</span>
+            </div>
+          </div>
+          <div class="mejora">
+            <span class="marca m-diseno">D</span>
+            <div>
+              <b>Pestañas de una sola opción</b
+              ><span
+                >Escandallos tiene una pestaña «Carta» sola. Si no hay dos, no hay pestañas.</span
+              >
+            </div>
+          </div>
+          <div class="mejora">
+            <span class="marca m-diseno">D</span>
+            <div>
+              <b>Cierre con Pro: un formulario largo</b
+              ><span
+                >Con la caja nueva, en Pro desaparece y queda «Cierres de caja» para mirar.</span
+              >
+            </div>
+          </div>
+          <div class="mejora">
+            <span class="marca m-idea">i</span>
+            <div>
+              <b>Repaso de todo en el móvil</b
+              ><span
+                >Con esta regla se repasan todas las pantallas a 390 px, con capturas antes y
+                después en el pull request.</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // Pestañas por el hash
+      const vistas = [...document.querySelectorAll('[data-vista]')];
+      const enlaces = [...document.querySelectorAll('.pestanas-dentro a')];
+      function mostrar() {
+        const quiero = (location.hash || '#caja').slice(1);
+        const existe = vistas.some((v) => v.dataset.vista === quiero) ? quiero : 'caja';
+        vistas.forEach((v) => (v.hidden = v.dataset.vista !== existe));
+        enlaces.forEach((a) => {
+          if (a.getAttribute('href') === '#' + existe) a.setAttribute('aria-current', 'page');
+          else a.removeAttribute('aria-current');
+        });
+      }
+      window.addEventListener('hashchange', mostrar);
+      mostrar();
+
+      // Tema del TPV: un interruptor para todas sus pantallas
+      let temaTpv = 'oscuro';
+      try {
+        temaTpv = localStorage.getItem('repaso.tema-tpv') || 'oscuro';
+      } catch {}
+      function ponerTema(t) {
+        temaTpv = t;
+        document
+          .querySelectorAll('.tpv')
+          .forEach((el) => el.classList.toggle('claro', t === 'claro'));
+        document
+          .querySelectorAll('[data-tema]')
+          .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tema === t)));
+        try {
+          localStorage.setItem('repaso.tema-tpv', t);
+        } catch {}
+      }
+      document
+        .querySelectorAll('[data-tema]')
+        .forEach((b) => b.addEventListener('click', () => ponerTema(b.dataset.tema)));
+      ponerTema(temaTpv);
+
+      // Contar el cajón (abrir y cerrar), de verdad
+      const euros = (c) =>
+        (c / 100).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+        ' €';
+      const VALORES = [5000, 2000, 1000, 500, 200, 100, 50, 20, 10];
+      const nombre = (c) => (c >= 100 ? c / 100 + ' €' : c + ' cts');
+      const INICIO = {
+        abrir: { 5000: 1, 2000: 3, 1000: 2, 500: 2, 200: 2, 100: 4, 50: 4, 20: 0, 10: 0 },
+        cerrar: { 5000: 7, 2000: 13, 1000: 8, 500: 5, 200: 3, 100: 1, 50: 0, 20: 2, 10: 0 },
+      };
+      const FONDO = 15000;
+      const DEBERIA = 72740;
+      document.querySelectorAll('[data-contar]').forEach((caja) => {
+        const modo = caja.dataset.contar;
+        const cuantos = { ...INICIO[modo] };
+        const rejilla = caja.querySelector('.billetes');
+        VALORES.forEach((v) => {
+          const b = document.createElement('div');
+          b.className = 'billete';
+          b.innerHTML =
+            '<span class="v">' +
+            nombre(v) +
+            '</span><span class="ctl"><button type="button" aria-label="Quitar uno de ' +
+            nombre(v) +
+            '">−</button><span class="n">' +
+            cuantos[v] +
+            '</span><button type="button" aria-label="Añadir uno de ' +
+            nombre(v) +
+            '">+</button></span>';
+          const [menos, mas] = b.querySelectorAll('button');
+          const n = b.querySelector('.n');
+          menos.addEventListener('click', () => {
+            cuantos[v] = Math.max(0, cuantos[v] - 1);
+            n.textContent = cuantos[v];
+            pintar();
+          });
+          mas.addEventListener('click', () => {
+            cuantos[v] += 1;
+            n.textContent = cuantos[v];
+            pintar();
+          });
+          rejilla.appendChild(b);
+        });
+        function pintar() {
+          const total = VALORES.reduce((s, v) => s + v * cuantos[v], 0);
+          caja.querySelector('[data-total]').textContent = euros(total);
+          if (modo === 'abrir') {
+            caja.querySelector('[data-abrir]').textContent = 'Abrir con ' + euros(total);
+            const aviso = caja.querySelector('[data-aviso-fondo]');
+            const d = total - FONDO;
+            aviso.classList.toggle('bien', d === 0);
+            aviso.innerHTML =
+              d === 0
+                ? '<span>Igual que el fondo de siempre</span>' + euros(FONDO)
+                : '<span>' +
+                  (d > 0 ? 'Más' : 'Menos') +
+                  ' que el fondo de siempre</span>' +
+                  euros(Math.abs(d));
+          } else {
+            // El arqueo de al lado sigue a lo que se cuenta aquí
+            const d = total - DEBERIA;
+            document
+              .querySelectorAll('[data-contado]')
+              .forEach((e) => (e.textContent = euros(total)));
+            document
+              .querySelectorAll('[data-retiras]')
+              .forEach((e) => (e.textContent = euros(Math.max(0, total - FONDO))));
+            document.querySelectorAll('[data-diferencia]').forEach((e) => {
+              e.classList.toggle('bien', d === 0);
+              e.innerHTML =
+                d === 0
+                  ? '<span>Efectivo</span>Cuadra'
+                  : '<span>' + (d > 0 ? 'Sobra' : 'Falta') + '</span>' + euros(Math.abs(d));
+            });
+          }
+        }
+        pintar();
+      });
+    </script>
+  </body>
+</html>

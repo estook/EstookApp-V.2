@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 9 de noviembre de 2026 · **En producción todo hasta la #177**: 111 migraciones y la API con 125 consultas y 354 comandos (leído el 8-nov), y **la caja para Windows 1.3.0**. **La pausa del 8-nov** ([0142](docs/decisiones/0142-la-pausa-del-8-nov.md)), aprobada con su maqueta: **entera en tres pull requests encadenados**: **P1** (#178, sin migración), **P2** (#179, migración 0112) y **P3** (migración 0113), API 128/358. **Luego T7, y T6 · 3 detrás**
+Última actualización: 8 de noviembre de 2026 · **En producción todo hasta la #177**: 111 migraciones y la API con 125 consultas y 354 comandos (leído el 8-nov), y **la caja para Windows 1.3.0**. **La pausa del 8-nov** ([0142](docs/decisiones/0142-la-pausa-del-8-nov.md)), aprobada con su maqueta: **entera en tres pull requests encadenados**: **P1** (#178, sin migración), **P2** (#179, migración 0112) y **P3** (migración 0113), API 128/358. **Luego T7, y T6 · 3 detrás**
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres

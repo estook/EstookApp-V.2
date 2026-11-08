@@ -3436,7 +3436,7 @@ Las pruebas: `la-entrada-del-tpv.spec.ts`, `la-puerta.spec.ts`, `la-puerta.prueb
 
 ### La pausa del 8-nov, entre T6 y T7
 
-_8 y 9 de noviembre de 2026._ Decisión [0142](decisiones/0142-la-pausa-del-8-nov.md), con
+_8 de noviembre de 2026._ Decisión [0142](decisiones/0142-la-pausa-del-8-nov.md), con
 [su maqueta](maquetas/la-pausa-del-8-nov.html). Los nueve puntos de Richi, en tres entregas:
 
 - **P1 · Lo del alta y Ajustes** (sin migración): la semana en el almacén, la letra automática, los datos del

@@ -2,15 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { comoPorcentaje, enDinero } from '@estook/dominio';
 import { puedeVer } from '@estook/permisos';
-import {
-  Aviso,
-  Boton,
-  Cargando,
-  EstadoVacio,
-  Segmentado,
-  Tarjeta,
-  clases,
-} from '@estook/ui';
+import { Aviso, Boton, Cargando, EstadoVacio, Segmentado, Tarjeta, clases } from '@estook/ui';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import type { LoQueSeVende, PlatoVendido } from './contratoDeLoQueSeVende.ts';

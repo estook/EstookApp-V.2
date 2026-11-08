@@ -48,3 +48,29 @@ vea, que Pro no pregunte lo que no tiene sentido, y cinco fallos del alta y de A
   Empleados, la cocina y lo que se tuerce **solo con Pro**: sin Estook TPV no hay camarero ni tiempos en cada venta.
 - **El margen** es el precio sin IVA menos el coste de su escandallo; un plato sin escandallo no se inventa.
 - **El tiempo de la cocina**, de que el pase se marcha a que se tacha; **solo si la cocina tacha en pantalla**.
+
+## 5 · P1 · Lo del alta y Ajustes, construido (rama `la-pausa-del-8-nov`, sin migración)
+
+| Punto | Lo que hay                                                                                                                                                                                                         |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1     | Almacén › Movimientos › Historial: **Semana · Mes · 3 meses · 6 meses · Año**, en botones (`Segmentado`, nuevo en `@estook/ui`)                                                                                    |
+| 2     | Consumo › Food cost real: **Semana · Mes · Trimestre · Inventarios**, con flechas para ir atrás (`el_food_cost_real` acepta `semana` con `dia` y `trimestre`)                                                      |
+| 9     | La letra **«Automática»**, la de fábrica: pequeña en el teléfono y normal en la tablet y el ordenador; las cifras grandes, un escalón menos en el teléfono                                                         |
+| 7     | **Ajustes › Tu local › Datos del local** (el formulario del alta, con «Rellenar desde Google») y **Organización › Nombre del negocio** (`cambiar_nombre_del_negocio`)                                              |
+| 8     | En el alta, **«Busca tu local en Google»** rellena las casillas (`elegir_mi_local_de_google` devuelve `casillas`, con `addressComponents` y `regularOpeningHours.periods`); **la hora de corte ya no se pregunta** |
+| 5     | **«¿Cuántos locales tienes?»** con − y + en «Elige tu plan»; `empezar_a_pagar` cobra esos; en el alta se les pone nombre, y **«Solo tengo estos»** baja la cuota (`ajustar_mi_cuota_a_mis_locales`)                |
+| 4.1   | Con Pro, el final del alta y Ajustes › Conexiones dicen **«Tus ventas entran solas con Estook TPV»**, con la descarga para Windows; el Panel y el cierre no preguntan                                              |
+| 6     | Estook TPV: **«Continuar con Google»** debajo de «Entrar»; en la caja para Windows, el código sacado en Estook (**Ajustes › Conexiones › «Vincular un aparato»**, `sacar_codigo_desde_estook`)                     |
+
+### Lo que decidió la IA al construirlo
+
+1. **Google en la caja para Windows, con el código y no con un QR.** La maqueta enseñaba un QR en la caja para entrar con el móvil. Se ha hecho al revés y con lo que ya había: el código de siempre (6 cifras, 10 minutos, un uso) **se saca en Estook, en el móvil**, y se escribe en la caja. Es lo mismo para quien lo usa, no abre ninguna puerta nueva que atacar, y sirve para cualquier aparato.
+2. **«Solo tengo estos» descuenta, no devuelve dinero**: Stripe prorratea la bajada como saldo a favor en la siguiente cuota. La maqueta decía «se devuelve»; la pantalla dice «se descuenta de tu siguiente cuota». Y **la cuota ya no baja sola al crear un local**: solo sube.
+3. **Hasta diez locales al pagar** (lo que llega Cadena); con más, «escríbenos a hola@estook.com».
+4. **La hora de corte, sin preguntar**: las cinco, o una hora después del último cierre de madrugada que diga Google si es a las cinco o más tarde (como mucho las once). Se cambia plegada en el alta y en Datos del local.
+5. **Lo de Google pisa lo escrito en las casillas, pero no se guarda hasta pulsar el botón**: se ve antes. Elegir el local en el alta lo enlaza con su ficha y pone su ubicación para fichar, como en Ajustes.
+6. **La letra «Automática» es CSS** (`data-letra="auto"`), no JavaScript: girar la tablet no avisa a nadie. **Estook TPV sigue en «Normal»**, que es con la que se probó el servicio en el móvil (R2).
+7. **Sin el dato del plan** (la API sin desplegar), se sigue preguntando cómo entran las ventas, como antes.
+8. **La gráfica de las ocho semanas del food cost** que enseñaba la maqueta **no se ha hecho**: cada semana es el cálculo entero del almacén. La de las semanas de ventas va en Informes (P2).
+
+**Para Richi**: apuntar en el cliente de OAuth de Google las vueltas de Estook TPV (`https://estook.com/tpv/` y `https://www.estook.com/tpv/`); sin eso, «Continuar con Google» en el TPV dice que Google no deja. Los pasos, en [`pasos-de-la-pausa-del-8-nov.md`](../pasos-de-la-pausa-del-8-nov.md).

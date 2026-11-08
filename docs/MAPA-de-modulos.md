@@ -10,7 +10,8 @@ ANTES DE M8   H · Horarios  →  I · La app instalable  →  C · El chat
 FASE 2        M8 → M9 → M10
 ESTOOK TPV    M16a · La jornada → M20A · 1 (base y API) → T1 · La puerta → T2 · La sala
               → T3 · 1 · La botonera → T3 · 2 · 1 · Opciones → T3 · 2 · 2 · Bebidas → T4 · Cocina y barra → T5 · La caja para Windows (M19a y M20A · 2)
-              → T6 · Facturación (M20B) → T7 · Cobro, caja y ventas (M20C, con M20)
+              → T6 · Facturación (M20B) → LA PAUSA DEL 8-NOV (P1 a P3, 0142)
+              → T7 · Cobro, caja y ventas (M20C, con M20) → T6 · 3 · Sin envío
 DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b
               → Fase 5 (M21 a M25) → Fase 6 (M26 a M28) → Fase 7 (M29 y M30)
 ```
@@ -111,9 +112,13 @@ El programa que se descarga en el PC de la caja (Richi, 27-oct): Estook TPV tal 
 
 El esquema aislado y de solo inserción, el alta fiscal del local, los tipos de documento, el QR, la cola de envío y el justificante provisional. **No se enciende en producción sin el asesor.** **T6 · 1, el alta**, en producción; **T6 · 2 · 2 · 1, las facturas y quién hace qué**, en producción ([0137](decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md)); **el reloj de los documentos y la auditoría**, en producción ([0138](decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md)); **sin lista de clientes**, en producción ([0139](decisiones/0139-sin-lista-de-clientes.md)); **T6 · 2 · 2 · 2, las correcciones**, en producción ([0140](decisiones/0140-t6-2-2-2-las-correcciones.md)): devolver, corregir los datos, anular y la señal; **T6 · 2 · 3, «Pide tu factura»**, en producción ([0141](decisiones/0141-t6-2-3-pide-tu-factura.md)): la página con la que el cliente pide su factura en su móvil, sin el QR en el papel, que va con T7; **T6 · 2 · 1, el motor y el ticket**, en producción ([0136](decisiones/0136-t6-2-1-el-motor-y-el-ticket.md)): el ticket de prueba de Ajustes, con su QR, y Servicio › Ventas › Tickets y facturas, con su estado ante Hacienda y su historia. Después, T6 · 3.
 
+### La pausa del 8-nov, entre T6 y T7
+
+**Aprobada el 8-nov con su maqueta** ([0142](decisiones/0142-la-pausa-del-8-nov.md), [la maqueta](maquetas/la-pausa-del-8-nov.html)), en tres entregas: **P1** (la semana en el almacén, la letra automática, los datos del local editables y buscados en Google, los locales al pagar, Pro sin «¿cómo entran tus ventas?» y Google en Estook TPV), **P2** (Servicio › Jornadas › **Información**, con «Tu carta en cuatro», y Negocio › **Informes** rehecho) y **P3** (Servicio › **Empleados**, con sus objetivos). **T7 va después, y antes que T6 · 3** (Richi, 8-nov).
+
 ### M20C · Cobro y caja
 
-Efectivo, datáfono y mixto; dividir la cuenta; factura a petición; devoluciones por rectificativa; caja y arqueo. Cerrar una mesa mueve caja, ventas y almacén sin teclear nada más.
+Efectivo, datáfono y mixto; dividir la cuenta; factura a petición; devoluciones por rectificativa; caja y arqueo. Cerrar una mesa mueve caja, ventas y almacén sin teclear nada más. **Lo primero de T7, la caja de la 0142**: «Empezar el día» y «Cerrar el día» al lado de «Fichar» en la pantalla del PIN, contar a ciegas, y **Servicio › Jornadas › Cierres de caja** en Estook; ese día, con Pro, se quita el cierre a mano, y Información, Informes y Empleados pasan a leer lo cobrado.
 
 ### M20D · Estook TPV para Android
 

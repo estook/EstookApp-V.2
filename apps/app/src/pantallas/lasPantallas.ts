@@ -55,7 +55,10 @@ export const ElHorario = perezosa(async () => (await import('../horario/ElHorari
 export const CierreDeCaja = perezosa(
   async () => (await import('../servicio/CierreDeCaja.tsx')).CierreDeCaja,
 );
-export const EnMarcha = perezosa(async () => (await import('../servicio/EnMarcha.tsx')).EnMarcha);
+// La pausa del 8-nov (0142): «En marcha» pasa a Información.
+export const Informacion = perezosa(
+  async () => (await import('../servicio/Informacion.tsx')).Informacion,
+);
 export const Ventas = perezosa(async () => (await import('../servicio/Ventas.tsx')).Ventas);
 export const TicketsYFacturas = perezosa(
   async () => (await import('../facturacion/TicketsYFacturas.tsx')).TicketsYFacturas,

@@ -279,7 +279,7 @@ Ahora hay dos niveles, y cada uno tiene un trabajo:
 
 Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres niveles. La vista es un filtro de la pantalla del medio, no un piso más. Y **ninguna app vuelve a tener un «Más»**: lo que antes se metía ahí es una vista de un destino que sí contesta algo.
 
-> **Y por qué vista se entra a un destino: por la primera que esté construida.** No por la primera de la tabla. Las vistas se escriben aquí **en el orden en el que se entienden** —«En marcha · Caja · Cierre» es el orden de un día—, y ese orden casi nunca coincide con el orden en el que se construyen. Entrar por la primera de la lista dejaría la pantalla que de verdad funciona escondida detrás de un cartel de «todavía no», que es la pestaña muerta de arriba un piso más abajo. Una vista pendiente **sí se enseña** en el control segmentado, con su módulo: ahí no le quita el sitio a nada y contesta «¿y la caja, dónde está?» antes de que nadie la busque. Si ninguna está construida, se entra por la primera, porque la dirección tiene que seguir siendo copiable.
+> **Y por qué vista se entra a un destino: por la primera que esté construida.** No por la primera de la tabla. Las vistas se escriben aquí **en el orden en el que se entienden** —«Información · Cierre» es el orden de un día—, y ese orden casi nunca coincide con el orden en el que se construyen. Entrar por la primera de la lista dejaría la pantalla que de verdad funciona escondida detrás de un cartel de «todavía no», que es la pestaña muerta de arriba un piso más abajo. Una vista pendiente **sí se enseña** en el control segmentado, con su módulo: ahí no le quita el sitio a nada y contesta «¿y la caja, dónde está?» antes de que nadie la busque. Si ninguna está construida, se entra por la primera, porque la dirección tiene que seguir siendo copiable.
 
 | App         | Sus destinos                                         |
 | ----------- | ---------------------------------------------------- |
@@ -288,7 +288,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | Carta       | Carta · Canales · Menús · Análisis                   |
 | Calendario  | Calendario · Tareas · Turnos                         |
 | Equipo      | Resumen · Personas · Fichajes · Incidencias          |
-| Servicio    | Jornada · Ventas · Delivery · APPCC                  |
+| Servicio    | Jornadas · Ventas · Delivery · APPCC                 |
 | Negocio     | Ventas · Informes · Pulse · Costes · Reseñas         |
 | Cuaderno    | Incidencias · Notas · Equipos                        |
 
@@ -307,8 +307,8 @@ Y sus vistas, donde las hay:
 | Calendario · Tareas       | Pendientes · Periódicas · Hechas                                    |
 | Equipo · Personas         | Con acceso · Sin entrar todavía · Retirados                         |
 | Equipo · Incidencias      | Todas · Faltas · Retrasos · Fichajes                                |
-| Servicio · Jornada        | En marcha · Caja · Cierre                                           |
-| Servicio · Ventas         | Del turno · Del día · Por producto · Tickets y facturas             |
+| Servicio · Jornadas       | Información · Cierre                                                |
+| Servicio · Ventas         | Tickets y facturas                                                  |
 | Negocio · Informes        | Día · Semana · Mes                                                  |
 | Cuaderno · Incidencias    | Abiertas · Cerradas                                                 |
 

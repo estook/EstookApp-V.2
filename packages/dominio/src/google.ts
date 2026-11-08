@@ -45,3 +45,78 @@ export function mesDe(fecha: string): string {
 
 /** Lo mínimo que hay que escribir para buscar: con menos, salen mil sitios. */
 export const LETRAS_PARA_BUSCAR = 3;
+
+// ── La dirección y la hora de corte, desde la ficha (la pausa del 8-nov, 0142) ─
+
+/**
+ * Un trozo de la dirección, como lo da Google (`addressComponents` de Places, con
+ * `longText`, `shortText` y `types`). Solo lo que se lee.
+ */
+export interface ParteDeLaDireccion {
+  readonly texto: string;
+  readonly tipos: readonly string[];
+}
+
+export interface DireccionPartida {
+  readonly direccion: string | null;
+  readonly codigoPostal: string | null;
+  readonly poblacion: string | null;
+  readonly provincia: string | null;
+}
+
+/**
+ * La dirección de Google en las casillas de Estook: «Calle Estafeta, 21», «31001»,
+ * «Pamplona» y «Navarra». En España la provincia es el `administrative_area_level_2`;
+ * en las comunidades de una sola provincia Google a veces solo da la comunidad
+ * (`level_1`), y entonces se usa esa. Lo que no llega se deja vacío: no se adivina.
+ */
+export function partirLaDireccion(partes: readonly ParteDeLaDireccion[]): DireccionPartida {
+  const de = (tipo: string) => partes.find((p) => p.tipos.includes(tipo))?.texto ?? null;
+  const calle = de('route');
+  const numero = de('street_number');
+  const codigoPostal = de('postal_code');
+  return {
+    direccion: calle === null ? null : numero === null ? calle : `${calle}, ${numero}`,
+    codigoPostal: codigoPostal !== null && /^[0-9]{5}$/.test(codigoPostal) ? codigoPostal : null,
+    poblacion: de('locality') ?? de('postal_town') ?? de('administrative_area_level_3'),
+    provincia: de('administrative_area_level_2') ?? de('administrative_area_level_1'),
+  };
+}
+
+/** Un tramo del horario de Google: el día (0 es domingo), la hora y el minuto. */
+export interface TramoDelHorario {
+  readonly abre: { readonly dia: number; readonly hora: number; readonly minuto: number };
+  /** Nulo si abre las 24 horas. */
+  readonly cierra: { readonly dia: number; readonly hora: number; readonly minuto: number } | null;
+}
+
+/** La de fábrica: a las cinco ya no queda un bar abierto, y el reparto de la mañana no ha empezado. */
+export const HORA_DE_CORTE_DE_FABRICA = '05:00';
+
+/**
+ * La hora a la que acaba el día del local, sin preguntarla (Richi, 8-nov: «al crear cuenta te
+ * pregunta por la hora de cierre, tampoco tiene mucho sentido»).
+ *
+ * **Las cinco de la mañana**, como hacen los TPV (Toast corta a las cuatro): lo que se vende a la
+ * 1:30 del sábado cuenta en el viernes. Solo si Google dice que el local cierra **de madrugada,
+ * a las cinco o más tarde** (una discoteca), se corta una hora después de su último cierre. Un
+ * local que abre las 24 horas, o sin horario, se queda en las cinco.
+ */
+export function horaDeCorteDelHorario(tramos: readonly TramoDelHorario[] | null): string {
+  if (tramos === null) return HORA_DE_CORTE_DE_FABRICA;
+  let masTarde = -1;
+  for (const t of tramos) {
+    if (t.cierra === null) continue;
+    // Cierra de madrugada: otro día que el que abrió, o el mismo día antes de la hora de abrir.
+    const deMadrugada =
+      t.cierra.dia !== t.abre.dia ||
+      t.cierra.hora * 60 + t.cierra.minuto <= t.abre.hora * 60 + t.abre.minuto;
+    if (!deMadrugada) continue;
+    const minutos = t.cierra.hora * 60 + t.cierra.minuto;
+    // Solo las madrugadas de verdad: un cierre a las 13:00 del día siguiente no es una noche.
+    if (minutos <= 12 * 60) masTarde = Math.max(masTarde, minutos);
+  }
+  if (masTarde < 5 * 60) return HORA_DE_CORTE_DE_FABRICA;
+  const corte = Math.min(Math.ceil(masTarde / 60) + 1, 11);
+  return `${String(corte).padStart(2, '0')}:00`;
+}

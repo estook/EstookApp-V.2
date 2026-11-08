@@ -78,7 +78,9 @@ import type { CierreLeido, FogonYYo } from '../fogon/contrato.ts';
  * botón que promete y no hace es el fallo que este proyecto persigue desde M4.
  */
 export function CierreDeCaja() {
-  const { cliente, permisos } = usarSesion();
+  const { cliente, permisos, yo } = usarSesion();
+  // Con Pro no se pregunta cómo entran las ventas (0142): son de Estook TPV.
+  const conPro = yo?.cuenta?.conEstookTpv === true;
   const [parametros, ponerParametros] = useSearchParams();
   const navegar = useNavigate();
   const fecha = parametros.get('fecha');
@@ -139,7 +141,7 @@ export function CierreDeCaja() {
 
   return (
     <div className="flex max-w-[48rem] flex-col gap-e4">
-      {datos.comoSeCierra === 'sin_decidir' && <ComoEntranTusVentas modo="ajustes" />}
+      {datos.comoSeCierra === 'sin_decidir' && !conPro && <ComoEntranTusVentas modo="ajustes" />}
 
       <div className="flex flex-wrap items-end justify-between gap-e3">
         <div className="w-[12rem]">

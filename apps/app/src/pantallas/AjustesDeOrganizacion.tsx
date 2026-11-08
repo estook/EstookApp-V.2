@@ -5,7 +5,7 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 
 /**
- * Lo que la organizacion decide sobre el acceso (M4).
+ * Lo que la organizacion decide sobre el acceso (M4), y su nombre (la pausa del 8-nov, 0142).
  *
  * Dos cosas, y las dos estan en el Plan de M4 palabra por palabra: «doble factor
  * **exigible desde la organizacion**» y «**segundo administrador o correo de
@@ -27,6 +27,8 @@ export function AjustesDeOrganizacion() {
   const { yo, cliente, refrescar, permisos } = usarSesion();
 
   const [correo, setCorreo] = useState<string | null>(null);
+  const [nombre, setNombre] = useState<string | null>(null);
+  const [nombreGuardado, setNombreGuardado] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [cambiando, setCambiando] = useState(false);
   const [aQuienLeFalta, setAQuienLeFalta] = useState<number | null>(null);
@@ -61,6 +63,30 @@ export function AjustesDeOrganizacion() {
     setCambiando(false);
   }
 
+  // El nombre del negocio (la pausa del 8-nov, 0142): el que se puso al crear la cuenta.
+  const nombreEscrito = nombre ?? organizacion.nombre;
+
+  async function guardarNombre() {
+    if (organizacion === null || nombreEscrito.trim() === '') return;
+    setCambiando(true);
+    setError(null);
+    setNombreGuardado(false);
+    const respuesta = await cliente.ejecutar('cambiar_nombre_del_negocio', {
+      organizacion_id: organizacion.id,
+      nombre: nombreEscrito.trim(),
+      version: organizacion.version,
+    });
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      setCambiando(false);
+      return;
+    }
+    await refrescar();
+    setNombre(null);
+    setNombreGuardado(true);
+    setCambiando(false);
+  }
+
   // Lo escrito, o lo que ya habia. Un campo controlado que empieza en `null`
   // ensena lo guardado hasta que alguien lo toca, y a partir de ahi lo suyo.
   const escrito = correo ?? organizacion.correoDeRecuperacion ?? '';
@@ -87,62 +113,89 @@ export function AjustesDeOrganizacion() {
   }
 
   return (
-    <Tarjeta
-      titulo={`Acceso de ${organizacion.nombre}`}
-      origen="Afecta a todo el equipo, no solo a ti"
-    >
-      {error && (
-        <div className="mb-e3">
-          <ErrorEnCristiano error={error} />
-        </div>
-      )}
-
-      <div className="flex flex-col gap-e4">
-        <div>
-          <Interruptor
-            etiqueta="Exigir el doble factor a todo el mundo"
-            puesto={organizacion.exigeDobleFactor}
-            disabled={cambiando}
-            alCambiar={(puesto) => {
-              void exigirDobleFactor(puesto);
-            }}
-          />
-          <p className="mt-e1 text-secundario text-texto-suave">
-            Con esto puesto, nadie del negocio entra sin el código de su aplicación de
-            autenticación. A quien todavía no lo tenga <strong>se le deja entrar</strong>, porque
-            desde fuera no podría activarlo, y la aplicación se lo pide nada más entrar.
-          </p>
-          {aQuienLeFalta !== null && aQuienLeFalta > 0 && (
-            <div className="mt-e2">
-              <Aviso tono="atencion" titulo={`Le falta a ${aQuienLeFalta} personas`}>
-                Mañana te van a preguntar. Merece la pena avisarlas antes.
-              </Aviso>
-            </div>
-          )}
-        </div>
-
-        <div className="border-t border-borde pt-e3">
+    <div className="flex flex-col gap-e4">
+      <Tarjeta titulo="Nombre del negocio" origen="El que ven tus locales y tu equipo">
+        <div className="flex flex-col gap-e2">
           <Campo
-            etiqueta="Correo de recuperación"
-            tipo="correo"
-            value={escrito}
+            etiqueta="Cómo se llama tu negocio"
+            value={nombreEscrito}
             onChange={(evento) => {
-              setCorreo(evento.target.value);
+              setNombre(evento.target.value);
+              setNombreGuardado(false);
             }}
-            ayuda="Para volver a entrar si el negocio se queda sin nadie que pueda administrarlo. Se puede quitar si hay una segunda persona con ese acceso."
+            ayuda="Cada local tiene además su nombre, en Ajustes › Tu local. La razón social de tus facturas está en Facturación."
           />
-          <div className="mt-e2">
+          <div className="flex flex-wrap items-center gap-e3">
             <Boton
               cargando={cambiando}
+              disabled={nombreEscrito.trim() === '' || nombreEscrito.trim() === organizacion.nombre}
               onClick={() => {
-                void guardarCorreo();
+                void guardarNombre();
               }}
             >
-              Guardar
+              Guardar el nombre
             </Boton>
+            {nombreGuardado && <span className="text-secundario text-texto-suave">Guardado</span>}
           </div>
         </div>
-      </div>
-    </Tarjeta>
+      </Tarjeta>
+      <Tarjeta
+        titulo={`Acceso de ${organizacion.nombre}`}
+        origen="Afecta a todo el equipo, no solo a ti"
+      >
+        {error && (
+          <div className="mb-e3">
+            <ErrorEnCristiano error={error} />
+          </div>
+        )}
+
+        <div className="flex flex-col gap-e4">
+          <div>
+            <Interruptor
+              etiqueta="Exigir el doble factor a todo el mundo"
+              puesto={organizacion.exigeDobleFactor}
+              disabled={cambiando}
+              alCambiar={(puesto) => {
+                void exigirDobleFactor(puesto);
+              }}
+            />
+            <p className="mt-e1 text-secundario text-texto-suave">
+              Con esto puesto, nadie del negocio entra sin el código de su aplicación de
+              autenticación. A quien todavía no lo tenga <strong>se le deja entrar</strong>, porque
+              desde fuera no podría activarlo, y la aplicación se lo pide nada más entrar.
+            </p>
+            {aQuienLeFalta !== null && aQuienLeFalta > 0 && (
+              <div className="mt-e2">
+                <Aviso tono="atencion" titulo={`Le falta a ${aQuienLeFalta} personas`}>
+                  Mañana te van a preguntar. Merece la pena avisarlas antes.
+                </Aviso>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-borde pt-e3">
+            <Campo
+              etiqueta="Correo de recuperación"
+              tipo="correo"
+              value={escrito}
+              onChange={(evento) => {
+                setCorreo(evento.target.value);
+              }}
+              ayuda="Para volver a entrar si el negocio se queda sin nadie que pueda administrarlo. Se puede quitar si hay una segunda persona con ese acceso."
+            />
+            <div className="mt-e2">
+              <Boton
+                cargando={cambiando}
+                onClick={() => {
+                  void guardarCorreo();
+                }}
+              >
+                Guardar
+              </Boton>
+            </div>
+          </div>
+        </div>
+      </Tarjeta>
+    </div>
   );
 }

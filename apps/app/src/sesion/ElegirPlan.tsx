@@ -21,10 +21,15 @@ import { usarSesion } from './Sesion.tsx';
  * más, Esencial y Cadena, que es Pro para grupos y más barato por local. Pausa no se
  * contrata al empezar: es para quien ya lleva tiempo y cierra una temporada.
  */
+/** Cadena llega hasta diez locales (`PLANES`); con más, se habla con nosotros. */
+const MAS_DE_ESTOS_SE_HABLA = 10;
+
 export function ElegirPlan() {
   const { yo, salir, cliente } = usarSesion();
   const suya = usarMiSuscripcion();
   const [anual, setAnual] = useState(false);
+  // Cuántos locales, antes de pagar (la pausa del 8-nov, 0142). Nulo: los que ya tiene.
+  const [cuantos, setCuantos] = useState<number | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [cancelado] = useState(
     () => new URLSearchParams(window.location.search).get('pago') === 'cancelado',
@@ -35,6 +40,7 @@ export function ElegirPlan() {
       const respuesta = await cliente.ejecutar<{ url: string }>('empezar_a_pagar', {
         plan,
         intervalo: anual ? 'ano' : 'mes',
+        locales,
       });
       if (!respuesta.ok) throw new FalloDeLaApi(respuesta.error);
       return respuesta.datos.url;
@@ -71,7 +77,8 @@ export function ElegirPlan() {
   }
 
   const datos = suya.data;
-  const locales = Math.max(1, datos?.localesActivos ?? 1);
+  const yaTiene = Math.max(1, datos?.localesActivos ?? 1);
+  const locales = Math.max(yaTiene, cuantos ?? yaTiene);
   const planes = PLANES.filter(
     (plan) =>
       plan.codigo !== 'pausa' && (locales >= 2 ? plan.codigo !== 'pro' : plan.codigo !== 'cadena'),
@@ -140,6 +147,60 @@ export function ElegirPlan() {
             {opcion.texto}
           </button>
         ))}
+      </div>
+
+      {/*
+        ── Cuántos locales, lo primero (la pausa del 8-nov, 0142) ─────────────────
+        Richi: «preguntar por locales antes, ahora lo pregunta después, no tiene sentido».
+        Se paga por todos, y en el alta solo se les pone nombre. Con dos o más, Pro pasa a
+        Cadena, que es Pro más barato por local. Más de diez, se habla con nosotros.
+      */}
+      <div className="mb-e4 flex flex-wrap items-center justify-between gap-e3 rounded-mayor border border-borde bg-superficie p-e4">
+        <div className="min-w-0">
+          <p className="text-cuerpo font-semibold">¿Cuántos locales tienes?</p>
+          <p className="text-secundario text-texto-suave">
+            Cada local, su cuota. Se pueden añadir más cuando quieras.
+          </p>
+        </div>
+        <div
+          role="group"
+          aria-label="Cuántos locales"
+          className="flex items-center overflow-hidden rounded-medio border border-borde-fuerte"
+        >
+          <button
+            type="button"
+            aria-label="Uno menos"
+            disabled={locales <= yaTiene}
+            onClick={() => {
+              setCuantos(Math.max(yaTiene, locales - 1));
+            }}
+            className="min-h-toque min-w-toque text-pantalla font-semibold disabled:text-texto-tenue"
+          >
+            −
+          </button>
+          <output
+            aria-live="polite"
+            className="min-w-[2.5rem] text-center text-pantalla font-semibold tabular-nums"
+          >
+            {locales}
+          </output>
+          <button
+            type="button"
+            aria-label="Uno más"
+            disabled={locales >= MAS_DE_ESTOS_SE_HABLA}
+            onClick={() => {
+              setCuantos(Math.min(MAS_DE_ESTOS_SE_HABLA, locales + 1));
+            }}
+            className="min-h-toque min-w-toque text-pantalla font-semibold disabled:text-texto-tenue"
+          >
+            +
+          </button>
+        </div>
+        {locales >= MAS_DE_ESTOS_SE_HABLA && (
+          <p className="w-full text-secundario text-texto-suave">
+            ¿Más de {MAS_DE_ESTOS_SE_HABLA}? Escríbenos a hola@estook.com y lo preparamos contigo.
+          </p>
+        )}
       </div>
 
       {suya.isLoading ? (
@@ -242,7 +303,7 @@ function TarjetaDePlan({
         <span className="text-secundario text-texto-suave">+ IVA por local {cada}</span>
       </p>
       {locales > 1 && (
-        <p className="text-secundario text-texto-suave">
+        <p className="text-secundario font-medium text-texto">
           Con tus {locales} locales: {conSimbolo(centimos(precio * locales))} + IVA {cada}.
         </p>
       )}

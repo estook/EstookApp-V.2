@@ -12,6 +12,8 @@ import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { elLocalDeLaSesion } from '../alta.ts';
 import {
   elMes,
+  elTrimestre,
+  laSemana,
   elRelojYElFisco,
   laCuentaDelFoodCost,
   lasLineasPorEmparejar,
@@ -197,8 +199,16 @@ export const laDesviacion = consulta<Record<string, never>, SalidaLaDesviacion>(
 
 export const entradaElFoodCostReal = z
   .object({
-    /** Entre los dos últimos inventarios, o un mes natural. Sin decirlo, lo primero si lo hay. */
-    periodo: z.enum(['inventarios', 'mes']).optional(),
+    /**
+     * Entre los dos últimos inventarios, una semana (de lunes a domingo), un mes o un trimestre
+     * natural (0142). Sin decirlo, lo primero si lo hay, y si no, el mes.
+     */
+    periodo: z.enum(['inventarios', 'semana', 'mes', 'trimestre']).optional(),
+    /** Un día de la semana que se mira: «2026-11-04». Sin él, la de hoy. */
+    dia: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'El día se escribe así: 2026-11-04.')
+      .optional(),
     mes: z
       .string()
       .regex(/^\d{4}-\d{2}$/, 'El mes se escribe así: 2026-10.')
@@ -209,7 +219,7 @@ export const entradaElFoodCostReal = z
 export type EntradaElFoodCostReal = z.infer<typeof entradaElFoodCostReal>;
 
 export interface SalidaElFoodCostReal {
-  readonly periodo: 'inventarios' | 'mes';
+  readonly periodo: 'inventarios' | 'semana' | 'mes' | 'trimestre';
   readonly desde: FechaOperativa;
   readonly hasta: FechaOperativa;
   readonly hoy: FechaOperativa;
@@ -270,12 +280,19 @@ export const elFoodCostReal = consulta<EntradaElFoodCostReal, SalidaElFoodCostRe
     const limites: LimitesDelPeriodo =
       periodo === 'inventarios' && inventarios !== null
         ? inventarios
-        : { por: 'dias', ...elMes(entrada.mes ?? hoy.slice(0, 7)) };
+        : {
+            por: 'dias',
+            ...(periodo === 'semana'
+              ? laSemana((entrada.dia ?? hoy) as FechaOperativa)
+              : periodo === 'trimestre'
+                ? elTrimestre(entrada.mes ?? hoy.slice(0, 7))
+                : elMes(entrada.mes ?? hoy.slice(0, 7))),
+          };
     const { desde, hasta } = limites;
     if (desde > hoy) {
       throw new FalloDeAplicacion('faltan_datos', {
-        campos: ['mes'],
-        porque: 'Ese mes todavía no ha empezado: elige este o uno de antes.',
+        campos: [periodo === 'semana' ? 'dia' : 'mes'],
+        porque: 'Ese periodo todavía no ha empezado: elige este o uno de antes.',
       });
     }
 

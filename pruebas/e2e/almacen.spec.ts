@@ -1160,8 +1160,12 @@ test('el libro se acota por tramo, y busca en el servidor', async ({ page, reque
   await irAAlmacen(page, 'movimientos', 'todo');
 
   // Hasta dónde se mira, que es lo que acota de verdad. De fábrica, el trimestre.
-  const tramo = page.getByLabel('Hasta dónde miro');
-  await expect(tramo).toHaveValue('trimestre');
+  // Desde la pausa del 8-nov (0142), en botones y con la semana delante.
+  const tramo = page.getByRole('radiogroup', { name: 'Hasta dónde miro' });
+  await expect(tramo.getByRole('radio', { name: '3 meses' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
   await expect(page.getByText(/quedaron /).first()).toBeVisible({ timeout: 15_000 });
 
   // ── Buscar busca en el servidor, y por eso encuentra ─────────────────────
@@ -1182,8 +1186,11 @@ test('el libro se acota por tramo, y busca en el servidor', async ({ page, reque
   await expect(page.getByText(/quedaron /).first()).toBeVisible({ timeout: 15_000 });
 
   // Y cambiar el tramo vuelve a preguntar al servidor, sin romperse.
-  await tramo.selectOption('mes');
-  await expect(tramo).toHaveValue('mes');
+  await tramo.getByRole('radio', { name: 'Semana', exact: true }).click();
+  await expect(tramo.getByRole('radio', { name: 'Semana', exact: true })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
   await expect(page.getByText('No he podido leer el libro')).toHaveCount(0);
   await expect(page.getByText(/quedaron /).first()).toBeVisible({ timeout: 15_000 });
 });

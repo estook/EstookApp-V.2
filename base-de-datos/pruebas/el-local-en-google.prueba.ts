@@ -99,13 +99,23 @@ describe('con Google', () => {
   });
 
   it('elegirlo guarda su ficha y, si se pide, su posición para fichar', async () => {
-    losDatos(
+    const elegido = losDatos<{ casillas: Record<string, unknown> }>(
       await conGoogle.ejecutar(rosa, 'elegir_mi_local_de_google', {
         id: 'lugar-de-prueba',
         sesion: SESION,
         usar_su_posicion: true,
       }),
     );
+    // Las casillas del alta y de Ajustes, partidas (0142): se rellenan y se guardan después.
+    expect(elegido.casillas).toMatchObject({
+      nombre: 'Bar Centro',
+      direccion: 'Calle Mayor, 1',
+      codigoPostal: '20001',
+      poblacion: 'Donostia',
+      provincia: 'Gipuzkoa',
+      telefono: '943 00 00 00',
+      horaDeCorte: '05:00',
+    });
 
     const guardado = await loGuardado(rosa);
     expect(guardado.ficha?.nombre).toBe('Bar Centro');

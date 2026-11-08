@@ -7,6 +7,7 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarComoSeCierra } from '../ganchos/usarComoSeCierra.ts';
 import { aplazar, estaAplazado } from '../pantallas/recordatorios.ts';
+import { TusVentasConEstookTpv } from './TusVentasConEstookTpv.tsx';
 
 /**
  * ¿Cómo entran tus ventas? · la pregunta que sustituye a «Conecta tu TPV».
@@ -35,7 +36,7 @@ import { aplazar, estaAplazado } from '../pantallas/recordatorios.ts';
  * Ajustes y la pantalla del cierre. Una pregunta, un solo sitio donde se contesta.
  */
 export function ComoEntranTusVentas({ modo }: { readonly modo: 'tarjeta' | 'ajustes' | 'alta' }) {
-  const { cliente, permisos } = usarSesion();
+  const { cliente, permisos, yo } = usarSesion();
   const cache = useQueryClient();
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [guardando, setGuardando] = useState(false);
@@ -64,7 +65,15 @@ export function ComoEntranTusVentas({ modo }: { readonly modo: 'tarjeta' | 'ajus
     await cache.invalidateQueries({ queryKey: ['un_cierre'] });
   }
 
-  if (!puedeElegir || como === null) return null;
+  if (!puedeElegir) return null;
+
+  // Con Pro no se pregunta (la pausa del 8-nov, 0142): sus ventas son de Estook TPV. Sin el dato
+  // del plan (la API sin desplegar), se pregunta como siempre: es lo que había.
+  if (yo?.cuenta?.conEstookTpv === true) {
+    return modo === 'tarjeta' ? null : <TusVentasConEstookTpv modo={modo} />;
+  }
+
+  if (como === null) return null;
 
   // En el Panel solo sale **mientras no se ha elegido**. Una vez elegido, la
   // tarjeta ya no tiene nada que pedir, y una tarjeta que no pide nada es ruido.

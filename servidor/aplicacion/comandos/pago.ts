@@ -75,6 +75,11 @@ export const entradaEmpezarAPagar = z
   .object({
     plan: z.enum(['esencial', 'pro', 'cadena']),
     intervalo: z.enum(['mes', 'ano']),
+    /**
+     * Cuántos locales se pagan (la pausa del 8-nov, 0142): se dice al pagar, y en el alta solo
+     * se les pone nombre. Nunca menos de los que ya hay. Cadena llega hasta diez.
+     */
+    locales: z.number().int().min(1).max(10).optional(),
   })
   .strict();
 
@@ -82,7 +87,7 @@ export const entradaEmpezarAPagar = z
  * La página de pago de Stripe, para la organización de la sesión.
  *
  * El plan se ajusta a los locales (Pro con dos o más es Cadena) y la cantidad son los
- * locales activos. Los días de prueba son los que se guardaron al crear la cuenta, y
+ * locales que dice al pagar, nunca menos de los activos (0142). Los días de prueba son los que se guardaron al crear la cuenta, y
  * solo la primera vez: quien ya tuvo una suscripción no vuelve a probar gratis.
  */
 export const empezarAPagar = comando<z.infer<typeof entradaEmpezarAPagar>, { url: string }>({
@@ -108,7 +113,7 @@ export const empezarAPagar = comando<z.infer<typeof entradaEmpezarAPagar>, { url
     }
 
     const catalogo = await elCatalogo(contexto);
-    const locales = Math.max(1, fila.localesActivos);
+    const locales = Math.max(1, fila.localesActivos, entrada.locales ?? 1);
     const plan = elPlanPorLosLocales(entrada.plan, locales);
     const precio = catalogo.precios[claveDelPrecio(plan, entrada.intervalo)];
     if (precio === undefined)
@@ -410,6 +415,11 @@ export const reanudarLaSuscripcion = cancelarOReanudar('reanudar_la_suscripcion'
 export async function laCuotaSigueALosLocales(
   contexto: Contexto,
   organizacionId: string,
+  /**
+   * Al crear un local la cuota **solo sube** (0142): quien pagó tres al empezar no ve bajar la
+   * cuota al crear el segundo. Baja cuando lo pide quien paga, con «Solo tengo estos».
+   */
+  { bajar = false }: { readonly bajar?: boolean } = {},
 ): Promise<void> {
   const pagos = contexto.pagos;
   if (pagos === null) return;
@@ -418,7 +428,9 @@ export async function laCuotaSigueALosLocales(
   if (fila.plan === null || fila.plan === 'pausa') return;
   if (fila.estado !== 'activa' && fila.estado !== 'prueba' && fila.estado !== 'impago') return;
 
-  const locales = Math.max(1, fila.localesActivos);
+  const locales = bajar
+    ? Math.max(1, fila.localesActivos)
+    : Math.max(1, fila.localesActivos, fila.localesPagados ?? 1);
   const plan = elPlanPorLosLocales(fila.plan, locales);
   if (locales === fila.localesPagados && plan === fila.plan) return;
 
@@ -442,3 +454,22 @@ export async function laCuotaSigueALosLocales(
     'un local más',
   );
 }
+
+// ── Solo tengo estos (la pausa del 8-nov, 0142) ──────────────────────────────
+
+/**
+ * Quien pagó más locales de los que al final ha creado: la cuota baja a los que hay, y Stripe
+ * descuenta lo pagado de más en la siguiente factura (prorrateo). Lo pide quien paga.
+ */
+export const ajustarMiCuotaAMisLocales = comando<Record<string, never>, { locales: number }>({
+  nombre: 'ajustar_mi_cuota_a_mis_locales',
+  entrada: z.object({}).strict(),
+  exige: 'dato.facturacion',
+
+  async ejecutar(contexto) {
+    const organizacionId = laOrganizacionDeLaSesion(contexto);
+    await laCuotaSigueALosLocales(contexto, organizacionId, { bajar: true });
+    const fila = await laSuscripcionDe(contexto, organizacionId);
+    return { locales: Math.max(1, fila?.localesPagados ?? fila?.localesActivos ?? 1) };
+  },
+});

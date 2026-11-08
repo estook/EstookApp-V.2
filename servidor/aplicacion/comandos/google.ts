@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { LETRAS_PARA_BUSCAR } from '@estook/dominio';
+import {
+  LETRAS_PARA_BUSCAR,
+  horaDeCorteDelHorario,
+  partirLaDireccion,
+  type DireccionPartida,
+} from '@estook/dominio';
 import { publicar } from '../../eventos/bandeja.ts';
 import type { FichaDeGoogle, LugaresDeGoogle } from '../../infraestructura/google.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
@@ -162,9 +167,32 @@ export const entradaElegirMiLocalDeGoogle = z
 
 export type EntradaElegirMiLocalDeGoogle = z.infer<typeof entradaElegirMiLocalDeGoogle>;
 
+/**
+ * Lo que la pantalla pone en sus casillas (la pausa del 8-nov, 0142): el alta y Ajustes ›
+ * Datos del local se rellenan con esto, y quien mira lo cambia antes de guardar. **No se
+ * guarda aquí**: lo guarda `guardar_donde_esta`, como siempre, con lo que se ve en pantalla.
+ */
+export interface FichaParaLasCasillas extends DireccionPartida {
+  readonly nombre: string | null;
+  readonly telefono: string | null;
+  readonly horario: readonly string[] | null;
+  /** «05:00», o una hora después del último cierre de madrugada (0142). */
+  readonly horaDeCorte: string;
+}
+
+function paraLasCasillas(ficha: FichaDeGoogle): FichaParaLasCasillas {
+  return {
+    nombre: ficha.nombre,
+    telefono: ficha.telefono,
+    horario: ficha.horario,
+    ...partirLaDireccion(ficha.partes ?? []),
+    horaDeCorte: horaDeCorteDelHorario(ficha.tramos),
+  };
+}
+
 export const elegirMiLocalDeGoogle = comando<
   EntradaElegirMiLocalDeGoogle,
-  { nombre: string | null; posicionPuesta: boolean }
+  { nombre: string | null; posicionPuesta: boolean; casillas: FichaParaLasCasillas }
 >({
   nombre: 'elegir_mi_local_de_google',
   entrada: entradaElegirMiLocalDeGoogle,
@@ -181,7 +209,7 @@ export const elegirMiLocalDeGoogle = comando<
       ficha,
       entrada.usar_su_posicion,
     );
-    return { nombre: ficha.nombre, posicionPuesta };
+    return { nombre: ficha.nombre, posicionPuesta, casillas: paraLasCasillas(ficha) };
   },
 });
 

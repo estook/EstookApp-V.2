@@ -1387,6 +1387,8 @@ estook.com/tpv/  →  «Vincular este aparato»
         → pantalla del PIN
 ```
 
+**Con Google** ([0142](../decisiones/0142-la-pausa-del-8-nov.md), Richi, 8-nov: quien crea la cuenta con Google no tiene contraseña y no podía vincular el primero): debajo de «Entrar», **«Continuar con Google»**, que va y vuelve a `estook.com/tpv/` y sigue igual que con el correo. **En la caja para Windows** Google no deja entrar desde dentro de un programa, así que ese botón explica el otro camino: **el código se saca en Estook**, en el móvil (Ajustes › Conexiones › «Vincular un aparato», eligiendo antes qué será), y se escribe en «Tengo un código». Es el mismo código de siempre (6 cifras, 10 minutos, un uso), a nombre de quien lo saca, con Pro y con el permiso de vincular.
+
 **La sesión personal no se queda en el aparato.** Lo que se queda es **la llave del aparato**, la misma pieza que ya usa fichar (0068): 32 bytes al azar que solo tiene el aparato; Estook guarda su huella (SHA-256) y nada más.
 
 ### Los demás aparatos
@@ -1479,7 +1481,7 @@ En el aparato nuevo
 - **Fichar**, en naranja, **solo en la caja** (0115); en el móvil, solo su reloj.
 - **El engranaje**, **solo en la caja y a quien puede tocar algo de dentro**: los agotados, los Ajustes del TPV y los aparatos (11.13).
 - **Quién está y Bloquear**, como siempre (11.4).
-- **La caja** (abrir y cerrar, en verde o en ámbar) **se pone arriba con el cobro** (T7, 11.6): hasta entonces no sale.
+- **La caja** (abrir y cerrar, en verde o en ámbar) **se pone arriba con el cobro** (T7, 11.6): hasta entonces no sale. **Y también en la pantalla del PIN, al lado de «Fichar»** (Richi, 8-nov, [0142](../decisiones/0142-la-pausa-del-8-nov.md)).
 - **Las franjas** de lo que pide mirar ya: «La cocina te llama» (0116) y lo que **toca marchar**, con su botón.
 - **El plano cabe entero** en la caja y en la tablet: se encoge o se estira hasta llenar lo que queda de pantalla, sin barras de desplazamiento. En el móvil, la cuadrícula de tres en fila (11.8).
 - **Abajo**, las mesas abiertas y las personas, y si la sala y la cocina van al segundo.
@@ -1511,6 +1513,12 @@ En el aparato nuevo
 5. **Solo entonces** se enseña la diferencia, en efectivo y en tarjeta, **sin bloquear el cierre** y a nombre de quien cerró (5.5). Se imprime el Z.
 
 **Dos cajones** (barra y comedor) son dos cajas, cada una con su fondo, su cierre y su Z; el cierre del día los suma (5.5). **Una caja que se quedó abierta ayer** no deja abrir la de hoy en ese cajón: sale «La caja de ayer sigue abierta · Cerrarla», y mientras tanto se sigue vendiendo con ella.
+
+**Lo que añadió Richi el 8-nov** ([0142](../decisiones/0142-la-pausa-del-8-nov.md), aprobado con [su maqueta](../maquetas/la-pausa-del-8-nov.html)), lo primero de T7:
+
+- **El botón de la caja, en la pantalla del PIN, al lado de «Fichar»**: verde «Empezar el día» o ámbar «Cerrar el día», que pide el PIN de un encargado; y dentro, arriba en la sala (11.5).
+- **Cerrar el día en cuatro pasos a la vista**: contar (a ciegas, billete a billete, con el total sumándose), el datáfono, lo que se queda para mañana, y el resultado con la diferencia en efectivo y en tarjeta, «Imprimir el Z» y «Listo».
+- **En Estook, «Cierre» pasa a «Cierres de caja»** con Pro: Servicio › Jornadas › Cierres de caja, la lista por día con su diferencia («Cuadra», o el importe en ámbar o en rojo), «Buscar un día» y «Con diferencia»; cada cierre con quién lo empezó y lo cerró, el fondo, lo cobrado, las entradas y salidas con su motivo, lo que debería haber, lo contado, la tarjeta frente al datáfono, sus tickets y «Descargar el Z». **Ese día se quita, con Pro, el cierre a mano** (hasta entonces sigue, porque el TPV todavía no cobra).
 
 **Lo que añadió Richi el 28-oct** ([0121](../decisiones/0121-la-pausa-del-tpv.md), punto 4), para T7:
 

@@ -69,6 +69,7 @@ export {
   TRAMOS_QUE_SE_MIRAN,
   DIAS_DEL_TRAMO,
   NOMBRE_DEL_TRAMO,
+  NOMBRE_CORTO_DEL_TRAMO,
   esTramoQueSeMira,
   desdeCuandoMira,
 } from './tiempo.ts';
@@ -693,8 +694,16 @@ export {
   topeDeGoogle,
   quedanDeGoogle,
   mesDe,
+  partirLaDireccion,
+  horaDeCorteDelHorario,
+  HORA_DE_CORTE_DE_FABRICA,
 } from './google.ts';
-export type { UsoDeGoogle } from './google.ts';
+export type {
+  UsoDeGoogle,
+  ParteDeLaDireccion,
+  DireccionPartida,
+  TramoDelHorario,
+} from './google.ts';
 
 // ── 0042 · crear cuenta, la oferta de prueba y los planes ────────────────────
 export {

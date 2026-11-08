@@ -181,6 +181,11 @@ export const VUELTAS_DE_GOOGLE = [
   'https://estook.com/app/',
   'https://www.estook.com/app/',
   'http://localhost:5174/',
+  // Estook TPV, para vincular el primer aparato con Google (la pausa del 8-nov, 0142). Hay que
+  // apuntarlas también en el cliente de OAuth de Google, o Google no vuelve a ellas.
+  'https://estook.com/tpv/',
+  'https://www.estook.com/tpv/',
+  'http://localhost:5178/',
 ] as const;
 
 export type VueltaDeGoogle = (typeof VUELTAS_DE_GOOGLE)[number];

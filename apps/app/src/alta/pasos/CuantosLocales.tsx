@@ -27,8 +27,14 @@ import type { PropsDeUnPaso } from '../contrato.ts';
  * los precios reales, los fichajes y el chat son del local siempre.
  */
 export function CuantosLocales({ alta, cliente, alGuardar, alFallar }: PropsDeUnPaso) {
-  const [cuantos, setCuantos] = useState(Math.max(alta.cuantosLocales, 1));
-  const [creando, setCreando] = useState(false);
+  // Los que dijo al pagar (0142), si son más de los que tiene: ya están pagados.
+  const suya = usarMiSuscripcion(true);
+  const pagados = suya.data?.deLaCasa === true ? 0 : (suya.data?.locales ?? 0);
+  const [elegidos, setCuantos] = useState<number | null>(null);
+  const cuantos = elegidos ?? Math.max(alta.cuantosLocales, pagados, 1);
+  const [abierto, setCreando] = useState<boolean | null>(null);
+  const creando = abierto ?? cuantos > 1;
+  const [bajando, setBajando] = useState(false);
   const [nombre, setNombre] = useState('');
   const [duplicarDe, setDuplicarDe] = useState(alta.localId);
   const [enviando, setEnviando] = useState(false);
@@ -37,9 +43,24 @@ export function CuantosLocales({ alta, cliente, alGuardar, alFallar }: PropsDeUn
   const faltan = Math.max(cuantos - alta.cuantosLocales - recienCreados.length, 0);
 
   // Lo que sumará a la cuota, dicho antes de crear (0048): la cuota es por local, y
-  // cambia sola en Stripe al crearlo. Solo si hay algo que cobrar.
-  const suya = usarMiSuscripcion(creando);
+  // cambia sola en Stripe al crearlo. Solo si hay algo que cobrar; uno ya pagado, nada (0142).
   const cache = useQueryClient();
+  const activos = alta.cuantosLocales + recienCreados.length;
+  const sobranPagados = suya.data?.conStripe === true && pagados > activos ? pagados - activos : 0;
+
+  /** «Solo tengo estos»: la cuota baja a los locales que hay (0142). */
+  async function soloEstos() {
+    setBajando(true);
+    const respuesta = await cliente.ejecutar('ajustar_mi_cuota_a_mis_locales', {});
+    setBajando(false);
+    if (!respuesta.ok) {
+      alFallar(respuesta.error);
+      return;
+    }
+    setCuantos(activos);
+    setCreando(false);
+    await cache.invalidateQueries({ queryKey: ['mi_suscripcion'] });
+  }
   const conUnoMas = suya.data?.conStripe === true ? suya.data.conUnLocalMas : null;
 
   async function crear() {
@@ -108,9 +129,11 @@ export function CuantosLocales({ alta, cliente, alGuardar, alFallar }: PropsDeUn
       {creando && faltan > 0 && (
         <div className="flex flex-col gap-e3 rounded-medio border border-borde bg-superficie p-e4">
           <p className="text-secundario text-texto-suave">
-            {faltan === 1
-              ? 'Te falta uno por dar de alta. Puedes hacerlo ahora o más tarde.'
-              : `Te faltan ${faltan} por dar de alta. Puedes hacerlo ahora o más tarde.`}
+            {sobranPagados > 0
+              ? `Has pagado ${String(pagados)} locales. Ponles nombre: ${faltan === 1 ? 'te falta uno' : `te faltan ${String(faltan)}`}.`
+              : faltan === 1
+                ? 'Te falta uno por dar de alta. Puedes hacerlo ahora o más tarde.'
+                : `Te faltan ${faltan} por dar de alta. Puedes hacerlo ahora o más tarde.`}
           </p>
 
           <Campo
@@ -162,6 +185,25 @@ export function CuantosLocales({ alta, cliente, alGuardar, alFallar }: PropsDeUn
           >
             Añadir este local
           </Boton>
+
+          {sobranPagados > 0 && (
+            <p className="text-secundario text-texto-suave">
+              ¿Al final son menos?{' '}
+              <button
+                type="button"
+                disabled={bajando}
+                onClick={() => {
+                  void soloEstos();
+                }}
+                className="min-h-toque font-semibold text-texto underline"
+              >
+                {bajando
+                  ? 'Ajustando la cuota…'
+                  : `Solo tengo ${String(activos)}: no me cobres ${sobranPagados === 1 ? 'el otro' : `los otros ${String(sobranPagados)}`}`}
+              </button>
+              . Lo pagado de más se descuenta de tu siguiente cuota.
+            </p>
+          )}
         </div>
       )}
 

@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./al-segundo": "./src/al-segundo.ts",
-    "./pin-cifrado": "./src/pin-cifrado.ts"
+    "./pin-cifrado": "./src/pin-cifrado.ts",
+    "./con-google": "./src/con-google.ts"
   },
   "scripts": {
     "tipos": "tsc --noEmit"

@@ -16,7 +16,7 @@ import {
   Separador,
   type ComoSeEntra,
 } from './Formas.tsx';
-import { irAGoogle } from './google.ts';
+import { irAGoogle } from '@estook/cliente-api/con-google';
 import { usarSesion } from './Sesion.tsx';
 
 /**

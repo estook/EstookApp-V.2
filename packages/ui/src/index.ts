@@ -76,6 +76,8 @@ export { Variacion } from './componentes/Variacion.tsx';
 export type { VariacionProps } from './componentes/Variacion.tsx';
 export { ElegirPeriodo } from './componentes/ElegirPeriodo.tsx';
 export type { ElegirPeriodoProps } from './componentes/ElegirPeriodo.tsx';
+export { Segmentado } from './componentes/Segmentado.tsx';
+export type { OpcionDeSegmentado, SegmentadoProps } from './componentes/Segmentado.tsx';
 export type { TiraProps, PuntoDeLaTira } from './componentes/Tira.tsx';
 export type { ProporcionProps, Trozo } from './componentes/Proporcion.tsx';
 export type {

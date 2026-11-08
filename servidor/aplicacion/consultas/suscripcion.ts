@@ -80,8 +80,12 @@ export const miSuscripcion = consulta<Record<string, never>, MiSuscripcion>({
       (contexto.pagos === null || fila.stripeModo === contexto.pagos.modo);
     const locales = Math.max(1, fila.localesPagados ?? fila.localesActivos);
     const intervalo = fila.intervalo ?? 'mes';
+    // Un local más **que ya está pagado** no cambia la cuota (0142): no se dice nada.
     const siguiente =
-      fila.plan === null || fila.plan === 'pausa' || fila.deLaCasa
+      fila.plan === null ||
+      fila.plan === 'pausa' ||
+      fila.deLaCasa ||
+      fila.localesActivos + 1 <= locales
         ? null
         : elPlanPorLosLocales(fila.plan, fila.localesActivos + 1);
     const todaviaSinCobrar =

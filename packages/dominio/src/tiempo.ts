@@ -292,12 +292,13 @@ export function estaVigente(
  * Vive en el dominio y no en cada pantalla porque lo usan el libro, las mermas y
  * lo que venga: un catálogo, un dueño (regla 6).
  */
-export const TRAMOS_QUE_SE_MIRAN = ['mes', 'trimestre', 'semestre', 'ano'] as const;
+export const TRAMOS_QUE_SE_MIRAN = ['semana', 'mes', 'trimestre', 'semestre', 'ano'] as const;
 
 export type TramoQueSeMira = (typeof TRAMOS_QUE_SE_MIRAN)[number];
 
 /** Cuántos días hacia atrás mira cada tramo. */
 export const DIAS_DEL_TRAMO: Readonly<Record<TramoQueSeMira, number>> = {
+  semana: 7,
   mes: 30,
   trimestre: 90,
   semestre: 180,
@@ -306,10 +307,23 @@ export const DIAS_DEL_TRAMO: Readonly<Record<TramoQueSeMira, number>> = {
 
 /** Cómo se llama en pantalla. En cristiano: nadie dice «últimos 90 días». */
 export const NOMBRE_DEL_TRAMO: Readonly<Record<TramoQueSeMira, string>> = {
+  semana: 'La última semana',
   mes: 'El último mes',
   trimestre: 'Los últimos tres meses',
   semestre: 'Los últimos seis meses',
   ano: 'El último año',
+};
+
+/**
+ * Cómo se llama en el botón, donde no cabe la frase entera (la pausa del 8-nov, 0142): «Semana · Mes ·
+ * 3 meses · 6 meses · Año». La semana la pidió Richi: el mes llega tarde para corregir nada.
+ */
+export const NOMBRE_CORTO_DEL_TRAMO: Readonly<Record<TramoQueSeMira, string>> = {
+  semana: 'Semana',
+  mes: 'Mes',
+  trimestre: '3 meses',
+  semestre: '6 meses',
+  ano: 'Año',
 };
 
 export function esTramoQueSeMira(valor: unknown): valor is TramoQueSeMira {

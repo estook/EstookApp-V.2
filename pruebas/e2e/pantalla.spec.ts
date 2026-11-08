@@ -379,6 +379,19 @@ test.describe('las tarjetas del Panel', () => {
     //
     // Desde M6½ la tarjeta ya no pide «conecta tu TPV»: pregunta cómo entran las
     // ventas, a mano o con el TPV, y desaparece al contestarla.
+    //
+    // **Solo con Esencial** desde la pausa del 8-nov (0142): con Pro las ventas son de Estook
+    // TPV y no se pregunta. Los locales de ejemplo lo tienen todo, así que aquí se hacen pasar
+    // por Esencial; lo de Pro, en la prueba de abajo.
+    await page.route('**/v1/consultas/quien_soy*', async (ruta) => {
+      const respuesta = await ruta.fetch();
+      const cuerpo = (await respuesta.json()) as {
+        datos: { cuenta: Record<string, unknown> | null } & Record<string, unknown>;
+      };
+      const cuenta =
+        cuerpo.datos.cuenta === null ? null : { ...cuerpo.datos.cuenta, conEstookTpv: false };
+      await ruta.fulfill({ response: respuesta, json: { datos: { ...cuerpo.datos, cuenta } } });
+    });
     await entrar(page);
 
     const tarjeta = page.getByRole('heading', { name: '¿Cómo entran tus ventas?' });
@@ -395,6 +408,22 @@ test.describe('las tarjetas del Panel', () => {
     // Volver a entrar, sí. Y sin vaciar el navegador, que sería hacer trampa.
     await volverAEntrar(page);
     await expect(tarjeta).toBeVisible();
+  });
+
+  test('con Pro no se pregunta: Conexiones dice que las ventas entran con Estook TPV', async ({
+    page,
+  }) => {
+    // La pausa del 8-nov (0142), punto 4.1: Pro es Estook TPV, así que ni el Panel ni Ajustes
+    // preguntan «¿cómo entran tus ventas?». Los locales de ejemplo llevan Pro.
+    await entrar(page);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { name: '¿Cómo entran tus ventas?' })).toHaveCount(0);
+
+    await abrirSinQueSeCaiga(page, `${APP}#/ajustes/conexiones`);
+    await expect(
+      page.getByRole('heading', { name: 'Tus ventas entran solas con Estook TPV' }),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Vincular un aparato' })).toBeVisible();
   });
 });
 

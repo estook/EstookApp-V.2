@@ -14,7 +14,14 @@
 
 import type { LlegadaDelEnlace } from '@estook/dominio';
 
-const DONDE_SE_GUARDA = 'estook.google';
+/**
+ * Dónde se guarda lo de la ida, para comprobarlo a la vuelta. Estook y Estook TPV comparten el
+ * sitio (estook.com), así que cada puerta lo guarda aparte: la del TPV con su propio nombre
+ * (la pausa del 8-nov, 0142).
+ */
+function dondeSeGuarda(): string {
+  return window.location.pathname.includes('/tpv') ? 'estook.tpv.google' : 'estook.google';
+}
 
 export type IntencionConGoogle = 'entrar' | 'crear';
 
@@ -63,17 +70,22 @@ export async function irAGoogle(
     readonly aceptaCondiciones?: true;
     readonly llegada?: LlegadaDelEnlace;
   },
+  /**
+   * A dónde vuelve, si no es la página en la que se está. Estook TPV vuelve siempre a su raíz
+   * (`/tpv/`), que es la apuntada en Google, aunque se pulse desde otra dirección (0142).
+   */
+  vueltaFija?: string,
 ): Promise<void> {
   const verificador = base64Url(crypto.getRandomValues(new Uint8Array(32)));
   const reto = base64Url(
     new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verificador))),
   );
   const estado = base64Url(crypto.getRandomValues(new Uint8Array(16)));
-  const vuelta = laVuelta();
+  const vuelta = vueltaFija ?? laVuelta();
 
   const guardado: LoGuardado = { estado, verificador, vuelta, ...datos };
   try {
-    window.sessionStorage.setItem(DONDE_SE_GUARDA, JSON.stringify(guardado));
+    window.sessionStorage.setItem(dondeSeGuarda(), JSON.stringify(guardado));
   } catch {
     // Sin poder guardar no se puede comprobar la vuelta: mejor no ir.
     throw new Error('Este navegador no deja guardar lo necesario para entrar con Google.');
@@ -112,8 +124,8 @@ export function laVueltaDeGoogle(): VueltaDeGoogle | null {
 
   let guardado: LoGuardado | null = null;
   try {
-    const texto = window.sessionStorage.getItem(DONDE_SE_GUARDA);
-    window.sessionStorage.removeItem(DONDE_SE_GUARDA);
+    const texto = window.sessionStorage.getItem(dondeSeGuarda());
+    window.sessionStorage.removeItem(dondeSeGuarda());
     guardado = texto === null ? null : (JSON.parse(texto) as LoGuardado);
   } catch {
     guardado = null;

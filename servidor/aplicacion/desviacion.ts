@@ -4,6 +4,7 @@ import {
   causaProbable,
   centimos,
   cuadra,
+  elLunes,
   faltaComoParaAvisar,
   fechaEnElLocal,
   horaDeCorte,
@@ -809,4 +810,24 @@ export function elMes(mes: string): { desde: FechaOperativa; hasta: FechaOperati
   // Del día 1, treinta y un días más es siempre el mes siguiente.
   const siguiente = `${masDias(desde, 31).slice(0, 7)}-01` as FechaOperativa;
   return { desde, hasta: masDias(siguiente, -1) };
+}
+
+/**
+ * De lunes a domingo, la semana de un día (la pausa del 8-nov, 0142): el tramo de un restaurante
+ * para corregir a tiempo. El food cost de una semana sin contar usa el libro, y lo dice.
+ */
+export function laSemana(dia: FechaOperativa): { desde: FechaOperativa; hasta: FechaOperativa } {
+  const desde = elLunes(dia);
+  return { desde, hasta: masDias(desde, 6) };
+}
+
+/** El trimestre natural de un mes: «2026-11» va de octubre a diciembre (0142). */
+export function elTrimestre(mes: string): { desde: FechaOperativa; hasta: FechaOperativa } {
+  const [anio, m] = mes.split('-').map(Number) as [number, number];
+  const primero = Math.floor((m - 1) / 3) * 3 + 1;
+  const dos = (n: number) => String(n).padStart(2, '0');
+  return {
+    desde: elMes(`${String(anio)}-${dos(primero)}`).desde,
+    hasta: elMes(`${String(anio)}-${dos(primero + 2)}`).hasta,
+  };
 }

@@ -43,14 +43,14 @@ export const SECCIONES: readonly Seccion[] = [
   {
     id: 'local',
     nombre: 'Tu local',
-    queHay: 'Marca, dónde está, fichar, objetivos, carta, menús y precios',
+    queHay: 'Datos, marca, dónde está, fichar, objetivos, carta, menús y precios',
   },
   { id: 'conexiones', nombre: 'Conexiones', queHay: 'Cómo entran tus ventas' },
   // T6 · 1 (0126): el alta de facturación del local, con Hacienda y Verifacti.
   { id: 'facturacion', nombre: 'Facturación', queHay: 'Tickets, facturas y Hacienda' },
   // La suscripción, a mano de quien la paga (Richi, 25-sep · 0048).
   { id: 'suscripcion', nombre: 'Suscripción', queHay: 'Plan, tarjeta, facturas y renovación' },
-  { id: 'organizacion', nombre: 'Organización', queHay: 'La seguridad de todo el negocio' },
+  { id: 'organizacion', nombre: 'Organización', queHay: 'El nombre y la seguridad del negocio' },
 ];
 
 export interface Ajuste {
@@ -109,6 +109,13 @@ export const AJUSTES: readonly Ajuste[] = [
     seccion: 'avisos',
     nombre: 'Desde cuánto avisa una subida de precio',
     palabras: 'precio subida alerta proveedor porcentaje sube caro',
+  },
+  {
+    id: 'datos-del-local',
+    seccion: 'local',
+    nombre: 'Nombre, dirección y teléfono del local',
+    palabras:
+      'nombre local dirección calle teléfono código postal población provincia hora corte cierre editar cambiar',
   },
   { id: 'tu-marca', seccion: 'local', nombre: 'Logo y color', palabras: 'logo marca color imagen' },
   {
@@ -175,6 +182,12 @@ export const AJUSTES: readonly Ajuste[] = [
     nombre: 'Tu suscripción',
     palabras:
       'suscripción plan pago pagar tarjeta factura facturas cancelar renovar cuota precio prueba baja pausa',
+  },
+  {
+    id: 'nombre-del-negocio',
+    seccion: 'organizacion',
+    nombre: 'El nombre del negocio',
+    palabras: 'nombre negocio organización empresa grupo cambiar',
   },
   {
     id: 'acceso-de-la-organizacion',

@@ -783,6 +783,70 @@ export const sacarCodigoParaVincular = comando<
 });
 
 /**
+ * **El código, sacado desde Estook** (la pausa del 8-nov, 0142): el mismo de siempre (6 cifras,
+ * 10 minutos, un uso), pero desde el móvil de quien lleva el local, con su sesión de Estook.
+ *
+ * Es para quien entra con Google y quiere vincular **la caja para Windows**: Google no deja
+ * entrar desde dentro de un programa, y sin contraseña no había forma de vincular el primero.
+ * También vale para cualquier aparato, sin tener otro vinculado. Lo mismo que en el TPV: con
+ * Pro, con el permiso de vincular en ese local, y queda a su nombre.
+ */
+export const sacarCodigoDesdeEstook = comando<
+  z.infer<typeof entradaSacarCodigo>,
+  CodigoParaVincular
+>({
+  nombre: 'sacar_codigo_desde_estook',
+  entrada: entradaSacarCodigo,
+  exige: 'accion.vincular_aparatos',
+  conSecreto: true,
+
+  async ejecutar(contexto, entrada) {
+    const localId = contexto.sesion?.localId;
+    const personaId = contexto.personaId;
+    if (!localId || !personaId) throw new FalloDeAplicacion('sin_sesion');
+    const local = await contexto.sql<{ organizacion_id: string; puede: boolean }[]>`
+      select l.organizacion_id::text as organizacion_id,
+             estook.puede_editar('accion.vincular_aparatos', l.id) as puede
+        from estook.local l
+       where l.id = ${localId}::uuid
+         and l.id in (select local_id from estook.locales_visibles())
+         and l.activo
+    `;
+    const fila = local[0];
+    if (fila?.puede !== true) {
+      throw new FalloDeAplicacion('sin_permiso', {
+        porque: 'Vincula aparatos quien lleva el local. Pídeselo a tu gerente.',
+      });
+    }
+    // Sin Pro no se vincula (0120): lo dice antes de crear nada.
+    await queLleveEstookTpv(contexto, fila.organizacion_id, entrada.funcion);
+    const preparado = await prepararLoQueSera(contexto, localId, entrada);
+    const caducaEn = new Date(contexto.ahora.getTime() + CODIGO_PARA_VINCULAR.minutos * 60_000);
+
+    for (let intento = 0; intento < 10; intento++) {
+      const codigo = pinNuevo(CODIGO_PARA_VINCULAR.cifras);
+      const huella = await huellaDeToken(codigo);
+      const vivo = await contexto.sql<{ codigo_id: string }[]>`
+        select codigo_id from estook.codigo_vivo_por_huella(${huella}, ${contexto.ahora.toISOString()}::timestamptz)
+      `;
+      if (vivo.length > 0) continue;
+      await contexto.sql`
+        insert into estook.codigo_para_vincular
+          (local_id, funcion, nombre, persona_id, cajon_id, huella, creado_por, creado_desde,
+           creado_en, caduca_en)
+        values (${localId}::uuid, ${entrada.funcion}, ${entrada.nombre},
+                ${preparado.personaId}::uuid, ${preparado.cajonId}::uuid, ${huella},
+                ${personaId}::uuid, null,
+                ${contexto.ahora.toISOString()}::timestamptz, ${caducaEn.toISOString()}::timestamptz)
+      `;
+      // El rastro es la fila del código: quién lo sacó (creado_por) y cuándo.
+      return { codigo, caducaEn: caducaEn.toISOString() };
+    }
+    throw new FalloDeAplicacion('fallo_nuestro');
+  },
+});
+
+/**
  * **El código de «Pasar a la app»** (T5 · 1, 0119), en la caja del navegador: el mismo de
  * siempre (6 cifras, 10 minutos, un uso), para **esta** caja. Se teclea en la caja para
  * Windows, que llega con todo lo de esta.

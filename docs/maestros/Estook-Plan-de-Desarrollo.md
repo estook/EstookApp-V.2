@@ -204,7 +204,7 @@ Esta parte existe para que la interfaz no se invente pantalla a pantalla. **Todo
 | Secundario                 | 13 px  | 400  | 1,4          |
 | Etiqueta y origen del dato | 11 px  | 500  | 1,3          |
 
-Las cifras siempre con `font-variant-numeric: tabular-nums`. Tres tamaños de letra ajustables en Ajustes, que multiplican por 0,9 · 1 · 1,15.
+Las cifras siempre con `font-variant-numeric: tabular-nums`. Tres tamaños de letra ajustables en Ajustes, que multiplican por 0,9 · 1 · 1,15, y **«Automática», la de fábrica desde el 8-nov** ([0142](../decisiones/0142-la-pausa-del-8-nov.md)): la pequeña en el teléfono (0,82) y la normal en la tablet y el ordenador; en el teléfono, además, la cifra grande baja a 29 px. Estook TPV sigue en la normal.
 
 ## B3 · Iconos
 
@@ -780,7 +780,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **En plan desde el 22-oct**, en dos entregas: [`m20-ventas-y-consumo.md`](../m20-ventas-y-consumo.md). Los platos uno a uno llegan de Estook TPV (M20C) o de un conector (M18), no del cierre a mano; por eso **va con M20C**, donde nace la venta (lo contestó Richi el 22-oct, [0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). Y con ventas plato a plato, **«Gastado en cocina» y «Vendido a un cliente» (0037) dejan de restar**, para no contar nada dos veces.
 
-**Entra.** Pantalla de ventas con **el origen y su fiabilidad siempre a la vista** · emparejamiento de artículos con propuesta por parecido y confirmación · explosión de menús y modificadores · caminos manuales explicados por marca y por sistema · foto del Z y total del día · consumo teórico descontando del almacén · lo no emparejado cuenta en dinero y no descuenta género, avisado · **lo que deja cada plato, por canal: estrella, caballo, puzzle y perro**, con su precio recomendado y los candidatos a retirar, en Carta › Análisis (de M10, 0103: «no te olvides», dijo Richi).
+**Entra.** Pantalla de ventas con **el origen y su fiabilidad siempre a la vista** · emparejamiento de artículos con propuesta por parecido y confirmación · explosión de menús y modificadores · caminos manuales explicados por marca y por sistema · foto del Z y total del día · consumo teórico descontando del almacén · lo no emparejado cuenta en dinero y no descuenta género, avisado · **lo que deja cada plato, por canal: estrella, caballo, puzzle y perro**, con su precio recomendado y los candidatos a retirar (de M10, 0103: «no te olvides», dijo Richi). **Desde la pausa del 8-nov** ([0142](../decisiones/0142-la-pausa-del-8-nov.md)) vive en **Servicio › Jornadas › Información**, como «Tu carta en cuatro», junto a lo que más sale, lo que más factura y lo que más deja; Carta › Análisis enlaza ahí.
 
 **Reglas críticas.** Una jornada estimada **no entra en la desviación sin avisar**. El menú importado se explota a sus platos.
 
@@ -881,6 +881,8 @@ _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-a
 ### M21 · Negocio, analítica y Estook Pulse
 
 **Entra.** Agregados por worker: diarios, por franja, por producto, por plato, por canal y por empleado · resúmenes con objetivo y comparación · productividad · **dónde se va el margen con enlace a donde se arregla** · previsión de ventas a siete días con su margen de error y contraste posterior · presupuesto por mes con seguimiento · salud de los datos · exportaciones en PDF, CSV y formatos de A3, Sage, Contasol y Holded · auditoría consultable · reconstrucción completa de agregados con un comando.
+
+**Adelantado en la pausa del 8-nov** ([0142](../decisiones/0142-la-pausa-del-8-nov.md)), con las mesas de Estook TPV y, desde T7, con lo cobrado: **Negocio › Informes** rehecho (cuándo se vende, por hora y por día y hora; la cocina, con el tiempo de salida y lo que sale tarde; lo que se tuerce: devueltos, cambiados, quitados y mesas anuladas; y las semanas) y **Servicio › Empleados** (lo vendido por cada uno y por hora fichada, con un objetivo en € por hora que sale de las horas del horario; la lista, solo para quien lleva el local, y cada uno ve el suyo si el gerente lo deja).
 
 **Adelantado en M6½**: Negocio › Ventas, con lo facturado, el ticket medio y un food cost **aproximado** —el género que ha salido del libro frente a lo facturado—, dicho como aproximado hasta que haya consumo teórico.
 

@@ -3,6 +3,9 @@ import {
   NOMBRE_DEL_ALERGENO,
   type Alergeno,
   type CanalDeVenta,
+  type ColorDeLaBotonera,
+  type IconoDeLaSeccion,
+  comoSeVeLaSeccion,
   hastaCuandoSeDice,
   type LoQueCambia,
   type PlatoLeido,
@@ -31,6 +34,30 @@ export interface UnaSeccion {
   readonly id: string;
   readonly nombre: string;
   readonly orden: number;
+  /**
+   * **Cómo se ve, la misma en Estook y en Estook TPV** (0143): lo elegido, y si no, lo que
+   * propone su nombre. El color puede ser nulo: el gris de lo que no se reconoce.
+   *
+   * **Opcionales**: una API de antes no los manda (entre fusionar y desplegar la API), y
+   * entonces se ven los que propone su nombre (`comoSeVeLaSeccion`).
+   */
+  readonly color?: ColorDeLaBotonera | null;
+  readonly icono?: IconoDeLaSeccion;
+  /** Lo que eligió el local; nulos, «el que propone su nombre». */
+  readonly colorElegido?: ColorDeLaBotonera | null;
+  readonly iconoElegido?: IconoDeLaSeccion | null;
+}
+
+/** Cómo se ve una sección, también con una API de antes que no lo manda (0143). */
+export function comoSeVeLaSeccionDeLaCarta(seccion: UnaSeccion): {
+  readonly color: ColorDeLaBotonera | null;
+  readonly icono: IconoDeLaSeccion;
+} {
+  return comoSeVeLaSeccion({
+    nombre: seccion.nombre,
+    color: seccion.color ?? null,
+    icono: seccion.icono ?? null,
+  });
 }
 
 export interface UnPlato {

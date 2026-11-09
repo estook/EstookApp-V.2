@@ -146,9 +146,15 @@ test.describe('las ocho apps', () => {
       // CSS— y las migas recortan su ultimo paso en pantalla estrecha, asi que
       // buscar el texto suelto encuentra uno escondido y la prueba se cae por
       // donde no es.
-      await expect(
-        page.locator('main header p').filter({ hasText: app.nombre }).first(),
-      ).toBeVisible();
+      // Desde el repaso del 8-nov (0143), solo si es otro: «Carta / Carta» no dice nada, y
+      // entonces el nombre de la app es el título.
+      if (app.nombre === app.entra) {
+        await expect(page.locator('main header p').filter({ hasText: app.nombre })).toHaveCount(0);
+      } else {
+        await expect(
+          page.locator('main header p').filter({ hasText: app.nombre }).first(),
+        ).toBeVisible();
+      }
 
       // El título de la tarjeta es un `h2` **mientras la app sea un esqueleto**.
       // Almacén dejó de serlo en M6 y Equipo · Personas en M4.

@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { ALERGENOS, CANALES_DE_VENTA, CODIGOS_DE_CANAL, type CanalDeVenta } from '@estook/dominio';
+import {
+  ALERGENOS,
+  CANALES_DE_VENTA,
+  CODIGOS_DE_CANAL,
+  COLORES_DE_LA_BOTONERA,
+  ICONOS_DE_LA_SECCION,
+  type CanalDeVenta,
+} from '@estook/dominio';
 import {
   TIPOS_DE_FOTO,
   TOPE_DE_LA_FOTO,
@@ -27,6 +34,12 @@ import { queSeVincula, vincularUnPlato } from './fichas.ts';
  */
 
 const nombreDeSeccion = z.string().trim().min(1).max(80);
+/**
+ * El color y el icono de una sección (0143): los mismos que en Estook TPV. Nulos, «el que
+ * propone su nombre».
+ */
+const colorDeSeccion = z.enum(COLORES_DE_LA_BOTONERA).nullable();
+const iconoDeSeccion = z.enum(ICONOS_DE_LA_SECCION).nullable();
 const nombreDePlato = z.string().trim().min(1).max(120);
 const centimos = z.number().int().min(0).max(100_000_000);
 const canalQueNoEsSala = z
@@ -71,9 +84,22 @@ async function laSeccion(contexto: Contexto, localId: string, seccionId: string 
 
 // ═══ Las secciones ════════════════════════════════════════════════════════════
 
-export const crearSeccion = comando<{ nombre: string }, { seccionId: string; yaExistia: boolean }>({
+export const crearSeccion = comando<
+  {
+    nombre: string;
+    color?: z.infer<typeof colorDeSeccion> | undefined;
+    icono?: z.infer<typeof iconoDeSeccion> | undefined;
+  },
+  { seccionId: string; yaExistia: boolean }
+>({
   nombre: 'crear_seccion',
-  entrada: z.object({ nombre: nombreDeSeccion }).strict(),
+  entrada: z
+    .object({
+      nombre: nombreDeSeccion,
+      color: colorDeSeccion.optional(),
+      icono: iconoDeSeccion.optional(),
+    })
+    .strict(),
   exige: 'app.carta',
 
   async ejecutar(contexto, entrada) {
@@ -87,11 +113,12 @@ export const crearSeccion = comando<{ nombre: string }, { seccionId: string; yaE
     if (ya[0] !== undefined) return { seccionId: ya[0].id, yaExistia: true };
 
     const filas = await contexto.sql<{ id: string }[]>`
-      insert into estook.seccion_de_carta (local_id, nombre, orden)
+      insert into estook.seccion_de_carta (local_id, nombre, orden, color, icono)
       values (
         ${localId}::uuid, ${entrada.nombre},
         coalesce((select max(orden) + 1 from estook.seccion_de_carta
-                   where local_id = ${localId}::uuid), 0)
+                   where local_id = ${localId}::uuid), 0),
+        ${entrada.color ?? null}, ${entrada.icono ?? null}
       )
       returning id
     `;
@@ -108,6 +135,8 @@ export const entradaCambiarSeccion = z
   .object({
     seccion_id: z.string().uuid(),
     nombre: nombreDeSeccion.optional(),
+    color: colorDeSeccion.optional(),
+    icono: iconoDeSeccion.optional(),
   })
   .strict();
 export type EntradaCambiarSeccion = z.infer<typeof entradaCambiarSeccion>;
@@ -135,7 +164,10 @@ export const cambiarSeccion = comando<EntradaCambiarSeccion, { seccionId: string
     }
     await contexto.sql`
         update estook.seccion_de_carta
-           set nombre = ${nombre}, actualizado_en = now()
+           set nombre = ${nombre},
+               color = case when ${entrada.color !== undefined} then ${entrada.color ?? null} else color end,
+               icono = case when ${entrada.icono !== undefined} then ${entrada.icono ?? null} else icono end,
+               actualizado_en = now()
          where id = ${entrada.seccion_id}::uuid
       `;
     await anotar(
@@ -145,7 +177,11 @@ export const cambiarSeccion = comando<EntradaCambiarSeccion, { seccionId: string
       entrada.seccion_id,
       localId,
       { nombre: antes.nombre },
-      { nombre },
+      {
+        nombre,
+        ...(entrada.color === undefined ? {} : { color: entrada.color }),
+        ...(entrada.icono === undefined ? {} : { icono: entrada.icono }),
+      },
     );
     return { seccionId: entrada.seccion_id };
   },

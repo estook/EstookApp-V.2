@@ -9,7 +9,16 @@ import {
   type IconoDeLaSeccion,
 } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
-import { Boton, Cargando, EstadoVacio, filtrarPorParecido } from '@estook/ui';
+import {
+  Boton,
+  COMO_SE_VE_EL_COLOR,
+  Cargando,
+  EL_ICONO,
+  EstadoVacio,
+  LaBaldosaDeLaSeccion,
+  filtrarPorParecido,
+  laBaldosa,
+} from '@estook/ui';
 import type { LaCartaDeLaSala, LaMesa, PaginaDeLaSala, PlatoDeLaSala } from '../datos/tipos.ts';
 import {
   anadirConLoElegido,
@@ -21,9 +30,6 @@ import { elPaseDeFabrica } from '../logica/laCuenta.ts';
 import { elNumeroDelPase, laPestanaDelPase, type PestanaDelPase } from '../logica/losPases.ts';
 import { elAlergeno, euros } from '../logica/texto.ts';
 import { irA } from '../navegar.ts';
-import { COMO_SE_VE_EL_COLOR, laBaldosa } from '../productos/colores.ts';
-import { EL_ICONO } from '../productos/iconosDeLaSeccion.ts';
-import { LaBaldosaDeLaSeccion } from '../productos/LaBaldosaDeLaSeccion.tsx';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { ElMenuDelDia } from './ElMenuDelDia.tsx';
 import { LoQueSeElige } from './LoQueSeElige.tsx';

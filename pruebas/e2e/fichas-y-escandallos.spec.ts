@@ -164,7 +164,8 @@ test('se desgrana un plato, el escandallo dice lo que deja en cada canal y la fi
 
   // ── En la Carta: lo que se vende tal cual, de golpe, y lo que pica ──────────
   await abrirSinQueSeCaiga(page, `${APP}#/carta/carta/por-secciones`);
-  await page.getByRole('button', { name: 'Desde el almacén' }).click();
+  await page.getByRole('button', { name: 'Más opciones de la carta' }).click();
+  await page.getByRole('button', { name: /^Desde el almacén/ }).click();
   const almacen = page.getByRole('dialog', { name: 'Desde el almacén' });
   // Todo el Almacén (lección 190): la carne, en kilos, también sale.
   await expect(almacen.getByRole('checkbox', { name: /Carne picada/ })).toBeVisible();

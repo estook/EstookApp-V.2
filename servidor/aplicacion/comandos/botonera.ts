@@ -122,7 +122,23 @@ async function laPaginaDeLaSeccion(
      )
     returning id::text as id
   `;
-  if (conSuNombre[0] !== undefined) return conSuNombre[0].id;
+  if (conSuNombre[0] !== undefined) {
+    // Desde que la página viene de la sección, se ve con el color y el icono de la sección
+    // (0143): lo que el local eligió para la página pasa a la sección, si esta no tenía.
+    await contexto.sql`
+      update estook.seccion_de_carta s
+         set color = coalesce(s.color, p.color),
+             icono = coalesce(s.icono, p.icono)
+        from estook.pagina_del_tpv p
+       where p.id = ${conSuNombre[0].id}::uuid and s.id = p.seccion_id
+         and (p.color is not null or p.icono is not null)
+    `;
+    await contexto.sql`
+      update estook.pagina_del_tpv set color = null, icono = null
+       where id = ${conSuNombre[0].id}::uuid
+    `;
+    return conSuNombre[0].id;
+  }
   const propone = loQueProponeElNombre(seccion.nombre);
   const filas = await contexto.sql<{ id: string }[]>`
     insert into estook.pagina_del_tpv (local_id, nombre, orden, quien_lo_prepara, pase, seccion_id)
@@ -401,12 +417,27 @@ export const cambiarPaginaDelTpv = comando<
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDeLaBotonera(contexto);
-    await laPagina(contexto, localId, entrada.pagina_id);
+    const pagina = await laPagina(contexto, localId, entrada.pagina_id);
+    // **Una página que viene de la carta se ve como su sección** (0143): su color y su icono se
+    // cambian en la sección, y así cambian también en Estook. Los suyos, solo sin sección.
+    const enSuSeccion = pagina.seccion_id !== null;
+    const tocaElAspecto = entrada.color !== undefined || entrada.icono !== undefined;
+    if (enSuSeccion && tocaElAspecto) {
+      const cambiadas = await contexto.sql<{ id: string }[]>`
+        update estook.seccion_de_carta
+           set color = case when ${entrada.color !== undefined} then ${entrada.color ?? null} else color end,
+               icono = case when ${entrada.icono !== undefined} then ${entrada.icono ?? null} else icono end
+         where id = ${pagina.seccion_id}::uuid and local_id = ${localId}::uuid
+        returning id::text as id
+      `;
+      // Sin la carta para editar, la base no deja tocar la sección: se dice, no se pierde.
+      if (cambiadas[0] === undefined) throw new FalloDeAplicacion('sin_permiso');
+    }
     await contexto.sql`
       update estook.pagina_del_tpv
          set nombre = coalesce(${entrada.nombre ?? null}, nombre),
-             color = case when ${entrada.color !== undefined} then ${entrada.color ?? null} else color end,
-             icono = case when ${entrada.icono !== undefined} then ${entrada.icono ?? null} else icono end,
+             color = case when ${!enSuSeccion && entrada.color !== undefined} then ${entrada.color ?? null} else color end,
+             icono = case when ${!enSuSeccion && entrada.icono !== undefined} then ${entrada.icono ?? null} else icono end,
              quien_lo_prepara = coalesce(${entrada.quien_lo_prepara ?? null}, quien_lo_prepara),
              pase = coalesce(${entrada.pase ?? null}, pase)
        where id = ${entrada.pagina_id}::uuid

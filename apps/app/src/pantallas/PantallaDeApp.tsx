@@ -216,7 +216,10 @@ function Dentro({
             <app.icono size={22} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-etiqueta font-semibold text-texto-tenue">{app.nombre}</p>
+            {/* «Carta / Carta» no dice nada (0143): el nombre de la app, solo si es otro. */}
+            {app.nombre !== destino.nombre && (
+              <p className="text-etiqueta font-semibold text-texto-tenue">{app.nombre}</p>
+            )}
             <h1
               title={destino.queContesta}
               className="truncate text-pantalla font-bold tracking-[-0.02em]"
@@ -242,7 +245,8 @@ function Dentro({
           )}
         </div>
 
-        {vista !== undefined && (
+        {/* Una pestaña sola no es una elección (0143): sin otra, no se enseña. */}
+        {vista !== undefined && lasVistas.length > 1 && (
           <div className="max-w-full lg:max-w-[40rem]">
             <Vistas
               vistas={lasVistas}

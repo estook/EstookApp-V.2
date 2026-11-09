@@ -1,14 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { AVISAR_ANTES_DE_ENTRAR, TURNO_SOSPECHOSO_DESDE, minutosHasta } from '@estook/dominio';
-import { IconoAnadir, IconoAdelante, IconoEntrar, IconoSalir } from '@estook/iconos';
-import { Boton, Hoja, IconoDeFogon, PanelLateral, clases, usarEsEscritorio } from '@estook/ui';
+import { IconoAdelante, IconoCerrar, IconoEntrar, IconoSalir } from '@estook/iconos';
+import { Boton, IconoDeFogon, clases } from '@estook/ui';
 import { comoSeLeeLaHora, comoSeLeenMinutos } from '../equipo/contrato.ts';
 import { usarContextoDeFogon } from '../ganchos/usarContextoDeFogon.ts';
 import { loQueDiceElFichaje, usarFichar } from '../ganchos/usarFichar.ts';
-import { usarHacer } from '../ganchos/usarHacer.ts';
-import { usarMisAtajos } from '../ganchos/usarMisAtajos.ts';
 import { usarSeEscondeAlBajar } from '../ganchos/usarSeEscondeAlBajar.ts';
-import { ElegirAtajos } from './ElegirAtajos.tsx';
 
 /**
  * El botón «+» · lo que más se hace, a un toque desde cualquier pantalla
@@ -33,8 +30,13 @@ import { ElegirAtajos } from './ElegirAtajos.tsx';
  *   1  Fogón, en su banner
  *   2  Fichar, **cuando se puede**: la salida si estás dentro, y la entrada
  *      resaltada si tu turno empieza en nada o ya ha empezado
- *   3  Tus atajos, los mismos que las acciones rápidas del Panel: por defecto los
- *      de tu puesto, y cada uno se pone los suyos
+ *
+ * ── Desde el repaso del 8-nov (0143) ─────────────────────────────────────────
+ *
+ * Richi: el «+» «parece para agregar cosas», la hoja «tapa casi toda la pantalla» y los
+ * atajos eran «demasiado». Así que **lleva el dibujo de Fogón** y no un «+», se abre en **una
+ * ventana pequeña encima del botón, como un chat**, y **sin «Tus atajos»**, que siguen en la
+ * tarjeta «Atajos» del Panel. Sigue donde estaba y se sigue apartando al bajar.
  */
 export function BotonDeHacer({ alPulsar }: { readonly alPulsar: () => void }) {
   // En el móvil se aparta al bajar y vuelve al subir (Richi, 25-sep).
@@ -61,7 +63,9 @@ export function BotonDeHacer({ alPulsar }: { readonly alPulsar: () => void }) {
           'max-lg:pointer-events-none max-lg:translate-y-[calc(100%+var(--spacing-e5))] max-lg:opacity-0 focus-visible:translate-y-0 focus-visible:opacity-100',
       )}
     >
-      <IconoAnadir size={28} />
+      <span className="grid size-[40px] place-items-center rounded-redondo bg-superficie">
+        <IconoDeFogon size={30} />
+      </span>
     </button>
   );
 }
@@ -75,119 +79,97 @@ export function HojaDeHacer({
   readonly alCerrar: () => void;
   readonly alAbrirFogon: () => void;
 }) {
-  const enEscritorio = usarEsEscritorio();
-  const Ventana = enEscritorio ? PanelLateral : Hoja;
   const contexto = usarContextoDeFogon();
-  const mios = usarMisAtajos();
-  const hacer = usarHacer();
-  const [eligiendo, setEligiendo] = useState(false);
+  const ventana = useRef<HTMLDivElement>(null);
 
-  // Fichar va aparte y arriba: si estuviera también en la rejilla, saldría dos veces.
-  const atajos = mios.atajos.filter((accion) => accion.id !== 'fichar');
+  // `alCerrar` llega nuevo en cada pintado: por una referencia, para que el foco no salte a
+  // la ventana cada vez que algo de dentro cambia (fichar, por ejemplo).
+  const cerrar = useRef(alCerrar);
+  cerrar.current = alCerrar;
+
+  // Escape cierra, y el foco entra en la ventana al abrirla (y no se queda detrás).
+  useEffect(() => {
+    if (!abierta) return;
+    ventana.current?.focus();
+    const alPulsar = (evento: KeyboardEvent) => {
+      if (evento.key === 'Escape') cerrar.current();
+    };
+    window.addEventListener('keydown', alPulsar);
+    return () => {
+      window.removeEventListener('keydown', alPulsar);
+    };
+  }, [abierta]);
+
+  // Solo mientras está abierta: lo de dentro —el fichaje, dónde estás— no pide nada al
+  // servidor mientras nadie lo mira.
+  if (!abierta) return null;
 
   return (
     <>
-      <Ventana abierta={abierta} alCerrar={alCerrar} titulo="Qué quieres hacer">
-        {/*
-          Solo mientras está abierta. La hoja es un `<dialog>` que al cerrarse se
-          esconde pero no se quita, y lo de dentro —el fichaje, dónde estás— quedaba
-          repetido y oculto en cada pantalla, pidiendo lo suyo al servidor sin que
-          nadie lo mirara.
-        */}
-        {abierta && (
-          <div className="flex flex-col gap-e4">
-            {/* ── Fogón, en su banner ── */}
-            <button
-              type="button"
-              onClick={() => {
-                alCerrar();
-                alAbrirFogon();
-              }}
-              className={clases(
-                'flex min-h-toque-cocina items-center gap-e3 rounded-grande p-e4 text-left',
-                // Lo destacado va en texto sobre superficie invertida: en los dos temas
-                // se lee, y es lo único oscuro de la hoja (0045).
-                'bg-texto text-superficie shadow-s2 hover:opacity-95',
-              )}
-            >
-              <span className="grid size-[44px] shrink-0 place-items-center rounded-redondo bg-superficie text-naranja">
-                <IconoDeFogon size={28} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-cuerpo font-semibold">Pregúntale a Fogón</span>
-                <span className="block text-secundario opacity-80">
-                  Sabe que estás en {contexto.donde}
-                </span>
-              </span>
-              <IconoAdelante size={20} />
-            </button>
-
-            <FicharAqui />
-
-            {/* ── Tus atajos ── */}
-            <section aria-label="Tus atajos" className="flex flex-col gap-e2">
-              <div className="flex items-center justify-between gap-e2">
-                <p className="text-secundario font-medium text-texto-suave">Tus atajos</p>
-                <Boton
-                  tono="texto"
-                  onClick={() => {
-                    setEligiendo(true);
-                  }}
-                >
-                  Cambiarlos
-                </Boton>
-              </div>
-              {atajos.length === 0 ? (
-                <p className="text-secundario text-texto-suave">
-                  No tienes ninguno. Pulsa «Cambiarlos» y pon los que uses.
-                </p>
-              ) : (
-                <div className="grid grid-cols-2 gap-e2">
-                  {atajos.slice(0, 8).map((accion) => (
-                    <button
-                      key={accion.id}
-                      type="button"
-                      onClick={() => {
-                        alCerrar();
-                        hacer(accion);
-                      }}
-                      className={clases(
-                        'flex min-h-[76px] flex-col items-start justify-between gap-e2 rounded-grande',
-                        'border border-borde bg-superficie p-e3 text-left shadow-s1',
-                        'hover:border-borde-fuerte',
-                      )}
-                    >
-                      <span className="grid size-[32px] place-items-center rounded-medio bg-fondo text-texto">
-                        <accion.icono size={18} />
-                      </span>
-                      <span className="text-secundario font-semibold leading-tight">
-                        {accion.nombre}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-        )}
-      </Ventana>
-
-      <ElegirAtajos
-        abierta={eligiendo}
-        alCerrar={() => {
-          setEligiendo(false);
-        }}
-        puedo={mios.puedo.filter((accion) => accion.id !== 'fichar')}
-        elegidas={mios.elegidos}
-        alCambiar={mios.guardar}
-        alVolverALosDeMiPuesto={mios.volverALosDeMiPuesto}
+      {/* Tocar fuera la cierra, como un chat. */}
+      <button
+        type="button"
+        aria-label="Cerrar"
+        tabIndex={-1}
+        onClick={alCerrar}
+        className="fixed inset-0 z-40 cursor-default bg-transparent no-imprimir"
       />
+      <div
+        ref={ventana}
+        role="dialog"
+        aria-label="Qué quieres hacer"
+        tabIndex={-1}
+        className={clases(
+          // **Una ventana pequeña, encima del botón** (0143): no tapa la pantalla.
+          'fixed right-e3 z-50 flex w-[min(22rem,calc(100vw-2*var(--spacing-e3)))] flex-col gap-e3 no-imprimir lg:right-e5',
+          'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e3)+64px-var(--desfase-abajo,0px))] lg:bottom-[calc(var(--spacing-e5)+64px)]',
+          'max-h-[min(32rem,70dvh)] overflow-y-auto rounded-mayor border border-borde bg-superficie p-e3 shadow-s3 outline-none',
+        )}
+      >
+        <div className="flex items-center justify-between gap-e2 pl-e1">
+          <p className="text-cuerpo font-semibold">¿Qué hacemos?</p>
+          <button
+            type="button"
+            aria-label="Cerrar"
+            onClick={alCerrar}
+            className="grid size-toque place-items-center rounded-medio text-texto-suave hover:bg-fondo"
+          >
+            <IconoCerrar size={18} />
+          </button>
+        </div>
+        {/* ── Fogón, en su banner ── */}
+        <button
+          type="button"
+          onClick={() => {
+            alCerrar();
+            alAbrirFogon();
+          }}
+          className={clases(
+            'flex min-h-toque-cocina items-center gap-e3 rounded-grande p-e3 text-left',
+            // Lo destacado va en texto sobre superficie invertida: en los dos temas se lee (0045).
+            'bg-texto text-superficie hover:opacity-95',
+          )}
+        >
+          <span className="grid size-[40px] shrink-0 place-items-center rounded-redondo bg-superficie">
+            <IconoDeFogon size={26} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-cuerpo font-semibold">Pregúntale a Fogón</span>
+            <span className="block truncate text-secundario opacity-80">
+              Sabe que estás en {contexto.donde}
+            </span>
+          </span>
+          <IconoAdelante size={20} />
+        </button>
+
+        <FicharAqui />
+      </div>
     </>
   );
 }
 
 /**
- * Fichar, dentro de la hoja. **Solo sale si se puede fichar**, y dice lo justo:
+ * Fichar, dentro de la ventana. **Solo sale si se puede fichar**, y dice lo justo:
  * dentro, cuánto llevas y el botón de salir; fuera, el de entrar, resaltado cuando
  * tu turno empieza en nada o ya ha empezado —como Homebase y 7shifts, que ponen el
  * reloj lo primero cuando toca—.

@@ -49,9 +49,10 @@ export function BotonDeHacer({ alPulsar }: { readonly alPulsar: () => void }) {
       data-recorrido="hacer"
       data-escondido={escondido || undefined}
       className={clases(
-        'fixed right-e3 z-30 grid size-[56px] place-items-center no-imprimir lg:right-e5',
-        // El icono en charcoal y no en blanco: blanco sobre naranja da 2,6:1 (B8).
-        'rounded-redondo bg-naranja text-sobre-naranja shadow-s3',
+        'fixed right-e3 z-30 grid size-[56px] place-items-center overflow-hidden no-imprimir lg:right-e5',
+        // **El dibujo de Fogón llena el botón** (0143), recortado en redondo: su fondo oscuro con
+        // el aro naranja se ve en los dos temas, y el borde lo separa también del fondo oscuro.
+        'rounded-redondo border-2 border-naranja shadow-s3',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja',
         // Con el desfase del visor, y fuera con el teclado, como la barra (repaso del 25-sep).
         'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e3)-var(--desfase-abajo,0px))] lg:bottom-e5',
@@ -63,8 +64,8 @@ export function BotonDeHacer({ alPulsar }: { readonly alPulsar: () => void }) {
           'max-lg:pointer-events-none max-lg:translate-y-[calc(100%+var(--spacing-e5))] max-lg:opacity-0 focus-visible:translate-y-0 focus-visible:opacity-100',
       )}
     >
-      <span className="grid size-[40px] place-items-center rounded-redondo bg-superficie">
-        <IconoDeFogon size={30} />
+      <span className="grid size-[64px] place-items-center [&>img]:rounded-none">
+        <IconoDeFogon size={64} />
       </span>
     </button>
   );

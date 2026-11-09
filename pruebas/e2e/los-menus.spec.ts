@@ -54,6 +54,15 @@ test('el menú del día: montarlo, lo que deja, descargarlo y apagarlo', async (
   await expect(hoja).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Lentejas estofadas/ })).toBeVisible();
   await expect(page.getByText('Solo del menú')).toBeVisible();
+  // Cada día dice si tiene menú (0143): el lunes, con su plato, ya no sale «sin menú».
+  await expect(lunes).not.toHaveAccessibleName(/sin menú/);
+  // Lo que se hace pocas veces, en «⋯» (0143).
+  await page.getByRole('button', { name: 'Más opciones del menú' }).click();
+  const mas = page.getByRole('dialog', { name: 'Más opciones' });
+  await expect(mas.getByRole('button', { name: /^Copiar la semana pasada/ })).toBeVisible();
+  await expect(mas.getByRole('button', { name: /^Otro menú/ })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(mas).toHaveCount(0);
 
   // ── Uno de la carta, en un toque ──
   await page.getByRole('button', { name: 'Añadir plato a Segundos' }).click();

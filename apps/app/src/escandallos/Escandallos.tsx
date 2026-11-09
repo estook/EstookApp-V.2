@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UNIDADES_DE_USO, type UnidadDeUso } from '@estook/dominio';
+import {
+  UNIDADES_DE_USO,
+  comoSeVeLaSeccion,
+  type ColorDeLaBotonera,
+  type IconoDeLaSeccion,
+  type UnidadDeUso,
+} from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import {
   Aviso,
@@ -13,6 +19,7 @@ import {
   Etiqueta,
   FotoDeProducto,
   Hoja,
+  LaBaldosaDeLaSeccion,
   Lista,
   Mosaico,
   NadaConEso,
@@ -32,6 +39,7 @@ import { usarRefrescarLasFichas } from '../ganchos/usarRefrescarLasFichas.ts';
 import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
 import { comoDinero } from '../almacen/contrato.ts';
 import { LosAlergenos } from './Alergenos.tsx';
+import { AnilloDelCoste } from './AnilloDelCoste.tsx';
 import { ElEscandalloDelPlato } from './ElEscandalloDelPlato.tsx';
 import { FichaTecnica } from './FichaTecnica.tsx';
 import {
@@ -40,7 +48,6 @@ import {
   comoSeAbre,
   leerCantidad,
   queFichaEs,
-  tonoDelSemaforo,
   type ElaboracionEnLaLista,
   type MisFichas,
   type PlatoEnLaLista,
@@ -170,26 +177,65 @@ function sinFichaTecnica(datos: MisFichas): readonly PlatoEnLaLista[] {
 
 // ── Una fila de plato ────────────────────────────────────────────────────────
 
-function filaDePlato(plato: PlatoEnLaLista, alAbrir: (ficha: QueFicha) => void): ElementoDeLista {
+/** Cómo se ve la sección de un plato: su color y su icono, los de la Carta y el TPV (0143). */
+interface ComoSeVe {
+  readonly color: ColorDeLaBotonera | null;
+  readonly icono: IconoDeLaSeccion;
+}
+
+const SIN_SECCION: ComoSeVe = { color: null, icono: 'utensils-crossed' };
+
+/** Para cada plato, cómo se ve su sección; con una API de antes, lo que propone su nombre. */
+function seVeDe(datos: MisFichas): (plato: PlatoEnLaLista) => ComoSeVe {
+  const mapa = new Map(
+    datos.secciones.map(
+      (x) =>
+        [
+          x.id,
+          comoSeVeLaSeccion({ nombre: x.nombre, color: x.color ?? null, icono: x.icono ?? null }),
+        ] as const,
+    ),
+  );
+  return (plato) =>
+    (plato.seccionId === null ? undefined : mapa.get(plato.seccionId)) ?? SIN_SECCION;
+}
+
+/**
+ * **La fila de un plato** (el repaso del 8-nov, 0143): su foto o el icono de su sección, lo que
+ * cuesta, y a la derecha **su food cost en un anillo** del color del semáforo.
+ */
+function filaDePlato(
+  plato: PlatoEnLaLista,
+  alAbrir: (ficha: QueFicha) => void,
+  seVe: ComoSeVe,
+): ElementoDeLista {
   const coste = plato.coste;
   const derecha = !plato.tieneFicha ? (
     <Etiqueta>Sin escandallo</Etiqueta>
   ) : coste === undefined ? undefined : coste.costeCentimos === null ? (
     <Etiqueta tono="atencion">Falta precio</Etiqueta>
   ) : coste.foodCost === null ? undefined : (
-    <Etiqueta tono={tonoDelSemaforo(coste.semaforo)}>{comoPorcentaje(coste.foodCost)}</Etiqueta>
+    <AnilloDelCoste foodCost={coste.foodCost} semaforo={coste.semaforo} />
   );
   const pierde = coste !== undefined && coste.pierdeEn.length > 0;
   // Sin escandallo, lo que costaría a tu objetivo, marcado «aprox.» (0095): no es un coste.
   const aprox = plato.tieneFicha ? null : (coste?.costeAproxCentimos ?? null);
   return {
     clave: plato.id,
-    delante: (
-      <FotoDeProducto nombre={plato.nombre} categoria={null} enlace={plato.miniatura} lado={40} />
-    ),
+    delante:
+      plato.miniatura !== null ? (
+        <FotoDeProducto nombre={plato.nombre} categoria={null} enlace={plato.miniatura} lado={40} />
+      ) : (
+        <LaBaldosaDeLaSeccion icono={seVe.icono} color={seVe.color} lado={40} suave />
+      ),
     titulo: plato.nombre,
     detalle: (
       <span className="flex min-w-0 items-center gap-e2">
+        {plato.tieneFicha &&
+          coste?.costeCentimos !== null &&
+          coste?.costeCentimos !== undefined && (
+            <span className="shrink-0 tabular-nums">Cuesta {comoDinero(coste.costeCentimos)}</span>
+          )}
         {plato.vinculadoA !== null && (
           <IconoVincular
             size={14}
@@ -253,6 +299,7 @@ function Resumen({
   const navegar = useNavigate();
   const { permisos } = usarSesion();
   const { cifras } = datos;
+  const seVe = seVeDe(datos);
 
   if (cifras.platos === 0) {
     return (
@@ -350,7 +397,7 @@ function Resumen({
         >
           <Lista
             titulo="Pierden dinero"
-            elementos={pierden.map((p) => filaDePlato(p, alAbrir))}
+            elementos={pierden.map((p) => filaDePlato(p, alAbrir, seVe(p)))}
             cuandoNoHay={null}
           />
         </Tarjeta>
@@ -380,7 +427,9 @@ function Resumen({
         >
           <Lista
             titulo="Sin escandallo"
-            elementos={sinEscandallo.slice(0, A_LA_VISTA).map((p) => filaDePlato(p, alAbrir))}
+            elementos={sinEscandallo
+              .slice(0, A_LA_VISTA)
+              .map((p) => filaDePlato(p, alAbrir, seVe(p)))}
             cuandoNoHay={null}
           />
         </Tarjeta>
@@ -390,7 +439,7 @@ function Resumen({
         <Tarjeta titulo="Pasan del objetivo" cuantos={pasan.length} acento={ACENTO} pegado>
           <Lista
             titulo="Pasan del objetivo"
-            elementos={pasan.slice(0, A_LA_VISTA).map((p) => filaDePlato(p, alAbrir))}
+            elementos={pasan.slice(0, A_LA_VISTA).map((p) => filaDePlato(p, alAbrir, seVe(p)))}
             cuandoNoHay={null}
           />
         </Tarjeta>
@@ -606,6 +655,55 @@ function PorSecciones({
   );
 }
 
+/**
+ * **El food cost medio de la carta, en su anillo** (0143), con el objetivo y lo que hay que
+ * mirar: cuántos pasan del objetivo y cuántos están sin hacer.
+ */
+function ElFoodCostMedio({ datos }: { readonly datos: MisFichas }) {
+  const medio = datos.cifras.foodCostMedio;
+  if (medio === null || medio === undefined) return null;
+  const objetivo =
+    datos.objetivo === null || datos.objetivo === undefined ? null : datos.objetivo * 100;
+  const semaforo =
+    objetivo === null
+      ? 'sin_dato'
+      : medio <= objetivo
+        ? 'verde'
+        : medio <= objetivo + 5
+          ? 'ambar'
+          : 'rojo';
+  const pasan = datos.cifras.bajoObjetivo ?? 0;
+  return (
+    <Tarjeta>
+      <div className="flex items-center gap-e4">
+        <AnilloDelCoste foodCost={medio} semaforo={semaforo} lado={64} />
+        <div className="flex min-w-0 flex-col gap-e1">
+          <p className="text-cuerpo font-semibold">Food cost medio</p>
+          {objetivo !== null && (
+            <p className="text-secundario text-texto-suave">
+              Tu objetivo: {comoPorcentaje(objetivo)}
+            </p>
+          )}
+          <span className="flex flex-wrap gap-e1">
+            {pasan > 0 && (
+              <Etiqueta tono="mal">
+                {pasan === 1 ? '1 por encima' : `${String(pasan)} por encima`}
+              </Etiqueta>
+            )}
+            {datos.cifras.sinFicha > 0 && (
+              <Etiqueta>
+                {datos.cifras.sinFicha === 1
+                  ? '1 sin hacer'
+                  : `${String(datos.cifras.sinFicha)} sin hacer`}
+              </Etiqueta>
+            )}
+          </span>
+        </div>
+      </div>
+    </Tarjeta>
+  );
+}
+
 // ── Escandallos ──────────────────────────────────────────────────────────────
 
 /**
@@ -629,6 +727,7 @@ function LosEscandallos({
   const [buscado, setBuscado] = useState('');
   const hacer = usarAbiertoEnLaDireccion('hacer');
   const { casa, buscador, nadaConEso } = elBuscador(buscado, setBuscado);
+  const seVe = seVeDe(datos);
   // En «Carta», lo de la carta: lo que nació en un menú sale en «Menús» (0104).
   const conEscandallo = datos.platos.filter((p) => p.tieneFicha && p.enLaCarta !== false);
   const elaboraciones = datos.elaboraciones.filter((e) => e.activo);
@@ -712,7 +811,7 @@ function LosEscandallos({
         <Tarjeta titulo="Pasan del objetivo" cuantos={enOrden.length} acento={ACENTO} pegado>
           <Lista
             titulo="Pasan del objetivo"
-            elementos={enOrden.map((p) => filaDePlato(p, alAbrir))}
+            elementos={enOrden.map((p) => filaDePlato(p, alAbrir, seVe(p)))}
             cuandoNoHay={nadaConEso}
           />
         </Tarjeta>
@@ -721,17 +820,34 @@ function LosEscandallos({
     );
   }
 
+  // **A quien ve costes, de peor a mejor** (0143): lo que más se lleva del precio, lo primero.
+  // Sin costes no hay orden que valga, y van por secciones como en la Carta.
+  const conCoste = datos.conImportes && platos.some((p) => p.coste?.foodCost != null);
+  const dePeorAMejor = [...platos].sort(
+    (a, b) => (b.coste?.foodCost ?? -1) - (a.coste?.foodCost ?? -1),
+  );
+
   return (
     <div className="flex flex-col gap-e4">
+      {conCoste && buscado.trim() === '' && <ElFoodCostMedio datos={datos} />}
       {arriba}
-      {platos.length > 0 && (
-        <PorSecciones
-          datos={datos}
-          platos={platos}
-          fila={(p) => filaDePlato(p, alAbrir)}
-          nadaConEso={nadaConEso}
-        />
-      )}
+      {platos.length > 0 &&
+        (conCoste ? (
+          <Tarjeta titulo="De peor a mejor" cuantos={platos.length} acento={ACENTO} pegado>
+            <Lista
+              titulo="De peor a mejor"
+              elementos={dePeorAMejor.map((p) => filaDePlato(p, alAbrir, seVe(p)))}
+              cuandoNoHay={null}
+            />
+          </Tarjeta>
+        ) : (
+          <PorSecciones
+            datos={datos}
+            platos={platos}
+            fila={(p) => filaDePlato(p, alAbrir, seVe(p))}
+            nadaConEso={nadaConEso}
+          />
+        ))}
       {lasElaboraciones.length > 0 && (
         <Tarjeta
           titulo="Elaboraciones"
@@ -771,6 +887,7 @@ function LosDeLosMenus({
   readonly alAbrir: (ficha: QueFicha) => void;
   readonly nadaConEso: React.ReactNode;
 }) {
+  const seVe = seVeDe(datos);
   const menus = [...new Set(datos.platos.flatMap((p) => p.enMenus ?? []))].sort((a, b) =>
     a.localeCompare(b, 'es'),
   );
@@ -803,7 +920,7 @@ function LosDeLosMenus({
         <Tarjeta key={g.menu} titulo={g.menu} cuantos={g.platos.length} acento={ACENTO} pegado>
           <Lista
             titulo={g.menu}
-            elementos={g.platos.map((p) => filaDePlato(p, alAbrir))}
+            elementos={g.platos.map((p) => filaDePlato(p, alAbrir, seVe(p)))}
             cuandoNoHay={null}
           />
         </Tarjeta>

@@ -4,7 +4,8 @@ import {
   elPeriodoDelServicio,
   enDinero,
   laCartaEnCuatro,
-  loQueDeberiaVender,
+  laMetaDelPeriodo,
+  laMetaHastaHoy,
   minutosDeCocina,
 } from './lo-que-se-vende.ts';
 
@@ -53,10 +54,39 @@ describe('los minutos de la cocina', () => {
   });
 });
 
-describe('lo que debería vender cada uno', () => {
-  it('el objetivo por hora por sus horas', () => {
-    // 45 €/h en 38 h: 1.710 €.
-    expect(loQueDeberiaVender(4500, 38 * 60)).toBe(171_000);
+describe('lo que debería vender cada uno (0143)', () => {
+  it('mirando el mismo periodo del objetivo, la meta es el objetivo', () => {
+    const alMes = { periodo: 'mes', centimos: 400_000 } as const;
+    expect(laMetaDelPeriodo(alMes, '2026-11-01', '2026-11-30')).toBe(400_000);
+    const aLaSemana = { periodo: 'semana', centimos: 92_000 } as const;
+    expect(laMetaDelPeriodo(aLaSemana, '2026-11-02', '2026-11-08')).toBe(92_000);
+  });
+
+  it('mirando otro periodo, se reparte por días', () => {
+    // 4.000 € al mes, una semana de noviembre (30 días): 933,33 €.
+    expect(
+      laMetaDelPeriodo({ periodo: 'mes', centimos: 400_000 }, '2026-11-02', '2026-11-08'),
+    ).toBe(93_333);
+    // Febrero de 2026 tiene 28 días: 4.000 € en una semana son 1.000 €.
+    expect(
+      laMetaDelPeriodo({ periodo: 'mes', centimos: 400_000 }, '2026-02-02', '2026-02-08'),
+    ).toBe(100_000);
+    // 920 € a la semana, en un mes de 31 días: 4.074,29 €.
+    expect(
+      laMetaDelPeriodo({ periodo: 'semana', centimos: 92_000 }, '2026-10-01', '2026-10-31'),
+    ).toBe(407_429);
+    // Un día con un objetivo semanal: la séptima parte.
+    expect(
+      laMetaDelPeriodo({ periodo: 'semana', centimos: 70_000 }, '2026-11-04', '2026-11-04'),
+    ).toBe(10_000);
+  });
+
+  it('a estas alturas: lo que toca llevar vendido hoy', () => {
+    // Día 9 de un mes de 30: 9/30 de la meta.
+    expect(laMetaHastaHoy(400_000, '2026-11-01', '2026-11-30', '2026-11-09')).toBe(120_000);
+    // Acabado: la meta entera. Sin empezar: nada.
+    expect(laMetaHastaHoy(400_000, '2026-10-01', '2026-10-31', '2026-11-09')).toBe(400_000);
+    expect(laMetaHastaHoy(400_000, '2026-12-01', '2026-12-31', '2026-11-09')).toBe(0);
   });
 });
 

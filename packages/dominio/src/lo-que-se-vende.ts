@@ -110,14 +110,51 @@ export function minutosDeCocina(
   return minutos;
 }
 
-// ── Los objetivos de cada uno (P3) ──────────────────────────────────────────
+// ── Los objetivos de cada uno (P3; el repaso del 8-nov, 0143) ───────────────
 
 /**
- * Lo que debería vender alguien en un periodo, con el objetivo en € por hora y sus horas
- * (Richi, 8-nov: «no es lo mismo que alguien de 20 h venda 500 a la semana que alguien de 40»).
+ * **El objetivo de venta, en € a la semana o al mes** (Richi, 8-nov: «como vas a poner un dinero
+ * a la hora cuando sería más lógico al mes o a la semana»). Sustituye al de € por hora de la 0142.
  */
-export function loQueDeberiaVender(centimosPorHora: number, minutos: number): number {
-  return Math.round((centimosPorHora * minutos) / 60);
+export const PERIODOS_DEL_OBJETIVO = ['semana', 'mes'] as const;
+export type PeriodoDelObjetivo = (typeof PERIODOS_DEL_OBJETIVO)[number];
+
+export interface ObjetivoDeVenta {
+  readonly periodo: PeriodoDelObjetivo;
+  /** Sin IVA, en céntimos. */
+  readonly centimos: number;
+}
+
+/** Los días de un tramo de jornadas, los dos incluidos (`2026-11-02` a `2026-11-08`: 7). */
+function diasDelTramo(desde: string, hasta: string): number {
+  return (Date.parse(`${hasta}T00:00:00Z`) - Date.parse(`${desde}T00:00:00Z`)) / 86_400_000 + 1;
+}
+
+/** Los días del mes de una jornada (`2026-11-…`: 30). */
+function diasDelMes(fecha: string): number {
+  const [anio, mes] = fecha.split('-').map(Number);
+  return new Date(Date.UTC(anio ?? 1970, mes ?? 1, 0)).getUTCDate();
+}
+
+/**
+ * **La meta del periodo que se mira**: el objetivo, repartido por días si se mira otro periodo.
+ * 4.000 € al mes, mirando una semana de noviembre: 4.000 × 7 / 30 = 933,33 €. Mirando un mes
+ * con un objetivo semanal: la semana × los días del mes / 7.
+ */
+export function laMetaDelPeriodo(objetivo: ObjetivoDeVenta, desde: string, hasta: string): number {
+  const base = objetivo.periodo === 'semana' ? 7 : diasDelMes(desde);
+  return Math.round((objetivo.centimos * diasDelTramo(desde, hasta)) / base);
+}
+
+/**
+ * **Lo que toca llevar vendido hoy**: la meta, repartida por los días que ya han pasado (hoy
+ * incluido). Un periodo acabado, la meta entera; uno que no ha empezado, nada. Es lo que dice si
+ * alguien va por delante o por detrás «a estas alturas del mes».
+ */
+export function laMetaHastaHoy(meta: number, desde: string, hasta: string, hoy: string): number {
+  if (hoy >= hasta) return meta;
+  if (hoy < desde) return 0;
+  return Math.round((meta * diasDelTramo(desde, hoy)) / diasDelTramo(desde, hasta));
 }
 
 // ── Los periodos de Información e Informes ───────────────────────────────────

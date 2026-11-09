@@ -1439,7 +1439,9 @@ export {
   MINUTOS_PARA_IR_TARDE,
   laCartaEnCuatro,
   minutosDeCocina,
-  loQueDeberiaVender,
+  laMetaDelPeriodo,
+  laMetaHastaHoy,
+  PERIODOS_DEL_OBJETIVO,
   PERIODOS_DEL_SERVICIO,
   esPeriodoDelServicio,
   elPeriodoDelServicio,
@@ -1454,5 +1456,7 @@ export type {
   PlatoParaClasificar,
   LaCartaEnCuatro,
   PeriodoDelServicio,
+  PeriodoDelObjetivo,
+  ObjetivoDeVenta,
   UnPeriodoDelServicio,
 } from './lo-que-se-vende.ts';

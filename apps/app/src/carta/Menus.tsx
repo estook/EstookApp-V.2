@@ -7,6 +7,7 @@ import {
   ErrorEnCristiano,
   EstadoVacio,
   Etiqueta,
+  Hoja,
   Lista,
   Selector,
   Tarjeta,
@@ -17,8 +18,10 @@ import {
   IconoAjustes,
   IconoAnadir,
   IconoDescargar,
+  IconoCalendario,
   IconoFlechaDerecha,
   IconoFlechaIzquierda,
+  IconoMas,
 } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import {
@@ -228,6 +231,8 @@ function ElMenu({
   const [anadirEn, setAnadirEn] = useState<string | null>(null);
   const [plato, setPlato] = useState<{ seccionId: string; plato: UnPlatoDelMenu } | null>(null);
   const [copiando, setCopiando] = useState(false);
+  /** «⋯»: copiar la semana y otro menú, lo que se hace pocas veces (0143). */
+  const [mas, setMas] = useState(false);
   /** Lo que ha hecho «Copiar la semana pasada», dicho en una línea. */
   const [copiada, setCopiada] = useState<string | null>(null);
   const [creando, setCreando] = useState(false);
@@ -296,23 +301,36 @@ function ElMenu({
         {...(datos.puedeEditar
           ? {
               accion: (
-                <Boton
-                  tono="texto"
-                  tamano="s"
-                  icono={<IconoAjustes size={18} />}
-                  aria-label="Ajustes: precio, secciones y lo que entra"
-                  onClick={() => {
-                    setAjustes(true);
-                  }}
-                >
-                  Ajustes
-                </Boton>
+                <div className="flex items-center gap-e1">
+                  <Boton
+                    tono="texto"
+                    tamano="s"
+                    icono={<IconoAjustes size={18} />}
+                    aria-label="Ajustes: precio, secciones y lo que entra"
+                    onClick={() => {
+                      setAjustes(true);
+                    }}
+                  >
+                    Ajustes
+                  </Boton>
+                  <Boton
+                    tono="texto"
+                    tamano="s"
+                    aria-label="Más opciones del menú"
+                    title="Más opciones"
+                    onClick={() => {
+                      setMas(true);
+                    }}
+                  >
+                    <IconoMas size={20} />
+                  </Boton>
+                </div>
               ),
             }
           : {})}
       >
         <div className="flex flex-col gap-e3 px-e3 pb-e3">
-          <div className="flex flex-wrap items-center justify-between gap-e2">
+          <div className="flex items-center justify-between gap-e2">
             <ElPrecio
               menu={menu}
               dia={dia}
@@ -326,11 +344,14 @@ function ElMenu({
               tono="secundario"
               tamano="s"
               icono={<IconoDescargar size={16} />}
+              aria-label="Descargar"
+              title="Descargar o imprimir"
               onClick={() => {
                 setDescargar(true);
               }}
             >
-              Descargar
+              {/* En el móvil, solo el dibujo: con el precio, en una sola línea (0143). */}
+              <span className="max-sm:hidden">Descargar</span>
             </Boton>
           </div>
 
@@ -410,9 +431,9 @@ function ElMenu({
                 }
               />
               {sePuedeTocar && (
-                <div className="px-e3 pb-e3 pt-e1">
+                <div className="px-e3 pb-e2">
                   <Boton
-                    tono="secundario"
+                    tono="texto"
                     tamano="s"
                     icono={<IconoAnadir size={16} />}
                     aria-label={`Añadir plato a ${seccion.comoSeLlama}`}
@@ -437,35 +458,68 @@ function ElMenu({
         />
       )}
 
-      {datos.puedeEditar && (
-        <div className="flex flex-wrap items-center gap-e2">
-          {/* Solo en las semanas que quedan por servir: lo que pasó no se toca. */}
-          {delDia && menu.dias.some((d) => !d.yaPaso) && (
-            <Boton
-              tono="texto"
-              cargando={copiando}
-              textoCargando="Copiando"
-              onClick={() => void copiarLaSemana()}
-            >
-              Copiar la semana pasada
-            </Boton>
-          )}
-          {/* «Que no esté tan a la vista, que no se usa tanto» (Richi, 21-oct). */}
-          <Boton
-            tono="texto"
-            icono={<IconoAnadir size={16} />}
-            cargando={creando}
-            textoCargando="Creando"
-            onClick={() => void crearOtro()}
-          >
-            Otro menú
-          </Boton>
-          {copiada !== null && (
-            <p role="status" className="w-full text-secundario text-texto-suave">
-              {copiada}
-            </p>
-          )}
-        </div>
+      {(copiando || creando || copiada !== null) && (
+        <p role="status" className="text-secundario text-texto-suave">
+          {copiando ? 'Copiando la semana pasada…' : creando ? 'Creando el menú…' : copiada}
+        </p>
+      )}
+
+      {/* «Que no esté tan a la vista, que no se usa tanto» (Richi, 21-oct): en «⋯» (0143). */}
+      {mas && datos.puedeEditar && (
+        <Hoja
+          abierta
+          ajustada
+          titulo="Más opciones"
+          alCerrar={() => {
+            setMas(false);
+          }}
+        >
+          <ul className="flex flex-col pt-e2">
+            {/* Solo en las semanas que quedan por servir: lo que pasó no se toca. */}
+            {delDia && menu.dias.some((d) => !d.yaPaso) && (
+              <li className="border-b border-borde">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMas(false);
+                    void copiarLaSemana();
+                  }}
+                  className="flex min-h-[3.5rem] w-full items-center gap-e3 py-e2 text-left"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-grande bg-fondo">
+                    <IconoCalendario size={18} />
+                  </span>
+                  <span className="flex min-w-0 flex-col">
+                    <span className="text-cuerpo font-semibold">Copiar la semana pasada</span>
+                    <span className="text-secundario text-texto-suave">
+                      Los días sin montar, como la semana de antes
+                    </span>
+                  </span>
+                </button>
+              </li>
+            )}
+            <li>
+              <button
+                type="button"
+                onClick={() => {
+                  setMas(false);
+                  void crearOtro();
+                }}
+                className="flex min-h-[3.5rem] w-full items-center gap-e3 py-e2 text-left"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-grande bg-fondo">
+                  <IconoAnadir size={18} />
+                </span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-cuerpo font-semibold">Otro menú</span>
+                  <span className="text-secundario text-texto-suave">
+                    El de fin de semana, el de grupos…
+                  </span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </Hoja>
       )}
 
       {ajustes && (
@@ -545,6 +599,11 @@ function ElPrecio({
   );
 }
 
+/** Si un día tiene menú: platos suyos, o los que repite de otro día. */
+function conPlatos(dia: UnDiaDelMenu): boolean {
+  return Object.values(dia.platos).some((lista) => lista.length > 0);
+}
+
 /** La semana: las flechas, y un botón por cada día que se sirve. */
 function LaSemana({
   menu,
@@ -597,20 +656,32 @@ function LaSemana({
               type="button"
               role="tab"
               aria-selected={elegido}
-              aria-label={elDiaEnLetra(d.fecha)}
+              aria-label={`${elDiaEnLetra(d.fecha)}${conPlatos(d) ? '' : ', sin menú'}`}
               onClick={() => {
                 alElegir(d.fecha);
               }}
               className={clases(
-                'relative flex min-h-toque flex-1 flex-col items-center justify-center rounded-mediano border text-secundario font-semibold transition-colors',
-                elegido
-                  ? 'border-transparent bg-[var(--color-app-carta)] text-white'
-                  : 'border-borde bg-superficie',
+                'relative flex min-h-[3.5rem] flex-1 flex-col items-center justify-center gap-[1px] rounded-grande text-secundario font-semibold transition-colors',
+                elegido ? 'bg-[var(--color-app-carta)] text-white' : 'bg-fondo hover:bg-borde',
                 !elegido && d.yaPaso && 'text-texto-suave',
               )}
             >
               <span>{INICIAL_DEL_DIA[diaDeLaSemana(fechaOperativa(d.fecha))]}</span>
               <span className="text-[0.7rem] font-normal">{Number(d.fecha.slice(8))}</span>
+              {/* **Si ese día tiene menú** (0143): verde con platos, gris sin ellos. */}
+              <span
+                aria-hidden
+                className={clases(
+                  'mt-[2px] size-[6px] rounded-full',
+                  conPlatos(d)
+                    ? elegido
+                      ? 'bg-white'
+                      : 'bg-bien'
+                    : elegido
+                      ? 'bg-white/40'
+                      : 'bg-borde-fuerte',
+                )}
+              />
               {d.esHoy && (
                 <span
                   aria-hidden

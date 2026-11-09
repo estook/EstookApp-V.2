@@ -41,3 +41,39 @@ intuitivo siempre gana**.
 - **El tema del TPV es de cada aparato** (la caja de la barra al sol, la tablet de la cocina a oscuras).
 - **«Cambiar de persona»** devuelve el aparato al PIN; **«Desvincular este aparato»** lo saca del local, pide
   confirmar y solo lo ve quien puede vincular aparatos.
+
+## 4 · Lo que contestó Richi el 9-nov, antes de R2
+
+1. **El botón flotante se queda donde está** (ya se aparta al bajar), pero **lleva el dibujo de Fogón** y no un «+»,
+   que «parece para agregar cosas»; se abre en **una ventana pequeña encima del botón, como un chat**, y **sin «Tus
+   atajos»**, que eran «demasiado». «Adaptar las pantallas a ese botón no tiene ningún sentido». Corrige la fila del
+   «+» de la sección 2: el botón no se quita de ninguna pantalla.
+2. **Los objetivos en € por hora se borran y se empieza de cero** con los de € por semana o por mes.
+3. **R2 va en dos entregas**: **R2 · 1** (la carta, sus secciones y el botón de Fogón) y **R2 · 2** (Escandallos,
+   Menús y objetivos), cada una con su pull request a `main`.
+
+## 5 · R2 · 1 · La carta y sus secciones, construido (rama `el-repaso-del-8-nov-r2`, migración 0114)
+
+- **El color y el icono de una sección son uno solo** (0114): viven en `seccion_de_carta`; la página del TPV que
+  vino de una sección lee los suyos, y cambiarlos en el TPV cambia la sección. Lo que el local ya había elegido en el
+  TPV pasa a su sección al migrar.
+- **Estook › Carta**: arriba «+ Plato» y «⋯» (Importar tu carta, Nueva sección, Desde el almacén); un atajo a cada
+  sección; cada sección con su icono en su color; cada plato con su foto o, sin foto, el icono de su sección; y a quien
+  ve costes, su food cost debajo del precio. La hoja de la sección elige color e icono con **el mismo selector que el
+  TPV**, que ahora vive en `@estook/ui`.
+- **El botón de Fogón**, como se contestó en la sección 4. Los atajos se cambian en la tarjeta «Atajos» del Panel.
+- **Cabeceras**: el nombre de la app encima del título solo si es otro («Carta / Carta» no dice nada), y **sin
+  pestañas cuando solo hay una**.
+
+### Lo que decidió la IA al construirlo
+
+1. **Solo el color y el icono son de los dos**; el nombre y el orden siguen siendo de cada uno, porque en el TPV los
+   nombres son cortos (30 letras) y el orden de la botonera no tiene por qué ser el de la carta.
+2. **Cambiar el color en el TPV pide poder editar la carta**: lo tienen gerente, area manager y dirección, que son
+   quienes tienen los Ajustes del TPV. Si alguien no lo tuviera, el TPV dice «sin permiso» en vez de no hacer nada.
+3. **«Desde el almacén»** sale en «⋯» y dentro de «Añadir platos» («¿Lo vendes tal cual?»), no arriba: vincular un
+   plato ya existente sigue en su ficha, junto a desgranar.
+4. **El plato sin foto lleva el icono de su sección tintado**, no macizo: diez baldosas macizas seguidas pesaban
+   demasiado en la lista. En el TPV siguen macizas, que es donde se buscan de un vistazo.
+5. **La Carta aguanta una API de antes**: entre fusionar y desplegar la API, las secciones se ven con lo que propone su
+   nombre.

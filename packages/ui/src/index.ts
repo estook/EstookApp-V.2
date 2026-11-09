@@ -40,6 +40,17 @@ export type { App, Destino, Vista, FormaDeApp } from './apps.ts';
 
 export { clases } from './clases.ts';
 
+// ── Las secciones de la carta: su color y su icono, los mismos en Estook y en el TPV (0143) ──
+export {
+  BALDOSA_SIN_COLOR,
+  COMO_SE_VE_EL_COLOR,
+  elAcentoDelColor,
+  laBaldosa,
+} from './secciones/colores.ts';
+export { EL_ICONO, NOMBRE_DEL_ICONO } from './secciones/iconos.ts';
+export { LaBaldosaDeLaSeccion } from './secciones/LaBaldosaDeLaSeccion.tsx';
+export { ElegirIconoYColor } from './secciones/ElegirIconoYColor.tsx';
+
 // ── Componentes base (B4) ────────────────────────────────────────────────────
 export { Boton, Botones } from './componentes/Boton.tsx';
 export type { BotonProps, TonoDeBoton, TamanoDeBoton } from './componentes/Boton.tsx';

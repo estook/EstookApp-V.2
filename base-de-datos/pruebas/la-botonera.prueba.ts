@@ -463,6 +463,152 @@ describe('el icono y el color de cada sección (R3, 0133)', () => {
   });
 });
 
+describe('el color y el icono de la sección, los mismos en Estook y en el TPV (0143)', () => {
+  it('se cambian en la carta o en el TPV, y los dos ven lo mismo', async () => {
+    const enLaCaja = await enElAparato(llaveDeLaCaja, ROSA);
+    const entrantes = seccion['Entrantes'];
+    const enEstook = async () =>
+      losDatos<{
+        secciones: {
+          id: string;
+          color: string | null;
+          icono: string;
+          colorElegido: string | null;
+          iconoElegido: string | null;
+        }[];
+      }>(await api.consultar(rosa, 'mi_carta')).secciones.find((s) => s.id === entrantes);
+    const enElTpv = async () =>
+      losDatos<{
+        paginas: { id: string; color: string | null; icono: string; deLaSeccion: string | null }[];
+      }>(await api.consultar(enLaCaja, 'la_botonera')).paginas.find(
+        (g) => g.deLaSeccion === 'Entrantes',
+      );
+
+    // Sin elegir: lo que propone su nombre, igual en los dos.
+    expect(await enEstook()).toMatchObject({
+      color: 'verde',
+      icono: 'salad',
+      colorElegido: null,
+      iconoElegido: null,
+    });
+    expect(await enElTpv()).toMatchObject({ color: 'verde', icono: 'salad' });
+
+    // **En Estook › Carta**: sale igual en el TPV y en la sala.
+    losDatos(
+      await api.ejecutar(rosa, 'cambiar_seccion', {
+        seccion_id: entrantes,
+        color: 'rojo',
+        icono: 'soup',
+      }),
+    );
+    expect(await enElTpv()).toMatchObject({ color: 'rojo', icono: 'soup' });
+    const enLaSala = losDatos<{
+      paginas: { nombre: string; color: string | null; icono: string }[];
+    }>(await api.consultar(enLaCaja, 'la_carta_de_la_sala')).paginas.find(
+      (g) => g.nombre === 'Entrantes',
+    );
+    expect(enLaSala).toMatchObject({ color: 'rojo', icono: 'soup' });
+
+    // **En Estook TPV**: cambia la sección, y Estook lo ve. El icono no se toca.
+    const pagina = await enElTpv();
+    losDatos(
+      await api.ejecutar(enLaCaja, 'cambiar_pagina_del_tpv', {
+        pagina_id: pagina?.id,
+        color: 'azul',
+      }),
+    );
+    expect(await enEstook()).toMatchObject({
+      color: 'azul',
+      icono: 'soup',
+      colorElegido: 'azul',
+      iconoElegido: 'soup',
+    });
+    // La página no guarda un color suyo: si la sección vuelve a «el de su nombre», no
+    // reaparece uno viejo.
+    const propio = await base.bd.query<{ color: string | null; icono: string | null }>(
+      `select color, icono from estook.pagina_del_tpv where id = $1::uuid`,
+      [pagina?.id],
+    );
+    expect(propio.rows[0]).toEqual({ color: null, icono: null });
+
+    // De vuelta a «el que propone su nombre».
+    losDatos(
+      await api.ejecutar(rosa, 'cambiar_seccion', {
+        seccion_id: entrantes,
+        color: null,
+        icono: null,
+      }),
+    );
+    expect(await enElTpv()).toMatchObject({ color: 'verde', icono: 'salad' });
+
+    // Lo que no es de la lista no entra, ni por la API ni saltándosela.
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'cambiar_seccion', { seccion_id: entrantes, color: 'fucsia' }),
+      ),
+    ).toBe('faltan_datos');
+    await expect(
+      base.bd.query(`update estook.seccion_de_carta set icono = 'dibujo-mio' where id = $1::uuid`, [
+        entrantes,
+      ]),
+    ).rejects.toThrow(/seccion_icono_conocido/);
+  });
+
+  it('al migrar, lo que el local eligió en el TPV pasa a su sección y se ve igual', async () => {
+    const enLaCaja = await enElAparato(llaveDeLaCaja, ROSA);
+    const laMigracion = async () => {
+      const deshacer = (await reversiones()).find((m) => m.nombre.startsWith('0114'));
+      const hacer = (await migraciones()).find((m) => m.nombre.startsWith('0114'));
+      if (deshacer === undefined || hacer === undefined) throw new Error('Sin la 0114');
+      return { deshacer: deshacer.sql, hacer: hacer.sql };
+    };
+    const la114 = await laMigracion();
+    // Como estaba antes de la 0114: el color, en la página que vino de «Principales».
+    await base.bd.exec(la114.deshacer);
+    await base.bd.query(
+      `update estook.pagina_del_tpv set color = 'turquesa', icono = 'fish'
+        where local_id = $1::uuid and seccion_id = $2::uuid`,
+      [barCentro, seccion['Principales']],
+    );
+    await base.bd.exec(la114.hacer);
+
+    const principales = losDatos<{
+      secciones: { id: string; colorElegido: string | null; iconoElegido: string | null }[];
+    }>(await api.consultar(rosa, 'mi_carta')).secciones.find(
+      (s) => s.id === seccion['Principales'],
+    );
+    expect(principales).toMatchObject({ colorElegido: 'turquesa', iconoElegido: 'fish' });
+    const enElTpv = losDatos<{
+      paginas: { color: string | null; icono: string; deLaSeccion: string | null }[];
+    }>(await api.consultar(enLaCaja, 'la_botonera')).paginas.find(
+      (g) => g.deLaSeccion === 'Principales',
+    );
+    expect(enElTpv).toMatchObject({ color: 'turquesa', icono: 'fish' });
+    losDatos(
+      await api.ejecutar(rosa, 'cambiar_seccion', {
+        seccion_id: seccion['Principales'],
+        color: null,
+        icono: null,
+      }),
+    );
+  });
+
+  it('una sección nueva nace con el color y el icono que se eligen', async () => {
+    const { seccionId } = losDatos<{ seccionId: string }>(
+      await api.ejecutar(rosa, 'crear_seccion', {
+        nombre: 'Sugerencias del día',
+        color: 'morado',
+        icono: 'chef-hat',
+      }),
+    );
+    const nueva = losDatos<{ secciones: { id: string; color: string | null; icono: string }[] }>(
+      await api.consultar(rosa, 'mi_carta'),
+    ).secciones.find((s) => s.id === seccionId);
+    expect(nueva).toMatchObject({ color: 'morado', icono: 'chef-hat' });
+    losDatos(await api.ejecutar(rosa, 'quitar_seccion', { seccion_id: seccionId }));
+  });
+});
+
 describe('quién monta la botonera', () => {
   it('la camarera no; el móvil de nadie tampoco; ni Estook con su sesión', async () => {
     const sara = await enElAparato(llaveDelMovil, SARA);

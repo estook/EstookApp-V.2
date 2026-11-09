@@ -58,49 +58,64 @@ test('un jefe de cocina arranca con su Panel: fichar y sus objetivos, sin lo del
 
 // ── 6 · El botón «+» ─────────────────────────────────────────────────────────
 
-test('el «+» abre Fogón en su banner y los atajos de su puesto', async ({ page }) => {
-  await entrarComoLuis(page);
-  await page.getByRole('button', { name: 'Qué quieres hacer' }).click();
-
-  const hoja = page.getByRole('dialog', { name: 'Qué quieres hacer' });
-  await expect(hoja.getByRole('button', { name: /Pregúntale a Fogón/ })).toContainText('el Panel');
-
-  const atajos = hoja.getByRole('region', { name: 'Tus atajos' });
-  await expect(atajos.getByRole('button', { name: 'Apuntar una merma' })).toBeVisible();
-  await expect(atajos.getByRole('button', { name: 'Recibir lo que ha llegado' })).toBeVisible();
-  // Un jefe de cocina no cierra la caja (0041): no se le ofrece.
-  await expect(atajos.getByRole('button', { name: 'Cerrar la caja' })).toHaveCount(0);
-
-  // Y Fogón, desde su banner.
-  await hoja.getByRole('button', { name: /Pregúntale a Fogón/ }).click();
-  await expect(page.getByRole('dialog', { name: 'Fogón' })).toBeVisible();
-});
-
-test('los atajos se cambian en el «+» y valen también en las acciones rápidas', async ({
+test('el botón de Fogón abre una ventana pequeña: Fogón y fichar, sin atajos (0143)', async ({
   page,
 }) => {
   await entrarComoLuis(page);
   await page.getByRole('button', { name: 'Qué quieres hacer' }).click();
-  const hoja = page.getByRole('dialog', { name: 'Qué quieres hacer' });
-  await hoja.getByRole('button', { name: 'Cambiarlos' }).click();
 
+  const ventana = page.getByRole('dialog', { name: 'Qué quieres hacer' });
+  await expect(ventana.getByRole('button', { name: /Pregúntale a Fogón/ })).toContainText(
+    'el Panel',
+  );
+  // Los atajos ya no van aquí (Richi, 9-nov: «es demasiado»): siguen en la tarjeta del Panel.
+  await expect(ventana.getByRole('region', { name: 'Tus atajos' })).toHaveCount(0);
+  // **Pequeña**: no tapa la pantalla, como hacía la hoja.
+  const caja = await ventana.boundingBox();
+  const pantalla = page.viewportSize();
+  expect(caja?.width ?? 0).toBeLessThanOrEqual(22 * 16 + 1);
+  expect(caja?.height ?? 0).toBeLessThan((pantalla?.height ?? 0) * 0.75);
+
+  // Escape la cierra; y Fogón, desde su banner.
+  await page.keyboard.press('Escape');
+  await expect(ventana).toHaveCount(0);
+  await page.getByRole('button', { name: 'Qué quieres hacer' }).click();
+  await ventana.getByRole('button', { name: /Pregúntale a Fogón/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Fogón' })).toBeVisible();
+});
+
+test('los atajos se cambian en su tarjeta del Panel', async ({ page }) => {
+  await entrarComoLuis(page);
+  // La tarjeta «Atajos», del catálogo del Panel.
+  await page.getByRole('button', { name: 'Editar' }).click();
+  await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
+  const catalogo = page.getByRole('dialog', { name: 'Añadir al panel' });
+  await catalogo.getByRole('button', { name: /^Atajos/ }).click();
+  await page.getByRole('button', { name: 'Listo' }).click();
+
+  await page.getByRole('button', { name: 'Elegir qué acciones rápidas quieres' }).click();
   const elegir = page.getByRole('dialog', { name: 'Tus atajos' });
-  await elegir.getByRole('checkbox', { name: /Ver el libro de movimientos/ }).check();
+  const elLibro = elegir.getByRole('checkbox', { name: /Ver el libro de movimientos/ });
+  await elLibro.check();
   await elegir.getByRole('button', { name: 'Guardar' }).click();
-  await expect(
-    hoja.getByRole('region', { name: 'Tus atajos' }).getByRole('button', {
-      name: 'Ver el libro de movimientos',
-    }),
-  ).toBeVisible();
+  await expect(elegir).toHaveCount(0);
+  // Se ha guardado: al volver a abrirla, sigue marcado. (La tarjeta enseña los primeros que
+  // caben, así que se mira en la hoja.)
+  await page.getByRole('button', { name: 'Elegir qué acciones rápidas quieres' }).click();
+  await expect(elLibro).toBeChecked();
 
   // Y se deja como estaba, para la siguiente vez.
-  await hoja.getByRole('button', { name: 'Cambiarlos' }).click();
   await elegir.getByRole('button', { name: 'Los de mi puesto' }).click();
-  await expect(
-    hoja.getByRole('region', { name: 'Tus atajos' }).getByRole('button', {
-      name: 'Ver el libro de movimientos',
-    }),
-  ).toHaveCount(0);
+  await expect(elegir).toHaveCount(0);
+  await page.getByRole('button', { name: 'Elegir qué acciones rápidas quieres' }).click();
+  await expect(elLibro).not.toBeChecked();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Editar' }).click();
+  await page
+    .getByRole('button', { name: /^Quitar Atajos del panel$/ })
+    .first()
+    .click();
+  await page.getByRole('button', { name: 'Listo' }).click();
 });
 
 test('«Fichar» desde cualquier sitio abre el «+» con fichar arriba', async ({ page }) => {

@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { alergenosDeLaReceta, type CanalDeVenta } from '@estook/dominio';
+import {
+  alergenosDeLaReceta,
+  comoSeVeLaSeccion,
+  type CanalDeVenta,
+  type ColorDeLaBotonera,
+  type IconoDeLaSeccion,
+} from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 import { losCanalesDelLocal, type UnCanal } from '../canales-del-local.ts';
@@ -22,6 +28,15 @@ export interface UnaSeccion {
   readonly id: string;
   readonly nombre: string;
   readonly orden: number;
+  /**
+   * **Cómo se ve, la misma en Estook y en Estook TPV** (0143): lo elegido, y si no, lo que
+   * propone su nombre. El color puede ser nulo: el gris de lo que no se reconoce.
+   */
+  readonly color: ColorDeLaBotonera | null;
+  readonly icono: IconoDeLaSeccion;
+  /** Lo que eligió el local; nulos, «el que propone su nombre». */
+  readonly colorElegido: ColorDeLaBotonera | null;
+  readonly iconoElegido: IconoDeLaSeccion | null;
 }
 
 export interface UnPlato {
@@ -190,8 +205,16 @@ export const miCarta = consulta<Record<string, never>, MiCarta>({
     const puedeEditar = await puedeEditarLaCarta(contexto, localId);
     const [canales, secciones, platos] = await Promise.all([
       losCanalesDelLocal(contexto, localId, puedeEditar),
-      contexto.sql<{ id: string; nombre: string; orden: number }[]>`
-        select id, nombre, orden from estook.seccion_de_carta
+      contexto.sql<
+        {
+          id: string;
+          nombre: string;
+          orden: number;
+          color: ColorDeLaBotonera | null;
+          icono: IconoDeLaSeccion | null;
+        }[]
+      >`
+        select id, nombre, orden, color, icono from estook.seccion_de_carta
          where local_id = ${localId}::uuid
          order by orden, nombre
       `,
@@ -200,7 +223,14 @@ export const miCarta = consulta<Record<string, never>, MiCarta>({
     return {
       puedeEditar,
       canales,
-      secciones,
+      secciones: secciones.map((s) => ({
+        id: s.id,
+        nombre: s.nombre,
+        orden: s.orden,
+        ...comoSeVeLaSeccion(s),
+        colorElegido: s.color,
+        iconoElegido: s.icono,
+      })),
       platos,
     };
   },

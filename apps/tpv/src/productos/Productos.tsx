@@ -4,7 +4,6 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import {
   COLORES_DE_LA_BOTONERA,
   COMO_SE_VE_LO_MAS_PEDIDO,
-  ICONOS_DE_LA_SECCION,
   NOMBRE_DE_QUIEN_LO_PREPARA,
   QUIEN_LO_PREPARA,
   centimos,
@@ -27,12 +26,15 @@ import {
 import {
   Boton,
   Botones,
+  COMO_SE_VE_EL_COLOR,
   Campo,
   CampoMoneda,
   Cargando,
+  ElegirIconoYColor,
   ErrorEnCristiano,
   Hoja,
   Interruptor,
+  LaBaldosaDeLaSeccion,
   Selector,
 } from '@estook/ui';
 import type {
@@ -46,10 +48,7 @@ import type {
 import { FalloDeLaSala, usarAcciones, type Resultado } from '../ganchos/usarLaSala.ts';
 import { euros } from '../logica/texto.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { COMO_SE_VE_EL_COLOR } from './colores.ts';
 import { HojaDeGrupo } from './HojaDeGrupo.tsx';
-import { LaBaldosaDeLaSeccion } from './LaBaldosaDeLaSeccion.tsx';
-import { EL_ICONO, NOMBRE_DEL_ICONO } from './iconosDeLaSeccion.ts';
 import { MontaTusBebidas } from './MontaTusBebidas.tsx';
 import { irA } from '../navegar.ts';
 import { moverUnPuesto, usarArrastrar } from '../ganchos/usarArrastrar.ts';
@@ -869,63 +868,19 @@ function HojaIconoYColor({
           <LaBaldosaDeLaSeccion icono={icono} color={color} lado={52} />
           <div className="flex min-w-0 flex-col">
             <strong className="truncate">{pagina.nombre}</strong>
-            <span className="text-secundario text-texto-suave">Así se verá en el comandero</span>
+            <span className="text-secundario text-texto-suave">
+              {pagina.deLaSeccion === null
+                ? 'Así se verá en el comandero'
+                : 'Así se verá aquí y en Estook › Carta'}
+            </span>
           </div>
         </div>
-        <div className="flex flex-col gap-e2">
-          <span className="text-secundario font-bold text-texto-suave">Color</span>
-          <div role="radiogroup" aria-label="Color" className="flex flex-wrap gap-e2">
-            {COLORES_DE_LA_BOTONERA.map((c) => (
-              <button
-                key={c}
-                type="button"
-                role="radio"
-                aria-checked={color === c}
-                aria-label={COMO_SE_VE_EL_COLOR[c].nombre}
-                title={COMO_SE_VE_EL_COLOR[c].nombre}
-                onClick={() => {
-                  setColor(c);
-                }}
-                className={[
-                  'size-toque rounded-redondo',
-                  COMO_SE_VE_EL_COLOR[c].punto,
-                  color === c ? 'outline outline-[3px] outline-offset-2 outline-texto' : '',
-                ].join(' ')}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-e2">
-          <span className="text-secundario font-bold text-texto-suave">Icono</span>
-          <div
-            role="radiogroup"
-            aria-label="Icono"
-            className="grid grid-cols-[repeat(auto-fill,minmax(3.25rem,1fr))] gap-e2"
-          >
-            {ICONOS_DE_LA_SECCION.map((i) => {
-              const ElIcono = EL_ICONO[i];
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  role="radio"
-                  aria-checked={icono === i}
-                  aria-label={NOMBRE_DEL_ICONO[i]}
-                  title={NOMBRE_DEL_ICONO[i]}
-                  onClick={() => {
-                    setIcono(i);
-                  }}
-                  className={[
-                    'flex h-[3.25rem] items-center justify-center rounded-grande',
-                    icono === i ? 'bg-texto text-fondo' : 'bg-charcoal text-texto',
-                  ].join(' ')}
-                >
-                  <ElIcono size={24} strokeWidth={2} />
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <ElegirIconoYColor
+          color={color}
+          icono={icono}
+          alCambiarElColor={setColor}
+          alCambiarElIcono={setIcono}
+        />
       </div>
     </Hoja>
   );

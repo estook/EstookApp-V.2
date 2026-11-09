@@ -90,3 +90,25 @@ export const BALDOSA_SIN_COLOR = 'bg-borde-fuerte text-fondo';
 export function laBaldosa(color: ColorDeLaBotonera | null): string {
   return color === null ? BALDOSA_SIN_COLOR : COMO_SE_VE_EL_COLOR[color].baldosa;
 }
+
+/**
+ * **El color de la sección como acento de una tarjeta** (0143): en Estook › Carta, cada sección
+ * lleva su icono en una pastilla de su color, el mismo que en el TPV. Sin color, el gris suave.
+ */
+const EL_ACENTO: Readonly<Record<ColorDeLaBotonera, string>> = {
+  amarillo: 'var(--color-seccion-amarillo)',
+  naranja: 'var(--color-naranja)',
+  ambar: 'var(--color-atencion)',
+  rojo: 'var(--color-mal)',
+  rosa: 'var(--color-app-carta)',
+  morado: 'var(--color-app-equipo)',
+  azul: 'var(--color-info)',
+  turquesa: 'var(--color-app-servicio)',
+  verde: 'var(--color-bien)',
+  arena: 'var(--color-app-cuaderno)',
+  marron: 'var(--color-seccion-marron)',
+};
+
+export function elAcentoDelColor(color: ColorDeLaBotonera | null): string {
+  return color === null ? 'var(--color-texto-suave)' : EL_ACENTO[color];
+}

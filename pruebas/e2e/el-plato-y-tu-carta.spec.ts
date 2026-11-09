@@ -40,7 +40,9 @@ test('se monta la carta de cero, con su sección, Uber Eats y el historial', asy
   // Sin sección todavía; se crea una y se coloca el plato.
   const sinSeccion = page.getByRole('list', { name: 'Sin sección' });
   await expect(sinSeccion.getByText('Croquetas de jamón')).toBeVisible();
-  await page.getByRole('button', { name: 'Nueva sección' }).click();
+  // Lo que se hace pocas veces va en «⋯» (0143).
+  await page.getByRole('button', { name: 'Más opciones de la carta' }).click();
+  await page.getByRole('button', { name: /^Nueva sección/ }).click();
   const seccion = page.getByRole('dialog', { name: 'Nueva sección' });
   await seccion.getByLabel('Nombre de la sección').fill('Entrantes');
   await seccion.getByRole('button', { name: 'Crear la sección' }).click();
@@ -100,6 +102,6 @@ test('la camarera ve la carta, pero no la monta', async ({ page }) => {
   await entrarEnLaApp(page, 'sara@ejemplo.estook.com');
   await abrirSinQueSeCaiga(page, `${APP}#/carta/carta`);
   await expect(page.getByRole('heading', { level: 1, name: 'Carta' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Añadir platos' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Nueva sección' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Plato', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Más opciones de la carta' })).toHaveCount(0);
 });

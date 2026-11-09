@@ -16,6 +16,7 @@ import {
   LAS_PAGINAS_DE_SIEMPRE,
   LO_MAS_PEDIDO,
   comoSeVeElNombre,
+  comoSeVeLaSeccion,
   laPaginaDeSiempre,
   loQueProponeElNombre,
   loQueValeEnElBoton,
@@ -971,8 +972,15 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
     const hoy = fechaOperativa(await laJornadaDeHoy(contexto, localId));
     const [secciones, platos, sirve, menus, botonera, masPedido, grupos, aPeso] = await Promise.all(
       [
-        contexto.sql<{ id: string; nombre: string }[]>`
-        select id::text as id, nombre from estook.seccion_de_carta
+        contexto.sql<
+          {
+            id: string;
+            nombre: string;
+            color: ColorDeLaBotonera | null;
+            icono: IconoDeLaSeccion | null;
+          }[]
+        >`
+        select id::text as id, nombre, color, icono from estook.seccion_de_carta
          where local_id = ${localId}::uuid
          order by orden, nombre
       `,
@@ -1086,11 +1094,12 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
       paginas = [
         lasDeSiempre('pan'),
         ...secciones.map((s) => {
-          const vale = deLaSeccion(s.nombre);
+          const seVe = comoSeVeLaSeccion(s);
+          const vale = { ...deLaSeccion(s.nombre), color: seVe.color };
           return {
             id: s.id,
             nombre: s.nombre,
-            ...comoSeVeElNombre(s.nombre),
+            ...seVe,
             pase: vale.pase,
             deSiempre: null,
             platos: queda.filter((p) => p.seccionId === s.id).map((p) => comoDeLaSala(p, vale)),

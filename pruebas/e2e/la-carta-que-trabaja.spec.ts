@@ -55,7 +55,8 @@ test('agotados, leer tu carta en PDF y el equilibrio', async ({ page, request },
 
   // ── Leer tu carta, en PDF ──
   await abrirSinQueSeCaiga(page, `${APP}#/carta/carta/por-secciones`);
-  await page.getByRole('button', { name: 'Importar tu carta' }).click();
+  await page.getByRole('button', { name: 'Más opciones de la carta' }).click();
+  await page.getByRole('button', { name: /^Importar tu carta/ }).click();
   const leer = page.getByRole('dialog', { name: 'Importar tu carta' });
   await leer.getByLabel('El PDF o las fotos de tu carta').setInputFiles({
     name: 'carta.pdf',

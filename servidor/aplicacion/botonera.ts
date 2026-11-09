@@ -79,11 +79,16 @@ export async function laBotoneraGuardada(
         de_siempre: 'pan' | 'cafes' | null;
       }[]
     >`
-      select id::text as id, nombre, orden, color, icono, quien_lo_prepara, pase,
-             seccion_id::text as seccion_id, de_siempre
-        from estook.pagina_del_tpv
-       where local_id = ${localId}::uuid
-       order by orden, nombre
+      -- El color y el icono de una página que vino de una sección son **los de su sección**
+      -- (0143): los mismos en Estook y en el TPV.
+      select p.id::text as id, p.nombre, p.orden,
+             case when p.seccion_id is null then p.color else s.color end as color,
+             case when p.seccion_id is null then p.icono else s.icono end as icono,
+             p.quien_lo_prepara, p.pase, p.seccion_id::text as seccion_id, p.de_siempre
+        from estook.pagina_del_tpv p
+        left join estook.seccion_de_carta s on s.id = p.seccion_id
+       where p.local_id = ${localId}::uuid
+       order by p.orden, p.nombre
     `,
     contexto.sql<
       {

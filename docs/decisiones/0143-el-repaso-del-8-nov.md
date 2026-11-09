@@ -52,7 +52,7 @@ intuitivo siempre gana**.
 3. **R2 va en dos entregas**: **R2 · 1** (la carta, sus secciones y el botón de Fogón) y **R2 · 2** (Escandallos,
    Menús y objetivos), cada una con su pull request a `main`.
 
-## 5 · R2 · 1 · La carta y sus secciones, construido (rama `el-repaso-del-8-nov-r2`, migración 0114)
+## 5 · R2 · 1 · La carta y sus secciones, construido (#184, en producción el 9-nov, migración 0114)
 
 - **El color y el icono de una sección son uno solo** (0114): viven en `seccion_de_carta`; la página del TPV que
   vino de una sección lee los suyos, y cambiarlos en el TPV cambia la sección. Lo que el local ya había elegido en el
@@ -78,7 +78,7 @@ intuitivo siempre gana**.
 5. **La Carta aguanta una API de antes**: entre fusionar y desplegar la API, las secciones se ven con lo que propone su
    nombre.
 
-## 6 · R2 · 2 · Escandallos, Menús y objetivos, construido (rama `el-repaso-del-8-nov-r2-2`, migración 0115)
+## 6 · R2 · 2 · Escandallos, Menús y objetivos, construido (#185, fusionada el 9-nov, migración 0115)
 
 - **Los objetivos, en € a la semana o al mes** (0115): una cifra y su periodo para todos, y una distinta para quien
   haga falta. Los de € por hora se borran al migrar (Richi, 9-nov). Si se mira otro periodo, la meta se reparte por

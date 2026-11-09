@@ -2,12 +2,12 @@
 
 > ## Cómo está
 >
-> | Qué              | Cómo está                                                                                  |
-> | ---------------- | ------------------------------------------------------------------------------------------ |
-> | El pull request  | «El repaso del 8-nov · R2 · 2 · Escandallos, Menús y objetivos», **abierto**, sin fusionar |
-> | La base de datos | **Hay que migrar**: pasa de 114 a **115** (los objetivos por semana o mes)                 |
-> | La API           | **Hay que desplegarla, después de migrar**: sigue en 128 consultas y 358 comandos          |
-> | La caja          | **No hay caja nueva**                                                                      |
+> | Qué              | Cómo está                                                                                    |
+> | ---------------- | -------------------------------------------------------------------------------------------- |
+> | El pull request  | «El repaso del 8-nov · R2 · 2 · Escandallos, Menús y objetivos», **fusionado** (#185, 9-nov) |
+> | La base de datos | **Hay que migrar**: pasa de 114 a **115** (los objetivos por semana o mes)                   |
+> | La API           | **Hay que desplegarla, después de migrar**: sigue en 128 consultas y 358 comandos            |
+> | La caja          | **No hay caja nueva**                                                                        |
 >
 > Lo decidido, en la [0143](decisiones/0143-el-repaso-del-8-nov.md) (sección 6). Con esto, R2 queda entera; falta R3
 > (la caja).

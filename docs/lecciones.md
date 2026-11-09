@@ -1119,4 +1119,6 @@
      esperar otra vuelta entera, y pasó en casi cada pull request. Avisarlo en el pull request no lo arreglaba
      (Richi, 9-nov: «¿por qué siempre fallan las pantallas?, perdemos mucho tiempo»). **Ahora, si lo único en rojo
      son fotos, la integración continua las sube sola y se prueba otra vez** («Las fotos nuevas», con
-     `herramientas/solo-las-fotos.mjs`, que es estricto). Las fotos se siguen mirando, en el pull request.
+     `herramientas/solo-las-fotos.mjs`, que es estricto). Las fotos se siguen mirando, en el pull request. Y
+     **la regla de `main` no da por buena una comprobación obligatoria «saltada»**: lo que se salta son los pasos,
+     y el trabajo sale en verde.

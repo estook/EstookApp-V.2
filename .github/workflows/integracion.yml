@@ -29,47 +29,58 @@ env:
 jobs:
   calidad:
     name: Calidad
-    # Se salta solo con el commit de las fotos nuevas, que no cambia nada que se compruebe
-    # aquí (ver `ya-probado`). Con `!cancelled()`, si `ya-probado` fallara se corre igual: un
-    # trabajo saltado cuenta como verde, y eso no puede pasar por un fallo.
+    # Con el commit de las fotos nuevas, que no cambia nada que se compruebe aquí (ver
+    # `ya-probado`), se saltan **los pasos, no el trabajo**: la regla de `main` no acepta
+    # una comprobación obligatoria «saltada», solo «en verde» (lo vio la #185, 9-nov). Y con
+    # `!cancelled()`, si `ya-probado` fallara se corre entero.
     needs: ya-probado
-    if: ${{ !cancelled() && needs.ya-probado.outputs.fotos != 'true' }}
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
+        if: needs.ya-probado.outputs.fotos != 'true'
 
       - uses: pnpm/action-setup@v5
+        if: needs.ya-probado.outputs.fotos != 'true'
 
       - uses: actions/setup-node@v6
+        if: needs.ya-probado.outputs.fotos != 'true'
         with:
           node-version-file: .nvmrc
           cache: pnpm
 
       - name: Instalar
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Tipos
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm tipos
 
       - name: Lint
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm lint
 
       - name: Formato
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm formato
 
       - name: Reglas de dependencia
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm dependencias
 
       # Lo que lee una persona, en espanol de Espana. Se anadio en M4, despues de
       # ver en un movil de verdad una pantalla que decia «todavia no tengo datos»
       # al lado de otra que decia «¿Donde estas hoy?».
       - name: Textos de pantalla
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm textos
 
       # Las tablas de docs/coste-por-local.md salen de un fichero con los precios. Si
       # alguien cambia un precio o un plan y no repasa el documento, esto lo para.
       - name: El coste por local cuadra con sus cuentas
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm coste:comprobar
 
       # ── El camino que nadie comprobaba ──────────────────────────────────────
@@ -93,9 +104,11 @@ jobs:
       # confianza. La nuestra resuelve como resuelve Supabase —mapa y rutas
       # relativas, y nada mas— y esta probada contra el fallo real.
       - name: El grafo de Deno resuelve
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm grafo
 
       - name: Pruebas
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm prueba
 
   # ── Lo de `main` que ya se probó en su rama (19-oct) ──────────────────────
@@ -413,9 +426,9 @@ jobs:
 
   migraciones:
     name: Migraciones reversibles
-    # Como Calidad: se salta solo con el commit de las fotos nuevas.
+    # Como Calidad: con el commit de las fotos nuevas se saltan los pasos, no el trabajo.
     needs: ya-probado
-    if: ${{ !cancelled() && needs.ya-probado.outputs.fotos != 'true' }}
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
     timeout-minutes: 10
     services:
@@ -440,27 +453,35 @@ jobs:
       DATABASE_URL: postgresql://postgres:pruebas@localhost:5432/estook
     steps:
       - uses: actions/checkout@v5
+        if: needs.ya-probado.outputs.fotos != 'true'
 
       - uses: pnpm/action-setup@v5
+        if: needs.ya-probado.outputs.fotos != 'true'
 
       - uses: actions/setup-node@v6
+        if: needs.ya-probado.outputs.fotos != 'true'
         with:
           node-version-file: .nvmrc
           cache: pnpm
 
       - name: Instalar
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Migrar
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm bd:migrar
 
       - name: Sembrar
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm bd:sembrar
 
       - name: Sembrar otra vez, que tiene que ser idempotente
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: pnpm bd:sembrar
 
       - name: Deshacerlo todo y volver a aplicarlo desde cero
+        if: needs.ya-probado.outputs.fotos != 'true'
         run: |
           pnpm bd:revertir:todo
           pnpm bd:migrar

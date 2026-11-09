@@ -16,6 +16,7 @@ build/
 # herramientas
 coverage/
 playwright-report/
+resultados-e2e/
 test-results/
 .eslintcache
 

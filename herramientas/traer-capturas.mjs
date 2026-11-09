@@ -13,6 +13,10 @@
  * `capturas-nuevas-<trozo>` (uno por cada trozo de las pruebas, desde el 19-oct), con el
  * nombre que tendrían en su sitio.
  *
+ * Desde el 9-nov, si lo único en rojo son fotos, las sube la integración continua sola
+ * («Las fotos nuevas» en `integracion.yml`). Esto queda para cuando hay algo más en rojo
+ * y se quieren las fotos a la vez que se arregla lo otro.
+ *
  * Esto las baja a `pruebas/e2e/capturas/linux/`. **Después hay que mirarlas**
  * —son lo que la prueba dará por bueno a partir de ahora— y, si son lo que se
  * quería, subirlas con el cambio. Una captura que se trae sin mirar convierte la

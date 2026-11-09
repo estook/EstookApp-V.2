@@ -26,9 +26,10 @@
 
 ## Lo que te toca · fusionar, migrar y desplegar
 
-**La primera vuelta de GitHub saldrá en rojo solo por las fotos de referencia**, porque el botón de Fogón ha
-cambiado a propósito. Cuando acabe, las bajo, las miro y las subo yo; no hace falta que hagas nada con eso. Si sale en
-rojo otra cosa, pásame una foto.
+**Las fotos de referencia ya no paran el pull request** (desde el 9-nov). Cuando lo único en rojo son fotos de
+pantallas que cambian a propósito, como el botón de Fogón, GitHub las sube solo en un commit aparte, «Las fotos de
+referencia, rehechas por la integración continua», y vuelve a probar: en unos minutos sale en verde sin que nadie
+haga nada. Si sale en rojo otra cosa, pásame una foto.
 
 1. **En GitHub**: cuando el pull request esté **en verde**, **Merge pull request** → **Confirm merge**.
 2. **En tu ordenador**, en PowerShell, uno por uno:

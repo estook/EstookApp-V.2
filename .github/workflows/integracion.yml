@@ -17,7 +17,10 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Un `push` nuevo corta la vuelta de antes, que ya no sirve. La que lanza «Las fotos
+  # nuevas» (abajo) no: espera a que acabe la que la lanzó, que es la que tiene que
+  # quedar terminada para que la nueva sepa que las fotos se subieron bien.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 env:
   ENTORNO: pruebas
@@ -26,6 +29,11 @@ env:
 jobs:
   calidad:
     name: Calidad
+    # Se salta solo con el commit de las fotos nuevas, que no cambia nada que se compruebe
+    # aquí (ver `ya-probado`). Con `!cancelled()`, si `ya-probado` fallara se corre igual: un
+    # trabajo saltado cuenta como verde, y eso no puede pasar por un fallo.
+    needs: ya-probado
+    if: ${{ !cancelled() && needs.ya-probado.outputs.fotos != 'true' }}
     runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
     timeout-minutes: 15
     steps:
@@ -107,17 +115,37 @@ jobs:
       checks: read
     outputs:
       saltar: ${{ steps.mira.outputs.saltar }}
+      fotos: ${{ steps.mira.outputs.fotos }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 2
 
+      # ── Y el commit de las fotos nuevas (9-nov) ──
+      #
+      # Lo hace «Las fotos nuevas» cuando lo único en rojo eran fotos: solo trae las fotos
+      # que esa misma vuelta acaba de hacer, así que coinciden por fuerza, y el resto ya
+      # se probó en el commit de debajo. Se salta todo si: lo firma el bot de GitHub,
+      # solo toca fotos de `capturas/linux/`, y en el commit de debajo «Las fotos nuevas»
+      # acabó bien. Si cualquiera de las tres falla, se prueba todo, como siempre.
       - id: mira
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           saltar=false
+          fotos=false
+          if [ "${{ github.ref }}" != "refs/heads/main" ] && git rev-parse -q --verify HEAD^ >/dev/null \
+            && [ "$(git log -1 --format=%ae HEAD)" = "41898282+github-actions[bot]@users.noreply.github.com" ]; then
+            cambiados=$(git diff --name-only HEAD^ HEAD)
+            if [ -n "$cambiados" ] && ! printf '%s\n' "$cambiados" | grep -qvE '^pruebas/e2e/capturas/linux/[^/]+\.png$'; then
+              padre=$(git rev-parse HEAD^)
+              hechas=$(gh api "repos/${{ github.repository }}/commits/$padre/check-runs?check_name=Las%20fotos%20nuevas" --jq '[.check_runs[] | select(.conclusion == "success")] | length' || echo 0)
+              if [ "$hechas" -gt 0 ]; then saltar=true; fotos=true; fi
+            fi
+          fi
+          echo "fotos=$fotos" >> "$GITHUB_OUTPUT"
+          echo "Solo las fotos nuevas: $fotos"
           if [ "${{ github.ref }}" = "refs/heads/main" ] && git rev-parse -q --verify HEAD^2 >/dev/null; then
             if [ "$(git rev-parse 'HEAD^{tree}')" = "$(git rev-parse 'HEAD^2^{tree}')" ]; then
               rama=$(git rev-parse HEAD^2)
@@ -240,9 +268,21 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+      # Lo que ha pasado en cada prueba, de los cuatro trozos, para que «Las fotos nuevas»
+      # sepa si lo único en rojo son fotos. De todos, también de los verdes: si falta
+      # uno, es que se cayó antes de probar, y eso no son fotos.
+      - name: Guardar los resultados de cada prueba
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: resultados-e2e-${{ matrix.trozo }}
+          path: resultados-e2e/
+          if-no-files-found: ignore
+          retention-days: 7
+
       # Las capturas que no han coincidido, o que no existian, con el nombre que
-      # tendrian en su sitio (entrega V). Se bajan con `pnpm capturas:traer`, que
-      # junta las de los cuatro trozos, se miran, y si son lo que se queria se suben.
+      # tendrian en su sitio (entrega V). Las pone en su sitio «Las fotos nuevas», sola,
+      # si no hay nada más en rojo; si lo hay, se bajan a mano con `pnpm capturas:traer`.
       - name: Guardar las capturas nuevas si alguna no coincide
         if: failure()
         uses: actions/upload-artifact@v6
@@ -258,9 +298,98 @@ jobs:
   # los cuatro trozos y está en verde solo si los cuatro lo están, o si el mismo
   # código ya pasó en su rama (`ya-probado`). Un trozo cancelado o saltado sin
   # motivo es un rojo.
+  # ── Las fotos nuevas, solas (9-nov) ─────────────────────────────────────────
+  #
+  # Cuando una pantalla cambia a propósito, su foto de referencia deja de coincidir y la
+  # vuelta sale en rojo. Hasta el 9-nov había que bajarlas a mano, subirlas y esperar
+  # otra vuelta entera, y pasaba en casi cada pull request (Richi: «¿por qué siempre
+  # fallan las pantallas?»). Ahora, **si lo único en rojo son fotos**
+  # (`herramientas/solo-las-fotos.mjs`, que es estricto), este trabajo:
+  #
+  #   1. pone las fotos nuevas en `pruebas/e2e/capturas/linux/`, en un commit aparte en
+  #      la misma rama, firmado por el bot de GitHub (se ven en «Files changed»);
+  #   2. lanza otra vuelta sobre ese commit. Un `push` hecho con el token de GitHub no
+  #      lanza ninguna vuelta, pero una vuelta pedida a mano (`workflow_dispatch`) sí;
+  #   3. esa vuelta ve en `ya-probado` que solo trae fotos y se salta lo ya probado.
+  #
+  # Si hay cualquier otra cosa en rojo, no hace nada y la vuelta se queda en rojo. Nunca
+  # en `main`, que no recibe commits más que por pull request.
+  fotos:
+    name: Las fotos nuevas
+    needs: pantalla
+    if: ${{ !cancelled() && needs.pantalla.result == 'failure' && github.ref != 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: write
+    outputs:
+      subidas: ${{ steps.subir.outputs.subidas }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref }}
+
+      # Si alguien ha subido algo encima mientras tanto, esa vuelta nueva ya hará sus fotos.
+      - name: Que la rama siga donde estaba
+        id: rama
+        run: |
+          if [ "$(git rev-parse HEAD)" = "${{ github.sha }}" ]; then
+            echo "sigue=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::La rama se ha movido desde esta vuelta: las fotos las hará la vuelta nueva."
+            echo "sigue=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Los resultados de los cuatro trozos
+        if: steps.rama.outputs.sigue == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          pattern: resultados-e2e-*
+          path: ${{ runner.temp }}/resultados
+
+      - name: ¿Lo único en rojo son fotos?
+        id: mira
+        if: steps.rama.outputs.sigue == 'true'
+        run: node herramientas/solo-las-fotos.mjs "$RUNNER_TEMP/resultados" 4
+
+      - name: Las fotos que no coinciden
+        if: steps.mira.outputs.solo_fotos == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          pattern: capturas-nuevas-*
+          path: ${{ runner.temp }}/fotos
+          merge-multiple: true
+
+      - name: Ponerlas en su sitio, subirlas y probar otra vez
+        id: subir
+        if: steps.mira.outputs.solo_fotos == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cp "$RUNNER_TEMP"/fotos/linux/*.png pruebas/e2e/capturas/linux/
+          git add pruebas/e2e/capturas/linux
+          if git diff --cached --quiet; then
+            echo "::warning::Las fotos que no coincidían son iguales a las que ya había: no hay nada que subir."
+            exit 0
+          fi
+          {
+            echo "### Las fotos que cambian"
+            echo
+            git diff --cached --name-only | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
+          git -c user.name='github-actions[bot]' \
+            -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -q -m "Las fotos de referencia, rehechas por la integración continua" \
+            -m "Lo único en rojo en la vuelta ${{ github.run_id }} eran fotos que no coincidían (herramientas/solo-las-fotos.mjs)."
+          git push origin "HEAD:${{ github.ref_name }}"
+          gh workflow run integracion.yml --ref "${{ github.ref_name }}"
+          echo "subidas=true" >> "$GITHUB_OUTPUT"
+
   construccion:
     name: Construccion y presupuestos
-    needs: [ya-probado, pantalla]
+    needs: [ya-probado, pantalla, fotos]
     if: ${{ always() }}
     runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
     timeout-minutes: 5
@@ -273,6 +402,10 @@ jobs:
             echo "El mismo código ya pasó las pruebas de pantalla en su rama."
             exit 0
           fi
+          if [ "${{ needs.fotos.outputs.subidas }}" = "true" ]; then
+            echo "::error::Lo único en rojo eran fotos de pantallas que cambian a propósito. Las nuevas ya están en la rama, en un commit aparte, y se está probando ese commit: no hace falta hacer nada."
+            exit 1
+          fi
           if [ "${{ needs.pantalla.result }}" != "success" ]; then
             echo "::error::Alguna de las pruebas de pantalla no ha pasado. Mira los trozos de arriba."
             exit 1
@@ -280,6 +413,9 @@ jobs:
 
   migraciones:
     name: Migraciones reversibles
+    # Como Calidad: se salta solo con el commit de las fotos nuevas.
+    needs: ya-probado
+    if: ${{ !cancelled() && needs.ya-probado.outputs.fotos != 'true' }}
     runs-on: ubuntu-24.04 # Fijo, como Construccion: el 19-oct-2026 `ubuntu-latest` pasa a la 26 (ver integracion.yml)
     timeout-minutes: 10
     services:

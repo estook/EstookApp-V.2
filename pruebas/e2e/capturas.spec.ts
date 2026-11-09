@@ -31,8 +31,11 @@ import { abrirConTema, entrarEnLaApp, irA, type TemaDePrueba } from './en-la-app
  * ── Cuando una pantalla cambia a propósito ──────────────────────────────────
  *
  * La integración continua sale en rojo y guarda la captura nueva en el artefacto
- * `capturas-nuevas`. `pnpm capturas:traer` la baja a su sitio: se mira, y si es lo
- * que se quería, se sube. Eso es lo que hace de esto una prueba y no un álbum.
+ * `capturas-nuevas`. **Si lo único en rojo son fotos**, «Las fotos nuevas»
+ * (`integracion.yml`) las pone en su sitio ella sola, en un commit aparte en la misma
+ * rama, y lo prueba otra vez (9-nov). Ese commit se mira en el pull request, foto a
+ * foto, antes de fusionar: eso es lo que hace de esto una prueba y no un álbum. Si hay
+ * algo más en rojo, se bajan a mano con `pnpm capturas:traer`.
  *
  * Solo en Chromium: Safari en Linux dibuja las fuentes a su manera y cambia de
  * versión con cada Playwright, y una prueba que falla por el motor no dice nada de

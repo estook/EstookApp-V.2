@@ -49,10 +49,7 @@ export function BotonDeHacer({ alPulsar }: { readonly alPulsar: () => void }) {
       data-recorrido="hacer"
       data-escondido={escondido || undefined}
       className={clases(
-        'fixed right-e3 z-30 grid size-[56px] place-items-center overflow-hidden no-imprimir lg:right-e5',
-        // **El dibujo de Fogón llena el botón** (0143), recortado en redondo: su fondo oscuro con
-        // el aro naranja se ve en los dos temas, y el borde lo separa también del fondo oscuro.
-        'rounded-redondo border-2 border-naranja shadow-s3',
+        'fixed right-e3 z-30 grid size-[52px] place-items-center rounded-redondo shadow-s3 no-imprimir lg:right-e5',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja',
         // Con el desfase del visor, y fuera con el teclado, como la barra (repaso del 25-sep).
         'bottom-[calc(var(--alto-barra-movil)+env(safe-area-inset-bottom)+var(--spacing-e3)-var(--desfase-abajo,0px))] lg:bottom-e5',
@@ -64,10 +61,35 @@ export function BotonDeHacer({ alPulsar }: { readonly alPulsar: () => void }) {
           'max-lg:pointer-events-none max-lg:translate-y-[calc(100%+var(--spacing-e5))] max-lg:opacity-0 focus-visible:translate-y-0 focus-visible:opacity-100',
       )}
     >
-      <span className="grid size-[64px] place-items-center [&>img]:rounded-none">
-        <IconoDeFogon size={64} />
-      </span>
+      <CaraDeFogon lado={52} />
     </button>
+  );
+}
+
+/**
+ * **La cara de Fogón en redondo, con un solo aro** (0143). El dibujo trae su propio aro naranja
+ * a 47/128 del centro, y puesto entero en un círculo salían dos aros y Fogón descentrado (Richi
+ * lo vio en el móvil). Aquí se recorta **por dentro de su aro**, centrado, sobre el mismo fondo
+ * oscuro del dibujo, y el aro lo pone el círculo: uno, del grueso que toca. Fogón ocupa algo
+ * más de la mitad del círculo, como en su ventana.
+ */
+function CaraDeFogon({ lado }: { readonly lado: number }) {
+  // El dibujo a 1,23 veces el lado: su aro (73 % del dibujo) cae fuera del recorte (77 %).
+  const dibujo = Math.floor(lado * 1.23);
+  const recorte = Math.floor(lado * 0.77);
+  return (
+    <span
+      aria-hidden
+      className="grid shrink-0 place-items-center rounded-redondo border-2 border-naranja bg-[#090e11]"
+      style={{ width: lado, height: lado }}
+    >
+      <span
+        className="relative overflow-hidden rounded-redondo [&>img]:absolute [&>img]:left-1/2 [&>img]:top-1/2 [&>img]:max-w-none [&>img]:-translate-x-1/2 [&>img]:-translate-y-1/2 [&>img]:rounded-none"
+        style={{ width: recorte, height: recorte }}
+      >
+        <IconoDeFogon size={dibujo} />
+      </span>
+    </span>
   );
 }
 
@@ -151,9 +173,7 @@ export function HojaDeHacer({
             'bg-texto text-superficie hover:opacity-95',
           )}
         >
-          <span className="grid size-[40px] shrink-0 place-items-center rounded-redondo bg-superficie">
-            <IconoDeFogon size={26} />
-          </span>
+          <CaraDeFogon lado={42} />
           <span className="min-w-0 flex-1">
             <span className="block text-cuerpo font-semibold">Pregúntale a Fogón</span>
             <span className="block truncate text-secundario opacity-80">

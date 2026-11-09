@@ -8,6 +8,7 @@ import {
   cantidad,
   comoPrecioPorUnidad,
   comoSeLeeEscalada,
+  comoSeVeLaSeccion,
   comoSeLeeLaCantidad,
   costeAproximado,
   costeDeLinea,
@@ -27,7 +28,9 @@ import {
   rayasQueCruza,
   type Alergeno,
   type CanalDeVenta,
+  type ColorDeLaBotonera,
   type FechaOperativa,
+  type IconoDeLaSeccion,
   type Semaforo,
   type UnidadDeUso,
   type VendidoConSuReceta,
@@ -149,7 +152,13 @@ export interface MisFichas {
   readonly conImportes: boolean;
   /** El objetivo de food cost del local, en fracción (0,30). Solo con costes. */
   readonly objetivo?: number | null;
-  readonly secciones: readonly { readonly id: string; readonly nombre: string }[];
+  /** Con su color y su icono, los mismos que en la Carta y el TPV (0143). */
+  readonly secciones: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly color: ColorDeLaBotonera | null;
+    readonly icono: IconoDeLaSeccion;
+  }[];
   readonly platos: readonly PlatoEnLaLista[];
   readonly elaboraciones: readonly ElaboracionEnLaLista[];
   readonly cifras: {
@@ -183,8 +192,15 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
     const libro = await elLibroDelLocal(contexto, localId, puede.costes);
     const [platos, secciones, cuenta, enMenus] = await Promise.all([
       losPlatos(contexto, localId, null, libro),
-      contexto.sql<{ id: string; nombre: string }[]>`
-        select id, nombre from estook.seccion_de_carta
+      contexto.sql<
+        {
+          id: string;
+          nombre: string;
+          color: ColorDeLaBotonera | null;
+          icono: IconoDeLaSeccion | null;
+        }[]
+      >`
+        select id, nombre, color, icono from estook.seccion_de_carta
          where local_id = ${localId}::uuid order by orden, nombre
       `,
       puede.costes ? loDeLaCuenta(contexto, localId) : Promise.resolve(null),
@@ -275,7 +291,7 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
       puedeEditar: puede.editar,
       conImportes: puede.costes,
       ...(cuenta === null ? {} : { objetivo: cuenta.objetivo }),
-      secciones,
+      secciones: secciones.map((x) => ({ id: x.id, nombre: x.nombre, ...comoSeVeLaSeccion(x) })),
       platos: enLaLista,
       elaboraciones,
       cifras: {

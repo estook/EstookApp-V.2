@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
-import { comoPorcentaje, enDinero } from '@estook/dominio';
+import {
+  centimos,
+  comoPorcentaje,
+  enDinero,
+  laMetaDelPeriodo,
+  type PeriodoDelObjetivo,
+} from '@estook/dominio';
 import {
   Aviso,
   Boton,
+  CampoMoneda,
   Cargando,
   ErrorEnCristiano,
   EstadoVacio,
@@ -25,7 +32,8 @@ import { ElegirElPeriodo, comoSeLlamaElPeriodo } from './elPeriodo.tsx';
  *
  * El equipo de mayor a menor, **por ventas o por € la hora**: «no es lo mismo que alguien de 20 h
  * venda 500 a la semana que alguien de 40». Los objetivos, **aparte, en su botón**, con General y
- * Por empleado (Richi, 8-nov: «hacerlo más por partes, no todo de golpe»).
+ * Por empleado (Richi, 8-nov: «hacerlo más por partes, no todo de golpe»), **en € a la semana o al
+ * mes** desde el repaso del 8-nov (0143): «lo más sencillo e intuitivo siempre es lo mejor».
  *
  * **La lista, solo para quien ve las ventas.** Cada camarero ve el suyo y nada más, si el gerente
  * lo deja (`cada_uno_lo_ve`). Solo con Estook TPV: sin él no hay camarero en cada venta.
@@ -41,9 +49,11 @@ interface VentaDeUno {
   readonly mesas: number;
   readonly ticketMedio: number | null;
   readonly porHora: number | null;
-  readonly objetivoPorHora: number | null;
+  /** Una API de antes (en € por hora) no lo manda: entonces, sin objetivo. */
+  readonly objetivo?: { readonly periodo: PeriodoDelObjetivo; readonly centimos: number } | null;
   readonly objetivoSuyo: boolean;
   readonly meta: number | null;
+  readonly metaHastaHoy?: number | null;
   readonly platos: readonly { readonly nombre: string; readonly uds: number }[];
 }
 
@@ -56,10 +66,17 @@ interface LaVentaDeCadaUno {
   readonly siguienteDel: string | null;
   readonly modo: 'todos' | 'yo';
   readonly puedeCambiar: boolean;
-  readonly general: { readonly centimosPorHora: number; readonly cadaUnoLoVe: boolean } | null;
+  readonly general: {
+    readonly periodo?: PeriodoDelObjetivo;
+    readonly centimos?: number;
+    readonly cadaUnoLoVe: boolean;
+  } | null;
   readonly personas: readonly VentaDeUno[];
-  readonly distintos: readonly { readonly personaId: string; readonly centimosPorHora: number }[];
+  readonly distintos: readonly { readonly personaId: string; readonly centimos?: number }[];
 }
+
+/** «al mes», «a la semana»: como se dice el periodo de un objetivo. */
+const AL: Readonly<Record<PeriodoDelObjetivo, string>> = { semana: 'a la semana', mes: 'al mes' };
 
 const horas = (minutos: number) =>
   `${(minutos / 60).toLocaleString('es-ES', { maximumFractionDigits: 1 })} h`;
@@ -294,13 +311,11 @@ function Progreso({ uno }: { readonly uno: VentaDeUno }) {
     return <span className="text-etiqueta text-texto-tenue">Sin objetivo</span>;
   }
   const parte = uno.ventas / uno.meta;
-  const tono = parte >= 1 ? 'bien' : parte >= 0.85 ? 'atencion' : 'mal';
-  const color =
-    tono === 'bien'
-      ? 'var(--color-bien)'
-      : tono === 'atencion'
-        ? 'var(--color-atencion)'
-        : 'var(--color-mal)';
+  // **Verde si va por delante de lo que toca a estas alturas** del periodo; ámbar si va por
+  // detrás (0143). A mitad de mes, la mitad de la meta ya es ir bien.
+  const aEstasAlturas = uno.metaHastaHoy ?? uno.meta;
+  const tono = parte >= 1 || uno.ventas >= aEstasAlturas ? 'bien' : 'atencion';
+  const color = tono === 'bien' ? 'var(--color-bien)' : 'var(--color-atencion)';
   return (
     <span className="flex flex-col gap-[2px]">
       <span className="flex items-center gap-e2">
@@ -312,7 +327,12 @@ function Progreso({ uno }: { readonly uno: VentaDeUno }) {
         </span>
         <Etiqueta tono={tono}>{comoPorcentaje(parte)}</Etiqueta>
       </span>
-      <span className="text-etiqueta text-texto-suave">de {dinero(uno.meta)}</span>
+      <span className="text-etiqueta text-texto-suave">
+        de {dinero(uno.meta)}
+        {tono === 'atencion' && aEstasAlturas < uno.meta
+          ? ` · a estas alturas, ${dinero(aEstasAlturas)}`
+          : ''}
+      </span>
     </span>
   );
 }
@@ -333,9 +353,14 @@ function LaFicha({
           <div className="flex flex-col gap-e2">
             <Progreso uno={uno} />
             <p className="text-secundario">
-              <b className="tabular-nums">{dinero(uno.ventas)}</b> vendidos en {horas(uno.minutos)},{' '}
-              con {dinero(uno.objetivoPorHora ?? 0)} la hora
-              {uno.objetivoSuyo ? ' (el suyo)' : ' (el general)'}.
+              <b className="tabular-nums">{dinero(uno.ventas)}</b> vendidos en {horas(uno.minutos)}.
+              {uno.objetivo !== undefined && uno.objetivo !== null && (
+                <>
+                  {' '}
+                  Objetivo: {dinero(uno.objetivo.centimos)} {AL[uno.objetivo.periodo]}
+                  {uno.objetivoSuyo ? ' (el suyo)' : ' (el general)'}.
+                </>
+              )}
             </p>
           </div>
         )}
@@ -378,47 +403,11 @@ function LaFicha({
 
 // ── La hoja de los objetivos ─────────────────────────────────────────────────
 
-function Paso({
-  valor,
-  alCambiar,
-  etiqueta,
-}: {
-  readonly valor: number;
-  readonly alCambiar: (v: number) => void;
-  readonly etiqueta: string;
-}) {
-  return (
-    <div role="group" aria-label={etiqueta} className="flex items-center gap-e3">
-      <div className="flex items-center overflow-hidden rounded-medio border border-borde-fuerte">
-        <button
-          type="button"
-          aria-label="Un euro menos"
-          className="min-h-toque min-w-toque text-pantalla font-semibold"
-          onClick={() => {
-            alCambiar(Math.max(100, valor - 100));
-          }}
-        >
-          −
-        </button>
-        <output className="min-w-[3rem] text-center text-pantalla font-semibold tabular-nums">
-          {valor / 100}
-        </output>
-        <button
-          type="button"
-          aria-label="Un euro más"
-          className="min-h-toque min-w-toque text-pantalla font-semibold"
-          onClick={() => {
-            alCambiar(Math.min(100_000, valor + 100));
-          }}
-        >
-          +
-        </button>
-      </div>
-      <span className="text-cuerpo font-semibold">€ por hora</span>
-    </div>
-  );
-}
-
+/**
+ * **Los objetivos, en € a la semana o al mes** (0143). Una cifra y su periodo para todos, y una
+ * distinta para quien haga falta (el de media jornada). Sin cifra puesta no se guarda: no hay un
+ * número de fábrica que nadie ha elegido.
+ */
 function LosObjetivos({
   d,
   alCerrar,
@@ -429,25 +418,37 @@ function LosObjetivos({
   const { cliente } = usarSesion();
   const cache = useQueryClient();
   const [pestana, setPestana] = useState<'general' | 'persona'>('general');
-  const [general, setGeneral] = useState(d.general?.centimosPorHora ?? 4500);
+  const [periodo, setPeriodo] = useState<PeriodoDelObjetivo>(d.general?.periodo ?? 'mes');
+  const [general, setGeneral] = useState<number | null>(d.general?.centimos ?? null);
   const [loVen, setLoVen] = useState(d.general?.cadaUnoLoVe ?? true);
   const [distintos, setDistintos] = useState<ReadonlyMap<string, number>>(
-    new Map(d.distintos.map((x) => [x.personaId, x.centimosPorHora])),
+    new Map(
+      d.distintos.flatMap((x) => (x.centimos === undefined ? [] : [[x.personaId, x.centimos]])),
+    ),
   );
   const [editando, setEditando] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
-  const ejemplo = d.personas[0];
+
+  // Lo otro, de orientación: 4.000 € al mes son unos 933 € a la semana (en un mes de 30 días).
+  const loOtro =
+    general === null
+      ? null
+      : periodo === 'mes'
+        ? `Unos ${dinero(laMetaDelPeriodo({ periodo, centimos: general }, '2026-11-02', '2026-11-08'))} a la semana.`
+        : `Unos ${dinero(laMetaDelPeriodo({ periodo, centimos: general }, '2026-11-01', '2026-11-30'))} al mes.`;
 
   async function guardar() {
+    if (general === null) return;
     setGuardando(true);
     setError(null);
     const respuesta = await cliente.ejecutar('guardar_los_objetivos_de_venta', {
+      periodo,
       general,
       cada_uno_lo_ve: loVen,
-      distintos: [...distintos.entries()].map(([persona_id, centimos_por_hora]) => ({
+      distintos: [...distintos.entries()].map(([persona_id, cuanto]) => ({
         persona_id,
-        centimos_por_hora,
+        centimos: cuanto,
       })),
     });
     setGuardando(false);
@@ -460,13 +461,13 @@ function LosObjetivos({
   }
 
   return (
-    <Hoja abierta titulo="Objetivos" alCerrar={alCerrar}>
-      <div className="flex flex-col gap-e4 px-e4 pb-e4">
+    <Hoja abierta ajustada titulo="Objetivos" alCerrar={alCerrar}>
+      <div className="flex flex-col gap-e4 px-e4 pb-e4 pt-e3">
         <Segmentado
           etiqueta="Qué objetivo"
           ancho
           opciones={[
-            { valor: 'general' as const, texto: 'General' },
+            { valor: 'general' as const, texto: 'Para todos' },
             { valor: 'persona' as const, texto: 'Por empleado' },
           ]}
           valor={pestana}
@@ -475,13 +476,24 @@ function LosObjetivos({
         {pestana === 'general' ? (
           <>
             <div className="flex flex-col gap-e3 rounded-mayor border border-borde p-e4">
-              <p className="text-cuerpo font-semibold">¿Cuánto debería vender cada hora de sala?</p>
-              <Paso valor={general} alCambiar={setGeneral} etiqueta="El objetivo general" />
-              <p className="text-secundario text-texto-suave">
-                {ejemplo === undefined
-                  ? 'Lo de cada uno sale de sus horas fichadas: con 38 horas, 38 veces esto.'
-                  : `Con ${dinero(general)} la hora, ${ejemplo.nombre} (${horas(ejemplo.minutos)}) tiene ${dinero((general * ejemplo.minutos) / 60)} en este periodo. Sale de sus horas fichadas.`}
-              </p>
+              <Segmentado
+                etiqueta="De qué periodo"
+                ancho
+                opciones={[
+                  { valor: 'semana' as const, texto: 'Semana' },
+                  { valor: 'mes' as const, texto: 'Mes' },
+                ]}
+                valor={periodo}
+                alElegir={setPeriodo}
+              />
+              <CampoMoneda
+                etiqueta={`Lo que debería vender cada uno ${AL[periodo]}, sin IVA`}
+                valor={general === null ? null : centimos(general)}
+                alCambiar={(v) => {
+                  setGeneral(v === null ? null : Number(v));
+                }}
+              />
+              {loOtro !== null && <p className="text-secundario text-texto-suave">{loOtro}</p>}
             </div>
             <div className="rounded-mayor border border-borde p-e4">
               <Interruptor
@@ -490,7 +502,7 @@ function LosObjetivos({
                 alCambiar={setLoVen}
               />
               <p className="mt-e1 text-secundario text-texto-suave">
-                En Servicio › Empleados, solo el suyo: nunca la lista de los demás.
+                Solo el suyo: nunca la lista de los demás.
               </p>
             </div>
           </>
@@ -510,26 +522,29 @@ function LosObjetivos({
                     onClick={() => {
                       setEditando(editando === p.personaId ? null : p.personaId);
                     }}
-                    className="flex w-full items-center justify-between gap-e3 text-left"
+                    className="flex min-h-toque w-full items-center justify-between gap-e3 text-left"
                   >
                     <span>
                       <span className="block text-cuerpo font-semibold">{p.nombre}</span>
                       <span className="block text-etiqueta text-texto-suave">
-                        {suyo === undefined ? 'El general' : 'Uno suyo'}
+                        {suyo === undefined ? 'El de todos' : 'Uno suyo'}
                       </span>
                     </span>
                     <b className={clases('tabular-nums', suyo !== undefined && 'text-naranja')}>
-                      {dinero(suyo ?? general)} / h
+                      {suyo === undefined && general === null
+                        ? '—'
+                        : `${dinero(suyo ?? general ?? 0)} ${AL[periodo]}`}
                     </b>
                   </button>
                   {editando === p.personaId && (
-                    <div className="mt-e3 flex flex-wrap items-center gap-e3">
-                      <Paso
-                        valor={suyo ?? general}
-                        etiqueta={`El objetivo de ${p.nombre}`}
+                    <div className="mt-e3 flex flex-col gap-e2">
+                      <CampoMoneda
+                        etiqueta={`El objetivo de ${p.nombre} ${AL[periodo]}`}
+                        valor={suyo === undefined ? null : centimos(suyo)}
                         alCambiar={(v) => {
                           const nuevos = new Map(distintos);
-                          nuevos.set(p.personaId, v);
+                          if (v === null) nuevos.delete(p.personaId);
+                          else nuevos.set(p.personaId, Number(v));
                           setDistintos(nuevos);
                         }}
                       />
@@ -542,7 +557,7 @@ function LosObjetivos({
                             setDistintos(nuevos);
                           }}
                         >
-                          Volver al general
+                          Volver al de todos
                         </Boton>
                       )}
                     </div>
@@ -556,6 +571,7 @@ function LosObjetivos({
         <Boton
           tono="principal"
           ancho
+          disabled={general === null}
           cargando={guardando}
           textoCargando="Guardando"
           onClick={() => {
@@ -564,6 +580,11 @@ function LosObjetivos({
         >
           Guardar
         </Boton>
+        {general === null && (
+          <p className="-mt-e2 text-center text-secundario text-texto-suave">
+            Pon la cifra para todos para guardar.
+          </p>
+        )}
       </div>
     </Hoja>
   );

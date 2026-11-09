@@ -67,7 +67,15 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: enCI,
   retries: enCI ? 1 : 0,
-  reporter: enCI ? [['github'], ['html', { open: 'never' }]] : [['list']],
+  // El JSON lo lee «Las fotos nuevas» de `integracion.yml`, para saber si lo único en
+  // rojo son fotos (`herramientas/solo-las-fotos.mjs`, 9-nov).
+  reporter: enCI
+    ? [
+        ['github'],
+        ['html', { open: 'never' }],
+        ['json', { outputFile: 'resultados-e2e/resultados.json' }],
+      ]
+    : [['list']],
   // **El rastro, del intento que falla** (25-sep). Con `on-first-retry` se grababa la
   // segunda vuelta, la que pasa: de cada prueba repetida de Safari quedaba el rastro
   // de cuando salió bien, y ni uno de cuando falló. Así se graba la primera y solo

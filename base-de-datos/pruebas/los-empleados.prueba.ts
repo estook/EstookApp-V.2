@@ -56,13 +56,15 @@ afterAll(async () => {
 interface LaVenta {
   modo: string;
   puedeCambiar: boolean;
-  general: { centimosPorHora: number; cadaUnoLoVe: boolean } | null;
+  general: { periodo: string; centimos: number; cadaUnoLoVe: boolean } | null;
   personas: {
     personaId: string;
     ventas: number;
     mesas: number;
-    objetivoPorHora: number | null;
+    objetivo: { periodo: string; centimos: number } | null;
     objetivoSuyo: boolean;
+    meta: number | null;
+    metaHastaHoy: number | null;
     platos: { nombre: string; uds: number }[];
   }[];
 }
@@ -83,30 +85,53 @@ describe('lo que vende cada uno', () => {
     ]);
   });
 
-  it('el gerente pone el general y uno distinto, y la camarera no puede', async () => {
+  it('el gerente pone el general al mes y uno distinto, y la camarera no puede (0143)', async () => {
     const token = await api.entrar(ROSA);
     losDatos(
       await api.ejecutar(token, 'guardar_los_objetivos_de_venta', {
-        general: 4500,
+        periodo: 'mes',
+        general: 400_000,
         cada_uno_lo_ve: true,
-        distintos: [{ persona_id: rosa, centimos_por_hora: 3500 }],
+        distintos: [{ persona_id: rosa, centimos: 200_000 }],
       }),
     );
     const venta = losDatos<LaVenta>(await api.consultar(token, 'la_venta_de_cada_uno', semana));
-    expect(venta.general).toEqual({ centimosPorHora: 4500, cadaUnoLoVe: true });
+    expect(venta.general).toEqual({ periodo: 'mes', centimos: 400_000, cadaUnoLoVe: true });
+    // **Mirando una semana**, la meta es la del mes repartida por días: 4.000 € × 7 / 31 (octubre).
     expect(venta.personas.find((p) => p.personaId === sara)).toMatchObject({
-      objetivoPorHora: 4500,
+      objetivo: { periodo: 'mes', centimos: 400_000 },
       objetivoSuyo: false,
+      meta: 90_323,
+      // A estas alturas: el reloj de las pruebas va por el martes 20, el 2.º día de 7.
+      metaHastaHoy: 25_807,
     });
     expect(venta.personas.find((p) => p.personaId === rosa)).toMatchObject({
-      objetivoPorHora: 3500,
+      objetivo: { periodo: 'mes', centimos: 200_000 },
       objetivoSuyo: true,
+      meta: 45_161,
     });
+    // Mirando el mes, la meta es la del mes.
+    const mes = losDatos<LaVenta>(
+      await api.consultar(token, 'la_venta_de_cada_uno', { periodo: 'mes', del: '2026-10-20' }),
+    );
+    expect(mes.personas.find((p) => p.personaId === sara)?.meta).toBe(400_000);
+
+    // Lo de antes en € por hora ya no entra.
+    expect(
+      elFallo(
+        await api.ejecutar(token, 'guardar_los_objetivos_de_venta', {
+          general: 4500,
+          cada_uno_lo_ve: true,
+          distintos: [],
+        }),
+      ),
+    ).toBe('faltan_datos');
 
     const deSara = await api.entrar(SARA);
     expect(
       elFallo(
         await api.ejecutar(deSara, 'guardar_los_objetivos_de_venta', {
+          periodo: 'semana',
           general: 100,
           cada_uno_lo_ve: true,
           distintos: [],
@@ -125,7 +150,8 @@ describe('lo que vende cada uno', () => {
     const token = await api.entrar(ROSA);
     losDatos(
       await api.ejecutar(token, 'guardar_los_objetivos_de_venta', {
-        general: 4500,
+        periodo: 'semana',
+        general: 92_000,
         cada_uno_lo_ve: false,
         distintos: [],
       }),

@@ -77,3 +77,27 @@ intuitivo siempre gana**.
    demasiado en la lista. En el TPV siguen macizas, que es donde se buscan de un vistazo.
 5. **La Carta aguanta una API de antes**: entre fusionar y desplegar la API, las secciones se ven con lo que propone su
    nombre.
+
+## 6 · R2 · 2 · Escandallos, Menús y objetivos, construido (rama `el-repaso-del-8-nov-r2-2`, migración 0115)
+
+- **Los objetivos, en € a la semana o al mes** (0115): una cifra y su periodo para todos, y una distinta para quien
+  haga falta. Los de € por hora se borran al migrar (Richi, 9-nov). Si se mira otro periodo, la meta se reparte por
+  días (4.000 € al mes son 933,33 € en una semana de noviembre), y **cada barra dice si va por delante o por detrás de
+  lo que toca a estas alturas** (`laMetaDelPeriodo` y `laMetaHastaHoy`, en el dominio y con sus pruebas).
+- **Escandallos**, a quien ve costes: arriba **el food cost medio en su anillo**, con el objetivo y cuántos pasan o
+  están sin hacer; debajo, **los platos de peor a mejor**, cada uno con su anillo del color del semáforo, lo que
+  cuesta, y su foto o el icono de su sección. Sin costes, por secciones como antes.
+- **Menús**: el precio y «Descargar» en una línea; cada día con **un punto que dice si tiene menú**; «Copiar la semana
+  pasada» y «Otro menú» en «⋯»; «Añadir plato» ligero.
+- **El botón de Fogón**, rehecho tras verlo Richi en el móvil (dos aros y Fogón descentrado y cortado): el dibujo se
+  recorta por dentro de su aro y el aro lo pone el botón, uno solo; la misma cara en la ventana.
+
+### Lo que decidió la IA al construirlo
+
+1. **El periodo es uno para todo el local**: el de todos y los distintos se guardan con el mismo. Con dos periodos
+   mezclados, la lista de Empleados no se podría comparar.
+2. **Sin cifra puesta no se guarda**: no hay un objetivo de fábrica que nadie ha elegido (antes salían 45 €/h).
+3. **«Por delante» o «por detrás» con lo que toca a estas alturas**, y no con la meta entera: a mitad de mes, la mitad
+   de la meta ya es ir bien. Verde o ámbar, sin rojo: un camarero no está «mal» el día 3.
+4. **El detalle de un escandallo no se ha rehecho**: ya tenía lo de la maqueta (coste, food cost con su objetivo,
+   precio recomendado, lo que deja en cada canal y la barra de cada ingrediente).

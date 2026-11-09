@@ -1114,3 +1114,11 @@
      borra la rama de debajo: P2 y P3 se quedaron fuera de `main`, y `bd:migrar` decía «ya estaba al día» (8-nov).
      **Todo pull request apunta a `main`.** Si una entrega necesita la anterior, se abre cuando la anterior ya
      está fusionada, o se cambia su base a `main` antes de dar los pasos a Richi.
+265. **Lo que obliga a hacer lo mismo a mano en cada entrega se automatiza, no se avisa.** Cada pantalla que
+     cambiaba a propósito dejaba la vuelta en rojo por sus fotos de referencia; había que bajarlas, subirlas y
+     esperar otra vuelta entera, y pasó en casi cada pull request. Avisarlo en el pull request no lo arreglaba
+     (Richi, 9-nov: «¿por qué siempre fallan las pantallas?, perdemos mucho tiempo»). **Ahora, si lo único en rojo
+     son fotos, la integración continua las sube sola y se prueba otra vez** («Las fotos nuevas», con
+     `herramientas/solo-las-fotos.mjs`, que es estricto). Las fotos se siguen mirando, en el pull request. Y
+     **la regla de `main` no da por buena una comprobación obligatoria «saltada»**: lo que se salta son los pasos,
+     y el trabajo sale en verde.

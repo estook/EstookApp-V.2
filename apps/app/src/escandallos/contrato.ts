@@ -1,4 +1,11 @@
-import { enPuntos, type Alergeno, type CanalDeVenta, type UnidadDeUso } from '@estook/dominio';
+import {
+  enPuntos,
+  type Alergeno,
+  type CanalDeVenta,
+  type ColorDeLaBotonera,
+  type IconoDeLaSeccion,
+  type UnidadDeUso,
+} from '@estook/dominio';
 import { sinAcentos } from '@estook/ui';
 
 /**
@@ -57,7 +64,13 @@ export interface MisFichas {
   readonly puedeEditar: boolean;
   readonly conImportes: boolean;
   readonly objetivo?: number | null;
-  readonly secciones: readonly { readonly id: string; readonly nombre: string }[];
+  /** Con su color y su icono (0143); una API de antes no los manda. */
+  readonly secciones: readonly {
+    readonly id: string;
+    readonly nombre: string;
+    readonly color?: ColorDeLaBotonera | null;
+    readonly icono?: IconoDeLaSeccion;
+  }[];
   readonly platos: readonly PlatoEnLaLista[];
   readonly elaboraciones: readonly ElaboracionEnLaLista[];
   readonly cifras: {

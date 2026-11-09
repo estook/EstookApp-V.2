@@ -1,10 +1,14 @@
 import { z } from 'zod';
 import {
+  PERIODOS_DEL_OBJETIVO,
   PERIODOS_DEL_SERVICIO,
   alCentimo,
   elPeriodoDelServicio,
   jornadaDe,
-  loQueDeberiaVender,
+  laMetaDelPeriodo,
+  laMetaHastaHoy,
+  type ObjetivoDeVenta,
+  type PeriodoDelObjetivo,
   type PeriodoDelServicio,
 } from '@estook/dominio';
 import { comando, consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -27,8 +31,8 @@ import { comoLista } from '../listas.ts';
  *                                  el equipo, de mayor a menor, con lo que vende, por hora fichada y
  *                                  frente a su objetivo. Los demás, también un jefe de cocina o la
  *                                  gestoría: solo lo suyo, y solo si el gerente deja que cada uno lo vea
- *   guardar_los_objetivos_de_venta el general en € por hora, uno distinto para quien haga falta, y
- *                                  si cada uno ve el suyo
+ *   guardar_los_objetivos_de_venta el general **en € a la semana o al mes** (0143), uno distinto
+ *                                  para quien haga falta, y si cada uno ve el suyo
  *
  * Richi: «que platos han vendido más los empleados y dinero total vendido por ellos de mayor a
  * menor… dependiendo de sus horas, haciendo una proporción, ver quién gana más para el local».
@@ -66,11 +70,13 @@ export interface VentaDeUno {
   readonly ticketMedio: number | null;
   /** Lo vendido por hora fichada, sin IVA. Nulo sin horas. */
   readonly porHora: number | null;
-  /** Su objetivo por hora: el suyo, o el general. Nulo si no hay ninguno. */
-  readonly objetivoPorHora: number | null;
+  /** Su objetivo (0143): el suyo, o el general. Nulo si no hay ninguno. */
+  readonly objetivo: ObjetivoDeVenta | null;
   readonly objetivoSuyo: boolean;
-  /** Lo que debería haber vendido con sus horas. */
+  /** Lo que debería vender **en el periodo que se mira**, repartido por días si es otro. */
   readonly meta: number | null;
+  /** Lo que toca llevar vendido hoy: dice si va por delante o por detrás. */
+  readonly metaHastaHoy: number | null;
   readonly platos: readonly { readonly nombre: string; readonly uds: number }[];
 }
 
@@ -84,17 +90,26 @@ export interface LaVentaDeCadaUno {
   /** «todos»: la lista entera. «yo»: solo lo de quien mira. */
   readonly modo: 'todos' | 'yo';
   readonly puedeCambiar: boolean;
-  readonly general: { readonly centimosPorHora: number; readonly cadaUnoLoVe: boolean } | null;
+  readonly general: {
+    readonly periodo: PeriodoDelObjetivo;
+    readonly centimos: number;
+    readonly cadaUnoLoVe: boolean;
+  } | null;
   readonly personas: readonly VentaDeUno[];
-  /** Los del equipo con un objetivo distinto, para la hoja de Objetivos. */
-  readonly distintos: readonly { readonly personaId: string; readonly centimosPorHora: number }[];
+  /** Los del equipo con un objetivo distinto, para la hoja de Objetivos (en el periodo del general). */
+  readonly distintos: readonly { readonly personaId: string; readonly centimos: number }[];
 }
 
 async function losObjetivos(contexto: Contexto, localId: string) {
   const filas = await contexto.sql<
-    { persona_id: string | null; centimos_por_hora: number; cada_uno_lo_ve: boolean | null }[]
+    {
+      persona_id: string | null;
+      periodo: PeriodoDelObjetivo;
+      centimos: number;
+      cada_uno_lo_ve: boolean | null;
+    }[]
   >`
-    select persona_id::text as persona_id, centimos_por_hora, cada_uno_lo_ve
+    select persona_id::text as persona_id, periodo, centimos, cada_uno_lo_ve
       from estook.objetivo_de_venta where local_id = ${localId}::uuid
   `;
   const general = filas.find((f) => f.persona_id === null);
@@ -103,13 +118,14 @@ async function losObjetivos(contexto: Contexto, localId: string) {
       general === undefined
         ? null
         : {
-            centimosPorHora: general.centimos_por_hora,
+            periodo: general.periodo,
+            centimos: general.centimos,
             cadaUnoLoVe: general.cada_uno_lo_ve ?? true,
           },
     distintos: filas.flatMap((f) =>
       f.persona_id === null
         ? []
-        : [{ personaId: f.persona_id, centimosPorHora: f.centimos_por_hora }],
+        : [{ personaId: f.persona_id, periodo: f.periodo, centimos: f.centimos }],
     ),
   };
 }
@@ -142,13 +158,27 @@ export const laVentaDeCadaUno = consulta<z.infer<typeof entrada>, LaVentaDeCadaU
       puedeCambiar,
       // Los objetivos de los demás, solo para quien los pone.
       general: puedeCambiar ? objetivos.general : null,
-      distintos: puedeCambiar ? objetivos.distintos : [],
+      distintos: puedeCambiar
+        ? objetivos.distintos.map((d) => ({ personaId: d.personaId, centimos: d.centimos }))
+        : [],
     };
+    // Su objetivo (el suyo o el general), y lo que le toca en el periodo que se mira (0143).
     const objetivoDe = (personaId: string) => {
       const suyo = objetivos.distintos.find((d) => d.personaId === personaId);
+      const objetivo: ObjetivoDeVenta | null =
+        suyo !== undefined
+          ? { periodo: suyo.periodo, centimos: suyo.centimos }
+          : objetivos.general === null
+            ? null
+            : { periodo: objetivos.general.periodo, centimos: objetivos.general.centimos };
+      const meta =
+        objetivo === null ? null : laMetaDelPeriodo(objetivo, periodo.desde, periodo.hasta);
       return {
-        objetivoPorHora: suyo?.centimosPorHora ?? objetivos.general?.centimosPorHora ?? null,
+        objetivo,
         objetivoSuyo: suyo !== undefined,
+        meta,
+        metaHastaHoy:
+          meta === null ? null : laMetaHastaHoy(meta, periodo.desde, periodo.hasta, hoy),
       };
     };
 
@@ -174,7 +204,6 @@ export const laVentaDeCadaUno = consulta<z.infer<typeof entrada>, LaVentaDeCadaU
       `;
       const minutos = Math.floor(Number(horas?.segundos ?? 0) / 60);
       const ventas = sinIva(conIva, iva);
-      const { objetivoPorHora, objetivoSuyo } = objetivoDe(personaId);
       return {
         ...comun,
         modo: 'yo',
@@ -187,9 +216,7 @@ export const laVentaDeCadaUno = consulta<z.infer<typeof entrada>, LaVentaDeCadaU
             mesas: vendido.mesas,
             ticketMedio: vendido.mesas === 0 ? null : alCentimo(conIva / vendido.mesas),
             porHora: minutos === 0 ? null : alCentimo((ventas * 60) / minutos),
-            objetivoPorHora,
-            objetivoSuyo,
-            meta: objetivoPorHora === null ? null : loQueDeberiaVender(objetivoPorHora, minutos),
+            ...objetivoDe(personaId),
             platos: [],
           },
         ],
@@ -233,7 +260,6 @@ export const laVentaDeCadaUno = consulta<z.infer<typeof entrada>, LaVentaDeCadaU
       const minutos = Math.floor(minutosDe.get(personaId) ?? 0);
       const ventas = sinIva(uno.conIva, iva);
       const suyasMesas = mesasDe.get(personaId) ?? 0;
-      const { objetivoPorHora, objetivoSuyo } = objetivoDe(personaId);
       return {
         personaId,
         nombre: nombres.find((n) => n.id === personaId)?.nombre ?? 'Sin nombre',
@@ -242,9 +268,7 @@ export const laVentaDeCadaUno = consulta<z.infer<typeof entrada>, LaVentaDeCadaU
         mesas: suyasMesas,
         ticketMedio: suyasMesas === 0 ? null : alCentimo(uno.conIva / suyasMesas),
         porHora: minutos === 0 ? null : alCentimo((ventas * 60) / minutos),
-        objetivoPorHora,
-        objetivoSuyo,
-        meta: objetivoPorHora === null ? null : loQueDeberiaVender(objetivoPorHora, minutos),
+        ...objetivoDe(personaId),
         platos: [...uno.platos.entries()]
           .map(([nombre, uds]) => ({ nombre, uds }))
           .sort((a, b) => b.uds - a.uds)
@@ -260,8 +284,10 @@ export const laVentaDeCadaUno = consulta<z.infer<typeof entrada>, LaVentaDeCadaU
 
 export const entradaObjetivosDeVenta = z
   .object({
-    /** En céntimos por hora: de 1 € a 1.000 €. */
-    general: z.number().int().min(100).max(100_000),
+    /** De qué es la cifra: la semana o el mes (0143). Vale para el general y para los distintos. */
+    periodo: z.enum(PERIODOS_DEL_OBJETIVO),
+    /** En céntimos, sin IVA: de 1 € a 1.000.000 €. */
+    general: z.number().int().min(100).max(100_000_000),
     cada_uno_lo_ve: z.boolean(),
     /** Los que tienen uno distinto. Quien no está, vuelve al general. */
     distintos: z
@@ -269,7 +295,7 @@ export const entradaObjetivosDeVenta = z
         z
           .object({
             persona_id: z.string().uuid(),
-            centimos_por_hora: z.number().int().min(100).max(100_000),
+            centimos: z.number().int().min(100).max(100_000_000),
           })
           .strict(),
       )
@@ -301,10 +327,11 @@ export const guardarLosObjetivosDeVenta = comando<
       }
     }
     await contexto.sql`
-      insert into estook.objetivo_de_venta (local_id, persona_id, centimos_por_hora, cada_uno_lo_ve, cambiado_por)
-      values (${localId}::uuid, null, ${entrada.general}, ${entrada.cada_uno_lo_ve}, ${quien}::uuid)
+      insert into estook.objetivo_de_venta (local_id, persona_id, periodo, centimos, cada_uno_lo_ve, cambiado_por)
+      values (${localId}::uuid, null, ${entrada.periodo}, ${entrada.general}, ${entrada.cada_uno_lo_ve}, ${quien}::uuid)
       on conflict (local_id, persona_id) do update
-        set centimos_por_hora = excluded.centimos_por_hora,
+        set periodo = excluded.periodo,
+            centimos = excluded.centimos,
             cada_uno_lo_ve = excluded.cada_uno_lo_ve,
             cambiado_en = now(), cambiado_por = excluded.cambiado_por
     `;
@@ -316,10 +343,11 @@ export const guardarLosObjetivosDeVenta = comando<
     `;
     for (const d of entrada.distintos) {
       await contexto.sql`
-        insert into estook.objetivo_de_venta (local_id, persona_id, centimos_por_hora, cambiado_por)
-        values (${localId}::uuid, ${d.persona_id}::uuid, ${d.centimos_por_hora}, ${quien}::uuid)
+        insert into estook.objetivo_de_venta (local_id, persona_id, periodo, centimos, cambiado_por)
+        values (${localId}::uuid, ${d.persona_id}::uuid, ${entrada.periodo}, ${d.centimos}, ${quien}::uuid)
         on conflict (local_id, persona_id) do update
-          set centimos_por_hora = excluded.centimos_por_hora,
+          set periodo = excluded.periodo,
+              centimos = excluded.centimos,
               cambiado_en = now(), cambiado_por = excluded.cambiado_por
       `;
     }

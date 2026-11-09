@@ -15,7 +15,7 @@ export const MONEDAS = [200, 100, 50, 20, 10, 5, 2, 1] as const;
 export const DENOMINACIONES: readonly number[] = [...BILLETES, ...MONEDAS];
 
 /** Lo contado billete a billete: `{ "5000": 2, "200": 5 }` (cuántos de cada uno). */
-export type LoContado = Readonly<Record<string, number>>;
+export type ElRecuento = Readonly<Record<string, number>>;
 
 /** Hasta cuántos de un mismo billete o moneda: un cajón no tiene diez mil. */
 export const CUANTOS_COMO_MUCHO = 9999;
@@ -26,7 +26,7 @@ export function nombreDeLaDenominacion(centimos: number): string {
 }
 
 /** Si lo que llega es un recuento que se puede guardar: solo billetes y monedas de euro, enteros. */
-export function esLoContado(valor: unknown): valor is LoContado {
+export function esLoContado(valor: unknown): valor is ElRecuento {
   if (typeof valor !== 'object' || valor === null || Array.isArray(valor)) return false;
   return Object.entries(valor).every(
     ([d, n]) =>
@@ -40,12 +40,12 @@ export function esLoContado(valor: unknown): valor is LoContado {
 }
 
 /** Lo que suma lo contado. */
-export function elTotalContado(contado: LoContado): number {
+export function elTotalContado(contado: ElRecuento): number {
   return Object.entries(contado).reduce((suma, [d, n]) => suma + Number(d) * n, 0);
 }
 
 /** Lo contado sin los ceros: lo que se guarda. */
-export function sinLosCeros(contado: LoContado): LoContado {
+export function sinLosCeros(contado: ElRecuento): ElRecuento {
   return Object.fromEntries(Object.entries(contado).filter(([, n]) => n > 0));
 }
 

@@ -1,4 +1,15 @@
 import {
+  abrirCaja,
+  cerrarCaja,
+  cobrar,
+  explicarLaDiferencia,
+  guardarAjustesDeLaCaja,
+  imprimirComoVa,
+  imprimirElZ,
+  moverDinero,
+} from './comandos/caja.ts';
+import { cierresDeCaja, comoVaLaCaja, laCaja, unDiaDeCaja } from './consultas/caja.ts';
+import {
   cambiarNombreDelNegocio,
   exigirDobleFactor,
   ponerCorreoDeRecuperacion,
@@ -534,6 +545,11 @@ import {
  */
 export const catalogo = {
   consultas: {
+    // R3 · 1 · La caja (0144): la del aparato, «Cómo va», y en Estook los cierres.
+    [laCaja.nombre]: laCaja,
+    [comoVaLaCaja.nombre]: comoVaLaCaja,
+    [cierresDeCaja.nombre]: cierresDeCaja,
+    [unDiaDeCaja.nombre]: unDiaDeCaja,
     // La pausa del 8-nov (0142): Información e Informes, de las mesas de Estook TPV.
     [loQueSeVende.nombre]: loQueSeVende,
     [elServicioPorDentro.nombre]: elServicioPorDentro,
@@ -1096,6 +1112,15 @@ export const catalogo = {
     [quitarImpresora.nombre]: quitarImpresora,
     [imprimirPrueba.nombre]: imprimirPrueba,
     [abrirElCajon.nombre]: abrirElCajon,
+    // R3 · 1 · La caja (0144): abrir, cobrar, el cajón, cerrar y sus ajustes.
+    [abrirCaja.nombre]: abrirCaja,
+    [cobrar.nombre]: cobrar,
+    [moverDinero.nombre]: moverDinero,
+    [cerrarCaja.nombre]: cerrarCaja,
+    [explicarLaDiferencia.nombre]: explicarLaDiferencia,
+    [imprimirComoVa.nombre]: imprimirComoVa,
+    [imprimirElZ.nombre]: imprimirElZ,
+    [guardarAjustesDeLaCaja.nombre]: guardarAjustesDeLaCaja,
     [imprimirLaCuenta.nombre]: imprimirLaCuenta,
     [reimprimirLaComanda.nombre]: reimprimirLaComanda,
     [laColaDeLaCaja.nombre]: laColaDeLaCaja,

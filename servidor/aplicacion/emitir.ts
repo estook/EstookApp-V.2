@@ -11,6 +11,8 @@ import {
   elJustificanteEnPapel,
   elNumeroEntero,
   elTicketEnPapel,
+  direccionParaPedirLaFactura,
+  elCodigoParaEnsenar,
   fechaEnElLocal,
   fechaParaVerifacti,
   laFacturaEnPapel,
@@ -1340,9 +1342,14 @@ export async function mandarLosDocumentos(
           if (h === undefined) return 'preparado' as const;
           const ahora = comoEsta(doc, h);
           if (ahora !== antes) await avisarSiHayQueHacerAlgo(contexto, doc, ahora);
-          // El papel del ticket de prueba, la primera vez: con su QR si Verifacti lo aceptó,
-          // y el justificante si no se llegó (4.11). Lo rechazado por los datos no se imprime.
-          if (como.imprimir && primeraVez && doc.origen === 'ticket_de_prueba') {
+          // El papel del ticket de prueba y el de un cobro (0144), la primera vez: con su QR si
+          // Verifacti lo aceptó, y el justificante si no se llegó (4.11). Lo rechazado por los datos
+          // no se imprime.
+          if (
+            como.imprimir &&
+            primeraVez &&
+            (doc.origen === 'ticket_de_prueba' || doc.origen === 'cobro')
+          ) {
             if (ahora === 'pendiente' || ahora === 'correcto' || ahora === 'fuera_sii') {
               await imprimirElDocumento(contexto, doc, h, false);
             } else if (ahora === 'enviando' || ahora === 'preparado') {
@@ -1753,6 +1760,8 @@ export function elPapelDelDocumento(
   doc: ElDocumento,
   h: LaHistoria,
   copia: boolean,
+  /** «Pide tu factura» (0141): en el papel del ticket desde que el TPV cobra (0144). */
+  pideTuFactura?: { readonly direccion: string; readonly codigo: string },
 ): PapelCompuesto | null {
   const cuando = cuandoEnElLocal(new Date(doc.preparadoEn), doc.zonaHoraria);
   const empresa = {
@@ -1821,6 +1830,7 @@ export function elPapelDelDocumento(
       ...(h.rectifica === null
         ? {}
         : { rectifica: { numero: h.rectifica.numero, motivo: h.rectifica.motivo } }),
+      ...(pideTuFactura === undefined || h.rectifica !== null ? {} : { pideTuFactura }),
     });
   }
   if (h.justificante !== null) {
@@ -1847,7 +1857,7 @@ export async function imprimirElDocumento(
   h: LaHistoria,
   copia: boolean,
 ): Promise<boolean> {
-  const papel = elPapelDelDocumento(doc, h, copia);
+  const papel = elPapelDelDocumento(doc, h, copia, await laFacturaQueSePide(contexto, doc));
   if (papel === null) return false;
   const impresora = await laImpresoraDe(contexto, doc.localId, 'caja');
   if (impresora === null) return false;
@@ -1857,4 +1867,28 @@ export async function imprimirElDocumento(
       : 'justificante';
   await dejarEnLaCola(contexto, doc.localId, impresora, tipo, papel, null);
   return true;
+}
+
+/**
+ * **El QR de «Pide tu factura»** de un ticket (0141, en el papel desde 0144): su dirección y su código,
+ * si el local la tiene encendida. Sin código (antes de la 0111) o apagada, nada.
+ */
+async function laFacturaQueSePide(
+  contexto: Contexto,
+  doc: ElDocumento,
+): Promise<{ readonly direccion: string; readonly codigo: string } | undefined> {
+  if (doc.tipo !== 'F2') return undefined;
+  const filas = await contexto.sql<{ codigo: string; encendida: boolean }[]>`
+    select c.codigo, l.pide_tu_factura as encendida
+      from facturacion.codigo_de_ticket c
+      join facturacion.documento d on d.id = c.documento_id
+      join estook.local l on l.id = d.local_id
+     where c.documento_id = ${doc.id}::uuid
+  `;
+  const fila = filas[0];
+  if (fila === undefined || !fila.encendida) return undefined;
+  return {
+    direccion: direccionParaPedirLaFactura(fila.codigo),
+    codigo: elCodigoParaEnsenar(fila.codigo),
+  };
 }

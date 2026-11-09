@@ -640,3 +640,96 @@ export function elJustificanteEnPapel(j: ElJustificanteQueSeImprime): PapelCompu
   piezas.push(CORTAR);
   return papel(piezas);
 }
+
+// ═══ El X y el Z de la caja (R3 · 1, 0144) ═════════════════════════════════════════
+
+/** Lo que sale en el papel de una caja: el X (sin cerrar) o el Z (cerrada). */
+export interface LaCajaEnElPapel {
+  /** El nombre del local, grande. */
+  readonly local: string;
+  /** «Caja 1». */
+  readonly caja: string;
+  readonly que: 'X' | 'Z';
+  /** «09/11/2026 23:48», en la hora del local. */
+  readonly cuando: string;
+  /** «Marcos, 12:02». */
+  readonly abrio: string;
+  /** «Marcos, 23:48»; nulo en el X. */
+  readonly cerro: string | null;
+  readonly fondo: number;
+  readonly efectivo: number;
+  readonly tarjeta: number;
+  readonly bizum: number;
+  readonly cheque: number;
+  /** Lo metido y lo sacado, con su para qué: «Sacar · Un proveedor · el pan». */
+  readonly movimientos: readonly { readonly que: string; readonly importe: number }[];
+  readonly deberiaHaber: number;
+  /** Solo en el Z. */
+  readonly contado: number | null;
+  readonly diferencia: number | null;
+  readonly datafono: number | null;
+  readonly paraManana: number | null;
+  readonly tickets: number;
+  readonly cajonSinVenta: number;
+  /** Reimpreso: sale con «COPIA». */
+  readonly copia: boolean;
+}
+
+/**
+ * **El X y el Z** (Anexo 10.6): cómo va la caja sin cerrarla, o cómo se cerró. **Ninguno es un
+ * documento fiscal**: los tickets ya están en Hacienda uno a uno. El Z enseña lo que el dueño quiere
+ * vigilar: lo que se sacó y se metió, las veces que se abrió el cajón sin venta y la diferencia.
+ */
+export function laCajaEnPapel(c: LaCajaEnElPapel): PapelCompuesto {
+  const linea = (izquierda: string, importe: number, negrita = false): PiezaDelPapel => ({
+    tipo: 'dos_columnas',
+    izquierda,
+    derecha: importeEnElPapel(importe),
+    ...(negrita ? { negrita: true } : {}),
+  });
+  const piezas: PiezaDelPapel[] = [
+    texto(c.local, { alinear: 'centro', tamano: 'doble', negrita: true }),
+    texto(`${c.que === 'Z' ? 'Cierre de caja (Z)' : 'Cómo va la caja (X)'} · ${c.caja}`, {
+      alinear: 'centro',
+      negrita: true,
+    }),
+  ];
+  if (c.copia) piezas.push(texto(' COPIA ', { negativo: true, alinear: 'centro' }));
+  piezas.push(texto(c.cuando, { alinear: 'centro' }));
+  piezas.push(texto('No es un documento fiscal', { alinear: 'centro' }));
+  piezas.push(RAYA);
+  piezas.push(texto(`Abrió: ${c.abrio}`));
+  if (c.cerro !== null) piezas.push(texto(`Cerró: ${c.cerro}`));
+  piezas.push(RAYA);
+  piezas.push(linea('Fondo', c.fondo));
+  piezas.push(linea('Cobrado en efectivo', c.efectivo));
+  for (const m of c.movimientos) piezas.push(linea(m.que, m.importe));
+  piezas.push(linea('Debería haber', c.deberiaHaber, true));
+  if (c.contado !== null) piezas.push(linea('Contado', c.contado, true));
+  if (c.diferencia !== null) {
+    piezas.push({
+      tipo: 'dos_columnas',
+      izquierda: c.diferencia === 0 ? 'Cuadra' : c.diferencia < 0 ? 'Faltan' : 'Sobran',
+      derecha: importeEnElPapel(Math.abs(c.diferencia)),
+      negrita: true,
+    });
+  }
+  piezas.push(RAYA);
+  piezas.push(linea('Con tarjeta', c.tarjeta));
+  if (c.datafono !== null) piezas.push(linea('El datáfono', c.datafono));
+  if (c.bizum > 0) piezas.push(linea('Bizum', c.bizum));
+  if (c.cheque > 0) piezas.push(linea('Cheques', c.cheque));
+  piezas.push({ tipo: 'dos_columnas', izquierda: 'Tickets', derecha: String(c.tickets) });
+  piezas.push({
+    tipo: 'dos_columnas',
+    izquierda: 'Cajón sin venta',
+    derecha: String(c.cajonSinVenta),
+  });
+  if (c.paraManana !== null && c.contado !== null) {
+    piezas.push(RAYA);
+    piezas.push(linea('Se queda para mañana', c.paraManana));
+    piezas.push(linea('Se retira', c.contado - c.paraManana, true));
+  }
+  piezas.push(CORTAR);
+  return papel(piezas);
+}

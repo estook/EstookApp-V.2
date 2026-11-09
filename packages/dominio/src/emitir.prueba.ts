@@ -24,7 +24,12 @@ import {
   sePuedeEntregar,
   porQueNoSeCanjea,
 } from './emitir.ts';
-import { elJustificanteEnPapel, elTicketEnPapel, esPapelCompuesto } from './impresion.ts';
+import {
+  elJustificanteEnPapel,
+  elTicketEnPapel,
+  esPapelCompuesto,
+  laCajaEnPapel,
+} from './impresion.ts';
 import type { FechaOperativa } from './tiempo.ts';
 
 /**
@@ -584,5 +589,65 @@ describe('la señal (0140)', () => {
     expect(
       porQueNoCabeLaSenal([{ ...comida, importe: 100_000, tipo: 0.21 }, ...lasDeLaSenal]),
     ).toContain('10 %');
+  });
+});
+
+describe('el papel de la caja (0144)', () => {
+  const base = {
+    local: 'IKATZ',
+    caja: 'Caja 1',
+    cuando: '09/11/2026 23:48',
+    abrio: 'Marcos, 12:02',
+    fondo: 15000,
+    efectivo: 61240,
+    tarjeta: 128460,
+    bizum: 0,
+    cheque: 0,
+    movimientos: [{ que: 'Sacar · Un proveedor', importe: -3500 }],
+    deberiaHaber: 72740,
+    tickets: 41,
+    cajonSinVenta: 2,
+    copia: false,
+  };
+
+  it('el Z dice lo que debería haber, lo contado, lo que falta y lo que se retira', () => {
+    const z = laCajaEnPapel({
+      ...base,
+      que: 'Z',
+      cerro: 'Marcos, 23:48',
+      contado: 72240,
+      diferencia: -500,
+      datafono: 128460,
+      paraManana: 15000,
+    });
+    const filas = z.piezas.map((p) =>
+      p.tipo === 'dos_columnas'
+        ? `${p.izquierda}=${p.derecha}`
+        : p.tipo === 'texto'
+          ? p.texto
+          : p.tipo,
+    );
+    expect(filas).toContain('Debería haber=727,40');
+    expect(filas).toContain('Contado=722,40');
+    expect(filas).toContain('Faltan=5,00');
+    expect(filas).toContain('Se retira=572,40');
+    expect(filas).toContain('No es un documento fiscal');
+    expect(filas.at(-1)).toBe('cortar');
+  });
+
+  it('el X no dice lo contado ni la diferencia', () => {
+    const x = laCajaEnPapel({
+      ...base,
+      que: 'X',
+      cerro: null,
+      contado: null,
+      diferencia: null,
+      datafono: null,
+      paraManana: null,
+    });
+    const izquierdas = x.piezas.flatMap((p) => (p.tipo === 'dos_columnas' ? [p.izquierda] : []));
+    expect(izquierdas).not.toContain('Contado');
+    expect(izquierdas).not.toContain('Faltan');
+    expect(izquierdas).toContain('Debería haber');
   });
 });

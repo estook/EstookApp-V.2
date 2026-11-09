@@ -97,7 +97,7 @@ export async function dejarEnLaCola(
   contexto: Contexto,
   localId: string,
   impresoraId: string,
-  tipo: 'comanda' | 'precuenta' | 'prueba' | 'cajon' | 'ticket' | 'justificante',
+  tipo: 'comanda' | 'precuenta' | 'prueba' | 'cajon' | 'ticket' | 'justificante' | 'informe',
   papel: PapelCompuesto,
   cuentaId: string | null,
 ): Promise<string> {

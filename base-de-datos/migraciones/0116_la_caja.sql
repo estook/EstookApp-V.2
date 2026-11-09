@@ -99,6 +99,11 @@ $$;
 revoke all on function estook.ve_la_caja(uuid) from public;
 grant execute on function estook.ve_la_caja(uuid) to estook_api;
 
+-- El cajón de la caja lo leen también quien cobra y quien la lleva: hasta hoy solo quien da de alta
+-- aparatos, y un camarero que cobra tiene que saber a qué caja va lo suyo.
+create policy cajon_lo_lee_la_caja on estook.cajon
+  for select using (estook.ve_la_caja(local_id));
+
 -- Lo que solo se añade: ni se cambia ni se borra, tampoco por quien manda.
 create function estook.la_caja_solo_se_anade()
 returns trigger
@@ -414,7 +419,24 @@ alter table estook.aprobacion
     operacion in ('quitar_de_cocina', 'llevar_la_caja', 'abrir_el_cajon')
   );
 
--- ═══ 8 · Emitir el ticket de un cobro ══════════════════════════════════════════
+-- ═══ 8 · El cierre del día lo escribe la caja ══════════════════════════════════
+--
+-- Con Estook TPV, cerrar la última caja del día **es** cerrar el día (0144, Richi 9-nov): se escribe el
+-- cierre de siempre con `origen = 'tpv'`. Lo hace la API como el sistema, a nombre de quien cerró la
+-- caja, porque quien la cierra (un jefe de sala, o un camarero si el local lo deja) no tiene por qué
+-- poder ver las ventas. Y si se abre otra caja en un día ya cerrado, el día se reabre solo, con su
+-- motivo escrito, como cualquier reapertura (0080).
+
+create policy cierre_lo_escribe_la_caja on estook.cierre_de_caja
+  for all using (estook.es_el_sistema()) with check (estook.es_el_sistema());
+create policy reapertura_la_hace_la_caja on estook.reapertura_de_jornada
+  for insert with check (estook.es_el_sistema());
+-- Y la lee: la regla del día cerrado (0080) mira que la reapertura esté escrita, y quien abre la caja
+-- puede no ver las ventas.
+create policy reapertura_la_lee_la_caja on estook.reapertura_de_jornada
+  for select using (estook.es_el_sistema());
+
+-- ═══ 9 · Emitir el ticket de un cobro ══════════════════════════════════════════
 
 -- La función de la 0111, entera, con una rama más: el cobro, con `accion.cobrar`.
 create or replace function facturacion.preparar_el_documento(

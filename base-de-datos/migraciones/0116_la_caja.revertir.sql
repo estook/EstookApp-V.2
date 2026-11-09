@@ -148,6 +148,10 @@ begin
 end;
 $$;
 
+drop policy reapertura_la_lee_la_caja on estook.reapertura_de_jornada;
+drop policy reapertura_la_hace_la_caja on estook.reapertura_de_jornada;
+drop policy cierre_lo_escribe_la_caja on estook.cierre_de_caja;
+
 alter table estook.aprobacion
   drop constraint aprobacion_operacion_conocida,
   add constraint aprobacion_operacion_conocida check (operacion in ('quitar_de_cocina'));
@@ -161,6 +165,7 @@ drop table estook.turno_de_caja;
 
 drop function estook.la_caja_cerrada_no_se_toca();
 drop function estook.la_caja_solo_se_anade();
+drop policy cajon_lo_lee_la_caja on estook.cajon;
 drop function estook.ve_la_caja(uuid);
 drop function estook.puede_llevar_la_caja(uuid);
 

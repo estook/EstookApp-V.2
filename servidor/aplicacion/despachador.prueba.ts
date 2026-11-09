@@ -1125,6 +1125,17 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'como_estan_las_impresoras',
         'imprimir_la_cuenta',
         'reimprimir_la_comanda',
+        // R3 · 1 · La caja (0144): abrir, cobrar, el cajón, cerrar y sus ajustes, solo en el TPV.
+        'la_caja',
+        'como_va_la_caja',
+        'abrir_caja',
+        'cobrar',
+        'mover_dinero',
+        'cerrar_caja',
+        'explicar_la_diferencia',
+        'imprimir_como_va',
+        'imprimir_el_z',
+        'guardar_ajustes_de_la_caja',
       ].sort(),
     );
   });

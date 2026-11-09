@@ -91,6 +91,9 @@ export const PERMISOS_DE_ACCION = [
   'accion.devolver',
   'accion.corregir_datos',
   'accion.anular',
+  // R3 · 1 · La caja (0144): abrir, cerrar y «Cómo va»; y cobrar, toda la sala.
+  'accion.llevar_la_caja',
+  'accion.cobrar',
 ] as const;
 
 export const PERMISOS = [...PERMISOS_DE_APP, ...PERMISOS_DE_DATO, ...PERMISOS_DE_ACCION] as const;

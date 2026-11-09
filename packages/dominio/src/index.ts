@@ -1259,6 +1259,7 @@ export {
   importeEnElPapel,
   laComandaEnPapel,
   laCuentaEnPapel,
+  laCajaEnPapel,
   laPruebaEnPapel,
 } from './impresion.ts';
 export type {
@@ -1271,6 +1272,7 @@ export type {
   VersionDelPapel,
   LaComandaQueSeImprime,
   LaCuentaQueSeImprime,
+  LaCajaEnElPapel,
   LaPruebaQueSeImprime,
   LineaDeLaComanda,
   LineaDeLaCuenta,
@@ -1495,7 +1497,7 @@ export {
   MOTIVOS_PARA_METER,
 } from './caja.ts';
 export type {
-  LoContado,
+  ElRecuento,
   LoQueMueveElCajon,
   ComoCuadra,
   MotivoDeLaDiferencia,

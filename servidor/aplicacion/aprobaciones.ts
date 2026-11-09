@@ -12,10 +12,13 @@ import { enNombreDelSistema } from './pago.ts';
  *
  * Solo desde Estook TPV: en la app cada uno está en su móvil y no hay a quién pasárselo.
  */
-export type OperacionQueSeAprueba = 'quitar_de_cocina';
+export type OperacionQueSeAprueba = 'quitar_de_cocina' | 'llevar_la_caja' | 'abrir_el_cajon';
 
 const PERMISO_QUE_APRUEBA = {
   quitar_de_cocina: 'accion.quitar_de_cocina',
+  // La caja (0144): abrirla o cerrarla, y abrir el cajón, los aprueba quien los puede hacer.
+  llevar_la_caja: 'accion.llevar_la_caja',
+  abrir_el_cajon: 'accion.abrir_el_cajon',
 } as const satisfies Record<OperacionQueSeAprueba, string>;
 
 export async function aprobarConElPin(

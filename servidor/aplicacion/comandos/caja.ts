@@ -219,7 +219,8 @@ export const abrirCaja = comando<EntradaAbrirCaja, CajaAbierta>({
 
     const ajustes = await losAjustesDeLaCaja(contexto, localId);
     const ultima = await loDeLaUltimaVez(contexto, cajon.id);
-    const contado: ElRecuento | null = entrada.contado == null ? null : sinLosCeros(entrada.contado);
+    const contado: ElRecuento | null =
+      entrada.contado == null ? null : sinLosCeros(entrada.contado);
     if (contado === null && ajustes.recuentoAlAbrir) {
       throw new FalloDeAplicacion('faltan_datos', {
         porque: 'En este local se cuenta siempre al abrir: cuenta el cajón.',

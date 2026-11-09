@@ -225,15 +225,13 @@ describe('el papel (Anexo 4.7)', () => {
       },
     });
     const qrs = conLaFactura.piezas.filter((p) => p.tipo === 'qr');
-    expect(qrs.map((q) => (q.tipo === 'qr' ? q.contenido : ''))).toEqual([
+    expect(qrs.map((q) => q.contenido)).toEqual([
       'https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?nif=B12345678',
       'https://estook.com/factura/7KQ2-M9XP-4TRD',
     ]);
-    const [tributario, deLaFactura] = qrs;
-    expect(deLaFactura?.tipo === 'qr' && tributario?.tipo === 'qr').toBe(true);
-    if (deLaFactura?.tipo === 'qr' && tributario?.tipo === 'qr') {
-      expect(deLaFactura.milimetros).toBeLessThan(tributario.milimetros);
-    }
+    // El de la factura, más pequeño que el tributario: el de Hacienda es el que manda.
+    const lados = qrs.map((q) => q.milimetros);
+    expect(lados[1]).toBeLessThan(lados[0] ?? 0);
     const textos = conLaFactura.piezas.map((p) => (p.tipo === 'texto' ? p.texto : ''));
     expect(textos).toContain('Código 7KQ2-M9XP-4TRD');
     expect(textos).not.toContain('¿Quieres factura? Pídela en la barra.');

@@ -7,7 +7,7 @@ import { LoApruebaUnEncargado } from '../mesa/LoApruebaUnEncargado.tsx';
 import { eurosConSimbolo } from '../logica/texto.ts';
 import { irA } from '../navegar.ts';
 import { ContarElCajon } from './ContarElCajon.tsx';
-import { idNuevo, pideEncargado, usarLaCaja, usarRecargarLaCaja } from './usarLaCaja.ts';
+import { idNuevo, pideEncargado, usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
 import type { CajaAbierta, ElRecuento } from './tipos.ts';
 
 /**

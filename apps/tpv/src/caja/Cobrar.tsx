@@ -14,7 +14,7 @@ import { irA } from '../navegar.ts';
 import type { LaMesa, PlatoDeLaCuenta } from '../datos/tipos.ts';
 import { AbrirCaja, ErrorDeLaCaja } from './AbrirCaja.tsx';
 import { deEurosACentimos, enLaCasilla } from './dinero.ts';
-import { idNuevo, usarLaCaja, usarRecargarLaCaja } from './usarLaCaja.ts';
+import { idNuevo, usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
 import type { Cobrado } from './tipos.ts';
 
 type Forma = FormaDePago | 'dividir';

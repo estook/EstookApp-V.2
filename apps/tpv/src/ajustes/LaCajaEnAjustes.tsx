@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { Cargando, ErrorEnCristiano } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { usarLaCaja, usarRecargarLaCaja } from '../caja/usarLaCaja.ts';
+import { usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
 import { deEurosACentimos, enLaCasilla } from '../caja/dinero.ts';
 import type { AjustesDeLaCaja } from '../caja/tipos.ts';
 import { eurosConSimbolo } from '../logica/texto.ts';

@@ -1122,3 +1122,11 @@
      `herramientas/solo-las-fotos.mjs`, que es estricto). Las fotos se siguen mirando, en el pull request. Y
      **la regla de `main` no da por buena una comprobación obligatoria «saltada»**: lo que se salta son los pasos,
      y el trabajo sale en verde.
+
+266. **Una regla de la base que lee otra tabla solo ve lo que puede ver quien está.** Al abrir una caja en un día
+     ya cerrado, la caja reabre el día escribiendo su motivo, y la regla de la 0080 comprueba que ese motivo esté.
+     Con Rosa (gerente) funcionaba; con Sara, camarera, la regla no veía la fila recién escrita (la seguridad por
+     filas se la escondía) y decía que el día estaba cerrado. Lo mismo con el cajón: el sistema no lo podía leer
+     porque su política no lo nombraba (0144). **Lo que hace la API como el sistema, la base tiene que dejárselo
+     leer también, no solo escribir**, y se prueba **con el rol que menos ve**, no con el gerente
+     (`la-caja.prueba.ts`, «con También camareros, Sara abre y cierra»).

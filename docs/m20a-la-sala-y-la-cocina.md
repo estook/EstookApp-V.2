@@ -704,12 +704,13 @@ tocan. Se escribe aquí entero **antes de empezar**, con lo aprendido en T6.
 
 **Lo que T7 ya tiene que cumplir** (Richi, 28-oct; 0121, puntos 4, 5 y 7; Anexo 11.4 y 11.6):
 
-- **El día en la caja**: **«Empezar el día»** (el primer día, preguntando con cuánto se empieza;
-  después, proponiendo lo que se quedó), y **sin empezarlo no se cobra**: al tocar «Cobrar» sale
-  ahí mismo, como en Square; **«Abrir el cajón»**, aparte, siempre preguntando para qué (Cambio ·
-  Sacar dinero · Meter dinero, con importe y motivo); y **«Cerrar el día»** contando el efectivo,
-  sin ver lo esperado, con la diferencia después (fondo + cobrado en efectivo + metido − sacado).
-  Los tres son de encargado: **el PIN de uno solo si quien está dentro no lo es**.
+- **El día en la caja**: **«Abrir caja»** (el primer día, preguntando con cuánto se empieza;
+  después, proponiendo lo que se quedó, con «Está correcto»), y **sin abrirla no se cobra**: al
+  tocar «Cobrar» sale ahí mismo, como en Square; **«Abrir el cajón»**, aparte, siempre preguntando
+  para qué (Cambio · Sacar dinero · Meter dinero, con importe y motivo); y **«Cerrar caja»** contando
+  el efectivo, sin ver lo esperado, con la diferencia después (fondo + cobrado en efectivo + metido −
+  sacado). Los tres son de encargado: **el PIN de uno solo si quien está dentro no lo es** (o de
+  cualquiera, con «También camareros», 0144).
 - **El PIN se teclea al entrar, no en cada cobro**: lo cobrado va a quien está dentro, y la caja se
   bloquea a los minutos sin tocar (bloquear al cobrar, apagado de fábrica, 0096). La caja se queda
   abierta todo el día; la pausa del gerente no cierra su sesión; su salida sí, y la caja sigue
@@ -725,6 +726,25 @@ tocan. Se escribe aquí entero **antes de empezar**, con lo aprendido en T6.
   céntimo con el fondo, lo cobrado y lo metido y sacado.
 - **Contestado por Richi** el 28-oct y **cerrado** como lo hacen Toast, Square y Lightspeed (0121,
   puntos 5 y 7).
+
+**T7 · 1 es R3, la caja** ([0144](decisiones/0144-r3-la-caja.md), maqueta aprobada el 9-nov), en dos
+entregas:
+
+- **R3 · 1, construida** (migración 0116): abrir caja al lado de Fichar y arriba en la sala, con
+  «Está correcto» o contando; cobrar en la caja (efectivo con billetes de un toque, tarjeta, Bizum y
+  cheque si se encienden, y dividir: a partes iguales, por platos o efectivo y tarjeta), un cobro y
+  un ticket que sale solo con el QR de «Pide tu factura»; abrir el cajón para cambio, sacar o meter;
+  «Cómo va» (el X) y el Z en papel; cerrar caja a ciegas en cuatro pasos, y el día que se cierra solo
+  con la última caja; Ajustes del TPV › La caja; y en Estook, con Pro, **Cierres de caja**, solo
+  para ver. Las pruebas de arriba que le tocan, en `la-caja.prueba.ts`: el mismo cobro dos veces
+  cobra una; la cuenta que cambió no se cobra a ciegas; dividir en tres suma lo mismo; y el arqueo
+  cuadra al céntimo.
+- **R3 · 2**: el aviso de retirar, el aviso del descuadre, las propinas, escribir el total al
+  contar, entregar la caja a otro encargado y los descuentos al cobrar.
+
+**Lo que queda de T7 después de R3**, antes de T6 · 3: cobrar sin internet con su justificante;
+las ventas de hoy con sus totales, la venta rápida y para llevar; que lo cobrado baje del almacén una
+sola vez (M20); Información, Informes y Empleados con lo cobrado; y devolver con el género de vuelta.
 
 ## Lo que ya está hecho (M20A · 1 · 1 y 1 · 2)
 

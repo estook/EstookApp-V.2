@@ -19,7 +19,8 @@ describe('lo que se escribe en euros (0144)', () => {
   });
 
   it('en la casilla, con coma y dos decimales', () => {
-    expect(enLaCasilla(128460)).toBe('1284,60');
+    expect(enLaCasilla(128460)).toBe('1.284,60');
+    expect(deEurosACentimos(enLaCasilla(128460))).toBe(128460);
     expect(enLaCasilla(5)).toBe('0,05');
   });
 });

@@ -1492,21 +1492,21 @@ En el aparato nuevo
 
 **Una caja por cajón, y el cierre ciego de fábrica** (respuesta 9). Lo de dentro —turno de caja, bolsa del camarero, X, Z y el cierre del día— está en 5.5 y 10.6; aquí, cómo se hace.
 
-**Empezar el día** (3 toques con el fondo propuesto, 10.13):
+**Abrir caja** (3 toques con el fondo propuesto, 10.13; el nombre, de Richi el 9-nov, [0144](../decisiones/0144-r3-la-caja.md)):
 
-1. **Empezar el día**. Se propone **lo que se dejó en el cajón al cerrar la última vez** («Se queda para mañana», abajo).
-2. «Es eso» con un toque, o **«Contar»**: billetes y monedas, de 500 € a 1 céntimo, con el `+` y el `−` o escribiendo la cantidad de cada uno, y el total sumándose solo.
+1. **Abrir caja**. Se propone **lo que se dejó en el cajón al cerrar la última vez** («Se queda para mañana», abajo).
+2. **«Está correcto · Abrir caja»** con un toque, o **«Contar»**: billetes y monedas, de 500 € a 1 céntimo, con el `+` y el `−` o escribiendo la cantidad de cada uno, y el total sumándose solo.
 3. **Empezar**: el cajón se abre para meter el fondo, y queda a nombre de quien la empezó.
 
 **Durante el día:**
 
 - **«Abrir el cajón»**, un solo botón para todo lo que no es una venta, que **siempre pregunta para qué** (Richi, 28-oct; como el «No sale», «Pay out» y «Cash in» de Toast): **Cambio** (sin importe), **Sacar dinero** (importe y motivo: **compras, un proveedor, propinas, al banco u otro**) o **Meter dinero** (importe y motivo: **cambio del banco u otro**); con «otro», se escribe. Con permiso de encargado: si quien está dentro no lo tiene, lo aprueba uno con su PIN ahí mismo. Rastro siempre (10.6); sale en el X y en el Z.
 - **El informe X**: cómo va sin cerrarla —ventas por forma de pago, entradas y salidas, lo que debería haber en efectivo— **a quien tiene permiso de verlo**; el camarero ve el de su bolsa.
-- **Sin empezar el día no se cobra**, ni en efectivo ni con tarjeta (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)): el cobro dice «Empieza el día para cobrar», y se empieza ahí mismo con el fondo propuesto, como en Square (si quien está dentro no es encargado, con el PIN de uno). **Tomar nota y mandar no piden la caja.**
+- **Sin abrir caja no se cobra**, ni en efectivo ni con tarjeta (Richi, 28-oct, [0121](../decisiones/0121-la-pausa-del-tpv.md)): el cobro dice «Abre la caja para cobrar», y se empieza ahí mismo con el fondo propuesto, como en Square (si quien está dentro no es encargado, con el PIN de uno). **Tomar nota y mandar no piden la caja.**
 
-**Cerrar el día** (lo que se tarde en contar):
+**Cerrar caja** (lo que se tarde en contar). **Cerrar la última caja abierta del día es cerrar el día**: con Pro, el cierre de Servicio se escribe solo (0144):
 
-1. **Cerrar el día**. Si hay mesas abiertas, lo dice («Quedan 3 mesas abiertas: el efectivo que cobren irá a la caja de mañana») y deja seguir.
+1. **Cerrar caja**. Si hay mesas abiertas, lo dice («Quedan 3 mesas abiertas: el efectivo que cobren irá a la caja de mañana») y deja seguir.
 2. **Contar sin ver lo esperado** (ciego, de fábrica; el gerente lo puede apagar): billetes y monedas como al abrir.
 3. **El total del cierre del datáfono**: se escribe (nivel 1) o viene solo (nivel 2, 10.7).
 4. **«Se queda para mañana»**: se propone el fondo de hoy; lo demás es lo que se retira.
@@ -1514,15 +1514,26 @@ En el aparato nuevo
 
 **Dos cajones** (barra y comedor) son dos cajas, cada una con su fondo, su cierre y su Z; el cierre del día los suma (5.5). **Una caja que se quedó abierta ayer** no deja abrir la de hoy en ese cajón: sale «La caja de ayer sigue abierta · Cerrarla», y mientras tanto se sigue vendiendo con ella.
 
+**Lo que contestó Richi el 9-nov, construido en R3 · 1** ([0144](../decisiones/0144-r3-la-caja.md), [su maqueta](../maquetas/r3-la-caja.html)), y manda sobre lo de abajo:
+
+- **Quién abre y cierra**: quien tiene `accion.llevar_la_caja` (jefe de sala, gerente, area manager y dirección), o **también los camareros** si el local lo enciende en Ajustes del TPV › La caja (apagado de fábrica); lo contado queda a su nombre. Si quien está no puede, lo aprueba uno que sí, con su PIN, ahí mismo.
+- **«Recuento obligatorio al abrir»**, en Ajustes, apagado de fábrica: encendido, no sale «Está correcto».
+- **Las formas de pago**: efectivo y tarjeta siempre; **Bizum** y **cheque restaurante** se encienden en Ajustes. Los cheques van al cajón, no dan cambio y se cuentan aparte.
+- **Se cobra en la caja** (el aparato con cajón). El comandero toma nota; cobrar en la mesa es la bolsa del camarero y el TPV portátil de Android (M20D).
+- **Dividir**: a partes iguales (cada parte, su ticket, con una línea «Servicio de restauración · Mesa 12 · parte 1 de 4»; los céntimos que sobran, a las primeras; la última se lleva lo que quede), por platos (cada cobro con sus platos) o efectivo y tarjeta (dos pagos, un ticket).
+- **La diferencia se ve con la caja ya cerrada**; el motivo, de un toque y una vez, después. «Cuadra» en verde, hasta 10 € en ámbar y más en rojo.
+- **En pruebas no se marca nada**: lo cobrado cuenta como en real; solo el papel dice «PRUEBA», que lo pone Hacienda.
+- **El ticket de un cobro sale solo** con su QR tributario y el de «Pide tu factura» (si el local la tiene encendida).
+
 **Lo que añadió Richi el 8-nov** ([0142](../decisiones/0142-la-pausa-del-8-nov.md), aprobado con [su maqueta](../maquetas/la-pausa-del-8-nov.html)), lo primero de T7:
 
-- **El botón de la caja, en la pantalla del PIN, al lado de «Fichar»**: verde «Empezar el día» o ámbar «Cerrar el día», que pide el PIN de un encargado; y dentro, arriba en la sala (11.5).
-- **Cerrar el día en cuatro pasos a la vista**: contar (a ciegas, billete a billete, con el total sumándose), el datáfono, lo que se queda para mañana, y el resultado con la diferencia en efectivo y en tarjeta, «Imprimir el Z» y «Listo».
+- **El botón de la caja, en la pantalla del PIN, al lado de «Fichar»**: verde «Abrir caja» o ámbar «Cerrar caja», que pide el PIN de quien la lleva; y dentro, arriba en la sala (11.5).
+- **Cerrar caja en cuatro pasos a la vista**: contar (a ciegas, billete a billete, con el total sumándose), el datáfono, lo que se queda para mañana, y el resultado con la diferencia en efectivo y en tarjeta, «Imprimir el Z» y «Listo».
 - **En Estook, «Cierre» pasa a «Cierres de caja»** con Pro: Servicio › Jornadas › Cierres de caja, la lista por día con su diferencia («Cuadra», o el importe en ámbar o en rojo), «Buscar un día» y «Con diferencia»; cada cierre con quién lo empezó y lo cerró, el fondo, lo cobrado, las entradas y salidas con su motivo, lo que debería haber, lo contado, la tarjeta frente al datáfono, sus tickets y «Descargar el Z». **Ese día se quita, con Pro, el cierre a mano** (hasta entonces sigue, porque el TPV todavía no cobra).
 
 **Lo que añadió Richi el 28-oct** ([0121](../decisiones/0121-la-pausa-del-tpv.md), punto 4), para T7:
 
-- **Dos botones distintos, de encargado**: **«Empezar el día»**, que abre la caja con su fondo y dura hasta **«Cerrar el día»**, con el recuento; y **«Abrir el cajón»**, que **siempre pregunta para qué** (arriba). Así el efectivo cuadra siempre.
+- **Dos botones distintos, de encargado**: **«Abrir caja»**, que abre la caja con su fondo y dura hasta **«Cerrar caja»**, con el recuento; y **«Abrir el cajón»**, que **siempre pregunta para qué** (arriba). Así el efectivo cuadra siempre.
 - **La caja la abre el gerente y se queda abierta todo el día; el PIN se teclea al entrar, no en cada cobro** (0121, punto 7). Su pausa no cierra su sesión; **su salida sí**, y la caja —el dinero— sigue abierta: «La caja sigue abierta · el siguiente entra con su PIN». Lo de después nunca queda a nombre de quien se ha ido.
 - **El primer día se pregunta con cuánto se empieza**: no hay nada que proponer.
 - **Una venta cuenta una sola vez, y solo al cobrar**: la venta nace del cobro con su clave, y cada línea cobrada baja del almacén una sola vez, **guardado por la base** (un índice único por venta y línea). Pedir, mandar, tachar, cambiar, anular o devolver a cocina antes de cobrar **no cuenta**; anular después de cobrar es una devolución (5.4), con su movimiento contrario.

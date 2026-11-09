@@ -18,7 +18,7 @@ import { eurosConSimbolo } from '../logica/texto.ts';
 import { ContarElCajon } from './ContarElCajon.tsx';
 import { AvisoDeLaCaja, ErrorDeLaCaja } from './AbrirCaja.tsx';
 import { deEurosACentimos, enLaCasilla } from './dinero.ts';
-import { pideEncargado, usarLaCaja, usarRecargarLaCaja } from './usarLaCaja.ts';
+import { pideEncargado, usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
 import type { ComoVaLaCaja, ElRecuento, LaCajaCerrada } from './tipos.ts';
 
 type Paso = 1 | 2 | 3;
@@ -127,16 +127,16 @@ export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
     <div className="flex flex-col gap-e4">
       <ol className="flex flex-wrap gap-e2" aria-label="Pasos para cerrar la caja">
         {LOS_PASOS.map((nombre, i) => {
-          const numero = i + 1;
-          const como = numero === paso ? 'ahora' : numero < paso ? 'hecho' : 'falta';
+          const elPaso = i + 1;
+          const como = elPaso === paso ? 'ahora' : elPaso < paso ? 'hecho' : 'falta';
           return (
             <li key={nombre}>
               <button
                 type="button"
-                disabled={numero > paso}
+                disabled={elPaso > paso}
                 aria-current={como === 'ahora' ? 'step' : undefined}
                 onClick={() => {
-                  if (numero < paso) setPaso(numero as Paso);
+                  if (elPaso < paso) setPaso(elPaso as Paso);
                 }}
                 className={`rounded-redondo px-e3 py-e1 text-secundario font-bold ${
                   como === 'ahora'
@@ -146,7 +146,7 @@ export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
                       : 'bg-superficie text-texto-tenue'
                 }`}
               >
-                {numero} {nombre}
+                {elPaso} {nombre}
               </button>
             </li>
           );

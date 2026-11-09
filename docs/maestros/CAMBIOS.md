@@ -105,6 +105,8 @@ hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban as�
 
 ## Roles, vistas, auditorías y administración
 
+**El 9 de noviembre de 2026, sin cambiar de versión** ([0144](../decisiones/0144-r3-la-caja.md)): en 1.12, **cobrar** lleva su permiso (`accion.cobrar`) y **abrir y cerrar caja** el suyo (`accion.llevar_la_caja`), que el camarero tiene si el local enciende «También camareros».
+
 **1.4** (30 de septiembre de 2026, [0055](../decisiones/0055-la-auditoria-profunda.md)). En 1.12: el terminal y su operador, la aprobación con el PIN de un superior, los límites por rol, «solo lo mío», la bolsa del camarero, dar de alta un terminal, y el titular de la empresa fiscal como único que autoriza ante Hacienda.
 
 **1.3** (27 de septiembre de 2026, [decisión 0054](../decisiones/0054-estook-tpv-y-uber-eats-comprobado.md)). El apartado 1.12 gana cinco filas: **abrir el cajón sin venta**, **ver el informe X**, **aceptar o rechazar un pedido de reparto**, **pausar la tienda en la plataforma** y **conectar un datáfono o un canal**. Son lo que trae el capítulo 10 del Anexo.
@@ -124,6 +126,8 @@ hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban as�
 **1.1.** Recoge la Evolución de producto 1.0: entran los canales de reparto en el mapa de dependencias, cuatro efectos en cadena nuevos, la máquina de estado de una alerta y de un pedido externo, seis hallazgos nuevos (del 13 al 18) y las decisiones de improvisación que traen las integraciones.
 
 ## Anexo · TPV y facturación
+
+**El 9 de noviembre de 2026, sin cambiar de versión** ([0144](../decisiones/0144-r3-la-caja.md)): en 11.6, «Empezar el día» y «Cerrar el día» pasan a **«Abrir caja»** y **«Cerrar caja»** (cerrar la última del día es cerrar el día), «Es eso» a **«Está correcto»**, y entra lo que contestó Richi: también camareros, recuento obligatorio, Bizum y cheque, dividir, la diferencia con la caja ya cerrada y que en pruebas no se marca nada.
 
 **El 4 de noviembre de 2026, sin cambiar de versión** ([0126](../decisiones/0126-t6-1-el-alta-de-facturacion.md), [0127](../decisiones/0127-con-verifactu-sin-envio-o-fuera.md)): **1.3 deja de ser «solo VERI\*FACTU»**: con VERI\*FACTU (la recomendada), sin envío (NO VERI\*FACTU, que construye Estook en T6 · 3) o fuera, por el SII, que ya no para el alta (1.4); la clave de cada NIF no se guarda (4.2); en los registros va la identificación de Verifacti (4.14); y la empresa y las series, como se construyeron (7).
 

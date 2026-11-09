@@ -2,8 +2,8 @@ import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { FalloDeLaSala } from '../ganchos/usarLaSala.ts';
-import type { LaCajaDelAparato } from './tipos.ts';
+import { FalloDeLaSala } from './usarLaSala.ts';
+import type { LaCajaDelAparato } from '../caja/tipos.ts';
 
 /**
  * **La caja de este aparato** (0144): si está abierta, lo que se propone al abrir, los ajustes y lo

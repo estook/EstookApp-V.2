@@ -97,7 +97,8 @@ beforeAll(async () => {
   );
   losDatos(
     await api.ejecutar(entrada.token, 'superar_doble_factor', {
-      codigo: await codigoEn(SECRETO_DEL_ADMIN_DE_EJEMPLO, new Date()),
+      // El código del segundo factor es el de este minuto, el del reloj de la API de prueba.
+      codigo: await codigoEn(SECRETO_DEL_ADMIN_DE_EJEMPLO, new Date(Date.now())),
     }),
   );
   losDatos(
@@ -122,7 +123,6 @@ beforeAll(async () => {
       cajon_nuevo: 'Caja 1',
     }),
   ).llave;
-  const rosa = await enLaCaja(ROSA);
   losDatos(
     await api.ejecutar(await enLaCaja(ROSA), 'guardar_impresora', {
       nombre: 'Caja',
@@ -597,7 +597,7 @@ describe('en Estook, los cierres de caja', () => {
     expect(lista.dias).toHaveLength(1);
     expect(lista.dias[0]).toMatchObject({ total: 16000, cajas: 3 });
     const dia = losDatos<{ cajas: { diferencia: number | null; motivo: string | null }[] }>(
-      await api.consultar(rosaEnEstook, 'un_dia_de_caja', { fecha: lista.dias[0]?.fecha }),
+      await api.consultar(rosaEnEstook, 'un_dia_de_caja', { fecha: lista.dias[0]?.fecha ?? '' }),
     );
     expect(dia.cajas[0]).toMatchObject({ diferencia: -500, motivo: 'no_se_sabe' });
     // Una camarera no ve las ventas: no ve los cierres.

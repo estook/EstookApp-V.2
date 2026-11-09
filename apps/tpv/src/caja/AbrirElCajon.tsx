@@ -7,7 +7,7 @@ import { LoApruebaUnEncargado } from '../mesa/LoApruebaUnEncargado.tsx';
 import { eurosConSimbolo } from '../logica/texto.ts';
 import { AvisoDeLaCaja, ErrorDeLaCaja } from './AbrirCaja.tsx';
 import { deEurosACentimos } from './dinero.ts';
-import { idNuevo, pideEncargado, usarLaCaja, usarRecargarLaCaja } from './usarLaCaja.ts';
+import { idNuevo, pideEncargado, usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
 
 const PARA_QUE: readonly { readonly que: ParaQueSeAbre; readonly nombre: string }[] = [
   { que: 'cambio', nombre: 'Cambio' },

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { irA } from '../navegar.ts';
 import { laHora } from '../logica/texto.ts';
-import { usarLaCaja } from './usarLaCaja.ts';
+import { usarLaCaja } from '../ganchos/usarLaCaja.ts';
 
 /**
  * **La caja, arriba en la sala** (Anexo 11.5; maqueta del 9-nov, tramo 3): un solo botón, verde con

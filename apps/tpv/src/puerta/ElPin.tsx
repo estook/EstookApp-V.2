@@ -504,10 +504,10 @@ export function ElPin({
                       : '/';
                   }}
                   className={`min-h-toque rounded-redondo px-e5 font-bold text-fondo ${
-                    aparato.cajaAbierta === true ? 'bg-atencion' : 'bg-bien'
+                    aparato.cajaAbierta ? 'bg-atencion' : 'bg-bien'
                   } ${paraLaCaja ? 'outline outline-2 outline-offset-2 outline-texto' : ''}`}
                 >
-                  {aparato.cajaAbierta === true ? 'Cerrar caja' : 'Abrir caja'}
+                  {aparato.cajaAbierta ? 'Cerrar caja' : 'Abrir caja'}
                 </button>
               )}
             </div>

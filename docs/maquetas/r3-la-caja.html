@@ -1,0 +1,4369 @@
+<title>R3 · La caja</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+/>
+<style>
+  /* Maqueta de R3 · La caja (repaso del 8-nov, 0143). Arriba Estook TPV con sus fichas reales
+     (oscuro de fábrica, claro con el interruptor); abajo Estook en el móvil, con las de la app.
+     Layout: pestañas (imprescindible · extra · después) y, dentro, el día en cinco tramos. */
+  :root {
+    --fondo: #f1efea;
+    --superficie: #ffffff;
+    --superficie-2: #f7f5f1;
+    --borde: #e0dcd4;
+    --texto: #111c1f;
+    --suave: #5a6568;
+    --tenue: #666e70;
+    --naranja: #ff7a00;
+    --sobre-naranja: #111c1f;
+    --naranja-suave: #fff1e5;
+    --bien: #187648;
+    --bien-s: #e7f4ee;
+    --atencion: #9a5c00;
+    --atencion-s: #fdf1de;
+    --mal: #c4372b;
+    --mal-s: #fbeae8;
+    --info: #2c6e9b;
+    --info-s: #e8f0f6;
+    --sombra: 0 1px 2px rgba(17, 28, 31, 0.05), 0 8px 24px -12px rgba(17, 28, 31, 0.14);
+    --fuente: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --fondo: #15181c;
+      --superficie: #1f2328;
+      --superficie-2: #262b31;
+      --borde: #2d333a;
+      --texto: #eef1f3;
+      --suave: #b8c0c7;
+      --tenue: #9ba5ae;
+      --naranja-suave: #33220f;
+      --bien: #4ec98a;
+      --bien-s: #122a20;
+      --atencion: #f0ae4e;
+      --atencion-s: #2c2312;
+      --mal: #f0796c;
+      --mal-s: #2d1a17;
+      --info: #6fb3e0;
+      --info-s: #13232e;
+      --sombra: 0 1px 2px rgba(0, 0, 0, 0.4);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --fondo: #15181c;
+    --superficie: #1f2328;
+    --superficie-2: #262b31;
+    --borde: #2d333a;
+    --texto: #eef1f3;
+    --suave: #b8c0c7;
+    --tenue: #9ba5ae;
+    --naranja-suave: #33220f;
+    --bien: #4ec98a;
+    --bien-s: #122a20;
+    --atencion: #f0ae4e;
+    --atencion-s: #2c2312;
+    --mal: #f0796c;
+    --mal-s: #2d1a17;
+    --info: #6fb3e0;
+    --info-s: #13232e;
+    --sombra: 0 1px 2px rgba(0, 0, 0, 0.4);
+    color-scheme: dark;
+  }
+
+  /* Estook TPV: sus fichas, oscuro de fábrica y claro con el interruptor (temas.css). */
+  .tpv {
+    --t-fondo: #0f1719;
+    --t-sup: #18252a;
+    --t-sup-2: #1f2f35;
+    --t-borde: #2c4047;
+    --t-texto: #f1efea;
+    --t-suave: #c4cfd1;
+    --t-tenue: #9fb0b3;
+    --t-charcoal: #22343a;
+    --t-bien: #4ec98a;
+    --t-bien-s: #11281e;
+    --t-sobre-bien: #0f1719;
+    --t-atencion: #f0ae4e;
+    --t-atencion-s: #2a2212;
+    --t-sobre-atencion: #0f1719;
+    --t-mal: #f0796c;
+    --t-mal-s: #2b1a18;
+    --t-info: #6fb7e8;
+    --t-info-s: #12232e;
+    --t-naranja-s: #33220f;
+  }
+  .tpv.claro {
+    --t-fondo: #f1efea;
+    --t-sup: #ffffff;
+    --t-sup-2: #f7f5f1;
+    --t-borde: #e0dcd4;
+    --t-texto: #111c1f;
+    --t-suave: #4f5a5d;
+    --t-tenue: #576063;
+    --t-charcoal: #ebe7e0;
+    --t-bien: #187648;
+    --t-bien-s: #e7f4ee;
+    --t-sobre-bien: #ffffff;
+    --t-atencion: #8a5200;
+    --t-atencion-s: #fdf1de;
+    --t-sobre-atencion: #ffffff;
+    --t-mal: #b3261e;
+    --t-mal-s: #fbeae8;
+    --t-info: #2c6e9b;
+    --t-info-s: #e8f0f6;
+    --t-naranja-s: #fff1e5;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  /* Lo oculto, oculto también al abrir el fichero en local (sin el esqueleto de la publicación). */
+  [hidden] {
+    display: none !important;
+  }
+  body {
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: var(--fuente);
+    font-size: 15px;
+    line-height: 1.45;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 24px 64px;
+  }
+  .envoltura {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: grid;
+    gap: 22px;
+    width: 100%;
+  }
+  /* Una rejilla de una columna no crece por lo que lleva dentro: lo encoge o lo parte. */
+  .extra,
+  .tpv .cuerpo,
+  .tarjeta-t,
+  .contador,
+  .partes,
+  .hecho-ok {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .envoltura > *,
+  .extras > *,
+  .extra > *,
+  .listas-despues > *,
+  .reglas > * {
+    min-width: 0;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    text-wrap: balance;
+    line-height: 1.2;
+  }
+  p {
+    margin: 0;
+  }
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  button:focus-visible,
+  input:focus-visible,
+  summary:focus-visible {
+    outline: 3px solid var(--naranja);
+    outline-offset: 2px;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Cabecera de la maqueta ───────────────────────────────── */
+  .cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 24px;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .cabecera .marca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .cabecera .e {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--naranja);
+    color: var(--sobre-naranja);
+    font-weight: 800;
+    font-size: 22px;
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .cabecera h1 {
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 800;
+  }
+  .cabecera .bajada {
+    color: var(--suave);
+    max-width: 62ch;
+    margin-top: 4px;
+  }
+  .pildora {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .p-bien {
+    background: var(--bien-s);
+    color: var(--bien);
+  }
+  .p-aten {
+    background: var(--atencion-s);
+    color: var(--atencion);
+  }
+  .p-mal {
+    background: var(--mal-s);
+    color: var(--mal);
+  }
+  .p-info {
+    background: var(--info-s);
+    color: var(--info);
+  }
+  .p-gris {
+    background: var(--superficie-2);
+    color: var(--suave);
+  }
+  .p-nar {
+    background: var(--naranja-suave);
+    color: var(--texto);
+  }
+
+  .pestanas {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    background: var(--superficie);
+    padding: 6px;
+    border-radius: 16px;
+    box-shadow: var(--sombra);
+    width: fit-content;
+    max-width: 100%;
+  }
+  .pestanas button {
+    border: 0;
+    background: transparent;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    color: var(--suave);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .pestanas button[aria-selected='true'] {
+    background: var(--texto);
+    color: var(--fondo);
+  }
+  .pestanas .cuenta {
+    font-size: 12px;
+    background: var(--naranja);
+    color: var(--sobre-naranja);
+    border-radius: 999px;
+    padding: 1px 7px;
+  }
+
+  .barra-control {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .tramos {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .tramos a {
+    text-decoration: none;
+    color: var(--texto);
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-weight: 600;
+    font-size: 13.5px;
+  }
+  .tramos a b {
+    color: var(--naranja);
+    margin-right: 4px;
+  }
+  .segmentado {
+    display: inline-flex;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .segmentado button {
+    border: 0;
+    background: transparent;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--suave);
+  }
+  .segmentado button[aria-pressed='true'] {
+    background: var(--texto);
+    color: var(--fondo);
+  }
+  .etiqueta-seg {
+    font-size: 12.5px;
+    color: var(--tenue);
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  /* ── Un tramo del día ─────────────────────────────────────── */
+  .tramo {
+    display: grid;
+    gap: 14px;
+    scroll-margin-top: 16px;
+  }
+  .tramo > header {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .tramo > header .n {
+    font-weight: 800;
+    color: var(--naranja);
+    font-size: 15px;
+    letter-spacing: 0.04em;
+  }
+  .tramo > header h2 {
+    font-size: 21px;
+    font-weight: 800;
+  }
+  .tramo > header p {
+    color: var(--suave);
+    flex-basis: 100%;
+    max-width: 70ch;
+  }
+  .lienzo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: flex-start;
+  }
+  .pieza {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    flex: 1 1 520px;
+    max-width: 100%;
+  }
+  .pieza.estrecha {
+    flex: 1 1 340px;
+    max-width: 440px;
+  }
+  .pieza .titulo {
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .pieza .nota {
+    font-size: 13px;
+    color: var(--suave);
+    max-width: 62ch;
+  }
+  .variantes {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  /* ── El marco de Estook TPV ───────────────────────────────── */
+  .tpv {
+    background: var(--t-fondo);
+    color: var(--t-texto);
+    border-radius: 20px;
+    border: 6px solid #0b0f10;
+    overflow: hidden;
+    box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.55);
+    min-width: 0;
+    position: relative;
+  }
+  .tpv .barra {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--t-sup);
+    border-bottom: 1px solid var(--t-borde);
+    flex-wrap: wrap;
+  }
+  .tpv .barra .e {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--naranja);
+    color: #111c1f;
+    font-weight: 800;
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .tpv .barra .local {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+    font-weight: 800;
+    font-size: 14px;
+  }
+  .tpv .barra .local small {
+    font-weight: 600;
+    color: var(--t-tenue);
+    font-size: 11.5px;
+  }
+  .tpv .hueco {
+    flex: 1;
+  }
+  .tpv .cuerpo {
+    padding: 16px;
+    display: grid;
+    gap: 14px;
+  }
+  .t-suave {
+    color: var(--t-suave);
+  }
+  .t-tenue {
+    color: var(--t-tenue);
+  }
+  .t-peq {
+    font-size: 12.5px;
+  }
+  .t-h {
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  /* Botones del TPV: grandes, para el dedo. */
+  .bt {
+    border: 0;
+    border-radius: 14px;
+    min-height: 48px;
+    padding: 10px 16px;
+    font-weight: 800;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--t-charcoal);
+    color: var(--t-texto);
+  }
+  .bt.naranja {
+    background: var(--naranja);
+    color: #111c1f;
+  }
+  .bt.verde {
+    background: var(--t-bien);
+    color: var(--t-sobre-bien);
+  }
+  .bt.ambar {
+    background: var(--t-atencion);
+    color: var(--t-sobre-atencion);
+  }
+  .bt.hueco-borde {
+    background: transparent;
+    border: 2px solid var(--t-borde);
+  }
+  .bt.peq {
+    min-height: 38px;
+    padding: 6px 12px;
+    font-size: 13.5px;
+    border-radius: 999px;
+  }
+  .bt.ancho {
+    width: 100%;
+  }
+  .bt[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .fila-bt {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .fila-bt > .bt {
+    flex: 1 1 140px;
+  }
+  .fila-mini {
+    display: flex;
+    gap: 8px;
+  }
+  .fila-mini > .bt {
+    min-width: 96px;
+  }
+
+  .aviso {
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .a-info {
+    background: var(--t-info-s);
+    color: var(--t-info);
+  }
+  .a-bien {
+    background: var(--t-bien-s);
+    color: var(--t-bien);
+  }
+  .a-aten {
+    background: var(--t-atencion-s);
+    color: var(--t-atencion);
+  }
+  .a-mal {
+    background: var(--t-mal-s);
+    color: var(--t-mal);
+  }
+  .a-gris {
+    background: var(--t-sup-2);
+    color: var(--t-suave);
+  }
+  .aviso b {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    border: 2px solid var(--t-borde);
+    background: transparent;
+    color: var(--t-texto);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    min-height: 42px;
+  }
+  .chip[aria-pressed='true'] {
+    border-color: var(--naranja);
+    background: var(--t-naranja-s);
+  }
+  .ajuste {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+  }
+  .ajuste > span:not(.segmentado-t) {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .ajuste small {
+    color: var(--t-tenue);
+    font-size: 12px;
+  }
+  .interruptor {
+    flex: none;
+    width: 52px;
+    height: 30px;
+    border-radius: 999px;
+    border: 0;
+    background: var(--t-borde);
+    position: relative;
+  }
+  .interruptor::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: var(--t-texto);
+    transition: left 0.15s ease;
+  }
+  .interruptor[aria-pressed='true'] {
+    background: var(--t-bien);
+  }
+  .interruptor[aria-pressed='true']::after {
+    left: 25px;
+    background: var(--t-sobre-bien);
+  }
+  /* Columnas que encajan sin huecos: cada apartado ocupa lo suyo, y el siguiente va debajo. */
+  .ajustes-rejilla {
+    columns: 3 300px;
+    column-gap: 14px;
+    padding: 16px;
+  }
+  .ajustes-rejilla > .apartado {
+    break-inside: avoid;
+    margin-bottom: 14px;
+  }
+  .apartado {
+    background: var(--t-sup);
+    border: 1px solid var(--t-borde);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .apartado h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--t-tenue);
+  }
+  .ajuste.columna {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .ajuste.columna > small {
+    color: var(--t-tenue);
+    font-size: 12px;
+  }
+  .segmentado-t {
+    display: inline-flex;
+    background: var(--t-fondo);
+    border: 1px solid var(--t-borde);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .segmentado-t button {
+    border: 0;
+    background: transparent;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--t-suave);
+  }
+  .segmentado-t button[aria-pressed='true'] {
+    background: var(--naranja);
+    color: #111c1f;
+  }
+  .chips.tres {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .chips.tres .chip {
+    padding: 8px 6px;
+  }
+  .tarjeta-t {
+    background: var(--t-sup);
+    border: 1px solid var(--t-borde);
+    border-radius: 16px;
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+  }
+  .renglon {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+    align-items: baseline;
+  }
+  .renglon span:first-child {
+    color: var(--t-suave);
+  }
+  .renglon b {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .renglon.fuerte {
+    border-top: 1px solid var(--t-borde);
+    padding-top: 8px;
+  }
+  .renglon.fuerte span:first-child {
+    color: var(--t-texto);
+    font-weight: 700;
+  }
+  .grande {
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* El PIN */
+  .puerta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+  }
+  .puerta .izq {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .puerta .reloj {
+    font-size: 54px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .puerta .der {
+    padding: 18px;
+    background: color-mix(in srgb, var(--t-sup) 55%, transparent);
+    border-left: 1px solid var(--t-borde);
+    display: grid;
+    gap: 14px;
+    justify-items: center;
+  }
+  .puerta .arriba {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .puerta .arriba .bt {
+    border-radius: 999px;
+    min-height: 44px;
+  }
+  .fichados {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .fichado {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: var(--t-sup);
+    border-radius: 999px;
+    padding: 4px 12px 4px 4px;
+    font-size: 13px;
+  }
+  .ini {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: var(--t-charcoal);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 12px;
+    flex: none;
+  }
+  .puntos {
+    display: flex;
+    gap: 10px;
+  }
+  .puntos i {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    border: 2px solid var(--t-borde);
+  }
+  .puntos i.l {
+    background: var(--t-texto);
+    border-color: var(--t-texto);
+  }
+  .teclado {
+    display: grid;
+    grid-template-columns: repeat(3, 64px);
+    gap: 8px;
+  }
+  .teclado span {
+    height: 56px;
+    border-radius: 14px;
+    background: var(--t-sup);
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .teclado span.vacia {
+    background: transparent;
+  }
+
+  /* Contar billetes y monedas */
+  .contador {
+    display: grid;
+    gap: 10px;
+  }
+  .contador h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--t-tenue);
+  }
+  .rejilla-den {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 8px;
+  }
+  .den {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 8px;
+    background: var(--t-sup);
+    border: 1px solid var(--t-borde);
+    border-radius: 12px;
+    padding: 8px 8px 8px 10px;
+    align-items: center;
+  }
+  .den .v {
+    font-weight: 800;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .den .sub.cero {
+    opacity: 0.55;
+  }
+  .den .sub {
+    grid-column: 1 / -1;
+    font-size: 11.5px;
+    color: var(--t-tenue);
+    font-variant-numeric: tabular-nums;
+  }
+  .den .ctl {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .den .ctl button {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--t-charcoal);
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .den input {
+    width: 40px;
+    height: 34px;
+    text-align: center;
+    border: 1px solid var(--t-borde);
+    border-radius: 8px;
+    background: var(--t-fondo);
+    color: var(--t-texto);
+    font: inherit;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    -moz-appearance: textfield;
+  }
+  .den input::-webkit-outer-spin-button,
+  .den input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .suma {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: var(--t-sup);
+    border-radius: 14px;
+    padding: 12px 14px;
+  }
+  .suma .cifra {
+    font-size: 26px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Los pasos del cierre */
+  .pasos {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pasos button {
+    border: 0;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    background: var(--t-sup-2);
+    color: var(--t-tenue);
+  }
+  .pasos button.hecho {
+    color: var(--t-bien);
+    background: var(--t-bien-s);
+  }
+  .pasos button.si {
+    background: var(--naranja);
+    color: #111c1f;
+  }
+
+  /* Cobrar */
+  .cobro {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+  .cobro .cuenta {
+    padding: 16px;
+    border-right: 1px solid var(--t-borde);
+    display: grid;
+    gap: 6px;
+    align-content: start;
+    background: var(--t-sup);
+  }
+  .linea {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    gap: 8px;
+    font-size: 14px;
+    align-items: center;
+    padding: 6px 4px;
+    border-radius: 10px;
+  }
+  .linea .cant {
+    color: var(--t-tenue);
+    font-weight: 700;
+  }
+  .linea b {
+    font-variant-numeric: tabular-nums;
+  }
+  .linea.elegible {
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+  .linea.elegible.marcada {
+    border-color: var(--naranja);
+    background: var(--t-naranja-s);
+  }
+  .linea.pagada {
+    opacity: 0.45;
+    text-decoration: line-through;
+    cursor: default;
+  }
+  .cobro .derecha {
+    padding: 16px;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+  .formas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .formas button {
+    border: 2px solid var(--t-borde);
+    background: var(--t-sup);
+    border-radius: 14px;
+    min-height: 64px;
+    font-weight: 800;
+    display: grid;
+    place-items: center;
+    gap: 2px;
+    font-size: 14px;
+  }
+  .formas button svg {
+    width: 22px;
+    height: 22px;
+  }
+  .formas button[aria-pressed='true'] {
+    border-color: var(--naranja);
+    background: var(--t-naranja-s);
+  }
+  .rapidos {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .rapidos button {
+    border: 2px solid var(--t-borde);
+    background: transparent;
+    border-radius: 12px;
+    min-height: 48px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  .rapidos button[aria-pressed='true'] {
+    border-color: var(--naranja);
+    background: var(--t-naranja-s);
+  }
+  .cambio {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: var(--t-bien-s);
+    color: var(--t-bien);
+    font-weight: 800;
+  }
+  .cambio .grande {
+    font-size: 34px;
+  }
+  .campo-t {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    border: 2px solid var(--t-borde);
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-size: 14px;
+    background: var(--t-fondo);
+  }
+  .campo-t input {
+    border: 0;
+    background: transparent;
+    color: var(--t-texto);
+    font: inherit;
+    font-weight: 800;
+    font-size: 18px;
+    text-align: right;
+    width: 9ch;
+    font-variant-numeric: tabular-nums;
+  }
+  .campo-t input:focus {
+    outline: none;
+  }
+  .campo-t:focus-within {
+    border-color: var(--naranja);
+  }
+  .tapa {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--t-fondo) 82%, transparent);
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    z-index: 2;
+  }
+  .tapa .caja-tapa {
+    background: var(--t-sup);
+    border: 1px solid var(--t-borde);
+    border-radius: 18px;
+    padding: 20px;
+    display: grid;
+    gap: 12px;
+    max-width: 360px;
+    text-align: center;
+  }
+  .hecho-ok {
+    display: grid;
+    gap: 12px;
+    justify-items: start;
+  }
+  .ok-circulo {
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    background: var(--t-bien);
+    color: var(--t-sobre-bien);
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    font-weight: 800;
+  }
+  .partes {
+    display: grid;
+    gap: 8px;
+  }
+  .parte {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--t-sup);
+    border: 1px solid var(--t-borde);
+    border-radius: 12px;
+    padding: 8px 10px;
+    flex-wrap: wrap;
+  }
+  .parte .que {
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .parte .que small {
+    display: block;
+    color: var(--t-tenue);
+    font-weight: 600;
+  }
+  .parte.pagada {
+    opacity: 0.6;
+  }
+  .contadorcito {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .contadorcito button {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 0;
+    background: var(--t-charcoal);
+    font-weight: 800;
+    font-size: 18px;
+  }
+  .contadorcito b {
+    min-width: 2ch;
+    text-align: center;
+    font-size: 18px;
+  }
+
+  /* La sala */
+  .zonas {
+    display: inline-flex;
+    gap: 2px;
+    background: var(--t-fondo);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .zonas span {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--t-suave);
+  }
+  .zonas span.si {
+    background: var(--t-charcoal);
+    color: var(--t-texto);
+  }
+  .plano {
+    position: relative;
+    height: 230px;
+    border-radius: 14px;
+    background: var(--t-sup);
+    border: 1px dashed var(--t-borde);
+    overflow: hidden;
+  }
+  .mesa {
+    position: absolute;
+    width: 74px;
+    height: 74px;
+    border-radius: 18px;
+    background: var(--t-fondo);
+    border: 2px solid var(--t-borde);
+    display: grid;
+    place-items: center;
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .mesa b {
+    font-size: 18px;
+    display: block;
+  }
+  .mesa.ocupada {
+    border-color: var(--t-info);
+  }
+  .mesa.cuenta {
+    border-color: var(--naranja);
+    background: var(--t-naranja-s);
+  }
+  .desplegable-caja {
+    position: absolute;
+    top: 62px;
+    right: 12px;
+    width: min(300px, calc(100% - 24px));
+    background: var(--t-sup);
+    border: 1px solid var(--t-borde);
+    border-radius: 16px;
+    box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.6);
+    padding: 14px;
+    display: grid;
+    gap: 8px;
+    z-index: 3;
+  }
+  .punto-vivo {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: currentColor;
+    display: inline-block;
+  }
+
+  /* ── Estook en el móvil ───────────────────────────────────── */
+  .movil {
+    width: 100%;
+    max-width: 380px;
+    background: var(--superficie);
+    border: 8px solid #0b0f10;
+    border-radius: 34px;
+    overflow: hidden;
+    box-shadow: var(--sombra);
+  }
+  .movil .estado {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 18px 2px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .movil .cab-app {
+    padding: 8px 14px 10px;
+    display: grid;
+    gap: 10px;
+    border-bottom: 1px solid var(--borde);
+  }
+  .movil .cab-app .fila {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .icono-app {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: #0f8b8d;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 14px;
+  }
+  .pest-app {
+    display: flex;
+    gap: 16px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--tenue);
+  }
+  .pest-app span.si {
+    color: var(--texto);
+    box-shadow: inset 0 -3px 0 var(--naranja);
+    padding-bottom: 6px;
+  }
+  .movil .dentro {
+    padding: 12px;
+    display: grid;
+    gap: 10px;
+    background: var(--fondo);
+    min-height: 520px;
+    align-content: start;
+  }
+  .vistas {
+    display: inline-flex;
+    background: var(--superficie);
+    border-radius: 999px;
+    padding: 3px;
+    border: 1px solid var(--borde);
+    width: fit-content;
+  }
+  .vistas span {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--suave);
+  }
+  .vistas span.si {
+    background: var(--texto);
+    color: var(--fondo);
+  }
+  .tarjeta {
+    background: var(--superficie);
+    border-radius: 16px;
+    box-shadow: var(--sombra);
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+  }
+  .fila-dia {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--borde);
+    background: transparent;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    width: 100%;
+    text-align: left;
+  }
+  .fila-dia:last-child {
+    border-bottom: 0;
+  }
+  .fila-dia .que {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .fila-dia .que small {
+    color: var(--tenue);
+    font-size: 12px;
+  }
+  .chips-app {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .chips-app button {
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+  .chips-app button[aria-pressed='true'] {
+    background: var(--texto);
+    color: var(--fondo);
+    border-color: var(--texto);
+  }
+  .linea-z {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13.5px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--borde);
+  }
+  .linea-z:last-child {
+    border-bottom: 0;
+  }
+  .linea-z span {
+    color: var(--suave);
+  }
+  .linea-z span small {
+    display: block;
+    color: var(--tenue);
+    font-size: 11.5px;
+  }
+  .linea-z b {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .boton-app {
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    border-radius: 12px;
+    padding: 9px 14px;
+    font-weight: 700;
+    font-size: 13.5px;
+  }
+  .barra-abajo {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid var(--borde);
+    background: var(--superficie);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tenue);
+    text-align: center;
+    padding: 8px 0 10px;
+  }
+  .barra-abajo .aqui {
+    color: var(--texto);
+  }
+
+  /* ── Reglas, extras y lo de después ───────────────────────── */
+  .reglas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+  }
+  .regla {
+    background: var(--superficie);
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: var(--sombra);
+    display: grid;
+    gap: 4px;
+    font-size: 13.5px;
+  }
+  .regla b {
+    font-size: 14px;
+  }
+  .regla span {
+    color: var(--suave);
+  }
+  details.porque {
+    background: var(--superficie);
+    border-radius: 14px;
+    padding: 10px 14px;
+    box-shadow: var(--sombra);
+    font-size: 14px;
+  }
+  details.porque summary {
+    font-weight: 700;
+    cursor: pointer;
+  }
+  details.porque ul {
+    margin: 10px 0 2px;
+    padding-left: 20px;
+    display: grid;
+    gap: 6px;
+    color: var(--suave);
+  }
+  details.porque li b {
+    color: var(--texto);
+  }
+
+  .extras {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+    gap: 14px;
+  }
+  .extra {
+    background: var(--superficie);
+    border-radius: 18px;
+    box-shadow: var(--sombra);
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    border: 2px solid transparent;
+  }
+  .extra.elegido {
+    border-color: var(--naranja);
+  }
+  .extra .cab {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .extra .cab h3 {
+    font-size: 16.5px;
+    font-weight: 800;
+  }
+  .extra .codigo {
+    font-weight: 800;
+    color: var(--naranja);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+  .extra p {
+    color: var(--suave);
+    font-size: 13.5px;
+  }
+  .extra .tpv {
+    border-width: 4px;
+    border-radius: 14px;
+    box-shadow: none;
+  }
+  .extra .tpv .cuerpo {
+    padding: 12px;
+    gap: 10px;
+  }
+  .meta {
+    display: grid;
+    gap: 4px;
+    font-size: 13px;
+    border-top: 1px solid var(--borde);
+    padding-top: 8px;
+  }
+  .meta span {
+    color: var(--suave);
+  }
+  .meta b {
+    color: var(--texto);
+  }
+  .meta .consejo b {
+    color: var(--naranja);
+  }
+  .elegir {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    width: fit-content;
+  }
+  .elegir input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--naranja);
+  }
+  .resumen-eleccion {
+    position: sticky;
+    bottom: 12px;
+    background: var(--texto);
+    color: var(--fondo);
+    border-radius: 16px;
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.5);
+    font-weight: 600;
+  }
+  .resumen-eleccion code {
+    font-family: inherit;
+    font-weight: 800;
+    color: var(--naranja);
+  }
+  .resumen-eleccion button {
+    border: 0;
+    border-radius: 10px;
+    background: var(--naranja);
+    color: var(--sobre-naranja);
+    font-weight: 800;
+    padding: 8px 14px;
+  }
+
+  .listas-despues {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
+    gap: 14px;
+  }
+  .lista-despues {
+    background: var(--superficie);
+    border-radius: 18px;
+    box-shadow: var(--sombra);
+    padding: 16px;
+    display: grid;
+    gap: 10px;
+    align-content: start;
+  }
+  .lista-despues h3 {
+    font-size: 16px;
+    font-weight: 800;
+  }
+  .lista-despues ul {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 7px;
+    font-size: 14px;
+  }
+  .lista-despues li small {
+    display: block;
+    color: var(--tenue);
+    font-size: 12.5px;
+  }
+
+  @media (max-width: 760px) {
+    .puerta {
+      grid-template-columns: 1fr;
+    }
+    .puerta .der {
+      border-left: 0;
+      border-top: 1px solid var(--t-borde);
+    }
+    .puerta .reloj {
+      font-size: 40px;
+    }
+    .cobro {
+      grid-template-columns: 1fr;
+    }
+    .cobro .cuenta {
+      border-right: 0;
+      border-bottom: 1px solid var(--t-borde);
+    }
+    .rapidos,
+    .formas {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    .grande {
+      font-size: 32px;
+    }
+    .teclado {
+      grid-template-columns: repeat(3, 56px);
+    }
+    /* En el móvil, la cuadrícula de tres en fila, como el TPV (Anexo 11.8). */
+    .plano {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px;
+      height: auto;
+    }
+    .plano .mesa {
+      position: static;
+      width: auto !important;
+      height: 70px;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .bt,
+    .chip,
+    .formas button,
+    .rapidos button {
+      transition:
+        transform 0.08s ease,
+        background-color 0.15s ease;
+    }
+    .bt:active,
+    .chip:active {
+      transform: scale(0.97);
+    }
+  }
+</style>
+
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <symbol id="i-billete" viewBox="0 0 24 24">
+    <rect
+      x="2.5"
+      y="6"
+      width="19"
+      height="12"
+      rx="2"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    />
+    <circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="2" />
+  </symbol>
+  <symbol id="i-tarjeta" viewBox="0 0 24 24">
+    <rect
+      x="2.5"
+      y="5"
+      width="19"
+      height="14"
+      rx="2"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    />
+    <path d="M2.5 10h19" stroke="currentColor" stroke-width="2" />
+  </symbol>
+  <symbol id="i-movil" viewBox="0 0 24 24">
+    <rect
+      x="6.5"
+      y="2.5"
+      width="11"
+      height="19"
+      rx="2.5"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    />
+    <path d="M10.5 18h3" stroke="currentColor" stroke-width="2" />
+  </symbol>
+  <symbol id="i-cheque" viewBox="0 0 24 24">
+    <path
+      d="M3 7.5h18v9H3z"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linejoin="round"
+    />
+    <path d="M6.5 11h6M6.5 13.5h4" stroke="currentColor" stroke-width="2" />
+  </symbol>
+  <symbol id="i-dividir" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+    <path d="M12 3v18M12 12l6.4 6.4" stroke="currentColor" stroke-width="2" fill="none" />
+  </symbol>
+</svg>
+
+<div class="envoltura">
+  <header class="cabecera">
+    <div class="marca">
+      <span class="e" aria-hidden="true">E</span>
+      <div>
+        <h1>R3 · La caja</h1>
+        <p class="bajada">
+          Abrir contando el cajón, cobrar, meter y sacar dinero y cerrar a ciegas, todo en Estook
+          TPV. En Estook, con Pro, los cierres solo para ver. Los botones funcionan: pruébalos.
+        </p>
+      </div>
+    </div>
+    <span class="pildora p-nar">Maqueta para aprobar · 9-nov</span>
+  </header>
+
+  <nav class="pestanas" role="tablist" aria-label="Partes de la maqueta">
+    <button role="tab" id="tab-imprescindible" aria-selected="true" data-tab="imprescindible">
+      Lo imprescindible
+    </button>
+    <button role="tab" id="tab-extra" aria-selected="false" data-tab="extra">
+      Lo extra · elegidos <span class="cuenta">8 de 9</span>
+    </button>
+    <button role="tab" id="tab-despues" aria-selected="false" data-tab="despues">
+      Lo que va después
+    </button>
+  </nav>
+
+  <!-- ═══════════════════════ LO IMPRESCINDIBLE ═══════════════════════ -->
+  <section id="vista-imprescindible" class="envoltura" style="gap: 34px">
+    <div class="barra-control">
+      <nav class="tramos" aria-label="El día en la caja">
+        <a href="#t-abrir"><b>1</b>Abrir</a>
+        <a href="#t-cobrar"><b>2</b>Cobrar</a>
+        <a href="#t-durante"><b>3</b>Durante el día</a>
+        <a href="#t-cerrar"><b>4</b>Cerrar</a>
+        <a href="#t-estook"><b>5</b>En Estook</a>
+        <a href="#t-ajustes"><b>6</b>Ajustes</a>
+      </nav>
+      <div>
+        <span class="etiqueta-seg">Estook TPV</span>
+        <span class="segmentado" role="group" aria-label="Tema de Estook TPV">
+          <button type="button" data-tema="oscuro" aria-pressed="true">Oscuro</button>
+          <button type="button" data-tema="claro" aria-pressed="false">Claro</button>
+        </span>
+      </div>
+    </div>
+
+    <!-- 1 · ABRIR -->
+    <section class="tramo" id="t-abrir">
+      <header>
+        <span class="n">1</span>
+        <h2>Abrir la caja</h2>
+        <p>
+          Al lado de Fichar, en la pantalla del PIN. Propone lo que se quedó anoche en el cajón: un
+          toque si es eso, o se cuenta billete a billete.
+        </p>
+      </header>
+      <div class="lienzo">
+        <div class="pieza">
+          <div class="titulo">
+            La pantalla del PIN
+            <span class="segmentado" role="group" aria-label="Estado de la caja">
+              <button type="button" data-puerta="cerrada" aria-pressed="true">
+                Caja sin abrir
+              </button>
+              <button type="button" data-puerta="pin" aria-pressed="false">
+                Al tocar «Abrir caja»
+              </button>
+              <button type="button" data-puerta="camarero" aria-pressed="false">
+                Si es un camarero
+              </button>
+              <button type="button" data-puerta="abierta" aria-pressed="false">Caja abierta</button>
+            </span>
+          </div>
+          <div class="tpv">
+            <div class="puerta">
+              <div class="izq">
+                <div>
+                  <div class="reloj num">12:01</div>
+                  <div class="t-tenue" style="margin-top: 6px; font-weight: 600">
+                    Lunes 9 de noviembre · Caja 1 · IKATZ
+                  </div>
+                </div>
+                <div class="t-suave" style="font-weight: 700; font-size: 13.5px">
+                  Fichados ahora
+                </div>
+                <div class="fichados">
+                  <span class="fichado"
+                    ><span class="ini">MA</span
+                    ><span
+                      ><b>Marcos</b><br /><span style="color: var(--t-bien)"
+                        >desde 11:52</span
+                      ></span
+                    ></span
+                  >
+                  <span class="fichado"
+                    ><span class="ini">SA</span
+                    ><span
+                      ><b>Sara</b><br /><span style="color: var(--t-bien)">desde 11:58</span></span
+                    ></span
+                  >
+                </div>
+              </div>
+              <div class="der">
+                <div class="arriba">
+                  <button type="button" class="bt naranja">Fichar</button>
+                  <button type="button" class="bt verde" id="boton-caja-puerta">Abrir caja</button>
+                </div>
+                <div class="t-h" id="puerta-titulo" style="text-align: center">Teclea tu PIN</div>
+                <div
+                  class="t-tenue t-peq"
+                  id="puerta-sub"
+                  style="text-align: center; margin-top: -8px"
+                  hidden
+                >
+                  De un gerente o un jefe de sala
+                </div>
+                <div
+                  class="aviso a-mal"
+                  id="puerta-aviso"
+                  hidden
+                  style="text-align: center; justify-content: center"
+                >
+                  Sara no puede abrir la caja. Que teclee su PIN un gerente o un jefe de sala.
+                </div>
+                <div class="puntos" aria-hidden="true">
+                  <i class="l"></i><i class="l"></i><i></i><i></i><i></i><i></i>
+                </div>
+                <div class="teclado" aria-hidden="true">
+                  <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span
+                  ><span>6</span><span>7</span><span>8</span><span>9</span
+                  ><span class="vacia"></span><span>0</span><span>⌫</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="nota" id="nota-puerta">
+            Abrir y cerrar la caja piden siempre el PIN, y solo vale el de un gerente o un jefe de
+            sala (y area manager o dirección). Un camarero no puede. Dentro del TPV, si quien está
+            ya es encargado, no se lo vuelve a pedir; si no lo es, lo teclea un encargado ahí mismo.
+          </p>
+        </div>
+
+        <div class="pieza">
+          <div class="titulo">
+            Abrir caja
+            <span class="segmentado" role="group" aria-label="Cómo empieza">
+              <button type="button" data-abrir-modo="normal" aria-pressed="true">
+                Un día cualquiera
+              </button>
+              <button type="button" data-abrir-modo="primero" aria-pressed="false">
+                El primer día
+              </button>
+              <button type="button" data-abrir-modo="ayer" aria-pressed="false">
+                Ayer no se cerró
+              </button>
+            </span>
+          </div>
+          <div class="tpv" id="tpv-abrir">
+            <div class="barra">
+              <span class="e">E</span><span class="local">IKATZ<small>▣ Caja 1</small></span>
+              <span class="hueco"></span>
+              <span class="pildora a-gris" style="background: var(--t-sup-2); color: var(--t-suave)"
+                >Marcos · encargado</span
+              >
+            </div>
+            <div class="cuerpo" id="abrir-cuerpo"></div>
+          </div>
+          <p class="nota">
+            Un día cualquiera son 3 toques: «Abrir caja», el PIN y «Está correcto». El cajón se abre
+            para meter el fondo y la caja queda a nombre de quien la abrió.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · COBRAR -->
+    <section class="tramo" id="t-cobrar">
+      <header>
+        <span class="n">2</span>
+        <h2>Cobrar</h2>
+        <p>
+          El total en grande. Efectivo con billetes de un toque y el cambio a la vista; tarjeta en
+          el datáfono de siempre; o dividir. El ticket sale solo y, con efectivo, se abre el cajón.
+        </p>
+      </header>
+      <div class="lienzo">
+        <div class="pieza" style="flex-basis: 760px">
+          <div class="titulo">
+            Mesa 12
+            <span class="segmentado" role="group" aria-label="Con o sin caja abierta">
+              <button type="button" data-cobro-caja="si" aria-pressed="true">Caja abierta</button>
+              <button type="button" data-cobro-caja="no" aria-pressed="false">
+                Sin abrir la caja
+              </button>
+            </span>
+          </div>
+          <div class="tpv" id="tpv-cobro">
+            <div class="barra">
+              <span class="e">E</span><span class="local">IKATZ<small>▣ Caja 1</small></span>
+              <span class="hueco"></span>
+              <span class="t-tenue t-peq" style="font-weight: 700"
+                >Cobrar · Mesa 12 · 4 personas</span
+              >
+              <button type="button" class="bt peq hueco-borde" id="cobro-volver">Volver</button>
+            </div>
+            <div class="cobro">
+              <div class="cuenta" id="cobro-lineas"></div>
+              <div class="derecha" id="cobro-derecha"></div>
+            </div>
+            <div class="tapa" id="cobro-tapa" hidden>
+              <div class="caja-tapa">
+                <div class="t-h">Abre la caja para cobrar</div>
+                <p class="t-suave t-peq">
+                  Pedir y mandar a cocina siguen igual. Ahí mismo, con lo que se quedó anoche.
+                </p>
+                <button type="button" class="bt verde ancho" id="tapa-abrir">
+                  Abrir caja con 150,00 €
+                </button>
+                <p class="t-tenue t-peq">
+                  Si quien cobra no es encargado, un encargado teclea su PIN.
+                </p>
+              </div>
+            </div>
+          </div>
+          <p class="nota">
+            Una caña exacta: «Cobrar» y «Cobrar 2,50 €»; el ticket ya está impreso. Si Hacienda no
+            contesta, sale el justificante, como hoy.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · DURANTE EL DÍA -->
+    <section class="tramo" id="t-durante">
+      <header>
+        <span class="n">3</span>
+        <h2>Durante el día</h2>
+        <p>
+          Arriba en la sala, el botón «Caja». Dentro, lo que se hace con el dinero que no es una
+          venta, y cómo va la caja sin cerrarla.
+        </p>
+      </header>
+      <div class="lienzo">
+        <div class="pieza" style="flex-basis: 100%">
+          <div class="titulo">La sala, con la caja arriba · toca «Caja»</div>
+          <div class="tpv" id="tpv-sala">
+            <div class="barra">
+              <span class="e">E</span><span class="local">IKATZ<small>▣ Caja 1</small></span>
+              <span class="zonas"
+                ><span class="si">Salón</span><span>Terraza</span><span>Barra y llevar</span></span
+              >
+              <span class="hueco"></span>
+              <button type="button" class="bt peq verde" id="sala-caja" aria-expanded="false">
+                <span class="punto-vivo"></span>Caja
+              </button>
+              <button type="button" class="bt peq naranja">Fichar</button>
+              <button type="button" class="bt peq hueco-borde" aria-label="Ajustes">⚙</button>
+              <button type="button" class="bt peq">MA · Bloquear</button>
+            </div>
+            <div class="cuerpo">
+              <div class="plano" aria-hidden="true">
+                <div class="mesa ocupada" style="left: 6%; top: 12%">
+                  <span><b>1</b>Comiendo</span>
+                </div>
+                <div class="mesa" style="left: 26%; top: 12%">
+                  <span><b>2</b></span>
+                </div>
+                <div class="mesa cuenta" style="left: 46%; top: 12%">
+                  <span><b>12</b>¿Cuenta? 4'</span>
+                </div>
+                <div class="mesa ocupada" style="left: 6%; top: 56%">
+                  <span><b>4</b>Esperando</span>
+                </div>
+                <div class="mesa" style="left: 26%; top: 56%">
+                  <span><b>5</b></span>
+                </div>
+                <div class="mesa ocupada" style="left: 46%; top: 56%">
+                  <span><b>6</b>Comiendo</span>
+                </div>
+                <div class="mesa" style="left: 74%; top: 30%; width: 22%; border-radius: 12px">
+                  <span><b>Barra</b></span>
+                </div>
+              </div>
+              <div
+                class="t-tenue t-peq"
+                style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px"
+              >
+                <span>4 mesas abiertas · 13 personas</span><span>Cocina y sala, al segundo</span>
+              </div>
+            </div>
+            <div class="desplegable-caja" id="sala-desplegable" hidden>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  gap: 8px;
+                  align-items: baseline;
+                "
+              >
+                <b>Caja 1</b><span class="t-tenue t-peq">abierta por Marcos · 12:02</span>
+              </div>
+              <button type="button" class="bt ancho" data-ir="#pieza-cajon">Abrir el cajón</button>
+              <button type="button" class="bt ancho" data-ir="#pieza-x">Cómo va</button>
+              <button type="button" class="bt ancho" data-ir="#t-cerrar">
+                Entregar la caja a otro encargado
+              </button>
+              <button type="button" class="bt ancho ambar" data-ir="#t-cerrar">Cerrar caja</button>
+            </div>
+          </div>
+          <p class="nota">
+            Un solo botón arriba, verde con la caja abierta. Lo demás, dentro, para que la barra de
+            la sala no crezca.
+          </p>
+        </div>
+
+        <div class="pieza estrecha" id="pieza-cajon">
+          <div class="titulo">Abrir el cajón · siempre pregunta para qué</div>
+          <div class="tpv">
+            <div class="cuerpo" id="cajon-cuerpo"></div>
+          </div>
+          <p class="nota">
+            Queda apuntado con quién, cuándo y por qué, y sale en el Z. Si quien está dentro no es
+            encargado, un encargado lo aprueba con su PIN ahí mismo.
+          </p>
+        </div>
+
+        <div class="pieza estrecha" id="pieza-x">
+          <div class="titulo">Cómo va (el informe X)</div>
+          <div class="tpv">
+            <div class="cuerpo">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  gap: 8px;
+                  align-items: baseline;
+                  flex-wrap: wrap;
+                "
+              >
+                <span class="t-h">Caja 1 · cómo va</span>
+                <span style="display: flex; gap: 8px; align-items: center"
+                  ><span class="t-tenue t-peq">16:40</span
+                  ><button type="button" class="bt peq hueco-borde" id="imprimir-x">
+                    Imprimir
+                  </button></span
+                >
+              </div>
+              <div class="tarjeta-t">
+                <div class="renglon"><span>Fondo · Marcos, 12:02</span><b>150,00 €</b></div>
+                <div class="renglon"><span>Cobrado en efectivo</span><b>612,40 €</b></div>
+                <div class="renglon"><span>Sacado · proveedor, el pan</span><b>−35,00 €</b></div>
+                <div class="renglon fuerte">
+                  <span>Debería haber en el cajón</span><b>727,40 €</b>
+                </div>
+              </div>
+              <div class="tarjeta-t">
+                <div class="renglon"><span>Con tarjeta</span><b>1.284,60 €</b></div>
+                <div class="renglon"><span>Tickets</span><b>41</b></div>
+                <div class="renglon"><span>Cajón sin venta</span><b>2 · Marcos</b></div>
+              </div>
+            </div>
+          </div>
+          <p class="nota">
+            Lo ven el gerente y el jefe de sala. Nada se cierra al mirarlo. «Imprimir» lo saca en
+            papel para el cambio de turno (E4).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 · CERRAR -->
+    <section class="tramo" id="t-cerrar">
+      <header>
+        <span class="n">4</span>
+        <h2>Cerrar la caja · a ciegas</h2>
+        <p>
+          Cuatro pasos a la vista: contar sin ver lo que debería haber, el datáfono, lo que se queda
+          para mañana y, solo entonces, la diferencia. Nunca bloquea el cierre.
+        </p>
+      </header>
+      <div class="lienzo">
+        <div class="pieza" style="flex-basis: 760px">
+          <div class="titulo">Cerrar caja · Caja 1</div>
+          <div class="tpv" id="tpv-cerrar">
+            <div class="barra">
+              <span class="e">E</span><span class="local">IKATZ<small>▣ Caja 1</small></span>
+              <span class="hueco"></span>
+              <div class="pasos" id="cerrar-pasos" role="group" aria-label="Pasos del cierre"></div>
+            </div>
+            <div class="cuerpo" id="cerrar-cuerpo"></div>
+          </div>
+          <p class="nota">
+            Los billetes vienen contados como ejemplo (722,40 €): cambia alguno y mira cómo se mueve
+            la diferencia del final. Lo que se cuenta queda a nombre de quien cierra.
+          </p>
+        </div>
+      </div>
+      <div class="reglas">
+        <div class="regla">
+          <b>Cada caja, su arqueo</b
+          ><span
+            >Con dos cajones (barra y comedor), dos cajas. El día se cierra cuando lo están
+            todas.</span
+          >
+        </div>
+        <div class="regla">
+          <b>Sin caja abierta no se cobra</b
+          ><span>Se abre ahí mismo, en el cobro. Pedir y mandar a cocina no la piden nunca.</span>
+        </div>
+        <div class="regla">
+          <b>La diferencia no bloquea</b
+          ><span
+            >Se guarda con quién cerró. Un cierre no se edita: se reabre con motivo, como hoy.</span
+          >
+        </div>
+        <div class="regla">
+          <b>A ciegas, de fábrica</b
+          ><span>El gerente lo puede apagar en Ajustes del TPV › Impresoras y cajón.</span>
+        </div>
+        <div class="regla">
+          <b>El fondo de siempre</b
+          ><span
+            >El primer día se pregunta. Después se propone para mañana, y lo demás es lo que se
+            retira.</span
+          >
+        </div>
+        <div class="regla">
+          <b>Devolver en efectivo</b
+          ><span
+            >La devolución de un ticket pagado en efectivo saca el dinero del cajón sola, con su
+            motivo.</span
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · EN ESTOOK -->
+    <section class="tramo" id="t-estook">
+      <header>
+        <span class="n">5</span>
+        <h2>En Estook, con Pro · Cierres de caja, solo para ver</h2>
+        <p>
+          Servicio › Jornada › Cierres de caja ocupa el sitio de «Cierre». Sin botón de cerrar: la
+          caja se abre y se cierra en el TPV. Sin Pro, el cierre a mano sigue como hoy.
+        </p>
+      </header>
+      <div class="lienzo">
+        <div class="pieza estrecha">
+          <div class="titulo">
+            El móvil del gerente · toca un día
+            <span class="segmentado" role="group" aria-label="Cuántos cajones">
+              <button type="button" data-cajones="1" aria-pressed="true">Un cajón</button>
+              <button type="button" data-cajones="2" aria-pressed="false">Dos cajones</button>
+            </span>
+          </div>
+          <div class="movil">
+            <div class="estado"><span>23:52</span><span>●●● 5G</span></div>
+            <div class="cab-app">
+              <div class="fila">
+                <span class="icono-app">S</span><b style="flex: 1">Servicio</b>
+                <span style="color: var(--tenue); font-size: 13px">IKATZ</span>
+              </div>
+              <div class="pest-app">
+                <span class="si">Jornada</span><span>Empleados</span><span>Ventas</span>
+              </div>
+            </div>
+            <div class="dentro" id="estook-dentro"></div>
+            <div class="barra-abajo">
+              <span>Apps</span><span class="aqui">Jornada</span><span>Empleados</span
+              ><span>Ventas</span>
+            </div>
+          </div>
+        </div>
+        <div class="pieza estrecha">
+          <div class="titulo">Cómo se lee</div>
+          <div class="reglas" style="grid-template-columns: minmax(0, 1fr)">
+            <div class="regla">
+              <b>Un día, una fila</b
+              ><span>Con el total del día y si cuadra. Con dos cajones, la fila suma los dos.</span>
+            </div>
+            <div class="regla">
+              <b>Dentro, primero el día entero</b
+              ><span
+                >Lo cobrado en efectivo y con tarjeta, los tickets y la diferencia total. Debajo,
+                cada caja con lo suyo: quién la abrió y la cerró, lo que debería haber, lo contado y
+                su Z.</span
+              >
+            </div>
+            <div class="regla">
+              <b>El día se cierra con la última caja</b
+              ><span
+                >Al cerrar la barra, el TPV dice «Queda abierta Comedor». Al cerrar la última, el
+                día queda cerrado y llega aquí solo.</span
+              >
+            </div>
+            <div class="regla">
+              <b>Con Esencial, como hoy</b
+              ><span
+                >Sin Estook TPV, «Cierre» sigue igual: se escribe a mano o se sube el fichero o la
+                foto del TPV que tenga el local.</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · AJUSTES DE LA CAJA -->
+    <section class="tramo" id="t-ajustes">
+      <header>
+        <span class="n">6</span>
+        <h2>Ajustes del TPV › La caja</h2>
+        <p>
+          Todo lo de la caja en un sitio, por apartados. Lo ve quien lleva los Ajustes del TPV
+          (gerente, area manager y dirección). Toca los interruptores: cambian la puerta, el cobro y
+          el cierre de arriba.
+        </p>
+      </header>
+      <div class="tpv" id="tpv-ajustes">
+        <div class="barra">
+          <span class="e">E</span><span class="local">IKATZ<small>▣ Caja 1</small></span>
+          <span class="hueco"></span>
+          <span class="t-tenue t-peq" style="font-weight: 700">Ajustes del TPV</span>
+        </div>
+        <div class="ajustes-rejilla">
+          <section class="apartado">
+            <h3>Abrir y cerrar</h3>
+            <div class="ajuste columna">
+              <span>Quién puede abrir y cerrar la caja</span>
+              <span
+                class="segmentado-t"
+                role="group"
+                aria-label="Quién puede abrir y cerrar la caja"
+              >
+                <button type="button" data-quien="encargados" aria-pressed="true">
+                  Encargados
+                </button>
+                <button type="button" data-quien="todos" aria-pressed="false">
+                  También camareros
+                </button>
+              </span>
+              <small id="quien-texto">Gerente y jefe de sala, con su PIN.</small>
+            </div>
+            <div class="ajuste">
+              <span
+                >Recuento obligatorio al abrir<small id="recuento-texto"
+                  >Apagado: «Contar» o «Está correcto»</small
+                ></span
+              ><button
+                type="button"
+                class="interruptor"
+                id="ajuste-recuento"
+                aria-pressed="false"
+                aria-label="Recuento obligatorio al abrir"
+              ></button>
+            </div>
+            <div class="renglon"><span>El fondo de siempre</span><b>150,00 €</b></div>
+          </section>
+
+          <section class="apartado">
+            <h3>Al contar el cierre</h3>
+            <div class="ajuste">
+              <span>Contar a ciegas<small>No se ve lo que debería haber hasta acabar</small></span
+              ><button
+                type="button"
+                class="interruptor"
+                aria-pressed="true"
+                aria-label="Contar a ciegas"
+              ></button>
+            </div>
+            <div class="ajuste">
+              <span>Contar escribiendo el total<small>Además de billete a billete</small></span
+              ><button
+                type="button"
+                class="interruptor"
+                id="ajuste-total"
+                aria-pressed="false"
+                aria-label="Contar escribiendo el total"
+              ></button>
+            </div>
+          </section>
+
+          <section class="apartado">
+            <h3>Formas de pago</h3>
+            <div class="ajuste">
+              <span>Efectivo y tarjeta</span><b class="t-tenue t-peq">Siempre</b>
+            </div>
+            <div class="ajuste">
+              <span>Bizum<small>Al móvil del local. Estook solo lo apunta</small></span
+              ><button
+                type="button"
+                class="interruptor"
+                data-forma-ajuste="bizum"
+                aria-pressed="false"
+                aria-label="Bizum"
+              ></button>
+            </div>
+            <div class="ajuste">
+              <span
+                >Cheque restaurante<small
+                  >Pluxee, Edenred, Up… Al cerrar se cuentan aparte</small
+                ></span
+              ><button
+                type="button"
+                class="interruptor"
+                data-forma-ajuste="cheque"
+                aria-pressed="false"
+                aria-label="Cheque restaurante"
+              ></button>
+            </div>
+          </section>
+
+          <section class="apartado">
+            <h3>Descuentos al cobrar</h3>
+            <div class="ajuste">
+              <span>Dejar descontar<small>Apagado de fábrica</small></span
+              ><button
+                type="button"
+                class="interruptor"
+                id="ajuste-descuento"
+                aria-pressed="false"
+                aria-label="Dejar descontar"
+              ></button>
+            </div>
+            <p class="t-suave t-peq">
+              Para quitar euros o un % del total al cobrar, con su motivo («cliente habitual», «se
+              tardó»). Muchos locales no descuentan nunca: si es tu caso, déjalo apagado y no
+              saldrá.
+            </p>
+            <div class="renglon" id="ajuste-limite" hidden>
+              <span>El jefe de sala, hasta</span><b>10 %</b>
+            </div>
+            <p class="t-tenue t-peq" id="ajuste-limite-texto" hidden>
+              El gerente, sin límite. Cada descuento sale en el Z con quién lo hizo.
+            </p>
+          </section>
+
+          <section class="apartado">
+            <h3>Propinas en efectivo</h3>
+            <div class="ajuste">
+              <span>«Quédate el cambio» al cobrar</span
+              ><button
+                type="button"
+                class="interruptor"
+                id="ajuste-propina"
+                aria-pressed="true"
+                aria-label="Quédate el cambio al cobrar"
+              ></button>
+            </div>
+            <div class="ajuste">
+              <span>Repartirlas al cerrar<small>A partes iguales entre los fichados</small></span
+              ><button
+                type="button"
+                class="interruptor"
+                id="ajuste-reparto"
+                aria-pressed="false"
+                aria-label="Repartirlas al cerrar"
+              ></button>
+            </div>
+          </section>
+
+          <section class="apartado">
+            <h3>Avisos</h3>
+            <div class="renglon"><span>Retirar, si el cajón pasa de</span><b>800,00 €</b></div>
+            <div class="renglon">
+              <span>Al gerente, si falta o sobra más de</span><b>10,00 €</b>
+            </div>
+          </section>
+
+          <section class="apartado">
+            <h3>Cajones</h3>
+            <div class="renglon">
+              <span>Caja 1 · en la impresora de la barra</span><b>Este aparato</b>
+            </div>
+            <button type="button" class="bt peq hueco-borde" style="justify-self: start">
+              Añadir un cajón
+            </button>
+          </section>
+        </div>
+      </div>
+      <details class="porque">
+        <summary>¿Por qué así?</summary>
+        <ul>
+          <li>
+            <b>Es lo que aprobaste</b> en la pausa y en el repaso del 8-nov, con tus respuestas del
+            9-nov.
+          </li>
+          <li>
+            <b>Por apartados</b>, como los Ajustes de los TPV grandes: lo de abrir y cerrar, lo de
+            contar, cómo se cobra, y los avisos, cada uno en su tarjeta.
+          </li>
+          <li>
+            <b>El color de la diferencia</b>: hasta 10 € en ámbar y más en rojo, la misma cifra que
+            el aviso al gerente.
+          </li>
+        </ul>
+      </details>
+    </section>
+  </section>
+
+  <!-- ═══════════════════════ LO EXTRA ═══════════════════════ -->
+  <section id="vista-extra" class="envoltura" hidden>
+    <div class="barra-control">
+      <p style="color: var(--suave); max-width: 70ch">
+        Lo que añaden los buenos TPV encima de lo básico. Nada de esto es necesario para que la caja
+        cuadre. Marcados los que elegiste el 9-nov (E1 a E8). Bizum y cheques, descuentos y propinas
+        se encienden en Ajustes del TPV.
+      </p>
+      <div>
+        <span class="etiqueta-seg">Estook TPV</span>
+        <span class="segmentado" role="group" aria-label="Tema de Estook TPV">
+          <button type="button" data-tema="oscuro" aria-pressed="true">Oscuro</button>
+          <button type="button" data-tema="claro" aria-pressed="false">Claro</button>
+        </span>
+      </div>
+    </div>
+    <div class="extras" id="extras"></div>
+    <div class="resumen-eleccion" id="resumen-eleccion">
+      <span id="resumen-texto">No has marcado ninguno.</span>
+      <button type="button" id="copiar-eleccion">Copiar</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ LO DE DESPUÉS ═══════════════════════ -->
+  <section id="vista-despues" class="envoltura" hidden>
+    <p style="color: var(--suave); max-width: 70ch">
+      Lo que no va en R3, y dónde va. R3 es lo primero de T7; el resto de T7 va detrás, y T6 · 3
+      después de T7.
+    </p>
+    <div class="listas-despues">
+      <div class="lista-despues">
+        <span class="pildora p-info" style="width: fit-content">Lo siguiente de T7</span>
+        <h3>Antes de T6 · 3</h3>
+        <ul>
+          <li>
+            Ventas de hoy en el TPV, con los totales y los filtros por forma de pago<small
+              >Anexo 11.7. Ya se ven los tickets; faltan los totales.</small
+            >
+          </li>
+          <li>Venta rápida y para llevar<small>Cobrar sin mesa, desde «Barra y llevar».</small></li>
+          <li>
+            Que lo cobrado baje del almacén, una sola vez<small
+              >M20: la venta nace del cobro con su clave.</small
+            >
+          </li>
+          <li>
+            Información, Informes y Empleados con lo cobrado<small
+              >Hoy leen lo pedido en las mesas (0142).</small
+            >
+          </li>
+          <li>
+            Devolver y que el género vuelva a la cámara<small
+              >El dinero sí vuelve ya en R3; el género, aquí.</small
+            >
+          </li>
+        </ul>
+      </div>
+      <div class="lista-despues">
+        <span class="pildora p-aten" style="width: fit-content">Lo investigo antes de hacerlo</span>
+        <h3>Marcados [VERIFICAR] en el Anexo: no se programan</h3>
+        <ul>
+          <li>
+            El ticket por correo o en un QR en pantalla<small
+              >Si vale como entrega de la factura simplificada (10.5).</small
+            >
+          </li>
+          <li>
+            Cambiar la forma de pago de un ticket ya emitido<small
+              >Mueve la caja sin tocar el ticket (11.7).</small
+            >
+          </li>
+          <li>
+            Invitar como consumo interno<small>Si es autoconsumo a efectos del IVA (5.1).</small>
+          </li>
+          <li>
+            Confirmar que la propina va fuera del ticket<small
+              >Así se hace ya: «Quédate el cambio» solo la apunta en la caja (5.1).</small
+            >
+          </li>
+        </ul>
+      </div>
+      <div class="lista-despues">
+        <span class="pildora p-gris" style="width: fit-content">Más adelante</span>
+        <h3>Con su módulo</h3>
+        <ul>
+          <li>
+            El datáfono conectado, sin teclear el importe<small
+              >Nivel 2, después de M20C, local a local (10.7).</small
+            >
+          </li>
+          <li>
+            Cobrar con la tarjeta en el propio aparato<small
+              >M20D · Estook TPV para Android, detrás de T7.</small
+            >
+          </li>
+          <li>
+            Los cajones que cuentan solos (CashDro, Cashlogy)<small
+              >Cuando un cliente lo tenga (10.6).</small
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  (function () {
+    'use strict';
+
+    // ── Utilidades ────────────────────────────────────────────
+    function eur(c) {
+      var neg = c < 0;
+      c = Math.abs(Math.round(c));
+      var e = Math.floor(c / 100);
+      var cc = String(c % 100).padStart(2, '0');
+      var s = String(e).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      return (neg ? '−' : '') + s + ',' + cc + ' €';
+    }
+    function aCentimos(texto) {
+      var t = String(texto).replace(/[€\s]/g, '').replace(/\./g, '').replace(',', '.');
+      var n = parseFloat(t);
+      return isFinite(n) ? Math.round(n * 100) : 0;
+    }
+    function $(sel, raiz) {
+      return (raiz || document).querySelector(sel);
+    }
+    function $$(sel, raiz) {
+      return Array.prototype.slice.call((raiz || document).querySelectorAll(sel));
+    }
+    function pulsado(grupo, boton) {
+      $$('button', grupo).forEach(function (b) {
+        b.setAttribute('aria-pressed', b === boton ? 'true' : 'false');
+      });
+    }
+
+    // Lo que se enciende en Ajustes del TPV › La caja (tramo 6).
+    var ajustesCaja = {
+      bizum: false,
+      cheque: false,
+      descuento: false,
+      total: false,
+      reparto: false,
+      propina: true,
+      camareros: false,
+      recuento: false,
+    };
+
+    var DENOMINACIONES = [
+      50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1,
+    ];
+    function nombreDen(d) {
+      return d >= 100 ? d / 100 + ' €' : d + ' c';
+    }
+    function totalDe(cuentas) {
+      return DENOMINACIONES.reduce(function (s, d) {
+        return s + d * (cuentas[d] || 0);
+      }, 0);
+    }
+
+    /** Billetes y monedas con + y −, o escribiendo la cantidad. */
+    function contador(raiz, prefijo, cuentas, alCambiar) {
+      raiz.innerHTML = '';
+      [
+        [
+          'Billetes',
+          DENOMINACIONES.filter(function (d) {
+            return d >= 500;
+          }),
+        ],
+        [
+          'Monedas',
+          DENOMINACIONES.filter(function (d) {
+            return d < 500;
+          }),
+        ],
+      ].forEach(function (grupo) {
+        var h = document.createElement('h4');
+        h.textContent = grupo[0];
+        raiz.appendChild(h);
+        var rej = document.createElement('div');
+        rej.className = 'rejilla-den';
+        grupo[1].forEach(function (d) {
+          var id = prefijo + '-' + d;
+          var caja = document.createElement('div');
+          caja.className = 'den';
+          caja.innerHTML =
+            '<label class="v" for="' +
+            id +
+            '">' +
+            nombreDen(d) +
+            '</label>' +
+            '<span class="ctl"><button type="button" aria-label="Uno menos de ' +
+            nombreDen(d) +
+            '">−</button>' +
+            '<input id="' +
+            id +
+            '" type="number" min="0" inputmode="numeric" value="' +
+            (cuentas[d] || 0) +
+            '">' +
+            '<button type="button" aria-label="Uno más de ' +
+            nombreDen(d) +
+            '">+</button></span>' +
+            '<span class="sub"></span>';
+          var entrada = $('input', caja);
+          var botones = $$('button', caja);
+          var sub = $('.sub', caja);
+          function pintar() {
+            sub.textContent = eur(d * (cuentas[d] || 0));
+            sub.classList.toggle('cero', !(cuentas[d] > 0));
+          }
+          function poner(n) {
+            cuentas[d] = Math.max(0, Math.min(9999, n | 0));
+            entrada.value = cuentas[d];
+            pintar();
+            alCambiar();
+          }
+          botones[0].addEventListener('click', function () {
+            poner((cuentas[d] || 0) - 1);
+          });
+          botones[1].addEventListener('click', function () {
+            poner((cuentas[d] || 0) + 1);
+          });
+          entrada.addEventListener('input', function () {
+            poner(parseInt(entrada.value || '0', 10));
+          });
+          pintar();
+          rej.appendChild(caja);
+        });
+        raiz.appendChild(rej);
+      });
+    }
+
+    // ── Pestañas (con el hash, para poder mandar el enlace) ───
+    var TABS = ['imprescindible', 'extra', 'despues'];
+    function abrirTab(nombre) {
+      if (TABS.indexOf(nombre) < 0) nombre = 'imprescindible';
+      TABS.forEach(function (t) {
+        $('#vista-' + t).hidden = t !== nombre;
+        $('#tab-' + t).setAttribute('aria-selected', t === nombre ? 'true' : 'false');
+      });
+    }
+    $$('[data-tab]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        abrirTab(b.dataset.tab);
+        if (location.hash !== '#' + b.dataset.tab)
+          history.replaceState(null, '', '#' + b.dataset.tab);
+      });
+    });
+    function desdeElHash() {
+      var h = location.hash.replace('#', '');
+      if (TABS.indexOf(h) >= 0) abrirTab(h);
+    }
+    window.addEventListener('hashchange', desdeElHash);
+    desdeElHash();
+
+    // ── El tema de Estook TPV ─────────────────────────────────
+    $$('[data-tema]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var claro = b.dataset.tema === 'claro';
+        $$('.tpv').forEach(function (t) {
+          t.classList.toggle('claro', claro);
+        });
+        $$('[data-tema]').forEach(function (x) {
+          x.setAttribute('aria-pressed', x.dataset.tema === b.dataset.tema ? 'true' : 'false');
+        });
+      });
+    });
+
+    // ── 1 · La puerta ─────────────────────────────────────────
+    $$('[data-puerta]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        ponerLaPuerta(b.dataset.puerta);
+      });
+    });
+    function ponerLaPuerta(estado) {
+      pulsado($('[data-puerta]').parentNode, $('[data-puerta="' + estado + '"]'));
+      var abierta = estado === 'abierta';
+      var pidiendo = estado === 'pin' || estado === 'camarero';
+      var boton = $('#boton-caja-puerta');
+      boton.className = 'bt ' + (abierta ? 'ambar' : 'verde');
+      boton.textContent = abierta ? 'Cerrar caja' : 'Abrir caja';
+      boton.setAttribute('aria-pressed', pidiendo ? 'true' : 'false');
+      boton.style.outline = pidiendo ? '3px solid var(--t-texto)' : '';
+      $('#puerta-titulo').textContent = pidiendo ? 'Abrir caja · tu PIN' : 'Teclea tu PIN';
+      $('#puerta-sub').hidden = !pidiendo;
+      var aviso = $('#puerta-aviso');
+      aviso.hidden = estado !== 'camarero';
+      aviso.className = 'aviso ' + (ajustesCaja.camareros ? 'a-bien' : 'a-mal');
+      aviso.textContent = ajustesCaja.camareros
+        ? 'Sara abre la caja. Queda a su nombre, con lo que cuente.'
+        : 'Sara no puede abrir la caja. Que teclee su PIN un gerente o un jefe de sala.';
+      $('#puerta-sub').textContent = ajustesCaja.camareros
+        ? 'Cualquiera del equipo, con su PIN'
+        : 'De un gerente o un jefe de sala';
+    }
+    $('#boton-caja-puerta').addEventListener('click', function () {
+      var abierta = $('[data-puerta="abierta"]').getAttribute('aria-pressed') === 'true';
+      if (!abierta) ponerLaPuerta('pin');
+    });
+
+    // ── 1 · Abrir caja ────────────────────────────────────────
+    var abrir = {
+      modo: 'normal',
+      contando: false,
+      hecha: false,
+      cuentas: { 2000: 4, 1000: 3, 500: 4, 200: 5, 100: 6, 50: 6, 20: 5 },
+    };
+    var FONDO = 15000;
+    function pintarAbrir() {
+      var c = $('#abrir-cuerpo');
+      if (abrir.hecha) {
+        var con = abrir.contando || abrir.modo === 'primero' ? totalDe(abrir.cuentas) : FONDO;
+        c.innerHTML =
+          '<div class="hecho-ok"><span class="ok-circulo">✓</span>' +
+          '<span class="t-h">Caja abierta con ' +
+          eur(con) +
+          '</span>' +
+          '<span class="t-suave">El cajón se ha abierto. A nombre de Marcos, 12:02.</span>' +
+          '<button type="button" class="bt hueco-borde peq" id="abrir-otra">Volver a probar</button></div>';
+        $('#abrir-otra').addEventListener('click', function () {
+          abrir.hecha = false;
+          abrir.contando = false;
+          pintarAbrir();
+        });
+        return;
+      }
+      var html = '';
+      if (abrir.modo === 'ayer') {
+        html +=
+          '<div class="aviso a-aten"><span>La caja de ayer sigue abierta. Mientras, se sigue cobrando con ella.</span>' +
+          '<button type="button" class="bt peq ambar" data-ir="#t-cerrar">Cerrarla</button></div>' +
+          '<p class="t-suave t-peq">Hasta cerrarla, este cajón no abre otra.</p>';
+        c.innerHTML = html;
+        enlazarIr(c);
+        return;
+      }
+      if (abrir.modo === 'primero') {
+        html +=
+          '<div><div class="t-h">¿Con cuánto empiezas?</div><div class="t-suave t-peq">Cuenta lo que metes en el cajón. Será el fondo de siempre.</div></div>';
+        html += '<div class="contador" id="abrir-contador"></div>';
+        html +=
+          '<div class="suma"><span class="t-suave">En el cajón</span><span class="cifra" id="abrir-total"></span></div>';
+        html += '<button type="button" class="bt verde ancho" id="abrir-ok"></button>';
+      } else {
+        html +=
+          '<div class="tarjeta-t" style="text-align:center; justify-items:center">' +
+          '<span class="t-suave">Anoche se quedó en el cajón</span>' +
+          '<span class="grande">' +
+          eur(FONDO) +
+          '</span>' +
+          '<span class="t-tenue t-peq">Cerró Marcos el domingo a las 23:48</span></div>';
+        if (!abrir.contando && !ajustesCaja.recuento) {
+          html +=
+            '<div class="fila-bt"><button type="button" class="bt hueco-borde" id="abrir-contar">Contar</button>' +
+            '<button type="button" class="bt verde" id="abrir-eseso" style="flex-grow:2">Está correcto · Abrir caja</button></div>';
+        } else {
+          html += '<div class="contador" id="abrir-contador"></div>';
+          html +=
+            '<div class="suma"><span class="t-suave">En el cajón</span><span class="cifra" id="abrir-total"></span></div>';
+          html += '<div id="abrir-comparar"></div>';
+          html += '<button type="button" class="bt verde ancho" id="abrir-ok"></button>';
+        }
+      }
+      c.innerHTML = html;
+      var cont = $('#abrir-contador', c);
+      function recalcular() {
+        var t = totalDe(abrir.cuentas);
+        $('#abrir-total', c).textContent = eur(t);
+        $('#abrir-ok', c).textContent = 'Abrir con ' + eur(t);
+        $('#abrir-ok', c).disabled = t <= 0;
+        var cmp = $('#abrir-comparar', c);
+        if (cmp) {
+          var dif = t - FONDO;
+          cmp.innerHTML =
+            dif === 0
+              ? '<div class="aviso a-bien"><span>Igual que lo que se quedó anoche</span></div>'
+              : '<div class="aviso a-aten"><span>' +
+                (dif < 0 ? 'Hay ' + eur(-dif) + ' menos' : 'Hay ' + eur(dif) + ' más') +
+                ' que lo que se quedó anoche</span><span class="t-peq">Se apunta y se abre igual</span></div>';
+        }
+      }
+      if (cont) {
+        contador(cont, 'abrir', abrir.cuentas, recalcular);
+        recalcular();
+        $('#abrir-ok', c).addEventListener('click', function () {
+          abrir.hecha = true;
+          pintarAbrir();
+        });
+      }
+      var bc = $('#abrir-contar', c);
+      if (bc)
+        bc.addEventListener('click', function () {
+          abrir.contando = true;
+          pintarAbrir();
+        });
+      var be = $('#abrir-eseso', c);
+      if (be)
+        be.addEventListener('click', function () {
+          abrir.hecha = true;
+          pintarAbrir();
+        });
+    }
+    $$('[data-abrir-modo]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        pulsado(b.parentNode, b);
+        abrir.modo = b.dataset.abrirModo;
+        abrir.hecha = false;
+        abrir.contando = false;
+        if (abrir.modo === 'primero') abrir.cuentas = {};
+        else abrir.cuentas = { 2000: 4, 1000: 3, 500: 4, 200: 5, 100: 6, 50: 6, 20: 5 };
+        pintarAbrir();
+      });
+    });
+    pintarAbrir();
+
+    // ── 2 · Cobrar ────────────────────────────────────────────
+    var LINEAS = [
+      { id: 1, cant: 2, que: 'Caña', c: 500 },
+      { id: 2, cant: 1, que: 'Croquetas de jamón', c: 950 },
+      { id: 3, cant: 1, que: 'Ensaladilla', c: 800 },
+      { id: 4, cant: 1, que: 'Merluza a la plancha', c: 2100 },
+      { id: 5, cant: 1, que: 'Agua grande', c: 200 },
+      { id: 6, cant: 2, que: 'Café solo', c: 300 },
+    ];
+    var TOTAL = LINEAS.reduce(function (s, l) {
+      return s + l.c;
+    }, 0); // 48,50 €
+    var numeroTicket = 124;
+    var cobro;
+    function reiniciarCobro() {
+      cobro = {
+        forma: 'efectivo',
+        entregado: TOTAL,
+        rapido: 'justo',
+        hecho: null,
+        tarjetaEsperando: false,
+        dividir: 'iguales',
+        partes: 4,
+        pagadas: [],
+        marcadas: {},
+        pagadasLineas: {},
+        efectivoMixto: 2000,
+        descuento: 0,
+        motivoDescuento: null,
+        abriendoDescuento: false,
+        propina: false,
+        cheque: 2200,
+        restoCon: null,
+      };
+    }
+    reiniciarCobro();
+
+    function pintarLineas() {
+      var c = $('#cobro-lineas');
+      var porPlatos = cobro.forma === 'dividir' && cobro.dividir === 'platos' && !cobro.hecho;
+      var html =
+        '<span class="t-tenue t-peq" style="font-weight:700">' +
+        (porPlatos ? 'Toca lo que paga' : 'La cuenta') +
+        '</span>';
+      LINEAS.forEach(function (l) {
+        var clases = 'linea';
+        if (porPlatos) {
+          clases += cobro.pagadasLineas[l.id]
+            ? ' pagada'
+            : ' elegible' + (cobro.marcadas[l.id] ? ' marcada' : '');
+        }
+        html +=
+          '<div class="' +
+          clases +
+          '" data-linea="' +
+          l.id +
+          '"' +
+          (porPlatos && !cobro.pagadasLineas[l.id] ? ' role="button" tabindex="0"' : '') +
+          '><span class="cant">' +
+          l.cant +
+          '×</span><span>' +
+          l.que +
+          '</span><b>' +
+          eur(l.c) +
+          '</b></div>';
+      });
+      if (cobro.descuento > 0 && !cobro.hecho) {
+        html +=
+          '<div class="linea"><span class="cant"></span><span style="color:var(--t-info)">Descuento · ' +
+          cobro.motivoDescuento +
+          '</span><b style="color:var(--t-info)">−' +
+          eur(cobro.descuento) +
+          '</b></div>';
+      }
+      html +=
+        '<div class="renglon fuerte" style="margin-top:6px"><span>Total</span><b style="font-size:18px">' +
+        eur(TOTAL - (cobro.hecho ? 0 : cobro.descuento)) +
+        '</b></div>';
+      c.innerHTML = html;
+      if (porPlatos) {
+        $$('.linea.elegible', c).forEach(function (el) {
+          function alternar() {
+            var id = +el.dataset.linea;
+            cobro.marcadas[id] = !cobro.marcadas[id];
+            pintarCobro();
+          }
+          el.addEventListener('click', alternar);
+          el.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              alternar();
+            }
+          });
+        });
+      }
+    }
+
+    function papelDelTicket(texto) {
+      numeroTicket += 1;
+      return (
+        '<span class="t-suave">' +
+        texto +
+        ' El ticket <b class="num">T-IKA-2026-000' +
+        numeroTicket +
+        '</b> sale por la impresora, con sus dos QR.</span>'
+      );
+    }
+
+    function pintarHecho(c) {
+      var h = cobro.hecho;
+      c.innerHTML =
+        '<div class="hecho-ok">' +
+        '<span class="ok-circulo">✓</span>' +
+        (h.cambio > 0
+          ? '<div class="cambio" style="width:100%"><span>Cambio</span><span class="grande">' +
+            eur(h.cambio) +
+            '</span></div>'
+          : '') +
+        '<span class="t-h">' +
+        h.titulo +
+        '</span>' +
+        papelDelTicket(h.texto) +
+        '<div class="fila-bt" style="width:100%"><button type="button" class="bt hueco-borde" id="cobro-factura">Factura</button>' +
+        '<button type="button" class="bt naranja" id="cobro-listo" style="flex-grow:2">Listo · la mesa queda libre</button></div>' +
+        '</div>';
+      $('#cobro-listo', c).addEventListener('click', function () {
+        reiniciarCobro();
+        pintarCobro();
+      });
+      $('#cobro-factura', c).addEventListener('click', function () {
+        $('#cobro-factura', c).textContent = 'Abre la factura de este ticket';
+      });
+    }
+
+    function pintarCobro() {
+      pintarLineas();
+      var c = $('#cobro-derecha');
+      if (cobro.hecho) {
+        pintarHecho(c);
+        return;
+      }
+      if (!ajustesCaja.descuento) {
+        cobro.descuento = 0;
+        cobro.motivoDescuento = null;
+        cobro.abriendoDescuento = false;
+      }
+      if (
+        (cobro.forma === 'bizum' && !ajustesCaja.bizum) ||
+        (cobro.forma === 'cheque' && !ajustesCaja.cheque)
+      )
+        cobro.forma = 'efectivo';
+      if (!ajustesCaja.propina) cobro.propina = false;
+      // Lo que se cobra: el total menos el descuento, si lo hay (E8).
+      var A = TOTAL - cobro.descuento;
+      if (cobro.rapido === 'justo') cobro.entregado = A;
+      var restante = A;
+      var html =
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">' +
+        '<span class="t-suave" style="font-weight:700">A cobrar</span><span class="grande">' +
+        eur(A) +
+        '</span></div>';
+      if (ajustesCaja.descuento && cobro.forma !== 'dividir') {
+        if (cobro.descuento > 0) {
+          html +=
+            '<div class="aviso a-info"><span>Descuento · ' +
+            cobro.motivoDescuento +
+            '</span><span style="display:flex;gap:8px;align-items:center"><b>−' +
+            eur(cobro.descuento) +
+            '</b><button type="button" class="bt peq hueco-borde" id="quitar-descuento">Quitar</button></span></div>';
+        } else if (cobro.abriendoDescuento) {
+          html +=
+            '<div class="tarjeta-t"><div class="chips" role="group" aria-label="Cuánto">' +
+            '<button type="button" class="chip" data-descuento="10">−10 %</button><button type="button" class="chip" data-descuento="500e">−5,00 €</button></div>' +
+            '<span class="t-tenue t-peq">Motivo: «Cliente habitual». Queda en el Z a nombre de Marcos.</span></div>';
+        } else {
+          html +=
+            '<button type="button" class="bt peq hueco-borde" id="abrir-descuento" style="justify-self:start">Descuento</button>';
+        }
+      }
+      var formas = [
+        ['efectivo', 'i-billete', 'Efectivo'],
+        ['tarjeta', 'i-tarjeta', 'Tarjeta'],
+      ];
+      if (ajustesCaja.bizum) formas.push(['bizum', 'i-movil', 'Bizum']);
+      if (ajustesCaja.cheque) formas.push(['cheque', 'i-cheque', 'Cheque']);
+      formas.push(['dividir', 'i-dividir', 'Dividir']);
+      html +=
+        '<div class="formas" role="group" aria-label="Forma de pago" style="grid-template-columns:repeat(' +
+        formas.length +
+        ', minmax(0, 1fr))">' +
+        formas
+          .map(function (f) {
+            return (
+              '<button type="button" data-forma="' +
+              f[0] +
+              '" aria-pressed="' +
+              (cobro.forma === f[0]) +
+              '"><svg><use href="#' +
+              f[1] +
+              '"/></svg>' +
+              f[2] +
+              '</button>'
+            );
+          })
+          .join('') +
+        '</div>';
+
+      if (cobro.forma === 'bizum') {
+        html +=
+          '<div class="tarjeta-t" style="justify-items:center;text-align:center">' +
+          '<span class="t-suave">Que te enseñe el Bizum enviado al móvil del local</span><span class="grande">' +
+          eur(A) +
+          '</span></div>' +
+          '<button type="button" class="bt naranja ancho" id="cobro-ok" style="min-height:60px;font-size:18px">Recibido por Bizum</button>' +
+          '<p class="t-tenue t-peq">Estook no ve el Bizum: lo apunta, y sale aparte en el arqueo.</p>';
+      } else if (cobro.forma === 'cheque') {
+        var ch = Math.max(0, Math.min(A, cobro.cheque));
+        var restoCheque = A - ch;
+        html +=
+          '<label class="campo-t" for="cobro-cheque"><span>En cheques</span><input id="cobro-cheque" inputmode="decimal" value="' +
+          eur(ch).replace(' €', '') +
+          '"></label>';
+        if (restoCheque > 0) {
+          html +=
+            '<div class="aviso a-gris"><span>El resto, ' +
+            eur(restoCheque) +
+            ', con</span><span class="fila-mini">' +
+            '<button type="button" class="bt peq" data-resto="efectivo" aria-pressed="' +
+            (cobro.restoCon === 'efectivo') +
+            '"' +
+            (cobro.restoCon === 'efectivo' ? ' style="outline:2px solid var(--naranja)"' : '') +
+            '>Efectivo</button>' +
+            '<button type="button" class="bt peq" data-resto="tarjeta"' +
+            (cobro.restoCon === 'tarjeta' ? ' style="outline:2px solid var(--naranja)"' : '') +
+            '>Tarjeta</button></span></div>';
+        }
+        html +=
+          '<button type="button" class="bt naranja ancho" id="cobro-ok"' +
+          (restoCheque > 0 && !cobro.restoCon ? ' disabled' : '') +
+          ' style="min-height:60px;font-size:18px">Cobrar ' +
+          eur(A) +
+          '</button>';
+        html +=
+          '<p class="t-tenue t-peq">Los cheques no dan cambio. Van al cajón y al cerrar se cuentan aparte.</p>';
+      } else if (cobro.forma === 'efectivo') {
+        var opciones = [
+          ['justo', 'Justo', A],
+          ['50', '50 €', 5000],
+          ['60', '60 €', 6000],
+          ['100', '100 €', 10000],
+          ['otro', 'Otro', null],
+        ];
+        html +=
+          '<div class="t-suave t-peq" style="font-weight:700">Te da</div><div class="rapidos" role="group" aria-label="Lo que te da">';
+        opciones.forEach(function (o) {
+          html +=
+            '<button type="button" data-rapido="' +
+            o[0] +
+            '" aria-pressed="' +
+            (cobro.rapido === o[0]) +
+            '">' +
+            o[1] +
+            '</button>';
+        });
+        html += '</div>';
+        if (cobro.rapido === 'otro') {
+          html +=
+            '<label class="campo-t" for="cobro-otro"><span>Te da</span><input id="cobro-otro" inputmode="decimal" value="' +
+            eur(cobro.entregado).replace(' €', '') +
+            '"></label>';
+        }
+        var cambio = cobro.entregado - A;
+        html +=
+          cambio > 0
+            ? '<div class="cambio"><span>' +
+              (cobro.propina ? 'Propina' : 'Cambio') +
+              '</span><span style="display:flex;gap:10px;align-items:center"><span class="grande" id="cobro-cambio">' +
+              eur(cambio) +
+              '</span>' +
+              (ajustesCaja.propina
+                ? '<button type="button" class="bt peq ' +
+                  (cobro.propina ? 'hueco-borde' : 'verde') +
+                  '" id="cobro-propina">' +
+                  (cobro.propina ? 'Dar el cambio' : 'Quédate el cambio') +
+                  '</button>'
+                : '') +
+              '</span></div>'
+            : cambio === 0
+              ? '<div class="aviso a-gris" style="min-height:58px"><span>Justo, sin cambio</span></div>'
+              : '<div class="aviso a-aten"><span>Faltan</span><b>' + eur(-cambio) + '</b></div>';
+        html +=
+          '<button type="button" class="bt naranja ancho" id="cobro-ok"' +
+          (cambio < 0 ? ' disabled' : '') +
+          ' style="min-height:60px;font-size:18px">Cobrar ' +
+          eur(A) +
+          '</button>';
+      } else if (cobro.forma === 'tarjeta') {
+        html +=
+          '<div class="tarjeta-t" style="justify-items:center;text-align:center">' +
+          '<span class="t-suave">Cóbralo en el datáfono</span><span class="grande">' +
+          eur(A) +
+          '</span>' +
+          '<span class="t-tenue t-peq">Cuando salga «aprobada» en el datáfono:</span></div>' +
+          '<button type="button" class="bt naranja ancho" id="cobro-ok" style="min-height:60px;font-size:18px">Cobrado con tarjeta</button>' +
+          '<button type="button" class="bt hueco-borde ancho" id="cobro-nopaso">No ha pasado</button>' +
+          '<p class="t-tenue t-peq">Si alguien marca cobrado lo que no pasó, sale al cerrar, en el cuadre del datáfono.</p>';
+      } else {
+        html +=
+          '<div class="chips" role="group" aria-label="Cómo se divide">' +
+          '<button type="button" class="chip" data-dividir="iguales" aria-pressed="' +
+          (cobro.dividir === 'iguales') +
+          '">A partes iguales</button>' +
+          '<button type="button" class="chip" data-dividir="platos" aria-pressed="' +
+          (cobro.dividir === 'platos') +
+          '">Por platos</button>' +
+          '<button type="button" class="chip" data-dividir="mixto" aria-pressed="' +
+          (cobro.dividir === 'mixto') +
+          '">Efectivo y tarjeta</button></div>';
+        if (cobro.dividir === 'iguales') {
+          var n = cobro.partes;
+          var base = Math.floor(A / n);
+          var resto = A - base * n;
+          html +=
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span class="t-suave" style="font-weight:700">Entre</span>' +
+            '<span class="contadorcito"><button type="button" id="partes-menos" aria-label="Una parte menos">−</button><b class="num">' +
+            n +
+            '</b><button type="button" id="partes-mas" aria-label="Una parte más">+</button></span></div>';
+          html += '<div class="partes">';
+          for (var i = 0; i < n; i++) {
+            var importe = base + (i < resto ? 1 : 0);
+            var pagada = cobro.pagadas[i];
+            if (!pagada) restante -= 0;
+            else restante -= importe;
+            html +=
+              '<div class="parte' +
+              (pagada ? ' pagada' : '') +
+              '"><span class="que">Parte ' +
+              (i + 1) +
+              ' · <span class="num">' +
+              eur(importe) +
+              '</span>' +
+              (pagada ? '<small>Cobrada con ' + pagada + '</small>' : '') +
+              '</span>' +
+              (pagada
+                ? '<span class="pildora" style="background:var(--t-bien-s);color:var(--t-bien)">✓</span>'
+                : '<span class="fila-mini"><button type="button" class="bt peq" data-parte="' +
+                  i +
+                  '" data-con="efectivo">Efectivo</button><button type="button" class="bt peq" data-parte="' +
+                  i +
+                  '" data-con="tarjeta">Tarjeta</button></span>') +
+              '</div>';
+          }
+          html += '</div>';
+          html +=
+            '<div class="aviso a-gris"><span>Queda por cobrar</span><b>' +
+            eur(restante) +
+            '</b></div>';
+          html +=
+            '<p class="t-tenue t-peq">Cada parte, su ticket. La mesa se libera con la última. Los céntimos que sobran van a las primeras.</p>';
+        } else if (cobro.dividir === 'platos') {
+          var marcado = LINEAS.reduce(function (s, l) {
+            return s + (cobro.marcadas[l.id] ? l.c : 0);
+          }, 0);
+          var pagadoLineas = LINEAS.reduce(function (s, l) {
+            return s + (cobro.pagadasLineas[l.id] ? l.c : 0);
+          }, 0);
+          html += '<div class="aviso a-gris"><span>Marcado</span><b>' + eur(marcado) + '</b></div>';
+          html +=
+            '<div class="fila-bt"><button type="button" class="bt" id="platos-efectivo"' +
+            (marcado === 0 ? ' disabled' : '') +
+            '>Efectivo ' +
+            eur(marcado) +
+            '</button>' +
+            '<button type="button" class="bt" id="platos-tarjeta"' +
+            (marcado === 0 ? ' disabled' : '') +
+            '>Tarjeta ' +
+            eur(marcado) +
+            '</button></div>';
+          html +=
+            '<div class="aviso a-gris"><span>Queda por cobrar</span><b>' +
+            eur(TOTAL - pagadoLineas) +
+            '</b></div>';
+          html +=
+            '<p class="t-tenue t-peq">Toca los platos a la izquierda. Cada cobro, su ticket con lo que paga esa persona.</p>';
+        } else {
+          var ef = Math.max(0, Math.min(A, cobro.efectivoMixto));
+          html +=
+            '<label class="campo-t" for="mixto-efectivo"><span>En efectivo</span><input id="mixto-efectivo" inputmode="decimal" value="' +
+            eur(ef).replace(' €', '') +
+            '"></label>';
+          html +=
+            '<div class="rapidos" style="grid-template-columns:repeat(4, minmax(0, 1fr))">' +
+            [1000, 2000, 3000, 4000]
+              .map(function (v) {
+                return (
+                  '<button type="button" data-mixto="' +
+                  v +
+                  '" aria-pressed="' +
+                  (ef === v) +
+                  '">' +
+                  v / 100 +
+                  ' €</button>'
+                );
+              })
+              .join('') +
+            '</div>';
+          html +=
+            '<div class="tarjeta-t"><div class="renglon"><span>Efectivo</span><b>' +
+            eur(ef) +
+            '</b></div><div class="renglon"><span>Con tarjeta, el resto</span><b>' +
+            eur(A - ef) +
+            '</b></div></div>';
+          html +=
+            '<button type="button" class="bt naranja ancho" id="mixto-ok" style="min-height:56px">Cobrar ' +
+            eur(A) +
+            ' · un ticket</button>';
+        }
+      }
+      c.innerHTML = html;
+
+      $$('[data-forma]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.forma = b.dataset.forma;
+          pintarCobro();
+        });
+      });
+      $$('[data-rapido]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.rapido = b.dataset.rapido;
+          var mapa = { justo: A, 50: 5000, 60: 6000, 100: 10000 };
+          cobro.propina = false;
+          if (cobro.rapido !== 'otro') cobro.entregado = mapa[cobro.rapido];
+          pintarCobro();
+          if (cobro.rapido === 'otro') {
+            var i = $('#cobro-otro');
+            i.focus();
+            i.select();
+          }
+        });
+      });
+      var otro = $('#cobro-otro', c);
+      if (otro)
+        otro.addEventListener('change', function () {
+          cobro.entregado = aCentimos(otro.value);
+          pintarCobro();
+        });
+      var ok = $('#cobro-ok', c);
+      if (ok)
+        ok.addEventListener('click', function () {
+          if (cobro.forma === 'efectivo') {
+            var sobra = cobro.entregado - A;
+            cobro.hecho = cobro.propina
+              ? {
+                  titulo: 'Cobrado en efectivo',
+                  texto:
+                    'El cajón se ha abierto y ' + eur(sobra) + ' quedan apuntados como propina.',
+                  cambio: 0,
+                }
+              : { titulo: 'Cobrado en efectivo', texto: 'El cajón se ha abierto.', cambio: sobra };
+          } else if (cobro.forma === 'bizum') {
+            cobro.hecho = { titulo: 'Cobrado por Bizum', texto: '', cambio: 0 };
+          } else if (cobro.forma === 'cheque') {
+            var enCheques = Math.max(0, Math.min(A, cobro.cheque));
+            cobro.hecho = {
+              titulo:
+                eur(enCheques) +
+                ' en cheques' +
+                (A > enCheques ? ' y ' + eur(A - enCheques) + ' con ' + cobro.restoCon : ''),
+              texto: 'El cajón se ha abierto.',
+              cambio: 0,
+            };
+          } else {
+            cobro.hecho = { titulo: 'Cobrado con tarjeta', texto: '', cambio: 0 };
+          }
+          pintarCobro();
+        });
+      var bp = $('#cobro-propina', c);
+      if (bp)
+        bp.addEventListener('click', function () {
+          cobro.propina = !cobro.propina;
+          pintarCobro();
+        });
+      var ad = $('#abrir-descuento', c);
+      if (ad)
+        ad.addEventListener('click', function () {
+          cobro.abriendoDescuento = true;
+          pintarCobro();
+        });
+      var qd = $('#quitar-descuento', c);
+      if (qd)
+        qd.addEventListener('click', function () {
+          cobro.propina = false;
+          cobro.descuento = 0;
+          cobro.motivoDescuento = null;
+          cobro.abriendoDescuento = false;
+          pintarCobro();
+        });
+      $$('[data-descuento]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.descuento = b.dataset.descuento === '10' ? Math.round(TOTAL / 10) : 500;
+          cobro.propina = false;
+          cobro.motivoDescuento =
+            (b.dataset.descuento === '10' ? '10 %' : '5,00 €') + ', cliente habitual';
+          cobro.abriendoDescuento = false;
+          pintarCobro();
+        });
+      });
+      var chq = $('#cobro-cheque', c);
+      if (chq)
+        chq.addEventListener('change', function () {
+          cobro.cheque = aCentimos(chq.value);
+          cobro.restoCon = null;
+          pintarCobro();
+        });
+      $$('[data-resto]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.restoCon = b.dataset.resto;
+          pintarCobro();
+        });
+      });
+      var np = $('#cobro-nopaso', c);
+      if (np)
+        np.addEventListener('click', function () {
+          cobro.forma = 'efectivo';
+          pintarCobro();
+        });
+      $$('[data-dividir]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.dividir = b.dataset.dividir;
+          pintarCobro();
+        });
+      });
+      var pm = $('#partes-menos', c),
+        pM = $('#partes-mas', c);
+      if (pm)
+        pm.addEventListener('click', function () {
+          if (cobro.partes > 2) {
+            cobro.partes--;
+            cobro.pagadas = [];
+            pintarCobro();
+          }
+        });
+      if (pM)
+        pM.addEventListener('click', function () {
+          if (cobro.partes < 10) {
+            cobro.partes++;
+            cobro.pagadas = [];
+            pintarCobro();
+          }
+        });
+      $$('[data-parte]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.pagadas[+b.dataset.parte] = b.dataset.con;
+          var todas = true;
+          for (var i = 0; i < cobro.partes; i++) if (!cobro.pagadas[i]) todas = false;
+          if (todas)
+            cobro.hecho = {
+              titulo: 'Cobrada entera, en ' + cobro.partes + ' partes',
+              texto: 'Cada parte con su ticket.',
+              cambio: 0,
+            };
+          pintarCobro();
+        });
+      });
+      function cobrarPlatos(con) {
+        LINEAS.forEach(function (l) {
+          if (cobro.marcadas[l.id]) {
+            cobro.pagadasLineas[l.id] = con;
+          }
+        });
+        cobro.marcadas = {};
+        var quedan = LINEAS.filter(function (l) {
+          return !cobro.pagadasLineas[l.id];
+        }).length;
+        if (quedan === 0)
+          cobro.hecho = {
+            titulo: 'Cobrada entera, por platos',
+            texto: 'Cada cobro con su ticket.',
+            cambio: 0,
+          };
+        pintarCobro();
+      }
+      var pe = $('#platos-efectivo', c),
+        pt = $('#platos-tarjeta', c);
+      if (pe)
+        pe.addEventListener('click', function () {
+          cobrarPlatos('efectivo');
+        });
+      if (pt)
+        pt.addEventListener('click', function () {
+          cobrarPlatos('tarjeta');
+        });
+      var me = $('#mixto-efectivo', c);
+      if (me)
+        me.addEventListener('change', function () {
+          cobro.efectivoMixto = aCentimos(me.value);
+          pintarCobro();
+        });
+      $$('[data-mixto]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.efectivoMixto = +b.dataset.mixto;
+          pintarCobro();
+        });
+      });
+      var mo = $('#mixto-ok', c);
+      if (mo)
+        mo.addEventListener('click', function () {
+          var ef = Math.max(0, Math.min(A, cobro.efectivoMixto));
+          cobro.hecho = {
+            titulo: eur(ef) + ' en efectivo y ' + eur(A - ef) + ' con tarjeta',
+            texto: 'Dos pagos, un ticket. El cajón se ha abierto.',
+            cambio: 0,
+          };
+          pintarCobro();
+        });
+    }
+    pintarCobro();
+    $('#cobro-volver').addEventListener('click', function () {
+      reiniciarCobro();
+      pintarCobro();
+    });
+    $$('[data-cobro-caja]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        pulsado(b.parentNode, b);
+        $('#cobro-tapa').hidden = b.dataset.cobroCaja !== 'no';
+      });
+    });
+    $('#tapa-abrir').addEventListener('click', function () {
+      $('#cobro-tapa').hidden = true;
+      var grupo = $('[data-cobro-caja]').parentNode;
+      pulsado(grupo, $('[data-cobro-caja="si"]'));
+    });
+
+    // ── 3 · La sala y el desplegable de la caja ───────────────
+    var botonSala = $('#sala-caja');
+    botonSala.addEventListener('click', function () {
+      var d = $('#sala-desplegable');
+      d.hidden = !d.hidden;
+      botonSala.setAttribute('aria-expanded', String(!d.hidden));
+    });
+    function enlazarIr(raiz) {
+      $$('[data-ir]', raiz).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var destino = $(b.dataset.ir);
+          if (destino) destino.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+    enlazarIr(document);
+
+    // ── 3 · Abrir el cajón ────────────────────────────────────
+    var cajon = {
+      que: 'sacar',
+      importe: 3500,
+      motivo: 'Un proveedor',
+      nota: 'El pan',
+      aprueba: false,
+      hecho: false,
+    };
+    var MOTIVOS = {
+      sacar: ['Compras', 'Un proveedor', 'Propinas', 'Al banco', 'Otro'],
+      meter: ['Cambio del banco', 'Otro'],
+    };
+    function pintarCajon() {
+      var c = $('#cajon-cuerpo');
+      if (cajon.hecho) {
+        var t =
+          cajon.que === 'cambio'
+            ? 'Cajón abierto para dar cambio'
+            : (cajon.que === 'sacar' ? 'Sacados ' : 'Metidos ') + eur(cajon.importe);
+        c.innerHTML =
+          '<div class="hecho-ok"><span class="ok-circulo">✓</span><span class="t-h">' +
+          t +
+          '</span>' +
+          '<span class="t-suave">' +
+          (cajon.que === 'cambio'
+            ? 'Apuntado: Marcos, 16:42.'
+            : cajon.motivo + (cajon.nota ? ' · ' + cajon.nota : '') + '. Marcos, 16:42.') +
+          '</span>' +
+          '<button type="button" class="bt hueco-borde peq" id="cajon-otra">Volver a probar</button></div>';
+        $('#cajon-otra').addEventListener('click', function () {
+          cajon.hecho = false;
+          pintarCajon();
+        });
+        return;
+      }
+      var html = '<span class="t-h">Abrir el cajón</span>';
+      html +=
+        '<div class="chips tres" role="group" aria-label="Para qué">' +
+        [
+          ['cambio', 'Cambio'],
+          ['sacar', 'Sacar dinero'],
+          ['meter', 'Meter dinero'],
+        ]
+          .map(function (o) {
+            return (
+              '<button type="button" class="chip" data-cajon="' +
+              o[0] +
+              '" aria-pressed="' +
+              (cajon.que === o[0]) +
+              '">' +
+              o[1] +
+              '</button>'
+            );
+          })
+          .join('') +
+        '</div>';
+      if (cajon.que === 'cambio') {
+        html +=
+          '<p class="t-suave">Para cambiar un billete. Sin importe: solo queda apuntado quién y cuándo.</p>';
+        html +=
+          '<button type="button" class="bt naranja ancho" id="cajon-ok">Abrir el cajón</button>';
+      } else {
+        html +=
+          '<label class="campo-t" for="cajon-importe"><span>Cuánto</span><input id="cajon-importe" inputmode="decimal" value="' +
+          eur(cajon.importe).replace(' €', '') +
+          '"></label>';
+        html +=
+          '<div class="t-suave t-peq" style="font-weight:700">Para qué</div><div class="chips" role="group" aria-label="Motivo">' +
+          MOTIVOS[cajon.que]
+            .map(function (m) {
+              return (
+                '<button type="button" class="chip" data-motivo="' +
+                m +
+                '" aria-pressed="' +
+                (cajon.motivo === m) +
+                '">' +
+                m +
+                '</button>'
+              );
+            })
+            .join('') +
+          '</div>';
+        html +=
+          '<label class="campo-t" for="cajon-nota"><span>' +
+          (cajon.motivo === 'Otro' ? 'Escribe para qué' : 'Nota, si quieres') +
+          '</span><input id="cajon-nota" style="width:14ch;font-size:15px;font-weight:600" value="' +
+          (cajon.nota || '') +
+          '"></label>';
+        html +=
+          '<label class="elegir t-peq" style="font-weight:600"><input type="checkbox" id="cajon-aprueba"' +
+          (cajon.aprueba ? ' checked' : '') +
+          '>Lo hace Sara, que no es encargada</label>';
+        if (cajon.aprueba) {
+          html +=
+            '<div class="aviso a-info"><span>Lo aprueba un encargado con su PIN</span><span class="puntos"><i class="l"></i><i class="l"></i><i class="l"></i><i></i><i></i><i></i></span></div>';
+        }
+        html +=
+          '<button type="button" class="bt naranja ancho" id="cajon-ok"' +
+          (cajon.importe <= 0 ? ' disabled' : '') +
+          '>' +
+          (cajon.que === 'sacar' ? 'Sacar ' : 'Meter ') +
+          eur(cajon.importe) +
+          '</button>';
+      }
+      c.innerHTML = html;
+      $$('[data-cajon]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cajon.que = b.dataset.cajon;
+          if (cajon.que !== 'cambio' && MOTIVOS[cajon.que].indexOf(cajon.motivo) < 0)
+            cajon.motivo = MOTIVOS[cajon.que][0];
+          pintarCajon();
+        });
+      });
+      $$('[data-motivo]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cajon.motivo = b.dataset.motivo;
+          pintarCajon();
+        });
+      });
+      var imp = $('#cajon-importe', c);
+      if (imp)
+        imp.addEventListener('change', function () {
+          cajon.importe = aCentimos(imp.value);
+          pintarCajon();
+        });
+      var nota = $('#cajon-nota', c);
+      if (nota)
+        nota.addEventListener('input', function () {
+          cajon.nota = nota.value;
+        });
+      var ap = $('#cajon-aprueba', c);
+      if (ap)
+        ap.addEventListener('change', function () {
+          cajon.aprueba = ap.checked;
+          pintarCajon();
+        });
+      $('#cajon-ok', c).addEventListener('click', function () {
+        cajon.hecho = true;
+        pintarCajon();
+      });
+    }
+    pintarCajon();
+
+    // ── 4 · Cerrar a ciegas ───────────────────────────────────
+    var DEBERIA = 72740; // 150,00 + 612,40 − 35,00
+    var TARJETA_ESTOOK = 128460;
+    var cierre;
+    function reiniciarCierre() {
+      cierre = {
+        paso: 1,
+        cuentas: {
+          10000: 2,
+          5000: 5,
+          2000: 8,
+          1000: 6,
+          500: 7,
+          200: 4,
+          100: 6,
+          50: 5,
+          20: 3,
+          10: 2,
+          5: 2,
+        },
+        datafono: 128460,
+        manana: 15000,
+        motivo: null,
+        listo: false,
+      };
+    }
+    reiniciarCierre();
+    var NOMBRES_PASOS = ['Contar', 'Datáfono', 'Para mañana', 'El resultado'];
+    function pintarPasos() {
+      var p = $('#cerrar-pasos');
+      p.innerHTML = NOMBRES_PASOS.map(function (n, i) {
+        var num = i + 1;
+        var clase = num === cierre.paso ? 'si' : num < cierre.paso ? 'hecho' : '';
+        return (
+          '<button type="button" class="' +
+          clase +
+          '" data-paso="' +
+          num +
+          '"' +
+          (num > cierre.paso ? ' disabled' : '') +
+          '>' +
+          num +
+          ' ' +
+          n +
+          '</button>'
+        );
+      }).join('');
+      $$('[data-paso]', p).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var n = +b.dataset.paso;
+          if (n <= cierre.paso) {
+            cierre.paso = n;
+            pintarCierre();
+          }
+        });
+      });
+    }
+    function pintarCierre() {
+      pintarPasos();
+      var c = $('#cerrar-cuerpo');
+      var contado = totalDe(cierre.cuentas);
+      var html = '';
+      if (cierre.listo) {
+        c.innerHTML =
+          '<div class="hecho-ok"><span class="ok-circulo">✓</span><span class="t-h">Caja cerrada</span>' +
+          '<span class="t-suave">Era la única caja abierta: el día queda cerrado y ya está en Estook › Cierres de caja. Mañana se propone abrir con ' +
+          eur(cierre.manana) +
+          '.</span>' +
+          '<button type="button" class="bt hueco-borde peq" id="cerrar-otra">Volver a probar</button></div>';
+        $('#cerrar-otra').addEventListener('click', function () {
+          reiniciarCierre();
+          pintarCierre();
+        });
+        return;
+      }
+      if (cierre.paso === 1) {
+        html +=
+          '<div class="aviso a-info"><span>Quedan 2 mesas abiertas: lo que cobren en efectivo irá a la caja de mañana.</span></div>';
+        if (ajustesCaja.total) {
+          html +=
+            '<div class="chips" role="group" aria-label="Cómo contar"><button type="button" class="chip" aria-pressed="true">Billete a billete</button><button type="button" class="chip" id="cerrar-escribir">Escribir el total</button></div>';
+        }
+        html += '<div class="contador" id="cerrar-contador"></div>';
+        html +=
+          '<div class="suma"><div><span class="t-tenue t-peq">Contado</span><div class="cifra" id="cerrar-total">' +
+          eur(contado) +
+          '</div></div>' +
+          '<span class="t-tenue t-peq" style="max-width:240px">Lo que debería haber sale al final.</span>' +
+          '<button type="button" class="bt naranja" id="cerrar-seguir">Seguir</button></div>';
+        c.innerHTML = html;
+        contador($('#cerrar-contador', c), 'cerrar', cierre.cuentas, function () {
+          $('#cerrar-total', c).textContent = eur(totalDe(cierre.cuentas));
+        });
+        $('#cerrar-seguir', c).addEventListener('click', function () {
+          cierre.paso = 2;
+          pintarCierre();
+        });
+        var esc = $('#cerrar-escribir', c);
+        if (esc)
+          esc.addEventListener('click', function () {
+            esc.parentNode.insertAdjacentHTML(
+              'afterend',
+              '<label class="campo-t" for="cerrar-a-mano" style="max-width:420px"><span>Total contado</span><input id="cerrar-a-mano" inputmode="decimal" value="722,40"></label>',
+            );
+            esc.parentNode.remove();
+            $('#cerrar-contador', c).hidden = true;
+          });
+        return;
+      }
+      if (cierre.paso === 2) {
+        html +=
+          '<div><div class="t-h">El cierre del datáfono</div><div class="t-suave t-peq">Saca el cierre del día en el datáfono y escribe su total.</div></div>';
+        html +=
+          '<label class="campo-t" for="cerrar-datafono" style="max-width:420px"><span>Total del datáfono</span><input id="cerrar-datafono" inputmode="decimal" value="' +
+          eur(cierre.datafono).replace(' €', '') +
+          '"></label>';
+        html +=
+          '<div class="fila-bt" style="max-width:420px"><button type="button" class="bt hueco-borde" id="cerrar-sin">Hoy no se ha usado</button><button type="button" class="bt naranja" id="cerrar-seguir">Seguir</button></div>';
+        c.innerHTML = html;
+        var dat = $('#cerrar-datafono', c);
+        dat.addEventListener('change', function () {
+          cierre.datafono = aCentimos(dat.value);
+        });
+        $('#cerrar-sin', c).addEventListener('click', function () {
+          cierre.datafono = 0;
+          cierre.paso = 3;
+          pintarCierre();
+        });
+        $('#cerrar-seguir', c).addEventListener('click', function () {
+          cierre.datafono = aCentimos(dat.value);
+          cierre.paso = 3;
+          pintarCierre();
+        });
+        return;
+      }
+      if (cierre.paso === 3) {
+        var manana = Math.min(cierre.manana, contado);
+        html +=
+          '<div><div class="t-h">Lo que se queda para mañana</div><div class="t-suave t-peq">El fondo de siempre. Lo demás lo retiras.</div></div>';
+        html +=
+          '<div class="tarjeta-t" style="max-width:460px">' +
+          '<label class="campo-t" for="cerrar-manana"><span>Se queda en el cajón</span><input id="cerrar-manana" inputmode="decimal" value="' +
+          eur(manana).replace(' €', '') +
+          '"></label>' +
+          '<div class="renglon fuerte"><span>Retiras</span><b style="font-size:20px">' +
+          eur(contado - manana) +
+          '</b></div></div>';
+        html +=
+          '<button type="button" class="bt naranja" id="cerrar-seguir" style="max-width:460px">Ver el resultado</button>';
+        c.innerHTML = html;
+        var m = $('#cerrar-manana', c);
+        m.addEventListener('change', function () {
+          cierre.manana = Math.min(aCentimos(m.value), contado);
+          pintarCierre();
+        });
+        $('#cerrar-seguir', c).addEventListener('click', function () {
+          cierre.manana = Math.min(aCentimos(m.value), contado);
+          cierre.paso = 4;
+          pintarCierre();
+        });
+        return;
+      }
+      // Paso 4: solo ahora se enseña la diferencia.
+      var dif = contado - DEBERIA;
+      var difT = cierre.datafono - TARJETA_ESTOOK;
+      function tono(d) {
+        return d === 0 ? 'a-bien' : Math.abs(d) > 1000 ? 'a-mal' : 'a-aten';
+      }
+      function frase(d, que) {
+        if (d === 0) return '<span><b>' + que + '</b> · cuadra</span>';
+        return (
+          '<span><b>' +
+          que +
+          '</b> · ' +
+          (d < 0 ? 'faltan' : 'sobran') +
+          '</span><b>' +
+          eur(Math.abs(d)) +
+          '</b>'
+        );
+      }
+      html +=
+        '<div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">';
+      html +=
+        '<div class="tarjeta-t">' +
+        '<div class="renglon"><span>Debería haber</span><b>' +
+        eur(DEBERIA) +
+        '</b></div>' +
+        '<div class="renglon"><span>Has contado</span><b>' +
+        eur(contado) +
+        '</b></div>' +
+        '<div class="aviso ' +
+        tono(dif) +
+        '">' +
+        frase(dif, 'Efectivo') +
+        '</div></div>';
+      html +=
+        '<div class="tarjeta-t">' +
+        '<div class="renglon"><span>Con tarjeta, en Estook</span><b>' +
+        eur(TARJETA_ESTOOK) +
+        '</b></div>' +
+        '<div class="renglon"><span>El datáfono</span><b>' +
+        eur(cierre.datafono) +
+        '</b></div>' +
+        '<div class="aviso ' +
+        tono(difT) +
+        '">' +
+        frase(difT, 'Tarjeta') +
+        '</div></div>';
+      html += '</div>';
+      if (dif !== 0) {
+        html +=
+          '<div class="t-suave t-peq" style="font-weight:700">¿Por qué? Si lo sabes (no hace falta)</div><div class="chips" role="group" aria-label="Motivo de la diferencia">' +
+          ['Error al dar el cambio', 'Propina sin apuntar', 'No se sabe']
+            .map(function (m) {
+              return (
+                '<button type="button" class="chip" data-motivo-cierre="' +
+                m +
+                '" aria-pressed="' +
+                (cierre.motivo === m) +
+                '">' +
+                m +
+                '</button>'
+              );
+            })
+            .join('') +
+          '</div>';
+      }
+      if (ajustesCaja.reparto) {
+        html +=
+          '<div class="aviso a-gris"><span>Propinas en efectivo hoy: <b>18,50 €</b>. Para Marcos, Sara y Ana: 6,17 €, 6,17 € y 6,16 €.</span><button type="button" class="bt peq">Repartirlas</button></div>';
+      }
+      html +=
+        '<div class="tarjeta-t"><div class="renglon"><span>Se queda para mañana</span><b>' +
+        eur(cierre.manana) +
+        '</b></div>' +
+        '<div class="renglon fuerte"><span>Retiras</span><b>' +
+        eur(contado - cierre.manana) +
+        '</b></div></div>';
+      html +=
+        '<div class="fila-bt"><button type="button" class="bt hueco-borde" id="cerrar-z">Imprimir el Z</button><button type="button" class="bt naranja" id="cerrar-listo" style="flex-grow:2">Listo</button></div>';
+      html +=
+        '<p class="t-tenue t-peq">A nombre de Marcos, 23:48. La diferencia no bloquea nada: se ve en Estook.</p>';
+      c.innerHTML = html;
+      $$('[data-motivo-cierre]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cierre.motivo = cierre.motivo === b.dataset.motivoCierre ? null : b.dataset.motivoCierre;
+          pintarCierre();
+        });
+      });
+      $('#cerrar-z', c).addEventListener('click', function () {
+        $('#cerrar-z', c).textContent = 'El Z sale por la impresora';
+      });
+      $('#cerrar-listo', c).addEventListener('click', function () {
+        cierre.listo = true;
+        pintarCierre();
+      });
+    }
+    pintarCierre();
+
+    // ── 5 · Estook: Cierres de caja ───────────────────────────
+    // Cada día, sus cajas. La barra es la de los tramos de arriba; el comedor solo sale con dos cajones.
+    var DIAS = [
+      {
+        id: 'd8',
+        dia: 'Dom 8 nov',
+        barra: { quien: 'Marcos', hora: '23:48', dif: -500, motivo: 'No se sabe' },
+        comedor: { quien: 'Ana', hora: '23:55', dif: 0 },
+      },
+      {
+        id: 'd7',
+        dia: 'Sáb 7 nov',
+        barra: { quien: 'Ana', hora: '00:41', dif: 0 },
+        comedor: { quien: 'Ana', hora: '00:44', dif: 0 },
+      },
+      {
+        id: 'd6',
+        dia: 'Vie 6 nov',
+        barra: { quien: 'Marcos', hora: '00:12', dif: 230, motivo: 'Propina sin apuntar' },
+        comedor: { quien: 'Ana', hora: '00:20', dif: 0 },
+      },
+      {
+        id: 'd5',
+        dia: 'Jue 5 nov',
+        barra: { quien: 'Ana', hora: '23:31', dif: 0 },
+        comedor: { quien: 'Ana', hora: '23:35', dif: 0 },
+      },
+      {
+        id: 'd4',
+        dia: 'Mié 4 nov',
+        barra: { quien: 'Marcos', hora: '23:20', dif: 0 },
+        comedor: { quien: 'Marcos', hora: '23:26', dif: 0 },
+      },
+      {
+        id: 'd3',
+        dia: 'Mar 3 nov',
+        barra: { quien: 'Ana', hora: '23:58', dif: -1200, motivo: 'Error al dar el cambio' },
+        comedor: { quien: 'Ana', hora: '00:05', dif: -300, motivo: 'No se sabe' },
+      },
+    ];
+    // Lo de cada caja en un día cualquiera, en céntimos.
+    var CAJA = {
+      barra: {
+        nombre: 'Barra',
+        fondo: 15000,
+        efectivo: 61240,
+        sacado: 3500,
+        tarjeta: 128460,
+        tickets: 41,
+      },
+      comedor: {
+        nombre: 'Comedor',
+        fondo: 10000,
+        efectivo: 39820,
+        sacado: 0,
+        tarjeta: 171630,
+        tickets: 52,
+      },
+    };
+    function deberia(k) {
+      return CAJA[k].fondo + CAJA[k].efectivo - CAJA[k].sacado;
+    }
+    var estook = { filtro: 'todos', abierto: null, cajones: 1 };
+    function lasCajas() {
+      return estook.cajones === 2 ? ['barra', 'comedor'] : ['barra'];
+    }
+    function difDelDia(d) {
+      return lasCajas().reduce(function (s, k) {
+        return s + d[k].dif;
+      }, 0);
+    }
+    function nombreCaja(k) {
+      return estook.cajones === 2 ? 'Caja ' + CAJA[k].nombre : 'Caja 1';
+    }
+    function pastilla(d) {
+      if (d === 0) return '<span class="pildora p-bien">Cuadra</span>';
+      var clase = Math.abs(d) > 1000 ? 'p-mal' : 'p-aten';
+      return (
+        '<span class="pildora ' +
+        clase +
+        '">' +
+        (d < 0 ? 'Falta ' : 'Sobra ') +
+        eur(Math.abs(d)) +
+        '</span>'
+      );
+    }
+    function colorDif(d) {
+      return d === 0 ? 'var(--bien)' : Math.abs(d) > 1000 ? 'var(--mal)' : 'var(--atencion)';
+    }
+    function zDeUnaCaja(k, d) {
+      var c = CAJA[k],
+        z = d[k];
+      return (
+        '<div class="tarjeta" style="gap:0">' +
+        '<div style="display:flex;align-items:center;gap:8px;padding-bottom:6px"><b style="flex:1">' +
+        nombreCaja(k) +
+        '</b>' +
+        pastilla(z.dif) +
+        '</div>' +
+        (z.motivo
+          ? '<div class="linea-z"><span>Por qué, según quien cerró</span><b>' +
+            z.motivo +
+            '</b></div>'
+          : '') +
+        '<div class="linea-z"><span>Abrió<small>' +
+        z.quien +
+        ' · 12:02</small></span><b>' +
+        eur(c.fondo) +
+        '</b></div>' +
+        '<div class="linea-z"><span>Cobrado en efectivo</span><b>' +
+        eur(c.efectivo) +
+        '</b></div>' +
+        (c.sacado
+          ? '<div class="linea-z"><span>Sacado<small>Un proveedor · el pan</small></span><b>−' +
+            eur(c.sacado) +
+            '</b></div>'
+          : '') +
+        '<div class="linea-z"><span>Debería haber</span><b>' +
+        eur(deberia(k)) +
+        '</b></div>' +
+        '<div class="linea-z"><span>Contado<small>' +
+        z.quien +
+        ' · ' +
+        z.hora +
+        '</small></span><b>' +
+        eur(deberia(k) + z.dif) +
+        '</b></div>' +
+        '<div class="linea-z"><span>Tarjeta<small>Estook y datáfono</small></span><b style="color:var(--bien)">' +
+        eur(c.tarjeta) +
+        ' ✓</b></div>' +
+        '<div class="linea-z"><span>Se quedó para mañana</span><b>' +
+        eur(c.fondo) +
+        '</b></div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:8px"><button type="button" class="boton-app">Descargar su Z</button><button type="button" class="boton-app">Sus tickets</button></div>' +
+        '</div>'
+      );
+    }
+    function pintarEstook() {
+      var c = $('#estook-dentro');
+      var html = '';
+      var cajas = lasCajas();
+      if (estook.abierto) {
+        var d = DIAS.filter(function (x) {
+          return x.id === estook.abierto;
+        })[0];
+        var dif = difDelDia(d);
+        var efectivo = cajas.reduce(function (s, k) {
+          return s + CAJA[k].efectivo;
+        }, 0);
+        var tarjeta = cajas.reduce(function (s, k) {
+          return s + CAJA[k].tarjeta;
+        }, 0);
+        var tickets = cajas.reduce(function (s, k) {
+          return s + CAJA[k].tickets;
+        }, 0);
+        html +=
+          '<div style="display:flex;align-items:center;gap:8px"><button type="button" class="boton-app" id="estook-atras" aria-label="Volver a la lista">←</button><b style="font-size:16px">' +
+          d.dia +
+          (estook.cajones === 2 ? '' : ' · Caja 1') +
+          '</b></div>';
+        // Arriba, el día entero.
+        html +=
+          '<div class="tarjeta">' +
+          '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><small style="color:var(--suave)">' +
+          (estook.cajones === 2 ? 'Todo el día · las dos cajas' : 'Todo el día') +
+          '</small><b class="num" style="font-size:22px">' +
+          eur(efectivo + tarjeta) +
+          '</b></div>' +
+          '<div style="display:flex;gap:12px;color:var(--suave);font-size:12.5px;flex-wrap:wrap"><span>Efectivo ' +
+          eur(efectivo) +
+          '</span><span>Tarjeta ' +
+          eur(tarjeta) +
+          '</span><span>' +
+          tickets +
+          ' tickets</span></div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--borde);padding-top:8px"><span style="color:var(--suave);font-size:13.5px">Diferencia en efectivo</span><b class="num" style="font-size:18px;color:' +
+          colorDif(dif) +
+          '">' +
+          (dif === 0 ? 'Cuadra' : eur(dif)) +
+          '</b></div>' +
+          '<div style="display:flex;gap:12px;color:var(--suave);font-size:12px;flex-wrap:wrap"><span>Cajón sin venta 2</span><span>Devoluciones 1 · 12,00 €</span><span>Mesas anuladas 1</span></div>' +
+          '</div>';
+        // Debajo, cada caja con lo suyo.
+        cajas.forEach(function (k) {
+          html += zDeUnaCaja(k, d);
+        });
+        c.innerHTML = html;
+        $('#estook-atras', c).addEventListener('click', function () {
+          estook.abierto = null;
+          pintarEstook();
+        });
+        return;
+      }
+      html +=
+        '<div class="vistas"><span>Información</span><span class="si">Cierres de caja</span></div>';
+      // Hoy, en vivo.
+      html +=
+        '<div class="tarjeta">' +
+        '<div style="display:flex;align-items:center;gap:8px"><span class="pildora p-bien"><span class="punto-vivo"></span>Hoy</span><b style="flex:1">' +
+        (estook.cajones === 2 ? 'Dos cajas abiertas' : 'Caja 1 abierta') +
+        '</b><small style="color:var(--tenue)">desde 12:02</small></div>';
+      cajas.forEach(function (k) {
+        html +=
+          '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="color:var(--suave);font-size:13.5px">' +
+          (estook.cajones === 2
+            ? 'En el cajón de ' + CAJA[k].nombre.toLowerCase()
+            : 'Efectivo en el cajón ahora') +
+          '</span><b class="num" style="font-size:' +
+          (estook.cajones === 2 ? '15px' : '18px') +
+          '">' +
+          eur(deberia(k)) +
+          '</b></div>';
+      });
+      var tarjetaHoy = cajas.reduce(function (s, k) {
+        return s + CAJA[k].tarjeta;
+      }, 0);
+      var ticketsHoy = cajas.reduce(function (s, k) {
+        return s + CAJA[k].tickets;
+      }, 0);
+      html +=
+        '<div style="display:flex;gap:12px;color:var(--suave);font-size:12px;flex-wrap:wrap"><span>Tarjeta ' +
+        eur(tarjetaHoy) +
+        '</span><span>' +
+        ticketsHoy +
+        ' tickets</span></div></div>';
+      var conDif = DIAS.filter(function (x) {
+        return difDelDia(x) !== 0;
+      }).length;
+      html +=
+        '<div class="chips-app" role="group" aria-label="Filtro">' +
+        '<button type="button" data-filtro="todos" aria-pressed="' +
+        (estook.filtro === 'todos') +
+        '">Todos</button>' +
+        '<button type="button" data-filtro="dif" aria-pressed="' +
+        (estook.filtro === 'dif') +
+        '">Con diferencia · ' +
+        conDif +
+        '</button>' +
+        '<button type="button">Buscar un día</button></div>';
+      html += '<div class="tarjeta" style="gap:0;padding:4px 12px">';
+      DIAS.filter(function (x) {
+        return estook.filtro === 'todos' || difDelDia(x) !== 0;
+      }).forEach(function (x) {
+        var ultima = estook.cajones === 2 ? x.comedor : x.barra;
+        var sub =
+          estook.cajones === 2
+            ? '2 cajas · la última, ' + ultima.quien + ' · ' + ultima.hora
+            : 'Cerró ' + ultima.quien + ' · ' + ultima.hora;
+        html +=
+          '<button type="button" class="fila-dia" data-dia="' +
+          x.id +
+          '"><span class="que"><b>' +
+          x.dia +
+          (estook.cajones === 2 ? '' : ' · Caja 1') +
+          '</b><small>' +
+          sub +
+          '</small></span>' +
+          pastilla(difDelDia(x)) +
+          '</button>';
+      });
+      html += '</div>';
+      c.innerHTML = html;
+      $$('[data-filtro]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          estook.filtro = b.dataset.filtro;
+          pintarEstook();
+        });
+      });
+      $$('[data-dia]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          estook.abierto = b.dataset.dia;
+          pintarEstook();
+        });
+      });
+    }
+    $$('[data-cajones]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        pulsado(b.parentNode, b);
+        estook.cajones = +b.dataset.cajones;
+        pintarEstook();
+      });
+    });
+    pintarEstook();
+
+    // ── 6 · Quién abre la caja y el recuento al abrir ─────────
+    $$('[data-quien]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        pulsado(b.parentNode, b);
+        ajustesCaja.camareros = b.dataset.quien === 'todos';
+        $('#quien-texto').textContent = ajustesCaja.camareros
+          ? 'Cualquiera del equipo, con su PIN. El recuento queda a su nombre.'
+          : 'Gerente y jefe de sala, con su PIN.';
+        var actual = $('[data-puerta][aria-pressed="true"]');
+        ponerLaPuerta(actual ? actual.dataset.puerta : 'cerrada');
+      });
+    });
+
+    // ── Ajustes del TPV › La caja: los interruptores ──────────
+    $$('#tpv-ajustes .interruptor').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var encendido = b.getAttribute('aria-pressed') !== 'true';
+        b.setAttribute('aria-pressed', String(encendido));
+        if (b.dataset.formaAjuste) ajustesCaja[b.dataset.formaAjuste] = encendido;
+        if (b.id === 'ajuste-descuento') {
+          ajustesCaja.descuento = encendido;
+          $('#ajuste-limite').hidden = !encendido;
+          $('#ajuste-limite-texto').hidden = !encendido;
+        }
+        if (b.id === 'ajuste-total') ajustesCaja.total = encendido;
+        if (b.id === 'ajuste-reparto') ajustesCaja.reparto = encendido;
+        if (b.id === 'ajuste-propina') ajustesCaja.propina = encendido;
+        if (b.id === 'ajuste-recuento') {
+          ajustesCaja.recuento = encendido;
+          $('#recuento-texto').textContent = encendido
+            ? 'Encendido: al abrir, siempre se cuenta'
+            : 'Apagado: «Contar» o «Está correcto»';
+          abrir.hecha = false;
+          abrir.contando = false;
+          pintarAbrir();
+        }
+        pintarCobro();
+        pintarCierre();
+      });
+    });
+    $('#imprimir-x').addEventListener('click', function () {
+      this.textContent = 'Sale por la impresora';
+    });
+
+    // ── Lo extra ──────────────────────────────────────────────
+    var EXTRAS = [
+      {
+        cod: 'E1',
+        titulo: 'Otras formas de pago',
+        tam: 'Mediano',
+        que: 'Bizum al móvil del local y cheque restaurante (Pluxee, Edenred, Up), cada uno con su botón al cobrar y su línea en el arqueo. Los cheques en papel se cuentan aparte al cerrar.',
+        hacen: 'Toast y Square («otras formas de pago»)',
+        consejo: 'Sí: a mediodía, con el menú, el cheque restaurante es muy común',
+        mini: '<div class="formas" style="grid-template-columns:repeat(4, minmax(0, 1fr))"><button type="button" aria-pressed="false">Efectivo</button><button type="button" aria-pressed="false">Tarjeta</button><button type="button" aria-pressed="true">Cheque</button><button type="button" aria-pressed="false">Bizum</button></div><div class="aviso a-gris"><span>Cheques en el cajón</span><b>3 · 33,00 €</b></div>',
+      },
+      {
+        cod: 'E2',
+        titulo: 'Retirar a media jornada',
+        tam: 'Pequeño',
+        que: 'Cuando el cajón pasa de una cifra (de fábrica, 800 €), un aviso pequeño en la caja: «Retira dinero». Se hace con «Sacar dinero · a la caja fuerte».',
+        hacen: 'Toast (cash drop)',
+        consejo: 'Sí, si se acumula mucho efectivo en el cajón',
+        mini: '<div class="aviso a-aten"><span>El cajón pasa de 800 €</span><button type="button" class="bt peq ambar">Retirar</button></div>',
+      },
+      {
+        cod: 'E3',
+        titulo: 'El aviso del descuadre',
+        tam: 'Pequeño',
+        que: 'Si un cierre falta o sobra más de una cifra (de fábrica, 10 €), al gerente le llega un aviso al móvil con el día y quién cerró. Uno por cierre, nunca más.',
+        hacen: 'Es como los demás avisos de Estook',
+        consejo: 'Sí: sin él, el descuadre solo se ve si se entra a mirarlo',
+        mini: '<div class="tarjeta-t" style="gap:4px"><b style="font-size:13.5px">Caja 1 · faltan 12,00 €</b><span class="t-tenue t-peq">Cerró Ana anoche a las 23:58</span></div>',
+      },
+      {
+        cod: 'E4',
+        titulo: 'Imprimir el X y reimprimir un Z',
+        tam: 'Pequeño',
+        que: '«Cómo va» también en papel, para el cambio de turno; y los Z de días anteriores, reimpresos como copia desde el TPV.',
+        hacen: 'Todos los TPV',
+        consejo: 'Sí: es poco y se pide mucho',
+        mini: '<div class="fila-bt"><button type="button" class="bt peq">Imprimir el X</button><button type="button" class="bt peq hueco-borde">Z de ayer</button></div>',
+      },
+      {
+        cod: 'E5',
+        titulo: 'Propinas en efectivo',
+        tam: 'Mediano',
+        que: 'Al cobrar, «Quédate el cambio» lo apunta como propina; al cerrar, la caja dice cuánto hay de propinas y lo reparte a partes iguales entre los fichados, si quieres.',
+        hacen: 'Toast (declarar y repartir propinas)',
+        consejo: 'Después: depende de cómo reparte IKATZ las propinas',
+        mini: '<div class="cambio"><span>Cambio 1,50 €</span><button type="button" class="bt peq verde">Quédate el cambio</button></div>',
+      },
+      {
+        cod: 'E6',
+        titulo: 'Contar escribiendo el total',
+        tam: 'Pequeño',
+        que: 'Además de billete a billete, «Escribir el total» para el que ya lo ha contado a mano. Sigue a ciegas.',
+        hacen: 'Square (cierra con un solo importe)',
+        consejo: 'Como opción del gerente, apagada de fábrica',
+        mini: '<label class="campo-t" for="mini-total"><span>Total contado</span><input id="mini-total" value="722,40" inputmode="decimal"></label>',
+      },
+      {
+        cod: 'E7',
+        titulo: 'Entregar la caja sin cerrarla',
+        tam: 'Mediano',
+        que: 'Cambio de turno con otro encargado: se cuenta a ciegas, queda el arqueo de la mañana, y la caja sigue abierta a nombre del de la tarde.',
+        hacen: 'Los TPV con turnos de caja',
+        consejo: 'Solo si hay dos encargados al día con la caja',
+        mini: '<div class="aviso a-info"><span>Marcos entrega la caja a Ana</span><button type="button" class="bt peq">Contar</button></div>',
+      },
+      {
+        cod: 'E8',
+        titulo: 'Descontar al cobrar',
+        tam: 'Mediano',
+        que: 'Un descuento en euros o en % en el cobro, con motivo y su permiso (el jefe de sala hasta su límite), y en el Z con quién lo hizo. Invitar espera al asesor.',
+        hacen: 'Todos los TPV',
+        consejo: 'Después, en T7: toca los permisos y la aprobación',
+        mini: '<div class="chips"><button type="button" class="chip" aria-pressed="true">−10 %</button><button type="button" class="chip" aria-pressed="false">−5,00 €</button><button type="button" class="chip" aria-pressed="false">Cliente habitual</button></div>',
+      },
+      {
+        cod: 'E9',
+        titulo: 'La bolsa del camarero',
+        tam: 'Grande',
+        que: 'El camarero cobra en la mesa con su móvil y lleva el efectivo encima; al acabar, lo entrega en la caja contando a ciegas, y su descuadre va a su nombre.',
+        hacen: 'Toast (server banking)',
+        consejo: 'Después: va con Estook TPV para Android (M20D)',
+        mini: '<div class="tarjeta-t" style="gap:4px"><div class="renglon"><span>Bolsa de Sara</span><b>214,50 €</b></div><button type="button" class="bt peq">Entregar en la caja</button></div>',
+      },
+    ];
+    // Lo que eligió Richi el 9-nov: E1 a E8 en R3; E9, después.
+    var elegidos = {
+      E1: true,
+      E2: true,
+      E3: true,
+      E4: true,
+      E5: true,
+      E6: true,
+      E7: true,
+      E8: true,
+    };
+    function pintarExtras() {
+      var c = $('#extras');
+      c.innerHTML = EXTRAS.map(function (x) {
+        var id = 'elegir-' + x.cod;
+        return (
+          '<article class="extra' +
+          (elegidos[x.cod] ? ' elegido' : '') +
+          '" data-extra="' +
+          x.cod +
+          '">' +
+          '<div class="cab"><div><span class="codigo">' +
+          x.cod +
+          '</span><h3>' +
+          x.titulo +
+          '</h3></div><span class="pildora p-gris">' +
+          x.tam +
+          '</span></div>' +
+          '<div class="tpv' +
+          ($('.tpv.claro') ? ' claro' : '') +
+          '"><div class="cuerpo">' +
+          x.mini +
+          '</div></div>' +
+          '<p>' +
+          x.que +
+          '</p>' +
+          '<div class="meta"><span><b>Lo hace:</b> ' +
+          x.hacen +
+          '</span>' +
+          '<span class="consejo"><b>Mi consejo:</b> ' +
+          x.consejo +
+          '</span></div>' +
+          '<label class="elegir" for="' +
+          id +
+          '"><input type="checkbox" id="' +
+          id +
+          '"' +
+          (elegidos[x.cod] ? ' checked' : '') +
+          '>Lo quiero en R3</label>' +
+          '</article>'
+        );
+      }).join('');
+      $$('.extra input[type=checkbox]', c).forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          var cod = cb.id.replace('elegir-', '');
+          if (cb.checked) elegidos[cod] = true;
+          else delete elegidos[cod];
+          cb.closest('.extra').classList.toggle('elegido', cb.checked);
+          pintarResumen();
+        });
+      });
+    }
+    function textoEleccion() {
+      var cods = EXTRAS.map(function (x) {
+        return x.cod;
+      }).filter(function (c) {
+        return elegidos[c];
+      });
+      return cods.length ? 'En R3 quiero: ' + cods.join(', ') + '.' : '';
+    }
+    function pintarResumen() {
+      var t = textoEleccion();
+      $('#resumen-texto').innerHTML = t
+        ? 'Marcados: <code>' + t.replace('En R3 quiero: ', '').replace('.', '') + '</code>'
+        : 'No has marcado ninguno.';
+    }
+    $('#copiar-eleccion').addEventListener('click', function () {
+      var t = textoEleccion() || 'En R3 no quiero ningún extra.';
+      var boton = this;
+      function hecho() {
+        boton.textContent = 'Copiado';
+        setTimeout(function () {
+          boton.textContent = 'Copiar';
+        }, 1600);
+      }
+      try {
+        navigator.clipboard.writeText(t).then(hecho, function () {
+          $('#resumen-texto').textContent = t;
+        });
+      } catch (e) {
+        $('#resumen-texto').textContent = t;
+      }
+    });
+    pintarExtras();
+    pintarResumen();
+  })();
+</script>

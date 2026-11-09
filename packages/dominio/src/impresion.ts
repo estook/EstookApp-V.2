@@ -398,6 +398,11 @@ export interface ElTicketQueSeImprime {
   readonly copia: boolean;
   /** Si es una devolución (R5): qué ticket rectifica y por qué (maqueta de T6, 6). */
   readonly rectifica?: { readonly numero: string; readonly motivo: string } | undefined;
+  /**
+   * **«Pide tu factura»** (0141, en el papel desde R3 · 1, 0144): la dirección con el código del
+   * ticket, para el QR, y el código como se lee. Sin ella, «Pídela en la barra».
+   */
+  readonly pideTuFactura?: { readonly direccion: string; readonly codigo: string } | undefined;
 }
 
 const MARCA_DE_PRUEBAS = texto(` ${PRUEBA_SIN_VALIDEZ} `, { alinear: 'centro', negativo: true });
@@ -478,7 +483,14 @@ export function elTicketEnPapel(t: ElTicketQueSeImprime): PapelCompuesto {
   piezas.push(RAYA);
   // Una devolución no se canjea por una factura: no se invita a pedirla.
   if (t.rectifica === undefined) {
-    piezas.push(texto('¿Quieres factura? Pídela en la barra.', { alinear: 'centro' }));
+    if (t.pideTuFactura === undefined) {
+      piezas.push(texto('¿Quieres factura? Pídela en la barra.', { alinear: 'centro' }));
+    } else {
+      // Después del tributario y más pequeño: el de Hacienda es el que manda (Anexo 5.3).
+      piezas.push(texto('¿Quieres factura? Pídela en tu móvil:', { alinear: 'centro' }));
+      piezas.push({ tipo: 'qr', contenido: t.pideTuFactura.direccion, milimetros: 25 });
+      piezas.push(texto(`Código ${t.pideTuFactura.codigo}`, { alinear: 'centro' }));
+    }
   }
   if (t.pruebas) piezas.push(MARCA_DE_PRUEBAS);
   piezas.push(CORTAR);

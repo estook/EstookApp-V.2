@@ -202,6 +202,38 @@ describe('el papel (Anexo 4.7)', () => {
     expect(elQr?.tipo === 'qr' ? elQr.milimetros : 0).toBeGreaterThanOrEqual(30);
   });
 
+  it('con «Pide tu factura» (0144), su QR va después del tributario, más pequeño y con el código', () => {
+    const conLaFactura = elTicketEnPapel({
+      empresa,
+      numero: 'T-IKA-2026-000038',
+      cuando: '06/11/2026 14:32',
+      donde: 'Mesa 12',
+      lineas: [{ cantidad: 1, nombre: 'Caña', importeCentimos: 220 }],
+      impuestos: [{ nombre: 'IVA 10 %', baseCentimos: 200, cuotaCentimos: 20 }],
+      totalCentimos: 220,
+      qr: 'https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?nif=B12345678',
+      pruebas: false,
+      copia: false,
+      pideTuFactura: {
+        direccion: 'https://estook.com/factura/7KQ2-M9XP-4TRD',
+        codigo: '7KQ2-M9XP-4TRD',
+      },
+    });
+    const qrs = conLaFactura.piezas.filter((p) => p.tipo === 'qr');
+    expect(qrs.map((q) => (q.tipo === 'qr' ? q.contenido : ''))).toEqual([
+      'https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?nif=B12345678',
+      'https://estook.com/factura/7KQ2-M9XP-4TRD',
+    ]);
+    const [tributario, deLaFactura] = qrs;
+    expect(deLaFactura?.tipo === 'qr' && tributario?.tipo === 'qr').toBe(true);
+    if (deLaFactura?.tipo === 'qr' && tributario?.tipo === 'qr') {
+      expect(deLaFactura.milimetros).toBeLessThan(tributario.milimetros);
+    }
+    const textos = conLaFactura.piezas.map((p) => (p.tipo === 'texto' ? p.texto : ''));
+    expect(textos).toContain('Código 7KQ2-M9XP-4TRD');
+    expect(textos).not.toContain('¿Quieres factura? Pídela en la barra.');
+  });
+
   it('con QR, la versión 2 del papel; las de siempre, la 1', () => {
     expect(ticket.version).toBe(2);
     expect(esPapelCompuesto(ticket)).toBe(true);

@@ -6,6 +6,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { irA, irAlPlano } from '../navegar.ts';
 import { Icono, IconoEnSuColor } from '../iconos.tsx';
 import { COMO_SE_VE_LA_FUNCION } from '../logica/comoSeVeElAparato.ts';
+import { BotonDeLaCaja } from '../caja/BotonDeLaCaja.tsx';
 
 /**
  * **Arriba, siempre** (la entrada nueva, maqueta 1; Anexo 11.5): a la izquierda la «E» y el
@@ -15,7 +16,7 @@ import { COMO_SE_VE_LA_FUNCION } from '../logica/comoSeVeElAparato.ts';
  *
  * Fichar, **solo en la caja**: un comandero solo pide (0115). **El engranaje, en todos** (0143):
  * dentro está «Tu sesión» con el tema, y lo demás solo en la caja y a quien puede tocarlo. La
- * caja (abrir y cerrar) se pone aquí con el cobro (T7).
+ * caja (abrir y cerrar), aquí desde R3 · 1 (0144), al lado de Fichar.
  */
 export function LaBarraDeArriba({
   titulo,
@@ -74,6 +75,8 @@ export function LaBarraDeArriba({
           <span className="max-sm:hidden">Tickets</span>
         </button>
       )}
+      {/* La caja (0144): un botón, verde con la caja abierta, y dentro lo demás. Solo en la caja. */}
+      {enLaCaja && <BotonDeLaCaja />}
       {enLaCaja && (
         <button
           type="button"

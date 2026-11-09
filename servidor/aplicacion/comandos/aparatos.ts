@@ -257,6 +257,11 @@ export interface ElAparatoPorDentro {
    * tiene la caja para Windows encendida, o si es una pantalla de fichar.
    */
   readonly elCentro?: ElCentroParaElAparato | null;
+  /**
+   * **Si su caja está abierta** (R3 · 1, 0144): para el botón de la pantalla del PIN, verde «Abrir
+   * caja» o ámbar «Cerrar caja», antes de que nadie entre. Nula si el aparato no tiene cajón.
+   */
+  readonly cajaAbierta: boolean | null;
 }
 
 export interface ElCentroParaElAparato {
@@ -302,7 +307,7 @@ async function elAparatoPorDentro(
   aparato: AparatoDelTpv,
   laLlave: string,
 ): Promise<ElAparatoPorDentro> {
-  const [fichados, bloqueo, mesas] = await Promise.all([
+  const [fichados, bloqueo, mesas, caja] = await Promise.all([
     contexto.sql<{ nombre: string; desde: Date }[]>`
       select nombre, desde from estook.fichados_en_el_aparato(${await huellaDeToken(laLlave)})
        order by desde
@@ -315,6 +320,16 @@ async function elAparatoPorDentro(
         select exists (
           select 1 from estook.mesa where local_id = ${aparato.localId}::uuid and archivada_en is null
         ) as hay
+      `,
+    ),
+    enNombreDelSistema(
+      contexto,
+      () =>
+        contexto.sql<{ abierta: boolean }[]>`
+        select exists (
+          select 1 from estook.turno_de_caja c join estook.terminal t on t.cajon_id = c.cajon_id
+           where t.id = ${aparato.terminalId}::uuid and c.cerrada_en is null
+        ) as abierta
       `,
     ),
   ]);
@@ -339,6 +354,7 @@ async function elAparatoPorDentro(
     hayMesas: mesas[0]?.hay === true,
     // La pone el latido, que es lo primero que hace el aparato al encenderse.
     clavePublica: null,
+    cajaAbierta: aparato.nombreDelCajon === null ? null : caja[0]?.abierta === true,
   };
 }
 

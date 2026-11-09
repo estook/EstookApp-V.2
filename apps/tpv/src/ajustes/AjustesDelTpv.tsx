@@ -13,6 +13,7 @@ import { LosAparatos } from './LosAparatos.tsx';
 import { PinYBloqueo } from './PinYBloqueo.tsx';
 import { CocinaYBarra } from './CocinaYBarra.tsx';
 import { ImpresorasYCajon } from './ImpresorasYCajon.tsx';
+import { LaCajaEnAjustes } from './LaCajaEnAjustes.tsx';
 import { Productos } from '../productos/Productos.tsx';
 import { LaDeclaracion } from './LaDeclaracion.tsx';
 import { ComoFacturaEnUnaLinea, LaFacturacion } from './LaFacturacion.tsx';
@@ -28,7 +29,7 @@ import { ponerElTema, usarElTemaElegido, type TemaDelTpv } from '../ganchos/usar
  * línea, con su título grande y legible; dos columnas en la tablet y una en el móvil, sin
  * huecos. Tres grupos: lo que se vende, lo que se conecta, y seguridad y Hacienda.
  *
- * Lo que llega con su entrega (la caja y el datáfono) **no se enseña hasta que funcione**; las
+ * Lo que llega con su entrega (el datáfono) **no se enseña hasta que funcione**; la caja, desde R3 · 1 (0144); las
  * impresoras y el cajón, desde T5 · 1 (0119). «Editar sala» vive aquí, en «La sala y las mesas».
  */
 
@@ -48,6 +49,7 @@ const DE_AQUI_DENTRO: readonly string[] = [
   'cocina',
   'aparatos',
   'impresoras',
+  'caja',
   'pin',
   'facturacion',
   'declaracion',
@@ -120,6 +122,15 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             tono: 'naranja',
             grupo: 'Lo que se conecta',
             ir: 'ajustes/impresoras',
+          } as const,
+          // La caja (R3 · 1, 0144): quién abre, el recuento, a ciegas, el fondo y las formas de pago.
+          {
+            id: 'caja',
+            nombre: 'La caja',
+            dibujo: 'caja',
+            tono: 'verde',
+            grupo: 'Lo que se conecta',
+            ir: 'ajustes/caja',
           } as const,
         ]
       : []),
@@ -275,6 +286,8 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
             <CocinaYBarra />
           ) : elegido === 'impresoras' ? (
             <ImpresorasYCajon />
+          ) : elegido === 'caja' ? (
+            <LaCajaEnAjustes />
           ) : elegido === 'facturacion' ? (
             <LaFacturacion />
           ) : elegido === 'declaracion' ? (
@@ -402,6 +415,7 @@ function ComoEsta({ id }: { readonly id: string }) {
   if (id === 'cocina') return <LaCocina />;
   if (id === 'aparatos') return <LosAparatosDelLocal />;
   if (id === 'impresoras') return <LasImpresorasDelLocal />;
+  if (id === 'caja') return <>Quién la abre, el recuento y las formas de pago</>;
   if (id === 'facturacion') return <ComoFacturaEnUnaLinea />;
   if (id === 'declaracion') return <>Lo que Estook declara a Hacienda</>;
   return <ElBloqueo />;

@@ -30,6 +30,7 @@ import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CifrasDeLaApp } from '../panel/CifrasDeLaApp.tsx';
 import { ComoEntranTusVentas } from './ComoEntranTusVentas.tsx';
+import { CierresDeCaja } from './CierresDeCaja.tsx';
 import {
   comoSeLeeElDia,
   comoSeLeeLaHoraDe,
@@ -78,6 +79,13 @@ import type { CierreLeido, FogonYYo } from '../fogon/contrato.ts';
  * botón que promete y no hace es el fallo que este proyecto persigue desde M4.
  */
 export function CierreDeCaja() {
+  const { yo } = usarSesion();
+  // Con Pro, el día lo cierra la caja de Estook TPV y aquí solo se ven sus cierres (0144).
+  if (yo?.cuenta?.conEstookTpv === true) return <CierresDeCaja />;
+  return <CierreAMano />;
+}
+
+function CierreAMano() {
   const { cliente, permisos, yo } = usarSesion();
   // Con Pro no se pregunta cómo entran las ventas (0142): son de Estook TPV.
   const conPro = yo?.cuenta?.conEstookTpv === true;

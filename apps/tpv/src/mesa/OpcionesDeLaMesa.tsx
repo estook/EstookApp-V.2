@@ -36,6 +36,7 @@ import { comensales, cuantoLlevan, euros, eurosConSimbolo, losNombres } from '..
 import { irAlPlano } from '../navegar.ts';
 import { LaCuenta } from './LaCuenta.tsx';
 import { LoServido } from './LoServido.tsx';
+import { Cobrar } from '../caja/Cobrar.tsx';
 
 /**
  * **La mesa, al tocarla** (0106, «MesaAcciones»; rehecha en la pausa del 5-nov, 0131).
@@ -45,7 +46,7 @@ import { LoServido } from './LoServido.tsx';
  *
  *   · **los platos**, con cómo va cada uno (la misma cuenta que dentro de la mesa), y el total
  *   · abajo, **los botones de siempre**: Pedir, Servido (si la sala marca lo servido, 0132),
- *     Cuenta (imprimirla) y Cobrar (apagado hasta que se cobre con Estook TPV, M20C)
+ *     Cuenta (imprimirla) y Cobrar (desde R3 · 1, 0144)
  *   · arriba, **tres iconos**: mover (cambiar de mesa, juntar, pasar a otro camarero), la nota
  *     para cocina y **«···»** con lo que se usa menos, lo que borra al final y en rojo
  *
@@ -69,7 +70,8 @@ export type PasoDeLaMesa =
   | 'alergias'
   | 'liberar'
   | 'anular'
-  | 'servido';
+  | 'servido'
+  | 'cobrar';
 
 /** De qué menú sale cada paso, para «Volver». */
 const VUELVE_A: Readonly<Partial<Record<PasoDeLaMesa, PasoDeLaMesa>>> = {
@@ -212,10 +214,34 @@ export function OpcionesDeLaMesa({
         detalle={hayParaLaCuenta ? 'imprimir' : 'sin impresora'}
         {...(hayParaLaCuenta ? { onClick: imprimirLaCuenta } : { apagado: 'sin impresora' })}
       />
-      {/* Cobrar llega con el cobro (M20C): se ve ya, apagado, para que nadie lo busque luego. */}
-      <BotonDeLaMesa icono={IconoCobrar} texto="Cobrar" detalle="pronto" apagado="llega pronto" />
+      {/* Cobrar (R3 · 1, 0144): en la caja; en un comandero, dice que se cobra en la caja. */}
+      <BotonDeLaMesa
+        icono={IconoCobrar}
+        texto="Cobrar"
+        {...(puedeEditar(yo.permisos, 'accion.cobrar')
+          ? {
+              onClick: () => {
+                setPaso('cobrar');
+              },
+            }
+          : { apagado: 'sin permiso' })}
+      />
     </div>
   );
+
+  if (paso === 'cobrar') {
+    return (
+      <Cobrar
+        mesa={mesa.data}
+        sinMandarAqui={sinMandarAqui}
+        alVolver={volver}
+        alAcabar={() => {
+          alCerrar();
+          irAlPlano();
+        }}
+      />
+    );
+  }
 
   if (paso === 'servido') {
     return (

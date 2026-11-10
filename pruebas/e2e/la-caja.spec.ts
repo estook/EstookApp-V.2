@@ -16,7 +16,7 @@ import {
  *   · **cobrar** una mesa en efectivo (un billete de un toque y su cambio) y otra **dividida** en
  *     efectivo y tarjeta: un ticket cada una, y la mesa queda libre
  *   · **abrir el cajón** para sacar dinero, con su para qué, y **«Cómo va»** con lo que debería haber
- *   · **cerrar caja** en sus cuatro pasos: contar, el datáfono, lo de mañana y el resultado
+ *   · **cerrar caja** en sus tres pasos: contar, lo de mañana y el resultado (sin el datáfono)
  *   · en Estook, **Cierres de caja**, solo para ver: el día con su total y, dentro, su caja; y ni un
  *     botón de cerrar el día a mano
  *
@@ -257,7 +257,7 @@ test('la caja: abrirla, cobrar en efectivo y dividido, el cajón, «Cómo va», 
   await expect(page.getByRole('main')).toContainText('195,00');
   await foto('09-como-va');
 
-  // ── Cerrar caja: contar (195 €), el datáfono (20 €), lo de mañana y el resultado ──
+  // ── Cerrar caja: contar (195 €), lo de mañana y el resultado. La tarjeta no se cuenta (11-nov) ──
   await laCaja.click();
   await page.getByRole('menuitem', { name: 'Cerrar caja' }).click();
   await expect(page.getByText('Lo que debería haber sale al final.')).toBeVisible({
@@ -274,9 +274,7 @@ test('la caja: abrirla, cobrar en efectivo y dividido, el cajón, «Cómo va», 
   }
   await foto('10-cerrar-contar');
   await page.getByRole('button', { name: 'Seguir', exact: true }).click();
-  await page.getByLabel('Total del datáfono').fill('20,00');
-  await foto('11-cerrar-datafono');
-  await page.getByRole('button', { name: 'Seguir', exact: true }).click();
+  await expect(page.getByText(/datáfono/i)).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Lo que se queda para mañana' })).toBeVisible();
   await expect(page.getByLabel('Se queda en el cajón')).toHaveValue('150,00');
   await foto('12-cerrar-para-manana');
@@ -285,7 +283,7 @@ test('la caja: abrirla, cobrar en efectivo y dividido, el cajón, «Cómo va», 
     timeout: 15_000,
   });
   await expect(page.getByText('Efectivo · cuadra')).toBeVisible();
-  await expect(page.getByText('Tarjeta · cuadra')).toBeVisible();
+  await expect(page.getByText(/datáfono/i)).toHaveCount(0);
   await expect(page.getByText(/Era la última caja abierta: el día queda cerrado/)).toBeVisible();
   await foto('13-caja-cerrada');
   await page.getByRole('button', { name: 'Listo', exact: true }).click();

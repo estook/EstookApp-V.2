@@ -403,15 +403,7 @@ function UnDiaDeCaja({
                 cuanto={enDinero(c.contado)}
               />
             )}
-            <Linea
-              que="Tarjeta"
-              detalle={c.datafono === null ? 'sin el cierre del datáfono' : 'Estook y datáfono'}
-              cuanto={
-                c.datafono === null || c.datafono === c.tarjeta
-                  ? `${enDinero(c.tarjeta)}${c.datafono === null ? '' : ' ✓'}`
-                  : `${enDinero(c.tarjeta)} · datáfono ${enDinero(c.datafono)}`
-              }
-            />
+            <Linea que="Con tarjeta" cuanto={enDinero(c.tarjeta)} />
             {c.bizum > 0 && <Linea que="Bizum" cuanto={enDinero(c.bizum)} />}
             {c.cheque > 0 && <Linea que="Cheques" cuanto={enDinero(c.cheque)} />}
             {c.paraManana !== null && (

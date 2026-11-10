@@ -4,8 +4,12 @@ import type { ElRecuento } from './tipos.ts';
 
 /**
  * **Contar el cajón, billete a billete** (Anexo 11.6; maqueta del 9-nov): de 500 € a 1 céntimo, con
- * el «+» y el «−» o escribiendo cuántos, y lo de cada uno debajo. El total lo pone quien lo usa:
+ * el «+» y el «−» o escribiendo cuántos, y lo de cada uno a su derecha. El total lo pone quien lo usa:
  * al abrir se ve; al cerrar, **no se ve lo que debería haber** hasta acabar.
+ *
+ * **Una fila por billete o moneda**, en dos columnas en la caja (billetes a un lado, monedas al otro) y
+ * una sola en el móvil: así se cuenta de arriba abajo, como se vacía el cajón. Antes eran baldosas en
+ * rejilla, y en una pantalla ancha el «+» de una se montaba encima de la siguiente (Richi, 10-nov).
  */
 export function ContarElCajon({
   recuento,
@@ -22,25 +26,25 @@ export function ContarElCajon({
   }
 
   return (
-    <div className="flex flex-col gap-e3">
+    <div className="grid grid-cols-1 gap-e4 md:grid-cols-2 md:gap-e5">
       {(
         [
           ['Billetes', BILLETES],
           ['Monedas', MONEDAS],
         ] as const
       ).map(([titulo, lista]) => (
-        <section key={titulo} className="flex flex-col gap-e2" aria-label={titulo}>
+        <section key={titulo} className="flex min-w-0 flex-col gap-e2" aria-label={titulo}>
           <h3 className="text-etiqueta font-bold uppercase tracking-wider text-texto-tenue">
             {titulo}
           </h3>
-          <ul className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-e2">
+          <ul className="flex flex-col divide-y divide-borde rounded-grande border border-borde bg-superficie">
             {lista.map((d) => {
               const cuantos = recuento[String(d)] ?? 0;
               const nombre = nombreDeLaDenominacion(d);
               return (
                 <li
                   key={d}
-                  className="grid grid-cols-[1fr_auto] items-center gap-x-e2 gap-y-e1 rounded-grande border border-borde bg-superficie py-e2 pl-e3 pr-e2"
+                  className="grid grid-cols-[4rem_auto_minmax(0,1fr)] items-center gap-e3 px-e3 py-e2"
                 >
                   <label htmlFor={`contar-${String(d)}`} className="whitespace-nowrap font-bold">
                     {nombre}
@@ -52,7 +56,7 @@ export function ContarElCajon({
                       onClick={() => {
                         poner(d, cuantos - 1);
                       }}
-                      className="flex size-10 items-center justify-center rounded-grande bg-charcoal text-seccion font-bold"
+                      className="flex size-11 items-center justify-center rounded-grande bg-charcoal text-seccion font-bold"
                     >
                       −
                     </button>
@@ -66,7 +70,7 @@ export function ContarElCajon({
                       onChange={(e) => {
                         poner(d, Number(e.currentTarget.value.replace(/\D/g, '') || '0'));
                       }}
-                      className="h-10 w-12 rounded-chico border border-borde bg-fondo text-center font-bold tabular-nums"
+                      className="h-11 w-14 rounded-chico border border-borde bg-fondo text-center font-bold tabular-nums"
                     />
                     <button
                       type="button"
@@ -74,13 +78,13 @@ export function ContarElCajon({
                       onClick={() => {
                         poner(d, cuantos + 1);
                       }}
-                      className="flex size-10 items-center justify-center rounded-grande bg-charcoal text-seccion font-bold"
+                      className="flex size-11 items-center justify-center rounded-grande bg-charcoal text-seccion font-bold"
                     >
                       +
                     </button>
                   </span>
                   <span
-                    className={`col-span-2 text-etiqueta tabular-nums ${cuantos > 0 ? 'text-texto-suave' : 'text-texto-tenue opacity-60'}`}
+                    className={`truncate text-right tabular-nums ${cuantos > 0 ? 'font-bold' : 'text-texto-tenue'}`}
                   >
                     {eurosConSimbolo(d * cuantos)}
                   </span>

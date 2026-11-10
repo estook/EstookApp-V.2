@@ -253,11 +253,12 @@ function comoTexto(o: unknown): Record<string, string> {
 
 async function recogerLoDeLaVictima() {
   const fks = await q(`
-    select a.attname as col, cl.relname as tabla, ct.relname as de
+    select a.attname as col, cl.relname as tabla, ct.relname as de, nh.nspname as de_esquema
       from pg_constraint c
       join pg_class cl on cl.oid = c.confrelid
       join pg_class ct on ct.oid = c.conrelid
       join pg_namespace n on n.oid = cl.relnamespace
+      join pg_namespace nh on nh.oid = ct.relnamespace
       join pg_attribute a on a.attrelid = c.conrelid and a.attnum = c.conkey[1]
      where c.contype = 'f' and n.nspname = 'estook' and array_length(c.conkey, 1) = 1`);
   const cuenta = new Map<string, Map<string, number>>();
@@ -346,7 +347,10 @@ async function recogerLoDeLaVictima() {
     }
   }
   // Un salto: las hijas de lo que ya es de la víctima (líneas, mensajes…).
+  // Solo las de `estook`: `plataforma.cobro` (lo que cobra Estook) y `estook.cobro` (lo que cobra la
+  // caja, 0144) se llaman igual, y la de fuera no tiene las columnas de la de dentro.
   for (const f of fks) {
+    if (f['de_esquema'] !== 'estook') continue;
     const hija = String(f['de']);
     const padre = String(f['tabla']);
     if (directos.has(hija) || !deLaVictima.has(padre)) continue;

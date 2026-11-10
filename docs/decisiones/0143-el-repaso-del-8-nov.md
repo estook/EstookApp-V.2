@@ -101,3 +101,11 @@ intuitivo siempre gana**.
    de la meta ya es ir bien. Verde o ámbar, sin rojo: un camarero no está «mal» el día 3.
 4. **El detalle de un escandallo no se ha rehecho**: ya tenía lo de la maqueta (coste, food cost con su objetivo,
    precio recomendado, lo que deja en cada canal y la barra de cada ingrediente).
+
+## 7 · R3 · 1 · La caja, construida (migración 0116)
+
+La tercera entrega es la caja, lo primero de T7, y tiene su decisión propia: la [0144](0144-r3-la-caja.md), con
+[su maqueta](../maquetas/r3-la-caja.html), aprobada por Richi el 9-nov. **R3 · 1** lleva abrir caja, cobrar (efectivo,
+tarjeta, Bizum, cheque y dividido), el cajón, «Cómo va», cerrar a ciegas, la devolución en efectivo y, en Estook,
+Cierres de caja. Lo que se encontró al revisarla el 10-nov y lo que decidió la IA, en su sección 7. **R3 · 2** (los
+avisos, las propinas, escribir el total, entregar la caja y los descuentos), después.

@@ -81,7 +81,9 @@ describe('los dibujos de los vacíos', () => {
       deFrente.map((f) => relative(RAIZ, f.ruta)),
       'Un dibujo importado de frente entra en el paquete inicial de todas las apps',
     ).toEqual([]);
-  });
+    // Lee todo el código de `apps` y `packages`: con las demás pruebas corriendo a la vez, en un
+    // ordenador de casa pasa de los cinco segundos de fábrica (10-nov, dos veces seguidas).
+  }, 30_000);
 
   it('todos van sobre el lienzo común y ninguno lleva un color escrito a mano', async () => {
     const nombres = (await readdir(DIBUJOS_EN)).filter((f) => !LO_COMUN.has(f));

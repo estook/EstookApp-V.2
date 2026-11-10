@@ -3450,6 +3450,30 @@ _8 de noviembre de 2026._ Decisión [0142](decisiones/0142-la-pausa-del-8-nov.md
 **La caja y sus cierres van con T7**, que pasa por delante de T6 · 3. Las pruebas: `la-pausa-del-8-nov.prueba.ts`,
 `lo-que-se-vende.prueba.ts`, `los-empleados.prueba.ts`, `informacion-e-informes.spec.ts` y `empleados.spec.ts`.
 
+### R3 · 1 · La caja
+
+_9 de noviembre de 2026._ Decisión [0144](decisiones/0144-r3-la-caja.md), con [su maqueta](maquetas/r3-la-caja.html),
+aprobada por Richi en tres vueltas el mismo día. **Estook TPV cobra** (migración 0116):
+
+- **Abrir caja**, al lado de Fichar en la pantalla del PIN y arriba en la sala: «Está correcto» con lo que se dejó
+  anoche, o contando billete a billete; el primer día y con «Recuento obligatorio», contando. Quien no puede, con
+  el PIN de un encargado; o cualquiera, con «También camareros».
+- **Cobrar**, en la caja: efectivo con los billetes de un toque y el cambio, tarjeta, Bizum y cheque si se
+  encienden, y dividir (a partes iguales, por platos, o efectivo y tarjeta). Un cobro, un ticket, que sale solo con
+  el QR de «Pide tu factura»; el mismo cobro dos veces cobra una; la mesa queda libre con lo último.
+- **Abrir el cajón** (cambio, sacar o meter, siempre con para qué), **«Cómo va»** (el X) y **el Z** en papel.
+- **Cerrar caja** a ciegas en cuatro pasos; la diferencia, con la caja ya cerrada; **el día se cierra solo con la
+  última caja** y se reabre solo si se abre otra.
+- **En Estook, con Pro, «Cierre» pasa a «Cierres de caja»**, solo para ver: hoy en vivo y un día por fila.
+
+Las pruebas: `la-caja.prueba.ts` (diecisiete, contra la base), `caja.prueba.ts` del dominio, `dinero.prueba.ts` del
+TPV y, desde el 10-nov, `la-caja.spec.ts`, de pantalla.
+
+**El repaso del 10-nov, antes de fusionar** (0144, sección 7): la prueba de pantalla encontró que «Abrir caja»
+junto a Fichar no llevaba a abrirla y que el cambio desaparecía al quedar la mesa libre; se construyó que **lo
+devuelto en efectivo salga del cajón**; y con Estook TPV se quitaron de Estook los botones de cerrar a mano, que
+ya no hacían nada.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

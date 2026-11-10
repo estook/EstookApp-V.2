@@ -10,8 +10,9 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * al pulsarlo es peor que una frase que lo explica.
  */
 export function usarAccion(id: string): Accion | null {
-  const { permisos } = usarSesion();
+  const { permisos, yo } = usarSesion();
   const accion = accionPorId(id);
-  if (accion === undefined || !puedoHacer(permisos, accion)) return null;
+  const conEstookTpv = yo?.cuenta?.conEstookTpv === true;
+  if (accion === undefined || !puedoHacer(permisos, accion, conEstookTpv)) return null;
   return accion;
 }

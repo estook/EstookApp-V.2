@@ -1,3 +1,4 @@
+import type { LoCobradoDeLaMesa } from '../caja/tipos.ts';
 /**
  * Lo que contesta la API a la sala (`servidor/aplicacion/consultas/sala.ts`), tal cual.
  * Si allí cambia algo, aquí también: la prueba de pantalla lo dice antes que nadie.
@@ -171,6 +172,8 @@ export interface LaMesa {
   readonly loSiguiente: LoSiguiente;
   /** Qué puede marcar servido la sala aquí (0132). Una API de antes no lo dice. */
   readonly marcanServido?: { readonly cocina: boolean; readonly barra: boolean };
+  /** Lo ya cobrado (0144). Una API de antes no lo dice. */
+  readonly cobrado?: LoCobradoDeLaMesa;
 }
 
 export interface PlatoDeLaSala {
@@ -375,6 +378,8 @@ export interface ElAparatoPorDentro {
    * clave de este aparato con ella. Una API de antes no lo dice.
    */
   readonly elCentro?: { readonly direcciones: readonly string[]; readonly clave: string } | null;
+  /** Si su caja está abierta (0144); nula sin cajón. Una API de antes no lo dice. */
+  readonly cajaAbierta?: boolean | null;
 }
 
 export interface AparatoVinculado {

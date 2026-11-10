@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { loCobradoDeLaCuenta, type LoCobradoDeLaCuenta } from '../caja.ts';
 import {
   comoVaLaMesa,
   desdeCuandoEnCocina,
@@ -420,6 +421,8 @@ export interface SalidaLaMesa {
   readonly loSiguiente: LoSiguiente;
   /** Qué puede marcar servido la sala aquí (0132): lo de la cocina, lo de la barra. */
   readonly marcanServido: { readonly cocina: boolean; readonly barra: boolean };
+  /** Lo ya cobrado (0144): para seguir cobrando por platos o a partes donde se dejó. */
+  readonly cobrado: LoCobradoDeLaCuenta;
 }
 
 function elEstadoDelPlato(linea: FilaDeLinea, pases: readonly FilaDePase[]): EstadoDelPlato {
@@ -444,10 +447,11 @@ export const laMesa = consulta<{ cuenta_id: string }, SalidaLaMesa>({
     if (cuenta === undefined) {
       throw new FalloDeAplicacion('no_existe', { porque: 'Esa mesa no está en este local.' });
     }
-    const [platos, pases, servido] = await Promise.all([
+    const [platos, pases, servido, cobrado] = await Promise.all([
       losPlatos(contexto, [cuenta.id]),
       losPases(contexto, [cuenta.id]),
       loServidoDelLocal(contexto, localId),
+      loCobradoDeLaCuenta(contexto, cuenta.id),
     ]);
     const enElDominio = platos.map(comoPlatoDeLaMesa);
     return {
@@ -497,6 +501,7 @@ export const laMesa = consulta<{ cuenta_id: string }, SalidaLaMesa>({
         cocina: laSalaMarca(servido, 'cocina'),
         barra: laSalaMarca(servido, 'barra'),
       },
+      cobrado,
     };
   },
 });

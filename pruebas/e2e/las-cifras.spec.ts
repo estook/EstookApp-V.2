@@ -1,5 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
+import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
 
 /**
  * V · punto 2 · «Cómo va»: las cifras con flecha de cada app.
@@ -142,8 +143,14 @@ test('un cocinero ve lo que se acaba, y ni un euro', async ({ page }) => {
   }
 });
 
-test('Servicio enseña sus cifras debajo del cierre del día', async ({ page }) => {
-  await entrar(page, ROSA);
+test('Servicio enseña sus cifras debajo del cierre del día', async ({ page, request }, info) => {
+  // **Con una cuenta Esencial** (R3 · 1, 0144): el cierre a mano, con sus cifras debajo, es de quien
+  // no lleva Estook TPV. Con él —Bar Centro, de ejemplo— ahí van «Cierres de caja», como en su
+  // maqueta aprobada, y lo vendido se mira en Información.
+  test.slow();
+  await cuentaNueva(page, request, `cifras-${unico(info)}@correo-de-prueba.com`, 'Bar Cifras');
+  await pagarEsencial(page);
+  await sinElAlta(page);
   await abrirSinQueSeCaiga(page, `${APP}#/servicio/jornada/cierre`);
 
   const fila = lasCifrasDe(page, 'servicio');

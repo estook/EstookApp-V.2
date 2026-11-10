@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Aviso, Boton, Etiqueta } from '@estook/ui';
 import { usarLectura } from '../ganchos/usarLectura.ts';
+import { usarSesion } from '../sesion/Sesion.tsx';
 import { comoSeLeeElDia, comoSeLeeLaHoraDe, type LaJornada } from './contrato.ts';
 import type { LoQueSeVende } from './contratoDeLoQueSeVende.ts';
 
@@ -9,14 +10,22 @@ import type { LoQueSeVende } from './contratoDeLoQueSeVende.ts';
  * —si el día está abierto o cerrado, cuánto le queda, el día de antes sin cerrar y «Cerrar el
  * día»— junto a lo que pasa en las mesas ahora mismo. Lo demás de «En marcha» eran los widgets
  * del Panel repetidos, y se fue.
+ *
+ * **Con Estook TPV** (R3 · 1, 0144) el día lo cierra la caja: aquí no se ofrece cerrarlo ni se
+ * avisa del de ayer —lo dice la caja, que es donde se puede hacer algo—, y «Ver el cierre» lleva
+ * a sus cierres de caja.
  */
 export function ElDiaDeHoy({ ahoraMismo }: { readonly ahoraMismo: LoQueSeVende['ahoraMismo'] }) {
   const navegar = useNavigate();
+  const { yo } = usarSesion();
+  const conEstookTpv = yo?.cuenta?.conEstookTpv === true;
   const lectura = usarLectura<LaJornada>('la_jornada', {}, true);
   const dia = lectura.data;
   const alCierre = (fecha: string | null) => {
     navegar(
-      fecha === null ? '/servicio/jornada/cierre' : `/servicio/jornada/cierre?fecha=${fecha}`,
+      fecha === null
+        ? '/servicio/jornada/cierre'
+        : `/servicio/jornada/cierre?${conEstookTpv ? 'dia' : 'fecha'}=${fecha}`,
     );
   };
   if (dia === undefined && ahoraMismo === null) return null;
@@ -63,13 +72,14 @@ export function ElDiaDeHoy({ ahoraMismo }: { readonly ahoraMismo: LoQueSeVende['
               <Boton
                 tono="texto"
                 onClick={() => {
-                  alCierre(null);
+                  alCierre(conEstookTpv ? dia.fecha : null);
                 }}
               >
                 Ver el cierre
               </Boton>
             ) : (
-              dia.puedeCerrar && (
+              dia.puedeCerrar &&
+              !conEstookTpv && (
                 <Boton
                   tono="secundario"
                   onClick={() => {
@@ -83,7 +93,7 @@ export function ElDiaDeHoy({ ahoraMismo }: { readonly ahoraMismo: LoQueSeVende['
           </span>
         )}
       </div>
-      {dia?.ayerSinCerrar != null && (
+      {dia?.ayerSinCerrar != null && !conEstookTpv && (
         <Aviso
           tono="atencion"
           titulo={`Falta cerrar el ${comoSeLeeElDia(dia.ayerSinCerrar)}`}

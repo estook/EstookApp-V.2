@@ -193,7 +193,14 @@ function Dentro({
   // Las vistas que solo salen si tienen algo: cuáles lo tienen lo dice la pantalla de
   // dentro, y mientras no lo dice no sale ninguna (repaso del 9-oct y del 10-oct).
   const [conAlgo, setConAlgo] = useState<readonly string[]>([]);
-  const lasVistas = vistasQueSeEnsenan(destino, vista?.id, conAlgo);
+  // Con Estook TPV, «Cierre» pasa a «Cierres de caja» (0142, 0144): los cierra la caja y aquí se ven.
+  const { yo } = usarSesion();
+  const conPro = yo?.cuenta?.conEstookTpv === true;
+  const lasVistas = vistasQueSeEnsenan(destino, vista?.id, conAlgo).map((v) =>
+    conPro && app.id === 'servicio' && destino.id === 'jornada' && v.id === 'cierre'
+      ? { ...v, nombre: 'Cierres de caja' }
+      : v,
+  );
   return (
     <div className={clases('flex w-full flex-col gap-e4 lg:gap-e5', ANCHO[app.forma])}>
       {/*

@@ -85,6 +85,13 @@ export function ElPin({
   } | null>(null);
   const [olvidado, setOlvidado] = useState(false);
   const [fichando, setFichando] = useState(false);
+  /** «Abrir caja» o «Cerrar caja» tocado (0144): quien teclee su PIN entra directo a hacerlo. */
+  const [paraLaCaja, setParaLaCaja] = useState(false);
+  // Al llegar a la puerta nadie ha tocado la caja todavía: una dirección de la caja que quedara de
+  // antes (un bloqueo, una recarga) no manda a abrirla ni a cerrarla a quien entra después.
+  useEffect(() => {
+    if (window.location.hash.startsWith('#/caja/')) window.location.hash = '/';
+  }, []);
   const [hecho, setHecho] = useState<string | null>(null);
   /** Sin internet, un PIN que no se puede comprobar aquí: lo que se le dice. */
   const [noSePuedeSinInternet, setNoSePuedeSinInternet] = useState<{
@@ -475,17 +482,40 @@ export function ElPin({
       <section className="flex flex-col items-center gap-e5 border-borde bg-superficie/40 p-e5 md:w-[28rem] md:border-l md:p-e7">
         {enLaCaja && (
           <div className="flex w-full flex-col items-end gap-e2">
-            <button
-              type="button"
-              onClick={() => {
-                setFichando(true);
-                setHecho(null);
-                setPin('');
-              }}
-              className="min-h-toque rounded-redondo bg-naranja px-e5 font-bold text-sobre-naranja"
-            >
-              Fichar
-            </button>
+            <div className="flex flex-wrap justify-end gap-e2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFichando(true);
+                  setHecho(null);
+                  setPin('');
+                }}
+                className="min-h-toque rounded-redondo bg-naranja px-e5 font-bold text-sobre-naranja"
+              >
+                Fichar
+              </button>
+              {/* La caja, al lado de Fichar (0142, 0144): verde para abrirla, ámbar para cerrarla.
+                  Quien teclee su PIN entra directo a hacerlo; si no puede, lo aprueba un encargado. */}
+              {aparato.cajaAbierta != null && (
+                <button
+                  type="button"
+                  aria-pressed={paraLaCaja}
+                  onClick={() => {
+                    const ir = !paraLaCaja;
+                    setParaLaCaja(ir);
+                    setPin('');
+                    window.location.hash = ir
+                      ? `/caja/${aparato.cajaAbierta === true ? 'cerrar' : 'abrir'}`
+                      : '/';
+                  }}
+                  className={`min-h-toque rounded-redondo px-e5 font-bold text-fondo ${
+                    aparato.cajaAbierta ? 'bg-atencion' : 'bg-bien'
+                  } ${paraLaCaja ? 'outline outline-2 outline-offset-2 outline-texto' : ''}`}
+                >
+                  {aparato.cajaAbierta ? 'Cerrar caja' : 'Abrir caja'}
+                </button>
+              )}
+            </div>
             {hecho !== null && (
               <span
                 role="status"
@@ -507,7 +537,18 @@ export function ElPin({
             </span>
           </div>
         ) : (
-          <span className="text-pantalla font-bold">Teclea tu PIN</span>
+          <span className="flex flex-col items-center gap-e1 text-center">
+            <span className="text-pantalla font-bold">
+              {paraLaCaja
+                ? `${aparato.cajaAbierta === true ? 'Cerrar' : 'Abrir'} caja · tu PIN`
+                : 'Teclea tu PIN'}
+            </span>
+            {paraLaCaja && (
+              <span className="text-secundario text-texto-suave">
+                De quien lleva la caja. Si no la llevas, lo aprueba un encargado.
+              </span>
+            )}
+          </span>
         )}
         {porLaCaja && (
           <span className="rounded-redondo bg-info-suave px-e3 py-e1 text-secundario font-bold text-info">

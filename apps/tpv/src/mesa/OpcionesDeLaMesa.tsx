@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ALERGENOS, enSuOrden, NOMBRE_CORTO_DEL_ALERGENO } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { puedeEditar } from '@estook/permisos';
@@ -36,6 +36,7 @@ import { comensales, cuantoLlevan, euros, eurosConSimbolo, losNombres } from '..
 import { irAlPlano } from '../navegar.ts';
 import { LaCuenta } from './LaCuenta.tsx';
 import { LoServido } from './LoServido.tsx';
+import { Cobrar } from '../caja/Cobrar.tsx';
 
 /**
  * **La mesa, al tocarla** (0106, «MesaAcciones»; rehecha en la pausa del 5-nov, 0131).
@@ -45,7 +46,7 @@ import { LoServido } from './LoServido.tsx';
  *
  *   · **los platos**, con cómo va cada uno (la misma cuenta que dentro de la mesa), y el total
  *   · abajo, **los botones de siempre**: Pedir, Servido (si la sala marca lo servido, 0132),
- *     Cuenta (imprimirla) y Cobrar (apagado hasta que se cobre con Estook TPV, M20C)
+ *     Cuenta (imprimirla) y Cobrar (desde R3 · 1, 0144)
  *   · arriba, **tres iconos**: mover (cambiar de mesa, juntar, pasar a otro camarero), la nota
  *     para cocina y **«···»** con lo que se usa menos, lo que borra al final y en rojo
  *
@@ -69,7 +70,8 @@ export type PasoDeLaMesa =
   | 'alergias'
   | 'liberar'
   | 'anular'
-  | 'servido';
+  | 'servido'
+  | 'cobrar';
 
 /** De qué menú sale cada paso, para «Volver». */
 const VUELVE_A: Readonly<Partial<Record<PasoDeLaMesa, PasoDeLaMesa>>> = {
@@ -82,11 +84,32 @@ const VUELVE_A: Readonly<Partial<Record<PasoDeLaMesa, PasoDeLaMesa>>> = {
   anular: 'mas',
 };
 
+/**
+ * **La ventana de la mesa, que no se va al cobrar** (R3 · 1, 0144). Una mesa cobrada entera queda
+ * libre y deja el plano, y con ella se iba la ventana: el cambio que hay que dar desaparecía antes
+ * de tocar «Listo». Mientras se cobra, la ventana se queda con la cuenta como estaba; fuera del
+ * cobro sigue como siempre: si otro aparato libera la mesa, se cierra sola.
+ */
+export function LaVentanaDeLaMesa({
+  cuenta,
+  ...lo
+}: Omit<Parameters<typeof OpcionesDeLaMesa>[0], 'cuenta' | 'alCobrar'> & {
+  readonly cuenta: CuentaEnElPlano | undefined;
+}) {
+  const [ultima, setUltima] = useState(cuenta);
+  const [cobrando, setCobrando] = useState(false);
+  if (cuenta !== undefined && cuenta !== ultima) setUltima(cuenta);
+  const laDeAhora = cuenta ?? (cobrando ? ultima : undefined);
+  if (laDeAhora === undefined) return null;
+  return <OpcionesDeLaMesa cuenta={laDeAhora} alCobrar={setCobrando} {...lo} />;
+}
+
 export function OpcionesDeLaMesa({
   cuenta,
   plano,
   alCerrar,
   alAbrir,
+  alCobrar,
   empiezaEn = 'mesa',
   sinMandarAqui = 0,
 }: {
@@ -95,6 +118,8 @@ export function OpcionesDeLaMesa({
   readonly alCerrar: () => void;
   /** «Pedir»: solo desde el plano; dentro de la mesa ya se está. */
   readonly alAbrir?: () => void;
+  /** Si se está cobrando: quien la abre la mantiene aunque la mesa quede libre (0144). */
+  readonly alCobrar?: (cobrando: boolean) => void;
   /** Por dónde se abre: desde el plano, la mesa entera; desde dentro, el icono tocado. */
   readonly empiezaEn?: PasoDeLaMesa;
   /** Lo pedido en esta tablet que aún no ha salido de ella (`comanda.ts`). */
@@ -104,6 +129,13 @@ export function OpcionesDeLaMesa({
   const { yo } = usarSesion();
   const ejecutar = usarAcciones();
   const [paso, setPaso] = useState<PasoDeLaMesa>(empiezaEn);
+  const cobrando = paso === 'cobrar';
+  useEffect(() => {
+    alCobrar?.(cobrando);
+    return () => {
+      alCobrar?.(false);
+    };
+  }, [cobrando, alCobrar]);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
   const [haciendo, setHaciendo] = useState(false);
   const [texto, setTexto] = useState('');
@@ -212,10 +244,34 @@ export function OpcionesDeLaMesa({
         detalle={hayParaLaCuenta ? 'imprimir' : 'sin impresora'}
         {...(hayParaLaCuenta ? { onClick: imprimirLaCuenta } : { apagado: 'sin impresora' })}
       />
-      {/* Cobrar llega con el cobro (M20C): se ve ya, apagado, para que nadie lo busque luego. */}
-      <BotonDeLaMesa icono={IconoCobrar} texto="Cobrar" detalle="pronto" apagado="llega pronto" />
+      {/* Cobrar (R3 · 1, 0144): en la caja; en un comandero, dice que se cobra en la caja. */}
+      <BotonDeLaMesa
+        icono={IconoCobrar}
+        texto="Cobrar"
+        {...(puedeEditar(yo.permisos, 'accion.cobrar')
+          ? {
+              onClick: () => {
+                setPaso('cobrar');
+              },
+            }
+          : { apagado: 'sin permiso' })}
+      />
     </div>
   );
+
+  if (paso === 'cobrar') {
+    return (
+      <Cobrar
+        mesa={mesa.data}
+        sinMandarAqui={sinMandarAqui}
+        alVolver={volver}
+        alAcabar={() => {
+          alCerrar();
+          irAlPlano();
+        }}
+      />
+    );
+  }
 
   if (paso === 'servido') {
     return (

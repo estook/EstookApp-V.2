@@ -18,7 +18,7 @@ import { LaCocinaLlama } from './LaCocinaLlama.tsx';
 import { LaFranjaSinInternet } from '../sinInternet/LaFranjaSinInternet.tsx';
 import { LaFranjaDeLaCaja } from '../sinInternet/LaFranjaDeLaCaja.tsx';
 import { DescargaLaCajaParaWindows, LasImpresorasAvisan } from './LasImpresorasAvisan.tsx';
-import { OpcionesDeLaMesa } from '../mesa/OpcionesDeLaMesa.tsx';
+import { LaVentanaDeLaMesa } from '../mesa/OpcionesDeLaMesa.tsx';
 import { MesaEnElPlano, TarjetaSinMesa } from './MesaEnElPlano.tsx';
 import { minutosCortos } from '../logica/comoVaLaMesa.ts';
 import { IconoCuenta, IconoPersona } from '@estook/iconos';
@@ -323,9 +323,10 @@ export function ElPlano() {
           }}
         />
       )}
-      {opciones !== null && laCuenta(opciones) !== undefined && (
-        <OpcionesDeLaMesa
-          cuenta={laCuenta(opciones) as CuentaEnElPlano}
+      {opciones !== null && (
+        <LaVentanaDeLaMesa
+          key={opciones}
+          cuenta={laCuenta(opciones)}
           plano={datos}
           alCerrar={() => {
             setOpciones(null);

@@ -13,7 +13,7 @@ import {
 import { laCajaParaWindows } from '../datos/laCajaParaWindows.ts';
 import type { AparatoVinculado, Dentro, ElAparatoPorDentro, YoEnElTpv } from '../datos/tipos.ts';
 import { DONDE, FalloDeLaSala } from '../ganchos/usarLaSala.ts';
-import { irA } from '../navegar.ts';
+import { irA, laDireccion } from '../navegar.ts';
 import { ContextoDeSesion, type SesionDeLaSala } from '../sesion/Sesion.tsx';
 import { ElPin } from './ElPin.tsx';
 import { LaPantallaDeCocina } from '../cocina/LaPantallaDeCocina.tsx';
@@ -270,8 +270,10 @@ function ConLlave({
           alDesvincular(local.current);
         }}
         alEntrar={(nuevo) => {
-          // **Todos a la sala** (la entrada nueva, 26-oct): ya no hay inicio de baldosas.
-          irA('');
+          // **Todos a la sala** (la entrada nueva, 26-oct): ya no hay inicio de baldosas. Salvo
+          // quien tocó «Abrir caja» o «Cerrar caja» al lado de Fichar (0144): entra directo a
+          // hacerlo, que es para lo que tecleó su PIN.
+          if (!/^caja\/(abrir|cerrar)$/.test(laDireccion())) irA('');
           setDentro(nuevo);
         }}
       />

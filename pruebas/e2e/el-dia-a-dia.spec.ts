@@ -1,5 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
+import { cuentaNueva, pagarEsencial, sinElAlta, unico } from './cuenta-nueva.ts';
 
 /**
  * M6½ · lo que pasa durante el servicio, de punta a punta.
@@ -337,26 +338,22 @@ test('se cierra la caja a mano, y el día sale en Negocio › Ventas', async ({
   page,
   request,
 }, info) => {
-  // **Un día distinto por proyecto.** La caja es una por local y día, y dos
-  // navegadores cerrando la misma se corregirían el uno al otro. Y se cuenta
-  // hacia atrás desde **la jornada que dice el servidor**, no desde el reloj de
-  // esta máquina: a las dos de la madrugada no son el mismo día (regla 10).
-  //
-  // **Y de dos en dos, no seguidos** (lección 141). La vuelta del 3-oct empezó a las
-  // 02:51 de Madrid: escritorio contó desde el día 2 (3 atrás, el 29) y el móvil,
-  // pasadas las 03:00, desde el 3 (4 atrás, también el 29). Encontró esa caja ya
-  // cerrada, sin nada que rellenar. Con un hueco de dos, aunque la jornada cambie a
-  // mitad de vuelta, cada navegador cae en su par de días y no se pisan.
-  const atras =
-    ({ escritorio: 1, 'movil-pequeno': 3, 'movil-safari': 5 } as Record<string, number>)[
-      info.project.name
-    ] ?? 7;
-  const rosa = await tokenDe(request, ROSA);
-  const cierres = await consultar<{ jornada: string }>(request, rosa, 'mis_cierres');
-  const jornada = Date.parse(`${cierres.datos?.jornada ?? ''}T12:00:00Z`);
-  const dia = new Date(jornada - atras * 86_400_000).toISOString().slice(0, 10);
+  // **Con una cuenta Esencial, nueva** (R3 · 1, 0144): con Estook TPV —Pro, la casa y los locales
+  // de ejemplo como Bar Centro— el día lo cierra la caja y aquí salen «Cierres de caja», solo para
+  // ver (`la-caja.spec.ts`). El cierre a mano sigue como siempre en Esencial, y es lo que se mira.
+  // Con su cuenta propia, cada navegador cierra su día y ninguno pisa el de otro (lección 141).
+  test.slow();
+  await cuentaNueva(page, request, `a-mano-${unico(info)}@correo-de-prueba.com`, 'Bar A Mano');
+  await pagarEsencial(page);
+  await sinElAlta(page);
+  const token = (await page.evaluate(() => window.localStorage.getItem('estook.sesion'))) ?? '';
 
-  await entrar(page, ROSA);
+  // El día de ayer, contado desde **la jornada que dice el servidor** y no desde el reloj de
+  // esta máquina: a las dos de la madrugada no son el mismo día (regla 10).
+  const cierres = await consultar<{ jornada: string }>(request, token, 'mis_cierres');
+  const jornada = Date.parse(`${cierres.datos?.jornada ?? ''}T12:00:00Z`);
+  const dia = new Date(jornada - 86_400_000).toISOString().slice(0, 10);
+
   await abrirSinQueSeCaiga(page, `${APP}#/servicio/jornada/cierre?fecha=${dia}`);
 
   await page.getByLabel('Total facturado').fill('834,50');

@@ -134,7 +134,13 @@ const LO_QUE_SE_FILTRA: readonly { readonly valor: Que; readonly texto: string }
 ];
 
 type Abierta =
-  | { readonly que: 'documento'; readonly id: string; readonly correoNoSalio?: boolean }
+  | {
+      readonly que: 'documento';
+      readonly id: string;
+      readonly correoNoSalio?: boolean;
+      /** Lo que acaba de salir del cajón por una devolución en efectivo (0144). */
+      readonly delCajon?: number;
+    }
   | { readonly que: 'factura'; readonly tickets: readonly TicketParaFacturar[] | null }
   | { readonly que: 'senal' }
   | { readonly que: 'devolver' | 'corregir' | 'anular' | 'rechazado'; readonly id: string }
@@ -480,6 +486,7 @@ export function TicketsYFacturas({
             key={abierta.id}
             id={abierta.id}
             correoNoSalio={abierta.correoNoSalio === true}
+            delCajon={abierta.delCajon ?? 0}
             cliente={cliente}
             conLaImpresora={conLaImpresora === true}
             alAbrir={(id) => {
@@ -511,8 +518,8 @@ export function TicketsYFacturas({
             que={abierta.que}
             id={abierta.id}
             cliente={cliente}
-            alHecho={(id) => {
-              setAbierta({ que: 'documento', id });
+            alHecho={(id, delCajon = 0) => {
+              setAbierta({ que: 'documento', id, ...(delCajon > 0 ? { delCajon } : {}) });
               void lista.otraVez();
             }}
           />
@@ -543,7 +550,7 @@ function LoQueSeHaceSobreEl({
   readonly que: 'devolver' | 'corregir' | 'anular' | 'rechazado';
   readonly id: string;
   readonly cliente: ClienteDeFacturas;
-  readonly alHecho: (id: string) => void;
+  readonly alHecho: (id: string, delCajon?: number) => void;
 }) {
   const doc = usarLectura<UnDocumento>(
     () => cliente.consultar('un_documento', { documento_id: id }),
@@ -668,6 +675,7 @@ function QueLaPidaElCliente({ codigo }: { readonly codigo: string }) {
 function ElDocumento({
   id,
   correoNoSalio,
+  delCajon,
   cliente,
   conLaImpresora,
   alAbrir,
@@ -676,6 +684,7 @@ function ElDocumento({
 }: {
   readonly id: string;
   readonly correoNoSalio: boolean;
+  readonly delCajon: number;
   readonly cliente: ClienteDeFacturas;
   readonly conLaImpresora: boolean;
   readonly alAbrir: (id: string) => void;
@@ -800,6 +809,12 @@ function ElDocumento({
             ? ''
             : ` Hacienda dice: «${d.anulacionQueNoSalio.dice}».`}{' '}
           <strong>Qué hacer:</strong> si el cliente lo tiene, devuélvelo.
+        </Aviso>
+      )}
+
+      {delCajon > 0 && (
+        <Aviso tono="atencion" titulo={`Devuelve ${importeDelDocumento(delCajon)} del cajón`}>
+          Es lo que se pagó en efectivo. Ya está apuntado en la caja.
         </Aviso>
       )}
 

@@ -27,6 +27,7 @@ import {
   SIN_HISTORIA,
   type UnaSenal,
 } from '../emitir.ts';
+import { sacarDelCajonLoDevuelto } from '../caja.ts';
 import { enLaBase } from '../facturacion.ts';
 import { enNombreDelSistema } from '../pago.ts';
 import {
@@ -42,7 +43,8 @@ import {
  * toca: **se corrige con otro documento**, y cada cosa tiene su permiso y su motivo.
  *
  *   devolver_el_documento     R5 de un ticket, R1 de una factura: lo devuelto, en negativo. Todo, una
- *                             parte (una de dos raciones) o lo cobrado de más. No mueve la caja: T7
+ *                             parte (una de dos raciones) o lo cobrado de más. En una caja con su caja
+ *                             abierta, lo que se pagó en efectivo sale del cajón (R3 · 1, 0144)
  *   corregir_los_datos        R4 por sustitución: el NIF, el nombre o el domicilio del cliente
  *   anular_el_documento       para lo que nunca debió existir. El número no se vuelve a usar
  *   corregir_lo_rechazado     otro documento igual, con otro número, para lo que rechazó Hacienda
@@ -83,7 +85,8 @@ export const devolverElDocumento = comando<
     motivo: MotivoDeDevolucion;
     detalle?: string | undefined;
   },
-  FacturaHecha
+  // Lo que sale del cajón, si se devuelve en una caja lo que se pagó en efectivo (0144).
+  FacturaHecha & { readonly delCajon: number; readonly cajonAbierto: boolean }
 >({
   nombre: 'devolver_el_documento',
   entrada: z
@@ -161,7 +164,19 @@ export const devolverElDocumento = comando<
         )
       `,
     );
-    return { documentoId: hecho.id, numero: hecho.numero };
+    const sale = await sacarDelCajonLoDevuelto(contexto, {
+      localId,
+      originalId: doc.id,
+      rectificativaId: hecho.id,
+      total: d.total,
+      motivo: elMotivo,
+    });
+    return {
+      documentoId: hecho.id,
+      numero: hecho.numero,
+      delCajon: sale?.importe ?? 0,
+      cajonAbierto: sale?.cajonAbierto ?? false,
+    };
   },
 });
 

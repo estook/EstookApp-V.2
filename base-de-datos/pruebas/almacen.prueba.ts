@@ -852,6 +852,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'poner_credencial',
       'poner_de_la_casa',
       'poner_pide_tu_factura',
+      'puede_llevar_la_caja',
       'puede_ver_el_canal',
       'quien_hace_que',
       'quien_lleva_el_servicio',

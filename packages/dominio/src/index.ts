@@ -1259,6 +1259,7 @@ export {
   importeEnElPapel,
   laComandaEnPapel,
   laCuentaEnPapel,
+  laCajaEnPapel,
   laPruebaEnPapel,
 } from './impresion.ts';
 export type {
@@ -1271,6 +1272,7 @@ export type {
   VersionDelPapel,
   LaComandaQueSeImprime,
   LaCuentaQueSeImprime,
+  LaCajaEnElPapel,
   LaPruebaQueSeImprime,
   LineaDeLaComanda,
   LineaDeLaCuenta,
@@ -1460,3 +1462,47 @@ export type {
   ObjetivoDeVenta,
   UnPeriodoDelServicio,
 } from './lo-que-se-vende.ts';
+
+// ── R3 · 1 · La caja (0144) ─────────────────────────────────────────────────
+export {
+  BILLETES,
+  MONEDAS,
+  DENOMINACIONES,
+  CUANTOS_COMO_MUCHO,
+  nombreDeLaDenominacion,
+  esLoContado,
+  elTotalContado,
+  sinLosCeros,
+  loQueDeberiaHaber,
+  UMBRAL_DEL_DESCUADRE,
+  comoCuadra,
+  laDiferenciaEnTexto,
+  MOTIVOS_DE_LA_DIFERENCIA,
+  NOMBRE_DEL_MOTIVO_DE_LA_DIFERENCIA,
+  loQueSeProponeAlAbrir,
+  loQueSeProponeParaManana,
+  FORMAS_DE_PAGO,
+  NOMBRE_DE_LA_FORMA_DE_PAGO,
+  abreElCajon,
+  lasPartesIguales,
+  laParte,
+  elCambio,
+  POR_QUE_NO_SE_COBRA,
+  TOPE_DE_UN_TICKET,
+  porQueNoSeCobra,
+  lasFormasEncendidas,
+  laLineaDeUnaParte,
+  PARA_QUE_SE_ABRE,
+  MOTIVOS_PARA_SACAR,
+  MOTIVOS_PARA_METER,
+} from './caja.ts';
+export type {
+  ElRecuento,
+  LoQueMueveElCajon,
+  ComoCuadra,
+  MotivoDeLaDiferencia,
+  FormaDePago,
+  UnPago,
+  PorQueNoSeCobra,
+  ParaQueSeAbre,
+} from './caja.ts';

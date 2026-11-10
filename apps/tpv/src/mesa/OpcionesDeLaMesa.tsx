@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ALERGENOS, enSuOrden, NOMBRE_CORTO_DEL_ALERGENO } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { puedeEditar } from '@estook/permisos';
@@ -84,11 +84,32 @@ const VUELVE_A: Readonly<Partial<Record<PasoDeLaMesa, PasoDeLaMesa>>> = {
   anular: 'mas',
 };
 
+/**
+ * **La ventana de la mesa, que no se va al cobrar** (R3 · 1, 0144). Una mesa cobrada entera queda
+ * libre y deja el plano, y con ella se iba la ventana: el cambio que hay que dar desaparecía antes
+ * de tocar «Listo». Mientras se cobra, la ventana se queda con la cuenta como estaba; fuera del
+ * cobro sigue como siempre: si otro aparato libera la mesa, se cierra sola.
+ */
+export function LaVentanaDeLaMesa({
+  cuenta,
+  ...lo
+}: Omit<Parameters<typeof OpcionesDeLaMesa>[0], 'cuenta' | 'alCobrar'> & {
+  readonly cuenta: CuentaEnElPlano | undefined;
+}) {
+  const [ultima, setUltima] = useState(cuenta);
+  const [cobrando, setCobrando] = useState(false);
+  if (cuenta !== undefined && cuenta !== ultima) setUltima(cuenta);
+  const laDeAhora = cuenta ?? (cobrando ? ultima : undefined);
+  if (laDeAhora === undefined) return null;
+  return <OpcionesDeLaMesa cuenta={laDeAhora} alCobrar={setCobrando} {...lo} />;
+}
+
 export function OpcionesDeLaMesa({
   cuenta,
   plano,
   alCerrar,
   alAbrir,
+  alCobrar,
   empiezaEn = 'mesa',
   sinMandarAqui = 0,
 }: {
@@ -97,6 +118,8 @@ export function OpcionesDeLaMesa({
   readonly alCerrar: () => void;
   /** «Pedir»: solo desde el plano; dentro de la mesa ya se está. */
   readonly alAbrir?: () => void;
+  /** Si se está cobrando: quien la abre la mantiene aunque la mesa quede libre (0144). */
+  readonly alCobrar?: (cobrando: boolean) => void;
   /** Por dónde se abre: desde el plano, la mesa entera; desde dentro, el icono tocado. */
   readonly empiezaEn?: PasoDeLaMesa;
   /** Lo pedido en esta tablet que aún no ha salido de ella (`comanda.ts`). */
@@ -106,6 +129,13 @@ export function OpcionesDeLaMesa({
   const { yo } = usarSesion();
   const ejecutar = usarAcciones();
   const [paso, setPaso] = useState<PasoDeLaMesa>(empiezaEn);
+  const cobrando = paso === 'cobrar';
+  useEffect(() => {
+    alCobrar?.(cobrando);
+    return () => {
+      alCobrar?.(false);
+    };
+  }, [cobrando, alCobrar]);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
   const [haciendo, setHaciendo] = useState(false);
   const [texto, setTexto] = useState('');

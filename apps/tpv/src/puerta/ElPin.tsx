@@ -87,6 +87,11 @@ export function ElPin({
   const [fichando, setFichando] = useState(false);
   /** «Abrir caja» o «Cerrar caja» tocado (0144): quien teclee su PIN entra directo a hacerlo. */
   const [paraLaCaja, setParaLaCaja] = useState(false);
+  // Al llegar a la puerta nadie ha tocado la caja todavía: una dirección de la caja que quedara de
+  // antes (un bloqueo, una recarga) no manda a abrirla ni a cerrarla a quien entra después.
+  useEffect(() => {
+    if (window.location.hash.startsWith('#/caja/')) window.location.hash = '/';
+  }, []);
   const [hecho, setHecho] = useState<string | null>(null);
   /** Sin internet, un PIN que no se puede comprobar aquí: lo que se le dice. */
   const [noSePuedeSinInternet, setNoSePuedeSinInternet] = useState<{

@@ -80,8 +80,13 @@ import type { CierreLeido, FogonYYo } from '../fogon/contrato.ts';
  */
 export function CierreDeCaja() {
   const { yo } = usarSesion();
-  // Con Pro, el día lo cierra la caja de Estook TPV y aquí solo se ven sus cierres (0144).
-  if (yo?.cuenta?.conEstookTpv === true) return <CierresDeCaja />;
+  const [parametros] = useSearchParams();
+  // Con Pro, el día lo cierra la caja de Estook TPV y aquí solo se ven sus cierres (0144). Un día
+  // con su fecha —el que se cerró a mano antes de tener la caja, desde Negocio › Ventas— se sigue
+  // viendo como siempre: lo ya cerrado no desaparece por estrenar la caja.
+  if (yo?.cuenta?.conEstookTpv === true && parametros.get('fecha') === null) {
+    return <CierresDeCaja />;
+  }
   return <CierreAMano />;
 }
 

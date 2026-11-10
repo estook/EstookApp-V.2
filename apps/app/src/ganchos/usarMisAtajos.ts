@@ -82,7 +82,9 @@ export function usarMisAtajos(): MisAtajos {
 
   const crudo = useSyncExternalStore(suscribirse, () => leerEnCrudo(quien));
 
-  const puedo = useMemo(() => accionesQuePuedo(permisos), [permisos]);
+  // Con Estook TPV, «Cerrar la caja» no es de Estook: la cierra la caja (0144).
+  const conEstookTpv = yo?.cuenta?.conEstookTpv === true;
+  const puedo = useMemo(() => accionesQuePuedo(permisos, conEstookTpv), [permisos, conEstookTpv]);
   const deMiPuesto = useMemo(
     () => ACCIONES_DEL_PUESTO[elPuestoDe((permiso: Permiso) => puedeVer(permisos, permiso))],
     [permisos],

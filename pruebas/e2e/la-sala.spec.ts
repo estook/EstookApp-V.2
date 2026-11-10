@@ -197,7 +197,8 @@ test('la sala: dibujarla en el TPV, abrir la mesa, pedir con los pases en pesta�
   const laMesa = page.getByRole('dialog', { name: 'Mesa 1' });
   await expect(laMesa.getByText('Croquetas')).toBeVisible({ timeout: 15_000 });
   await expect(laMesa.getByRole('button', { name: 'Pedir' })).toBeVisible();
-  await expect(laMesa.getByRole('button', { name: 'Cobrar: llega pronto' })).toBeDisabled();
+  // «Cobrar» ya cobra (R3 · 1, 0144): encendido para quien puede. Lo que hace, en `la-caja.spec.ts`.
+  await expect(laMesa.getByRole('button', { name: 'Cobrar', exact: true })).toBeEnabled();
   // Las tres de mover, juntas, detrás de su icono.
   await laMesa.getByRole('button', { name: /^Mover la mesa/ }).click();
   await expect(laMesa.getByRole('button', { name: 'Cambiar de mesa' })).toBeVisible();

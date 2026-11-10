@@ -186,7 +186,7 @@ export function VentanaDeFogon({
 }) {
   const { pathname } = useLocation();
   const navegar = useNavigate();
-  const { permisos } = usarSesion();
+  const { permisos, yo } = usarSesion();
   const esqueleto = usarElEsqueleto();
   // El unico corte de la aplicacion vive en `@estook/ui`, no aqui: si esta
   // pantalla se inventara el suyo, un dia dirian cosas distintas.
@@ -214,7 +214,7 @@ export function VentanaDeFogon({
    * minimo, abren el libro. Lo que hara Fogon cuando hable esta mas abajo, contado
    * y sin botones.
    */
-  const acciones = accionesDeAqui(permisos, primero).slice(0, 4);
+  const acciones = accionesDeAqui(permisos, primero, yo?.cuenta?.conEstookTpv === true).slice(0, 4);
 
   const Ventana = enEscritorio ? PanelLateral : Hoja;
 

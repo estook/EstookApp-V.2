@@ -92,6 +92,11 @@ export interface Accion {
   readonly ir: string;
   /** Las que abren algo del esqueleto en vez de navegar. */
   readonly abre?: 'buscador' | 'fogon';
+  /**
+   * Las que **se van con Estook TPV** (R3 · 1, 0144): con él, el día lo cierra la caja y en Estook
+   * solo se ven sus cierres. Ofrecer «Cerrar la caja» ahí sería un botón que no hace nada.
+   */
+  readonly sinEstookTpv?: true;
 }
 
 export const ACCIONES: readonly Accion[] = [
@@ -361,6 +366,7 @@ export const ACCIONES: readonly Accion[] = [
     icono: IconoDinero,
     permiso: { cual: 'dato.ventas', como: 'editar' },
     ir: '/servicio/jornada/cierre',
+    sinEstookTpv: true,
   },
   {
     id: 'ventas',
@@ -403,15 +409,24 @@ export function accionPorId(id: string): Accion | undefined {
  * la ponen las políticas de M1 y el `exige` de cada operación. Es para no ofrecerle
  * a un cocinero un botón que le va a decir que no.
  */
-export function accionesQuePuedo(permisos: PermisosResueltos): readonly Accion[] {
-  return ACCIONES.filter((accion) => puedoHacer(permisos, accion));
+export function accionesQuePuedo(
+  permisos: PermisosResueltos,
+  conEstookTpv = false,
+): readonly Accion[] {
+  return ACCIONES.filter((accion) => puedoHacer(permisos, accion, conEstookTpv));
 }
 
 /**
  * Si esta persona puede hacer **esta** acción. Es la misma cuenta que la lista de
- * arriba, para una sola: la usan los vacíos, que ofrecen un botón (entrega V).
+ * arriba, para una sola: la usan los vacíos, que ofrecen un botón (entrega V). Con Estook
+ * TPV, las que hace la caja no salen (0144).
  */
-export function puedoHacer(permisos: PermisosResueltos, accion: Accion): boolean {
+export function puedoHacer(
+  permisos: PermisosResueltos,
+  accion: Accion,
+  conEstookTpv = false,
+): boolean {
+  if (conEstookTpv && accion.sinEstookTpv === true) return false;
   if (accion.permiso === null) return true;
   return accion.permiso.como === 'editar'
     ? puedeEditar(permisos, accion.permiso.cual)
@@ -463,8 +478,12 @@ export const ACCIONES_DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = 
  * primero lo de Almacén. Y las generales van detras y no se quitan, porque
  * «buscar en todo» sirve igual en las ocho.
  */
-export function accionesDeAqui(permisos: PermisosResueltos, idDeLaApp: string): readonly Accion[] {
-  const puedo = accionesQuePuedo(permisos);
+export function accionesDeAqui(
+  permisos: PermisosResueltos,
+  idDeLaApp: string,
+  conEstookTpv = false,
+): readonly Accion[] {
+  const puedo = accionesQuePuedo(permisos, conEstookTpv);
 
   // En el Panel no hay app delante, y ahí lo útil es **todo lo que se puede
   // hacer**: es la pantalla desde la que se sale a hacer cosas. Ofrecer solo las

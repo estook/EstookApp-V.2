@@ -42,7 +42,10 @@ import { comoDinero, comoSeLeeLaFecha } from '../almacen/contrato.ts';
  * exactamente lo que trae.
  */
 export function Ventas() {
-  const { cliente } = usarSesion();
+  const { cliente, yo } = usarSesion();
+  // Con Estook TPV, el día lo cierra la caja (0144): aquí no se ofrece cerrarlo. Lo que cerró la
+  // caja abre su día en «Cierres de caja»; lo que se cerró a mano antes de tenerla, como siempre.
+  const conEstookTpv = yo?.cuenta?.conEstookTpv === true;
   const navegar = useNavigate();
   const cerrarCaja = usarAccion('cerrar-caja');
   const [dias, setDias] = useState('30');
@@ -147,7 +150,7 @@ export function Ventas() {
             }}
           />
         </div>
-        {datos.puedeCerrar && !datos.hoyEstaCerrado && (
+        {datos.puedeCerrar && !datos.hoyEstaCerrado && !conEstookTpv && (
           <Boton
             tono="principal"
             onClick={() => {
@@ -222,9 +225,17 @@ export function Ventas() {
               dibujo="caja"
               acento="var(--color-app-negocio)"
               titulo="Todavía no hay cajas cerradas"
-              frase="En cuanto cierres la primera, aquí verás lo que entra cada día."
+              frase={
+                conEstookTpv
+                  ? 'En cuanto se cierre la primera en Estook TPV, aquí verás lo que entra cada día.'
+                  : 'En cuanto cierres la primera, aquí verás lo que entra cada día.'
+              }
               {...(cerrarCaja === null
-                ? { sinAccionPorque: 'La caja la cierra quien lleva el local o la sala.' }
+                ? {
+                    sinAccionPorque: conEstookTpv
+                      ? 'La caja se cierra en Estook TPV.'
+                      : 'La caja la cierra quien lleva el local o la sala.',
+                  }
                 : { accion: <BotonDeAccion accion={cerrarCaja} texto="Cerrar la caja de hoy" /> })}
             />
           }
@@ -239,7 +250,9 @@ export function Ventas() {
             filas={datos.cierres}
             claveDe={(c) => c.cierreId}
             alPulsar={(c) => {
-              navegar(`/servicio/jornada/cierre?fecha=${c.fecha}`);
+              navegar(
+                `/servicio/jornada/cierre?${conEstookTpv && c.origen === 'tpv' ? 'dia' : 'fecha'}=${c.fecha}`,
+              );
             }}
             cuandoNoHay={null}
           />

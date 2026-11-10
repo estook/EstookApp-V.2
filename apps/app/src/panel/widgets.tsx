@@ -311,11 +311,12 @@ function SinCajaCerrada() {
       <Tranquilo>
         {datos?.comoSeCierra === 'sin_decidir' && !conPro
           ? 'Todavía no has elegido cómo entran tus ventas.'
-          : datos?.comoSeCierra === 'tpv'
+          : datos?.comoSeCierra === 'tpv' && !conPro
             ? 'Tu TPV traerá las ventas. Hasta entonces, se apuntan al cerrar.'
             : 'Sin cajas cerradas en estos días.'}
       </Tranquilo>
-      {datos?.puedeCerrar === true && (
+      {/* Con Estook TPV la cierra la caja (0144): aquí no hay nada que pulsar. */}
+      {datos?.puedeCerrar === true && !conPro && (
         <Boton
           tono="principal"
           onClick={() => {

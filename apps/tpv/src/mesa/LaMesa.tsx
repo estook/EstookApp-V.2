@@ -36,7 +36,7 @@ import { LaCuenta } from './LaCuenta.tsx';
 import { LoQueSePide } from './LoQueSePide.tsx';
 import { LosPasesEnPestanas } from './LosPasesEnPestanas.tsx';
 import { laPestanaDeFabrica, type PestanaDelPase } from '../logica/losPases.ts';
-import { OpcionesDeLaMesa, type PasoDeLaMesa } from './OpcionesDeLaMesa.tsx';
+import { LaVentanaDeLaMesa, type PasoDeLaMesa } from './OpcionesDeLaMesa.tsx';
 import {
   IconoCuaderno,
   IconoFlechaIzquierda,
@@ -484,8 +484,8 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
         </Hoja>
       )}
 
-      {opciones !== null && plano.data !== undefined && enElPlano !== undefined && (
-        <OpcionesDeLaMesa
+      {opciones !== null && plano.data !== undefined && (
+        <LaVentanaDeLaMesa
           cuenta={enElPlano}
           plano={plano.data}
           sinMandarAqui={borrador.length}

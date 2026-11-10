@@ -69,9 +69,10 @@ export function ComoVa() {
       <section className="flex flex-col gap-e2 rounded-grande border border-borde bg-superficie p-e4">
         <RenglonDeLaCaja que={`Fondo · ${c.abiertaPor}, ${laHora(c.desde)}`} cuanto={c.fondo} />
         <RenglonDeLaCaja que="Cobrado en efectivo" cuanto={c.efectivo} />
-        {sacadoYMetido.map((m) => (
+        {sacadoYMetido.map((m, i) => (
           <RenglonDeLaCaja
-            key={`${m.en}-${m.tipo}`}
+            // Dos del mismo tipo en el mismo segundo no pueden compartir clave.
+            key={`${m.en}-${m.tipo}-${String(i)}`}
             que={elMovimiento(m)}
             cuanto={m.tipo === 'meter' ? m.importe : -m.importe}
           />

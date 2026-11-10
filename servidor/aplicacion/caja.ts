@@ -313,6 +313,74 @@ export async function abrirElCajonDeEsteAparato(
   return true;
 }
 
+/**
+ * **Lo devuelto en efectivo sale del cajón** (0144): devolver, **en una caja con su caja abierta**, un
+ * ticket que se pagó en efectivo apunta la salida en esa caja —con el motivo de la devolución y su
+ * rectificativa— y abre el cajón. Sale en el X, en el Z y en lo que debería haber.
+ *
+ * Solo lo que se pagó en efectivo, y nunca más de lo que queda de eso: de un ticket de 30 € pagado
+ * con 10 € en efectivo y 20 € con tarjeta, del cajón salen 10 € como mucho; lo de la tarjeta se
+ * devuelve en el datáfono. Desde Estook, desde un comandero o con la caja cerrada no se apunta nada:
+ * ahí no hay cajón del que sacar. Devuelve lo que sale, o nulo.
+ */
+export async function sacarDelCajonLoDevuelto(
+  contexto: Contexto,
+  que: {
+    readonly localId: string;
+    /** El ticket o la factura que se devuelve. */
+    readonly originalId: string;
+    readonly rectificativaId: string;
+    /** Lo que se devuelve ahora, en positivo. */
+    readonly total: number;
+    readonly motivo: string;
+  },
+): Promise<{ readonly importe: number; readonly cajonAbierto: boolean } | null> {
+  const personaId = contexto.personaId;
+  const cajon = await elCajonDelAparato(contexto);
+  if (cajon === null || personaId === null) return null;
+  const caja = await laCajaAbiertaDe(contexto, cajon.id);
+  if (caja === null) return null;
+
+  // Lo que se pagó en efectivo de ese documento (o del ticket que se canjeó por esa factura), y lo
+  // que ya salió del cajón en sus devoluciones de antes.
+  const cuentas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ efectivo: number; devuelto: number }[]>`
+      select
+        coalesce((
+          select sum(p.importe)
+            from estook.pago p join estook.cobro c on c.id = p.cobro_id
+           where p.forma = 'efectivo' and c.local_id = ${que.localId}::uuid
+             and (c.documento_id = ${que.originalId}::uuid
+                  or c.documento_id in (select k.ticket_id from facturacion.canje k
+                                         where k.factura_id = ${que.originalId}::uuid))
+        ), 0)::integer as efectivo,
+        coalesce((
+          select sum(m.importe)
+            from estook.movimiento_de_caja m
+           where m.tipo = 'devolucion' and m.local_id = ${que.localId}::uuid
+             and m.documento_id in (select r.rectificativa_id from facturacion.rectificacion r
+                                     where r.documento_id = ${que.originalId}::uuid
+                                       and r.clase = 'devolucion')
+        ), 0)::integer as devuelto
+    `,
+  );
+  const quedaEnEfectivo = (cuentas[0]?.efectivo ?? 0) - (cuentas[0]?.devuelto ?? 0);
+  const importe = Math.min(que.total, quedaEnEfectivo);
+  if (importe <= 0) return null;
+
+  await contexto.sql`
+    insert into estook.movimiento_de_caja
+      (id, turno_id, local_id, tipo, importe, motivo, documento_id, hecho_por, hecho_desde, en)
+    values (gen_random_uuid(), ${caja.id}::uuid, ${que.localId}::uuid, 'devolucion', ${importe},
+            ${`Devolución: ${que.motivo}`.slice(0, 120)}, ${que.rectificativaId}::uuid,
+            ${personaId}::uuid, ${contexto.sesion?.aparato?.terminalId ?? null}::uuid,
+            ${contexto.ahora.toISOString()}::timestamptz)
+  `;
+  const cajonAbierto = await abrirElCajonDeEsteAparato(contexto, que.localId);
+  return { importe, cajonAbierto };
+}
+
 /** «Sacar · Un proveedor · el pan», lo que dice el X y el Z de cada movimiento. */
 export function elMovimientoEnTexto(m: UnMovimientoDeLaCaja): string {
   const que =

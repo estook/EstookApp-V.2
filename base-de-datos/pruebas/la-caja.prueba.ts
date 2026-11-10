@@ -606,3 +606,117 @@ describe('en Estook, los cierres de caja', () => {
     );
   });
 });
+
+describe('devolver en la caja lo que se pagó en efectivo', () => {
+  let ticket: string;
+
+  it('sale del cajón solo lo pagado en efectivo, con su motivo, y baja lo que debería haber', async () => {
+    losDatos(
+      await api.ejecutar(await enLaCaja(ROSA), 'abrir_caja', {
+        turno_id: crypto.randomUUID(),
+        contado: { '5000': 3 },
+      }),
+    );
+    // 40,00 €: 10 en efectivo y 30 con tarjeta.
+    const { cuenta } = await unaMesaPedida(0);
+    ticket = losDatos<{ documentoId: string }>(
+      await api.ejecutar(await enLaCaja(ROSA), 'cobrar', {
+        cobro_id: crypto.randomUUID(),
+        cuenta_id: cuenta,
+        que: 'toda',
+        importe: 4000,
+        pagos: [
+          { forma: 'efectivo', importe: 1000, entregado: 1000 },
+          { forma: 'tarjeta', importe: 3000 },
+        ],
+      }),
+    ).documentoId;
+
+    // Una croqueta, 9,00 €: cabe en lo pagado en efectivo, y sale entera del cajón.
+    const [elTicket] = await comoDuena<{ lineas: { nombre: string }[] }>(
+      `select lineas from facturacion.documento where id = $1`,
+      [ticket],
+    );
+    const lasCroquetas = elTicket?.lineas.findIndex((l) => l.nombre === 'Croquetas') ?? -1;
+    const cajonAntes = await loQueHayEnLaCola('cajon');
+    const una = losDatos<{ documentoId: string; delCajon: number; cajonAbierto: boolean }>(
+      await api.ejecutar(await enLaCaja(ROSA), 'devolver_el_documento', {
+        documento_id: ticket,
+        que: 'partes',
+        partes: [{ linea: lasCroquetas, cantidad: 1 }],
+        motivo: 'mal_hecho',
+      }),
+    );
+    expect(una).toMatchObject({ delCajon: 900, cajonAbierto: true });
+    expect(await loQueHayEnLaCola('cajon')).toBe(cajonAntes + 1);
+    const [apunte] = await comoDuena<{ tipo: string; importe: number; motivo: string }>(
+      `select tipo, importe, motivo from estook.movimiento_de_caja where documento_id = $1`,
+      [una.documentoId],
+    );
+    expect(apunte).toEqual({ tipo: 'devolucion', importe: 900, motivo: 'Devolución: Mal hecho' });
+
+    // Lo que queda, 31,00 €: del cajón solo sale el euro que quedaba de lo pagado en efectivo.
+    const resto = losDatos<{ delCajon: number }>(
+      await api.ejecutar(await enLaCaja(ROSA), 'devolver_el_documento', {
+        documento_id: ticket,
+        que: 'todo',
+        motivo: 'no_lo_quiso',
+      }),
+    );
+    expect(resto.delCajon).toBe(100);
+
+    const x = losDatos<{ efectivo: number; deberiaHaber: number; fondo: number }>(
+      await api.consultar(await enLaCaja(ROSA), 'como_va_la_caja', {}),
+    );
+    // 150 de fondo + 10 cobrados en efectivo − 10 devueltos.
+    expect(x).toMatchObject({ fondo: 15000, efectivo: 1000, deberiaHaber: 15000 });
+  });
+
+  it('desde Estook, o de lo pagado con tarjeta, no se saca nada del cajón', async () => {
+    // Otra mesa, pagada entera en efectivo y devuelta desde Estook: allí no hay cajón.
+    const { cuenta } = await unaMesaPedida(1);
+    const enEfectivo = losDatos<{ documentoId: string }>(
+      await api.ejecutar(await enLaCaja(ROSA), 'cobrar', {
+        cobro_id: crypto.randomUUID(),
+        cuenta_id: cuenta,
+        que: 'toda',
+        importe: 4000,
+        pagos: [{ forma: 'efectivo', importe: 4000, entregado: 4000 }],
+      }),
+    ).documentoId;
+    const desdeEstook = losDatos<{ delCajon: number; cajonAbierto: boolean }>(
+      await api.ejecutar((rosaEnEstook = await api.entrar(ROSA)), 'devolver_el_documento', {
+        documento_id: enEfectivo,
+        que: 'todo',
+        motivo: 'mal_hecho',
+      }),
+    );
+    expect(desdeEstook).toMatchObject({ delCajon: 0, cajonAbierto: false });
+
+    // Y una pagada con tarjeta, devuelta en la caja: se devuelve en el datáfono.
+    const { cuenta: otra } = await unaMesaPedida(2);
+    const conTarjeta = losDatos<{ documentoId: string }>(
+      await api.ejecutar(await enLaCaja(ROSA), 'cobrar', {
+        cobro_id: crypto.randomUUID(),
+        cuenta_id: otra,
+        que: 'toda',
+        importe: 4000,
+        pagos: [{ forma: 'tarjeta', importe: 4000 }],
+      }),
+    ).documentoId;
+    const enLaCajaConTarjeta = losDatos<{ delCajon: number }>(
+      await api.ejecutar(await enLaCaja(ROSA), 'devolver_el_documento', {
+        documento_id: conTarjeta,
+        que: 'todo',
+        motivo: 'mal_hecho',
+      }),
+    );
+    expect(enLaCajaConTarjeta.delCajon).toBe(0);
+    const [n] = await comoDuena<{ n: number }>(
+      `select count(*)::int as n from estook.movimiento_de_caja
+        where local_id = $1 and tipo = 'devolucion'`,
+      [barCentro],
+    );
+    expect(n?.n).toBe(2);
+  });
+});

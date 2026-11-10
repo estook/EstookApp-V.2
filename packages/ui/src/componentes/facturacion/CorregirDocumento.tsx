@@ -125,7 +125,8 @@ export function Devolver({
 }: {
   readonly cliente: ClienteDeFacturas;
   readonly documento: DocumentoParaCorregir;
-  readonly alHecho: AlHecho;
+  /** Con lo que sale del cajón, si se devuelve en la caja lo que se pagó en efectivo (0144). */
+  readonly alHecho: (documentoId: string, delCajon: number) => void;
 }) {
   const [que, setQue] = useState<'todo' | 'partes'>('todo');
   const [motivo, setMotivo] = useState<MotivoDeDevolucion>('mal_hecho');
@@ -158,7 +159,10 @@ export function Devolver({
     if (pedida === null) return;
     setHaciendo(true);
     setError(null);
-    const r = await cliente.ejecutar<{ documentoId: string }>('devolver_el_documento', {
+    const r = await cliente.ejecutar<{
+      documentoId: string;
+      delCajon?: number;
+    }>('devolver_el_documento', {
       documento_id: documento.id,
       que: pedida.que,
       ...(pedida.que === 'partes' ? { partes: pedida.partes } : {}),
@@ -171,7 +175,7 @@ export function Devolver({
       setError(r.error);
       return;
     }
-    alHecho(r.datos.documentoId);
+    alHecho(r.datos.documentoId, r.datos.delCajon ?? 0);
   }
 
   return (
@@ -254,7 +258,8 @@ export function Devolver({
         Devolver {importeDelDocumento(total)}
       </Boton>
       <p className="text-etiqueta text-texto-suave">
-        Sale una devolución con su número, y queda quién la hizo y por qué. La caja no se mueve.
+        Sale una devolución con su número, y queda quién la hizo y por qué. En la caja, lo que se
+        pagó en efectivo sale del cajón.
       </p>
     </div>
   );

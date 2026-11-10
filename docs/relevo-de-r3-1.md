@@ -31,6 +31,12 @@ exist`, sin localizar todavía. Esa prueba siembra Bar Centro, lanza todos los c
    inventados, recorre todas las tablas de `estook` y mira que desde otra organización no se lee ni toca nada.
    Empezar por lo nuevo: los comandos y consultas de `servidor/aplicacion/comandos/caja.ts` y `consultas/caja.ts`, y
    las tablas de la 0116. Repetirla sola: `pnpm exec vitest run base-de-datos/pruebas/nadie-toca-lo-de-otro-negocio.prueba.ts`.
+   **GitHub (10-nov) falla además en cuatro pruebas de pantalla**, casi seguro porque R3 · 1 cambió lo que esperan: en
+   Estook, con Pro, la pestaña «Cierre» ahora se llama «Cierres de caja», y en la mesa «Cobrar» ya funciona. Son
+   `el-dia-a-dia.spec.ts:336` («se cierra la caja a mano»), `las-cifras.spec.ts:145` («Servicio enseña sus cifras
+   debajo del cierre del día»), `la-sala.spec.ts:21` y, solo en el móvil pequeño, `los-vendedores.spec.ts:144`
+   (quizá suelta: repetirla). Hay que poner esas pruebas al día con lo nuevo, sin quitarles lo que comprueban.
+   «Construcción y presupuestos» falla solo porque fallan las pantallas.
 2. **Repetir `pnpm verifica` entero** (la última vuelta: 4 en rojo; ya arreglados ESTADO y `almacen.prueba.ts`).
 3. **Ver las pantallas en el navegador** (no se han visto todavía): Estook TPV › Abrir caja, Cobrar (efectivo,
    tarjeta, dividir), Abrir el cajón, Cómo va, Cerrar caja, Ajustes › La caja; Estook › Servicio › Jornada › Cierres de

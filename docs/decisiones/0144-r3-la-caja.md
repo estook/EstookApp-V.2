@@ -126,3 +126,41 @@ solo se miran.
 3. **El ticket de una parte igual** lleva una sola línea con el servicio y la parte (arriba, con su
    artículo del reglamento).
 4. **Ámbar hasta 10 € y rojo desde ahí**, la misma cifra que el aviso al gerente (E3).
+
+## 7 · El repaso del 10-nov, antes de fusionar R3 · 1
+
+La cuenta que entró el 10-nov acabó lo que quedaba del relevo y **vio la caja funcionando**, con una prueba de
+pantalla nueva (`pruebas/e2e/la-caja.spec.ts`) que abre la caja, cobra en efectivo y dividido, saca dinero, mira
+«Cómo va», la cierra y la ve en Estook. Lo que encontró y arregló:
+
+1. **«Abrir caja», al lado de Fichar, no llevaba a abrirla**: al teclear el PIN se caía en la sala, como
+   cualquier entrada. Ahora entra directo a hacerlo, que es lo que dice la maqueta.
+2. **El cambio desaparecía de la pantalla.** Al cobrar una mesa entera la mesa queda libre, el plano se refresca y
+   cerraba la ventana, con «Cambio 10,00 €» dentro, antes de tocar «Listo». Mientras se cobra, la ventana se queda.
+3. **Devolver en la caja lo que se pagó en efectivo saca el dinero del cajón** (sección 3, sin construir hasta
+   hoy): queda apuntado en la caja abierta con su motivo y su rectificativa, abre el cajón, y la pantalla dice
+   «Devuelve 9,00 € del cajón». Sale en el X, en el Z y en lo que debería haber.
+4. **En Estook quedaban botones de cerrar a mano** que, con Estook TPV, llevaban a una pantalla de solo ver:
+   «Cerrar la caja» en el «+», en el buscador, en Fogón y en el Panel; «Cerrar la caja de hoy» en Negocio › Ventas;
+   y «Cerrar el día» y «Falta cerrar el…» en Información. Con Estook TPV ya no salen.
+5. **Tres pruebas de pantalla esperaban lo de antes** (el cierre a mano, sus cifras y «Cobrar: llega pronto»): el
+   cierre a mano y sus cifras se prueban ahora con una cuenta Esencial, que es donde siguen.
+6. **La prueba que ataca toda la API desde otro negocio** confundía `plataforma.cobro` (lo que cobra Estook) con
+   `estook.cobro` (lo que cobra la caja), por llamarse igual: ahora mira el esquema (lección 267).
+
+### Lo que decidió la IA en el repaso
+
+1. **Del cajón sale solo lo que se pagó en efectivo**, y nunca más de lo que queda de eso: de un ticket de 40 €
+   pagado con 10 € en efectivo y 30 € con tarjeta, salen 10 € como mucho; lo demás se devuelve en el datáfono.
+   Desde Estook, desde un comandero o con la caja cerrada no se apunta nada: ahí no hay cajón del que sacar.
+2. **Lo que se cerró a mano antes de tener la caja se sigue viendo**: en Negocio › Ventas, un cierre hecho a mano
+   abre su día como siempre; uno hecho por la caja abre su día en Cierres de caja.
+3. **Con Estook TPV, «Falta cerrar el…» no sale en Estook**: lo dice la caja («La caja de ayer sigue abierta ·
+   Cerrarla»), que es donde se puede hacer algo.
+4. **Cierres de caja no lleva las cifras de Servicio** («Cómo va»: ventas, ticket medio, food cost): no están en su
+   maqueta, y lo vendido se mira en Información. Con Esencial siguen debajo del cierre a mano.
+
+### Lo que queda de la maqueta, sin construir
+
+- **«Descargar su Z» y «Sus tickets»**, los dos botones de cada caja dentro de un día, en Estook › Cierres de caja.
+  El Z se puede reimprimir en la caja («Imprimir el Z»); descargarlo en Estook y saltar a sus tickets, no todavía.

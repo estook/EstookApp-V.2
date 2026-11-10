@@ -127,6 +127,8 @@ hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban as�
 
 ## Anexo · TPV y facturación
 
+**El 10 de noviembre de 2026, sin cambiar de versión** ([0144](../decisiones/0144-r3-la-caja.md), sección 7): en 11.6, **devolver en la caja lo que se pagó en efectivo saca el dinero del cajón**, ya construido.
+
 **El 9 de noviembre de 2026, sin cambiar de versión** ([0144](../decisiones/0144-r3-la-caja.md)): en 11.6, «Empezar el día» y «Cerrar el día» pasan a **«Abrir caja»** y **«Cerrar caja»** (cerrar la última del día es cerrar el día), «Es eso» a **«Está correcto»**, y entra lo que contestó Richi: también camareros, recuento obligatorio, Bizum y cheque, dividir, la diferencia con la caja ya cerrada y que en pruebas no se marca nada.
 
 **El 4 de noviembre de 2026, sin cambiar de versión** ([0126](../decisiones/0126-t6-1-el-alta-de-facturacion.md), [0127](../decisiones/0127-con-verifactu-sin-envio-o-fuera.md)): **1.3 deja de ser «solo VERI\*FACTU»**: con VERI\*FACTU (la recomendada), sin envío (NO VERI\*FACTU, que construye Estook en T6 · 3) o fuera, por el SII, que ya no para el alta (1.4); la clave de cada NIF no se guarda (4.2); en los registros va la identificación de Verifacti (4.14); y la empresa y las series, como se construyeron (7).

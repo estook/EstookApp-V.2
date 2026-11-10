@@ -1130,3 +1130,31 @@
      porque su política no lo nombraba (0144). **Lo que hace la API como el sistema, la base tiene que dejárselo
      leer también, no solo escribir**, y se prueba **con el rol que menos ve**, no con el gerente
      (`la-caja.prueba.ts`, «con También camareros, Sara abre y cierra»).
+
+267. **Dos tablas pueden llamarse igual en dos esquemas, y lo que las recorre por su nombre las confunde.** R3 · 1
+     creó `estook.cobro` (lo que cobra la caja) y ya existía `plataforma.cobro` (lo que cobra Estook a sus clientes).
+     La prueba que ataca toda la API desde otro negocio seguía las claves ajenas por el nombre de la tabla, sin su
+     esquema, y le pidió a la de dentro una columna de la de fuera: «column "organizacion_id" does not exist», sin
+     decir de dónde venía. Se localizó haciendo que la prueba dijera **qué consulta fallaba**. **Lo que recorre el
+     catálogo de la base mira siempre el esquema**, y un fallo de SQL sin dueño se busca enseñando la consulta, no
+     leyendo el código nuevo (`nadie-toca-lo-de-otro-negocio.prueba.ts`).
+
+268. **Una pantalla que nadie ha visto funcionar no está hecha, aunque su API tenga quince pruebas en verde.** La
+     caja llegó al relevo «construida» y sin ver. Su prueba de pantalla (`la-caja.spec.ts`), escrita el 10-nov,
+     encontró dos fallos a la primera: «Abrir caja» junto a Fichar tecleaba el PIN y dejaba en la sala (la entrada
+     manda a todos a la sala), y **el cambio que hay que dar desaparecía**, porque al cobrar la mesa queda libre, el
+     plano se refresca y cerraba la ventana con el cambio dentro, unas veces sí y otras no. **Lo que se construye con
+     pantalla lleva su prueba de pantalla en la misma entrega**, y una prueba que falla una de cada dos veces está
+     enseñando una carrera de verdad, no un despiste suyo.
+
+269. **Cambiar una pantalla por otra obliga a buscar todos los botones que llevan a ella.** Con Estook TPV, «Cierre»
+     pasó a «Cierres de caja», solo para ver, y seguían llevando allí «Cerrar la caja» (el «+», el buscador, Fogón y
+     el Panel), «Cerrar la caja de hoy» (Negocio › Ventas) y «Cerrar el día» (Información): botones que prometen y no
+     hacen, el fallo de siempre. **Antes de dar por cambiada una pantalla se busca su dirección en todo el código**
+     (`grep` de `/servicio/jornada/cierre`), y lo que se va con un plan se dice en el catálogo de acciones
+     (`catalogo.prueba.ts`).
+
+270. **Un identificador al azar puede traer dentro la cifra que una prueba busca.** «La cocina no ve ni un precio»
+     miraba que la respuesta no llevara «1400» en ningún sitio, y el 10-nov un plato nació con un id acabado en
+     `…651400`: rojo sin que nada estuviera mal. **Las pruebas que buscan una cifra en un texto quitan antes los
+     identificadores** (`la-carta-que-trabaja.prueba.ts`).

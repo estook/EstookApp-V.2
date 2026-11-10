@@ -3466,7 +3466,13 @@ aprobada por Richi en tres vueltas el mismo día. **Estook TPV cobra** (migraci�
   última caja** y se reabre solo si se abre otra.
 - **En Estook, con Pro, «Cierre» pasa a «Cierres de caja»**, solo para ver: hoy en vivo y un día por fila.
 
-Las pruebas: `la-caja.prueba.ts` (quince, contra la base), `caja.prueba.ts` del dominio y `dinero.prueba.ts` del TPV.
+Las pruebas: `la-caja.prueba.ts` (diecisiete, contra la base), `caja.prueba.ts` del dominio, `dinero.prueba.ts` del
+TPV y, desde el 10-nov, `la-caja.spec.ts`, de pantalla.
+
+**El repaso del 10-nov, antes de fusionar** (0144, sección 7): la prueba de pantalla encontró que «Abrir caja»
+junto a Fichar no llevaba a abrirla y que el cambio desaparecía al quedar la mesa libre; se construyó que **lo
+devuelto en efectivo salga del cajón**; y con Estook TPV se quitaron de Estook los botones de cerrar a mano, que
+ya no hacían nada.
 
 ---
 

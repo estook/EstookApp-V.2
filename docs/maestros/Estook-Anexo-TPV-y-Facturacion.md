@@ -1524,6 +1524,7 @@ En el aparato nuevo
 - **La diferencia se ve con la caja ya cerrada**; el motivo, de un toque y una vez, después. «Cuadra» en verde, hasta 10 € en ámbar y más en rojo.
 - **En pruebas no se marca nada**: lo cobrado cuenta como en real; solo el papel dice «PRUEBA», que lo pone Hacienda.
 - **El ticket de un cobro sale solo** con su QR tributario y el de «Pide tu factura» (si el local la tiene encendida).
+- **Devolver en la caja lo que se pagó en efectivo saca el dinero del cajón** (10-nov): queda apuntado en la caja abierta con su motivo y su rectificativa, y abre el cajón. Solo lo pagado en efectivo; lo de la tarjeta, en el datáfono. Desde Estook no mueve ningún cajón.
 
 **Lo que añadió Richi el 8-nov** ([0142](../decisiones/0142-la-pausa-del-8-nov.md), aprobado con [su maqueta](../maquetas/la-pausa-del-8-nov.html)), lo primero de T7:
 

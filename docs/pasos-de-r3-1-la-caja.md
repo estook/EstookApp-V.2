@@ -11,6 +11,8 @@
 >
 > Lo decidido, en la [0144](decisiones/0144-r3-la-caja.md), con [su maqueta](maquetas/r3-la-caja.html). Con esto,
 > R3 · 1 queda hecha; falta R3 · 2 (los avisos, las propinas, escribir el total, entregar la caja y los descuentos).
+> **Revisada el 10-nov** (0144, sección 7): vista funcionando en el ordenador y en el móvil, con dos fallos de
+> pantalla arreglados y la devolución en efectivo construida.
 
 ---
 
@@ -27,6 +29,19 @@
   al abrir**, **contar a ciegas**, el **fondo de siempre**, y encender **Bizum** y el **cheque restaurante**.
 - **En Estook, Servicio › Jornada › Cierres de caja** (antes «Cierre»): hoy en vivo, un día por fila con su total y
   si cuadra, y al tocarlo, el día entero y cada caja con lo suyo. **Solo para ver**: el día lo cierra la caja.
+- **En Estook ya no salen los botones de cerrar a mano** («Cerrar la caja» en el «+» y en el Panel, «Cerrar la caja
+  de hoy» en Negocio › Ventas, «Cerrar el día» en Información): con Estook TPV no hacían nada. Lo que cerraste a
+  mano antes se sigue viendo, tocando su día en Negocio › Ventas.
+- **Devolver en la caja un ticket pagado en efectivo saca el dinero del cajón**: la pantalla dice «Devuelve 9,00 €
+  del cajón», se abre el cajón y queda apuntado en la caja. Lo pagado con tarjeta se devuelve en el datáfono.
+
+**Una cosa que tienes que decidir antes de fusionar.** El 8-nov decidiste que, con Estook TPV, el cierre a mano se
+quita de Estook el día que la caja cobre. Ese día es este. Pero IKATZ factura en pruebas y sus tickets dicen
+«PRUEBA», así que a los clientes de verdad todavía no les cobras con la caja: **si fusionas tal cual, en IKATZ no
+habrá dónde apuntar lo vendido cada día** hasta que cobres con la caja de verdad (el Panel y Negocio › Ventas se
+quedarían sin las ventas de esos días). Dime cuál prefieres: **A**, que un local que factura en pruebas siga
+pudiendo cerrar el día a mano (lo recomiendo: son diez minutos, y no pierdes ni un día); o **B**, dejarlo como
+está y cerrar el día con la caja aunque sea de prueba.
 
 **Importante, por ley**: mientras IKATZ facture en pruebas, cada ticket sale con «PRUEBA · SIN VALIDEZ». Eso **no es
 el ticket que hay que dar a un cliente de verdad**. Prueba la caja con cobros de prueba (tú mismo, o el equipo), y
@@ -77,5 +92,8 @@ verde sin que nadie haga nada. Si sale en rojo otra cosa, pásame una foto.
 7. **En Estook**, en el móvil: **Servicio › Jornada › Cierres de caja**. Tiene que salir el día de hoy con su total, y
    al tocarlo, la caja con lo que abriste, cobraste, sacaste, contaste y la diferencia.
 8. **Ajustes del TPV › La caja**: enciende **Bizum**, vuelve a una mesa y mira que en **Cobrar** sale Bizum.
+9. **Devolver en efectivo.** Con la caja abierta, en la caja: **Tickets** → toca un ticket que cobraste en efectivo
+   → **Devolver** → deja **Todo** → **Devolver** con su importe. Tiene que salir **«Devuelve … del cajón»** con el importe, y en
+   **Caja → Cómo va**, una línea «Devuelto» que baja lo que debería haber.
 
 **Si algo falla**, dime en qué paso y qué sale en pantalla (una foto vale).

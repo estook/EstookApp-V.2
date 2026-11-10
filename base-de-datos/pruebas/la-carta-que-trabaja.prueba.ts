@@ -186,7 +186,12 @@ describe('los agotados', () => {
 
   it('la cocina, sin la app Carta, ve los platos para agotar y ni un precio', async () => {
     const respuesta = await api.consultar(marcos, 'los_agotados');
-    expect(JSON.stringify(losDatos(respuesta))).not.toMatch(/precio|1400|centimos/i);
+    // Sin los ids: nacen al azar y uno puede traer «1400» dentro (pasó el 10-nov, en `…651400`).
+    const sinIds = JSON.stringify(losDatos(respuesta)).replace(
+      /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/g,
+      '',
+    );
+    expect(sinIds).not.toMatch(/precio|1400|centimos/i);
     expect((await elDelPulpo(marcos))?.agotado).not.toBeNull();
     expect(elFallo(await api.consultar(marcos, 'mi_carta'))).toBe('sin_permiso');
   });

@@ -14,6 +14,7 @@ import { TicketsYFacturasDelTpv } from './facturas/TicketsYFacturasDelTpv.tsx';
 import { EditorDeLaSala } from './sala/EditorDeLaSala.tsx';
 import { LaBarraDeArriba } from './inicio/LaBarraDeArriba.tsx';
 import { esPantallaDeLaCaja, LaCaja } from './caja/LaCaja.tsx';
+import { CobroPendienteDesdeLaPuerta } from './caja/CobrarElPendiente.tsx';
 import { escucharLaDireccion, laDireccion } from './navegar.ts';
 import { ContextoAlSegundo, usarEscucharAlSegundo } from './ganchos/usarLaSala.ts';
 import { usarSesion } from './sesion/Sesion.tsx';
@@ -43,6 +44,8 @@ function Dentro() {
   const mesa = /^mesa\/([0-9a-f-]{36})$/.exec(direccion)?.[1];
   // La caja (0144): abrir, cerrar, el cajón y «Cómo va», solo en la caja.
   const deLaCaja = /^caja\/([a-z-]+)$/.exec(direccion)?.[1] ?? '';
+  // El efectivo que dejó un camarero (0145): desde la pantalla del PIN, directo a cobrarlo.
+  const cobroPendiente = /^cobro\/([0-9a-f-]{36})$/.exec(direccion)?.[1];
 
   // La operativa de facturar, en cualquier aparato de sala (0137): no solo en la caja.
   const factura =
@@ -52,7 +55,9 @@ function Dentro() {
   let pantalla;
   if (direccion === 'facturas' && factura) pantalla = <TicketsYFacturasDelTpv />;
   else if (enLaCaja && esPantallaDeLaCaja(deLaCaja)) pantalla = <LaCaja pantalla={deLaCaja} />;
-  else if (enLaCaja && direccion === 'fichar') pantalla = <Fichar />;
+  else if (enLaCaja && cobroPendiente !== undefined) {
+    pantalla = <CobroPendienteDesdeLaPuerta id={cobroPendiente} conectado={conectado} />;
+  } else if (enLaCaja && direccion === 'fichar') pantalla = <Fichar />;
   else if (enLaCaja && direccion === 'agotados') pantalla = <Agotados />;
   else if (enLaCaja && (direccion === 'ajustes' || direccion.startsWith('ajustes/'))) {
     pantalla = <AjustesDelTpv direccion={direccion} />;

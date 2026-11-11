@@ -315,3 +315,248 @@ test('la caja: abrirla, cobrar en efectivo y dividido, el cajón, «Cómo va», 
   await expect(page).toHaveURL(/#\/servicio\/jornada\/cierre\?dia=\d{4}-\d{2}-\d{2}/);
   await expect(page.getByText('Todo el día')).toBeVisible({ timeout: 15_000 });
 });
+
+/** Entrar en Estook por la API, con la contraseña de la cuenta nueva: vincular cierra la sesión. */
+async function otraSesion(request: APIRequestContext, correo: string): Promise<string> {
+  const r = await request.post(`${API}/v1/comandos/entrar`, {
+    headers: { 'x-idempotencia': `entrar-${String(Date.now())}-${String(Math.random())}` },
+    data: { correo, contrasena: CLAVE },
+  });
+  return ((await r.json()) as { datos: { token: string } }).datos.token;
+}
+
+/** Entrar con el PIN en un aparato, por la API: su token del TPV. */
+async function enElAparato(
+  request: APIRequestContext,
+  llave: string,
+  pin: string,
+): Promise<string> {
+  const dentro = (await (
+    await request.post(`${API}/v1/comandos/entrar_con_pin`, {
+      headers: { 'x-idempotencia': `pin-${String(Date.now())}-${String(Math.random())}` },
+      data: { llave, pin },
+    })
+  ).json()) as { datos: { turno: string } };
+  return `tpv.${dentro.datos.turno}.${llave}`;
+}
+
+test('cobrar en la mesa: el comandero cobra con tarjeta y deja el efectivo, y la caja lo cobra con un PIN', async ({
+  browser,
+  page,
+  request,
+}, info) => {
+  test.setTimeout(180_000);
+  const foto = async (donde: Page, paso: string) => {
+    if (process.env['CAPTURAS_DE_LA_CAJA'] === undefined) return;
+    await donde.screenshot({ path: info.outputPath(`${paso}.png`), fullPage: true });
+  };
+
+  // ── Una cuenta de la casa, con la empresa de pruebas, su carta y tres mesas pedidas ──
+  const correo = `mesa-r3-${unico(info)}@correo-de-prueba.com`;
+  await cuentaNueva(page, request, correo, 'Bar Mesa');
+  const token = (await page.evaluate(() => window.localStorage.getItem('estook.sesion'))) ?? '';
+  const { organizacion } = await consultarEnLaApi<{ organizacion: { id: string } }>(
+    request,
+    token,
+    'quien_soy',
+  );
+  const admin = await comoAdmin(request);
+  await ejecutarEnLaApi(request, admin, 'admin_de_la_casa', {
+    organizacion_id: organizacion.id,
+    de_la_casa: true,
+    motivo: 'La prueba de cobrar en la mesa',
+  });
+  await recargarSinQueSeCaiga(page);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    /¿Cómo te llamas\?|¿Qué tipo de local tienes\?|¿Dónde está tu local\?/,
+    { timeout: 20_000 },
+  );
+  await sinElAlta(page);
+  const yo = await consultarEnLaApi<{ local: { id: string } }>(request, token, 'quien_soy');
+  await ejecutarEnLaApi(request, admin, 'admin_poner_la_empresa_de_pruebas', {
+    local_id: yo.local.id,
+  });
+  await ejecutarEnLaApi(request, token, 'poner_las_series', {
+    ticket: 'T-MS',
+    factura: 'F-MS',
+    rectificativa: 'R-MS',
+    otro_programa: false,
+  });
+  const { seccionId } = await ejecutarEnLaApi<{ seccionId: string }>(
+    request,
+    token,
+    'crear_seccion',
+    { nombre: 'Principales' },
+  );
+  const hechos = await ejecutarEnLaApi<{ creados: { platoId: string }[] }>(
+    request,
+    token,
+    'crear_platos',
+    { seccion_id: seccionId, platos: [{ nombre: 'Entrecot', precio_centimos: 2000 }] },
+  );
+  const entrecot = hechos.creados[0]?.platoId ?? '';
+  const caja = await ejecutarEnLaApi<{ llave: string; tuPinNuevo: string }>(
+    request,
+    token,
+    'vincular_el_primer_aparato',
+    { local_id: yo.local.id, funcion: 'caja', nombre: 'Caja 1', cajon_nuevo: 'Cajón 1' },
+  );
+  const pin = caja.tuPinNuevo;
+  const enLaCaja = await enElAparato(request, caja.llave, pin);
+  await ejecutarEnLaApi(request, enLaCaja, 'abrir_caja', {
+    turno_id: crypto.randomUUID(),
+    contado: { '5000': 2 },
+  });
+  const { zonaId } = await ejecutarEnLaApi<{ zonaId: string }>(
+    request,
+    enLaCaja,
+    'crear_zona_de_sala',
+    { nombre: 'Salón' },
+  );
+  const cuentas: string[] = [];
+  for (const x of [60, 300, 540]) {
+    const { mesaId } = await ejecutarEnLaApi<{ mesaId: string }>(request, enLaCaja, 'crear_mesa', {
+      zona_id: zonaId,
+      x,
+      y: 60,
+    });
+    const cuenta = crypto.randomUUID();
+    await ejecutarEnLaApi(request, enLaCaja, 'abrir_mesa', {
+      cuenta_id: cuenta,
+      mesa_id: mesaId,
+      personas: 2,
+    });
+    // Dos entrecots: 40,00 €.
+    await ejecutarEnLaApi(request, enLaCaja, 'pedir', {
+      cuenta_id: cuenta,
+      platos: [{ id: crypto.randomUUID(), plato_id: entrecot, pase: 1, cantidad: 2 }],
+    });
+    cuentas.push(cuenta);
+  }
+  const comandero = await ejecutarEnLaApi<{ llave: string }>(
+    request,
+    await otraSesion(request, correo),
+    'vincular_el_primer_aparato',
+    { local_id: yo.local.id, funcion: 'comandero', nombre: 'Móvil de Lucía' },
+  );
+
+  // El comandero es para quien ha fichado (0115): Lucía ficha la entrada en la caja.
+  await request.post(`${API}/v1/comandos/fichar_en_la_caja`, {
+    headers: { 'x-idempotencia': `fichar-${unico(info)}` },
+    data: { llave: caja.llave, pin, que: 'entrada' },
+  });
+
+  // ── El comandero, en su propio navegador ──
+  const otro = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const movil = await otro.newPage();
+  await abrirSinQueSeCaiga(movil, TPV);
+  await movil.evaluate((laLlave) => {
+    window.localStorage.setItem('estook.tpv.llave', laLlave);
+  }, comandero.llave);
+  await abrirSinQueSeCaiga(movil, TPV);
+  await expect(movil.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await movil.keyboard.type(pin);
+  const sinFichar = movil.getByRole('button', { name: 'Entrar sin fichar' });
+  if (await sinFichar.isVisible({ timeout: 3_000 }).catch(() => false)) await sinFichar.click();
+
+  // La mesa 1, con tarjeta, en la mesa: el datáfono de siempre, y «Cobrado con tarjeta».
+  await movil.getByRole('button', { name: /^Mesa 1: / }).click({ timeout: 15_000 });
+  await movil
+    .getByRole('dialog', { name: 'Mesa 1' })
+    .getByRole('button', { name: 'Cobrar', exact: true })
+    .click();
+  await movil
+    .getByRole('group', { name: 'Cómo paga' })
+    .getByRole('button', { name: 'Tarjeta', exact: true })
+    .click({ timeout: 15_000 });
+  await foto(movil, '20-comandero-tarjeta');
+  await movil.getByRole('button', { name: 'Cobrado con tarjeta' }).click();
+  await expect(movil.getByText(/T-MS-\d{4}-000001/)).toBeVisible({ timeout: 15_000 });
+  await movil.getByRole('button', { name: 'Listo · la mesa queda libre' }).click();
+
+  // La mesa 2, en efectivo: se deja para la caja, a su nombre.
+  await movil.getByRole('button', { name: /^Mesa 2: / }).click({ timeout: 15_000 });
+  await movil
+    .getByRole('dialog', { name: 'Mesa 2' })
+    .getByRole('button', { name: 'Cobrar', exact: true })
+    .click();
+  await expect(movil.getByText('El efectivo se cobra en la caja')).toBeVisible({ timeout: 15_000 });
+  await foto(movil, '21-comandero-efectivo');
+  await movil.getByRole('button', { name: /^Dejar 40,00.*para la caja$/ }).click();
+  await expect(movil.getByRole('heading', { name: /en efectivo, para la caja/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  await foto(movil, '22-comandero-dejado');
+  await movil.getByRole('button', { name: 'Listo', exact: true }).click();
+  await expect(
+    movil.getByRole('button', { name: /^Mesa 2: .*cobro pendiente en la caja/ }),
+  ).toBeVisible({
+    timeout: 15_000,
+  });
+  await otro.close();
+
+  // ── La caja, abierta: «Cobrar efectivo · Lucía» en la mesa, con el PIN de quien cobra ──
+  await abrirSinQueSeCaiga(page, TPV);
+  await page.evaluate((laLlave) => {
+    window.localStorage.setItem('estook.tpv.llave', laLlave);
+  }, caja.llave);
+  await abrirSinQueSeCaiga(page, TPV);
+  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await page.keyboard.type(pin);
+  await page
+    .getByRole('button', { name: /^Mesa 2: .*cobro pendiente en la caja/ })
+    .click({ timeout: 15_000 });
+  await page
+    .getByRole('dialog', { name: 'Mesa 2' })
+    .getByRole('button', { name: /^Cobrar efectivo · Lucía/ })
+    .click();
+  await expect(page.getByText('Cobrar efectivo · tu PIN')).toBeVisible({ timeout: 15_000 });
+  await foto(page, '23-caja-el-pin');
+  await page.keyboard.type(pin);
+  await expect(page.getByText('¿Cuánto te da?')).toBeVisible({ timeout: 15_000 });
+  await page
+    .getByRole('group', { name: 'Lo que te da' })
+    .getByRole('button', { name: '50 €', exact: true })
+    .click();
+  await expect(page.getByText('Cambio')).toBeVisible();
+  await foto(page, '24-caja-cuanto-te-da');
+  await page.getByRole('button', { name: /^Cobrar 40,00/ }).click();
+  await expect(page.getByText(/T-MS-\d{4}-000002/)).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/Cobrado por Lucía/)).toBeVisible();
+  await foto(page, '25-caja-cobrado');
+  await page.getByRole('button', { name: 'Listo · la mesa queda libre' }).click();
+  await expect(page.getByRole('button', { name: /^Mesa 2: Libre/ })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  // ── Y desde la pantalla del PIN: la mesa 3, que deja el comandero por la API ──
+  await ejecutarEnLaApi(
+    request,
+    await enElAparato(request, comandero.llave, pin),
+    'dejar_el_cobro_en_la_caja',
+    {
+      pendiente_id: crypto.randomUUID(),
+      cuenta_id: cuentas[2],
+      que: 'toda',
+      importe: 4000,
+      ya_pagado: [{ forma: 'tarjeta', importe: 1000 }],
+    },
+  );
+  await page.getByRole('button', { name: /bloquear/i }).click();
+  const elPendiente = page.getByRole('button', { name: /^Mesa 3.*30,00/ });
+  await expect(elPendiente).toBeVisible({ timeout: 90_000 });
+  await foto(page, '26-la-puerta-con-pendientes');
+  await elPendiente.click();
+  await expect(page.getByText('Cobrar Mesa 3 · tu PIN')).toBeVisible();
+  await page.keyboard.type(pin);
+  const entrar = page.getByRole('button', { name: 'Entrar sin fichar' });
+  if (await entrar.isVisible({ timeout: 3_000 }).catch(() => false)) await entrar.click();
+  await expect(page.getByText('¿Cuánto te da?')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/Ya cobrado en la mesa: Tarjeta 10,00/)).toBeVisible();
+  await page.getByRole('button', { name: /^Cobrar 30,00/ }).click();
+  await expect(page.getByText(/T-MS-\d{4}-000003/)).toBeVisible({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'Listo · la mesa queda libre' }).click();
+  await expect(page.getByRole('button', { name: /^Mesa 3: Libre/ })).toBeVisible({
+    timeout: 15_000,
+  });
+});

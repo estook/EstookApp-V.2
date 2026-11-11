@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { escucharAlSegundo, haySegundo } from '@estook/cliente-api/al-segundo';
+import { DONDE } from '../ganchos/usarLaSala.ts';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { CIFRAS_DEL_PIN, tokenDelAparato } from '@estook/dominio';
 import { ErrorEnCristiano } from '@estook/ui';
@@ -29,6 +32,7 @@ import { cifraDeLaTecla } from './teclas.ts';
 import { OlvideMiPin } from './OlvideMiPin.tsx';
 import { FicharEnLaCaja } from './FicharEnLaCaja.tsx';
 import { ElAvisoDeWindows } from '../sinInternet/ElAvisoDeWindows.tsx';
+import { eurosConSimbolo } from '../logica/texto.ts';
 
 /**
  * **Teclea tu PIN, y ya está** (maquetas 3 y 22; Anexo 11.4): sin buscar antes la cara.
@@ -87,10 +91,19 @@ export function ElPin({
   const [fichando, setFichando] = useState(false);
   /** «Abrir caja» o «Cerrar caja» tocado (0144): quien teclee su PIN entra directo a hacerlo. */
   const [paraLaCaja, setParaLaCaja] = useState(false);
+  /** Un cobro pendiente tocado (0145): quien teclee su PIN entra directo a cobrarlo, a su nombre. */
+  const [paraCobrar, setParaCobrar] = useState<{
+    readonly id: string;
+    readonly titulo: string;
+    readonly enEfectivo: number;
+    readonly por: string;
+  } | null>(null);
   // Al llegar a la puerta nadie ha tocado la caja todavía: una dirección de la caja que quedara de
   // antes (un bloqueo, una recarga) no manda a abrirla ni a cerrarla a quien entra después.
   useEffect(() => {
-    if (window.location.hash.startsWith('#/caja/')) window.location.hash = '/';
+    if (window.location.hash.startsWith('#/caja/') || window.location.hash.startsWith('#/cobro/')) {
+      window.location.hash = '/';
+    }
   }, []);
   const [hecho, setHecho] = useState<string | null>(null);
   /** Sin internet, un PIN que no se puede comprobar aquí: lo que se le dice. */
@@ -102,6 +115,25 @@ export function ElPin({
   useSyncExternalStore(escucharLaCaja, llegamosALaCaja);
   const porLaCaja = sinInternet && hayCaja() && llegamosALaCaja() !== false;
   const enLaCaja = aparato.funcion === 'caja';
+  // **La caja bloqueada se entera al momento** (0145): el camarero deja un cobro y va a la caja, que
+  // no puede esperar al latido de cada minuto para enseñarlo. Con el toque de la sala, se vuelve a latir.
+  const cache = useQueryClient();
+  const tema = aparato.temaAlSegundo;
+  useEffect(() => {
+    if (!enLaCaja || !haySegundo(DONDE) || tema === null) return undefined;
+    const escucha = escucharAlSegundo(
+      DONDE,
+      tema,
+      (canal) => {
+        if (canal.startsWith('servicio:'))
+          void cache.invalidateQueries({ queryKey: ['latido', llave] });
+      },
+      () => undefined,
+    );
+    return () => {
+      escucha.parar();
+    };
+  }, [enLaCaja, tema, cache, llave]);
   // El reloj de la pantalla **solo se pinta**: la hora de lo que se hace la pone el servidor.
   const [reloj, setReloj] = useState(() => Date.now());
 
@@ -445,6 +477,43 @@ export function ElPin({
             {aparato.local.nombre}
           </span>
         </div>
+        {/* **Los cobros en efectivo que esperan** (0145; Richi, 10-nov): los de todos, a la vista. Se
+            toca uno, se teclea el PIN de quien cobra y se entra directo a cobrarlo. */}
+        {enLaCaja && (aparato.cobrosPendientes ?? []).length > 0 && (
+          <div className="flex flex-col gap-e3">
+            <span className="text-cuerpo font-bold text-texto-suave">Cobros pendientes</span>
+            <ul className="flex max-w-[30rem] flex-col gap-e2">
+              {(aparato.cobrosPendientes ?? []).map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    aria-pressed={paraCobrar?.id === p.id}
+                    onClick={() => {
+                      const ir = paraCobrar?.id !== p.id;
+                      setParaCobrar(ir ? p : null);
+                      setParaLaCaja(false);
+                      setPin('');
+                      window.location.hash = ir ? `/cobro/${p.id}` : '/';
+                    }}
+                    className={`flex min-h-toque-cocina w-full items-center justify-between gap-e3 rounded-grande bg-atencion-suave px-e4 py-e2 text-left font-bold text-atencion ${
+                      paraCobrar?.id === p.id
+                        ? 'outline outline-2 outline-offset-2 outline-texto'
+                        : ''
+                    }`}
+                  >
+                    <span className="flex min-w-0 flex-col">
+                      <span className="truncate">{p.titulo}</span>
+                      <span className="text-secundario font-semibold">de {p.por}</span>
+                    </span>
+                    <span className="shrink-0 text-seccion tabular-nums">
+                      {eurosConSimbolo(p.enEfectivo)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {aparato.dueno === null && aparato.fichados.length > 0 && (
           <div className="hidden flex-col gap-e3 md:flex">
             <span className="text-cuerpo font-bold text-texto-suave">Fichados ahora</span>
@@ -503,6 +572,7 @@ export function ElPin({
                   onClick={() => {
                     const ir = !paraLaCaja;
                     setParaLaCaja(ir);
+                    setParaCobrar(null);
                     setPin('');
                     window.location.hash = ir
                       ? `/caja/${aparato.cajaAbierta === true ? 'cerrar' : 'abrir'}`
@@ -539,10 +609,18 @@ export function ElPin({
         ) : (
           <span className="flex flex-col items-center gap-e1 text-center">
             <span className="text-pantalla font-bold">
-              {paraLaCaja
-                ? `${aparato.cajaAbierta === true ? 'Cerrar' : 'Abrir'} caja · tu PIN`
-                : 'Teclea tu PIN'}
+              {paraCobrar !== null
+                ? `Cobrar ${paraCobrar.titulo} · tu PIN`
+                : paraLaCaja
+                  ? `${aparato.cajaAbierta === true ? 'Cerrar' : 'Abrir'} caja · tu PIN`
+                  : 'Teclea tu PIN'}
             </span>
+            {paraCobrar !== null && (
+              <span className="text-secundario text-texto-suave">
+                {eurosConSimbolo(paraCobrar.enEfectivo)} en efectivo que dejó {paraCobrar.por}. El
+                cobro queda a tu nombre.
+              </span>
+            )}
             {paraLaCaja && (
               <span className="text-secundario text-texto-suave">
                 De quien lleva la caja. Si no la llevas, lo aprueba un encargado.

@@ -92,6 +92,13 @@ export interface Cobrado {
   readonly cajonAbierto: boolean;
 }
 
+/** Lo que contesta dejar el efectivo pendiente en la caja (0145). */
+export interface CobroDejadoEnLaCaja {
+  readonly pendienteId: string;
+  readonly enEfectivo: number;
+  readonly yaEstaba: boolean;
+}
+
 /** Lo ya cobrado de una cuenta, en `la_mesa`. Una API de antes no lo dice. */
 export interface LoCobradoDeLaMesa {
   readonly importe: number;

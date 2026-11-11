@@ -508,6 +508,21 @@ function ElAparato({
     });
   }
 
+  async function elegirImpresora(impresoraId: string) {
+    setOcupado(true);
+    setError(null);
+    const respuesta = await cliente.ejecutar('elegir_donde_imprime', {
+      terminal_id: aparato.id,
+      impresora_id: impresoraId === '' ? null : impresoraId,
+    });
+    setOcupado(false);
+    if (!respuesta.ok) {
+      setError(respuesta.error);
+      return;
+    }
+    await cache.invalidateQueries({ queryKey: ['los_aparatos'] });
+  }
+
   async function desvincular() {
     setOcupado(true);
     setError(null);
@@ -598,6 +613,30 @@ function ElAparato({
           </span>
         </label>
       )}
+
+      {/* **Dónde saca sus tickets** (0145): lo que cobra en la mesa un comandero sale en su impresora. */}
+      {(aparato.funcion === 'comandero' || aparato.funcion === 'caja') &&
+        (datos.impresoras ?? []).length > 0 && (
+          <label className="flex flex-col gap-e2 rounded-mayor bg-superficie p-e5">
+            <span className="text-seccion font-bold">Saca sus tickets en</span>
+            <span className="text-cuerpo text-texto-suave">
+              Los tickets de lo que se cobra en este aparato. Sin elegir, la impresora de la caja.
+            </span>
+            <select
+              value={aparato.imprimeEn ?? ''}
+              disabled={ocupado}
+              onChange={(e) => void elegirImpresora(e.currentTarget.value)}
+              className="min-h-toque-cocina rounded-grande border-2 border-borde bg-fondo px-e4 text-seccion font-semibold"
+            >
+              <option value="">La de la caja</option>
+              {(datos.impresoras ?? []).map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.nombre}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
       {sePasaALaApp && (
         <section className="flex flex-col gap-e3 rounded-mayor border-2 border-info bg-info-suave p-e5">

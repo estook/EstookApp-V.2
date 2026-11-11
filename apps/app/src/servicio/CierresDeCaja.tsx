@@ -420,7 +420,7 @@ function UnDiaDeCaja({
             <div className="flex flex-wrap gap-e2 pt-e3">
               {c.cerradaEn !== null && (
                 <BotonDelDocumento
-                  consulta="el_z_en_pdf"
+                  consulta={'el_z_en_pdf'}
                   parametros={{ turno_id: c.turnoId }}
                   texto="Descargar su Z"
                 />

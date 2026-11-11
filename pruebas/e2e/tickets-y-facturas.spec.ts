@@ -12,7 +12,7 @@ const TPV = 'http://localhost:5178/';
  *
  *   · Bar Faro, con la empresa de pruebas de Verifacti que pone el admin y sus series
  *   · Ajustes › Facturación › «Imprimir un ticket de prueba»: sale con su número
- *   · Servicio › Ventas › Tickets y facturas: el ticket con su chapa; al tocarlo, el papel
+ *   · Negocio › Ventas › Tickets y facturas (antes en Servicio, 0145): el ticket con su chapa; al tocarlo, el papel
  *     como salió, con su QR, y su historia
  *   · T6 · 2 · 2 · 1 (0137): la factura de ese ticket, con su NIF comprobado; el ticket queda
  *     canjeado y no se puede canjear otra vez; una factura a mano, por cobrar, con un concepto libre
@@ -75,7 +75,7 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
   await expect(probar.getByText(/Hecho: T-BF-\d{4}-\d{6}/)).toBeVisible();
   const numero = (await probar.locator('strong').first().textContent()) ?? '';
 
-  // Servicio › Ventas › Tickets y facturas.
+  // Negocio › Ventas › Tickets y facturas (0145).
   await probar.getByRole('link', { name: 'Verlo en Tickets y facturas' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Ventas' })).toBeVisible();
   const fila = page.getByRole('row').filter({ hasText: numero });

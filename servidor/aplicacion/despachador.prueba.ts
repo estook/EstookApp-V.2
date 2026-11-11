@@ -1136,6 +1136,11 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'imprimir_como_va',
         'imprimir_el_z',
         'guardar_ajustes_de_la_caja',
+        // Cobrar en la mesa (0145): el efectivo pendiente en la caja, y dónde imprime cada aparato.
+        'dejar_el_cobro_en_la_caja',
+        'quitar_el_cobro_pendiente',
+        'quien_cobra_con_este_pin',
+        'elegir_donde_imprime',
       ].sort(),
     );
   });

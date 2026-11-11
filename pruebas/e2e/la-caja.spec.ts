@@ -306,6 +306,27 @@ test('la caja: abrirla, cobrar en efectivo y dividido, el cajón, «Cómo va», 
   await expect(page.getByText('Se quedó para mañana')).toBeVisible();
   await foto('15-un-dia-de-caja');
 
+  // Su Z en PDF, y sus tickets: los cobros de esa caja, con lo entregado y el cambio (0145).
+  await expect(page.getByRole('button', { name: 'Descargar su Z' })).toBeVisible();
+  await page.getByRole('button', { name: 'Sus tickets' }).click();
+  await expect(page).toHaveURL(/#\/negocio\/ventas\/cobros\?caja=/);
+  const losCobros = page.getByRole('list', { name: 'Los cobros' });
+  await expect(losCobros.getByRole('listitem')).toHaveCount(2, { timeout: 15_000 });
+  await expect(losCobros).toContainText('entregó 50,00 € · cambio 10,00 €');
+  await foto('17-sus-tickets');
+
+  // Negocio › Ventas: el Resumen dice cómo se cobró hoy, y están Cobros y Tickets y facturas.
+  await abrirSinQueSeCaiga(page, `${APP}#/negocio/ventas/resumen`);
+  await page.getByLabel('Periodo').first().selectOption('1');
+  const comoSeCobro = page.getByRole('group', { name: 'Cómo se cobró' });
+  await expect(comoSeCobro).toContainText('80,00', { timeout: 15_000 });
+  await expect(comoSeCobro).toContainText(/Tarjeta\s*20,00/);
+  await expect(comoSeCobro).toContainText(/Efectivo\s*60,00/);
+  for (const pestana of ['Resumen', 'Cobros', 'Tickets y facturas']) {
+    await expect(page.getByRole('tab', { name: pestana })).toBeVisible();
+  }
+  await foto('18-ventas-resumen');
+
   // Y el día, cerrado por la caja: en Información no se ofrece cerrarlo a mano.
   await abrirSinQueSeCaiga(page, `${APP}#/servicio/jornada/informacion`);
   await expect(page.getByText(/^Cerrado/)).toBeVisible({ timeout: 15_000 });

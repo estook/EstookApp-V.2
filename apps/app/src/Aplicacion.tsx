@@ -303,6 +303,9 @@ function Puerta() {
             <Route path="almacen/compras/precios" element={<ALaDireccionDeAhora />} />
             {/* Sin pestaña de elaboraciones desde el 16-oct (0090). */}
             <Route path="escandallos/elaboraciones" element={<ALaDireccionDeAhora />} />
+            {/* Tickets y facturas, de Servicio a Negocio › Ventas (0145). */}
+            <Route path="servicio/ventas" element={<ALaDireccionDeAhora />} />
+            <Route path="servicio/ventas/tickets-y-facturas" element={<ALaDireccionDeAhora />} />
             <Route path=":app" element={<PantallaDeApp />} />
             <Route path=":app/:destino" element={<PantallaDeApp />} />
             <Route path=":app/:destino/:vista" element={<PantallaDeApp />} />

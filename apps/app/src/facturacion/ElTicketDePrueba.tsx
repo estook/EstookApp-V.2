@@ -53,7 +53,7 @@ export function ElTicketDePrueba() {
         {imprimir.data !== undefined && (
           <p className="text-secundario">
             Hecho: <strong className="tabular-nums">{imprimir.data.numero}</strong>.{' '}
-            <Link className="underline" to="/servicio/ventas/tickets-y-facturas">
+            <Link className="underline" to="/negocio/ventas/tickets-y-facturas">
               Verlo en Tickets y facturas
             </Link>
           </p>

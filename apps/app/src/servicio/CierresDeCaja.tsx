@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   NOMBRE_DEL_MOTIVO_DE_LA_DIFERENCIA,
   comoCuadra,
@@ -11,6 +11,7 @@ import {
 import { puedeVer } from '@estook/permisos';
 import { Cargando, EstadoVacio, Tarjeta } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
 
 /**
  * **Servicio › Jornada › Cierres de caja** (0142 y 0144; maqueta del 9-nov, tramo 5): con Estook TPV,
@@ -293,6 +294,7 @@ function UnDiaDeCaja({
   readonly alVolver: () => void;
 }) {
   const { cliente } = usarSesion();
+  const navegar = useNavigate();
   const dia = useQuery({
     queryKey: ['un_dia_de_caja', fecha],
     queryFn: async () => {
@@ -414,6 +416,25 @@ function UnDiaDeCaja({
             {c.cerradaEn === null && (
               <p className="pt-e2 text-secundario font-bold text-bien">Sigue abierta</p>
             )}
+            {/* **Su Z y sus tickets** (0145; la maqueta de R3): el cierre en PDF, y lo que cobró. */}
+            <div className="flex flex-wrap gap-e2 pt-e3">
+              {c.cerradaEn !== null && (
+                <BotonDelDocumento
+                  consulta="el_z_en_pdf"
+                  parametros={{ turno_id: c.turnoId }}
+                  texto="Descargar su Z"
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  navegar(`/negocio/ventas/cobros?caja=${c.turnoId}`);
+                }}
+                className="min-h-toque rounded-redondo border border-borde px-e4 font-semibold"
+              >
+                Sus tickets
+              </button>
+            </div>
           </div>
         </Tarjeta>
       ))}

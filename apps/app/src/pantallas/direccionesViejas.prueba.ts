@@ -61,6 +61,15 @@ describe('las direcciones de antes de la pausa del 8-nov (0142)', () => {
     expect(laDireccionDeAhora('/servicio/ventas/por-producto')).toBe(
       '/servicio/jornada/informacion',
     );
-    expect(laDireccionDeAhora('/servicio/ventas/tickets-y-facturas')).toBeNull();
+  });
+});
+
+describe('Tickets y facturas, de Servicio a Negocio › Ventas (0145)', () => {
+  it('los enlaces de antes llevan a la pestaña nueva', () => {
+    expect(laDireccionDeAhora('/servicio/ventas/tickets-y-facturas')).toBe(
+      '/negocio/ventas/tickets-y-facturas',
+    );
+    expect(laDireccionDeAhora('/servicio/ventas')).toBe('/negocio/ventas/tickets-y-facturas');
+    expect(laDireccionDeAhora('/negocio/ventas/cobros')).toBeNull();
   });
 });

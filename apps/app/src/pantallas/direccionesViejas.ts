@@ -18,6 +18,10 @@ export function laDireccionDeAhora(ruta: string): string | null {
   if (/^\/servicio\/ventas\/(del-turno|del-dia|por-producto)\/?$/.test(ruta)) {
     return '/servicio/jornada/informacion';
   }
+  // Tickets y facturas, de Servicio a Negocio › Ventas (0145): los enlaces de antes siguen valiendo.
+  if (/^\/servicio\/ventas(\/tickets-y-facturas)?\/?$/.test(ruta)) {
+    return '/negocio/ventas/tickets-y-facturas';
+  }
   // Escandallos (repaso del 16-oct, 0090): las elaboraciones ya no tienen pestaña.
   if (/^\/escandallos\/elaboraciones\/?$/.test(ruta)) return '/escandallos/escandallos';
   // Compras en tres (la experiencia, 0083): lo que ha llegado es «Llegado» dentro de

@@ -468,7 +468,7 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
     'imprimir_un_ticket_de_prueba',
     {},
   );
-  await abrirSinQueSeCaiga(page, `${APP}#/servicio/ventas/tickets-y-facturas`);
+  await abrirSinQueSeCaiga(page, `${APP}#/negocio/ventas/tickets-y-facturas`);
   const laPedida = page.getByRole('row').filter({ hasText: 'Pedida por el cliente' }).first();
   await expect(laPedida).toBeVisible();
   await laPedida.click();
@@ -525,11 +525,22 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
   await pasar('9-hacer-factura-en-el-tpv');
 });
 
-test('la cocina no ve Tickets y facturas, y la sala sí (0137)', async ({ page }) => {
-  await entrarEnLaApp(page, 'marcos@ejemplo.estook.com');
-  await abrirSinQueSeCaiga(page, `${APP}#/servicio`);
-  await expect(page.getByRole('button', { name: 'Ventas', exact: true })).toHaveCount(0);
-  await entrarEnLaApp(page, 'sara@ejemplo.estook.com');
-  await abrirSinQueSeCaiga(page, `${APP}#/servicio`);
-  await expect(page.getByRole('button', { name: 'Ventas', exact: true })).toBeVisible();
+test('en Estook, Tickets y facturas es de quien lleva el local; la sala factura en Estook TPV (0145)', async ({
+  page,
+}) => {
+  // Ni la cocina ni la sala ven Ventas en Estook: Servicio ya no la tiene, y Negocio no es suyo.
+  for (const correo of ['marcos@ejemplo.estook.com', 'sara@ejemplo.estook.com']) {
+    await entrarEnLaApp(page, correo);
+    await abrirSinQueSeCaiga(page, `${APP}#/servicio`);
+    await expect(page.getByRole('button', { name: 'Ventas', exact: true })).toHaveCount(0);
+  }
+  // Quien lleva el local, en Negocio › Ventas, con sus tres pestañas.
+  await entrarEnLaApp(page, 'rosa@ejemplo.estook.com');
+  await abrirSinQueSeCaiga(page, `${APP}#/negocio/ventas`);
+  for (const pestana of ['Resumen', 'Cobros', 'Tickets y facturas']) {
+    await expect(page.getByRole('tab', { name: pestana })).toBeVisible({ timeout: 15_000 });
+  }
+  // Y los enlaces de antes llevan a la pestaña nueva.
+  await abrirSinQueSeCaiga(page, `${APP}#/servicio/ventas/tickets-y-facturas`);
+  await expect(page).toHaveURL(/#\/negocio\/ventas\/tickets-y-facturas/);
 });

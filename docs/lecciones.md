@@ -1171,3 +1171,8 @@
      la lista y la pantalla del cambio se cambiaba por «ya no está pendiente». **Lo que se está haciendo se
      guarda en la pantalla mientras dura**, y no se vuelve a buscar en lo que el refresco trae
      (`CobroPendienteDesdeLaPuerta`, `LaVentanaDeLaMesa`).
+
+273. **Añadir una carpeta entera arrastra lo que no es tuyo.** Un `git add pruebas/e2e` subió la prueba temporal de
+     capturas que vive sin subir en esa carpeta y que no es de ninguna cuenta (ESTADO, sección 0), y GitHub se puso
+     en rojo en tres máquinas por algo que no era de la entrega. **Se añade fichero a fichero lo que se ha tocado**,
+     y antes de abrir el pull request se mira `git diff --name-status main...HEAD` buscando lo que nadie ha escrito.

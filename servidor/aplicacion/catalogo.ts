@@ -11,7 +11,14 @@ import {
   quienCobraConEstePin,
   quitarElCobroPendiente,
 } from './comandos/caja.ts';
-import { cierresDeCaja, comoVaLaCaja, laCaja, unDiaDeCaja } from './consultas/caja.ts';
+import {
+  cierresDeCaja,
+  comoVaLaCaja,
+  elZEnPdf,
+  laCaja,
+  losCobros,
+  unDiaDeCaja,
+} from './consultas/caja.ts';
 import {
   cambiarNombreDelNegocio,
   exigirDobleFactor,
@@ -554,6 +561,9 @@ export const catalogo = {
     [comoVaLaCaja.nombre]: comoVaLaCaja,
     [cierresDeCaja.nombre]: cierresDeCaja,
     [unDiaDeCaja.nombre]: unDiaDeCaja,
+    // 0145: Negocio › Ventas › Cobros, y sus totales para el Resumen.
+    [losCobros.nombre]: losCobros,
+    [elZEnPdf.nombre]: elZEnPdf,
     // La pausa del 8-nov (0142): Información e Informes, de las mesas de Estook TPV.
     [loQueSeVende.nombre]: loQueSeVende,
     [elServicioPorDentro.nombre]: elServicioPorDentro,

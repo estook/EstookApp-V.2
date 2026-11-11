@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { tokenDelAparato } from '@estook/dominio';
 import { codigoEn } from '../../servidor/dominio/doble-factor.ts';
 import { verifactiDeMentira } from '../../servidor/facturacion/verifacti-de-mentira.ts';
+import { pdfDeMentira } from '../../servidor/infraestructura/pdf.ts';
 import {
   ADMIN_DE_EJEMPLO,
   CLAVE_DE_EJEMPLO,
@@ -24,6 +25,7 @@ import { elFallo, entrarFichando, losDatos, montarLaApi, type ApiDePrueba } from
 let base: BaseDePrueba;
 let api: ApiDePrueba;
 const verifacti = verifactiDeMentira();
+const motor = pdfDeMentira();
 
 const ROSA = 'rosa@ejemplo.estook.com';
 const SARA = 'sara@ejemplo.estook.com';
@@ -79,7 +81,7 @@ const loQueHayEnLaCola = async (tipo: string) =>
 
 beforeAll(async () => {
   base = await levantarBase();
-  api = montarLaApi(base.bd, { facturacion: verifacti });
+  api = montarLaApi(base.bd, { facturacion: verifacti, pdf: motor });
   barCentro = await base.localPorCodigo('bar-centro');
 
   // Bar Centro, de la casa, con la empresa de pruebas de Verifacti y sus series (0125).
@@ -978,5 +980,85 @@ describe('cobrar en la mesa, y el efectivo pendiente en la caja (0145)', () => {
     );
     expect(await losTrabajos(sala?.id ?? '')).toBe(enSala + 1);
     expect(await losTrabajos(caja?.id ?? '')).toBe(enCaja);
+  });
+});
+
+describe('en Estook, los cobros y el Z (0145)', () => {
+  it('cada cobro con su mesa, cómo se pagó, lo entregado y el cambio; y los totales', async () => {
+    const rosa = await api.entrar(ROSA);
+    const hoy = losDatos<{
+      totales: {
+        total: number;
+        efectivo: number;
+        tarjeta: number;
+        bizum: number;
+        cheque: number;
+        cobros: number;
+      };
+      cobros: {
+        importe: number;
+        titulo: string;
+        cobradoPor: string;
+        pagos: {
+          forma: string;
+          importe: number;
+          entregado: number | null;
+          cambio: number | null;
+        }[];
+        ticket: { numero: string };
+        turnoId: string;
+      }[];
+    }>(await api.consultar(rosa, 'los_cobros', { dias: '1' }));
+    expect(hoy.totales.cobros).toBe(hoy.cobros.length);
+    expect(hoy.totales.total).toBe(
+      hoy.totales.efectivo + hoy.totales.tarjeta + hoy.totales.bizum + hoy.totales.cheque,
+    );
+    expect(hoy.totales.total).toBe(hoy.cobros.reduce((suma, c) => suma + c.importe, 0));
+    // El de Sara en la caja: 10 € de tarjeta en la mesa, y 30 € en efectivo con 50 entregados.
+    const deSara = hoy.cobros.find(
+      (c) => c.cobradoPor === 'Sara' && c.pagos.some((p) => p.forma === 'efectivo'),
+    );
+    expect(deSara?.titulo).toBe('Mesa 2');
+    expect(deSara?.pagos).toEqual([
+      { forma: 'efectivo', importe: 3000, entregado: 5000, cambio: 2000 },
+      { forma: 'tarjeta', importe: 1000, entregado: null, cambio: null },
+    ]);
+    expect(deSara?.ticket.numero).toMatch(/^T-BC-2026-/);
+
+    // Los de una caja, que son los de su Z.
+    const deLaCaja = losDatos<{ cobros: { turnoId: string }[] }>(
+      await api.consultar(rosa, 'los_cobros', { turno_id: deSara?.turnoId ?? '' }),
+    );
+    expect(deLaCaja.cobros.every((c) => c.turnoId === deSara?.turnoId)).toBe(true);
+
+    // Una camarera no ve las ventas: tampoco los cobros.
+    expect(elFallo(await api.consultar(await api.entrar(SARA), 'los_cobros', {}))).toBe(
+      'sin_permiso',
+    );
+  });
+
+  it('«Descargar su Z»: el cierre de una caja en PDF, sin ser un documento fiscal', async () => {
+    const rosa = await api.entrar(ROSA);
+    const [cerrada] = await comoDuena<{ id: string }>(
+      `select id::text from estook.turno_de_caja where local_id = $1 and cerrada_en is not null
+        order by cerrada_en limit 1`,
+      [barCentro],
+    );
+    const pdf = losDatos<{ nombre: string; tipo: string }>(
+      await api.consultar(rosa, 'el_z_en_pdf', { turno_id: cerrada?.id ?? '' }),
+    );
+    expect(pdf.tipo).toBe('application/pdf');
+    expect(pdf.nombre).toMatch(/^z-caja-1-\d{4}-\d{2}-\d{2}\.pdf$/);
+    const html = motor.hechos.at(-1)?.html ?? '';
+    expect(html).toContain('Cierre de caja (Z)');
+    expect(html).toContain('Debería haber');
+    expect(html).toContain('No es un documento fiscal');
+    expect(
+      elFallo(
+        await api.consultar(await api.entrar(SARA), 'el_z_en_pdf', {
+          turno_id: cerrada?.id ?? '',
+        }),
+      ),
+    ).toBe('sin_permiso');
   });
 });

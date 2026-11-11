@@ -215,7 +215,7 @@ export function comoPaseDeLaMesa(pase: FilaDePase): PaseDeLaMesa {
 }
 
 /** El título de la cuenta: «Mesa 6», «Barra», «Para llevar · Laura». */
-export function elTituloDeLaCuenta(cuenta: FilaDeCuenta): string {
+export function elTituloDeLaCuenta(cuenta: Pick<FilaDeCuenta, 'tipo' | 'mesa' | 'nombre'>): string {
   if (cuenta.tipo === 'mesa') return `Mesa ${cuenta.mesa ?? ''}`.trim();
   if (cuenta.tipo === 'barra') return cuenta.nombre === null ? 'Barra' : `Barra · ${cuenta.nombre}`;
   const tipo = cuenta.tipo === 'reparto' ? 'Reparto' : 'Para llevar';

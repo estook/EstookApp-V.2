@@ -2,11 +2,14 @@ import {
   abrirCaja,
   cerrarCaja,
   cobrar,
+  dejarElCobroEnLaCaja,
   explicarLaDiferencia,
   guardarAjustesDeLaCaja,
   imprimirComoVa,
   imprimirElZ,
   moverDinero,
+  quienCobraConEstePin,
+  quitarElCobroPendiente,
 } from './comandos/caja.ts';
 import { cierresDeCaja, comoVaLaCaja, laCaja, unDiaDeCaja } from './consultas/caja.ts';
 import {
@@ -114,6 +117,7 @@ import {
 import {
   bloquear,
   cambiarAparato,
+  elegirDondeImprime,
   desvincularAparato,
   dondePuedoVincular,
   entrarConPin,
@@ -1121,6 +1125,10 @@ export const catalogo = {
     [imprimirComoVa.nombre]: imprimirComoVa,
     [imprimirElZ.nombre]: imprimirElZ,
     [guardarAjustesDeLaCaja.nombre]: guardarAjustesDeLaCaja,
+    // 0145: cobrar en la mesa, y el efectivo pendiente en la caja.
+    [dejarElCobroEnLaCaja.nombre]: dejarElCobroEnLaCaja,
+    [quitarElCobroPendiente.nombre]: quitarElCobroPendiente,
+    [quienCobraConEstePin.nombre]: quienCobraConEstePin,
     [imprimirLaCuenta.nombre]: imprimirLaCuenta,
     [reimprimirLaComanda.nombre]: reimprimirLaComanda,
     [laColaDeLaCaja.nombre]: laColaDeLaCaja,
@@ -1143,6 +1151,7 @@ export const catalogo = {
     [cambiarLasAlergias.nombre]: cambiarLasAlergias,
     [guardarLaCocinaYLaBarra.nombre]: guardarLaCocinaYLaBarra,
     [cambiarAparato.nombre]: cambiarAparato,
+    [elegirDondeImprime.nombre]: elegirDondeImprime,
     [desvincularAparato.nombre]: desvincularAparato,
     [guardarPinYBloqueo.nombre]: guardarPinYBloqueo,
 

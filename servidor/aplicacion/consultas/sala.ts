@@ -147,6 +147,78 @@ export interface CuentaEnElPlano {
   readonly colorDelTiempo: ColorDelTiempo | null;
   /** Si pidió algo de cocina: una mesa solo de bebida dice «Bebiendo», no «Comiendo». */
   readonly conComida: boolean;
+  /** El efectivo que espera en la caja (0145): «Cobrar efectivo · Ricardo · 40,00 €». */
+  readonly pendientes: readonly CobroPendienteEnLaMesa[];
+}
+
+/** Un cobro en efectivo que dejó un camarero para la caja (0145). */
+export interface CobroPendienteEnLaMesa {
+  readonly id: string;
+  readonly que: 'toda' | 'platos' | 'parte';
+  readonly lineas: readonly string[];
+  readonly parte: number | null;
+  readonly de: number | null;
+  /** Lo que cubre entero, y lo que se cobra en efectivo en la caja. */
+  readonly importe: number;
+  readonly enEfectivo: number;
+  /** Lo cobrado ya en la mesa con tarjeta, Bizum o cheque: va en el mismo ticket. */
+  readonly yaPagado: readonly {
+    readonly forma: 'tarjeta' | 'bizum' | 'cheque';
+    readonly importe: number;
+  }[];
+  /** Quién lo dejó: «Ricardo». */
+  readonly por: string;
+  readonly desde: string;
+}
+
+/** Los cobros en efectivo que esperan en la caja, por cuenta (0145). */
+export async function losPendientesPorCuenta(
+  contexto: Contexto,
+  cuentas: readonly string[],
+): Promise<Map<string, CobroPendienteEnLaMesa[]>> {
+  const porCuenta = new Map<string, CobroPendienteEnLaMesa[]>();
+  if (cuentas.length === 0) return porCuenta;
+  const filas = await contexto.sql<
+    {
+      id: string;
+      cuenta_id: string;
+      que: 'toda' | 'platos' | 'parte';
+      lineas: string[] | null;
+      parte: number | null;
+      de_partes: number | null;
+      importe: number;
+      ya_pagado: { forma: 'tarjeta' | 'bizum' | 'cheque'; importe: number }[];
+      por: string;
+      desde: string;
+    }[]
+  >`
+    select c.id::text as id, c.cuenta_id::text as cuenta_id, c.que, c.lineas::text[] as lineas,
+           c.parte, c.de_partes, c.importe, c.ya_pagado, p.nombre as por,
+           to_char(c.marcado_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as desde
+      from estook.cobro_pendiente c join estook.persona p on p.id = c.marcado_por
+     where c.cuenta_id = any (${cuentas as string[]}::uuid[])
+       and c.cobro_id is null and c.quitado_en is null
+     order by c.marcado_en
+  `;
+  for (const f of filas) {
+    const yaPagado = f.ya_pagado.map((p) => ({ forma: p.forma, importe: p.importe }));
+    porCuenta.set(f.cuenta_id, [
+      ...(porCuenta.get(f.cuenta_id) ?? []),
+      {
+        id: f.id,
+        que: f.que,
+        lineas: f.lineas ?? [],
+        parte: f.parte,
+        de: f.de_partes,
+        importe: f.importe,
+        enEfectivo: f.importe - yaPagado.reduce((suma, p) => suma + p.importe, 0),
+        yaPagado,
+        por: f.por.trim().split(/\s+/)[0] ?? f.por,
+        desde: f.desde,
+      },
+    ]);
+  }
+  return porCuenta;
 }
 
 /** Lo que el plano necesita saber de la cocina del local para pintar el tiempo (0131). */
@@ -201,6 +273,7 @@ function enElPlano(
   pases: readonly FilaDePase[],
   seHanIdo: ReadonlySet<string>,
   cocina: LaCocinaParaElPlano,
+  pendientes: readonly CobroPendienteEnLaMesa[],
 ): CuentaEnElPlano {
   const minutos = minutosDesde(contexto, cuenta.abierta_en) ?? 0;
   const loSiguiente = loSiguienteDeLaMesa(
@@ -260,6 +333,7 @@ function enElPlano(
         ? elColorDelTiempo(minutosEnCocina, cocina)
         : null,
     conComida: deCocina.length > 0,
+    pendientes,
   };
 }
 
@@ -300,6 +374,7 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
     `;
     const platos = porCuenta(await losPlatos(contexto, ids));
     const pases = porCuenta(await losPases(contexto, ids));
+    const pendientes = await losPendientesPorCuenta(contexto, ids);
     const idos = await contexto.sql<{ persona_id: string }[]>`
       select estook.han_fichado_la_salida(${localId}::uuid)::text as persona_id
     `;
@@ -327,6 +402,7 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
         pases.get(c.id) ?? [],
         seHanIdo,
         cocina,
+        pendientes.get(c.id) ?? [],
       ),
     }));
     const porMesa = new Map(

@@ -24,7 +24,12 @@ import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { enNombreDelSistema } from '../pago.ts';
 import { tocarElServicio } from '../al-segundo.ts';
-import { aprobarConElPin, usarLaAprobacion, type OperacionQueSeAprueba } from '../aprobaciones.ts';
+import {
+  aprobarConElPin,
+  quienEsElPin,
+  usarLaAprobacion,
+  type OperacionQueSeAprueba,
+} from '../aprobaciones.ts';
 import { elRelojYElFisco, elTipoDeRestauracion } from '../desviacion.ts';
 import { prepararUnDocumento } from '../emitir.ts';
 import { cuandoEnElLocal, loDelLocalParaImprimir } from '../impresion.ts';
@@ -38,6 +43,7 @@ import {
 import { soloEnLaCaja } from './aparatos.ts';
 import {
   abrirElCajonDeEsteAparato,
+  elCajonDelAparato,
   elCajonOFallo,
   imprimirLaCaja,
   laCajaAbiertaDe,
@@ -57,7 +63,11 @@ import {
  * **La caja de Estook TPV** (R3 · 1, decisión 0144; Anexo 5.1, 10.5, 10.6 y 11.6; maqueta del 9-nov):
  *
  *   abrir_caja                 con lo de la última vez («Está correcto») o contando el cajón
- *   cobrar                     una cuenta entera, unos platos o una parte igual: un cobro, un ticket
+ *   cobrar                     una cuenta entera, unos platos o una parte igual: un cobro, un ticket;
+ *                              en la caja, y en el comandero lo que no es efectivo (0145)
+ *   dejar_el_cobro_en_la_caja  el efectivo de una mesa, pendiente en la caja a nombre del camarero
+ *   quitar_el_cobro_pendiente  el cliente pagó al final de otra forma
+ *   quien_cobra_con_este_pin   en la caja, el PIN de quien cobra un pendiente, antes de cobrarlo
  *   mover_dinero               abrir el cajón para cambio, sacar o meter dinero, siempre con para qué
  *   cerrar_caja                contando a ciegas; la diferencia se ve con la caja ya cerrada
  *   explicar_la_diferencia     el motivo de un toque, después, una vez
@@ -311,19 +321,41 @@ const unPago = z
   })
   .strict();
 
+/** Lo cobrado ya en la mesa, sin cajón: tarjeta, Bizum o cheque. Nunca efectivo. */
+const unPagoEnLaMesa = z
+  .object({
+    forma: z.enum(['tarjeta', 'bizum', 'cheque']),
+    importe: z.number().int().min(1).max(300000),
+  })
+  .strict();
+
+/** Lo que cubre un cobro, igual al cobrar que al dejarlo pendiente en la caja. */
+const loQueCubreLaEntrada = {
+  cuenta_id: id,
+  /** Lo que queda de la cuenta, unos platos o una parte igual. */
+  que: z.enum(['toda', 'platos', 'parte']),
+  lineas: z.array(id).min(1).max(200).optional(),
+  parte: z.number().int().min(1).max(20).optional(),
+  de: z.number().int().min(2).max(20).optional(),
+  /** Lo que el aparato enseñó: si la cuenta cambió entre medias, no se cobra a ciegas. */
+  importe: z.number().int().min(1).max(300000),
+};
+
 export const entradaCobrar = z
   .object({
     /** Nace en el aparato: repetir no cobra dos veces (0121). */
     cobro_id: id,
-    cuenta_id: id,
-    /** Lo que queda de la cuenta, unos platos o una parte igual. */
-    que: z.enum(['toda', 'platos', 'parte']),
-    lineas: z.array(id).min(1).max(200).optional(),
-    parte: z.number().int().min(1).max(20).optional(),
-    de: z.number().int().min(2).max(20).optional(),
-    /** Lo que el aparato enseñó: si la cuenta cambió entre medias, no se cobra a ciegas. */
-    importe: z.number().int().min(1).max(300000),
-    pagos: z.array(unPago).min(1).max(4),
+    ...loQueCubreLaEntrada,
+    /** Cómo se paga. Sin él, solo para cobrar un pendiente: lo ya pagado y el efectivo. */
+    pagos: z.array(unPago).min(1).max(4).optional(),
+    /** Desde un aparato sin cajón, si hay más de una caja abierta: en cuál va (0145). */
+    turno_id: id.optional(),
+    /** En la caja: el efectivo que dejó pendiente un camarero (0145)… */
+    pendiente_id: id.optional(),
+    /** …y lo que da el cliente. Sin él, justo. */
+    entregado: z.number().int().min(1).max(10000000).optional(),
+    /** El PIN de quien cobra: el cobro queda a su nombre aunque la caja la tenga otro (0145). */
+    pin: z.string().optional(),
   })
   .strict();
 export type EntradaCobrar = z.infer<typeof entradaCobrar>;
@@ -340,6 +372,8 @@ export interface Cobrado {
   readonly liberada: boolean;
   readonly cajonAbierto: boolean;
   readonly yaEstaba: boolean;
+  /** Quién cobró: quien tecleó su PIN, o quien está en el aparato. */
+  readonly cobradoPor: string;
 }
 
 interface CobroAnterior {
@@ -348,31 +382,256 @@ interface CobroAnterior {
   readonly de_partes: number | null;
 }
 
+type LineaViva = Awaited<ReturnType<typeof losPlatos>>[number];
+
+interface LoQueCubre {
+  readonly cuenta: Awaited<ReturnType<typeof laCuentaAbierta>>;
+  readonly importe: number;
+  readonly queda: number;
+  readonly lineasDelCobro: readonly LineaViva[];
+  readonly parte: { readonly parte: number; readonly de: number } | null;
+  readonly titulo: string;
+}
+
 /**
- * **Cobrar** (Anexo 5.1 y 10.5, 0144): un cobro, un ticket, con uno o varios pagos. La cuenta se
- * bloquea mientras se cobra: dos cajas a la vez, gana una y la otra lo ve. El ticket sale solo en
- * cuanto contesta Hacienda; con efectivo o cheque, el cajón se abre al momento. La mesa queda libre
- * con lo último.
+ * **Lo que cubre un cobro** (0144): lo que queda de la cuenta, unos platos o una parte igual, mirado con
+ * la cuenta bloqueada. Lo usan cobrar y dejar un cobro pendiente en la caja (0145), para que los dos
+ * digan lo mismo. Si lo que enseñó el aparato no es lo que hay, no se cobra a ciegas.
+ */
+async function loQueCubre(
+  contexto: Contexto,
+  localId: string,
+  que: {
+    readonly cuenta_id: string;
+    readonly que: 'toda' | 'platos' | 'parte';
+    readonly lineas?: readonly string[] | undefined;
+    readonly parte?: number | undefined;
+    readonly de?: number | undefined;
+    readonly importe: number;
+  },
+): Promise<LoQueCubre> {
+  // **La cuenta, bloqueada mientras se cobra**: la segunda caja espera y ve lo que queda.
+  await contexto.sql`
+    select id from estook.cuenta
+     where id = ${que.cuenta_id}::uuid and local_id = ${localId}::uuid
+     for update
+  `;
+  const cuenta = await laCuentaAbierta(contexto, localId, que.cuenta_id);
+  const vivas = (await losPlatos(contexto, [cuenta.id])).filter((l) => l.quitada_en === null);
+  const total = vivas.reduce((s, l) => s + l.precio_centimos * l.cantidad, 0);
+  const [anteriores, lineasCobradas] = await Promise.all([
+    contexto.sql<CobroAnterior[]>`
+      select importe, parte, de_partes from estook.cobro where cuenta_id = ${cuenta.id}::uuid
+    `,
+    contexto.sql<{ linea_id: string }[]>`
+      select l.linea_id::text as linea_id
+        from estook.cobro_de_linea l join estook.cobro c on c.id = l.cobro_id
+       where c.cuenta_id = ${cuenta.id}::uuid
+    `,
+  ]);
+  const cobrado = anteriores.reduce((s, c) => s + c.importe, 0);
+  const queda = total - cobrado;
+  const cobradas = new Set(lineasCobradas.map((l) => l.linea_id));
+  const partesAnteriores = anteriores.filter((c) => c.parte !== null);
+  const sinCobrar = vivas.filter((l) => !cobradas.has(l.id));
+
+  if (queda <= 0) {
+    throw new FalloDeAplicacion('ya_hecho', { porque: 'Esta cuenta ya está cobrada entera.' });
+  }
+
+  let importe: number;
+  let lineasDelCobro: LineaViva[] = [];
+  let parte: { readonly parte: number; readonly de: number } | null = null;
+
+  if (que.que === 'toda') {
+    const aMedias =
+      partesAnteriores.length > 0 &&
+      partesAnteriores.length < (partesAnteriores[0]?.de_partes ?? 0);
+    if (aMedias) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Esta cuenta se está cobrando a partes iguales: cobra las que quedan.',
+      });
+    }
+    importe = queda;
+    // Si ya se cobró a partes, lo que queda no son platos: es el resto.
+    lineasDelCobro = partesAnteriores.length > 0 ? [] : sinCobrar;
+  } else if (que.que === 'platos') {
+    if (partesAnteriores.length > 0) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Esta cuenta se está cobrando a partes iguales, no por platos.',
+      });
+    }
+    const elegidas = new Set(que.lineas ?? []);
+    const arriba = sinCobrar.filter((l) => elegidas.has(l.id));
+    if (arriba.length !== elegidas.size || arriba.some((l) => l.parte_de !== null)) {
+      throw new FalloDeAplicacion('lo_cambio_otra_persona', {
+        porque: 'Algún plato ya no está o ya se cobró: mira la cuenta otra vez.',
+      });
+    }
+    // Los platos de un menú van con su menú.
+    lineasDelCobro = [
+      ...arriba,
+      ...sinCobrar.filter((l) => l.parte_de !== null && elegidas.has(l.parte_de)),
+    ];
+    importe = lineasDelCobro.reduce((s, l) => s + l.precio_centimos * l.cantidad, 0);
+  } else {
+    const de = que.de;
+    const cual = que.parte;
+    if (de === undefined || cual === undefined || cual > de) {
+      throw new FalloDeAplicacion('faltan_datos', { porque: 'Di qué parte y de cuántas.' });
+    }
+    if (cobradas.size > 0 || anteriores.some((c) => c.parte === null)) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Esta cuenta ya se ha empezado a cobrar de otra forma.',
+      });
+    }
+    if (partesAnteriores.some((c) => c.de_partes !== de)) {
+      throw new FalloDeAplicacion('lo_cambio_otra_persona', {
+        porque: `Esta cuenta se está cobrando en ${String(partesAnteriores[0]?.de_partes ?? de)} partes.`,
+      });
+    }
+    if (partesAnteriores.some((c) => c.parte === cual)) {
+      throw new FalloDeAplicacion('ya_hecho', { porque: 'Esa parte ya está cobrada.' });
+    }
+    // La última parte se lleva lo que quede: si se pidió algo entre medias, la cuenta cuadra igual.
+    const esLaUltima = partesAnteriores.length === de - 1;
+    importe = esLaUltima ? queda : laParte(total, cual, de);
+    parte = { parte: cual, de };
+  }
+
+  if (importe !== que.importe) {
+    throw new FalloDeAplicacion('lo_cambio_otra_persona', {
+      porque: 'La cuenta ha cambiado mientras cobrabas: mírala otra vez.',
+    });
+  }
+  return { cuenta, importe, queda, lineasDelCobro, parte, titulo: elTituloDeLaCuenta(cuenta) };
+}
+
+/** Un cobro pendiente que sigue esperando en la caja, como lo lee la API. */
+interface FilaDelPendiente {
+  readonly id: string;
+  readonly cuenta_id: string;
+  readonly que: 'toda' | 'platos' | 'parte';
+  readonly lineas: string[] | null;
+  readonly parte: number | null;
+  readonly de_partes: number | null;
+  readonly importe: number;
+  readonly ya_pagado: { forma: 'tarjeta' | 'bizum' | 'cheque'; importe: number }[];
+  readonly cobro_id: string | null;
+  readonly quitado_en: string | null;
+}
+
+async function elPendiente(
+  contexto: Contexto,
+  localId: string,
+  pendienteId: string,
+): Promise<FilaDelPendiente> {
+  const filas = await contexto.sql<FilaDelPendiente[]>`
+    select id::text as id, cuenta_id::text as cuenta_id, que, lineas::text[] as lineas, parte,
+           de_partes, importe, ya_pagado, cobro_id::text as cobro_id, quitado_en::text as quitado_en
+      from estook.cobro_pendiente
+     where id = ${pendienteId}::uuid and local_id = ${localId}::uuid
+     for update
+  `;
+  const fila = filas[0];
+  if (fila === undefined) {
+    throw new FalloDeAplicacion('no_existe', { porque: 'Ese cobro pendiente ya no está.' });
+  }
+  return fila;
+}
+
+/** Los que siguen esperando en la caja para una cuenta. */
+async function losPendientesDeLaCuenta(
+  contexto: Contexto,
+  cuentaId: string,
+): Promise<{ id: string; parte: number | null }[]> {
+  return contexto.sql<{ id: string; parte: number | null }[]>`
+    select id::text as id, parte from estook.cobro_pendiente
+     where cuenta_id = ${cuentaId}::uuid and cobro_id is null and quitado_en is null
+  `;
+}
+
+/**
+ * **La caja del cobro** (0145). En la caja, la de su cajón: sin abrir, no se cobra. En un aparato sin
+ * cajón (el comandero), la caja abierta del local; si hay más de una, la que se elija.
+ */
+async function laCajaDelCobro(
+  contexto: Contexto,
+  localId: string,
+  turnoElegido: string | undefined,
+): Promise<{ readonly id: string; readonly conCajon: boolean }> {
+  const cajon = await elCajonDelAparato(contexto);
+  if (cajon !== null) {
+    const caja = await laCajaAbiertaDe(contexto, cajon.id);
+    if (caja === null) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Abre la caja para cobrar.',
+        caja: 'cerrada',
+      });
+    }
+    return { id: caja.id, conCajon: true };
+  }
+  const abiertas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ id: string; nombre: string }[]>`
+      select t.id::text as id, c.nombre
+        from estook.turno_de_caja t join estook.cajon c on c.id = t.cajon_id
+       where t.local_id = ${localId}::uuid and t.cerrada_en is null
+       order by c.nombre
+    `,
+  );
+  const elegida = abiertas.find((a) => a.id === turnoElegido);
+  if (elegida !== undefined) return { id: elegida.id, conCajon: false };
+  if (abiertas.length === 1 && abiertas[0] !== undefined) {
+    return { id: abiertas[0].id, conCajon: false };
+  }
+  if (abiertas.length === 0) {
+    throw new FalloDeAplicacion('faltan_datos', {
+      porque: 'La caja está cerrada: ábrela en la caja para poder cobrar.',
+      caja: 'cerrada',
+    });
+  }
+  throw new FalloDeAplicacion('faltan_datos', {
+    porque: 'Hay más de una caja abierta: elige en cuál va este cobro.',
+    cajas: abiertas.map((a) => ({ turnoId: a.id, nombre: a.nombre })),
+  });
+}
+
+/**
+ * **Cobrar** (Anexo 5.1 y 10.5, 0144 y 0145): un cobro, un ticket, con uno o varios pagos. La cuenta se
+ * bloquea mientras se cobra: dos aparatos a la vez, gana uno y el otro lo ve. El ticket sale solo en
+ * cuanto contesta Hacienda, por la impresora del aparato; con efectivo o cheque, en la caja, la
+ * impresora abre el cajón. La mesa queda libre con lo último.
+ *
+ * **En el comandero** (0145) se cobra con tarjeta (el datáfono de siempre), Bizum o cheque. **El efectivo
+ * no**: va al cajón, y se deja pendiente en la caja (`dejar_el_cobro_en_la_caja`). **En la caja** se
+ * cobra todo, y también lo pendiente, con el PIN de quien cobra.
  */
 export const cobrar = comando<EntradaCobrar, Cobrado>({
   nombre: 'cobrar',
   entrada: entradaCobrar,
   exige: 'accion.cobrar',
   enElTpv: 'solo',
-  enLosAparatos: ['caja'],
+  enLosAparatos: ['caja', 'comandero'],
 
   async ejecutar(contexto, entrada) {
-    soloEnLaCaja(contexto);
     sinInternetNo(contexto);
     const localId = elLocalDelServicio(contexto);
-    const personaId = contexto.personaId;
-    if (personaId === null) throw new FalloDeAplicacion('sin_sesion');
+    const enElAparato = contexto.personaId;
+    if (enElAparato === null) throw new FalloDeAplicacion('sin_sesion');
 
     // El mismo cobro otra vez (la respuesta se perdió): lo de entonces, sin cobrar dos veces.
     const repetido = await contexto.sql<
-      { documento_id: string; serie: string; numero: number; cuenta_id: string }[]
+      {
+        documento_id: string;
+        serie: string;
+        numero: number;
+        cuenta_id: string;
+        cobrado_por: string;
+      }[]
     >`
-      select c.documento_id::text as documento_id, d.serie, d.numero, c.cuenta_id::text as cuenta_id
+      select c.documento_id::text as documento_id, d.serie, d.numero, c.cuenta_id::text as cuenta_id,
+             c.cobrado_por::text as cobrado_por
         from estook.cobro c join facturacion.documento d on d.id = c.documento_id
        where c.id = ${entrada.cobro_id}::uuid and c.local_id = ${localId}::uuid
     `;
@@ -383,124 +642,105 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
         cobroId: entrada.cobro_id,
         documentoId: yaCobrado.documento_id,
         numero: elNumeroEntero(yaCobrado.serie, yaCobrado.numero),
-        cambio: elCambio(entrada.pagos),
+        cambio: entrada.pagos === undefined ? 0 : elCambio(entrada.pagos),
         queda: quedaAhora,
         liberada: quedaAhora === 0,
         cajonAbierto: false,
         yaEstaba: true,
+        cobradoPor: yaCobrado.cobrado_por,
       };
     }
 
-    const cajon = await elCajonOFallo(contexto);
-    const caja = await laCajaAbiertaDe(contexto, cajon.id);
-    if (caja === null) {
-      throw new FalloDeAplicacion('faltan_datos', {
-        porque: 'Abre la caja para cobrar.',
-        caja: 'cerrada',
-      });
+    // **Quien cobra**: quien teclea su PIN, aunque la caja la tenga abierta otro (0145).
+    const cobradoPor =
+      entrada.pin === undefined
+        ? enElAparato
+        : (await quienEsElPin(contexto, entrada.pin, 'accion.cobrar')).personaId;
+
+    const caja = await laCajaDelCobro(contexto, localId, entrada.turno_id);
+
+    // ── Lo pendiente en la caja: lo cubre lo que dejó el camarero, con lo ya pagado en la mesa ──
+    const pendiente =
+      entrada.pendiente_id === undefined
+        ? null
+        : await elPendiente(contexto, localId, entrada.pendiente_id);
+    if (pendiente !== null) {
+      if (!caja.conCajon) {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: 'El efectivo pendiente se cobra en la caja, que es donde está el cajón.',
+        });
+      }
+      if (pendiente.cobro_id !== null || pendiente.quitado_en !== null) {
+        throw new FalloDeAplicacion('ya_hecho', {
+          porque:
+            pendiente.cobro_id !== null
+              ? 'Este cobro ya lo ha cobrado otra persona.'
+              : 'Este cobro pendiente lo han quitado.',
+        });
+      }
+    }
+    const loQue =
+      pendiente === null
+        ? entrada
+        : {
+            cuenta_id: pendiente.cuenta_id,
+            que: pendiente.que,
+            lineas: pendiente.lineas ?? undefined,
+            parte: pendiente.parte ?? undefined,
+            de: pendiente.de_partes ?? undefined,
+            importe: pendiente.importe,
+          };
+    const cubre = await loQueCubre(contexto, localId, loQue);
+
+    // Una cuenta con un efectivo pendiente en la caja no se cobra por otro lado: se quita antes.
+    if (pendiente === null) {
+      const esperan = await losPendientesDeLaCuenta(contexto, cubre.cuenta.id);
+      const pisa = esperan.some(
+        (p) => p.parte === null || cubre.parte === null || p.parte === cubre.parte.parte,
+      );
+      if (pisa) {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque:
+            'Esta cuenta tiene un cobro en efectivo pendiente en la caja. Cóbralo allí, o quítalo antes.',
+        });
+      }
     }
 
-    // **La cuenta, bloqueada mientras se cobra**: la segunda caja espera y ve lo que queda.
-    await contexto.sql`
-      select id from estook.cuenta
-       where id = ${entrada.cuenta_id}::uuid and local_id = ${localId}::uuid
-       for update
-    `;
-    const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
-    const vivas = (await losPlatos(contexto, [cuenta.id])).filter((l) => l.quitada_en === null);
-    const total = vivas.reduce((s, l) => s + l.precio_centimos * l.cantidad, 0);
-    const [anteriores, lineasCobradas] = await Promise.all([
-      contexto.sql<CobroAnterior[]>`
-        select importe, parte, de_partes from estook.cobro where cuenta_id = ${cuenta.id}::uuid
-      `,
-      contexto.sql<{ linea_id: string }[]>`
-        select l.linea_id::text as linea_id
-          from estook.cobro_de_linea l join estook.cobro c on c.id = l.cobro_id
-         where c.cuenta_id = ${cuenta.id}::uuid
-      `,
-    ]);
-    const cobrado = anteriores.reduce((s, c) => s + c.importe, 0);
-    const queda = total - cobrado;
-    const cobradas = new Set(lineasCobradas.map((l) => l.linea_id));
-    const partesAnteriores = anteriores.filter((c) => c.parte !== null);
-    const sinCobrar = vivas.filter((l) => !cobradas.has(l.id));
-
-    if (queda <= 0) {
-      throw new FalloDeAplicacion('ya_hecho', { porque: 'Esta cuenta ya está cobrada entera.' });
-    }
-
-    // ── Lo que cubre este cobro ──────────────────────────────────────────────────────
-    let importe: number;
-    let lineasDelCobro: typeof vivas = [];
-    let parte: { readonly parte: number; readonly de: number } | null = null;
-    const titulo = elTituloDeLaCuenta(cuenta);
-
-    if (entrada.que === 'toda') {
-      const aMedias =
-        partesAnteriores.length > 0 &&
-        partesAnteriores.length < (partesAnteriores[0]?.de_partes ?? 0);
-      if (aMedias) {
+    let pagos: readonly z.infer<typeof unPago>[];
+    if (pendiente !== null) {
+      const yaPagado = pendiente.ya_pagado.reduce((s, p) => s + p.importe, 0);
+      const enEfectivo = pendiente.importe - yaPagado;
+      if (enEfectivo <= 0) {
         throw new FalloDeAplicacion('faltan_datos', {
-          porque: 'Esta cuenta se está cobrando a partes iguales: cobra las que quedan.',
+          porque: 'No queda nada por cobrar en efectivo.',
         });
       }
-      importe = queda;
-      // Si ya se cobró a partes, lo que queda no son platos: es el resto.
-      lineasDelCobro = partesAnteriores.length > 0 ? [] : sinCobrar;
-    } else if (entrada.que === 'platos') {
-      if (partesAnteriores.length > 0) {
-        throw new FalloDeAplicacion('faltan_datos', {
-          porque: 'Esta cuenta se está cobrando a partes iguales, no por platos.',
-        });
-      }
-      const elegidas = new Set(entrada.lineas ?? []);
-      const arriba = sinCobrar.filter((l) => elegidas.has(l.id));
-      if (arriba.length !== elegidas.size || arriba.some((l) => l.parte_de !== null)) {
-        throw new FalloDeAplicacion('lo_cambio_otra_persona', {
-          porque: 'Algún plato ya no está o ya se cobró: mira la cuenta otra vez.',
-        });
-      }
-      // Los platos de un menú van con su menú.
-      lineasDelCobro = [
-        ...arriba,
-        ...sinCobrar.filter((l) => l.parte_de !== null && elegidas.has(l.parte_de)),
+      pagos = [
+        ...pendiente.ya_pagado.map((p) => ({ forma: p.forma, importe: p.importe })),
+        {
+          forma: 'efectivo' as const,
+          importe: enEfectivo,
+          entregado: entrada.entregado ?? enEfectivo,
+        },
       ];
-      importe = lineasDelCobro.reduce((s, l) => s + l.precio_centimos * l.cantidad, 0);
     } else {
-      const de = entrada.de;
-      const cual = entrada.parte;
-      if (de === undefined || cual === undefined || cual > de) {
-        throw new FalloDeAplicacion('faltan_datos', { porque: 'Di qué parte y de cuántas.' });
+      if (entrada.pagos === undefined) {
+        throw new FalloDeAplicacion('faltan_datos', { porque: 'Di cómo se paga.' });
       }
-      if (cobradas.size > 0 || anteriores.some((c) => c.parte === null)) {
+      pagos = entrada.pagos;
+      // **Sin cajón, el efectivo no se cobra aquí** (0145): se deja pendiente en la caja.
+      if (!caja.conCajon && pagos.some((p) => p.forma === 'efectivo')) {
         throw new FalloDeAplicacion('faltan_datos', {
-          porque: 'Esta cuenta ya se ha empezado a cobrar de otra forma.',
+          porque: 'El efectivo se cobra en la caja: déjalo pendiente para cobrarlo allí.',
         });
       }
-      if (partesAnteriores.some((c) => c.de_partes !== de)) {
-        throw new FalloDeAplicacion('lo_cambio_otra_persona', {
-          porque: `Esta cuenta se está cobrando en ${String(partesAnteriores[0]?.de_partes ?? de)} partes.`,
-        });
-      }
-      if (partesAnteriores.some((c) => c.parte === cual)) {
-        throw new FalloDeAplicacion('ya_hecho', { porque: 'Esa parte ya está cobrada.' });
-      }
-      // La última parte se lleva lo que quede: si se pidió algo entre medias, la cuenta cuadra igual.
-      const esLaUltima = partesAnteriores.length === de - 1;
-      importe = esLaUltima ? queda : laParte(total, cual, de);
-      parte = { parte: cual, de };
     }
 
-    if (importe !== entrada.importe) {
-      throw new FalloDeAplicacion('lo_cambio_otra_persona', {
-        porque: 'La cuenta ha cambiado mientras cobrabas: mírala otra vez.',
-      });
-    }
     const ajustes = await losAjustesDeLaCaja(contexto, localId);
     const no = porQueNoSeCobra({
-      importe,
-      queda,
-      pagos: entrada.pagos,
+      importe: cubre.importe,
+      queda: cubre.queda,
+      pagos,
       encendidas: lasFormasDelLocal(ajustes),
     });
     if (no !== null)
@@ -517,8 +757,8 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
     }
     const regimen = fisco.regimen as LineaVendida['regimen'];
     const lineas: LineaVendida[] =
-      lineasDelCobro.length > 0
-        ? lineasDelCobro
+      cubre.lineasDelCobro.length > 0
+        ? cubre.lineasDelCobro
             // Los platos de un menú sin suplemento no cobran: van dentro de su menú.
             .filter((l) => l.precio_centimos > 0)
             .map((l) => ({
@@ -531,16 +771,16 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
         : [
             {
               nombre:
-                parte === null
-                  ? `Servicio de restauración · ${titulo} · el resto`
-                  : laLineaDeUnaParte(titulo, parte.parte, parte.de),
+                cubre.parte === null
+                  ? `Servicio de restauración · ${cubre.titulo} · el resto`
+                  : laLineaDeUnaParte(cubre.titulo, cubre.parte.parte, cubre.parte.de),
               cantidad: 1,
-              importe,
+              importe: cubre.importe,
               regimen,
               tipo,
             },
           ];
-    const camarero = cuenta.camarero === null ? null : nombreCorto(cuenta.camarero);
+    const camarero = cubre.cuenta.camarero === null ? null : nombreCorto(cubre.cuenta.camarero);
     const hecho = await prepararUnDocumento(contexto, {
       localId,
       tipo: 'F2',
@@ -548,53 +788,66 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
       lineas,
       regimenDelLocal: regimen,
       zonaHoraria: fisco.zonaHoraria,
-      donde: camarero === null ? titulo : `${titulo} · ${camarero}`,
+      donde: camarero === null ? cubre.titulo : `${cubre.titulo} · ${camarero}`,
       origen: 'cobro',
     });
 
-    // ── El cobro, lo que cubre y cómo se pagó ────────────────────────────────────────
-    await contexto.sql`
-      insert into estook.cobro
-        (id, local_id, cuenta_id, turno_id, documento_id, importe, parte, de_partes,
-         cobrado_por, cobrado_desde, cobrado_en)
-      values (${entrada.cobro_id}::uuid, ${localId}::uuid, ${cuenta.id}::uuid, ${caja.id}::uuid,
-              ${hecho.id}::uuid, ${importe}, ${parte?.parte ?? null}, ${parte?.de ?? null},
-              ${personaId}::uuid, ${contexto.sesion?.aparato?.terminalId ?? null}::uuid,
-              ${contexto.ahora.toISOString()}::timestamptz)
-    `;
-    for (const l of lineasDelCobro) {
+    // ── El cobro, lo que cubre y cómo se pagó: a nombre de quien cobra ───────────────
+    await comoQuien(contexto, cobradoPor !== enElAparato, async () => {
       await contexto.sql`
-        insert into estook.cobro_de_linea (cobro_id, linea_id)
-        values (${entrada.cobro_id}::uuid, ${l.id}::uuid)
+        insert into estook.cobro
+          (id, local_id, cuenta_id, turno_id, documento_id, importe, parte, de_partes,
+           cobrado_por, cobrado_desde, cobrado_en)
+        values (${entrada.cobro_id}::uuid, ${localId}::uuid, ${cubre.cuenta.id}::uuid,
+                ${caja.id}::uuid, ${hecho.id}::uuid, ${cubre.importe}, ${cubre.parte?.parte ?? null},
+                ${cubre.parte?.de ?? null}, ${cobradoPor}::uuid,
+                ${contexto.sesion?.aparato?.terminalId ?? null}::uuid,
+                ${contexto.ahora.toISOString()}::timestamptz)
       `;
-    }
-    for (const p of entrada.pagos) {
-      await contexto.sql`
-        insert into estook.pago (cobro_id, local_id, forma, importe, entregado)
-        values (${entrada.cobro_id}::uuid, ${localId}::uuid, ${p.forma}, ${p.importe},
-                ${p.forma === 'efectivo' ? (p.entregado ?? null) : null})
-      `;
-    }
+      for (const l of cubre.lineasDelCobro) {
+        await contexto.sql`
+          insert into estook.cobro_de_linea (cobro_id, linea_id)
+          values (${entrada.cobro_id}::uuid, ${l.id}::uuid)
+        `;
+      }
+      for (const p of pagos) {
+        await contexto.sql`
+          insert into estook.pago (cobro_id, local_id, forma, importe, entregado)
+          values (${entrada.cobro_id}::uuid, ${localId}::uuid, ${p.forma}, ${p.importe},
+                  ${p.forma === 'efectivo' ? (p.entregado ?? null) : null})
+        `;
+      }
+      if (pendiente !== null) {
+        await contexto.sql`
+          update estook.cobro_pendiente set cobro_id = ${entrada.cobro_id}::uuid
+           where id = ${pendiente.id}::uuid
+        `;
+      }
+    });
 
-    const quedaDespues = queda - importe;
+    const quedaDespues = cubre.queda - cubre.importe;
     const liberada = quedaDespues === 0;
     if (liberada) {
       await contexto.sql`
         update estook.cuenta
            set liberada_en = ${contexto.ahora.toISOString()}::timestamptz,
-               liberada_por = ${personaId}::uuid
-         where id = ${cuenta.id}::uuid
+               liberada_por = ${enElAparato}::uuid
+         where id = ${cubre.cuenta.id}::uuid
       `;
     }
-    const cajonAbierto = entrada.pagos.some((p) => abreElCajon(p.forma))
-      ? await abrirElCajonDeEsteAparato(contexto, localId)
-      : false;
-    await apuntar(contexto, 'cobrar', 'cuenta', cuenta.id, localId, {
+    // **El cajón lo abre la impresora** de esta caja, con su impulso. Un comandero no tiene cajón.
+    const cajonAbierto =
+      caja.conCajon && pagos.some((p) => abreElCajon(p.forma))
+        ? await abrirElCajonDeEsteAparato(contexto, localId)
+        : false;
+    await apuntar(contexto, 'cobrar', 'cuenta', cubre.cuenta.id, localId, {
       cobro: entrada.cobro_id,
       ticket: hecho.numero,
-      importe,
-      pagos: entrada.pagos.map((p) => ({ forma: p.forma, importe: p.importe })),
-      ...(parte === null ? {} : { parte: parte.parte, de: parte.de }),
+      importe: cubre.importe,
+      pagos: pagos.map((p) => ({ forma: p.forma, importe: p.importe })),
+      ...(cubre.parte === null ? {} : { parte: cubre.parte.parte, de: cubre.parte.de }),
+      ...(pendiente === null ? {} : { pendiente: pendiente.id }),
+      ...(cobradoPor === enElAparato ? {} : { cobrado_por: cobradoPor }),
       liberada,
     });
     await tocarElServicio(contexto, localId);
@@ -602,11 +855,12 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
       cobroId: entrada.cobro_id,
       documentoId: hecho.id,
       numero: hecho.numero,
-      cambio: elCambio(entrada.pagos),
+      cambio: elCambio(pagos),
       queda: quedaDespues,
       liberada,
       cajonAbierto,
       yaEstaba: false,
+      cobradoPor,
     };
   },
 });
@@ -621,6 +875,158 @@ async function loQueQueda(contexto: Contexto, cuentaId: string): Promise<number>
   `;
   return Math.max(0, filas[0]?.queda ?? 0);
 }
+
+// ═══ El efectivo, pendiente en la caja (0145) ═══════════════════════════════════════
+
+export const entradaDejarElCobroEnLaCaja = z
+  .object({
+    /** Nace en el aparato: dejarlo dos veces desde el mismo toque no deja dos. */
+    pendiente_id: id,
+    ...loQueCubreLaEntrada,
+    /** Lo cobrado ya en la mesa con tarjeta, Bizum o cheque: va en el mismo ticket. */
+    ya_pagado: z.array(unPagoEnLaMesa).max(3).optional(),
+  })
+  .strict();
+export type EntradaDejarElCobroEnLaCaja = z.infer<typeof entradaDejarElCobroEnLaCaja>;
+
+export interface CobroDejadoEnLaCaja {
+  readonly pendienteId: string;
+  /** Lo que se cobra en efectivo en la caja. */
+  readonly enEfectivo: number;
+  readonly yaEstaba: boolean;
+}
+
+/**
+ * **Dejar el efectivo para la caja** (0145; Richi, 10-nov): el camarero cobra en la mesa lo que no es
+ * efectivo, y el efectivo lo deja pendiente a su nombre. En la caja sale «Cobro pendiente · Mesa 4 ·
+ * Ricardo», en la pantalla del PIN y en la mesa, y se cobra allí con el PIN de quien cobra. No hace falta
+ * ninguna caja abierta para dejarlo: se cobra cuando se abra.
+ */
+export const dejarElCobroEnLaCaja = comando<EntradaDejarElCobroEnLaCaja, CobroDejadoEnLaCaja>({
+  nombre: 'dejar_el_cobro_en_la_caja',
+  entrada: entradaDejarElCobroEnLaCaja,
+  exige: 'accion.cobrar',
+  enElTpv: 'solo',
+  enLosAparatos: ['caja', 'comandero'],
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelServicio(contexto);
+    const personaId = contexto.personaId;
+    if (personaId === null) throw new FalloDeAplicacion('sin_sesion');
+
+    const antes = await contexto.sql<{ importe: number; ya_pagado: { importe: number }[] }[]>`
+      select importe, ya_pagado from estook.cobro_pendiente
+       where id = ${entrada.pendiente_id}::uuid and local_id = ${localId}::uuid
+    `;
+    const yaDejado = antes[0];
+    if (yaDejado !== undefined) {
+      return {
+        pendienteId: entrada.pendiente_id,
+        enEfectivo: yaDejado.importe - yaDejado.ya_pagado.reduce((s, p) => s + p.importe, 0),
+        yaEstaba: true,
+      };
+    }
+
+    const cubre = await loQueCubre(contexto, localId, entrada);
+    const yaPagado = entrada.ya_pagado ?? [];
+    const enMesa = yaPagado.reduce((s, p) => s + p.importe, 0);
+    const enEfectivo = cubre.importe - enMesa;
+    if (enEfectivo <= 0) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Así no queda nada en efectivo: cóbralo todo aquí.',
+      });
+    }
+    const ajustes = await losAjustesDeLaCaja(contexto, localId);
+    const encendidas = lasFormasDelLocal(ajustes);
+    if (yaPagado.some((p) => !encendidas.includes(p.forma))) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Esa forma de pago no está encendida en este local.',
+      });
+    }
+    const esperan = await losPendientesDeLaCuenta(contexto, cubre.cuenta.id);
+    if (
+      esperan.some((p) => p.parte === null || cubre.parte === null || p.parte === cubre.parte.parte)
+    ) {
+      throw new FalloDeAplicacion('ya_hecho', {
+        porque: 'Esta cuenta ya tiene un cobro pendiente en la caja.',
+      });
+    }
+
+    await contexto.sql`
+      insert into estook.cobro_pendiente
+        (id, local_id, cuenta_id, que, lineas, parte, de_partes, importe, ya_pagado,
+         marcado_por, marcado_desde, marcado_en)
+      values (${entrada.pendiente_id}::uuid, ${localId}::uuid, ${cubre.cuenta.id}::uuid,
+              ${entrada.que}, ${entrada.que === 'platos' ? (entrada.lineas ?? null) : null}::uuid[],
+              ${cubre.parte?.parte ?? null}, ${cubre.parte?.de ?? null}, ${cubre.importe},
+              ${JSON.stringify(yaPagado)}::text::jsonb, ${personaId}::uuid,
+              ${contexto.sesion?.aparato?.terminalId ?? null}::uuid,
+              ${contexto.ahora.toISOString()}::timestamptz)
+    `;
+    await apuntar(contexto, 'dejar_el_cobro_en_la_caja', 'cuenta', cubre.cuenta.id, localId, {
+      pendiente: entrada.pendiente_id,
+      importe: cubre.importe,
+      en_efectivo: enEfectivo,
+      ya_pagado: yaPagado,
+    });
+    await tocarElServicio(contexto, localId);
+    return { pendienteId: entrada.pendiente_id, enEfectivo, yaEstaba: false };
+  },
+});
+
+/**
+ * **Quitar un cobro pendiente** (0145): el cliente al final paga con tarjeta, o se dejó por error. Lo
+ * puede quitar quien cobra, en la caja o en el comandero. Queda quién y cuándo.
+ */
+export const quitarElCobroPendiente = comando<
+  { pendiente_id: string },
+  { readonly quitado: boolean }
+>({
+  nombre: 'quitar_el_cobro_pendiente',
+  entrada: z.object({ pendiente_id: id }).strict(),
+  exige: 'accion.cobrar',
+  enElTpv: 'solo',
+  enLosAparatos: ['caja', 'comandero'],
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelServicio(contexto);
+    const personaId = contexto.personaId;
+    if (personaId === null) throw new FalloDeAplicacion('sin_sesion');
+    const pendiente = await elPendiente(contexto, localId, entrada.pendiente_id);
+    if (pendiente.quitado_en !== null) return { quitado: true };
+    if (pendiente.cobro_id !== null) {
+      throw new FalloDeAplicacion('ya_hecho', { porque: 'Ya está cobrado: no se puede quitar.' });
+    }
+    await contexto.sql`
+      update estook.cobro_pendiente
+         set quitado_en = ${contexto.ahora.toISOString()}::timestamptz, quitado_por = ${personaId}::uuid
+       where id = ${pendiente.id}::uuid
+    `;
+    await apuntar(contexto, 'quitar_el_cobro_pendiente', 'cuenta', pendiente.cuenta_id, localId, {
+      pendiente: pendiente.id,
+    });
+    await tocarElServicio(contexto, localId);
+    return { quitado: true };
+  },
+});
+
+/**
+ * **¿De quién es este PIN?** (0145): en la caja, al tocar un cobro pendiente, se teclea el PIN de quien
+ * cobra antes de escribir lo que da el cliente. Esto lo mira y dice su nombre; el cobro lo vuelve a
+ * mirar. El intento se guarda, acierte o no.
+ */
+export const quienCobraConEstePin = comando<{ pin: string }, { readonly nombre: string }>({
+  nombre: 'quien_cobra_con_este_pin',
+  entrada: z.object({ pin: z.string().max(12) }).strict(),
+  exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
+  enLosAparatos: ['caja'],
+
+  async ejecutar(contexto, entrada) {
+    const quien = await quienEsElPin(contexto, entrada.pin, 'accion.cobrar');
+    return { nombre: nombreCorto(quien.nombre) };
+  },
+});
 
 // ═══ Abrir el cajón: cambio, sacar o meter ═════════════════════════════════════════
 

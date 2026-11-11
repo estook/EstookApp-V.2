@@ -47,6 +47,7 @@ import {
   type QuienFichaAqui,
 } from './aparato-para-fichar.ts';
 import { pasarAOtroCamarero } from './sala.ts';
+import { elTituloDeLaCuenta } from '../sala.ts';
 
 /**
  * Los aparatos de Estook TPV y quién los usa (T1 · La puerta, decisión 0107; Anexo
@@ -262,6 +263,18 @@ export interface ElAparatoPorDentro {
    * caja» o ámbar «Cerrar caja», antes de que nadie entre. Nula si el aparato no tiene cajón.
    */
   readonly cajaAbierta: boolean | null;
+  /**
+   * **Los cobros en efectivo que esperan en la caja** (0145): «Cobro pendiente · Mesa 4 · Ricardo», a la
+   * izquierda de la pantalla del PIN. Solo en la caja; vacío en los demás aparatos.
+   */
+  readonly cobrosPendientes: readonly {
+    readonly id: string;
+    readonly cuentaId: string;
+    readonly titulo: string;
+    readonly enEfectivo: number;
+    readonly por: string;
+    readonly desde: string;
+  }[];
 }
 
 export interface ElCentroParaElAparato {
@@ -307,7 +320,7 @@ async function elAparatoPorDentro(
   aparato: AparatoDelTpv,
   laLlave: string,
 ): Promise<ElAparatoPorDentro> {
-  const [fichados, bloqueo, mesas, caja] = await Promise.all([
+  const [fichados, bloqueo, mesas, caja, pendientes] = await Promise.all([
     contexto.sql<{ nombre: string; desde: Date }[]>`
       select nombre, desde from estook.fichados_en_el_aparato(${await huellaDeToken(laLlave)})
        order by desde
@@ -332,6 +345,28 @@ async function elAparatoPorDentro(
         ) as abierta
       `,
     ),
+    aparato.nombreDelCajon === null
+      ? Promise.resolve([])
+      : enNombreDelSistema(
+          contexto,
+          () =>
+            contexto.sql<
+              {
+                id: string;
+                cuenta_id: string;
+                tipo: string;
+                mesa: string | null;
+                nombre: string | null;
+                en_efectivo: number;
+                por: string;
+                desde: string;
+              }[]
+            >`
+            select id::text as id, cuenta_id::text as cuenta_id, tipo, mesa, nombre, en_efectivo, por,
+                   to_char(desde at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as desde
+              from estook.los_cobros_pendientes_de_la_caja(${aparato.localId}::uuid)
+          `,
+        ),
   ]);
   return {
     terminalId: aparato.terminalId,
@@ -355,6 +390,14 @@ async function elAparatoPorDentro(
     // La pone el latido, que es lo primero que hace el aparato al encenderse.
     clavePublica: null,
     cajaAbierta: aparato.nombreDelCajon === null ? null : caja[0]?.abierta === true,
+    cobrosPendientes: pendientes.map((p) => ({
+      id: p.id,
+      cuentaId: p.cuenta_id,
+      titulo: elTituloDeLaCuenta({ tipo: p.tipo, mesa: p.mesa, nombre: p.nombre }),
+      enEfectivo: p.en_efectivo,
+      por: p.por.trim().split(' ')[0] ?? p.por,
+      desde: p.desde,
+    })),
   };
 }
 
@@ -1660,6 +1703,8 @@ export interface UnAparato {
   readonly esElCentro: boolean;
   /** Solo el centro: si va por wifi o por cable. */
   readonly centroPor: 'wifi' | 'cable' | null;
+  /** La impresora donde saca sus tickets (0145); nula, la de la caja. */
+  readonly imprimeEn: string | null;
 }
 
 export interface LosAparatos {
@@ -1667,6 +1712,8 @@ export interface LosAparatos {
   readonly aparatos: readonly UnAparato[];
   readonly cajones: readonly { readonly id: string; readonly nombre: string }[];
   readonly personas: readonly { readonly id: string; readonly nombre: string }[];
+  /** Las impresoras del local, para elegir dónde saca sus tickets cada aparato (0145). */
+  readonly impresoras: readonly { readonly id: string; readonly nombre: string }[];
 }
 
 export const losAparatos = consulta<Record<string, never>, LosAparatos>({
@@ -1680,7 +1727,7 @@ export const losAparatos = consulta<Record<string, never>, LosAparatos>({
   async ejecutar(contexto) {
     const aparato = await elAparatoDeLaSesion(contexto);
     const hace2 = new Date(contexto.ahora.getTime() - 2 * 60_000).toISOString();
-    const [filas, cajones, personas] = await Promise.all([
+    const [filas, cajones, personas, impresoras] = await Promise.all([
       contexto.sql<
         {
           id: string;
@@ -1698,6 +1745,7 @@ export const losAparatos = consulta<Record<string, never>, LosAparatos>({
           camino: CaminoAlCentro | null;
           es_el_centro: boolean;
           centro_por: 'wifi' | 'cable' | null;
+          imprime_en: string | null;
         }[]
       >`
         with el_centro as (
@@ -1719,7 +1767,7 @@ export const losAparatos = consulta<Record<string, never>, LosAparatos>({
                ) as vale,
                t.sistema, t.camino_al_centro as camino,
                exists (select 1 from el_centro e where e.id = t.id) as es_el_centro,
-               t.centro_por
+               t.centro_por, t.imprime_en::text as imprime_en
           from estook.terminal t
           left join estook.persona d on d.id = t.persona_id
           left join estook.cajon c on c.id = t.cajon_id
@@ -1733,6 +1781,10 @@ export const losAparatos = consulta<Record<string, never>, LosAparatos>({
          where local_id = ${aparato.localId}::uuid and retirado_en is null order by nombre
       `,
       quienesTomanNota(contexto, aparato.localId),
+      contexto.sql<{ id: string; nombre: string }[]>`
+        select id::text as id, nombre from estook.impresora
+         where local_id = ${aparato.localId}::uuid and retirada_en is null order by nombre
+      `,
     ]);
     return {
       este: aparato.terminalId,
@@ -1750,9 +1802,11 @@ export const losAparatos = consulta<Record<string, never>, LosAparatos>({
         camino: f.camino,
         esElCentro: f.es_el_centro,
         centroPor: f.es_el_centro ? f.centro_por : null,
+        imprimeEn: f.imprime_en,
       })),
       cajones,
       personas,
+      impresoras,
     };
   },
 });
@@ -1803,6 +1857,56 @@ export const cambiarAparato = comando<
       {
         nombre: entrada.nombre,
         funcion: entrada.funcion,
+      },
+    );
+    return { terminalId: entrada.terminal_id };
+  },
+});
+
+/**
+ * **Dónde saca sus tickets un aparato** (0145; Richi, 11-nov): un comandero con impresora propia, o una
+ * en la sala, saca allí los tickets de lo que cobra en la mesa. Sin elegir, la de la caja.
+ */
+export const elegirDondeImprime = comando<
+  { terminal_id: string; impresora_id: string | null },
+  { readonly terminalId: string }
+>({
+  nombre: 'elegir_donde_imprime',
+  entrada: z.object({ terminal_id: id, impresora_id: id.nullable() }).strict(),
+  exige: 'accion.vincular_aparatos',
+  enElTpv: 'solo',
+  enLosAparatos: ['caja'],
+
+  async ejecutar(contexto, entrada) {
+    soloEnLaCaja(contexto);
+    const aparato = await elAparatoDeLaSesion(contexto);
+    if (entrada.impresora_id !== null) {
+      const hay = await contexto.sql<{ id: string }[]>`
+        select id::text as id from estook.impresora
+         where id = ${entrada.impresora_id}::uuid and local_id = ${aparato.localId}::uuid
+           and retirada_en is null
+      `;
+      if (hay.length === 0) {
+        throw new FalloDeAplicacion('no_existe', { porque: 'Esa impresora ya no está.' });
+      }
+    }
+    const filas = await contexto.sql<{ id: string }[]>`
+      update estook.terminal set imprime_en = ${entrada.impresora_id}::uuid
+       where id = ${entrada.terminal_id}::uuid and local_id = ${aparato.localId}::uuid
+         and retirado_en is null
+      returning id::text as id
+    `;
+    if (filas.length === 0) {
+      throw new FalloDeAplicacion('no_existe', { porque: 'Ese aparato ya no está vinculado.' });
+    }
+    await apuntar(
+      contexto,
+      aparato.organizacionId,
+      'cambiar',
+      entrada.terminal_id,
+      aparato.localId,
+      {
+        imprime_en: entrada.impresora_id,
       },
     );
     return { terminalId: entrada.terminal_id };

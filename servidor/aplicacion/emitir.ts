@@ -1859,7 +1859,19 @@ export async function imprimirElDocumento(
 ): Promise<boolean> {
   const papel = elPapelDelDocumento(doc, h, copia, await laFacturaQueSePide(contexto, doc));
   if (papel === null) return false;
-  const impresora = await laImpresoraDe(contexto, doc.localId, 'caja');
+  // **Por la impresora del aparato que lo hizo** (0145): un comandero con la suya saca allí sus
+  // tickets. Sin ella, o sin aparato (Estook, el reloj), la de la caja.
+  const delAparato = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ id: string }[]>`
+      select i.id::text as id
+        from facturacion.documento d
+        join estook.terminal t on t.id = d.desde_terminal
+        join estook.impresora i on i.id = t.imprime_en
+       where d.id = ${doc.id}::uuid and i.retirada_en is null and i.local_id = ${doc.localId}::uuid
+    `,
+  );
+  const impresora = delAparato[0]?.id ?? (await laImpresoraDe(contexto, doc.localId, 'caja'));
   if (impresora === null) return false;
   const tipo =
     papel.piezas.some((p) => p.tipo === 'qr') || doc.modalidad === 'fuera_sii'

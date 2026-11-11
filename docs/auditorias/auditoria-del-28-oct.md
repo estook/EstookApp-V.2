@@ -51,7 +51,7 @@
 
 ## Lo que hay que saber, sin ser un fallo
 
-- **El programa de Windows no está publicado**: hasta el paso 5 de [T5 · 1](../pasos-de-t5-1.md),
+- **El programa de Windows no está publicado**: hasta el paso 5 de [T5 · 1](../pasos/pasos-de-t5-1.md),
   «Descargar» no baja nada.
 - **El enlace de descarga vive en GitHub**: el día que el repositorio pase a privado (la mudanza),
   hay que llevar el programa al alojamiento nuevo antes.

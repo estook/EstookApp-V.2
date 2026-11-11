@@ -36,24 +36,24 @@ Tres cosas, y las tres respetan el principio de arriba.
 
 **El reparto de alertas.** Una alerta llega a quien puede actuar sobre ella, **no a todo el mundo**. Una alerta que llega a alguien que no puede hacer nada con ella es ruido, y el ruido enseña a ignorar.
 
-**Estook Pulse.** Lo ve quien tiene responsabilidad sobre el resultado del negocio. No es un secreto: es que a un camarero no le sirve de nada, y ocupar su pantalla con ello es empeorarle la herramienta.
+**Estook Pulse se quitó el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)), y con él la columna «¿Ve Pulse?» de esta tabla. Las cifras del negocio las ve quien tiene responsabilidad sobre el resultado: a un camarero no le sirven de nada, y ocupar su pantalla con ellas es empeorarle la herramienta.
 
-| Rol            | Zona de atención                                      | Alertas que le llegan                                     | ¿Ve Pulse?                        |
-| -------------- | ----------------------------------------------------- | --------------------------------------------------------- | --------------------------------- |
-| Camarero       | Su turno, agotados, lo que le han cambiado            | Cambios en su turno, agotados de sala                     | No                                |
-| Cocinero       | Fichas nuevas, caducidades, sus tareas, APPCC del día | Caducidad, ficha nueva, APPCC pendiente suyo              | No                                |
-| Jefe de sala   | Turnos sin cubrir de sala, agotados, ventas del turno | Turno sin cubrir, agotado, incidencia de sala             | No                                |
-| Jefe de cocina | Bajo mínimo, caducidades, platos bajo objetivo, APPCC | Stock crítico, margen de plato, APPCC, pedido por recibir | **Solo la parte de cocina**       |
-| Gerente        | Todo lo del local                                     | Todas las del local                                       | **Sí, completo**                  |
-| Area manager   | Los locales que se salen, primero                     | Las de sus locales, agrupadas por local                   | **Sí, de cada local y comparado** |
-| Gestoría       | Periodos por cerrar, descuadres                       | Descuadre, periodo sin cerrar                             | No                                |
-| Dirección      | Lo que se sale, en todos los locales                  | Las de todos, agrupadas                                   | **Sí, y el consolidado**          |
+| Rol            | Zona de atención                                      | Alertas que le llegan                                     |
+| -------------- | ----------------------------------------------------- | --------------------------------------------------------- |
+| Camarero       | Su turno, agotados, lo que le han cambiado            | Cambios en su turno, agotados de sala                     |
+| Cocinero       | Fichas nuevas, caducidades, sus tareas, APPCC del día | Caducidad, ficha nueva, APPCC pendiente suyo              |
+| Jefe de sala   | Turnos sin cubrir de sala, agotados, ventas del turno | Turno sin cubrir, agotado, incidencia de sala             |
+| Jefe de cocina | Bajo mínimo, caducidades, platos bajo objetivo, APPCC | Stock crítico, margen de plato, APPCC, pedido por recibir |
+| Gerente        | Todo lo del local                                     | Todas las del local                                       |
+| Area manager   | Los locales que se salen, primero                     | Las de sus locales, agrupadas por local                   |
+| Gestoría       | Periodos por cerrar, descuadres                       | Descuadre, periodo sin cerrar                             |
+| Dirección      | Lo que se sale, en todos los locales                  | Las de todos, agrupadas                                   |
 
 ## 1.3 Camarero o personal de sala
 
 **Entra y ve:** su turno de hoy, el menú del día, los agotados, los alérgenos y sus horas de la semana.
 
-**Su rueda:** Calendario, Carta (solo lectura), **Escandallos (las fichas, sin un euro)**, Cuaderno y Servicio limitado a registrar mermas. Cinco sectores ([0087](../decisiones/0087-fichas-y-escandallos.md): «la ficha es para camareros y cocineros sobre todo»). **Si el local cobra con Estook**, la sala la lleva en **Estook TPV**, en la caja o en su móvil vinculado como comandero: las mesas, tomar nota y, si el local lo permite, cobrar (1.12). Desde Estook no se entra al TPV ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)).
+**Su rueda:** Calendario, Carta (solo lectura), **Escandallos (las fichas, sin un euro)** y Servicio limitado a registrar mermas. Cuatro sectores, sin Cuaderno desde el 11-nov-2026 ([0087](../decisiones/0087-fichas-y-escandallos.md): «la ficha es para camareros y cocineros sobre todo»). **Si el local cobra con Estook**, la sala la lleva en **Estook TPV**, en la caja o en su móvil vinculado como comandero: las mesas, tomar nota y, si el local lo permite, cobrar (1.12). Desde Estook no se entra al TPV ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)).
 
 ```
 Buenos dias, Sara
@@ -87,7 +87,7 @@ Buenos dias, Sara
 
 **Entra y ve:** su turno, lo que caduca y sus tareas. La hoja de producción del día, cuando se encienda con las elaboraciones (0090).
 
-**Su rueda:** Escandallos, Almacén (registrar), Servicio (APPCC y mermas), Calendario y Cuaderno.
+**Su rueda:** Escandallos, Almacén (registrar), Servicio (APPCC y mermas) y Calendario.
 
 **Lo que hace especial su experiencia:** **las fichas técnicas** de la casa en el móvil, con gramajes y los pasos con sus fotos, **sin un solo importe**, y **escaladas a las raciones que vaya a hacer** (0092). Sin modo cocina (en servicio, Estook TPV; 0090) y sin «ya la sé» (0092).
 
@@ -103,7 +103,7 @@ No ve costes de materia prima ni escandallos con importes.
 
 ## 1.6 Jefe de cocina
 
-**Su Panel:** gasto de cocina contra objetivo, platos bajo objetivo, valor en cámara, caducidades de la semana, pedidos por recibir y APPCC pendiente. Y **la parte de cocina de Pulse**: food cost, mermas y desviación, sin la parte de personal de sala ni la de facturación.
+**Su Panel:** gasto de cocina contra objetivo, platos bajo objetivo, valor en cámara, caducidades de la semana, pedidos por recibir y APPCC pendiente. Y **lo de cocina**: food cost, mermas y desviación, sin la parte de personal de sala ni la de facturación.
 
 **Y manda los pedidos** (M7). Hacer el borrador y recibir el camión es de cualquiera con el Almacén —el cocinero sabe lo que falta y es quien está en la puerta—; **mandarlo al proveedor, o cancelar uno ya mandado, compromete dinero del local** y pide `accion.enviar_pedidos`, que tienen el jefe de cocina, el gerente, el responsable de área, dirección y compras central. Al cocinero no se le esconde el botón: se le dice quién lo manda, y a quien puede le sale como borrador por mandar ([decisión 0032](../decisiones/0032-las-compras-se-mandan-se-reciben-y-se-concilian.md)). Las facturas, lo pactado y la comparativa de precios son de quien ve precios de compra.
 
@@ -162,6 +162,8 @@ Dos cosas distintas, con dos reglas distintas ([decisión 0025](../decisiones/00
 ## 1.11 Los avisos del Calendario
 
 Los publica quien puede editar el Calendario —gerente, jefes—, y **elige qué roles los ven**: toda la plantilla, solo la cocina, solo la sala. Lo filtra la base de datos, como las horas. Lo que publican los módulos —entregas, caducidades, turnos— lo ve quien ve ese módulo: una entrega, quien lleva compras y el almacén; un turno, su dueño y quien lleva a esa persona ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)).
+
+**Desde la reorganización del 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.1; Plan, M14), y por construir: quien pone un recordatorio en el Calendario es **el gerente, el jefe de cocina o el jefe de sala**, y elige si es **general, solo de sala o solo de cocina**; ese grupo recibe el aviso ese día, y cada día si son varios. **Cada empleado tiene sus notas personales**, con recordatorio si quiere: **no las ve nadie más, tampoco el gerente**. Y **las vacaciones**: los jefes se las ponen a su equipo, o el empleado las pide y su jefe las valida o propone otros días; cada uno ve su saldo y nadie el de otro, salvo quien lleva a esa persona.
 
 **El Tablón** es otra cosa: el corcho de la cocina, en el Panel ([decisión 0049](../decisiones/0049-almacen-inventario-congelado-tablon-y-carta.md)). **Escribe cualquiera del local**, a su nombre —quien más lo usa es la sala, con las reservas—, para todos o para la cocina o la sala: la cocina no ve lo de sala ni la sala lo de cocina, y quien lleva las dos lo ve todo. Cada uno marca **leído** lo suyo; **quien la escribió ve quién la ha leído**, y **quien lleva al equipo** (quien ve Equipo) ve además **quién falta** de a quien lleva. La quita su autor o quien lleva al equipo. Con hora, sale también en el Calendario y, una vez leída, en «Hoy», con la misma regla de quién la ve.
 
@@ -225,9 +227,22 @@ _Solo en locales que cobran con Estook TPV. Es la propuesta por defecto: el gere
 
 **Fogón**, con cualquier rol, puede explicar un ticket o una factura, pero **nunca emite, anula ni corrige** ninguno, ni lo ofrece como acción de un toque.
 
+## 1.13 Lo que añade la reorganización del 11-nov
+
+_Decidido por Richi el 11-nov-2026 ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)); por construir, cada cosa en su módulo del Plan._
+
+- **El APPCC (M16b).** El **gerente** lo configura: controles, equipos, frecuencias, límites, responsables y procedimientos. El **jefe de cocina y el jefe de sala** ejecutan y registran lo de su área. **Los trabajadores** hacen solo los controles que se les asignan: nunca se les obliga a rellenar todo el APPCC. Cada registro queda a nombre de quien lo hace.
+- **El contrato y la ficha del trabajador (M13).** El contrato lo ven **quien lleva el local y la propia persona**; nadie más, y Fogón solo para leerlo cuando el gerente lo sube. Lo que sale de él —jornada, convenio, vacaciones— lo confirma el gerente.
+- **La exportación de los fichajes (M15)**, desde la ficha: quien lleva a esa persona, y cada uno los suyos.
+- **Cada plan, lo suyo (S1; Plan, M26 y E5).** Lo que no lleva un plan lo niegan **el servidor y la base**, no solo la pantalla: Esencial no llega a nada de Pro ni de Estook TPV. Y **los datos de una empresa no los ve otra jamás**; una prueba lo intenta en cada pull request.
+
+---
+
 # 2 · El area manager
 
 Cómo se pasa de ver seis locales a estar dentro de uno.
+
+**Dicho por Richi el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 2.3; Plan, M24): al contratar varios restaurantes, quien los lleva recibe el rol de area manager. Al entrar ve **la lista de todos sus restaurantes** que usan Estook y, debajo, **un resumen de todos**: un top, los ingresos totales y separados. Puede **entrar en un local y verlo todo como su gerente**. **Solo los que tiene asignados**: lo decide la base, y una prueba lo intenta con uno ajeno.
 
 ## 2.1 Al entrar
 
@@ -258,7 +273,7 @@ Cómo se pasa de ver seis locales a estar dentro de uno.
 │ │ Estacion │ 1.228 €  │ 31,2 % ● │ 26,9 % ● │ 32,8 % ● │      │
 │ └──────────┴──────────┴──────────┴──────────┴──────────┘      │
 │                                                               │
-│ RANKING · COMPRAS · ESTANDARES · VISITAS · CALENDARIO · PULSE │
+│ RANKING · COMPRAS · ESTANDARES · VISITAS · CALENDARIO         │
 └───────────────────────────────────────────────────────────────┘
 ```
 
@@ -268,7 +283,7 @@ Y **cada línea de «necesitan que vayas» es una alerta de verdad**: con su cau
 
 ## 2.2 Entrar en un local y volver
 
-Al pulsar **Entrar** en Puerto, el area manager ve **exactamente lo que vería su gerente**: el Panel completo del local, las ocho apps, sus datos y sus avisos. No una versión reducida ni una de solo lectura.
+Al pulsar **Entrar** en Puerto, el area manager ve **exactamente lo que vería su gerente**: el Panel completo del local, las siete apps, sus datos y sus avisos. No una versión reducida ni una de solo lectura.
 
 Lo único que cambia es que **queda claro dónde está**:
 
@@ -361,7 +376,7 @@ Los puntos automáticos no son cuatro: son **todo lo que Estook ya sabe**. Antes
 | Desviación elevada       | Almacén · brecha entre food cost teórico y real |
 | Fichajes anómalos        | Equipo · planificado contra fichado             |
 | Formación pendiente      | Escandallos · fichas sin aprender por su equipo |
-| Documentación incompleta | Cuaderno · revisiones de equipos vencidas       |
+| Documentación incompleta | APPCC · revisiones de equipos vencidas          |
 | Problemas de stock       | Almacén · bajo mínimo y stock negativo          |
 | Tareas sin cerrar        | Calendario · tareas vencidas                    |
 

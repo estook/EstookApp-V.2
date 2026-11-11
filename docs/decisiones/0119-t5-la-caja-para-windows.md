@@ -113,7 +113,7 @@ caja**, y se decide con M18.
 
 Migración **0093**; la API pasa a **115 consultas y 312 comandos**; el programa, en
 `apps/caja-windows`; el traductor, en `packages/impresion`; los pasos, en
-[`docs/pasos-de-t5-1.md`](../pasos-de-t5-1.md).
+[`docs/pasos/pasos-de-t5-1.md`](../pasos/pasos-de-t5-1.md).
 
 1. **La caja lee su cola al oír el toque al segundo** de su aparato (`impresion:<local>`, solo a las
    cajas) **y una vez por minuto** por si se pierde. Preguntar cada dos segundos gastaría el plan de

@@ -73,7 +73,7 @@ vea, que Pro no pregunte lo que no tiene sentido, y cinco fallos del alta y de A
 7. **Sin el dato del plan** (la API sin desplegar), se sigue preguntando cómo entran las ventas, como antes.
 8. **La gráfica de las ocho semanas del food cost** que enseñaba la maqueta **no se ha hecho**: cada semana es el cálculo entero del almacén. La de las semanas de ventas va en Informes (P2).
 
-**Para Richi**: apuntar en el cliente de OAuth de Google las vueltas de Estook TPV (`https://estook.com/tpv/` y `https://www.estook.com/tpv/`); sin eso, «Continuar con Google» en el TPV dice que Google no deja. Los pasos, en [`pasos-de-la-pausa-del-8-nov.md`](../pasos-de-la-pausa-del-8-nov.md).
+**Para Richi**: apuntar en el cliente de OAuth de Google las vueltas de Estook TPV (`https://estook.com/tpv/` y `https://www.estook.com/tpv/`); sin eso, «Continuar con Google» en el TPV dice que Google no deja. Los pasos, en [`pasos-de-la-pausa-del-8-nov.md`](../pasos/pasos-de-la-pausa-del-8-nov.md).
 
 ## 6 · P2 · Información e Informes, construido (rama `la-pausa-del-8-nov-p2`, migración 0112)
 

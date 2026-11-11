@@ -12,7 +12,7 @@
 >
 > **T1 está en producción**, y Richi vinculó y entró en IKATZ el 24-oct. Lo que vio al probarla
 > (el PIN de quien crea el restaurante, y lo olvidado) está en
-> [`pasos-del-pin-y-la-contrasena.md`](../../pasos-del-pin-y-la-contrasena.md).
+> [`pasos-del-pin-y-la-contrasena.md`](../../pasos/pasos-del-pin-y-la-contrasena.md).
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`. Lo de
 antes, en [`pasos-de-m20a.md`](pasos-de-m20a.md).

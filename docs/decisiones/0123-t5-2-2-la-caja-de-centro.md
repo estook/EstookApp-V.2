@@ -122,4 +122,4 @@ Y lo que ya estaba fuera: **cobrar sin internet**, con su justificante, en T7.
   política de seguridad, que deja hablar con la caja (`politica-de-seguridad.prueba.ts`).
 - **Lo que no se puede probar aquí**: el programa de Windows con el wifi de verdad, el permiso de
   Chrome en un Android de verdad y una impresora de verdad. Se prueba en el local del amigo, con el
-  router de internet desenchufado ([los pasos](../pasos-de-t5-2-2.md)).
+  router de internet desenchufado ([los pasos](../pasos/pasos-de-t5-2-2.md)).

@@ -2,7 +2,7 @@
 titulo: Manifiesto
 tipo: Documento maestro de producto
 fecha: Septiembre de 2026 · versión 1.4
-nota: Qué es Estook, para quién, cómo se comporta hasta el último detalle, qué cuesta y cuánto se cobra. Un Panel y ocho apps, cada una una app de verdad. Documentos hermanos: Arquitectura, Plan de desarrollo, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
+nota: Qué es Estook, para quién, cómo se comporta hasta el último detalle, qué cuesta y cuánto se cobra. Un Panel y siete apps, cada una una app de verdad. Documentos hermanos: Arquitectura, Plan de desarrollo, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
 ---
 
 # Qué es este documento
@@ -64,12 +64,14 @@ Cobrar lo puede hacer Estook con **Estook TPV** —sala, cocina, cobro y tickets
 
 | Lo que ve el cliente     | Quién entra                     | Qué es                                                                                           |
 | ------------------------ | ------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **Estook**               | El restaurante y su equipo      | La gestión: el Panel y sus ocho apps                                                             |
+| **Estook**               | El restaurante y su equipo      | La gestión: el Panel y sus siete apps                                                            |
 | **Estook TPV**           | La sala, la barra y la cocina   | El servicio: tomar nota, cocina, cobrar y la caja. Se instala aparte y **funciona sin conexión** |
 | **La caja para Windows** | Se descarga en el PC de la caja | Estook TPV con el centro del local dentro: impresoras, cajón y la cocina sin internet (0119)     |
-| **Estook Link**          | Se instala una vez en el local  | El conector: las ventas de un TPV ajeno, para quien no cobra con Estook (M19b)                   |
+| **Estook Link**          | Se instala una vez en el local  | El conector: las ventas de un TPV ajeno, para quien no cobra con Estook (M18)                    |
 | **Carta digital**        | El cliente del restaurante      | La carta pública con QR, sin login                                                               |
 | **Web y panel interno**  | Cualquiera / nosotros           | Vender, contratar y administrar                                                                  |
+
+**Estook TPV se usa en sus apps nativas** (Richi, 11-nov-2026; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 3.3): la caja para Windows y Estook TPV para Android —y el iPhone, si algún día se hace—, que **guardan los datos en la máquina** y por eso siguen cobrando sin internet. **La versión web de Estook TPV se queda**, para entrar desde cualquier parte y para probar, con su aviso de que es mejor la nativa y el botón de descarga. Estook, la gestión, es de internet.
 
 > **Una sola base de código, en web.** Estook TPV es **otra puerta del mismo código**, no otra aplicación: la misma cuenta, el mismo PIN, los mismos permisos y los mismos datos al momento. Dónde vive cada pieza y por qué, en la [Arquitectura](Estook-Arquitectura.md), capítulo 1 ([0056](../decisiones/0056-estook-tpv-su-puerta-y-estook-link.md)).
 
@@ -254,34 +256,35 @@ Una persona tiene una o varias membresías, y cada una es `persona + alcance + r
 
 # 5 · La arquitectura de la aplicación
 
-## Un Panel y ocho apps
+## Un Panel y siete apps
 
 ```
                     EL PANEL
         (inicio · atencion · resumen · Fogon)
                         │
-  ┌──────┬──────┬──────┼──────┬──────┬──────┬──────┐
-  ▼      ▼      ▼      ▼      ▼      ▼      ▼      ▼
-ALMA-  ESCAN- CARTA CALEN- EQUIPO SERVI- NEGO-  CUA-
-CEN    DALLOS       DARIO         CIO    CIO   DERNO
+  ┌──────┬──────┬──────┼──────┬──────┬──────┐
+  ▼      ▼      ▼      ▼      ▼      ▼      ▼
+ALMA-  ESCAN- CARTA CALEN- EQUIPO SERVI- NEGO-
+CEN    DALLOS       DARIO         CIO    CIO
 ```
 
-| App         | Qué resuelve                                 | Su pregunta                                   |
-| ----------- | -------------------------------------------- | --------------------------------------------- |
-| Almacén     | Qué hay, qué cuesta, a quién se le compra    | ¿Qué tenemos? ¿Qué se acaba? ¿Qué caduca?     |
-| Escandallos | Todo lo que vendes, plato a plato            | ¿Cuánto cuesta de verdad? ¿Qué margen deja?   |
-| Carta       | Componer la carta y el menú, imprimirlos     | ¿Qué funciona? ¿Qué pierde dinero?            |
-| Calendario  | Qué pasa cada día en el local                | ¿Qué hay hoy? ¿Quién trabaja?                 |
-| Equipo      | Quién trabaja, cuándo y cuánto cuesta        | ¿Cuántas horas? ¿Cuánto cuesta?               |
-| Servicio    | El día a día: jornada, ventas, APPCC, cierre | ¿Qué está pasando hoy?                        |
-| Negocio     | Cómo va, dónde se va el margen               | ¿Dónde se pierde dinero? ¿Qué cambiar?        |
-| Cuaderno    | Notas, incidencias y mantenimiento           | ¿Qué ha pasado? ¿Qué debe saber el siguiente? |
+| App         | Qué resuelve                                 | Su pregunta                                 |
+| ----------- | -------------------------------------------- | ------------------------------------------- |
+| Almacén     | Qué hay, qué cuesta, a quién se le compra    | ¿Qué tenemos? ¿Qué se acaba? ¿Qué caduca?   |
+| Escandallos | Todo lo que vendes, plato a plato            | ¿Cuánto cuesta de verdad? ¿Qué margen deja? |
+| Carta       | Componer la carta y el menú, imprimirlos     | ¿Qué funciona? ¿Qué pierde dinero?          |
+| Calendario  | Qué pasa cada día en el local                | ¿Qué hay hoy? ¿Quién trabaja?               |
+| Equipo      | Quién trabaja, cuándo y cuánto cuesta        | ¿Cuántas horas? ¿Cuánto cuesta?             |
+| Servicio    | El día a día: jornada, ventas, APPCC, cierre | ¿Qué está pasando hoy?                      |
+| Negocio     | Cómo va, dónde se va el margen               | ¿Dónde se pierde dinero? ¿Qué cambiar?      |
+
+**Eran ocho hasta el 11-nov-2026**: Cuaderno se quitó ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md); capítulo 19). Lo que tiene que saber el turno siguiente va en el Tablón; las notas personales, en el Calendario; y el mantenimiento, en el APPCC.
 
 Y encima de todo, **Fogón**, presente en cada pantalla, y el chat del equipo en la cabecera.
 
 ## Qué significa «cada app es una app»
 
-No es una frase bonita. Es una regla de construcción, y cada una de las ocho la cumple:
+No es una frase bonita. Es una regla de construcción, y cada una de las siete la cumple:
 
 - Tiene su propio icono y su acento de color. Se reconoce de un vistazo.
 - Tiene su propia navegación interna, con sus vistas.
@@ -375,7 +378,6 @@ Una rejilla de widgets que cada uno coloca a su gusto, arrastrando. La configura
 | Widget                | Qué enseña                                                            |
 | --------------------- | --------------------------------------------------------------------- |
 | Cifras del día        | Ventas, materia prima, personal, margen, con objetivo y comparación   |
-| Estook Pulse          | La salud del negocio con su explicación                               |
 | Calendario            | Lo de hoy y lo de mañana: turnos, entregas, limpiezas, tareas         |
 | Mi turno              | A qué hora entro, con quién, y qué me toca                            |
 | Avisos de Fogón       | Tarjetas con acción y con ✕                                           |
@@ -408,7 +410,7 @@ Un cocinero se fija sus tres fichas del plato nuevo. Un gerente se fija el marge
 
 Nadie empieza con el Panel vacío:
 
-- **Gerente y propietario:** cifras del día, Pulse, calendario, avisos de Fogón, dónde se va el margen, bajo mínimo, reseñas.
+- **Gerente y propietario:** cifras del día, calendario, avisos de Fogón, dónde se va el margen, bajo mínimo, reseñas.
 - **Jefe de cocina:** calendario, bajo mínimo, caducidades, platos bajo objetivo, gasto de cocina, APPCC pendiente.
 - **Jefe de sala:** mi turno, calendario del equipo, ventas del turno, agotados, alérgenos.
 - **Cocinero:** mi turno, fichas nuevas, caducidades, mis tareas, notas de cocina. **Ningún importe.**
@@ -418,50 +420,19 @@ Nadie empieza con el Panel vacío:
 
 Y a todo el que ficha, **Fichar arriba del todo**: es lo primero que se hace al llegar, y si el horario dice que entras en cinco minutos, el widget lo dice. Quien puede apuntar mermas —camareros incluidos— lo tiene a un toque, desde el widget, desde las acciones rápidas o desde el botón «+».
 
-**Cómo se cumple hoy** (entrega O, decisión 0047): cada puesto —quien lleva el local, un jefe, cocina y sala— arranca con **lo de esta lista que ya existe**, sacado de sus permisos y no del nombre de su rol; lo que llega con su módulo (Pulse, las fichas, el APPCC) entra en su Panel el día que exista. Encima, **Lo de hoy**, la zona de atención, ordenada por el servidor.
+**Cómo se cumple hoy** (entrega O, decisión 0047): cada puesto —quien lleva el local, un jefe, cocina y sala— arranca con **lo de esta lista que ya existe**, sacado de sus permisos y no del nombre de su rol; lo que llega con su módulo (las fichas, el APPCC) entra en su Panel el día que exista. Encima, **Lo de hoy**, la zona de atención, ordenada por el servidor.
 
 > **Regla sin excepción:** cada número lleva debajo, en letra pequeña, de dónde sale y de qué periodo es.
 
 ---
 
-# 7 · Estook Pulse
+# 7 · Estook Pulse · quitado
 
-La salud del restaurante en un número, con su explicación. Vive en el Panel y en Negocio.
+**Quitado el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.7). Richi: «fuera del plan Estook Pulse; se elimina». No hay un número de «salud del negocio»: cómo va el local lo dicen el Panel, Negocio › Ventas e Informes.
 
-```
-ESTOOK PULSE
+> **La regla que se queda: nunca se enseña un número solo.** Cada cifra lleva de dónde sale, de qué periodo es y con qué se compara.
 
-SALUD DEL NEGOCIO
-
-████████░░  82 / 100
-
-  Ventas          ↑ 12 %
-  Food cost       ↓  3 %
-  Personal        →  1 %
-  Margen          ↑  5 %
-
-PROBLEMAS
-  ⚠ Pollo bajo minimo
-  ⚠ Aceite +12 %
-  ⚠ Martes -23 % en ventas
-
-OPORTUNIDADES
-  · Reducir personal el martes de 22:00 a 00:00
-  · Revisar el precio de 2 platos
-  · Cambiar de proveedor de aceite
-```
-
-> **Nunca se enseña un número solo.** Pulse siempre explica por qué una métrica está en verde, en amarillo o en rojo, y qué la mueve. Un indicador que no se puede desmontar en sus componentes es un adorno.
-
-## Pulse y salud de los datos son dos cosas distintas
-
-|              | Salud de los datos                             | Estook Pulse                      |
-| ------------ | ---------------------------------------------- | --------------------------------- |
-| Qué mide     | Si Estook tiene lo que necesita para funcionar | Cómo va el negocio                |
-| Para quién   | Todos, sobre todo al arrancar                  | Gerencia, dirección, area manager |
-| Si sale bajo | Falta configurar cosas                         | Hay un problema en el restaurante |
-
-No se mezclan y no se suman. Un local puede tener la salud de datos al 100 % y el Pulse en 54, y eso significa exactamente lo que parece: los datos están bien y el negocio va mal.
+**La salud de los datos sigue**, y no era lo mismo: dice si Estook tiene lo que necesita para funcionar, es de todos y sirve sobre todo al arrancar.
 
 ---
 
@@ -803,6 +774,8 @@ Aquí se compone lo que va impreso y lo que ve el cliente. **El plato es uno sol
 
 _Su navegación: Carta · Canales · Menús · Análisis_
 
+**Más limpia, y con su carta online** (Richi, 11-nov-2026; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.5; lo que entra, en el Plan, M11 y M12). Al entrar en Carta **se ve la carta, sin pestañas**; «Agotados» solo aparece, y en rojo, cuando hay algún plato agotado. En los tres puntitos, **«Carta online»**: el enlace de la carta del local, su QR para descargar o imprimir —solo, o con «¡Escanea el QR para ver la carta!»— y **la carta para imprimir**, en cinco diseños (desenfadado, clásico, juvenil, formal y sobrio), vectorial y en PDF de imprenta, con el logo solo en la portada: «te ahorras el diseñador».
+
 ## Montar la carta
 
 Secciones que se añaden y se ordenan arrastrando. Dentro, platos con nombre, precio, descripción y foto, **y se añaden varios de golpe** —nombre y precio, fila a fila— porque así se pasa una carta de papel. Su ficha, en Escandallos, les da los alérgenos y el coste; mientras no la tienen, salen en «sin ficha». **Lo que se vende tal cual** —el chuletón, la lata, la botella— **se trae del Almacén de golpe, ya vinculado**, y la carta dice **sus alérgenos con su dibujo, si pica y si es vegetariano o vegano**, y cuántas unidades lleva la ración cuando importa (0087). Cada plato se marca **agotado** desde el móvil, en dos toques, y desaparece de la carta digital, del PDF y del análisis. Estook recuerda que hay que marcarlo también en el TPV.
@@ -856,7 +829,9 @@ La **carta digital** es la página pública del local con su QR en tres formatos
 
 Todo lo que pasa en el local, en un sitio. **No es un calendario de turnos: es el calendario del negocio.**
 
-_Su navegación: Calendario · Tareas · Turnos_
+_Su navegación: Calendario · Vacaciones · Turnos_ (Tareas se quitó el 11-nov-2026: las limpiezas periódicas son del APPCC).
+
+**Una app completa de calendario** (Richi, 11-nov-2026; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.1 y 1.2; lo que entra, en el Plan, M14). El gerente, el jefe de cocina y el jefe de sala ponen **recordatorios** —una limpieza, una revisión, la visita de Sanidad, una reserva de 50, un evento de cinco días— para **todos, solo sala o solo cocina**, y el grupo recibe el aviso ese día, o cada día si son varios. Cada empleado tiene **sus notas personales**, con recordatorio si quiere. Y en **Vacaciones**, los jefes las ponen o los empleados las piden, y se validan o se propone otro día; cada uno ve los días que le quedan.
 
 | Qué vive aquí |                                                               |
 | ------------- | ------------------------------------------------------------- |
@@ -918,6 +893,8 @@ Quién trabaja, con qué condiciones, cuántas horas y cuánto cuesta.
 
 _Su navegación: Resumen · Personas · Fichajes · Incidencias. El horario de la semana vive en Calendario › Turnos, y el Resumen lleva a él ([0082](../decisiones/0082-el-repaso-antes-de-m9.md))._
 
+**La ficha del trabajador** (Richi, 11-nov-2026; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.3; lo que entra, en el Plan, M13). Al invitar a alguien, Estook pregunta si su ficha se hace **a mano o automática**: en automática se sube el contrato, **Fogón lee** las horas, el tipo de contrato, la incorporación, la jornada, el convenio y las vacaciones, y **el gerente revisa y confirma**. Quien ya está tiene «Subir contrato». De la ficha salen las horas, las vacaciones y la exportación de sus fichajes por fechas.
+
 ## Personas
 
 Ficha con rol, alcance, contacto, contrato y sus documentos. Alta por invitación con **PIN generado y mostrado en pantalla** para darlo en mano. Retirar acceso mata el PIN al instante, deja los turnos futuros sin cubrir con aviso y **conserva la persona**, porque sigue en lo que hizo. Quien se va y vuelve se reactiva con todo.
@@ -957,7 +934,7 @@ Vacaciones, bajas, permisos y asuntos propios, con solicitud, aprobación y sald
 
 El día a día: abrir, controlar y cerrar.
 
-_Su navegación: Jornada · Ventas · Delivery · APPCC_ — y **el cierre es una vista de la jornada**, que es lo que es: el final de la jornada, no otro sitio ([decisión 0022](../decisiones/0022-el-reparto-tiene-sitio-antes-que-conexion.md)).
+_Su navegación: Jornadas · Empleados · Delivery · APPCC_ (Ventas pasó a Negocio con la 0145; con M16b, APPCC sube debajo de Jornadas, 0146) — y **el cierre es una vista de la jornada**, que es lo que es: el final de la jornada, no otro sitio ([decisión 0022](../decisiones/0022-el-reparto-tiene-sitio-antes-que-conexion.md)).
 
 ## Sala, cocina y cobro · Estook TPV
 
@@ -1024,6 +1001,8 @@ Vive aquí y no en Carta porque lo que se mira en esta pantalla son los pedidos 
 
 ## APPCC
 
+**Un sistema inteligente de tareas, no un formulario enorme** (Richi, 11-nov-2026; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 3.4; lo que entra, entero, en el Plan, M16b). En Servicio, debajo de Jornadas, con **APPCC** e **Historial**: un panel de tarjetas (recepción, temperaturas, limpieza, trazabilidad, proveedores, alérgenos, plagas, mantenimiento, higiene y formación, incidencias y documentación); el gerente configura, los jefes registran lo de su área y a los trabajadores solo les llega lo que se les asigna; los controles se generan solos; y sus informes salen en PDF para Sanidad. **Estook no se inventa límites legales.**
+
 El plan lo monta el gerente o el jefe de cocina, con plantillas por tipo de local. El equipo lo rellena en dos toques y queda a su nombre con su PIN. **Fuera de rango no se puede seguir sin registrar la acción correctiva.** Un punto sin registrar sale `NO REGISTRADO` en rojo, y no se puede registrar en el pasado.
 
 Y la **trazabilidad de lote**: de un lote concreto, en qué elaboraciones entró y qué días se sirvió. Es la pregunta exacta que hace una inspección.
@@ -1045,21 +1024,21 @@ Al cerrar se calcula el consumo teórico, se descuenta del almacén, se guarda l
 
 Cómo va, por qué, y qué hacer.
 
-_Su navegación: Ventas · Informes · Pulse · Costes · Reseñas_
+_Su navegación: Ventas · Informes · Reseñas_ (Pulse y Costes se quitaron el 11-nov-2026, 0146)
 
 ## Resumen
 
 Día, semana, mes y año: ventas, materia prima, personal, prime cost, mermas, desviación y margen, con su objetivo y su comparación. Y la otra mitad del negocio: **productividad**. Ventas por hora trabajada, ventas por franja cruzadas con el personal que había, ticket por comensal y días fuertes y flojos.
 
-**Previsión de ventas.** Con el histórico, el día de la semana, la estacionalidad y los eventos del calendario, Estook estima las ventas de los próximos siete días. Sirve para tres cosas concretas: **cuánto pedir, cuánta gente poner y cuánto producir.** Se enseña siempre como estimación, con su margen de error, y se compara después con lo que pasó de verdad.
+**Previsión de ventas, después de vender** (0146). Con el histórico, el día de la semana, la estacionalidad y los eventos del calendario, Estook estima las ventas de los próximos siete días. Sirve para tres cosas concretas: **cuánto pedir, cuánta gente poner y cuánto producir.** Se enseña siempre como estimación, con su margen de error, y se compara después con lo que pasó de verdad.
 
-**Presupuesto.** Objetivo de ventas y de costes por mes, con el seguimiento al lado.
+**Presupuesto, también después de vender.** Objetivo de ventas y de costes por mes, con el seguimiento al lado.
 
 En cadena, la comparativa entre locales con gestión por excepción.
 
-## Costes
+## Costes · quitado
 
-Dónde se va el margen, **con cada línea llevando a la app donde se arregla**: subidas de precio sin repercutir, género sin explicar, mermas, platos bajo objetivo, horas de más, comisiones de reparto.
+**Quitado como destino el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.6): ya estaba en bastantes sitios. El food cost, en Ventas; las mermas, en Almacén; lo que no deja margen, en Escandallos; lo gastado, en Consumo. **Dónde se va el margen** se dice dentro de Informes, con cada línea llevando a la app donde se arregla.
 
 ## Reseñas y Competencia
 
@@ -1071,27 +1050,25 @@ Dónde se va el margen, **con cada línea llevando a la app donde se arregla**: 
 
 ## Exportar
 
-Lo que la gestoría necesita, en su formato: desglose por tipo de IVA, ventas por método de pago, compras por proveedor, horas del periodo. En PDF, en CSV y en los formatos de A3, Sage, Contasol y Holded. Y la **auditoría consultable**: quién, qué, cuándo, antes y después.
+**La exportación de datos ordenados, tipo resumen de todo** (Richi, 11-nov-2026), y lo que la gestoría necesita, en su formato: desglose por tipo de IVA, ventas por método de pago, compras por proveedor, horas del periodo. En PDF, en CSV y en los formatos de A3, Sage, Contasol y Holded. Y la **auditoría consultable**: quién, qué, cuándo, antes y después.
 
 ---
 
-# 19 · APP · CUADERNO
+# 19 · APP · CUADERNO · quitada
 
-Lo que hoy vive en la cabeza del jefe de cocina y en un grupo de WhatsApp.
+**Quitada el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.4). Richi: «no vale para nada; con Calendario y Tablón lo cubrimos».
 
-_Su navegación: Incidencias · Notas · Equipos_
-
-**Incidencias del turno.** «Se ha roto el abatidor.» «El cliente de la 12 se quejó de la espera.» Se apunta en dos toques o dictándoselo a Fogón, queda enlazada a la jornada y **la lee el turno siguiente al entrar**.
-
-**Notas.** Mis notas, notas del equipo y notas del local. Con enlaces a platos, productos, proveedores y personas. **Compartir cambia los permisos de la nota, no la duplica.**
-
-**Equipos y mantenimiento.** Cámaras, abatidor, campana, lavavajillas, extintores. Cada uno con su ficha, su histórico de averías, sus revisiones con vencimiento y sus documentos. **Avisa antes de que venza**, que es justo lo que pregunta una inspección.
+| Lo que iba a tener                          | Dónde queda                                                                |
+| ------------------------------------------- | -------------------------------------------------------------------------- |
+| Lo que tiene que saber el turno siguiente   | El **Tablón** del Panel                                                    |
+| Mis notas                                   | Las **notas personales** del Calendario (capítulo 15)                      |
+| Equipos y mantenimiento, con sus revisiones | **APPCC › Mantenimiento** (capítulo 17) y los recordatorios del Calendario |
 
 ---
 
 # 20 · FOGÓN
 
-No es un chat pegado al lado. Es **la capa que lee las ocho apps**, y precisamente porque el ecosistema es cerrado puede decir cosas que un asistente suelto no podría.
+No es un chat pegado al lado. Es **la capa que lee las siete apps**, y precisamente porque el ecosistema es cerrado puede decir cosas que un asistente suelto no podría.
 
 ## Presente en todas las apps, con el contexto de cada una
 
@@ -1290,25 +1267,9 @@ Y siempre que la API lo permita, Estook gestiona desde su interfaz el ciclo del 
 
 ---
 
-# 25 · La API pública
+# 25 · La API pública · quitada
 
-La API interna ya existe y seguirá siendo la separación entre el frontend y el dominio. A medio plazo se prepara una **API pública** para TPV, ERP, contabilidad, herramientas externas, desarrolladores, agentes de IA y plataformas de reparto.
-
-```
-                    ESTOOK API
-                         │
-       ┌─────────────────┼─────────────────┐
-       ▼                 ▼                 ▼
-     TPV                ERP             FOGON
-       │                 │                 │
-       └─────────────────┼─────────────────┘
-                         ▼
-                    DATOS ESTOOK
-```
-
-Fogón usa herramientas internas por ese mismo camino, de forma controlada.
-
-Y hay una razón de mercado, no solo técnica: **el TPV líder de España se integra con dos back-office de nuestra categoría.** Quiere integrarse con nosotros, y para eso tiene que haber dónde.
+**Quitada del todo el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 2.2). La API de dentro ya existe y sigue siendo la separación entre las pantallas y el dominio; Fogón usa sus herramientas por ese mismo camino, de forma controlada. Lo que entra de fuera —un TPV ajeno (M18), Uber Eats (M29)— entra por sus conectores, con los mismos comandos, permisos y auditoría.
 
 ---
 
@@ -1486,15 +1447,15 @@ Estook no toca dinero. Si el local cobra con Estook, sus tickets y facturas pasa
 
 ## Los planes
 
-Tres planes, con una diferencia clara: **el primero es gestión a mano, el segundo lo hace solo, y el tercero es lo mismo para varios locales.** **Todos los precios son sin IVA: el IVA va aparte** (los finales, decididos el 6-nov-2026: [0135](../decisiones/0135-r4-precios-ia-y-papeles.md)).
+Tres planes, con una diferencia clara: **el primero es gestión a mano, el segundo lo hace solo, y el tercero es lo mismo para varios locales.** **Todos los precios son sin IVA: el IVA va aparte** (los finales, decididos el 6-nov-2026: [0135](../decisiones/0135-r4-precios-ia-y-papeles.md)). **En estudio desde el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), sección 4): que el cobro con tarjeta integrado en el aparato se pague aparte, con un fijo pequeño por aparato. Sin decidir; Estook sigue sin cobrar un porcentaje de los cobros.
 
 ### ESTOOK ESENCIAL · 39 € + IVA por local y mes
 
 Para el bar que quiere controlar su cocina sin cambiar nada más.
 
-Las ocho apps completas · carta digital con QR · documentos sin límite · auditorías con autoevaluación · acceso para la gestoría · **Fogón Esencial**: 100 créditos al mes, con el modelo económico.
+Las siete apps completas · carta digital con QR · documentos sin límite · auditorías con autoevaluación · acceso para la gestoría · **Fogón Esencial**: 100 créditos al mes, con el modelo económico.
 
-Las ventas y el catálogo de **su TPV** entran **por fichero**, con la guía de exportación, y **conectadas cuando lleguen los conectores** (M19b): quien cobra con otro TPV solo trae sus datos, y no se le pide Pro ([0120](../decisiones/0120-estook-tpv-es-de-pro.md); Richi, 28-oct).
+Las ventas y el catálogo de **su TPV** entran **por fichero**, con la guía de exportación, y **conectadas, o por foto del ticket de cierre, cuando llegue M18**: quien cobra con otro TPV solo trae sus datos, y no se le pide Pro ([0120](../decisiones/0120-estook-tpv-es-de-pro.md); Richi, 28-oct).
 
 _Lo que cuesta y lo que deja, en [`coste-por-local.md`](../coste-por-local.md)._
 
@@ -1505,7 +1466,6 @@ Para el local que factura de verdad y quiere que Estook trabaje solo. Todo lo de
 - **Cobro con Estook**, que es **Estook TPV, solo de Pro** ([0120](../decisiones/0120-estook-tpv-es-de-pro.md)): sala, cocina, caja y tickets y facturas cumpliendo VeriFactu. _Las cuentas salen con el precio del proveedor delante: el margen aguanta entre el 91 % y el 64 % según cuántos tickets haga el local ([`el-precio-de-verifacti.md`](../el-precio-de-verifacti.md))._
 - **Canales de reparto conectados**, con su comisión descontada.
 - **Fogón Pro**: 500 créditos al mes, con el modelo grande. Análisis del cierre cada noche, resumen semanal, propuestas de menú, de precios y de cuadrante.
-- **Estook Pulse** con su histórico.
 - Previsión de ventas y presupuesto por mes.
 - Análisis de equilibrio de carta y comparación con tu zona.
 - Reseñas con respuesta propuesta y alertas de competencia.
@@ -1530,7 +1490,7 @@ _4 locales: 356 € + IVA al mes. Lo que cuesta cada uno, en [`coste-por-local.m
 
 La IA es el único coste que crece con el uso, así que se mide y se enseña. **Lo que no cuesta, no consume.**
 
-**Lo que no gasta un solo crédito:** los avisos automáticos del Panel, las alertas de bajo mínimo y caducidad, los semáforos, los cálculos de coste y margen, la desviación, Pulse y los informes. **Dieciocho de cada veintidós avisos son gratis, y son los que enganchan.**
+**Lo que no gasta un solo crédito:** los avisos automáticos del Panel, las alertas de bajo mínimo y caducidad, los semáforos, los cálculos de coste y margen, la desviación y los informes. **Dieciocho de cada veintidós avisos son gratis, y son los que enganchan.**
 
 | Acción                               | Créditos |
 | ------------------------------------ | -------- |
@@ -1596,7 +1556,7 @@ _Investigado en septiembre de 2026._
 
 **2 · Somos bastante más baratos que el comparable internacional**, con un margen del 90 %: Esencial, entre tres y cinco veces; Pro, a 99 €, alrededor de la mitad, y con el TPV dentro. No hay que bajar el precio: hay que **decir el del comparable**, porque nos favorece. **Lo que cambia con Pro a 99 €** es que queda por encima de Gstock ONE (~82 €): mientras Estook TPV no esté, Pro se defiende por lo que hace de más, no por el precio.
 
-**3 · Last.app se integra con Apicbase y con Gstock.** Un TPV moderno quiere un back-office conectado, no construirlo. De ahí salen dos decisiones: **la API pública sube de prioridad**, y en la web dejamos de hablar de los TPV como rivales. Con el TPV propio competimos con ellos en una parte del mercado: se dice con respeto y sin atacar a nadie.
+**3 · Last.app se integra con Apicbase y con Gstock.** Un TPV moderno quiere un back-office conectado, no construirlo. De ahí salen dos decisiones: **la API pública subía de prioridad** —se quitó del plan el 11-nov-2026 ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md))—, y en la web dejamos de hablar de los TPV como rivales. Con el TPV propio competimos con ellos en una parte del mercado: se dice con respeto y sin atacar a nadie.
 
 **4 · La IA de la competencia se queda en previsión de demanda.** Apicbase predice qué pedir. Es útil, y es todo. **Nadie explica por qué ha caído un margen, ni cruza las quejas de las reseñas con el cuadrante, ni encadena una subida de precio hasta la alerta.** Ahí está Fogón, y ahí está el producto.
 

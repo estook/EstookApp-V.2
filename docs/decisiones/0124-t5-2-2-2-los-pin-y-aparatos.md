@@ -125,6 +125,6 @@ la maqueta de T5 · 2 aprobada el 29-oct.
   dice «1 de 1 siguen sin internet» y «Es el centro». Y `sin-internet.spec.ts` cierra la hoja con
   «Esc» (lección 245).
 - **Lo que no se puede probar aquí**: la pregunta de Windows de verdad, Chrome en un Android de
-  verdad y el wifi de un local. Se prueba en casa y en el local del amigo ([los pasos](../pasos-de-t5-2-2.md)).
+  verdad y el wifi de un local. Se prueba en casa y en el local del amigo ([los pasos](../pasos/pasos-de-t5-2-2.md)).
   Leer el cortafuegos y el tipo de red sí se probó en el Windows de Richi: su red de casa sale
   como **pública**.

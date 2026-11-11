@@ -3,7 +3,7 @@
 **Investigado el 6 de noviembre de 2026**, a petición de Richi. Las fuentes están al final, con su
 fecha. **Nada de esto se ha probado todavía con un aparato de verdad.** Lo marcado **[VERIFICAR]**
 no se programa hasta comprobarlo con el proveedor o con el aparato en la mano (regla 13 del Plan).
-La decisión que sale de aquí es la [0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), **ya contestada por Richi el mismo día** (apartado 8).
+La decisión que sale de aquí es la [0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), **ya contestada por Richi el mismo día** (apartado 8). **El 11-nov Richi reabrió con qué proveedor se cobra y cuánto cobra Estook: apartado 9**, que manda sobre «Stripe primero».
 
 ## En corto
 
@@ -256,6 +256,100 @@ o el V3 son la apuesta segura; y para empezar encaja mejor Stripe que SumUp.
   el puente de Capacitor funciona con Estook TPV cargado de `estook.com/tpv/` (si no, va dentro de
   cada versión de la app).
 
+## 9 · Lo que se investigó el 11-nov: el banco es más barato, y cuánto cobra Estook
+
+**Pedido por Richi el 11 de noviembre de 2026** ([0146](decisiones/0146-la-reorganizacion-del-11-nov.md),
+sección 4): «tal vez no usemos Stripe y usemos Caixa u otros más baratos», mirar los Sunmi «P» y
+una forma nueva de cobrar Estook, por aparato con cobro integrado. **Reabre el punto 2 del
+apartado 8 («Stripe primero»), y nada más.** Buscado en internet ese día; lo que no salió de una
+fuente oficial va marcado **[VERIFICAR]** y no se programa.
+
+### 9.1 Lo que paga un bar por cada cobro
+
+| Con quién cobra                          | Lo que le cuesta                       | Un ticket de 12 € | 30.000 € al mes en 2.000 cobros |
+| ---------------------------------------- | -------------------------------------- | ----------------- | ------------------------------- |
+| **Su banco** (media de los restaurantes) | **≈ 0,36 %** con tarjeta de particular | **≈ 0,04 €**      | **≈ 110 €**                     |
+| Square                                   | 1,25 % + 0,05 €                        | 0,20 €            | 475 €                           |
+| SumUp                                    | 1,49 %                                 | 0,18 €            | 447 €                           |
+| myPOS                                    | desde 1,45 % + 0,05 €                  | 0,22 €            | 535 €                           |
+| Stripe, con Tap to Pay                   | 1,4 % + 0,10 € + 0,10 €                | 0,37 €            | 820 €                           |
+
+- **Lo del banco es un dato oficial**: las tasas de descuento que publica el Banco de España por
+  sector; en restaurantes, primer trimestre de 2026, 0,36 % con tarjetas de particulares (y entre
+  0,66 % y 1 % con tarjetas de empresa). **Es una media**: cada local pacta la suya, y algunos
+  bancos añaden una cuota al mes por el datáfono.
+- **Richi tiene razón**: en un bar, con tickets pequeños, los céntimos fijos de Stripe pesan más
+  que el porcentaje. **Lo barato es el banco del local.**
+- Lo de Square, SumUp, myPOS y Stripe sale de sus páginas o de comparativas de ellos mismos:
+  **[VERIFICAR]** en la tarifa oficial el día que se elija.
+
+### 9.2 Los Sunmi «P», y cómo se entra en un datáfono
+
+- **Los Sunmi P (P2, P3) son datáfonos certificados**: cobran chip, banda y sin contacto, con su
+  PIN. **No se compran sueltos para cobrar**: los entrega un banco o un proveedor con **su app de
+  pago** dentro. Es lo que dice el apartado 1, y no cambia: **Tap to Pay no funciona en ellos**.
+- **La forma de entrar es «de app a app»**: Estook TPV, instalado en el mismo aparato, abre la app
+  de pago con el importe y recibe «cobrado» o «rechazado». Estook no ve la tarjeta.
+- **CaixaBank lo tiene documentado en público** (Comercia Global Payments, su entidad de pago):
+  1. **«Pago integrado con TPV Android»**: una app de terceros convive con la app de pago de
+     Comercia en sus datáfonos Android. Los modelos de su lista son Ingenico (Axium DX8000) e
+     ITOS (CM35S, CM5, IN20, Q6000), con Android 7.1 a 10. **No nombra ningún Sunmi**
+     **[VERIFICAR con Comercia]**.
+  2. **«Smartphone TPV»**: su app para cobrar sin contacto en un Android con NFC (desde
+     Android 8), y una integración para que otra app le mande el importe. La app integrada **se
+     pide a su soporte**. Es su Tap to Pay, y **encaja con un Sunmi V3 o con el móvil del
+     camarero**.
+- **Viva** documenta lo mismo, de app a app, desde Android 8.1, y vende sus propios Sunmi P3. Su
+  0 % es solo para quien tiene la cuenta y la tarjeta de Viva; **la tarifa normal de España no
+  está publicada [VERIFICAR]**.
+- **Banco Sabadell** (Paycomet) vende el «TPV Smart» como «plataforma de aplicaciones», y
+  **Redsys** tiene una modalidad «App2App» para el cobro presencial. **Cómo entra un tercero, sin
+  confirmar [VERIFICAR]**. De Santander (Getnet) y de BBVA no salió nada.
+- **Lo que no se sabe todavía, y decide:** las condiciones para ser integrador (contrato,
+  certificación y plazo), si el local tiene que cambiar de datáfono, y la tarifa. **Se pide por
+  escrito** a Comercia y a Viva (es un paso de Richi).
+
+### 9.3 Qué cambia y qué no
+
+- **No cambia:** el adaptador `ProveedorDatafono` (Anexo 10.7); que Estook **no toca el dinero**
+  ni cobra **un porcentaje** de los cobros; que el datáfono del banco sin conectar vale siempre;
+  la app de Android (T8 · 1), que no depende de con quién se cobre.
+- **Cambia:** «Stripe primero» deja de estar decidido. Los caminos, de más barato para el local a
+  más caro:
+
+| Camino                                  | Aparato                                   | Para el local                             | Para Estook                                       |
+| --------------------------------------- | ----------------------------------------- | ----------------------------------------- | ------------------------------------------------- |
+| **A · El datáfono Android de su banco** | El que le da el banco (Ingenico, ITOS, …) | Lo más barato; un aparato hace de todo    | Un acuerdo y una certificación **por banco**      |
+| **B · La app de cobro del banco**       | Sunmi V3 (GMS) o el móvil del camarero    | Barato; solo sin contacto                 | Una integración por banco; sin certificar aparato |
+| **C · Viva, de app a app**              | Cualquier Android con NFC, o su P3        | Tarifa por confirmar                      | La integración más sencilla y abierta             |
+| **D · Stripe**                          | Sunmi V3 (GMS) o el móvil                 | Caro en tickets pequeños; alta en minutos | Un SDK para todo; ya está dentro de Estook        |
+
+**Lo que recomienda la IA:** empezar por **B con CaixaBank** (su documentación es pública) **o por
+C**, según lo que contesten; y dejar **D** como el camino que funciona el primer día para el local
+que no quiera esperar a su banco. **No se elige sin las condiciones por escrito** (regla 13 del
+Plan).
+
+### 9.4 Cuánto cobra Estook por el cobro integrado
+
+Hoy: Esencial 39 €, Pro 99 € y Cadena 89 € por local y mes, sin IVA ([0135](decisiones/0135-r4-precios-ia-y-papeles.md));
+Estook TPV entra en Pro con todos sus aparatos. A Estook, un aparato más no le cuesta nada cada
+mes; lo que cuesta es certificarse con cada banco y atender a quien cobra con él.
+
+| Opción                          | Cómo queda                                                                                 | A favor                                              | En contra                                  |
+| ------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------ |
+| **1 · Todo dentro de Pro**      | Pro 99 €, con el cobro integrado incluido                                                  | Lo más sencillo de explicar                          | El que no lo usa paga lo mismo             |
+| **2 · Un extra por aparato**    | Pro 99 € con el datáfono aparte, como hoy; **+ un fijo al mes por cada aparato que cobra** | Lo que propone Richi: paga quien lo usa, y es barato | Una línea más en la factura                |
+| **3 · Un plan «Pro con cobro»** | Un plan más caro que lo lleva todo                                                         | Un solo precio                                       | Otro plan que explicar; castiga al pequeño |
+
+**Lo que recomienda la IA: la 2**, con un fijo pequeño por aparato (del orden de 5 a 9 € al mes,
+**sin decidir**): es lo que pidió Richi, no rompe los precios cerrados el 6-nov, y sigue siendo
+suscripción, no comisión. Como referencia, Lightspeed cobra 49 € por cada caja de más y Ágora,
+34 € al mes por un puesto, según comparativas de 2026 **[VERIFICAR]**.
+
+**Sin decidir, y es de Richi:** el proveedor con el que se empieza y la opción de precio. **T8 · 2
+(cobrar con tarjeta en el aparato) no empieza sin las dos respuestas**; T8 · 1 (la app de Android)
+no depende de ellas.
+
 ## Fuentes
 
 Leídas el 6 de noviembre de 2026.
@@ -270,3 +364,13 @@ Leídas el 6 de noviembre de 2026.
 - Revolut · [Revolut Terminal desde la API](https://developer.revolut.com/docs/guides/in-person-payments/revolut-terminal/push-payments)
 - Sunmi · [Productos (España)](https://www.sunmi.com/es/products) · [Impresora de dentro, para programadores](https://file.cdn.sunmi.com/SUNMIDOCS/SunmiPrinter-Developer-Docs-1-1.pdf) · [Ficha del V3H](https://jarltech.co.uk/sites/default/files/documents/product/datasheet/en/V3H_EN.pdf) · [Ficha del FLEX 3](https://cdn.sunmi.com/public/generalfile/mgt_import/a70210b4783a47b4b350e68a2ecfce55.pdf) · [V3 PLUS en una tienda](https://www.barcodesite.eu/sunmi-v3-plus-p06120017.html)
 - Banco de España · [Los pagos del segundo semestre de 2025 (nota del 23-jul-2026)](https://www.bde.es/wbe/es/noticias-eventos/actualidad-banco-espana/notas-banco-espana/el-numero-de-operaciones-de-pago-con-instrumentos-distintos-del-efectivo-aumento-un-108-en-el-segundo-semestre-de-2025-respecto-al-mismo-periodo-de-2024.html)
+
+Leídas el 11 de noviembre de 2026, para el apartado 9.
+
+- Banco de España · [Tasas de descuento por sector, primer trimestre de 2026](https://www.bde.es/app/sif/documentosTasas/0000_Descuento_202603.pdf)
+- CaixaBank y Comercia Global Payments · [Pagos integrados en el TPV](https://docs.globalpayments.es/en/docs/pos-integrated-payments/pos-integrated-payments/) · [Con TPV Android](https://docs.globalpayments.es/en/docs/pos-integrated-payments/payment-integrated-with-android-pos/) · [Con Smartphone TPV, en Android](https://docs.globalpayments.es/en/docs/pos-integrated-payments/payment-integrated-with-smartphone-pos/payment-integration-with-smartphone-pos-android/) · [Fichas de los aparatos](https://docs.globalpayments.es/en/docs/pos-integrated-payments/pos-data-sheets/) · [Tap to Pay de CaixaBank](https://www.caixabank.es/empresa/business/tap-to-pay.html)
+- Viva · [Tap on Any Device en Android](https://developer.viva.com/apis-for-point-of-sale/card-terminal-apps/android-app/) · [Su Sunmi P3](https://www.viva.com/en-eu/shop/terminals/vivapos-p3scan)
+- Redsys · [Pago presencial y sus modalidades](https://redsys.es/en/pago-presencial)
+- Banco Sabadell · [La gama TPV Smart](https://www.bancsabadell.com/bsnacional/en/business/tpv/gama-tpv-smart)
+- Square · [Tarifas en España](https://squareup.com/es/es/legal/general/fees) · SumUp · [SumUp frente a myPOS](https://www.sumup.com/es-es/compare/sumup-vs-mypos/)
+- Precios de otros TPV · [Lightspeed Restaurant](https://lightspeedhq.com/es/tpv/restaurant/precios) · [Comparativa de TPV para restaurantes de 2026](https://hackceleration.com/es/labs/mejor/tpv-restaurantes)

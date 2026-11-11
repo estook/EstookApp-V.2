@@ -11,7 +11,7 @@
 > | La API           | Desplegada con M20A · 1 · 2: **107 consultas y 253 comandos**                           |
 >
 > **M20A · 1 está en producción entera**: fusionada, migrada, desplegada y comprobada el 23-oct.
-> Lo de antes, en [`pasos-de-m16a.md`](../../pasos-de-m16a.md).
+> Lo de antes, en [`pasos-de-m16a.md`](../../pasos/pasos-de-m16a.md).
 
 Los comandos van con `.\estook.cmd` y **uno por recuadro**: PowerShell no entiende `&&`.
 

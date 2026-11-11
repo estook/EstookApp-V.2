@@ -22,6 +22,11 @@ DESPUÉS       M11 · Documentos → M12 · Carta con QR → M13 · Equipo → M
               → M19b → Fases 5, 6 y 7 (M21 a M30)
 ```
 
+**Ese era el orden del 22-oct.** El de hoy, con M17 y M30 quitados, es el del 11-nov
+([0146](decisiones/0146-la-reorganizacion-del-11-nov.md)) y vive en la cabecera de la parte D del
+[Plan](maestros/Estook-Plan-de-Desarrollo.md): **M20 · 1 va justo después de «L · La limpieza» y de
+«S1 · Cada plan, lo suyo»**.
+
 **No se ha saltado nada**: M11 a M19 están detrás del TPV a propósito. **El 5-oct Hacienda anunció
 pasar VeriFactu a octubre de 2028**, sin BOE todavía; la 0061 dice que, si se publica, el orden se
 revisa con Richi.

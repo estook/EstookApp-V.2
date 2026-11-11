@@ -110,4 +110,4 @@ emitir.
 ## 5 · Lo que tiene que hacer Richi
 
 Fusionar, migrar la **0099** (99 de 99), desplegar la API y probarlo en IKATZ, con
-[sus pasos](../pasos-de-t6-1.md).
+[sus pasos](../pasos/pasos-de-t6-1.md).

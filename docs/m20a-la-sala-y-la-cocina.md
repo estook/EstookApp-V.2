@@ -369,7 +369,7 @@ camareros con Android), **Android sí e iPhone si alguien lo pide**, **sin firma
 ### T5 · 1 · Imprimir y el cajón, en producción (27-oct-2026)
 
 En producción (#148) ([0119](decisiones/0119-t5-la-caja-para-windows.md), sección 4; migración 0093;
-[sus pasos](pasos-de-t5-1.md)): **la caja para Windows** en `apps/caja-windows` (Electron), con su
+[sus pasos](pasos/pasos-de-t5-1.md)): **la caja para Windows** en `apps/caja-windows` (Electron), con su
 instalador hecho en GitHub; **la cola** (`impresora` y `trabajo_de_impresion`), que la caja recoge con
 su llave; **el traductor** a ESC/POS en `packages/impresion`; **Ajustes del TPV › Impresoras y cajón**;
 la comanda en papel al mandar, marchar, quitar, devolver y anular; la cuenta y reimprimir en las
@@ -385,7 +385,7 @@ a la app»), y `la-caja-para-windows.spec.ts` (la pantalla, con un puente de men
 ### La pausa del TPV (28-oct-2026)
 
 Lo que vio Richi con la caja para Windows ya publicada, antes de seguir ([0121](decisiones/0121-la-pausa-del-tpv.md),
-migración 0095, [sus pasos](pasos-de-la-pausa-del-tpv.md)): **la zona segura del iPhone** en todo Estook
+migración 0095, [sus pasos](pasos/pasos-de-la-pausa-del-tpv.md)): **la zona segura del iPhone** en todo Estook
 TPV; **el pase lo elige el camarero** (fuera «¿En qué pase sale?»); **lo de llevar, todo junto y
 programado** a una hora; **«Nº de comensales»**; **«Fichar» con la caja abierta pide el PIN a todos**;
 y **volver a vincular** un aparato sin duplicarlo. Las pruebas: `la-puerta.prueba.ts` (volver a
@@ -418,7 +418,7 @@ iPhone; después **la caja de centro**.
 ### T5 · 2 · 1 · Cada aparato aguanta solo, entregada (29-oct-2026)
 
 En su pull request ([0122](decisiones/0122-t5-2-1-cada-aparato-aguanta-solo.md), sin migración, la
-API sin órdenes nuevas; [sus pasos](pasos-de-t5-2-1.md)): **lo guardado** en `apps/tpv/src/sinInternet/`
+API sin órdenes nuevas; [sus pasos](pasos/pasos-de-t5-2-1.md)): **lo guardado** en `apps/tpv/src/sinInternet/`
 (`laCopia.ts`, `quienEntroHoy.ts`, `laCola.ts`, `loGuardado.ts`, `subir.ts`, `laConexion.ts` y la
 franja), **la subida** en `ganchos/usarSubirLoGuardado.ts`, y en la API, **entrar con el PIN
 cifrado** (`entrar_con_pin` con `pin_cifrado`) y **abrir, pedir, mandar, marchar y bloquear**
@@ -448,7 +448,7 @@ aceptando lo hecho sin internet. Las pruebas: `la-puerta.prueba.ts` (sin interne
 
 En dos, como T5 · 2 · 1: **primero que la comanda llegue**, después los PIN y Aparatos. En su pull
 request ([0123](decisiones/0123-t5-2-2-la-caja-de-centro.md), migración **0097**, la API sin órdenes
-nuevas, la caja **1.1.0**; [sus pasos](pasos-de-t5-2-2.md); maquetas de los cuatro avisos,
+nuevas, la caja **1.1.0**; [sus pasos](pasos/pasos-de-t5-2-2.md); maquetas de los cuatro avisos,
 [`t5-2-2-la-caja-de-centro.html`](maquetas/t5-2-2-la-caja-de-centro.html), aprobadas el 31-oct):
 **el centro** en `apps/caja-windows/src/el-centro.ts` (escucha en el 47100, sobres cerrados, imprime
 una vez y guarda en el disco); **lo que viaja** en `packages/dominio/src/centro.ts` y
@@ -470,7 +470,7 @@ Chrome y los datos móviles en `LaFranjaDeLaCaja.tsx`; y en la API, el latido co
 ### T5 · 2 · 2 · 2 · Los PIN y Aparatos, entregada (2-nov-2026)
 
 En su pull request ([0124](decisiones/0124-t5-2-2-2-los-pin-y-aparatos.md), migración **0098**, la
-API con **un comando nuevo**, `los_pin_del_centro`, la caja **1.2.0**; [sus pasos](pasos-de-t5-2-2.md),
+API con **un comando nuevo**, `los_pin_del_centro`, la caja **1.2.0**; [sus pasos](pasos/pasos-de-t5-2-2.md),
 los de las dos partes; sin pantallas nuevas): **los PIN en la caja** en
 `packages/dominio/src/centro-pin.ts` y `apps/caja-windows/src/el-centro.ts` (`pin` y `fichar`);
 **lo que dice Windows** en `apps/caja-windows/src/windows.ts`; **entrar y fichar por la caja** en
@@ -693,9 +693,12 @@ Estook, y la revisa el asesor antes de poder elegirla.
 - **La regla del año natural**: con VERI\*FACTU de verdad, a «sin envío» solo desde el 1 de enero
   (`porQueNoSePuedeCambiar`, ya escrita y probada).
 - **La declaración responsable**, cambiada a «no solo VERI\*FACTU», con el asesor, y firmada otra vez.
-- **Pendiente de Richi y del asesor** antes de construirla: **con qué certificado se firma**. Puede ser
-  el de cada empresa, guardado cifrado en Estook, o uno de Estook con la representación de cada
-  empresa.
+- **Va antes de vender** (Richi, 11-nov; [0146](decisiones/0146-la-reorganizacion-del-11-nov.md), 2.1):
+  hay clientes que piden facturar sin VERI\*FACTU, «pero siguiendo la legalidad, eso siempre».
+- **Con qué certificado se firma**: Richi dijo «el que pidan, el gratuito». **Al empezarla se comprueba
+  en la fuente oficial** qué certificado cualificado vale para una sociedad y para un autónomo, cuál es
+  gratuito, y si es el de cada empresa guardado cifrado en Estook o uno de Estook con la representación
+  de cada empresa; y se le enseña a Richi antes de construir **[VERIFICAR]**.
 
 ### T7 · Cobrar, la caja y las ventas
 
@@ -741,6 +744,12 @@ entregas:
   cuadra al céntimo.
 - **R3 · 2**: el aviso de retirar, el aviso del descuadre, las propinas, escribir el total al
   contar, entregar la caja a otro encargado y los descuentos al cobrar.
+
+**Sin internet, en las apps nativas** (Richi, 11-nov; [0146](decisiones/0146-la-reorganizacion-del-11-nov.md),
+3.3): no se interrumpe la facturación; lo cobrado y sus registros se guardan **en la máquina** y se
+envían al volver, en orden y una sola vez; el envío se reintenta cada cierto tiempo; y la incidencia
+queda identificada. **Estook TPV se recomienda siempre en la caja para Windows y en la app de Android**;
+la versión web se queda, con su aviso y el botón de descarga, y no promete cobrar sin internet.
 
 **Lo que queda de T7 después de R3**, antes de T6 · 3: cobrar sin internet con su justificante;
 las ventas de hoy con sus totales, la venta rápida y para llevar; que lo cobrado baje del almacén una

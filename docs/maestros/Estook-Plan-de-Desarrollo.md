@@ -1,13 +1,15 @@
 ---
 titulo: Plan de desarrollo
 tipo: Documento de construcción
-fecha: Septiembre de 2026 · versión 1.4
-nota: Reglas de trabajo, sistema de diseño, web pública y 32 módulos, más M6½ y los cuatro del TPV (M20A, M20B, M20C y M20D), en orden. Escrito para que no haga falta inventar nada. Documentos hermanos - Manifiesto, Arquitectura, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
+fecha: Noviembre de 2026 · versión 1.5
+nota: Reglas de trabajo, sistema de diseño, web pública y 32 módulos numerados (dos quitados: M17 y M30), más M6½ y los cuatro del TPV (M20A, M20B, M20C y M20D), en orden. Escrito para que no haga falta inventar nada. Documentos hermanos - Manifiesto, Arquitectura, Roles y administración, Auditoría de flujos y el Anexo de TPV y facturación.
 ---
 
 # Qué es este documento
 
 Este documento va dirigido a quien construya Estook, que será en su mayor parte una IA. Está escrito para que **no haga falta inventar nada**: cada decisión que se podría improvisar ya está tomada aquí.
+
+**La versión 1.5** (11 de noviembre de 2026) recoge la reorganización que pidió Richi ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)): **lo que sobra sale** (Cuaderno, Estook Pulse, Negocio › Costes, la API pública y las pestañas que esperaban), **lo que faltaba se escribe entero** (el Calendario con sus recordatorios y sus vacaciones, la ficha del trabajador que lee el contrato, el APPCC, la carta online y la carta para imprimir, traer los datos de otro TPV y la cadena), **el orden hasta vender** (la cabecera de D), **«Sin suposiciones»** (A1) y **los puntos de auditoría** (E5).
 
 **La versión 1.4** (30 de septiembre de 2026) recoge la auditoría profunda ([decisión 0055](../decisiones/0055-la-auditoria-profunda.md)): **el orden nuevo**, con Estook TPV justo después de M10 ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)); la pila, el repositorio y las superficies **se van a la Arquitectura**, que es su sitio ([0063](../decisiones/0063-una-fuente-por-tema.md)); y entran las gráficas (B9). Lo que cambió en cada versión, en el [registro de cambios](CAMBIOS.md).
 
@@ -37,7 +39,20 @@ Se leen al empezar cada sesión de trabajo, y **una decisión que las incumpla s
 14. **Nada entra aislado.** Antes de construir algo se responde: qué datos usa, de dónde vienen, qué otras partes de Estook tienen que enterarse cuando cambien, qué puede automatizar Fogón, qué tiene que aprobar una persona, qué permisos tiene cada rol, qué pasa si falla internet, qué pasa si se ejecuta dos veces y qué queda en auditoría.
 15. **Nunca se escribe, se edita ni se borra un documento de facturación fuera de su módulo.** Ni una migración de arreglo, ni un script, ni el panel interno. Lo emitido se corrige emitiendo otro documento.
 
-> La regla 14 es la que convierte «ocho apps que funcionan» en «un sistema donde cada dato nuevo hace más inteligente al resto».
+> La regla 14 es la que convierte «siete apps que funcionan» en «un sistema donde cada dato nuevo hace más inteligente al resto».
+
+### Sin suposiciones
+
+_Añadido el 11-nov-2026 ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), sección 7). Es la regla 13, desplegada, para que nadie —persona o IA— programe a ojo._
+
+- **No se inventa** una función, un requisito, un campo ni un límite legal. Lo que no está escrito en este Plan, en el Anexo o en una decisión **se pregunta, y se para**.
+- **No se cambia lo aprobado** —una decisión, una maqueta, un texto— sin permiso de Richi. Se propone, con su razón.
+- **No se rehace código por iniciativa propia.** Una refactorización general necesita su decisión.
+- **Si dos documentos se contradicen**, o la duda toca a la arquitectura, a la seguridad o al dinero, **se para y se pregunta**. No se elige el que conviene.
+- **De un servicio de fuera, primero su documentación oficial de ese día.** Lo marcado **[VERIFICAR]** no se programa.
+- **Las pantallas nuevas, con su maqueta aprobada antes del código.**
+- **Cada módulo tiene una sola fuente**: su ficha de la parte D, y el Anexo en lo de Estook TPV y la facturación. [El mapa](../MAPA-de-modulos.md) la señala, `ESTADO.md` dice lo que es cierto hoy y las decisiones guardan el porqué. Lo demás enlaza, no repite.
+- **Lo que se decide sin preguntar, se cuenta** en el mismo pull request (E2).
 
 ### Cuáles comprueba la máquina
 
@@ -312,6 +327,15 @@ Y sus vistas, donde las hay:
 | Negocio · Informes        | Día · Semana · Mes                                                  |
 | Cuaderno · Incidencias    | Abiertas · Cerradas                                                 |
 
+> **Decidido el 11-nov-2026 y todavía sin construir** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)). Las dos tablas de arriba, la de iconos de B3 y los títulos de las fichas de M17 y M21 dicen **lo que hay hoy en el código** —la prueba las compara—, y cambian en la misma entrega que él:
+>
+> | Entrega         | Lo que cambia en la navegación                                                                                                                                                                                                                                                |
+> | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | L · La limpieza | **Cuaderno sale**, y quedan siete apps · Negocio queda en **Ventas · Informes · Reseñas**, sin Pulse ni Costes · Calendario pierde **Tareas** · Carta › Análisis queda en **Equilibrio · Tu zona** · Carta › Carta, **sin pestañas**; con algún agotado, **Carta · Agotados** |
+> | M14             | Calendario: **Calendario · Vacaciones · Turnos** (el orden de los dos últimos, en su maqueta)                                                                                                                                                                                 |
+> | M16b            | Servicio: **Jornadas · APPCC · Empleados · Delivery**, y APPCC con las vistas **APPCC · Historial**                                                                                                                                                                           |
+> | M12 y M11       | Carta › «⋯»: **Nueva sección · Carta online · Desde almacén · Importa tu carta**                                                                                                                                                                                              |
+
 **Movimientos no va en la barra** (la experiencia, [0083](../decisiones/0083-la-experiencia.md)): es un destino construido y con su dirección, pero se llega por «Revisar movimientos», debajo de las cifras del Resumen de Almacén, por «Hacer inventario» de Productos y por el buscador. Así Almacén cabe en cuatro en la barra de abajo del móvil. Y **Compras son tres** en el orden del día —se pide, llega y se paga; y a quién—: lo que ha llegado (los albaranes) es «Llegado» dentro de Pedidos, y los precios van con los proveedores.
 
 **En el ordenador, la navegación es un menú a la izquierda** (0083) que se pliega: plegado, el logo del local y el icono de cada app, con sus destinos al pulsarla; abierto, el logo de Estook, el local y cada app con sus destinos colgando. Sustituye a la barra de arriba con las ocho apps y al menú lateral de dentro de cada app. Las apps que todavía no tienen nada construido van juntas en «Próximamente».
@@ -404,7 +428,7 @@ Contraste mínimo 4,5:1 en texto y 3:1 en iconos con significado · **medido en 
 | ¿Voy mejor que la semana pasada?                 | Línea del periodo, el anterior en gris detrás y la diferencia al final | Ventas, Informes, Panel |
 | ¿A qué hora se me llena?                         | Mapa de calor día × hora                                               | Negocio, el cuadrante   |
 | ¿Qué platos me dan dinero y cuáles solo trabajo? | Matriz de popularidad y margen                                         | Carta (M10)             |
-| ¿Dónde se va el margen?                          | Cascada: ventas → género → personal → mermas → margen                  | Negocio, Pulse          |
+| ¿Dónde se va el margen?                          | Cascada: ventas → género → personal → mermas → margen                  | Negocio                 |
 | ¿Llego al objetivo?                              | Barra contra la línea del objetivo, con lo que falta                   | Panel, Informes         |
 | ¿Qué 20 % me hace el 80 %?                       | Pareto de productos o de proveedores                                   | Almacén, Compras        |
 | ¿Cuánto me cuesta el personal para lo que vendo? | Ventas por hora trabajada, por franja                                  | Negocio                 |
@@ -432,7 +456,7 @@ Serio y directo. Se le habla a alguien que lleva veinte años con un bar y no ti
 1. **Encabezado.** Titular en una línea: _La gestión de tu restaurante, en una sola aplicación._ Dos botones: «Crear cuenta» —«Empezar la prueba» cuando hay oferta (0042)— y «Ver cómo funciona».
 2. **El problema, con números.** Tres datos honestos y verificables. Sin dramatismo.
 3. **La bifurcación.** Dos tarjetas: _Tengo un local_ / _Tengo varios locales_.
-4. **Las ocho apps.** Rejilla con icono, nombre y una frase. Al pasar el ratón, captura.
+4. **Las siete apps.** Rejilla con icono, nombre y una frase. Al pasar el ratón, captura.
 5. **Cómo se conecta con tu TPV.** El bloque que más dudas resuelve, y **arriba, no abajo**: no cambias de TPV, sigues cobrando como siempre.
 6. **Los documentos.** Muestras reales que se abren a tamaño completo. **Es el bloque que más convierte**, porque es lo único tangible.
 7. **Fogón.** Tres avisos reales de ejemplo, y la frase que lo resume: propone, nunca decide.
@@ -471,7 +495,7 @@ Una página por app, por tipo de local y por caso de uso, cada una con su títul
 
 # D · Los módulos
 
-**32 módulos, de M0 a M31, más M6½ y los cuatro del TPV (M20A, M20B, M20C y M20D)**; M20D y M31, añadidos el 6-nov-2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)). Cada uno se entrega funcionando, probado en móvil real y con datos de verdad. **Ninguno se da por bueno «al 90 %».**
+**32 módulos numerados, de M0 a M31, más M6½ y los cuatro del TPV (M20A, M20B, M20C y M20D)**; M20D y M31, añadidos el 6-nov-2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)); **M17 y M30, quitados el 11-nov-2026, y M19b dentro de M18** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)). Cada uno se entrega funcionando, probado en móvil real y con datos de verdad. **Ninguno se da por bueno «al 90 %».**
 
 **Las fichas van por fases, y el orden en el que se construyen es este** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)). Los números no cambian, para no romper las referencias de las decisiones ya escritas.
 
@@ -483,8 +507,30 @@ FASE 2        M8 → M9 → M10
 ESTOOK TPV    M16a · La jornada → M20A · 1 (base y API) → T1 · La puerta → T2 · La sala
               → T3 · Los productos → T4 · Cocina y barra → T5 · La caja para Windows (M19a y M20A · 2)
               → T6 · Facturación (M20B) → T7 · Cobro, caja y ventas (M20C, con M20)
-DESPUES       M11 → M12 → M13 → M14 → M15 → M16b · APPCC → M17 → M18 → M19b
-              → Fase 5 (M21 a M25) → Fase 6 (M26 a M28) → Fase 7 (M29 y M30)
+              → la pausa del 8-nov → R3 · 1 · La caja → cobrar en la mesa (0145)
+```
+
+**Y desde aquí hasta vender, el orden del 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), sección 6). Cada línea es una entrega con su pull request; las **AUDITORÍAS** son las de E5.
+
+```
+AHORA       L · La limpieza: fuera Cuaderno, Pulse, Costes, Tareas y las pestañas que esperan;
+            la Carta sin pestañas
+            → S1 · Cada plan, lo suyo: la primera auditoría de seguridad
+ESTOOK TPV  → M20 · 1 · Lo vendido baja del almacén → M20 · 2 · Lo que se escapa
+            → R3 · 2 · La caja, segunda parte → lo que queda de T7 (sin internet en las nativas,
+              las ventas de hoy, la venta rápida, Informes y Empleados con lo cobrado)
+            → T6 · 3 · NO VERI*FACTU → T8 · Android (con el proveedor de cobro decidido)
+            → AUDITORÍA 2 → M29 · Uber Eats (cuando den el acceso)
+PERSONAS    → M13 · La ficha del trabajador → M14 · Calendario y Vacaciones
+            → M15 · Fichajes → M16b · APPCC → AUDITORÍA 3
+LA CARTA    → M12 y M11 · La carta online y la carta para imprimir
+ESENCIAL    → M18 · Traer los datos de otro TPV
+EL NEGOCIO  → M21 · La exportación → M22 · Fogón 2 → M23 · Reseñas → M25 · Avisos
+            → M24 · Cadena → AUDITORÍA 4
+VENDER      → M26 · Contratar solo y la web → M27 · La mudanza, las copias y el endurecimiento
+            → M28 · El visto bueno del amigo → se vende
+DESPUÉS     M31 · iPhone, si el mercado lo pide · Glovo y Just Eat · previsión y presupuesto
+QUITADO     M17 · Cuaderno · M30 · API pública · Estook Pulse · Negocio › Costes
 ```
 
 **El chat se adelanta** ([0067](../decisiones/0067-pro-a-99-el-chat-adelantado-y-el-plan-de-h.md)): era parte de M23 y pasa a ser la entrega **C**, justo después de la app instalable, que es la que trae los avisos al móvil. M23 se queda con las reseñas y la competencia.
@@ -648,15 +694,30 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M11 · Documentos y diseños
 
-**Entra.** Renderizado en servidor con tipografías incrustadas y paginación real · las plantillas del catálogo · diseños de carta y cartelería en vectorial · personalización · previsualización · enviar, imprimir, descargar · guardado de la receta y regeneración idéntica · conservación de los legales · **los destacados («Sugerencia del chef») y la carta a una o a dos columnas**, de M10 (0103) · el cartel y el PDF del menú del día de M10 · 2 pasan a sus plantillas.
+**Se entrega junto con M12**, porque los dos se abren por el mismo sitio: **Carta › «⋯» › «Carta online»** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.5). **Con su maqueta aprobada antes de construir.**
 
-**Y su capa inteligente.** **Lectura de documentos subidos:** albaranes, facturas y contratos. Fogón extrae los campos y **propone**; una persona confirma; la operación la ejecuta el dominio. De un contrato salen además sus avisos de vencimiento.
+**Entra.** Renderizado en servidor con tipografías incrustadas y paginación real · las plantillas del catálogo · diseños de carta y cartelería en vectorial · personalización · previsualización · enviar, imprimir, descargar · guardado de la receta y regeneración idéntica · conservación de los legales · **los destacados («Sugerencia del chef») y la carta a una o a dos columnas**, de M10 (0103) · el cartel y el PDF del menú del día de M10 · 2 pasan a sus plantillas · el pedido en PDF con el logo (hoy, «Imprimir», sin membrete).
 
-**Terminado cuando.** Desde el móvil se genera un menú con fotos y logo y se manda por WhatsApp; se ve idéntico en un ordenador; regenerarlo tres semanas después da el mismo fichero; y de un albarán fotografiado sale una recepción propuesta que una persona confirma en dos toques.
+**La carta para imprimir** (Richi, 11-nov). Desde «Carta online»:
+
+- **Cómo se reparte:** en una hoja, en varias, una sección por hoja, o eligiendo qué va en cada una.
+- **El diseño:** **desenfadado, clásico, juvenil, formal y sobrio** (fondo blanco y letra negra con algún adorno, como en los restaurantes caros).
+- **Lo que enseña:** alérgenos, unidades y precios. Una carta de restaurante impresa, profesional.
+- **Cómo sale:** **vectorial, en PDF de imprenta, con sus márgenes**. **El logo, solo en la primera página, de portada**; las demás, con los platos detallados y ordenados, «de editorial».
+- **Y lo dice:** «Te ahorras el diseñador: mándala a imprimir».
+- **El QR para imprimir:** solo, o con un diseño para los clientes («¡Escanea el QR para ver la carta!»).
+
+**Ya hecho antes, y no se repite.** Los PDF salen del servidor desde la entrega H (el horario, la ficha técnica, el cartel A3 del menú, el Z de la caja y la factura). Y **leer el albarán, el Z y la merma por foto ya lo hace Fogón 1** ([0098](../decisiones/0098-fogon-1-entero.md)).
+
+**Y su capa inteligente, lo que queda.** **Leer facturas y contratos subidos**: el contrato del trabajador, con M13; de un contrato de proveedor salen además sus avisos de vencimiento. Fogón extrae los campos y **propone**; una persona confirma; la operación la ejecuta el dominio.
+
+**Terminado cuando.** Desde el móvil se genera un menú con fotos y logo y se manda por WhatsApp; se ve idéntico en un ordenador; regenerarlo tres semanas después da el mismo fichero; **y la carta de un local sale en los cinco diseños, lista para la imprenta, con el logo solo en la portada**.
 
 ### M12 · Carta digital pública
 
-**Entra.** Página por local con su dirección y su QR en tres formatos · marca del local · precios del canal elegido · filtros por alérgeno y dieta · idiomas automáticos · agotados en vivo · **los platos destacados**, de M10 (0103) · datos de contacto y enlace a reseña · caché con invalidación por evento · SEO y datos estructurados · **cero cookies**.
+**Para el local se llama «Carta online»** (Richi, 11-nov; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.5), y se abre desde **Carta › «⋯» › «Carta online»**, la opción con color. El menú queda en este orden: **Nueva sección · Carta online · Desde almacén · Importa tu carta**. Dentro están **el enlace de su carta, bien puesto y diseñado**, el QR para descargar o imprimir, y la carta para imprimir (M11). **Se entrega con M11, con su maqueta aprobada antes.**
+
+**Entra.** Página por local con su dirección y su QR en tres formatos · marca del local · **bonita**, que es lo que ve el cliente · precios del canal elegido · filtros por alérgeno y dieta · idiomas automáticos · agotados en vivo · **los platos destacados**, de M10 (0103) · datos de contacto y enlace a reseña · caché con invalidación por evento · SEO y datos estructurados · **cero cookies**.
 
 **Ya hecho antes:** la dirección y el QR definitivos (entrega O, [0047](../decisiones/0047-lo-que-se-ordena.md)) y **la carta subida** página a página (repaso del 25-sep, 0049). Cuando haya platos, el local elige qué enseña su QR: la carta de Estook, con filtros y agotados, o el diseño que subió.
 
@@ -666,35 +727,69 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M13 · Equipo
 
-**Entra.** Personas con rol, alcance y documentos · contratos con vigencia · **coste por hora con permiso propio**, o coste medio por puesto como opción por defecto · calendario laboral con festivos por código postal · ausencias con solicitud, aprobación y saldo · bolsa de horas · reactivación de quien vuelve.
+**Entra.** Personas con rol, alcance y documentos · contratos con vigencia · **coste por hora con permiso propio**, o coste medio por puesto como opción por defecto · calendario laboral con festivos por código postal · bolsa de horas · reactivación de quien vuelve · unir dos personas que resultan ser la misma. **Las ausencias y las vacaciones —su solicitud, su aprobación y su saldo— se ven y se piden en Calendario › Vacaciones (M14)**; aquí se guarda de dónde sale el saldo.
 
-**Reglas críticas.** El coste por hora **solo lo ve quien tiene ese permiso**. No aparece en documentos ni en Fogón.
+**La ficha del trabajador, rehecha** (Richi, 11-nov; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.3; **con su maqueta aprobada antes de construir**). Hoy los datos de cada persona se ponen «de forma austera»; pasan a ser una ficha de verdad:
+
+- **Al crear un usuario e invitarle**, Estook pregunta al momento: **«Crear la ficha del trabajador: a mano o automática»**, y explica las dos.
+- **Automática:** se sube el contrato y **Fogón lee** las horas, el tipo de contrato, la fecha de incorporación, la jornada, el convenio, las vacaciones y las condiciones: todo. **El gerente revisa y confirma**, y la ficha queda hecha. De ella salen las horas, las vacaciones (M14) y las horas extra (M15), «y así no fallamos».
+- **A mano:** los mismos datos, escritos.
+- **Los que ya están**, y los hechos a mano, tienen **«Subir contrato»**, que pone sus datos al día de una vez.
+- **El historial de fichajes de la persona, bonito y exportable por fechas** (M15).
+
+**Reglas críticas.** El coste por hora **solo lo ve quien tiene ese permiso**. No aparece en documentos ni en Fogón. **El contrato es un dato personal**: lo ven quien lleva el local y la propia persona, y nadie más; lo decide la base, no la pantalla. Fogón lo lee **en el servidor**, propone y **no guarda nada sin que el gerente confirme**; lo que pone el contrato es un dato, jamás una instrucción (M22). **Estook no se inventa lo que dice un convenio**: los días de vacaciones salen del convenio aplicado, del contrato o de lo que ponga el gerente a mano, y siempre los confirma él; cómo sabe Estook lo que dice cada convenio se pregunta en el plan del módulo.
 
 **Y la persona sin correo** ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)), que se adelanta a la entrega H: a quien no tiene o no quiere dar su correo se le da de alta con nombre y PIN. Ficha, sale en el cuadrante y entra en los terminales del local; no entra desde un aparato propio.
 
-**Adelantado en M6½** ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): la ficha de cada persona con sus horas, sus fichajes y su última conexión, y **lo que cobra**, por hora o al mes, con permiso propio y nunca hacia arriba. **Queda**: contratos con vigencia y documentos, coste medio por puesto, festivos, ausencias y bolsa de horas.
+**Adelantado en M6½** ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): la ficha de cada persona con sus horas, sus fichajes y su última conexión, y **lo que cobra**, por hora o al mes, con permiso propio y nunca hacia arriba. **Queda**: la ficha nueva con su contrato, contratos con vigencia y documentos, coste medio por puesto, festivos y bolsa de horas.
 
-**Terminado cuando.** Con costes por puesto y sin un solo sueldo individual, el porcentaje de personal del Panel sale correcto.
+**Depende de.** Fogón 1 (hecho), para leer el contrato.
+
+**Terminado cuando.** Con costes por puesto y sin un solo sueldo individual, el porcentaje de personal del Panel sale correcto; **de un contrato subido sale una ficha propuesta que el gerente confirma en una pantalla; y un camarero llamando a la API a pelo no recibe el contrato ni el sueldo de otro**.
 
 ### M14 · Calendario
 
-**Entra.** Vistas mes, semana, día, turnos y tareas · todo lo que pasa en el local con su color y su filtro · arrastrar para crear y mover · turnos partidos · plantillas y copiar semana · **coste en vivo mientras montas** · avisos automáticos · borrador y publicado · al publicar, cada uno recibe lo suyo; al cambiar, solo se avisa al afectado · recurrencias · suscripción de calendario · vista «solo lo mío».
+**Una app completa de calendario** (Richi, 11-nov; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.1 y 1.2; **con su maqueta aprobada antes de construir**). Sus destinos: **Calendario**, el primero; **Vacaciones**; y **Turnos**, que ya existe. **Tareas sale**: las limpiezas periódicas son controles del APPCC (M16b), y las revisiones y las visitas, recordatorios de aquí.
 
-**Y su capa inteligente · horarios con Fogón.** Botón de **generar horario**, que cruza disponibilidad, contratos, horas objetivo, vacaciones, ausencias, turnos anteriores, ventas históricas, previsión de ventas, eventos, necesidades mínimas por puesto y coste laboral. Devuelve coste estimado, comparación con la semana anterior, cobertura por área y los huecos sin cubrir.
+**Calendario.**
 
-**Regla crítica.** **Nunca se publica automáticamente.** La propuesta nace en borrador.
+- **Quién pone cosas:** el gerente, y también el jefe de cocina y el jefe de sala.
+- **Qué se pone:** días de limpieza, revisiones, visitas de Sanidad y **otros** (una reserva de 50, un evento de cinco días seguidos). **Un día o varios.**
+- **A quién avisa: general, solo sala o solo cocina.** El grupo recibe la notificación **ese día, y cada uno de los días si son varios**.
+- **Arriba, el botón «Añadir recordatorio»**: un cuadro para elegir si es general o por partes, el día o los días y, si se quiere, la hora.
+- **Cada empleado puede añadir notas personales**, que solo ve él.
+- **Todo, lo del local y lo personal, con la opción de activar el recordatorio** (aviso y notificación).
+- **Bonito, y que se vea bien en móvil, tablet y ordenador**: vistas de mes, semana y día · todo lo que pasa en el local con su color y su filtro · «solo lo mío» · recurrencias · suscripción de calendario.
+- **Y la historia del Tablón, por días**, que iba a ser de Cuaderno.
+
+**Vacaciones.**
+
+- **Los jefes** ponen días de vacaciones ya marcados a sus empleados.
+- **Los empleados las piden**, y los jefes **las validan o proponen otros días**.
+- **A cada empleado le sale cuántos días le quedan**, y los gasta en el calendario.
+- **El saldo sale** del convenio aplicado, del contrato o de lo que ponga el gerente a mano: lo guarda la ficha del trabajador (M13).
+
+**Turnos, lo que queda.** Arrastrar para crear y mover · turnos partidos · plantillas y copiar semana · **coste en vivo mientras montas** · avisos automáticos · borrador y publicado · al publicar, cada uno recibe lo suyo; al cambiar, solo se avisa al afectado · cambiar un turno con un compañero.
+
+**Y su capa inteligente · horarios con Fogón.** **«Hacer el cuadrante con Fogón» ya existe** (Fogón 1 · 3, [0098](../decisiones/0098-fogon-1-entero.md)): lo propone con las horas de cada uno y las reglas del local, y va al borrador solo si la persona lo pulsa. **Aquí se le añade lo que todavía no cruza**: los contratos (M13), las vacaciones y las ausencias, las ventas históricas y su previsión, los eventos del Calendario, las necesidades mínimas por puesto y el coste laboral. Devuelve coste estimado, comparación con la semana anterior, cobertura por área y los huecos sin cubrir.
+
+**Reglas críticas.** **Nunca se publica automáticamente.** La propuesta nace en borrador. **A quién llega un aviso lo decide la base, no la pantalla**: uno de «solo cocina» no viaja al móvil de un camarero. **Una nota personal no la ve nadie más, tampoco el gerente.** Unas vacaciones pedidas no cuentan hasta que se validan.
 
 **La base ya está**: las horas fichadas de cada persona frente a su contrato, en Equipo › Fichajes, y **el horario publicado** de cada semana (H2), que desde el 9-oct es **el único** ([0081](../decisiones/0081-un-solo-horario-y-las-incidencias.md)): el «horario de siempre» de la ficha dejó de contar, y sus filas esperan aquí a que se decida qué hacer con ellas. Y **Equipo › Incidencias**, con las faltas y los retrasos frente a lo publicado y su justificación. Es lo primero que tiene que leer el generador de horarios.
 
 **Y lo que pinta ya lo publican otros** ([decisión 0031](../decisiones/0031-el-calendario-recoge-lo-de-todos.md)): desde M7, las entregas y las caducidades están en la tabla de eventos. M14 **pinta**, no va a buscar: añade los turnos, **los avisos de quien lleva el local con los roles que los ven** —filtrados por la base, no por la pantalla—, las capas con el color de su app y sus filtros, y «solo lo mío». Todo lo necesario, y nada de más.
 
-**Terminado cuando.** Una semana con partidos se publica, cada persona recibe lo suyo, un cambio avisa solo al afectado, el cuadrante impreso sale legible, **y una propuesta de Fogón se puede editar antes de publicar**.
+**Depende de.** M13 (el saldo de vacaciones), la entrega I (los avisos al móvil) y M25 (los avisos del horario).
+
+**Terminado cuando.** Una semana con partidos se publica, cada persona recibe lo suyo, un cambio avisa solo al afectado, el cuadrante impreso sale legible, **y una propuesta de Fogón se puede editar antes de publicar**. **Un recordatorio de «solo cocina» de tres días avisa a cocina los tres días y a nadie de sala; un empleado pide vacaciones, su jefe propone otros días, él los acepta y su saldo baja; y una nota personal no sale en ninguna respuesta de la API para otra persona.**
 
 ### M15 · Fichajes
 
 **Adelantado en M6½** ([decisión 0025](../decisiones/0025-fichar-pide-donde-y-no-bloquea.md)): fichar en un toque desde el Panel y desde Equipo › Resumen, con **hora del servidor** y **la ubicación pedida al entrar y al salir, que nunca bloquea** —se guardan los metros, o por qué no los hay— · un turno abierto por persona · correcciones con nombre y motivo, y el turno olvidado lo cierra quien corrige · quién ve los fichajes de quién, decidido en la base.
 
 **Entra.** Fichar con el PIN **en la caja de Estook TPV** ya está (el botón naranja, [0115](../decisiones/0115-cada-aparato-a-lo-suyo.md) y [0121](../decisiones/0121-la-pausa-del-tpv.md)), y en Esencial se ficha con el móvil, sin aparato para fichar ([0120](../decisiones/0120-estook-tpv-es-de-pro.md)) · para el local que lo quiera, fichar **solo** desde sus aparatos · comparativa de lo planificado contra lo fichado con su coste (con M14).
+
+**La exportación, en la ficha del trabajador** (Richi, 11-nov; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 3.5): el historial de fichajes que ya existe, **puesto bonito**, con **«Exportar» por fechas: última semana, último mes o elegir días**. Es la «exportación completa del periodo» de la tabla de abajo.
 
 **Y la ley de registro horario, que afecta a esto directamente.** Registrar la jornada es obligatorio en España desde mayo de 2019, y la Inspección ya sanciona los registros que considera poco fiables. Además hay un **Real Decreto de registro horario digital en tramitación** —a septiembre de 2026 **no está publicado en el BOE**, así que todavía no obliga— cuyo borrador exige cosas muy concretas. Estook ya cumple varias por diseño, y las que faltan se construyen aquí porque hacerlo después es rehacer:
 
@@ -722,13 +817,34 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **M16a · La jornada** (**en producción desde el 22-oct**, [0105](../decisiones/0105-m16a-la-jornada.md): lo reabre quien puede cerrar la caja, sin PIN en el propio móvil, y el cierre va en tres pasos hasta que M16b traiga el APPCC). Apertura automática de jornada · **fecha operativa en el servidor**, incluida la noche del cambio de hora · panel en vivo (desde la pausa del 8-nov, [0142](../decisiones/0142-la-pausa-del-8-nov.md), «En marcha» es **Información**: lo que se vende, con lo de hoy en una línea arriba) · cierre del día en cuatro pasos y sesenta segundos · reapertura con motivo. **Terminado cuando** un cierre real se completa en menos de sesenta segundos, y la jornada de la noche del cambio de hora dura lo que tiene que durar, probada con `pnpm prueba:semana`.
 
-**M16b · APPCC y trazabilidad.** Plan de APPCC versionado con plantillas · registro en dos toques, que queda a nombre de quien lo hace con su PIN, y **acción correctiva obligatoria** · `NO REGISTRADO` en rojo · informe de trazabilidad de lote. **Terminado cuando** un mes de APPCC se exporta listo para inspección, y de un lote sale el listado de días y platos en que se sirvió.
+**M16b · APPCC y trazabilidad** (Richi, 11-nov; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 3.4; **con su maqueta aprobada antes de construir**). **Vive en Servicio, debajo de Jornadas**, con dos vistas: **APPCC** e **Historial**. Completo, fácil e intuitivo, y **no un formulario enorme: un sistema inteligente de tareas**.
+
+- **El panel, en tarjetas:** recepción de mercancías · temperaturas · limpieza y desinfección · trazabilidad · proveedores · alérgenos · plagas · mantenimiento · higiene y formación · incidencias y acciones correctoras · documentación e informes.
+- **Quién hace qué.** El **gerente** configura: los controles, los equipos, las frecuencias, los límites, los responsables y los procedimientos. El **jefe de cocina y el jefe de sala** ejecutan y registran los de su área (recepción, temperaturas, limpieza y supervisión). **Los trabajadores** hacen controles concretos cuando se les asignan, y **nunca se les obliga a rellenar todo el APPCC**.
+- **El día a día.** La pantalla principal enseña los controles pendientes de hoy, los hechos, las incidencias abiertas, las alertas de temperatura fuera de rango, las próximas tareas y el responsable de cada una. **Cada control abre su pantalla rápida y propia**, no un formulario genérico: botones, selectores, números, foto cuando haga falta, y la confirmación de quien lo hace.
+- **Recepción de mercancías.** Proveedor, producto, fecha, lote cuando toque, temperatura si procede, estado del embalaje, caducidad, y aceptar o rechazar. **Unida a Compras y al Almacén**: recibir un pedido (M7) es ya la recepción, y nada se escribe dos veces.
+- **Automático.** Los controles se generan solos con las frecuencias y los horarios que pone el gerente. Estook detecta lo que no se ha hecho, **pide la acción correctora** y avisa al responsable. **Una incidencia no se cierra sin decir qué se hizo y quién lo hizo.**
+- **Historial y papeles.** Cada registro, con fecha, hora, usuario, resultado y el rastro de sus cambios. Se filtra por fechas, responsables y categorías; **los informes salen en PDF, para imprimir para Sanidad o para quien los pida**; y toda la documentación del sistema está a mano.
+- **Cómo se ve.** Moderno, visual, rápido y mínimo, con el diseño de Estook: tarjetas, indicadores de estado, calendarios y tareas pendientes. **Ni tablas interminables ni formularios largos.** Un jefe de cocina lo lleva **en segundos**, y el gerente ve cómo cumple el local.
+- **Lo que ya traía este módulo, y se queda:** el plan de APPCC versionado con plantillas · el registro en dos toques, a nombre de quien lo hace con su PIN · `NO REGISTRADO` en rojo · el informe de trazabilidad de lote · y el cuarto paso del cierre del día (M16a).
+
+**No duplica** (regla 14 y la prueba de la plantilla). Antes de construir se revisa lo que existe y **se reutiliza**: las personas y sus permisos (M1 y M4), los proveedores y la recepción (M7), los productos, los lotes y las caducidades (M6 y M8) y los alérgenos de cada plato (M9). **Mantenimiento** es lo que iba a ser Cuaderno › Equipos, y **limpieza**, lo que iba a ser Calendario › Tareas: viven aquí y en ningún otro sitio. No se toca otro módulo sin necesidad.
+
+**La ley.** El Reglamento (CE) 852/2004, el Real Decreto 1021/2022 y lo sanitario que toque. **Los controles, los límites y las frecuencias se adaptan al APPCC real de cada local: Estook no se inventa límites legales universales.** Las plantillas se escriben con la norma delante, el día que se construya, y con su fuente.
+
+**Terminado cuando** un mes de APPCC se exporta listo para inspección; de un lote sale el listado de días y platos en que se sirvió; una temperatura fuera de rango no se cierra sin su acción correctora; recibir un pedido deja hecha la recepción del APPCC sin escribir nada dos veces; y un trabajador sin controles asignados no tiene nada que rellenar.
 
 ### M17 · Cuaderno
 
-**Entra.** Incidencias del turno enlazadas a la jornada, que lee el turno siguiente · notas privadas, de equipo y de local, donde **compartir cambia permisos y no duplica** · enlaces a platos, productos, proveedores y personas · equipos con revisiones, vencimientos y adjuntos, que aparecen solas en el Calendario.
+**Quitado el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.4); el título de esta ficha cambia con el código, en «L · La limpieza». Richi: «no vale para nada; con Calendario y Tablón lo cubrimos». **Estook pasa de ocho apps a siete**; la app sale del código en «L · La limpieza». Dónde queda lo que iba a tener:
 
-**Terminado cuando.** El turno de la mañana lee la incidencia de la noche anterior sin que nadie se lo cuente.
+| Lo que iba a ser de Cuaderno               | Dónde queda                                                |
+| ------------------------------------------ | ---------------------------------------------------------- |
+| Lo que tiene que saber el turno siguiente  | El **Tablón** del Panel, que ya existe                     |
+| Notas privadas                             | Las **notas personales** del Calendario (M14)              |
+| Revisiones y mantenimiento de las máquinas | **APPCC › Mantenimiento** (M16b) y los recordatorios (M14) |
+| Incidencias del turno                      | El Tablón; las del APPCC, en M16b                          |
+| La historia del Tablón, por días           | El Calendario (M14)                                        |
 
 ## Fase 4 · Las ventas
 
@@ -743,7 +859,18 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 > - **M19a · el centro del local.** El programa, su emparejamiento con el local, el centro que mantiene sala y cocina sin internet, y la impresión. Va **entre M20A · 1 y M20A · 2**: la sala y la cocina se prueban primero en pantalla y con internet, y la caja para Windows les da el papel y el aguante a los cortes antes de que cobren (T5).
 > - **M19b · el conector de TPV.** Vigilar la carpeta y los lectores de formato de cada marca. Va con M18, porque solo lo necesita quien sigue con su TPV. **Es de Estook, con Esencial**: quien cobra con otro TPV solo trae sus datos (Richi, 28-oct; [0120](../decisiones/0120-estook-tpv-es-de-pro.md)).
 
-### M18 · El conector · vía nube
+### M18 · Traer los datos de otro TPV · el conector, con lo que era M19b
+
+**Es de Esencial** (Richi, 28-oct y 11-nov; [0120](../decisiones/0120-estook-tpv-es-de-pro.md) y [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.9): quien tiene Esencial no tiene Estook TPV, así que Estook no puede leer sus ventas. Esto las trae: **para descontar productos, hacer cierres y ver ganancias**. **Va después de Estook TPV entero.**
+
+**Cuatro caminos, de más automático a menos, en un solo sitio** —Ajustes › «¿Cómo entran tus ventas?», que ya existe—, cada uno diciendo **qué trae y qué no**:
+
+1. **Conectado**, por la API del TPV (lo de abajo).
+2. **Por fichero**: la carpeta vigilada o subir el CSV (lo que era M19b; su especificación, en la ficha de M19).
+3. **Por foto del ticket de cierre**: «menos automatizado, pero más barato». Fogón 1 ya lee el Z de una foto (0098).
+4. **A mano**: el cierre de caja de siempre.
+
+**Sin lío** (Richi): «que todo tenga sentido, que no esté mal colocado, opciones visibles, bien explicadas y optimizadas». **Con su maqueta aprobada antes de construir.** Y se prueba con un local que tenga ese TPV antes de venderlo.
 
 **Entra.** El asistente de conexión en cuatro pantallas · guías por marca y por sistema operativo, cada una con sus pasos, sus capturas y el correo redactado para pedir credenciales · importación del catálogo de artículos que monta la Carta sola · marco de conectores con una interfaz común (`autenticar`, `listar_articulos`, `traer_ventas`, `estado`) · implementación de Ágora y de Glop por su API oficial · pantalla de conexión con la lista de TPV y sus logos · sincronización cada 15 minutos, más al cierre, más botón de sincronizar ahora · idempotencia por identificador de pedido y fecha de servicio · panel de estado.
 
@@ -757,7 +884,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M19 · La caja para Windows y el conector · se entrega en dos partes
 
-**M19a va entre M20A · 1 y M20A · 2, y M19b al final**, por lo dicho en la cabecera de la fase. **M19a es T5 · La caja para Windows** (Richi, 27-oct): un programa que se descarga en el PC de la caja, con Estook TPV tal cual y lo de abajo dentro; lo que entra y en qué orden, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md). Lo de abajo es el módulo entero; lo que entra en cada parte se dice al final de la ficha.
+**M19a va entre M20A · 1 y M20A · 2, y M19b al final**, por lo dicho en la cabecera de la fase. **Desde el 11-nov-2026, M19b no es una entrega aparte: va dentro de M18** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)); lo que esta ficha dice del conector sigue siendo su especificación. **M19a es T5 · La caja para Windows** (Richi, 27-oct): un programa que se descarga en el PC de la caja, con Estook TPV tal cual y lo de abajo dentro; lo que entra y en qué orden, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md). Lo de abajo es el módulo entero; lo que entra en cada parte se dice al final de la ficha.
 
 **Entra.** **M19a es la caja para Windows** (0119): Estook TPV en un programa de Electron, firmado antes de vender, solo para Windows mientras ningún cliente pida otra cosa. **M19b**, el conector: un servicio que **vigila una carpeta** y sube los ficheros nuevos · emparejamiento con un código de un solo uso · solo lectura, sin puertos abiertos, saliente y cifrado · latido cada 15 minutos · cola local si no hay red · icono de bandeja con el estado · instalador y guía de puesta en marcha remota · lectores de formato para Hosteltáctil y para los informes de Ágora y Glop cuando no hay API.
 
@@ -836,7 +963,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Depende de.** M1, M2 (el motor fiscal desglosa los impuestos) y M11 (plantillas para la factura completa en PDF).
 
-**Reglas críticas.** Regla 15 de A1. Las claves del proveedor, solo en el servidor. **Nunca se llama a la eliminación permanente de un NIF en el proveedor.** **Un número asignado nunca se pierde ni se reutiliza**: un documento preparado que no llega se reintenta con la misma clave, no se borra. **Nada va a producción sin la revisión escrita del asesor y la declaración responsable publicada** (E3).
+**Reglas críticas.** Regla 15 de A1. Las claves del proveedor, solo en el servidor. **Nunca se llama a la eliminación permanente de un NIF en el proveedor.** **Un número asignado nunca se pierde ni se reutiliza**: un documento preparado que no llega se reintenta con la misma clave, no se borra. **Nada va a producción sin la declaración responsable publicada** (E3); **la revisión del asesor la dio Richi por hecha el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 3.2).
+
+**NO VERI\*FACTU (T6 · 3) va antes de vender** (Richi, 11-nov; 0146, 2.1): hay clientes que la piden. Con **el certificado que pida la ley** —Richi: «el gratuito»—, **la cadena y el QR**, «todo legal, eso siempre»; qué certificado vale para una sociedad y para un autónomo, y cuál es gratuito, se comprueba en la fuente oficial al empezarla. Lo que entra, en [el plan de Estook TPV](../m20a-la-sala-y-la-cocina.md), T6 · 3.
 
 **Terminado cuando.** Todas las pruebas del Anexo pasan contra el entorno de pruebas del proveedor; un rechazo simulado llega a la pantalla de errores y se corrige sin tocar el original; y ningún rol, ni el panel interno, consigue modificar un documento emitido llamando a la API a pelo.
 
@@ -848,7 +977,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Y cómo se ve y cómo se usa** (capítulo 10 del Anexo): la pantalla de cobrar con el total en grande, los billetes para no teclear y el cambio a la vista · el ticket impreso, por correo o en un QR, y «Pedir factura» en la misma pantalla · **el cajón**, que se abre solo con efectivo como una línea más del formato de impresión, y **abrirlo sin venta con permiso, motivo y rastro** · **informe X** sin cerrar e **informe Z** al cerrar, que son consultas y no documentos fiscales · **arqueo ciego de fábrica** · **el cuadre de la tarjeta**: el total del cierre del datáfono frente a lo cobrado con tarjeta · el datáfono del banco **sin conectar**, que vale para todos.
 
-**Después de M20C, local a local: el datáfono conectado** (Anexo, 10.7), detrás de `ProveedorDatafono`, con el importe que viaja solo y vuelve «aprobado». La cuenta es del local y el dinero no pasa por Estook. **Va primero Stripe** (Richi, 6-nov, [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)): cobra sin salir de Estook y un solo SDK cubre Android, iPhone y los lectores; Viva o SumUp, solo si un local lo pide. **Cobrar con tarjeta en el propio aparato** (Tap to Pay) necesita la app de Android: va en M20D. **Estook nunca es entidad de pago ni cobra comisión por cobro** (Arquitectura, capítulo 10).
+**Después de M20C, local a local: el datáfono conectado** (Anexo, 10.7), detrás de `ProveedorDatafono`, con el importe que viaja solo y vuelve «aprobado». La cuenta es del local y el dinero no pasa por Estook. **Con qué proveedor se empieza se reabrió el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), sección 4): el banco del local, de app a app, le sale mucho más barato que Stripe (el 6-nov se había decidido Stripe primero, [0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)). **Sin decidir, y es de Richi**; la comparación, en [la investigación](../estook-tpv-android-y-el-cobro.md), apartado 9. **Cobrar con tarjeta en el propio aparato** (Tap to Pay) necesita la app de Android: va en M20D. **Estook nunca es entidad de pago ni cobra comisión por cobro** (Arquitectura, capítulo 10).
+
+**Sin internet se sigue cobrando, y no se pierde nada** (Richi, 11-nov; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 3.3). Es lo que pide VeriFactu y lo que ya estaba pensado: **la facturación no se interrumpe**; lo cobrado y sus registros **se guardan en el aparato y se envían al volver**, en orden y una sola vez; el sistema **reintenta el envío cada cierto tiempo**; y **la incidencia queda identificada** en el documento. **Lo sostienen las apps nativas** —la caja para Windows (M19a) y Estook TPV para Android (M20D)—, que guardan en la máquina: **es donde se recomienda usar Estook TPV**. **La versión web de Estook TPV se queda**, para entrar desde cualquier parte y para probar, con **su aviso de que es mejor la nativa** y **el botón de descarga directa**; cobrar sin internet solo se promete en las nativas.
 
 **Depende de.** M20A, M20B, M16a y M6½.
 
@@ -859,6 +990,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 ### M20D · Estook TPV para Android: el TPV portátil y cobrar en el aparato
 
 _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md); la investigación, en [`docs/estook-tpv-android-y-el-cobro.md`](../estook-tpv-android-y-el-cobro.md)). **Decidido con Richi el mismo día**: detrás de T7, con Stripe y sin salir de Estook, en este repositorio con su propio flujo de GitHub, y sin que Estook gane nada con los cobros._
+
+**Reabierto el 11-nov-2026 en una sola cosa** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), sección 4, y [la investigación](../estook-tpv-android-y-el-cobro.md), apartado 9): **con qué proveedor se cobra** —el banco del local, de app a app, sale mucho más barato que Stripe— y **si el cobro integrado se paga por aparato**. **Sin decidir, y es de Richi: T8 · 2 no empieza sin esa respuesta.** Donde lo de abajo dice «Stripe», se lee «el proveedor que se elija», detrás de `ProveedorDatafono`. T8 · 1, la app, no depende de ello.
 
 **Objetivo.** Que un local tenga todo con Estook: **un TPV Android con impresora dentro** (como un Sunmi V3 PLUS) que toma nota en la mesa, imprime la cuenta y el ticket y **cobra con tarjeta en el propio aparato**; y que el móvil Android de un camarero cobre igual.
 
@@ -880,17 +1013,21 @@ _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-a
 
 ### M21 · Negocio, analítica y Estook Pulse
 
-**Entra.** Agregados por worker: diarios, por franja, por producto, por plato, por canal y por empleado · resúmenes con objetivo y comparación · productividad · **dónde se va el margen con enlace a donde se arregla** · previsión de ventas a siete días con su margen de error y contraste posterior · presupuesto por mes con seguimiento · salud de los datos · exportaciones en PDF, CSV y formatos de A3, Sage, Contasol y Holded · auditoría consultable · reconstrucción completa de agregados con un comando.
+**Estook Pulse y Negocio › Costes, quitados el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.6 y 1.7): el módulo pasa a llamarse **«Negocio y analítica»**, y el título de esta ficha cambia con el código, en «L · La limpieza». Negocio queda en **Ventas · Informes · Reseñas**. Lo que iba a contestar Costes ya está en su sitio: el food cost en Ventas, las mermas en Almacén, lo que no deja margen en Escandallos y lo gastado en Consumo.
+
+**Entra.** Agregados por worker: diarios, por franja, por producto, por plato, por canal y por empleado · resúmenes con objetivo y comparación · productividad · **dónde se va el margen con enlace a donde se arregla**, dentro de Informes · salud de los datos · **la exportación de datos ordenados, tipo resumen de todo** (Richi, 11-nov), en PDF, CSV y los formatos de A3, Sage, Contasol y Holded, **que es también la pantalla de la gestoría** (tiene su permiso y no tiene pantalla, [0137](../decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md)) · auditoría consultable · reconstrucción completa de agregados con un comando.
+
+**Después de vender:** la previsión de ventas a siete días con su margen de error y su contraste posterior, y el presupuesto por mes con seguimiento.
 
 **Adelantado en la pausa del 8-nov** ([0142](../decisiones/0142-la-pausa-del-8-nov.md)), con las mesas de Estook TPV y, desde T7, con lo cobrado: **Negocio › Informes** rehecho (cuándo se vende, por hora y por día y hora; la cocina, con el tiempo de salida y lo que sale tarde; lo que se tuerce: devueltos, cambiados, quitados y mesas anuladas; y las semanas) y **Servicio › Empleados** (lo vendido por cada uno y por hora fichada, con un objetivo en € por hora que sale de las horas del horario; la lista, solo para quien lleva el local, y cada uno ve el suyo si el gerente lo deja).
 
 **Adelantado en M6½**: Negocio › Ventas, con lo facturado, el ticket medio y un food cost **aproximado** —el género que ha salido del libro frente a lo facturado—, dicho como aproximado hasta que haya consumo teórico.
 
-**Y su capa inteligente · Estook Pulse.** La salud del negocio en un número, **con sus componentes, sus pesos y su explicación**, exactamente con la disciplina del indicador de salud de datos: se puede desmontar y dice qué la está bajando. Con sus problemas y sus oportunidades, cada uno accionable.
+**Ventas › Resumen e Informes se quedan como están** (0146, 1.8): si se solapan, se vuelve a mirar cuando Informes lea lo cobrado.
 
-**Regla crítica.** **Nunca se enseña un número solo.** Pulse siempre explica por qué está en verde, amarillo o rojo. Y Pulse y salud de los datos **son dos indicadores distintos que no se mezclan**.
+**Regla crítica.** **Nunca se enseña un número solo**: cada cifra lleva su origen, su periodo y con qué se compara.
 
-**Terminado cuando.** Los números cuadran con el Z y con la gestoría; el Panel carga en menos de un segundo con un año de datos; reconstruir da los mismos números; **y Pulse se puede abrir y desglosar hasta el dato que lo mueve**.
+**Terminado cuando.** Los números cuadran con el Z y con la gestoría; el Panel carga en menos de un segundo con un año de datos; reconstruir da los mismos números; **y la exportación de un mes la abre la gestoría sin pedir nada más**.
 
 ### M22 · Fogón
 
@@ -926,6 +1063,8 @@ _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-a
 
 ### M24 · Cadena
 
+**Cómo entra el area manager** (Richi, 11-nov; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 2.3). Al contratar varios restaurantes, quien los lleva recibe el rol de **area manager**. Al entrar ve **la lista de todos sus restaurantes** que usan Estook; debajo, **un resumen de todos**: un top, los ingresos totales y separados; y puede **entrar en un local y verlo todo como lo vería su gerente**. **Solo los locales que tiene asignados**: lo decide la base, y una prueba lo intenta con uno que no es suyo (E5).
+
 **Entra.** Panel de cadena con comparativa y **gestión por excepción**, servido de agregados precalculados · bajada al local en un toque · ranking configurable · comparativa de precios de compra frente al contrato marco · catálogo maestro con propagación y adopción · informe de cumplimiento de estándares · gestión de áreas y area managers · **visitas y auditorías de local completas** según el documento de Roles · movilidad de personal · archivado de local excluido de las medias.
 
 **Y su capa inteligente.** La auditoría **detecta sola** APPCC incompleto, inventario atrasado, desviación elevada, fichajes anómalos, formación pendiente, documentación incompleta, problemas de stock y tareas sin cerrar. Y convierte cada problema en **tarea + responsable + fecha**.
@@ -942,6 +1081,8 @@ _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-a
 
 ### M26 · Suscripciones, web y panel interno
 
+**Los límites de cada plan se adelantan: son la entrega S1** (Richi, 11-nov; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 3.6 y sección 8). «No se pueden cruzar privilegios, y mucho menos datos entre empresas.» **Esencial tiene sus pantallas y no llega a nada de Pro ni de Estook TPV**: solo la app de gestión, y conectarse a un TPV o traer su información (M18). **En el servidor y en la base, no solo en la pantalla.** Lo que ya está: los aparatos de Estook TPV los cierra la API desde la [0120](../decisiones/0120-estook-tpv-es-de-pro.md). Lo que hace S1: cada operación del catálogo dice de qué plan es y el despachador lo comprueba **también con la sesión de una persona**; una prueba recorre todo el catálogo con un local en Esencial; y las pantallas de Esencial se repasan una a una. El resto de lo de abajo va en su sitio, antes de vender.
+
 **Entra.** Motor de derechos de uso: plan → derechos y cupos comprobados en servidor, con `402` y el código del derecho · contadores por día natural · se paga al empezar, y la prueba es una oferta que se enciende desde el admin y **pide tarjeta** (0042, enmendada por la 0048) · antiabuso por ficha de Google, CIF y dirección · planes en Stripe con anual, pausa y prorrateo · una factura por organización con desglose por local · impago escalonado **sin cortar en mitad del servicio** · baja con exportación completa · la web pública entera de la parte C · panel interno completo según el documento de Roles.
 
 **Terminado cuando.** Cada derecho tiene su prueba llamando a la API con un plan inferior y esperando `402`; cambiar los derechos en el navegador no desbloquea nada; y un local se da de alta y contrata de principio a fin sin que intervengamos.
@@ -950,7 +1091,7 @@ _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-a
 
 ### M27 · Endurecimiento y puesta en producción
 
-**Entra.** Revisión de seguridad y de RLS tabla por tabla · límites de petición · pruebas de carga en los caminos calientes · índices revisados con planes reales · RGPD: registro de actividades, retención por tipo de dato aplicada por un trabajo nocturno, según [`conservacion-de-datos.md`](../legal/conservacion-de-datos.md) —fichajes, cuatro años; tickets, facturas y libros, seis, aunque el cliente se dé de baja—, borrado y portabilidad, contrato de encargado (con Verifacti como subencargado para quien cobra con Estook), **datos alojados en la Unión Europea, comprobado región por región en Supabase, en el almacenamiento y en cada proveedor**, aviso a empleados sobre fichajes, ubicación del fichaje y chat · copias: la semanal cifrada ya existe desde el 30-sep-2026; aquí se comprueba la diaria de Supabase Pro y la recuperación a un punto exacto ([`copias-de-seguridad.md`](../copias-de-seguridad.md)) · **la mudanza a Cloudflare Pages y el repositorio en privado**, antes del primer cliente de pago o de vender Estook TPV ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)) · **el paquete legal de `docs/legal/` revisado por el asesor** ([0062](../decisiones/0062-lo-legal.md)) · página de estado · dominio, correo verificado y certificados · la lista de claves · alta de la cuenta propia.
+**Entra.** Revisión de seguridad y de RLS tabla por tabla · límites de petición · pruebas de carga en los caminos calientes · índices revisados con planes reales · RGPD: registro de actividades, retención por tipo de dato aplicada por un trabajo nocturno, según [`conservacion-de-datos.md`](../legal/conservacion-de-datos.md) —fichajes, cuatro años; tickets, facturas y libros, seis, aunque el cliente se dé de baja—, borrado y portabilidad, contrato de encargado (con Verifacti como subencargado para quien cobra con Estook), **datos alojados en la Unión Europea, comprobado región por región en Supabase, en el almacenamiento y en cada proveedor**, aviso a empleados sobre fichajes, ubicación del fichaje y chat · copias, **aplazadas hasta la mudanza y que se hacen al cien por cien** (Richi, 11-nov): la semanal cifrada ya está escrita desde el 30-sep-2026; aquí se comprueba la diaria de Supabase Pro y la recuperación a un punto exacto ([`copias-de-seguridad.md`](../copias-de-seguridad.md)) · **la mudanza a Cloudflare Pages y el repositorio en privado**, antes del primer cliente de pago o de vender Estook TPV ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)) · **el paquete legal de `docs/legal/` revisado por el asesor** ([0062](../decisiones/0062-lo-legal.md)) · página de estado · dominio, correo verificado y certificados · la lista de claves · alta de la cuenta propia.
 
 **Y cómo se despliega sobre restaurantes que están dando de comer.** Esto no estaba escrito y es de lo que más caro sale aprender:
 
@@ -964,15 +1105,19 @@ _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-a
 
 **Y la prueba final del coste por local** ([0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)). Un mes de un local de ejemplo cargado como uno de verdad —sus ventas, sus tickets, sus correos y su Fogón—, con la factura real de cada proveedor al lado. **El coste medido por local no se separa más de un 20 % de [`coste-por-local.md`](../coste-por-local.md)**; si se separa, se corrige la tabla o el precio antes de vender.
 
-### M28 · Piloto real
+### M28 · El visto bueno del amigo
 
-**Entra.** Tres locales reales durante un mes, uno con Ágora, otro con Glop y, si M20C está terminado y la facturación aprobada por el asesor, uno cobrando con Estook · acompañamiento en la instalación y la primera semana · **registro de cada fricción y cada llamada** · medición de activación, salud de datos y **coste real por local, día a día, en el panel interno** · corrección con prioridad sobre cualquier función nueva · entrevista de salida.
+_Era «Piloto real», con tres locales durante un mes. Cambiado el 11-nov-2026 ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 3.8)._ Richi: «el piloto no cuenta: es un amigo que me ayuda a buscar fallos; una vez me dé el visto bueno y todo funcione bien, empezaremos a venderlo».
 
-**Regla crítica.** **No se abre ninguna función nueva mientras haya fricción del piloto sin resolver.**
+**Entra.** El restaurante del amigo trabajando con Estook y con Estook TPV —la caja para Windows, su impresora, la cocina y un Android—, sin pagar y el tiempo que haga falta · acompañamiento en la instalación y la primera semana · **registro de cada fricción y cada llamada**, en [`pruebas-pendientes.md`](../pruebas-pendientes.md) · medición de activación, salud de datos y **coste real por local, día a día, en el panel interno** · corrección con prioridad sobre cualquier función nueva · **su visto bueno, dicho por él**.
+
+**Regla crítica.** **No se abre ninguna función nueva mientras haya fricción sin resolver. Y no se vende antes de su visto bueno.**
 
 ## Fase 7 · El ecosistema
 
 ### M29 · Canales de reparto e integraciones
+
+**Necesario, y antes de vender** (Richi, 11-nov; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 2.5): que los pedidos de reparto lleguen a la cocina. Uber Eats primero; después, otros canales (Glovo y Just Eat). **El acceso de integrador se pide ya**, porque tarda, y sin él no se empieza; si Uber tardara más que todo lo demás, se le pregunta a Richi si se vende sin él.
 
 **Objetivo.** Que un pedido de una plataforma de reparto entre en Estook por el mismo sitio que una venta del TPV, y alimente lo mismo.
 
@@ -992,19 +1137,15 @@ _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-a
 
 **Terminado cuando.** Un pedido real entra por webhook, se acepta desde Estook, actualiza ventas y consumo, y **reenviar el mismo webhook no lo duplica**. Uber da el acceso de producción tras su verificación de punta a punta, y **el local piloto mantiene un 98 % de pedidos entrados bien durante tres días**, que es lo que pide Uber antes de abrirlo a más locales. Y añadir un segundo canal es escribir un adaptador, no tocar el núcleo.
 
-### M30 · API pública
+### M30 · API pública · quitada
 
-**Objetivo.** Que un TPV, un ERP o una herramienta externa puedan leer y escribir en Estook con permiso del cliente.
-
-**Entra.** Superficie pública versionada sobre la API interna existente · autenticación por aplicación con alcances y autorización del cliente · límites por aplicación y por cliente · documentación y entorno de pruebas · registro de uso y auditoría de quién llamó a qué · webhooks salientes para que un tercero se entere de lo que cambia en Estook.
-
-**Reglas críticas.** La API pública **no es un atajo al dominio**: pasa por los mismos comandos, los mismos permisos y la misma auditoría que la aplicación. Un tercero **nunca** ve más de lo que vería la persona que autorizó la conexión.
-
-**Por qué está aquí y no antes.** Porque exige que el dominio esté cerrado. Y por qué está: el TPV líder de España se integra con dos back-office de nuestra categoría, así que **quiere integrarse con nosotros** y tiene que haber dónde.
+**Quitada del todo el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 2.2). Si algún día vuelve, vuelve con su decisión. Lo que sigue valiendo, porque es de la API de dentro: **nadie de fuera entra sin pasar por los mismos comandos, los mismos permisos y la misma auditoría** que la aplicación.
 
 ### M31 · Estook TPV para iPhone y iPad
 
 _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md))._ Richi: «empezaremos con Android, y si el mercado lo pide más adelante haremos iOS (iOS seguro al final)».
+
+**Un extra, al final, y solo si el mercado lo pide** (confirmado por Richi el 11-nov; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 2.4). Mientras tanto, el camarero con iPhone entra por la versión web de Estook TPV, con su aviso.
 
 **Objetivo.** Lo mismo que M20D en el iPhone y el iPad: la misma app de Capacitor con su parte de iPhone, imprimir sin la caja para Windows y **cobrar con Tap to Pay en iPhone** (en noviembre de 2026 ya funcionaba en España con Stripe, SumUp, Viva y Adyen).
 
@@ -1039,11 +1180,11 @@ Código en su rama con commits legibles · migraciones numeradas y reversibles �
 4. Ningún módulo empieza con el anterior a medias.
 5. **Antes de M8 hay que haber decidido quién ejecuta los procesos de fondo.** La bandeja de salida y la cola de trabajos existen desde M2 y nadie las llama: en cuanto un módulo dependa de un evento, eso deja de ser gratis. **Decidido**: `pg_cron` llamando a nuestra API ([0016](../decisiones/0016-el-reloj-es-pg-cron-llamando-a-la-api.md)), y **se monta en M7**, porque la actualización diaria de la ficha de Google lo necesita.
 6. **Estook TPV va justo después de M10**, en el orden de la cabecera de D, y **M19a antes de M20A**.
-7. **M29 y M30 van al final, y no es un descuido.** Una integración sobre un dominio a medio cerrar se rehace entera.
-8. **No se lanza sin M28.** Un mes con tres locales reales vale más que seis meses de suposiciones.
-9. **La facturación no se enciende en producción** sin las once condiciones del capítulo 9 del Anexo; las tres primeras: todas las pruebas en verde contra el entorno de pruebas, la declaración responsable publicada en la app y la revisión del asesor fiscal por escrito.
+7. **M29 va con el dominio cerrado, y no es un descuido**: después de Estook TPV entero, y antes de vender ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)). Una integración sobre un dominio a medio cerrar se rehace entera. M30 se quitó.
+8. **No se vende sin M28**: el visto bueno del amigo que lo prueba en su restaurante (0146). Un local de verdad vale más que seis meses de suposiciones.
+9. **La facturación no se enciende en producción** sin las once condiciones del capítulo 9 del Anexo; las tres primeras: todas las pruebas en verde contra el entorno de pruebas, la declaración responsable publicada en la app y la revisión del asesor fiscal, **que Richi dio por hecha el 11-nov-2026** (0146).
 10. **Antes del primer cliente que pague de verdad:** Supabase Pro con su copia diaria, **la copia semanal encendida**, la mudanza a Cloudflare Pages, el repositorio en privado y el contrato de encargado publicado ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md), [0062](../decisiones/0062-lo-legal.md), [0065](../decisiones/0065-el-coste-por-local-y-la-copia-aplazada.md)).
-11. **Fogón no se vende sin la prueba final del coste por local** (M22 y M27). Encenderlo para un cliente sí se puede antes: lo enciende Richi desde el admin, y el coste lo mira con el piloto ([0097](../decisiones/0097-fogon-1-las-respuestas-y-la-base.md), que cambia lo que decía: «no se enciende sin su coste medido»).
+11. **Fogón no se vende sin la prueba final del coste por local** (M22 y M27). Encenderlo para un cliente sí se puede antes: lo enciende Richi desde el admin, y el coste lo mira con el local del amigo, M28 ([0097](../decisiones/0097-fogon-1-las-respuestas-y-la-base.md), que cambia lo que decía: «no se enciende sin su coste medido»).
 
 > **Documento de control obligatorio.** Antes de cerrar cualquier módulo se pasa la lista de la **Auditoría de flujos, dependencias y efectos en cadena**, que define el mapa de dependencias de datos, los efectos en cascada de cada cambio, de dónde salen las opciones de cada desplegable, las máquinas de estado y el comportamiento ante fallos parciales.
 
@@ -1064,3 +1205,27 @@ Lo que costó caro, escrito para no repetirlo.
 **Se prueba con el rol más pequeño que puede hacerlo.** La merma pasaba todas las pruebas de base de datos y a la camarera le decía «ese producto no está»: el candado del producto exigía permiso de editarlo. Solo lo encontró una prueba de pantalla entrando como ella.
 
 **El conductor de la base también es un «sitio».** Las pruebas hablan con PGlite; producción, con `postgres.js`, que convierte a JSON lo que va a una columna JSON. El código ya se lo daba convertido, así que se guardaba envuelto en un texto, y **el Panel no se guardó nunca en producción** con todo en verde ([decisión 0029](../decisiones/0029-lo-que-va-a-jsonb-viaja-como-texto.md)). Lo que depende del conductor se escribe de forma que dé igual cuál sea —`::text::jsonb`— y se comprueba contra la base de verdad después de desplegar.
+
+## E5 · Los puntos de auditoría
+
+_Añadido el 11-nov-2026 ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), sección 7). Richi: «auditar la seguridad, los roles y las fugas de información cada cierto número de módulos, para estar seguros de que todo va bien»._
+
+**Cuándo.** **Nunca pasan más de cuatro entregas de código sin una auditoría.** Siempre al acabar cada bloque del orden (las que llevan nombre en la cabecera de D). Siempre antes de vender. Y siempre que una entrega toque permisos, planes, sesiones o datos de personas.
+
+**Lo que se mira de seguridad.** No basta con esconderlo en la pantalla (regla 4): cada punto se comprueba **llamando a la API a pelo y mirando la base**.
+
+1. **Los negocios, separados**: nadie lee ni escribe lo de otra empresa.
+2. **Los roles y los permisos**: cada rol, con lo suyo y nada más.
+3. **Cada operación del servidor**: qué puerta tiene, y que ninguna se ha quedado sin ella.
+4. **Los límites de cada plan**: Esencial no llega a nada de Pro ni de Estook TPV.
+5. **La entrada y las sesiones**: contraseñas, PIN, llaves de aparato, caducidades y el segundo factor del admin.
+6. **Los datos de los empleados y de los clientes**: contratos, sueldos, fichajes, ubicaciones y los datos de las facturas.
+7. **El area manager, solo en los locales que tiene asignados.**
+
+**Lo que se mira de calidad.** Las pruebas unitarias · las de integración, contra la base · las de pantalla, en ordenador y en móvil · las de permisos · las de sincronización entre aparatos · las de sin internet · y **las regresiones de los módulos anteriores**: `pnpm verifica`, `prueba:e2e:completa` y `prueba:semana`, enteras y en verde.
+
+**Lo que ya vigila la máquina en cada pull request**, para no repetirlo a mano: una prueba que ataca toda la API desde otro negocio y con cada rol (`nadie-toca-lo-de-otro-negocio`), otra que exige a cada operación que declare su puerta (`despachador`), la lista cerrada de funciones que saltan la seguridad por filas, y la política de seguridad del navegador. **La auditoría mira lo que esas no ven**, y lo que encuentra se convierte en prueba.
+
+**Lo que pasa con lo que sale.** **Un fallo crítico para todo lo demás**: no se fusiona otra cosa hasta que esté arreglado y con su prueba. Lo que no es crítico se apunta con su entrega.
+
+**Dónde queda.** Cada auditoría, con su fecha, lo que miró y lo que encontró, en [`docs/auditorias/`](../auditorias/LEEME.md). Lo que hay que probar a mano y todavía no se ha probado, con su resultado, en [`docs/pruebas-pendientes.md`](../pruebas-pendientes.md).

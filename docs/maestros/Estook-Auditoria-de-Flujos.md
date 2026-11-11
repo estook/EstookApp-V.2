@@ -71,7 +71,7 @@ Para cada uno: **quién lo crea, quién lo consume, qué pasa si falta y qué pa
 
 **HORAS FICHADAS Y COSTE HORA.** _Las crea:_ el quiosco de fichaje; el coste, la ficha de la persona o el coste medio del puesto. _Lo consume:_ coste de personal · prime cost · productividad · planificado contra fichado. _Si falta el coste:_ se usa el medio del puesto y **se marca el dato como aproximado**.
 
-**OBJETIVOS.** _Los crea:_ Ajustes, con propuesta según el tipo de local. _Los consume:_ **todos los semáforos de la aplicación**, todos los avisos de Fogón y el cálculo de Pulse. _Si faltan:_ se usan los del tipo de local y se dice que son los de partida. **Este es el dato más silencioso y más influyente del sistema.** Un objetivo mal puesto tiñe de rojo o de verde una aplicación entera. Por eso se revisa en el alta y se recuerda una vez al trimestre.
+**OBJETIVOS.** _Los crea:_ Ajustes, con propuesta según el tipo de local. _Los consume:_ **todos los semáforos de la aplicación** y todos los avisos de Fogón. _Si faltan:_ se usan los del tipo de local y se dice que son los de partida. **Este es el dato más silencioso y más influyente del sistema.** Un objetivo mal puesto tiñe de rojo o de verde una aplicación entera. Por eso se revisa en el alta y se recuerda una vez al trimestre.
 
 ## 1.3 Qué usa cada app de las demás
 
@@ -80,11 +80,10 @@ Para cada uno: **quién lo crea, quién lo consume, qué pasa si falta y qué pa
 | Almacén     | Nada. **Es el origen**                        | Coste por unidad de uso, stock, caducidades, precios, previsión de agotamiento    |
 | Escandallos | Almacén                                       | Coste del plato, alérgenos, nutrición, consumo por venta                          |
 | Carta       | Escandallos                                   | Platos publicados, agotados, precios por canal                                    |
-| Calendario  | Equipo, Almacén, Servicio, Cuaderno           | Turnos publicados, tareas, entregas                                               |
+| Calendario  | Equipo, Almacén, Servicio                     | Turnos publicados, tareas, entregas                                               |
 | Equipo      | Calendario                                    | Horas, coste de personal, quién sabe qué ficha                                    |
 | Servicio    | Escandallos, Carta, Almacén, conectores       | Jornadas, sala y cocina, cobros, tickets y facturas, consumo, APPCC, trazabilidad |
-| Negocio     | Todas                                         | Agregados, desviación, previsión, Pulse, informes                                 |
-| Cuaderno    | Calendario                                    | Incidencias, revisiones de equipos                                                |
+| Negocio     | Todas                                         | Agregados, desviación, previsión, informes                                        |
 | **Alertas** | **Todas**                                     | **Nada. Es un sumidero, no una fuente**                                           |
 | **Fogón**   | **Todas, con los permisos de quien pregunta** | **Explicaciones y propuestas. Nunca datos nuevos**                                |
 
@@ -110,7 +109,6 @@ Entra un albaran con el aceite un 12 % mas caro
 ├─ los que caen bajo objetivo generan ALERTA con su impacto y su boton
 ├─ las fichas impresas de esos platos quedan marcadas «desactualizada»
 ├─ la carta impresa queda marcada para regenerar (el precio no cambia solo)
-├─ Pulse recalcula su componente de coste
 └─ entra en el resumen de Fogon de manana
 ```
 
@@ -207,7 +205,6 @@ Deja de facturar · queda en solo lectura · **se excluye de las medias del grup
 ├─ se generan los movimientos de stock
 ├─ se guarda la jornada con su origen y su fiabilidad
 ├─ se recalculan los agregados del dia
-├─ se recalcula Pulse
 ├─ se lanza el analisis nocturno de Fogon
 └─ el APPCC pendiente queda marcado NO REGISTRADO en rojo
 ```
@@ -231,7 +228,7 @@ Y ya fuera del webhook:
 │  por partidas, y NO pasa por el cobro de la sala (Anexo, 10.8)
 ├─ entra como venta con su canal y su comision
 ├─ se explotan sus fichas y se mueve el stock
-├─ actualiza agregados, analitica y Pulse
+├─ actualiza agregados y analitica
 └─ entra en el contexto de Fogon
 ```
 
@@ -495,7 +492,7 @@ Cerrar → se cuenta el efectivo por billetes y monedas, SIN ver lo esperado
 ├─ el TURNO DE CAJA se cierra; el descuadre se guarda y NO bloquea
 └─ el CIERRE DEL DIA, uno por jornada, suma sus turnos de caja y sus bolsas
    y se rellena solo, con origen «Estook TPV»
-   └─ Negocio, «Tu dia» de mañana y Pulse lo leen de ahi
+   └─ Negocio y «Tu dia» de mañana lo leen de ahi
 ```
 
 **NO se toca:** ningún ticket. **El Z no es un documento fiscal**: los tickets ya están en Hacienda uno a uno, y el Z es una consulta sobre el turno de caja (Anexo, 5.5 y 7.4).
@@ -681,7 +678,7 @@ Veintidós puntos que, tal y como estaban escritos, habrían obligado a improvis
 
 ## Los seis de la inteligencia y las integraciones
 
-**13 · Estook Pulse podía acabar siendo un número sin sentido.** Un indicador de salud del negocio que no se puede desmontar es un adorno. **Decisión:** se construye con la misma disciplina que la salud de los datos —componentes, pesos y explicación— y **se puede abrir hasta el dato que lo mueve**. Y no se mezcla con la salud de los datos: son dos indicadores distintos que responden a preguntas distintas.
+**13 · (Sin efecto: Estook Pulse se quitó el 11-nov-2026, 0146.) Estook Pulse podía acabar siendo un número sin sentido.** Un indicador de salud del negocio que no se puede desmontar es un adorno. **Decisión:** se construye con la misma disciplina que la salud de los datos —componentes, pesos y explicación— y **se puede abrir hasta el dato que lo mueve**. Y no se mezcla con la salud de los datos: son dos indicadores distintos que responden a preguntas distintas.
 
 **14 · No estaba dicho de dónde nace una alerta ni cuándo muere.** Un centro de alertas sin ciclo de vida es un generador de ruido. **Decisión:** una alerta es siempre la materialización de una condición en código, con su causa, su impacto, su acción y su botón. Nace cuando la condición se cumple, **se actualiza en vez de duplicarse**, y muere cuando la condición deja de cumplirse o alguien la cierra. Su máquina de estado está en la parte 4.
 
@@ -691,7 +688,7 @@ Veintidós puntos que, tal y como estaban escritos, habrían obligado a improvis
 
 **17 · No estaba escrito qué pasa cuando Fogón propone algo y nadie lo mira.** **Decisión:** una propuesta de Fogón —horario, menú, precio, pedido, respuesta a reseña— **es siempre un borrador con caducidad**. Si nadie la aprueba, caduca y se registra que caducó. Nunca se aplica sola, y nunca se queda viva para siempre ensuciando la pantalla.
 
-**18 · Faltaba decir qué pasa si un componente de Pulse no tiene datos.** **Decisión:** el componente sin datos **no cuenta como cero**: se excluye y se reparte su peso entre los demás, y Pulse dice cuántos componentes está usando. Contar como cero castigaría a un local recién dado de alta por no tener aún un inventario, que es exactamente lo contrario de lo que se quiere.
+**18 · (Sin efecto: Estook Pulse se quitó el 11-nov-2026, 0146.) Faltaba decir qué pasa si un componente de Pulse no tiene datos.** **Decisión:** el componente sin datos **no cuenta como cero**: se excluye y se reparte su peso entre los demás, y Pulse dice cuántos componentes está usando. Contar como cero castigaría a un local recién dado de alta por no tener aún un inventario, que es exactamente lo contrario de lo que se quiere.
 
 ## Los cuatro de Estook TPV
 
@@ -733,7 +730,7 @@ Cosas que quien construya **va a tener que decidir sí o sí**, y que por tanto 
 | **¿Un pedido de reparto crea productos o platos?**                   | **No.** Si trae un artículo que no existe, entra sin emparejar: cuenta en dinero y no descuenta género, igual que en el TPV                                                                                |
 | **¿Se acepta un pedido automáticamente?**                            | **Es una opción del local, apagada por defecto**, y con su registro. Nunca la decide Fogón                                                                                                                 |
 | **¿Qué manda si el TPV y el canal de reparto traen la misma venta?** | **El canal, para su propio pedido.** Se descarta el duplicado por identificador y se avisa una vez, no cada día                                                                                            |
-| **¿La API pública puede saltarse un permiso?**                       | **No.** Pasa por los mismos comandos, los mismos permisos y la misma auditoría. Un tercero nunca ve más que quien autorizó la conexión                                                                     |
+| **¿Lo que entra de fuera puede saltarse un permiso?**                | **No.** Pasa por los mismos comandos, los mismos permisos y la misma auditoría. Un tercero nunca ve más que quien autorizó la conexión                                                                     |
 | **¿Se puede editar o borrar un ticket o una factura?**               | **No, nunca, desde ningún sitio.** Se corrige con otro documento                                                                                                                                           |
 | **¿Cuándo se asigna el número de un ticket?**                        | Cuando el proveedor de VeriFactu devuelve 200. Si devuelve error, el número no se consume                                                                                                                  |
 | **¿Quién calcula la huella y encadena?**                             | **El proveedor.** Estook guarda lo que devuelve: identificador, QR, huella y estado. Nunca calcula una segunda cadena                                                                                      |
@@ -787,13 +784,11 @@ Al cerrar cada módulo se comprueban las que apliquen. **Cada línea es una prue
 - Cambiar el rol de alguien surte efecto en la petición siguiente.
 - Pedir datos de otro local devuelve `403` llamando a la API a mano.
 - Fogón preguntando por algo que quien pregunta no puede ver, responde que no.
-- La API pública con el alcance justo no devuelve un campo de más.
+- Un conector de fuera (M18, M29) no recibe ni un campo de más. La API pública se quitó el 11-nov-2026 (0146).
 
 ## Inteligencia
 
 - Ninguna alerta llega **sin causa, sin impacto y sin botón**.
-- Pulse se puede desglosar hasta el dato que lo mueve.
-- Un componente de Pulse sin datos **no cuenta como cero**.
 - Fogón no calcula ningún número: todos vienen de consultas.
 - **Un texto de fuera —reseña, albarán, web— no cambia el comportamiento de Fogón.**
 - Ninguna propuesta de Fogón se aplica sin que una persona la apruebe.
@@ -855,3 +850,19 @@ Al cerrar cada módulo se comprueban las que apliquen. **Cada línea es una prue
 - Un descuento por encima del límite del rol **no pasa sin la aprobación de un superior**, llamando a la API a pelo; y una aprobación no vale dos veces.
 - Un camarero no recibe los tickets ni el informe X de otro, llamando a la API a pelo.
 - Un terminal revocado deja de poder hacer nada **en la siguiente petición**.
+
+## Lo que añade la reorganización del 11-nov
+
+_Decidido por Richi el 11-nov-2026 ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)) y por construir. Va aquí para que el día que se construya nadie tenga que adivinar quién se entera de qué._
+
+**RECORDATORIO DEL CALENDARIO.** _Lo crea:_ el gerente, el jefe de cocina o el jefe de sala, para todos, solo sala o solo cocina, un día o varios (M14). _Lo consume:_ el Calendario · los avisos al móvil de ese grupo, cada día · «Lo de hoy» del Panel. _Si falta:_ nada se rompe. **A quién llega lo decide la base.**
+
+**NOTA PERSONAL.** _La crea:_ cualquier empleado, para sí. _La consume:_ solo su Calendario y, si lo activa, su aviso. **No sale en ninguna respuesta para otra persona.**
+
+**FICHA DEL TRABAJADOR.** _La crea:_ el gerente, a mano, o Fogón leyendo el contrato y el gerente confirmando (M13). _La consume:_ el saldo de vacaciones (M14) · las horas ordinarias y extra (M15) · el coste de personal (M21) · el cuadrante con Fogón. _Si falta:_ las horas se cuentan como hasta hoy y el saldo se pone a mano.
+
+**VACACIONES.** _Las crea:_ el jefe, poniéndolas, o el empleado, pidiéndolas; valen cuando se validan. _Las consume:_ el saldo de la persona · el Calendario · Turnos (ese día no se le pone turno sin avisar) · el cuadrante con Fogón. _Si se quitan:_ el saldo vuelve.
+
+**CONTROL DEL APPCC.** _Lo crea:_ el gerente al configurar; después se genera solo con su frecuencia (M16b). _Lo consume:_ el día a día del APPCC · el aviso al responsable · el cuarto paso del cierre del día · el historial y sus informes · las auditorías de local (Roles, 3). _Si queda sin hacer:_ sale `NO REGISTRADO` y pide su acción correctora. **La recepción la rellena recibir un pedido (M7); el mantenimiento y la limpieza viven aquí y en ningún otro sitio.**
+
+**Y lo que se quitó**: Cuaderno, Estook Pulse, Negocio › Costes y la API pública ya no crean ni consumen nada. Donde este documento los nombre más arriba, no cuentan.

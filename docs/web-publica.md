@@ -55,7 +55,7 @@ de cada página están en `src/paginas/`.
 
 ## Lo que será la web de verdad (Parte C del Plan)
 
-El encabezado con el problema en números, las ocho apps, cómo se conecta con tu TPV
+El encabezado con el problema en números, las siete apps, cómo se conecta con tu TPV
 («no cambias de TPV» arriba, Manifiesto 30), los planes con sus precios, los documentos
 de muestra y las preguntas frecuentes. **Nada de eso está hecho**, y la portada básica
 no pretende parecerlo.

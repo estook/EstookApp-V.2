@@ -94,7 +94,7 @@ aparato aguanta solo** (esta), que sirve también en el iPhone; después **la ca
    ecosistema que ya tiene». Antes de ir, **buscar impresoras deja de mandar nada a lo que no se
    ha elegido** (una impresora de oficina imprimiría la pregunta del modelo; lección 242), y los
    pasos para probar sin tocar nada suyo están en
-   [`pasos-en-el-local-del-amigo.md`](../pasos-en-el-local-del-amigo.md).
+   [`pasos-en-el-local-del-amigo.md`](../pasos/pasos-en-el-local-del-amigo.md).
 
 ## 6 · Las pruebas
 

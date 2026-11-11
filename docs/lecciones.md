@@ -1176,3 +1176,10 @@
      capturas que vive sin subir en esa carpeta y que no es de ninguna cuenta (ESTADO, sección 0), y GitHub se puso
      en rojo en tres máquinas por algo que no era de la entrega. **Se añade fichero a fichero lo que se ha tocado**,
      y antes de abrir el pull request se mira `git diff --name-status main...HEAD` buscando lo que nadie ha escrito.
+
+274. **Lo que se le dice a Richi de la seguridad se mira antes en el código.** En un análisis de lo pendiente se
+     escribió que un local en Esencial podía llegar a cosas de Pro llamando a la API, leyendo solo la ficha de M26
+     del Plan. Richi se alarmó, con razón. Mirado después: los aparatos de Estook TPV ya los cerraba la API desde
+     la 0120, y lo que faltaba era más pequeño (lo que se hace desde Estook con la sesión de una persona).
+     **En un análisis se separa lo comprobado en el código de lo que dice un documento**, y lo de seguridad,
+     permisos o dinero se comprueba siempre antes de escribirlo (0146, sección 8).

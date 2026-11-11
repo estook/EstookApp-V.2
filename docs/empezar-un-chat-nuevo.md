@@ -58,6 +58,8 @@ Están en el Plan y se repiten aquí porque son las que más se notan cuando fal
    en el ordenador y en el móvil.
 3. **Si aparece una decisión de producto que no está escrita, se para y se pregunta.**
    No se inventa.
+   Es «Sin suposiciones», en la parte A1 del Plan: tampoco se cambia lo aprobado ni se
+   rehace código por iniciativa propia, y cada pantalla nueva lleva su maqueta aprobada.
 
 ---
 

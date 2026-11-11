@@ -36,7 +36,7 @@ Documentos hermanos: **Manifiesto** (qué es el producto), **Arquitectura** (có
 
 1. **El soporte en horario de servicio**: horario, canal y quién. Se decide antes de vender el primer TPV.
 2. **Si el camarero cobra de fábrica.** Propuesta: sí, y el gerente lo apaga por local.
-3. ~~Qué datáfono conectado va primero~~ **Contestado el 6-nov: Stripe**, que cobra sin salir de Estook ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)).
+3. **Qué proveedor de cobro va primero, y si el cobro integrado se paga por aparato.** El 6-nov se contestó Stripe ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)); **Richi lo reabrió el 11-nov** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), sección 4): el banco del local, de app a app, le sale mucho más barato. La comparación, en [la investigación](../estook-tpv-android-y-el-cobro.md), apartado 9. **T8 · 2 no empieza sin la respuesta.**
 
 ---
 
@@ -82,6 +82,8 @@ Cada empresa factura de una de tres formas, que elige en el alta y en Ajustes de
 - **Con VERI\*FACTU, la recomendada y la de fábrica**: cada registro se envía a la AEAT al emitir, por Verifacti. No hay que conservar los registros, porque los tiene Hacienda. **Quien la elige se queda en ella al menos hasta el fin del año natural** (preguntas frecuentes de la AEAT).
 - **Sin envío, la modalidad «NO VERI\*FACTU»**: los registros se generan igual, encadenados, pero **firmados en el momento con un certificado electrónico cualificado**. Se comprueba la cadena antes de cada uno, se lleva **un registro de eventos** (que vigila también la hora del sistema) y todo se conserva sin poder cambiarlo. A la AEAT se le mandan **solo si los pide**, tal cual se hicieron, por su servicio web. **Verifacti no la hace**: la construye Estook en **T6 · 3**. Hasta entonces, se ve y no se elige. La AEAT ha dicho que revisará más a quien la use y que es temporal.
 - **Fuera de VERI\*FACTU, por el SII**: quien lleva los libros por el SII queda fuera del reglamento (1.4). Estook emite tickets y facturas según el RD 1619/2012, sin QR tributario ni registros, y la empresa los informa por su SII. Sale sola al contestar el SII.
+
+**«Sin envío» va antes de vender** (Richi, 11-nov-2026; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 2.1): hay clientes que piden facturar sin VERI\*FACTU. **Siempre dentro de la ley**: el certificado que pida —Richi: «el gratuito»—, la cadena y el QR. Qué certificado cualificado vale para una sociedad y para un autónomo, y cuál es gratuito, **se comprueba en la fuente oficial al empezar T6 · 3 [VERIFICAR]**.
 
 **Mientras «sin envío» no exista, Estook declara que funciona solo como VERI\*FACTU** (4.14). Cuando llegue será un programa «dual»: el registro de eventos tiene que estar en el código, y la declaración se cambia y se vuelve a firmar.
 
@@ -1023,7 +1025,7 @@ Todas automáticas, contra el entorno de pruebas. Cada una se rompe a propósito
 1. Todas las pruebas del capítulo 8 **y las de los apartados 3.7 y 10.12**, en verde.
 2. Todos los **[VERIFICAR]** resueltos y escritos en `ESTADO.md`, con su fuente y su fecha.
 3. **Declaración responsable de Estook** redactada por el asesor y publicada dentro de la app.
-4. **Revisión escrita del asesor fiscal** sobre el planteamiento entero.
+4. **Revisión del asesor fiscal** sobre el planteamiento entero. **Hecha: Richi habló con su asesor el 11-nov-2026 y «está todo ok»** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 3.2); lo que haya por escrito lo guarda él, fuera del repositorio.
 5. Suscripción de pago con el proveedor, con su NIF de producción dado de alta y su representación firmada.
 6. Procedimiento de baja escrito, con la exportación de XML antes de cancelar nada.
 7. Vía de impresión decidida y probada con impresoras reales.
@@ -1161,6 +1163,8 @@ Dos niveles, y **en los dos el dinero va de la tarjeta del cliente a la cuenta d
 
 **El nivel 1 no se quita nunca**: el datáfono del banco es lo que tiene casi todo local en España, y el TPV no puede exigir cambiarlo.
 
+**Con qué proveedor se conecta el nivel 2, reabierto el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), sección 4). Donde este apartado diga «Stripe primero», se lee «el proveedor que se elija»: el banco del local cobra de media un 0,36 % a un restaurante, y Stripe con Tap to Pay, 1,4 % + 0,20 €. Los caminos —el datáfono Android del banco, la app de cobro del banco, Viva o Stripe—, en [la investigación](../estook-tpv-android-y-el-cobro.md), apartado 9. **Sin decidir, y es de Richi.**
+
 **El nivel 2, comprobado el 27 de septiembre de 2026.** Estos existen y tienen documentación pública; **ninguno se ha probado todavía**:
 
 - **Stripe Terminal**, con su integración «dirigida por el servidor»: Estook habla con la API de Stripe y Stripe con el lector, sin tocar la red del local. Disponible en España con lectores inteligentes (S700, WisePOS E). [Documentación](https://docs.stripe.com/terminal/payments/setup-reader).
@@ -1219,6 +1223,8 @@ Y tres cosas que un TPV sin almacén no puede hacer:
 **Antes de construirlo** (Arquitectura, capítulo 10, «Los pedidos de reparto»): la 1 y la 3 exigen que la carta se suba **desde Estook** por la API de menús de la plataforma, y **solo una aplicación por tienda puede aceptar pedidos** —la que Uber llama _order manager_—: si el local ya usa otro integrador, Estook no puede serlo a la vez. **[VERIFICAR con el asesor quién factura un pedido de plataforma]** —el restaurante, o la plataforma en su nombre—. **Hasta saberlo, un pedido de reparto no emite ticket de Estook**, y el límite de la simplificada ya se guarda por canal (4.6).
 
 ## 10.9 Sin internet, lo que se ve
+
+**Lo que manda** (Richi, 11-nov-2026; [0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 3.3), y es lo que pide VeriFactu: **sin conexión no se interrumpe la facturación**; lo cobrado y sus registros **se guardan en el aparato y se envían al volver**; el sistema **reintenta el envío cada cierto tiempo**; y **la incidencia queda identificada** en cada documento. **Lo sostienen las apps nativas** —la caja para Windows y Estook TPV para Android—, que guardan en la máquina: **Estook TPV se recomienda siempre en ellas**. **La versión web se queda**, para entrar desde cualquier parte y para probar, con **su aviso de que es mejor la nativa y el botón de descarga directa**; cobrar sin internet solo se promete en las nativas.
 
 Arriba del TPV, siempre con icono y texto, nunca solo con color:
 

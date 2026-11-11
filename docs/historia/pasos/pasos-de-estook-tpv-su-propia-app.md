@@ -73,5 +73,5 @@ el enlace sirve también para tu web:
 `https://github.com/estook/EstookApp-V.2/releases/latest/download/Estook-TPV-caja-para-Windows.exe`
 
 **Hoy ese enlace no baja nada**: el programa todavía no está publicado. Se publica con el paso 5 de
-[los pasos de T5 · 1](../../pasos-de-t5-1.md). Y **el día que el repositorio pase a privado** (la
+[los pasos de T5 · 1](../../pasos/pasos-de-t5-1.md). Y **el día que el repositorio pase a privado** (la
 mudanza), el enlace deja de servir: hay que llevar el programa al alojamiento nuevo antes.

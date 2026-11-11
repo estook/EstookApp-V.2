@@ -37,6 +37,8 @@ import { irAlPlano } from '../navegar.ts';
 import { LaCuenta } from './LaCuenta.tsx';
 import { LoServido } from './LoServido.tsx';
 import { Cobrar } from '../caja/Cobrar.tsx';
+import { CobrarElPendiente } from '../caja/CobrarElPendiente.tsx';
+import type { CobroPendienteEnLaMesa } from '../datos/tipos.ts';
 
 /**
  * **La mesa, al tocarla** (0106, «MesaAcciones»; rehecha en la pausa del 5-nov, 0131).
@@ -71,7 +73,8 @@ export type PasoDeLaMesa =
   | 'liberar'
   | 'anular'
   | 'servido'
-  | 'cobrar';
+  | 'cobrar'
+  | 'cobrar_pendiente';
 
 /** De qué menú sale cada paso, para «Volver». */
 const VUELVE_A: Readonly<Partial<Record<PasoDeLaMesa, PasoDeLaMesa>>> = {
@@ -126,10 +129,15 @@ export function OpcionesDeLaMesa({
   readonly sinMandarAqui?: number;
 }) {
   const { porPases, notaParaCocina } = cuenta;
-  const { yo } = usarSesion();
+  const { yo, aparato } = usarSesion();
+  /** El efectivo de esta mesa que espera en la caja (0145), y el que se va a cobrar. */
+  const pendientes = cuenta.pendientes ?? [];
+  const [aCobrar, setACobrar] = useState<CobroPendienteEnLaMesa | null>(null);
+  const conCajon = aparato.cajon !== null;
+  const cobra = puedeEditar(yo.permisos, 'accion.cobrar');
   const ejecutar = usarAcciones();
   const [paso, setPaso] = useState<PasoDeLaMesa>(empiezaEn);
-  const cobrando = paso === 'cobrar';
+  const cobrando = paso === 'cobrar' || paso === 'cobrar_pendiente';
   useEffect(() => {
     alCobrar?.(cobrando);
     return () => {
@@ -218,52 +226,105 @@ export function OpcionesDeLaMesa({
   );
 
   const marcanServido = plano.marcanServido === true;
+  // **El efectivo que espera en la caja** (0145): en la caja, «Cobrar efectivo · Ricardo», con el PIN
+  // de quien cobra; en el comandero, que está pendiente.
+  const loPendiente = pendientes.map((p) =>
+    conCajon && cobra ? (
+      <button
+        key={p.id}
+        type="button"
+        onClick={() => {
+          setACobrar(p);
+          setPaso('cobrar_pendiente');
+        }}
+        className="flex min-h-toque-cocina items-center justify-between gap-e3 rounded-grande bg-bien px-e4 font-bold text-fondo"
+      >
+        <span>Cobrar efectivo · {p.por}</span>
+        <span className="tabular-nums">{eurosConSimbolo(p.enEfectivo)}</span>
+      </button>
+    ) : (
+      <p
+        key={p.id}
+        className="flex items-center justify-between gap-e3 rounded-grande bg-atencion-suave px-e4 py-e3 font-bold text-atencion"
+      >
+        <span>Pendiente en la caja · {p.por}</span>
+        <span className="tabular-nums">{eurosConSimbolo(p.enEfectivo)}</span>
+      </p>
+    ),
+  );
   const pie = (
-    <div className={`grid gap-e2 ${marcanServido ? 'grid-cols-4' : 'grid-cols-3'}`}>
-      <BotonDeLaMesa
-        icono={IconoAnadir}
-        texto="Pedir"
-        principal
-        {...(alAbrir === undefined ? { apagado: 'ya estás dentro' } : { onClick: alAbrir })}
-      />
-      {/* **Servido** (0132): lo que el camarero lleva a la mesa, si el local lo deja. */}
-      {marcanServido && (
+    <div className="flex flex-col gap-e2">
+      {loPendiente}
+      <div className={`grid gap-e2 ${marcanServido ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <BotonDeLaMesa
-          icono={IconoServido}
-          texto="Servido"
-          etiqueta="Marcar lo servido"
-          onClick={() => {
-            setPaso('servido');
-          }}
+          icono={IconoAnadir}
+          texto="Pedir"
+          principal
+          {...(alAbrir === undefined ? { apagado: 'ya estás dentro' } : { onClick: alAbrir })}
         />
-      )}
-      <BotonDeLaMesa
-        icono={IconoCuenta}
-        texto="Cuenta"
-        etiqueta="Imprimir la cuenta"
-        detalle={hayParaLaCuenta ? 'imprimir' : 'sin impresora'}
-        {...(hayParaLaCuenta ? { onClick: imprimirLaCuenta } : { apagado: 'sin impresora' })}
-      />
-      {/* Cobrar (R3 · 1, 0144): en la caja; en un comandero, dice que se cobra en la caja. */}
-      <BotonDeLaMesa
-        icono={IconoCobrar}
-        texto="Cobrar"
-        {...(puedeEditar(yo.permisos, 'accion.cobrar')
-          ? {
-              onClick: () => {
-                setPaso('cobrar');
-              },
-            }
-          : { apagado: 'sin permiso' })}
-      />
+        {/* **Servido** (0132): lo que el camarero lleva a la mesa, si el local lo deja. */}
+        {marcanServido && (
+          <BotonDeLaMesa
+            icono={IconoServido}
+            texto="Servido"
+            etiqueta="Marcar lo servido"
+            onClick={() => {
+              setPaso('servido');
+            }}
+          />
+        )}
+        <BotonDeLaMesa
+          icono={IconoCuenta}
+          texto="Cuenta"
+          etiqueta="Imprimir la cuenta"
+          detalle={hayParaLaCuenta ? 'imprimir' : 'sin impresora'}
+          {...(hayParaLaCuenta ? { onClick: imprimirLaCuenta } : { apagado: 'sin impresora' })}
+        />
+        {/* Cobrar (R3 · 1, 0144): en la caja; en un comandero, dice que se cobra en la caja. */}
+        <BotonDeLaMesa
+          icono={IconoCobrar}
+          texto="Cobrar"
+          {...(puedeEditar(yo.permisos, 'accion.cobrar')
+            ? {
+                onClick: () => {
+                  setPaso('cobrar');
+                },
+              }
+            : { apagado: 'sin permiso' })}
+        />
+      </div>
     </div>
   );
+
+  if (paso === 'cobrar_pendiente' && aCobrar !== null) {
+    return (
+      <CobrarElPendiente
+        pendiente={aCobrar}
+        cuentaId={cuenta.cuentaId}
+        titulo={cuenta.titulo}
+        conPin
+        alVolver={() => {
+          setACobrar(null);
+          setPaso(empiezaEn);
+        }}
+        alAcabar={() => {
+          alCerrar();
+          irAlPlano();
+        }}
+      />
+    );
+  }
 
   if (paso === 'cobrar') {
     return (
       <Cobrar
         mesa={mesa.data}
         sinMandarAqui={sinMandarAqui}
+        pendientes={pendientes}
+        alCobrarElPendiente={(p) => {
+          setACobrar(p);
+          setPaso('cobrar_pendiente');
+        }}
         alVolver={volver}
         alAcabar={() => {
           alCerrar();

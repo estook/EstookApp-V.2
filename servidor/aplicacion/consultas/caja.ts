@@ -1,9 +1,17 @@
 import { z } from 'zod';
+import {
+  NOMBRE_DEL_MOTIVO_DE_LA_DIFERENCIA,
+  elNumeroEntero,
+  enDinero,
+  laDiferenciaEnTexto,
+} from '@estook/dominio';
+import { documentoDelZ } from '@estook/documentos';
+import { hacerElPdf, hechoEl, laMarcaDelLocal, type UnPdf } from '../documentos.ts';
 import type { FormaDePago, ElRecuento, MotivoDeLaDiferencia } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { elLocalDeLaSesion } from '../alta.ts';
 import { enNombreDelSistema } from '../pago.ts';
-import { elLocalDelServicio, laJornadaDeHoy } from '../sala.ts';
+import { elLocalDelServicio, elTituloDeLaCuenta, laJornadaDeHoy } from '../sala.ts';
 import {
   elCajonDelAparato,
   lasFormasDelLocal,
@@ -12,8 +20,10 @@ import {
   loQueDeberiaHaberEn,
   loQueLlevaLaCaja,
   losAjustesDeLaCaja,
+  losMovimientosParaElPapel,
   nombreCorto,
   puedeLlevarLaCaja,
+  quienYCuando,
   type LosAjustesDeLaCaja,
   type UnMovimientoDeLaCaja,
 } from '../caja.ts';
@@ -428,5 +438,272 @@ export const unDiaDeCaja = consulta<{ fecha: string }, ElDiaDeCaja>({
       ),
       cajas,
     };
+  },
+});
+
+// ═══ En Estook: los cobros (0145) ════════════════════════════════════════════════════
+
+export interface UnCobroEnEstook {
+  readonly cobroId: string;
+  readonly en: string;
+  /** «Mesa 4», «Barra · Laura». */
+  readonly titulo: string;
+  readonly importe: number;
+  readonly parte: number | null;
+  readonly de: number | null;
+  readonly pagos: readonly {
+    readonly forma: 'efectivo' | 'tarjeta' | 'bizum' | 'cheque';
+    readonly importe: number;
+    /** Solo en efectivo: lo que dio el cliente, y el cambio. */
+    readonly entregado: number | null;
+    readonly cambio: number | null;
+  }[];
+  readonly cobradoPor: string;
+  readonly camarero: string | null;
+  readonly cajon: string;
+  readonly turnoId: string;
+  readonly ticket: { readonly documentoId: string; readonly numero: string };
+  /** Lo devuelto después, con su rectificativa: un ticket devuelto entero da su importe. */
+  readonly devuelto: number;
+}
+
+export interface LosCobrosEnEstook {
+  readonly desde: string;
+  readonly hasta: string;
+  readonly totales: {
+    readonly cobros: number;
+    readonly total: number;
+    readonly efectivo: number;
+    readonly tarjeta: number;
+    readonly bizum: number;
+    readonly cheque: number;
+    readonly devuelto: number;
+  };
+  readonly cobros: readonly UnCobroEnEstook[];
+}
+
+interface FilaDelCobro {
+  readonly id: string;
+  readonly en: string;
+  readonly tipo: string;
+  readonly mesa: string | null;
+  readonly nombre: string | null;
+  readonly importe: number;
+  readonly parte: number | null;
+  readonly de_partes: number | null;
+  readonly pagos: {
+    forma: 'efectivo' | 'tarjeta' | 'bizum' | 'cheque';
+    importe: number;
+    entregado: number | null;
+  }[];
+  readonly cobro_por: string;
+  readonly camarero: string | null;
+  readonly cajon: string;
+  readonly turno_id: string;
+  readonly documento_id: string;
+  readonly serie: string;
+  readonly numero: number;
+  readonly devuelto: number;
+}
+
+/**
+ * **Los cobros** (0145; Richi, 10-nov): Negocio › Ventas › Cobros, cada cobro con su hora, su mesa, cómo
+ * se pagó, lo que dio el cliente y el cambio, quién lo cobró y su ticket. Y sus totales por forma de
+ * pago, para el Resumen. Por días del restaurante (hoy, la semana, el mes…) o los de una caja (los de
+ * su Z, «Sus tickets»). Solo para quien ve las ventas.
+ */
+export const losCobros = consulta<
+  { dias?: string | undefined; dia?: string | undefined; turno_id?: string | undefined },
+  LosCobrosEnEstook
+>({
+  nombre: 'los_cobros',
+  entrada: z
+    .object({
+      dias: z
+        .string()
+        .regex(/^\d{1,3}$/)
+        .optional(),
+      dia: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .optional(),
+      turno_id: z.string().uuid().optional(),
+    })
+    .strict(),
+  exige: 'dato.ventas',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeLaSesion(contexto);
+    const puede = await contexto.sql<
+      { ve: boolean }[]
+    >`select estook.ve_la_caja(${localId}::uuid) as ve`;
+    if (puede[0]?.ve !== true) throw new FalloDeAplicacion('sin_permiso');
+    const hoy = await laJornadaDeHoy(contexto, localId);
+    const dias = Math.min(366, Math.max(1, Number(entrada.dias ?? '1')));
+    const desde = entrada.dia ?? menosDias(hoy, dias - 1);
+    const hasta = entrada.dia ?? hoy;
+    const turno = entrada.turno_id ?? null;
+
+    // Las cuentas, sus cajas y quién las cobró se leen como el sistema, ya mirado que puede.
+    const filas = await enNombreDelSistema(
+      contexto,
+      () => contexto.sql<FilaDelCobro[]>`
+        select c.id::text as id,
+               to_char(c.cobrado_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as en,
+               cu.tipo, m.nombre as mesa, cu.nombre, c.importe, c.parte, c.de_partes,
+               coalesce((select jsonb_agg(jsonb_build_object('forma', p.forma, 'importe', p.importe,
+                                                            'entregado', p.entregado)
+                                          order by p.forma)
+                           from estook.pago p where p.cobro_id = c.id), '[]'::jsonb) as pagos,
+               pc.nombre as cobro_por, pm.nombre as camarero, cj.nombre as cajon,
+               t.id::text as turno_id, d.id::text as documento_id, d.serie, d.numero,
+               coalesce((select sum(-dr.total)::integer
+                           from facturacion.rectificacion r
+                           join facturacion.documento dr on dr.id = r.rectificativa_id
+                          where r.documento_id = d.id and r.clase = 'devolucion'), 0) as devuelto
+          from estook.cobro c
+          join estook.turno_de_caja t on t.id = c.turno_id
+          join estook.cajon cj on cj.id = t.cajon_id
+          join estook.cuenta cu on cu.id = c.cuenta_id
+          left join estook.mesa m on m.id = cu.mesa_id
+          join estook.persona pc on pc.id = c.cobrado_por
+          left join estook.persona pm on pm.id = cu.camarero_id
+          join facturacion.documento d on d.id = c.documento_id
+         where c.local_id = ${localId}::uuid
+           and (${turno}::uuid is null or c.turno_id = ${turno}::uuid)
+           and (${turno}::uuid is not null
+                or t.fecha_operativa between ${desde}::date and ${hasta}::date)
+         order by c.cobrado_en desc
+      `,
+    );
+    const cobros: UnCobroEnEstook[] = filas.map((f) => ({
+      cobroId: f.id,
+      en: f.en,
+      titulo: elTituloDeLaCuenta({ tipo: f.tipo, mesa: f.mesa, nombre: f.nombre }),
+      importe: f.importe,
+      parte: f.parte,
+      de: f.de_partes,
+      pagos: f.pagos.map((p) => ({
+        forma: p.forma,
+        importe: p.importe,
+        entregado: p.forma === 'efectivo' ? p.entregado : null,
+        cambio:
+          p.forma === 'efectivo' && p.entregado !== null
+            ? Math.max(0, p.entregado - p.importe)
+            : null,
+      })),
+      cobradoPor: nombreCorto(f.cobro_por),
+      camarero: f.camarero === null ? null : nombreCorto(f.camarero),
+      cajon: f.cajon,
+      turnoId: f.turno_id,
+      ticket: { documentoId: f.documento_id, numero: elNumeroEntero(f.serie, f.numero) },
+      devuelto: f.devuelto,
+    }));
+    const deLaForma = (forma: string) =>
+      cobros.reduce(
+        (s, c) => s + c.pagos.filter((p) => p.forma === forma).reduce((t, p) => t + p.importe, 0),
+        0,
+      );
+    return {
+      desde,
+      hasta,
+      totales: {
+        cobros: cobros.length,
+        total: cobros.reduce((s, c) => s + c.importe, 0),
+        efectivo: deLaForma('efectivo'),
+        tarjeta: deLaForma('tarjeta'),
+        bizum: deLaForma('bizum'),
+        cheque: deLaForma('cheque'),
+        devuelto: cobros.reduce((s, c) => s + c.devuelto, 0),
+      },
+      cobros,
+    };
+  },
+});
+
+// ═══ En Estook: el Z de una caja, en PDF (0145) ═══════════════════════════════════════
+
+/** «martes, 10 de noviembre de 2026». */
+function elDiaLargo(fecha: string): string {
+  return new Intl.DateTimeFormat('es-ES', {
+    timeZone: 'UTC',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(`${fecha}T12:00:00Z`));
+}
+
+/**
+ * **«Descargar su Z»** (0145; la maqueta de R3): el cierre de una caja, en A4, como salió al cerrarla. Lo
+ * descarga quien ve las ventas, desde Servicio › Jornadas › Cierres de caja. No es un documento fiscal.
+ */
+export const elZEnPdf = consulta<{ turno_id: string }, UnPdf>({
+  nombre: 'el_z_en_pdf',
+  entrada: z.object({ turno_id: z.string().uuid() }).strict(),
+  exige: 'dato.ventas',
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDeLaSesion(contexto);
+    const cuando = await enNombreDelSistema(
+      contexto,
+      () => contexto.sql<{ fecha: string }[]>`
+        select fecha_operativa::text as fecha from estook.turno_de_caja
+         where id = ${entrada.turno_id}::uuid and local_id = ${localId}::uuid
+      `,
+    );
+    const fecha = cuando[0]?.fecha;
+    if (fecha === undefined) throw new FalloDeAplicacion('no_existe');
+    const t = (await losTurnosDelLocal(contexto, localId, fecha, fecha)).find(
+      (x) => x.id === entrada.turno_id,
+    );
+    if (t === undefined) throw new FalloDeAplicacion('no_existe');
+    const marca = await laMarcaDelLocal(contexto, localId);
+    const lleva = await enNombreDelSistema(contexto, () => loQueLlevaLaCaja(contexto, t.id));
+    const cerrada = t.cerrada_en !== null;
+    const efectivo = cerrada ? (t.efectivo_cobrado ?? 0) : lleva.efectivo;
+    const tarjeta = cerrada ? (t.tarjeta_cobrada ?? 0) : lleva.tarjeta;
+    const bizum = cerrada ? (t.bizum_cobrado ?? 0) : lleva.bizum;
+    const cheque = cerrada ? (t.cheque_cobrado ?? 0) : lleva.cheque;
+    const deberia = cerrada ? (t.deberia_haber ?? 0) : loQueDeberiaHaberEn(t.fondo, lleva);
+    const html = documentoDelZ({
+      marca,
+      hechoEl: hechoEl(contexto.ahora, marca.zonaHoraria),
+      caja: t.cajon,
+      dia: elDiaLargo(fecha),
+      abrio: `${quienYCuando(t.abrio, t.abierta_en, marca.zonaHoraria)}${t.contado_al_abrir === null ? '' : ' · contando'}`,
+      cerro:
+        t.cerro === null || t.cerrada_en === null
+          ? null
+          : quienYCuando(t.cerro, t.cerrada_en, marca.zonaHoraria),
+      delCajon: [
+        { que: 'Fondo', importe: enDinero(t.fondo) },
+        { que: 'Cobrado en efectivo', importe: enDinero(efectivo) },
+        ...losMovimientosParaElPapel(lleva.movimientos).map((m) => ({
+          que: m.que,
+          importe: `${m.importe < 0 ? '−' : '+'}${enDinero(Math.abs(m.importe))}`,
+        })),
+      ],
+      deberiaHaber: enDinero(deberia),
+      contado: t.contado_total === null ? null : enDinero(t.contado_total),
+      comoCuadra: t.diferencia === null ? 'Sigue abierta' : laDiferenciaEnTexto(t.diferencia),
+      cuadra: t.diferencia === 0,
+      motivo: t.motivo === null ? null : NOMBRE_DEL_MOTIVO_DE_LA_DIFERENCIA[t.motivo],
+      cobrado: enDinero(efectivo + tarjeta + bizum + cheque),
+      formas: [
+        { que: 'Efectivo', importe: enDinero(efectivo) },
+        { que: 'Tarjeta', importe: enDinero(tarjeta) },
+        ...(bizum > 0 ? [{ que: 'Bizum', importe: enDinero(bizum) }] : []),
+        ...(cheque > 0 ? [{ que: 'Cheques', importe: enDinero(cheque) }] : []),
+      ],
+      paraManana: t.para_manana === null ? null : enDinero(t.para_manana),
+      tickets: cerrada ? (t.tickets ?? 0) : lleva.tickets,
+      cajonSinVenta: cerrada ? (t.cajon_sin_venta ?? 0) : lleva.cajonSinVenta,
+    });
+    const nombre = `z-${t.cajon.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${fecha}.pdf`;
+    return hacerElPdf(contexto, html, {
+      nombre,
+      pie: `Cierre de caja · ${t.cajon} · ${fecha}`,
+    });
   },
 });

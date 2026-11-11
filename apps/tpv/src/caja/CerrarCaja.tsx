@@ -21,13 +21,14 @@ import { deEurosACentimos, enLaCasilla } from './dinero.ts';
 import { pideEncargado, usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
 import type { ComoVaLaCaja, ElRecuento, LaCajaCerrada } from './tipos.ts';
 
-type Paso = 1 | 2 | 3;
-const LOS_PASOS = ['Contar', 'Datáfono', 'Para mañana', 'El resultado'] as const;
+type Paso = 1 | 2;
+const LOS_PASOS = ['Contar', 'Para mañana', 'El resultado'] as const;
 
 /**
- * **Cerrar caja, a ciegas** (Anexo 11.6; maqueta del 9-nov, tramo 4): cuatro pasos a la vista.
- * Contar **sin ver lo que debería haber** (si el local no lo apaga), el total del datáfono y lo que
- * se queda para mañana. **La diferencia se ve con la caja ya cerrada**: así nadie vuelve a contar
+ * **Cerrar caja, a ciegas** (Anexo 11.6; maqueta del 9-nov, tramo 4): tres pasos a la vista.
+ * Contar **sin ver lo que debería haber** (si el local no lo apaga) y lo que se queda para mañana.
+ * **La tarjeta no se cuenta** (Richi, 11-nov): lo cobrado con tarjeta ya está apuntado al cobrarlo, y
+ * con pagos integrados lo sabe el propio aparato. **La diferencia se ve con la caja ya cerrada**: así nadie vuelve a contar
  * hasta cuadrar. No bloquea nada y queda a nombre de quien cierra; después, un motivo de un toque si
  * se sabe, e «Imprimir el Z».
  */
@@ -37,8 +38,6 @@ export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
   const recargar = usarRecargarLaCaja();
   const [paso, setPaso] = useState<Paso>(1);
   const [recuento, setRecuento] = useState<ElRecuento>({});
-  const [datafono, setDatafono] = useState('');
-  const [sinDatafono, setSinDatafono] = useState(false);
   const [manana, setManana] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
@@ -81,7 +80,6 @@ export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
     contado,
   });
   const paraManana = manana === null ? propuesto : (deEurosACentimos(manana) ?? -1);
-  const datafonoBien = sinDatafono ? null : deEurosACentimos(datafono);
 
   async function cerrar(pin?: string): Promise<ErrorDeLaApi | null> {
     if (abierta === null) return null;
@@ -90,7 +88,7 @@ export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
     const respuesta = await cliente.ejecutar<LaCajaCerrada>('cerrar_caja', {
       turno_id: abierta.turnoId,
       contado: recuento,
-      datafono: datafonoBien,
+      datafono: null,
       para_manana: paraManana,
       ...(pin === undefined ? {} : { pin_del_encargado: pin }),
     });
@@ -196,53 +194,6 @@ export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
       {paso === 2 && (
         <div className="flex max-w-[30rem] flex-col gap-e3">
           <div>
-            <h2 className="text-pantalla font-bold">El cierre del datáfono</h2>
-            <p className="text-texto-suave">
-              Saca el cierre del día en el datáfono y escribe su total.
-            </p>
-          </div>
-          <label className="flex items-center justify-between gap-e3 rounded-grande border-2 border-borde bg-fondo px-e4 py-e2 focus-within:border-naranja">
-            <span className="text-texto-suave">Total del datáfono</span>
-            <input
-              inputMode="decimal"
-              value={datafono}
-              placeholder="0,00"
-              disabled={sinDatafono}
-              onChange={(e) => {
-                setDatafono(e.currentTarget.value);
-              }}
-              className="w-[9ch] bg-transparent text-right text-cifra-larga font-bold tabular-nums outline-none"
-            />
-          </label>
-          <div className="grid grid-cols-1 gap-e3 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => {
-                setSinDatafono(true);
-                setPaso(3);
-              }}
-              className="min-h-toque-cocina rounded-grande border-2 border-borde font-bold"
-            >
-              Hoy no se ha usado
-            </button>
-            <button
-              type="button"
-              disabled={deEurosACentimos(datafono) === null}
-              onClick={() => {
-                setSinDatafono(false);
-                setPaso(3);
-              }}
-              className="min-h-toque-cocina rounded-grande bg-naranja font-bold text-sobre-naranja disabled:opacity-50"
-            >
-              Seguir
-            </button>
-          </div>
-        </div>
-      )}
-
-      {paso === 3 && (
-        <div className="flex max-w-[30rem] flex-col gap-e3">
-          <div>
             <h2 className="text-pantalla font-bold">Lo que se queda para mañana</h2>
             <p className="text-texto-suave">El fondo de siempre. Lo demás lo retiras.</p>
           </div>
@@ -345,31 +296,7 @@ function ElResultado({
           </p>
         </section>
         <section className="flex flex-col gap-e2 rounded-grande border border-borde bg-superficie p-e4">
-          <Renglon que="Con tarjeta, en Estook" cuanto={cerrada.tarjeta} />
-          {cerrada.datafono === null ? (
-            <p className="text-texto-tenue">Sin el cierre del datáfono.</p>
-          ) : (
-            <>
-              <Renglon que="El datáfono" cuanto={cerrada.datafono} />
-              <p
-                className={`flex justify-between rounded-grande p-e3 font-bold ${tono(cerrada.diferenciaDeTarjeta ?? 0)}`}
-              >
-                <span>
-                  Tarjeta ·{' '}
-                  {cerrada.diferenciaDeTarjeta === 0
-                    ? 'cuadra'
-                    : (cerrada.diferenciaDeTarjeta ?? 0) < 0
-                      ? 'el datáfono dice menos'
-                      : 'el datáfono dice más'}
-                </span>
-                {cerrada.diferenciaDeTarjeta !== 0 && (
-                  <span className="tabular-nums">
-                    {enDinero(Math.abs(cerrada.diferenciaDeTarjeta ?? 0))}
-                  </span>
-                )}
-              </p>
-            </>
-          )}
+          <Renglon que="Con tarjeta" cuanto={cerrada.tarjeta} />
           {cerrada.bizum > 0 && <Renglon que="Bizum" cuanto={cerrada.bizum} />}
           {cerrada.cheque > 0 && <Renglon que="Cheques, a contar aparte" cuanto={cerrada.cheque} />}
         </section>

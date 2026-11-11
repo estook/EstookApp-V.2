@@ -11,11 +11,17 @@ import { Cargando, ErrorEnCristiano } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { euros, eurosConSimbolo } from '../logica/texto.ts';
 import { irA } from '../navegar.ts';
-import type { LaMesa, PlatoDeLaCuenta } from '../datos/tipos.ts';
+import type { CobroPendienteEnLaMesa, LaMesa, PlatoDeLaCuenta } from '../datos/tipos.ts';
 import { AbrirCaja, ErrorDeLaCaja } from './AbrirCaja.tsx';
 import { deEurosACentimos, enLaCasilla } from './dinero.ts';
 import { idNuevo, usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
-import type { Cobrado } from './tipos.ts';
+import type { Cobrado, CobroDejadoEnLaCaja } from './tipos.ts';
+
+/** Una caja abierta del local, para elegir en cuál va un cobro de la mesa (0145). */
+interface UnaCajaAbierta {
+  readonly turnoId: string;
+  readonly nombre: string;
+}
 
 type Forma = FormaDePago | 'dividir';
 type ComoSeDivide = 'iguales' | 'platos' | 'mixto';
@@ -46,17 +52,28 @@ export function losBilletesQueLoCubren(importe: number): number[] {
  * de un toque y el cambio a la vista; **tarjeta** en el datáfono de siempre; **Bizum y cheque** si el
  * local los enciende; y **dividir**: a partes iguales, por platos, o efectivo y tarjeta. Cada cobro, su
  * ticket, que sale solo; con efectivo o cheque, el cajón se abre. **Sin caja abierta no se cobra**: se
- * abre ahí mismo. Se cobra en la caja; un comandero manda a cobrar a la caja.
+ * abre ahí mismo.
+ *
+ * **En la mesa, con el comandero** (0145; Richi, 10-nov): tarjeta (el datáfono de siempre), Bizum y
+ * cheque se cobran aquí mismo. **El efectivo se deja para la caja**, a nombre de quien lo deja: allí
+ * sale «Cobro pendiente · Mesa 4» y se cobra con un PIN, que es donde está el cajón. Dividido igual:
+ * lo que es de tarjeta se cobra ya, y el efectivo va a la caja en el mismo ticket.
  */
 export function Cobrar({
   mesa,
   sinMandarAqui,
+  pendientes = [],
+  alCobrarElPendiente,
   alVolver,
   alAcabar,
 }: {
   readonly mesa: LaMesa | undefined;
   /** Lo pedido en esta tablet que no ha salido de ella: hay que mandarlo antes. */
   readonly sinMandarAqui: number;
+  /** El efectivo de esta mesa que espera en la caja (0145). */
+  readonly pendientes?: readonly CobroPendienteEnLaMesa[];
+  /** En la caja: cobrar ese efectivo, con el PIN de quien cobra. */
+  readonly alCobrarElPendiente?: (pendiente: CobroPendienteEnLaMesa) => void;
   readonly alVolver: () => void;
   /** La mesa ha quedado libre. */
   readonly alAcabar: () => void;
@@ -77,26 +94,24 @@ export function Cobrar({
   const [ocupado, setOcupado] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
   const [hecho, setHecho] = useState<Cobrado | null>(null);
+  const [dejado, setDejado] = useState<CobroDejadoEnLaCaja | null>(null);
   const [abriendoLaCaja, setAbriendoLaCaja] = useState(false);
+  /** Con más de una caja abierta, en cuál va lo que se cobra en la mesa. */
+  const [turnoElegido, setTurnoElegido] = useState<string | undefined>(undefined);
+  const [elegirCaja, setElegirCaja] = useState<{
+    readonly cajas: readonly UnaCajaAbierta[];
+    readonly reintentar: (turnoId: string) => void;
+  } | null>(null);
 
   if (mesa === undefined || caja.isLoading || caja.data === undefined) {
     return caja.error === null ? <Cargando que="la cuenta" /> : <ErrorDeLaCaja />;
   }
   const c = caja.data;
+  /** **Sin cajón** (el comandero): se cobra lo que no es efectivo; el efectivo va a la caja. */
+  const enLaMesa = c.cajon === null;
 
   // ── Antes de cobrar ──────────────────────────────────────────────────────────────
-  if (c.cajon === null) {
-    return (
-      <Marco titulo={mesa.titulo} alVolver={alVolver}>
-        <p className="text-pantalla font-bold">Se cobra en la caja</p>
-        <p className="text-texto-suave">
-          Este aparato toma nota y manda. La cuenta de {mesa.titulo} está lista para cobrarla en la
-          caja.
-        </p>
-      </Marco>
-    );
-  }
-  if (c.abierta === null || abriendoLaCaja) {
+  if (!enLaMesa && (c.abierta === null || abriendoLaCaja)) {
     return (
       <Marco titulo={mesa.titulo} alVolver={alVolver}>
         {!abriendoLaCaja ? (
@@ -160,17 +175,48 @@ export function Cobrar({
 
   const marcado = deArriba.filter((p) => marcadas.has(p.id)).reduce((s, p) => s + importeDe(p), 0);
 
-  async function cobrar(lo: LoQueSeCobra, importe: number, pagos: readonly UnPago[]) {
+  async function cobrar(
+    lo: LoQueSeCobra,
+    importe: number,
+    pagos: readonly UnPago[],
+    turnoId: string | undefined = turnoElegido,
+  ) {
     setOcupado(true);
     setFallo(null);
-    const respuesta = await cliente.ejecutar<Cobrado>('cobrar', {
-      cobro_id: cobroId,
+    const queCubre = {
       cuenta_id: mesa?.cuentaId,
       que: lo.que,
       ...(lo.que === 'parte' ? { parte: lo.parte, de: lo.de } : {}),
       ...(lo.que === 'platos' ? { lineas: lo.lineas } : {}),
       importe,
+    };
+    // **En la mesa, el efectivo va a la caja** (0145): lo demás que se paga a la vez (la tarjeta de un
+    // pago mixto, los cheques) ya se ha cobrado aquí, y va en el mismo ticket.
+    if (enLaMesa && pagos.some((p) => p.forma === 'efectivo')) {
+      const dejar = await cliente.ejecutar<CobroDejadoEnLaCaja>('dejar_el_cobro_en_la_caja', {
+        pendiente_id: cobroId,
+        ...queCubre,
+        ya_pagado: pagos
+          .filter((p) => p.forma !== 'efectivo')
+          .map((p) => ({ forma: p.forma, importe: p.importe })),
+      });
+      setOcupado(false);
+      if (dejar.ok) {
+        setDejado(dejar.datos);
+        setCobroId(idNuevo());
+        setMarcadas(new Set());
+        await recargar();
+      } else {
+        if (dejar.error.codigo !== 'sin_conexion') setCobroId(idNuevo());
+        setFallo(dejar.error);
+      }
+      return;
+    }
+    const respuesta = await cliente.ejecutar<Cobrado>('cobrar', {
+      cobro_id: cobroId,
+      ...queCubre,
       pagos,
+      ...(enLaMesa && turnoId !== undefined ? { turno_id: turnoId } : {}),
     });
     setOcupado(false);
     if (respuesta.ok) {
@@ -178,11 +224,95 @@ export function Cobrar({
       setCobroId(idNuevo());
       setMarcadas(new Set());
       await recargar();
-    } else {
-      // Sin conexión, el mismo cobro se repite con el mismo id: no cobra dos veces. Lo demás, otro.
-      if (respuesta.error.codigo !== 'sin_conexion') setCobroId(idNuevo());
-      setFallo(respuesta.error);
+      return;
     }
+    // Con más de una caja abierta, se elige en cuál va, y se cobra con el mismo id.
+    const cajas = respuesta.error.detalle?.['cajas'];
+    if (enLaMesa && Array.isArray(cajas)) {
+      setElegirCaja({
+        cajas: cajas as UnaCajaAbierta[],
+        reintentar: (elegido) => {
+          setTurnoElegido(elegido);
+          setElegirCaja(null);
+          void cobrar(lo, importe, pagos, elegido);
+        },
+      });
+      return;
+    }
+    // Sin conexión, el mismo cobro se repite con el mismo id: no cobra dos veces. Lo demás, otro.
+    if (respuesta.error.codigo !== 'sin_conexion') setCobroId(idNuevo());
+    setFallo(respuesta.error);
+  }
+
+  async function quitarElPendiente(pendiente: CobroPendienteEnLaMesa) {
+    setFallo(null);
+    const r = await cliente.ejecutar('quitar_el_cobro_pendiente', { pendiente_id: pendiente.id });
+    if (r.ok) await recargar();
+    else setFallo(r.error);
+  }
+
+  // ── Dejado para la caja ──────────────────────────────────────────────────────────
+  if (dejado !== null) {
+    return (
+      <Marco titulo={mesa.titulo} alVolver={alVolver}>
+        <div className="flex max-w-[36rem] flex-col items-start gap-e4">
+          <span
+            aria-hidden
+            className="flex size-14 items-center justify-center rounded-redondo bg-bien text-cifra-media text-fondo"
+          >
+            ✓
+          </span>
+          <h2 className="text-pantalla font-bold">
+            {eurosConSimbolo(dejado.enEfectivo)} en efectivo, para la caja
+          </h2>
+          <p className="text-texto-suave">
+            Lleva el dinero a la caja: allí sale «Cobro pendiente · {mesa.titulo}». Se cobra con el
+            PIN de quien cobra, sale el ticket y el cajón se abre para el cambio.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setDejado(null);
+              alVolver();
+            }}
+            className="min-h-toque-cocina w-full rounded-grande bg-naranja text-seccion font-bold text-sobre-naranja"
+          >
+            Listo
+          </button>
+        </div>
+      </Marco>
+    );
+  }
+
+  // ── En qué caja va, si hay más de una abierta ────────────────────────────────────
+  if (elegirCaja !== null) {
+    return (
+      <Marco
+        titulo={mesa.titulo}
+        alVolver={() => {
+          setElegirCaja(null);
+        }}
+      >
+        <div className="flex max-w-[30rem] flex-col gap-e3">
+          <h2 className="text-pantalla font-bold">¿En qué caja va?</h2>
+          <p className="text-texto-suave">
+            Hay más de una caja abierta. Se queda elegida para los demás cobros.
+          </p>
+          {elegirCaja.cajas.map((cj) => (
+            <button
+              key={cj.turnoId}
+              type="button"
+              onClick={() => {
+                elegirCaja.reintentar(cj.turnoId);
+              }}
+              className="min-h-toque-cocina rounded-grande border-2 border-borde text-seccion font-bold"
+            >
+              {cj.nombre}
+            </button>
+          ))}
+        </div>
+      </Marco>
+    );
   }
 
   // ── Cobrado ──────────────────────────────────────────────────────────────────────
@@ -255,6 +385,38 @@ export function Cobrar({
 
   return (
     <Marco titulo={mesa.titulo} alVolver={alVolver}>
+      {pendientes.map((p) => (
+        <div
+          key={p.id}
+          className="flex flex-wrap items-center justify-between gap-e3 rounded-grande bg-atencion-suave p-e4"
+        >
+          <span className="font-bold text-atencion">
+            {enLaMesa ? 'Pendiente en la caja' : 'Efectivo pendiente'} ·{' '}
+            <span className="tabular-nums">{eurosConSimbolo(p.enEfectivo)}</span> · de {p.por}
+          </span>
+          {enLaMesa ? (
+            <button
+              type="button"
+              onClick={() => void quitarElPendiente(p)}
+              className="min-h-toque rounded-redondo border-2 border-borde px-e4 font-bold"
+            >
+              Quitar
+            </button>
+          ) : (
+            alCobrarElPendiente !== undefined && (
+              <button
+                type="button"
+                onClick={() => {
+                  alCobrarElPendiente(p);
+                }}
+                className="min-h-toque rounded-redondo bg-bien px-e5 font-bold text-fondo"
+              >
+                Cobrar efectivo · {p.por}
+              </button>
+            )
+          )}
+        </div>
+      ))}
       <div className="grid gap-e5 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         {/* La cuenta: por platos, se tocan los que paga. */}
         <section
@@ -358,7 +520,29 @@ export function Cobrar({
 
           {fallo !== null && <ErrorEnCristiano error={fallo} />}
 
-          {formaVista === 'efectivo' && (
+          {formaVista === 'efectivo' && enLaMesa && (
+            <>
+              <div className="flex flex-col items-center gap-e1 rounded-grande border border-borde bg-superficie p-e5 text-center">
+                <span className="text-texto-suave">El efectivo se cobra en la caja</span>
+                <span className="text-cifra font-bold tabular-nums">{eurosConSimbolo(queda)}</span>
+                <span className="text-secundario text-texto-tenue">
+                  Allí sale a tu nombre, se cobra con un PIN y el cajón se abre para el cambio.
+                </span>
+              </div>
+              <BotonDeCobrar
+                ocupado={ocupado}
+                apagado={queda <= 0}
+                texto={`Dejar ${eurosConSimbolo(queda)} para la caja`}
+                alTocar={() =>
+                  void cobrar({ que: 'toda' }, queda, [
+                    { forma: 'efectivo', importe: queda, entregado: queda },
+                  ])
+                }
+              />
+            </>
+          )}
+
+          {formaVista === 'efectivo' && !enLaMesa && (
             <>
               <span className="text-secundario font-bold text-texto-suave">Te da</span>
               <div
@@ -614,7 +798,9 @@ export function Cobrar({
                                   }
                                   className="min-h-toque min-w-[6rem] rounded-redondo bg-charcoal px-e3 font-bold"
                                 >
-                                  {NOMBRE_DE_LA_FORMA_DE_PAGO[f]}
+                                  {enLaMesa && f === 'efectivo'
+                                    ? 'Efectivo · caja'
+                                    : NOMBRE_DE_LA_FORMA_DE_PAGO[f]}
                                 </button>
                               ))}
                             </span>
@@ -658,7 +844,10 @@ export function Cobrar({
                         }
                         className="min-h-toque-cocina rounded-grande bg-charcoal font-bold disabled:opacity-40"
                       >
-                        {NOMBRE_DE_LA_FORMA_DE_PAGO[f]} {eurosConSimbolo(marcado)}
+                        {enLaMesa && f === 'efectivo'
+                          ? 'Efectivo · caja'
+                          : NOMBRE_DE_LA_FORMA_DE_PAGO[f]}{' '}
+                        {eurosConSimbolo(marcado)}
                       </button>
                     ))}
                   </div>
@@ -706,7 +895,11 @@ export function Cobrar({
                   <BotonDeCobrar
                     ocupado={ocupado}
                     apagado={efectivoMixto <= 0 || efectivoMixto >= queda}
-                    texto={`Cobrar ${eurosConSimbolo(queda)} · un ticket`}
+                    texto={
+                      enLaMesa
+                        ? `Tarjeta cobrada · ${eurosConSimbolo(efectivoMixto)} para la caja`
+                        : `Cobrar ${eurosConSimbolo(queda)} · un ticket`
+                    }
                     alTocar={() =>
                       void cobrar({ que: 'toda' }, queda, [
                         { forma: 'efectivo', importe: efectivoMixto, entregado: efectivoMixto },

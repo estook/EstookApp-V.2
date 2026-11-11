@@ -50,6 +50,27 @@ export function Ventas() {
   const cerrarCaja = usarAccion('cerrar-caja');
   const [dias, setDias] = useState('30');
 
+  // **Cómo se cobró** (0145; Richi, 11-nov): con Estook TPV, de cada cobro, también lo de hoy sin
+  // cerrar; sin él, de los cierres, con lo que se apuntó de efectivo y tarjeta.
+  const cobros = useQuery({
+    queryKey: ['los_cobros', 'resumen', dias],
+    enabled: conEstookTpv,
+    queryFn: async () => {
+      const r = await cliente.consultar<{
+        totales: {
+          total: number;
+          efectivo: number;
+          tarjeta: number;
+          bizum: number;
+          cheque: number;
+          cobros: number;
+        };
+      }>('los_cobros', { dias });
+      if (!r.ok) throw new Error(r.error.codigo);
+      return r.datos.totales;
+    },
+  });
+
   const consulta = useQuery({
     queryKey: ['mis_cierres', 'ventas', dias],
     queryFn: async (): Promise<MisCierres> => {
@@ -139,6 +160,7 @@ export function Ventas() {
           <Selector
             etiqueta="Periodo"
             opciones={[
+              { valor: '1', texto: 'Hoy' },
               { valor: '7', texto: 'Última semana' },
               { valor: '30', texto: 'Último mes' },
               { valor: '90', texto: 'Últimos tres meses' },
@@ -194,6 +216,26 @@ export function Ventas() {
           </Tarjeta>
         )}
       </div>
+
+      <ComoSeCobro
+        {...(conEstookTpv
+          ? cobros.data === undefined
+            ? { cargando: true }
+            : {
+                total: cobros.data.total,
+                tarjeta: cobros.data.tarjeta,
+                efectivo: cobros.data.efectivo,
+                otros: cobros.data.bizum + cobros.data.cheque,
+                origen: `${String(cobros.data.cobros)} ${cobros.data.cobros === 1 ? 'cobro' : 'cobros'} de Estook TPV`,
+              }
+          : {
+              total: datos.cierres.reduce((suma, c) => suma + c.totalCentimos, 0),
+              tarjeta: datos.cierres.reduce((suma, c) => suma + (c.tarjetaCentimos ?? 0), 0),
+              efectivo: datos.cierres.reduce((suma, c) => suma + (c.efectivoCentimos ?? 0), 0),
+              otros: datos.cierres.reduce((suma, c) => suma + (c.otrosCentimos ?? 0), 0),
+              origen: 'De lo apuntado al cerrar cada día',
+            })}
+      />
 
       <Tarjeta titulo="Día a día">
         <Grafica
@@ -259,5 +301,55 @@ export function Ventas() {
         </Tarjeta>
       )}
     </div>
+  );
+}
+
+/**
+ * **Cómo se cobró** (0145; Richi, 11-nov): lo cobrado en el periodo, y de eso cuánto con tarjeta y
+ * cuánto en efectivo (y Bizum y cheques, si los hay). Con Estook TPV sale de cada cobro, también lo
+ * de hoy sin cerrar; sin él, de lo que se apuntó al cerrar.
+ */
+function ComoSeCobro(
+  props:
+    | { readonly cargando: true }
+    | {
+        readonly total: number;
+        readonly tarjeta: number;
+        readonly efectivo: number;
+        readonly otros: number;
+        readonly origen: string;
+      },
+) {
+  if ('cargando' in props) {
+    return (
+      <Tarjeta titulo="Cómo se cobró">
+        <Cargando que="los cobros" forma="cifra" />
+      </Tarjeta>
+    );
+  }
+  const filas = [
+    { que: 'Tarjeta', cuanto: props.tarjeta },
+    { que: 'Efectivo', cuanto: props.efectivo },
+    ...(props.otros > 0 ? [{ que: 'Bizum y cheques', cuanto: props.otros }] : []),
+  ];
+  return (
+    <Tarjeta titulo="Cómo se cobró" acento="var(--color-app-negocio)">
+      <div className="flex flex-col gap-e2" role="group" aria-label="Cómo se cobró">
+        <div className="flex items-baseline justify-between gap-e3">
+          <span className="text-texto-suave">Cobrado</span>
+          <b className="text-cifra-media tabular-nums">{comoDinero(props.total)}</b>
+        </div>
+        {filas.map((f) => (
+          <div
+            key={f.que}
+            className="flex items-baseline justify-between gap-e3 border-t border-borde pt-e2"
+          >
+            <span className="text-texto-suave">{f.que}</span>
+            <b className="tabular-nums">{comoDinero(f.cuanto)}</b>
+          </div>
+        ))}
+        <span className="text-etiqueta text-texto-tenue">{props.origen}</span>
+      </div>
+    </Tarjeta>
   );
 }

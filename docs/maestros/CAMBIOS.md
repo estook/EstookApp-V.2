@@ -105,6 +105,8 @@ hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban as�
 
 ## Roles, vistas, auditorías y administración
 
+**El 11 de noviembre de 2026, sin cambiar de versión** ([0145](../decisiones/0145-cobrar-en-la-mesa-y-negocio-ventas.md)): en 1.12, cobrar vale también en el comandero (el efectivo, en la caja), y en Estook, **Negocio › Ventas es de quien lleva el local**: los camareros facturan en Estook TPV. En el **Plan**, la tabla de B5: Ventas sale de Servicio y Negocio › Ventas tiene Resumen, Cobros y Tickets y facturas.
+
 **El 9 de noviembre de 2026, sin cambiar de versión** ([0144](../decisiones/0144-r3-la-caja.md)): en 1.12, **cobrar** lleva su permiso (`accion.cobrar`) y **abrir y cerrar caja** el suyo (`accion.llevar_la_caja`), que el camarero tiene si el local enciende «También camareros».
 
 **1.4** (30 de septiembre de 2026, [0055](../decisiones/0055-la-auditoria-profunda.md)). En 1.12: el terminal y su operador, la aprobación con el PIN de un superior, los límites por rol, «solo lo mío», la bolsa del camarero, dar de alta un terminal, y el titular de la empresa fiscal como único que autoriza ante Hacienda.
@@ -126,6 +128,8 @@ hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban as�
 **1.1.** Recoge la Evolución de producto 1.0: entran los canales de reparto en el mapa de dependencias, cuatro efectos en cadena nuevos, la máquina de estado de una alerta y de un pedido externo, seis hallazgos nuevos (del 13 al 18) y las decisiones de improvisación que traen las integraciones.
 
 ## Anexo · TPV y facturación
+
+**El 11 de noviembre de 2026, sin cambiar de versión** ([0145](../decisiones/0145-cobrar-en-la-mesa-y-negocio-ventas.md)): en 11.6, **el comandero cobra** con tarjeta, Bizum o cheque y **el efectivo se deja pendiente en la caja**, que lo cobra con el PIN de quien cobra; **cerrar caja no pide el datáfono**.
 
 **El 10 de noviembre de 2026, sin cambiar de versión** ([0144](../decisiones/0144-r3-la-caja.md), sección 7): en 11.6, **devolver en la caja lo que se pagó en efectivo saca el dinero del cajón**, ya construido.
 

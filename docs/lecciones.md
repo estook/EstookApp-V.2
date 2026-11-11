@@ -1158,3 +1158,21 @@
      miraba que la respuesta no llevara «1400» en ningún sitio, y el 10-nov un plato nació con un id acabado en
      `…651400`: rojo sin que nada estuviera mal. **Las pruebas que buscan una cifra en un texto quitan antes los
      identificadores** (`la-carta-que-trabaja.prueba.ts`).
+
+271. **Lo que hace la API sin sesión no ve a las personas, y está bien que no.** La pantalla del PIN de la caja
+     tenía que decir «Cobro pendiente · Mesa 3 · Lucía» sin nadie dentro: la API lo lee como el sistema, y la fila
+     de la persona no salía (el sistema no ve las personas, y no debe). En vez de abrir la tabla, una función
+     `security definer` devuelve solo lo que hace falta —la mesa, el importe y el nombre de pila— y solo al sistema
+     (`los_cobros_pendientes_de_la_caja`, 0117). **Para leer sin sesión, una función que dé lo justo, no una
+     política que abra la tabla**; y se prueba con una sonda que cuente cada tabla por separado como el sistema.
+
+272. **Una pantalla que sale de una lista se va cuando la lista cambia.** Pasó dos veces en dos días: la
+     ventana de la mesa al cobrarla (lección 268) y la de cobrar un pendiente, que al cobrarlo dejaba de estar en
+     la lista y la pantalla del cambio se cambiaba por «ya no está pendiente». **Lo que se está haciendo se
+     guarda en la pantalla mientras dura**, y no se vuelve a buscar en lo que el refresco trae
+     (`CobroPendienteDesdeLaPuerta`, `LaVentanaDeLaMesa`).
+
+273. **Añadir una carpeta entera arrastra lo que no es tuyo.** Un `git add pruebas/e2e` subió la prueba temporal de
+     capturas que vive sin subir en esa carpeta y que no es de ninguna cuenta (ESTADO, sección 0), y GitHub se puso
+     en rojo en tres máquinas por algo que no era de la entrega. **Se añade fichero a fichero lo que se ha tocado**,
+     y antes de abrir el pull request se mira `git diff --name-status main...HEAD` buscando lo que nadie ha escrito.

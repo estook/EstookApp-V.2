@@ -837,6 +837,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'locales_revisados_de_noche',
       'locales_visibles',
       'los_clientes',
+      'los_cobros_pendientes_de_la_caja',
       'los_nombres_de_la_sala',
       'los_pin_del_centro',
       'nivel_de_permiso',

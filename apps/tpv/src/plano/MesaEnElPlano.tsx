@@ -148,11 +148,13 @@ export function MesaEnElPlano({
   const seHaIdo = cuenta?.suCamareroSeHaIdo === true;
   const linea = comoVaLaMesa(mesa);
   const minutos = cuenta === null ? null : losMinutos(mesa.estado, cuenta);
+  // El efectivo que espera en la caja (0145): se ve desde lejos, en la misma mesa.
+  const enCaja = (cuenta?.pendientes ?? []).length > 0;
   return (
     <button
       type="button"
       onClick={alTocar}
-      aria-label={`Mesa ${mesa.nombre}: ${linea}${seHaIdo ? `, ${cuenta.camarero ?? 'su camarero'} ha fichado la salida` : ''}`}
+      aria-label={`Mesa ${mesa.nombre}: ${linea}${enCaja ? ', cobro pendiente en la caja' : ''}${seHaIdo ? `, ${cuenta.camarero ?? 'su camarero'} ha fichado la salida` : ''}`}
       style={enElPlano ? estiloEnElPlano(mesa) : undefined}
       className={[
         'flex overflow-hidden text-texto transition-transform active:scale-[0.98]',
@@ -220,6 +222,11 @@ export function MesaEnElPlano({
             <span className="truncate">{euros(cuenta.totalCentimos)}</span>
           </span>
         )}
+        {enCaja && (
+          <span className="truncate rounded-redondo bg-atencion px-e2 text-etiqueta font-bold text-fondo">
+            Cobro en caja
+          </span>
+        )}
         {seHaIdo && !pequena && (
           <span className="truncate text-etiqueta font-semibold text-mal">
             {cuenta.camarero ?? 'Su camarero'} ha fichado la salida
@@ -245,7 +252,7 @@ export function TarjetaSinMesa({
     <button
       type="button"
       onClick={alTocar}
-      aria-label={`${cuenta.titulo}: ${linea}`}
+      aria-label={`${cuenta.titulo}: ${linea}${(cuenta.pendientes ?? []).length > 0 ? ', cobro pendiente en la caja' : ''}`}
       className={[
         'flex min-h-[7.5rem] flex-col gap-[2px] rounded-mayor p-e3 text-left',
         como.caja,
@@ -266,6 +273,11 @@ export function TarjetaSinMesa({
         </span>
       )}
       <span className="text-secundario text-texto-suave">{euros(cuenta.totalCentimos)} €</span>
+      {(cuenta.pendientes ?? []).length > 0 && (
+        <span className="self-start rounded-redondo bg-atencion px-e2 text-etiqueta font-bold text-fondo">
+          Cobro en caja
+        </span>
+      )}
     </button>
   );
 }

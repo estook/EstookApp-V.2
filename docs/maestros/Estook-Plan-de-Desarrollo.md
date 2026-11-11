@@ -288,7 +288,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | Carta       | Carta · Canales · Menús · Análisis                   |
 | Calendario  | Calendario · Tareas · Turnos                         |
 | Equipo      | Resumen · Personas · Fichajes · Incidencias          |
-| Servicio    | Jornadas · Empleados · Ventas · Delivery · APPCC     |
+| Servicio    | Jornadas · Empleados · Delivery · APPCC              |
 | Negocio     | Ventas · Informes · Pulse · Costes · Reseñas         |
 | Cuaderno    | Incidencias · Notas · Equipos                        |
 
@@ -308,7 +308,7 @@ Y sus vistas, donde las hay:
 | Equipo · Personas         | Con acceso · Sin entrar todavía · Retirados                         |
 | Equipo · Incidencias      | Todas · Faltas · Retrasos · Fichajes                                |
 | Servicio · Jornadas       | Información · Cierre                                                |
-| Servicio · Ventas         | Tickets y facturas                                                  |
+| Negocio · Ventas          | Resumen · Cobros · Tickets y facturas                               |
 | Negocio · Informes        | Día · Semana · Mes                                                  |
 | Cuaderno · Incidencias    | Abiertas · Cerradas                                                 |
 
@@ -326,12 +326,12 @@ En **Historial**, lo que entra, sale, se vende o se ajusta es un filtro de la mi
 
 ### Sala y Cocina viven en Estook TPV
 
-**Sala y Cocina no son destinos de Servicio.** Servicio tiene los suyos —Jornada, Ventas, Delivery y APPCC—, que son de consulta. Tomar nota, la cocina y cobrar viven en **Estook TPV**, su propia puerta (A5 y el Anexo, 10.1):
+**Sala y Cocina no son destinos de Servicio.** Servicio tiene los suyos —Jornada, Empleados, Delivery y APPCC—, que son de consulta. Tomar nota, la cocina y cobrar viven en **Estook TPV**, su propia puerta (A5 y el Anexo, 10.1):
 
 - **Un aparato del local enciende en su función** —caja, comandero, cocina, barra o fichar (Anexo, 11.3)— y entra quien teclea su PIN. **Estook TPV no se abre con la sesión personal** ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)): el móvil de un camarero es un comandero personal, vinculado con un código como los demás.
 - **Desde Estook se llega con el botón «Estook TPV» de Ajustes**, el único con color propio, para quien vincula los aparatos (gerente y dirección); **con Esencial sale con candado** y explica qué gana con Pro (Richi, 28-oct; [la maqueta](../maquetas/estook-tpv-en-ajustes.html)).
 - **Se sale** con un botón explícito, que en un terminal pide PIN.
-- Lo del cobro que es de consulta vive en Estook: **la caja es una vista de Servicio · Jornada** y **los tickets y facturas, una vista de Servicio · Ventas**.
+- Lo del cobro que es de consulta vive en Estook: **los cierres de caja, una vista de Servicio · Jornada**, y **el Resumen, los Cobros y los tickets y facturas, las vistas de Negocio · Ventas** ([0145](../decisiones/0145-cobrar-en-la-mesa-y-negocio-ventas.md)), que son de quien ve las ventas: los camareros facturan en Estook TPV.
 - **Comparte `packages/ui`**: los mismos botones, los mismos colores y los mismos textos. Lo que cambia es la disposición —a pantalla completa, sin barra de navegación, botones grandes— y sus reglas, que están en el capítulo 10 del Anexo.
 
 **Escritorio ·** desde la experiencia ([0083](../decisiones/0083-la-experiencia.md)), **un menú a la izquierda que se pliega**, oscuro en los dos temas: abierto, el logo de Estook, el local (y su cambio, si se llevan varios), el Panel, cada app con **sus destinos colgando** —la pregunta que contesta cada uno, al pasar por encima— y, abajo, Ajustes y tu cuenta; plegado, **el logo del local** y el icono de cada app, que abre sus destinos al lado. Arriba, una barra fina con dónde estás y, a la derecha, **el buscador, los avisos, el chat, el claro y el oscuro, y el avatar**, que abre tu cuenta —mi acceso, cambiar de local y salir—. Ya no hay menú lateral dentro de cada app: sus destinos están en el de la izquierda. La ficha se sigue abriendo en panel derecho sin tapar la lista.

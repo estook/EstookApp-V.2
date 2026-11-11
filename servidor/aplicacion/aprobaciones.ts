@@ -98,6 +98,68 @@ export async function aprobarConElPin(
   return aprobacionId;
 }
 
+/**
+ * **De quién es este PIN**, en este aparato y para esto (0145): cobrar en la caja un efectivo que dejó
+ * un camarero lo hace quien teclea su PIN, **aunque la caja la tenga abierta otro** (Richi, 11-nov: «la
+ * responsabilidad del cobro es de esa persona»). No cambia quién está dentro. El intento se guarda,
+ * acierte o no, como al entrar (0068). Devuelve su id y su nombre.
+ */
+export async function quienEsElPin(
+  contexto: Contexto,
+  pin: string,
+  permiso: 'accion.cobrar',
+): Promise<{ readonly personaId: string; readonly nombre: string }> {
+  const terminalId = contexto.sesion?.aparato?.terminalId ?? null;
+  if (terminalId === null) {
+    throw new FalloDeAplicacion('sin_permiso', {
+      porque: 'El PIN se teclea en el aparato del local.',
+    });
+  }
+  const aparatos = await enNombreDelSistema(
+    contexto,
+    () =>
+      contexto.sql<{ local_id: string; sal_del_pin: string }[]>`
+      select t.local_id::text as local_id, l.sal_del_pin
+        from estook.terminal t join estook.local l on l.id = t.local_id
+       where t.id = ${terminalId}::uuid and t.retirado_en is null
+    `,
+  );
+  const aparato = aparatos[0];
+  if (aparato === undefined) throw new FalloDeAplicacion('aparato_retirado');
+  const fallo = async () => {
+    await contexto.sql`select estook.anotar_intento_en_terminal(${terminalId}::uuid, false)`;
+    return falloQueSeGuarda('pin_desconocido');
+  };
+  if (!esPinConForma(pin)) throw await fallo();
+  const huella = await derivarConSalDelLocal(pin, aparato.sal_del_pin);
+  const pines = await contexto.sql<
+    { pin_id: string; persona_id: string; bloqueado_hasta: Date | null }[]
+  >`select * from estook.pin_del_quiosco(${aparato.local_id}::uuid, ${huella})`;
+  const elPin = pines[0];
+  if (elPin === undefined) throw await fallo();
+  if (elPin.bloqueado_hasta !== null && new Date(elPin.bloqueado_hasta) > contexto.ahora) {
+    throw new FalloDeAplicacion('demasiados_intentos');
+  }
+  const filas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ nivel: string; nombre: string }[]>`
+      select estook.nivel_de_permiso(${elPin.persona_id}::uuid, ${aparato.local_id}::uuid, ${permiso})::text
+               as nivel,
+             p.nombre
+        from estook.persona p where p.id = ${elPin.persona_id}::uuid
+    `,
+  );
+  const quien = filas[0];
+  if (quien?.nivel !== 'ver_y_editar') {
+    throw new FalloDeAplicacion('sin_permiso', {
+      porque: 'Ese PIN no puede cobrar en este local.',
+    });
+  }
+  await contexto.sql`select estook.anotar_intento_en_terminal(${terminalId}::uuid, true)`;
+  await contexto.sql`select estook.anotar_intento_de_pin(${elPin.pin_id}::uuid, true)`;
+  return { personaId: elPin.persona_id, nombre: quien.nombre };
+}
+
 /** Una aprobación sirve una vez: se marca al usarla. */
 export async function usarLaAprobacion(contexto: Contexto, aprobacionId: string): Promise<void> {
   await enNombreDelSistema(

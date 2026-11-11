@@ -439,22 +439,33 @@ describe('lo construido y lo que llega', () => {
 
   it('si ninguna vista esta construida, se entra por la primera', () => {
     // La dirección tiene que seguir siendo copiable, así que se entra por la primera y el
-    // destino enseña su cartel. (Era Servicio · Ventas hasta que llegó «Tickets y facturas».)
-    const ventas = laApp('servicio').destinos.find((d) => d.id === 'ventas');
-    if (ventas === undefined) throw new Error('Servicio ya no tiene Ventas');
+    // destino enseña su cartel.
+    const ventas = laApp('negocio').destinos.find((d) => d.id === 'ventas');
+    if (ventas === undefined) throw new Error('Negocio ya no tiene Ventas');
     const nadaHecho = {
       ...ventas,
       vistas: ventas.vistas.map((v) => ({ ...v, modulo: v.modulo ?? 'M99' })),
     };
     expect(vistasConstruidas(nadaHecho)).toHaveLength(0);
-    expect(dondeEntraEnElDestino(nadaHecho)?.id).toBe('tickets-y-facturas');
+    expect(dondeEntraEnElDestino(nadaHecho)?.id).toBe('resumen');
   });
 
-  it('Servicio · Ventas entra por «Tickets y facturas», que es lo construido (0136)', () => {
-    const ventas = laApp('servicio').destinos.find((d) => d.id === 'ventas');
-    if (ventas === undefined) throw new Error('Servicio ya no tiene Ventas');
-    expect(vistasConstruidas(ventas).map((v) => v.id)).toEqual(['tickets-y-facturas']);
-    expect(dondeEntraEnElDestino(ventas)?.id).toBe('tickets-y-facturas');
+  it('Negocio · Ventas entra por el Resumen, y Servicio ya no tiene Ventas (0145)', () => {
+    const ventas = laApp('negocio').destinos.find((d) => d.id === 'ventas');
+    if (ventas === undefined) throw new Error('Negocio ya no tiene Ventas');
+    expect(vistasConstruidas(ventas).map((v) => v.id)).toEqual([
+      'resumen',
+      'cobros',
+      'tickets-y-facturas',
+    ]);
+    expect(dondeEntraEnElDestino(ventas)?.id).toBe('resumen');
+    // Lo del dinero, para quien ve las ventas; los tickets, para quien hace facturas.
+    expect(ventas.vistas.map((v) => v.permiso)).toEqual([
+      'dato.ventas',
+      'dato.ventas',
+      'accion.factura_de_un_ticket',
+    ]);
+    expect(laApp('servicio').destinos.some((d) => d.id === 'ventas')).toBe(false);
   });
 
   it('un destino sin vistas no tiene vista de entrada', () => {

@@ -3474,6 +3474,20 @@ junto a Fichar no llevaba a abrirla y que el cambio desaparecía al quedar la me
 devuelto en efectivo salga del cajón**; y con Estook TPV se quitaron de Estook los botones de cerrar a mano, que
 ya no hacían nada.
 
+### Cobrar en la mesa y Negocio › Ventas
+
+_11 de noviembre de 2026._ Decisión [0145](decisiones/0145-cobrar-en-la-mesa-y-negocio-ventas.md), con lo que pidió
+Richi el 10 y el 11-nov (migración 0117):
+
+- **El comandero cobra** con tarjeta, Bizum y cheque; **el efectivo se deja pendiente en la caja**, que lo cobra
+  con el PIN de quien cobra desde la mesa o desde la pantalla del PIN, con el cambio y el cajón.
+- **Cerrar caja sin el datáfono**, y cada aparato saca sus tickets en su impresora.
+- **Negocio › Ventas en tres**: Resumen (con «Cómo se cobró»), Cobros (lo entregado y el cambio) y Tickets y
+  facturas, que sale de Servicio. En Cierres de caja, «Descargar su Z» y «Sus tickets».
+
+Las pruebas: `la-caja.prueba.ts` (veinticuatro, contra la base) y `la-caja.spec.ts` (dos recorridos de
+pantalla, uno con el comandero en su propio navegador).
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

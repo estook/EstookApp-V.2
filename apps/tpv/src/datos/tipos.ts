@@ -60,6 +60,28 @@ export interface CuentaEnElPlano {
   readonly minutosEnElEstado?: number | null;
   readonly colorDelTiempo?: ColorDelTiempo | null;
   readonly conComida?: boolean;
+  /** El efectivo que espera en la caja (0145). Una API de antes no lo dice. */
+  readonly pendientes?: readonly CobroPendienteEnLaMesa[];
+}
+
+/** Un cobro en efectivo que dejó un camarero para la caja (0145). */
+export interface CobroPendienteEnLaMesa {
+  readonly id: string;
+  readonly que: 'toda' | 'platos' | 'parte';
+  readonly lineas: readonly string[];
+  readonly parte: number | null;
+  readonly de: number | null;
+  /** Lo que cubre entero, y lo que se cobra en efectivo en la caja. */
+  readonly importe: number;
+  readonly enEfectivo: number;
+  /** Lo cobrado ya en la mesa con tarjeta, Bizum o cheque. */
+  readonly yaPagado: readonly {
+    readonly forma: 'tarjeta' | 'bizum' | 'cheque';
+    readonly importe: number;
+  }[];
+  /** Quién lo dejó: «Ricardo». */
+  readonly por: string;
+  readonly desde: string;
 }
 
 /** Una mesa como se dibujó en el TPV (T2): su forma, su sitio, su tamaño y su giro. */
@@ -380,6 +402,18 @@ export interface ElAparatoPorDentro {
   readonly elCentro?: { readonly direcciones: readonly string[]; readonly clave: string } | null;
   /** Si su caja está abierta (0144); nula sin cajón. Una API de antes no lo dice. */
   readonly cajaAbierta?: boolean | null;
+  /**
+   * Los cobros en efectivo que esperan en la caja (0145), para la pantalla del PIN. Solo en la caja.
+   * Una API de antes no lo dice.
+   */
+  readonly cobrosPendientes?: readonly {
+    readonly id: string;
+    readonly cuentaId: string;
+    readonly titulo: string;
+    readonly enEfectivo: number;
+    readonly por: string;
+    readonly desde: string;
+  }[];
 }
 
 export interface AparatoVinculado {
@@ -452,6 +486,8 @@ export interface UnAparato {
   readonly camino?: CaminoAlCentro | null;
   readonly esElCentro?: boolean;
   readonly centroPor?: 'wifi' | 'cable' | null;
+  /** La impresora donde saca sus tickets (0145); nula, la de la caja. Una API de antes no lo dice. */
+  readonly imprimeEn?: string | null;
 }
 
 export interface LosAparatos {
@@ -459,6 +495,8 @@ export interface LosAparatos {
   readonly aparatos: readonly UnAparato[];
   readonly cajones: readonly { readonly id: string; readonly nombre: string }[];
   readonly personas: readonly { readonly id: string; readonly nombre: string }[];
+  /** Las impresoras del local (0145). Una API de antes no lo dice. */
+  readonly impresoras?: readonly { readonly id: string; readonly nombre: string }[];
 }
 
 export interface DondeSePuedeVincular {

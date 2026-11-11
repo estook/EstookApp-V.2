@@ -272,8 +272,8 @@ function ConLlave({
         alEntrar={(nuevo) => {
           // **Todos a la sala** (la entrada nueva, 26-oct): ya no hay inicio de baldosas. Salvo
           // quien tocó «Abrir caja» o «Cerrar caja» al lado de Fichar (0144): entra directo a
-          // hacerlo, que es para lo que tecleó su PIN.
-          if (!/^caja\/(abrir|cerrar)$/.test(laDireccion())) irA('');
+          // hacerlo, que es para lo que tecleó su PIN. Y quien tocó un cobro pendiente (0145), a cobrarlo.
+          if (!/^(caja\/(abrir|cerrar)|cobro\/[0-9a-f-]{36})$/.test(laDireccion())) irA('');
           setDentro(nuevo);
         }}
       />

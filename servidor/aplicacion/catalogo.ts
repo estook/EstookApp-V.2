@@ -2,13 +2,23 @@ import {
   abrirCaja,
   cerrarCaja,
   cobrar,
+  dejarElCobroEnLaCaja,
   explicarLaDiferencia,
   guardarAjustesDeLaCaja,
   imprimirComoVa,
   imprimirElZ,
   moverDinero,
+  quienCobraConEstePin,
+  quitarElCobroPendiente,
 } from './comandos/caja.ts';
-import { cierresDeCaja, comoVaLaCaja, laCaja, unDiaDeCaja } from './consultas/caja.ts';
+import {
+  cierresDeCaja,
+  comoVaLaCaja,
+  elZEnPdf,
+  laCaja,
+  losCobros,
+  unDiaDeCaja,
+} from './consultas/caja.ts';
 import {
   cambiarNombreDelNegocio,
   exigirDobleFactor,
@@ -114,6 +124,7 @@ import {
 import {
   bloquear,
   cambiarAparato,
+  elegirDondeImprime,
   desvincularAparato,
   dondePuedoVincular,
   entrarConPin,
@@ -550,6 +561,9 @@ export const catalogo = {
     [comoVaLaCaja.nombre]: comoVaLaCaja,
     [cierresDeCaja.nombre]: cierresDeCaja,
     [unDiaDeCaja.nombre]: unDiaDeCaja,
+    // 0145: Negocio › Ventas › Cobros, y sus totales para el Resumen.
+    [losCobros.nombre]: losCobros,
+    [elZEnPdf.nombre]: elZEnPdf,
     // La pausa del 8-nov (0142): Información e Informes, de las mesas de Estook TPV.
     [loQueSeVende.nombre]: loQueSeVende,
     [elServicioPorDentro.nombre]: elServicioPorDentro,
@@ -1121,6 +1135,10 @@ export const catalogo = {
     [imprimirComoVa.nombre]: imprimirComoVa,
     [imprimirElZ.nombre]: imprimirElZ,
     [guardarAjustesDeLaCaja.nombre]: guardarAjustesDeLaCaja,
+    // 0145: cobrar en la mesa, y el efectivo pendiente en la caja.
+    [dejarElCobroEnLaCaja.nombre]: dejarElCobroEnLaCaja,
+    [quitarElCobroPendiente.nombre]: quitarElCobroPendiente,
+    [quienCobraConEstePin.nombre]: quienCobraConEstePin,
     [imprimirLaCuenta.nombre]: imprimirLaCuenta,
     [reimprimirLaComanda.nombre]: reimprimirLaComanda,
     [laColaDeLaCaja.nombre]: laColaDeLaCaja,
@@ -1143,6 +1161,7 @@ export const catalogo = {
     [cambiarLasAlergias.nombre]: cambiarLasAlergias,
     [guardarLaCocinaYLaBarra.nombre]: guardarLaCocinaYLaBarra,
     [cambiarAparato.nombre]: cambiarAparato,
+    [elegirDondeImprime.nombre]: elegirDondeImprime,
     [desvincularAparato.nombre]: desvincularAparato,
     [guardarPinYBloqueo.nombre]: guardarPinYBloqueo,
 

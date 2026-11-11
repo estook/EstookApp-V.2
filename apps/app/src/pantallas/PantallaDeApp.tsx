@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { appsVisibles } from '@estook/permisos';
+import { appsVisibles, puedeVer } from '@estook/permisos';
 import {
   EstrellaDeLasApps,
   acentoParaTexto,
@@ -36,6 +36,7 @@ import {
   Resenas,
   ResumenDelEquipo,
   TicketsYFacturas,
+  LosCobros,
   Ventas,
 } from './lasPantallas.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -194,13 +195,16 @@ function Dentro({
   // dentro, y mientras no lo dice no sale ninguna (repaso del 9-oct y del 10-oct).
   const [conAlgo, setConAlgo] = useState<readonly string[]>([]);
   // Con Estook TPV, «Cierre» pasa a «Cierres de caja» (0142, 0144): los cierra la caja y aquí se ven.
-  const { yo } = usarSesion();
+  const { yo, permisos } = usarSesion();
   const conPro = yo?.cuenta?.conEstookTpv === true;
-  const lasVistas = vistasQueSeEnsenan(destino, vista?.id, conAlgo).map((v) =>
-    conPro && app.id === 'servicio' && destino.id === 'jornada' && v.id === 'cierre'
-      ? { ...v, nombre: 'Cierres de caja' }
-      : v,
-  );
+  // Las pestañas con permiso (0145): en Negocio › Ventas, cada una para quien la puede ver.
+  const lasVistas = vistasQueSeEnsenan(destino, vista?.id, conAlgo)
+    .filter((v) => v.permiso === undefined || puedeVer(permisos, v.permiso))
+    .map((v) =>
+      conPro && app.id === 'servicio' && destino.id === 'jornada' && v.id === 'cierre'
+        ? { ...v, nombre: 'Cierres de caja' }
+        : v,
+    );
   return (
     <div className={clases('flex w-full flex-col gap-e4 lg:gap-e5', ANCHO[app.forma])}>
       {/*
@@ -322,11 +326,15 @@ function Contenido({
     return <Informacion />;
   }
   if (app.id === 'servicio' && destino.id === 'empleados') return <Empleados />;
-  if (app.id === 'negocio' && destino.id === 'ventas') return <Ventas />;
-  // T6 · 2 · 1 (0136): lo emitido, con su estado ante Hacienda.
-  if (app.id === 'servicio' && destino.id === 'ventas' && vista?.id === 'tickets-y-facturas') {
+  // Negocio › Ventas en tres (0145): los cobros uno a uno, lo emitido con su estado ante Hacienda
+  // (T6 · 2 · 1, 0136; antes en Servicio) y el Resumen.
+  if (app.id === 'negocio' && destino.id === 'ventas' && vista?.id === 'cobros') {
+    return <LosCobros />;
+  }
+  if (app.id === 'negocio' && destino.id === 'ventas' && vista?.id === 'tickets-y-facturas') {
     return <TicketsYFacturas />;
   }
+  if (app.id === 'negocio' && destino.id === 'ventas') return <Ventas />;
   // R2 (0053): Tu día, Tu semana y Tu mes, y la nota en Google.
   if (app.id === 'negocio' && destino.id === 'informes') {
     return <Informes vista={vista?.id ?? 'dia'} />;

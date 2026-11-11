@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { tokenDelAparato } from '@estook/dominio';
 import { codigoEn } from '../../servidor/dominio/doble-factor.ts';
 import { verifactiDeMentira } from '../../servidor/facturacion/verifacti-de-mentira.ts';
+import { pdfDeMentira } from '../../servidor/infraestructura/pdf.ts';
 import {
   ADMIN_DE_EJEMPLO,
   CLAVE_DE_EJEMPLO,
@@ -24,6 +25,7 @@ import { elFallo, entrarFichando, losDatos, montarLaApi, type ApiDePrueba } from
 let base: BaseDePrueba;
 let api: ApiDePrueba;
 const verifacti = verifactiDeMentira();
+const motor = pdfDeMentira();
 
 const ROSA = 'rosa@ejemplo.estook.com';
 const SARA = 'sara@ejemplo.estook.com';
@@ -79,7 +81,7 @@ const loQueHayEnLaCola = async (tipo: string) =>
 
 beforeAll(async () => {
   base = await levantarBase();
-  api = montarLaApi(base.bd, { facturacion: verifacti });
+  api = montarLaApi(base.bd, { facturacion: verifacti, pdf: motor });
   barCentro = await base.localPorCodigo('bar-centro');
 
   // Bar Centro, de la casa, con la empresa de pruebas de Verifacti y sus series (0125).
@@ -718,5 +720,345 @@ describe('devolver en la caja lo que se pagó en efectivo', () => {
       [barCentro],
     );
     expect(n?.n).toBe(2);
+  });
+});
+
+describe('cobrar en la mesa, y el efectivo pendiente en la caja (0145)', () => {
+  let llaveDelComandero: string;
+  let pendiente: string;
+  let cuentaPendiente: string;
+
+  /** En el comandero, como en la caja, cada uno con su PIN. */
+  async function enElComandero(correo: string): Promise<string> {
+    const dentro = losDatos<{ turno: string }>(
+      await entrarFichando(api, llaveDelComandero, base.pinDe(correo, 'bar-centro'), llaveDeLaCaja),
+    );
+    return tokenDelAparato(dentro.turno, llaveDelComandero);
+  }
+
+  const losTrabajos = async (impresora: string) =>
+    (
+      await comoDuena<{ n: number }>(
+        `select count(*)::int as n from estook.trabajo_de_impresion where impresora_id = $1 and tipo = 'ticket'`,
+        [impresora],
+      )
+    )[0]?.n ?? 0;
+
+  beforeAll(async () => {
+    llaveDelComandero = losDatos<{ llave: string }>(
+      await api.ejecutar(await api.entrar(ROSA), 'vincular_el_primer_aparato', {
+        local_id: barCentro,
+        funcion: 'comandero',
+        nombre: 'Móvil de Sara',
+      }),
+    ).llave;
+  });
+
+  it('con tarjeta se cobra en la mesa: va a la caja abierta, sin abrir el cajón', async () => {
+    const { cuenta } = await unaMesaPedida(0);
+    const cajon = await loQueHayEnLaCola('cajon');
+    const cobrado = losDatos<{ liberada: boolean; cajonAbierto: boolean; cobradoPor: string }>(
+      await api.ejecutar(await enElComandero(SARA), 'cobrar', {
+        cobro_id: crypto.randomUUID(),
+        cuenta_id: cuenta,
+        que: 'toda',
+        importe: 4000,
+        pagos: [{ forma: 'tarjeta', importe: 4000 }],
+      }),
+    );
+    expect(cobrado).toMatchObject({ liberada: true, cajonAbierto: false });
+    expect(await loQueHayEnLaCola('cajon')).toBe(cajon);
+    const [delCobro] = await comoDuena<{ abierta: boolean }>(
+      `select t.cerrada_en is null as abierta from estook.cobro c
+         join estook.turno_de_caja t on t.id = c.turno_id where c.cuenta_id = $1`,
+      [cuenta],
+    );
+    expect(delCobro?.abierta).toBe(true);
+  });
+
+  it('el efectivo no se cobra en el comandero: se deja pendiente, con lo ya pagado con tarjeta', async () => {
+    const { cuenta } = await unaMesaPedida(1);
+    cuentaPendiente = cuenta;
+    const comandero = await enElComandero(SARA);
+    const enEfectivo = await api.ejecutar(comandero, 'cobrar', {
+      cobro_id: crypto.randomUUID(),
+      cuenta_id: cuenta,
+      que: 'toda',
+      importe: 4000,
+      pagos: [{ forma: 'efectivo', importe: 4000, entregado: 5000 }],
+    });
+    expect(elFallo(enEfectivo)).toBe('faltan_datos');
+    expect(JSON.stringify(enEfectivo)).toContain('El efectivo se cobra en la caja');
+
+    pendiente = crypto.randomUUID();
+    const dejado = losDatos<{ enEfectivo: number }>(
+      await api.ejecutar(comandero, 'dejar_el_cobro_en_la_caja', {
+        pendiente_id: pendiente,
+        cuenta_id: cuenta,
+        que: 'toda',
+        importe: 4000,
+        ya_pagado: [{ forma: 'tarjeta', importe: 1000 }],
+      }),
+    );
+    expect(dejado.enEfectivo).toBe(3000);
+
+    // La mesa lo dice en el plano, y la caja, bloqueada, en la pantalla del PIN.
+    const plano = losDatos<{
+      zonas: {
+        mesas: {
+          cuenta: { pendientes: { id: string; enEfectivo: number; por: string }[] } | null;
+        }[];
+      }[];
+    }>(await api.consultar(await enLaCaja(ROSA), 'el_plano', {}));
+    const enElPlano = plano.zonas
+      .flatMap((z) => z.mesas)
+      .flatMap((m) => m.cuenta?.pendientes ?? []);
+    expect(enElPlano).toEqual([
+      expect.objectContaining({ id: pendiente, enEfectivo: 3000, por: 'Sara' }),
+    ]);
+    const latido = losDatos<{
+      cobrosPendientes: { id: string; titulo: string; enEfectivo: number }[];
+    }>(await api.ejecutar(null, 'latir_el_aparato', { llave: llaveDeLaCaja, version: 'prueba' }));
+    expect(latido.cobrosPendientes).toEqual([
+      expect.objectContaining({ id: pendiente, titulo: 'Mesa 2', enEfectivo: 3000 }),
+    ]);
+
+    // Con el efectivo pendiente, la cuenta no se cobra por otro lado.
+    expect(
+      elFallo(
+        await api.ejecutar(comandero, 'cobrar', {
+          cobro_id: crypto.randomUUID(),
+          cuenta_id: cuenta,
+          que: 'toda',
+          importe: 4000,
+          pagos: [{ forma: 'tarjeta', importe: 4000 }],
+        }),
+      ),
+    ).toBe('faltan_datos');
+  });
+
+  it('en la caja se cobra con el PIN de quien cobra: el cambio, el cajón y un solo ticket', async () => {
+    const caja = await enLaCaja(ROSA);
+    expect(elFallo(await api.ejecutar(caja, 'quien_cobra_con_este_pin', { pin: '000000' }))).toBe(
+      'pin_desconocido',
+    );
+    expect(
+      losDatos<{ nombre: string }>(
+        await api.ejecutar(caja, 'quien_cobra_con_este_pin', {
+          pin: base.pinDe(SARA, 'bar-centro'),
+        }),
+      ).nombre,
+    ).toBe('Sara');
+
+    const cajon = await loQueHayEnLaCola('cajon');
+    const cobroId = crypto.randomUUID();
+    const entrada = {
+      cobro_id: cobroId,
+      cuenta_id: cuentaPendiente,
+      que: 'toda',
+      importe: 4000,
+      pendiente_id: pendiente,
+      entregado: 5000,
+      pin: base.pinDe(SARA, 'bar-centro'),
+    };
+    const cobrado = losDatos<{ cambio: number; liberada: boolean; cajonAbierto: boolean }>(
+      await api.ejecutar(caja, 'cobrar', entrada),
+    );
+    expect(cobrado).toMatchObject({ cambio: 2000, liberada: true, cajonAbierto: true });
+    expect(await loQueHayEnLaCola('cajon')).toBe(cajon + 1);
+
+    // Un cobro, dos pagos, a nombre de Sara aunque la caja la tenga Rosa.
+    const pagos = await comoDuena<{ forma: string; importe: number; entregado: number | null }>(
+      `select p.forma, p.importe, p.entregado from estook.pago p where p.cobro_id = $1 order by p.forma`,
+      [cobroId],
+    );
+    expect(pagos).toEqual([
+      { forma: 'efectivo', importe: 3000, entregado: 5000 },
+      { forma: 'tarjeta', importe: 1000, entregado: null },
+    ]);
+    const [quien] = await comoDuena<{ correo: string; resuelto: string | null }>(
+      `select p.correo, (select cobro_id::text from estook.cobro_pendiente where id = $2) as resuelto
+         from estook.cobro c join estook.persona p on p.id = c.cobrado_por where c.id = $1`,
+      [cobroId, pendiente],
+    );
+    expect(quien).toEqual({ correo: SARA, resuelto: cobroId });
+
+    // Repetir el mismo toque no cobra dos veces; y otro cobro del mismo pendiente, tampoco.
+    expect(
+      losDatos<{ yaEstaba: boolean }>(await api.ejecutar(caja, 'cobrar', entrada)).yaEstaba,
+    ).toBe(true);
+    expect(
+      elFallo(await api.ejecutar(caja, 'cobrar', { ...entrada, cobro_id: crypto.randomUUID() })),
+    ).toBe('ya_hecho');
+    await expect(
+      comoDuena(`update estook.cobro_pendiente set importe = 1 where id = $1`, [pendiente]),
+    ).rejects.toThrow(/no se toca/);
+  });
+
+  it('lo pendiente se quita si al final paga de otra forma, y ya no se cobra', async () => {
+    const { cuenta } = await unaMesaPedida(2);
+    const comandero = await enElComandero(SARA);
+    const otro = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(comandero, 'dejar_el_cobro_en_la_caja', {
+        pendiente_id: otro,
+        cuenta_id: cuenta,
+        que: 'toda',
+        importe: 4000,
+      }),
+    );
+    expect(
+      losDatos<{ quitado: boolean }>(
+        await api.ejecutar(comandero, 'quitar_el_cobro_pendiente', { pendiente_id: otro }),
+      ).quitado,
+    ).toBe(true);
+    expect(
+      elFallo(
+        await api.ejecutar(await enLaCaja(ROSA), 'cobrar', {
+          cobro_id: crypto.randomUUID(),
+          cuenta_id: cuenta,
+          que: 'toda',
+          importe: 4000,
+          pendiente_id: otro,
+        }),
+      ),
+    ).toBe('ya_hecho');
+    // Quitado, se cobra con tarjeta en la mesa sin más.
+    expect(
+      losDatos<{ liberada: boolean }>(
+        await api.ejecutar(comandero, 'cobrar', {
+          cobro_id: crypto.randomUUID(),
+          cuenta_id: cuenta,
+          que: 'toda',
+          importe: 4000,
+          pagos: [{ forma: 'bizum', importe: 4000 }],
+        }),
+      ).liberada,
+    ).toBe(true);
+  });
+
+  it('cada aparato saca sus tickets en su impresora; sin elegir, en la de la caja', async () => {
+    const rosa = await enLaCaja(ROSA);
+    losDatos(
+      await api.ejecutar(rosa, 'guardar_impresora', {
+        nombre: 'Sala',
+        modelo: 'Epson TM-m30III',
+        direccion: '192.168.77.32:9100',
+        imprime: ['caja'],
+        tiene_cajon: false,
+      }),
+    );
+    const [sala] = await comoDuena<{ id: string }>(
+      `select id::text from estook.impresora where local_id = $1 and nombre = 'Sala'`,
+      [barCentro],
+    );
+    const [caja] = await comoDuena<{ id: string }>(
+      `select id::text from estook.impresora where local_id = $1 and nombre = 'Caja'`,
+      [barCentro],
+    );
+    const [comandero] = await comoDuena<{ id: string }>(
+      `select id::text from estook.terminal where local_id = $1 and nombre = 'Móvil de Sara'`,
+      [barCentro],
+    );
+    losDatos(
+      await api.ejecutar(rosa, 'elegir_donde_imprime', {
+        terminal_id: comandero?.id,
+        impresora_id: sala?.id,
+      }),
+    );
+    const enSala = await losTrabajos(sala?.id ?? '');
+    const enCaja = await losTrabajos(caja?.id ?? '');
+    const { cuenta } = await unaMesaPedida(3);
+    losDatos(
+      await api.ejecutar(await enElComandero(SARA), 'cobrar', {
+        cobro_id: crypto.randomUUID(),
+        cuenta_id: cuenta,
+        que: 'toda',
+        importe: 4000,
+        pagos: [{ forma: 'tarjeta', importe: 4000 }],
+      }),
+    );
+    expect(await losTrabajos(sala?.id ?? '')).toBe(enSala + 1);
+    expect(await losTrabajos(caja?.id ?? '')).toBe(enCaja);
+  });
+});
+
+describe('en Estook, los cobros y el Z (0145)', () => {
+  it('cada cobro con su mesa, cómo se pagó, lo entregado y el cambio; y los totales', async () => {
+    const rosa = await api.entrar(ROSA);
+    const hoy = losDatos<{
+      totales: {
+        total: number;
+        efectivo: number;
+        tarjeta: number;
+        bizum: number;
+        cheque: number;
+        cobros: number;
+      };
+      cobros: {
+        importe: number;
+        titulo: string;
+        cobradoPor: string;
+        pagos: {
+          forma: string;
+          importe: number;
+          entregado: number | null;
+          cambio: number | null;
+        }[];
+        ticket: { numero: string };
+        turnoId: string;
+      }[];
+    }>(await api.consultar(rosa, 'los_cobros', { dias: '1' }));
+    expect(hoy.totales.cobros).toBe(hoy.cobros.length);
+    expect(hoy.totales.total).toBe(
+      hoy.totales.efectivo + hoy.totales.tarjeta + hoy.totales.bizum + hoy.totales.cheque,
+    );
+    expect(hoy.totales.total).toBe(hoy.cobros.reduce((suma, c) => suma + c.importe, 0));
+    // El de Sara en la caja: 10 € de tarjeta en la mesa, y 30 € en efectivo con 50 entregados.
+    const deSara = hoy.cobros.find(
+      (c) => c.cobradoPor === 'Sara' && c.pagos.some((p) => p.forma === 'efectivo'),
+    );
+    expect(deSara?.titulo).toBe('Mesa 2');
+    expect(deSara?.pagos).toEqual([
+      { forma: 'efectivo', importe: 3000, entregado: 5000, cambio: 2000 },
+      { forma: 'tarjeta', importe: 1000, entregado: null, cambio: null },
+    ]);
+    expect(deSara?.ticket.numero).toMatch(/^T-BC-2026-/);
+
+    // Los de una caja, que son los de su Z.
+    const deLaCaja = losDatos<{ cobros: { turnoId: string }[] }>(
+      await api.consultar(rosa, 'los_cobros', { turno_id: deSara?.turnoId ?? '' }),
+    );
+    expect(deLaCaja.cobros.every((c) => c.turnoId === deSara?.turnoId)).toBe(true);
+
+    // Una camarera no ve las ventas: tampoco los cobros.
+    expect(elFallo(await api.consultar(await api.entrar(SARA), 'los_cobros', {}))).toBe(
+      'sin_permiso',
+    );
+  });
+
+  it('«Descargar su Z»: el cierre de una caja en PDF, sin ser un documento fiscal', async () => {
+    const rosa = await api.entrar(ROSA);
+    const [cerrada] = await comoDuena<{ id: string }>(
+      `select id::text from estook.turno_de_caja where local_id = $1 and cerrada_en is not null
+        order by cerrada_en limit 1`,
+      [barCentro],
+    );
+    const pdf = losDatos<{ nombre: string; tipo: string }>(
+      await api.consultar(rosa, 'el_z_en_pdf', { turno_id: cerrada?.id ?? '' }),
+    );
+    expect(pdf.tipo).toBe('application/pdf');
+    expect(pdf.nombre).toMatch(/^z-caja-1-\d{4}-\d{2}-\d{2}\.pdf$/);
+    const html = motor.hechos.at(-1)?.html ?? '';
+    expect(html).toContain('Cierre de caja (Z)');
+    expect(html).toContain('Debería haber');
+    expect(html).toContain('No es un documento fiscal');
+    expect(
+      elFallo(
+        await api.consultar(await api.entrar(SARA), 'el_z_en_pdf', {
+          turno_id: cerrada?.id ?? '',
+        }),
+      ),
+    ).toBe('sin_permiso');
   });
 });

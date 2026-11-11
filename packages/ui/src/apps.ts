@@ -105,6 +105,11 @@ export interface Vista {
    */
   readonly modulo?: string;
   /**
+   * **Solo para quien tiene este permiso** (0145): en Negocio › Ventas, el Resumen y los Cobros son de
+   * quien ve las ventas, y Tickets y facturas de quien hace facturas. Sin él, la pestaña no sale.
+   */
+  readonly permiso?: Permiso;
+  /**
    * Solo sale si tiene algo (repaso del 9-oct y del 10-oct): «Sin precio», «Congelados» y
    * «Desactivados» vacías son opciones que no sirven y hacen la fila larga. **Mientras
    * no se sabe, no sale**: si saliera y luego se fuera, parpadea al entrar.
@@ -549,7 +554,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     icono: IconoServicio,
     acento: 'var(--color-app-servicio)',
     forma: 'panel',
-    queHace: 'El día a día: jornada, ventas del TPV, APPCC y cierre',
+    queHace: 'El día a día: la jornada, los empleados, el reparto y el APPCC',
     destinos: [
       {
         id: 'jornada',
@@ -592,22 +597,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         queContesta: '¿Quién vende más, por hora, y cómo va cada uno con su objetivo?',
         vistas: [],
       },
-      {
-        id: 'ventas',
-        nombre: 'Ventas',
-        icono: IconoNegocio,
-        queContesta: '¿Qué se ha vendido, y qué consumo ha generado?',
-        // «Tickets y facturas» llega primero, con T6 · 2 · 1 (0136): es la lista de lo que
-        // ha emitido el propio sistema de facturación del local, con su estado ante
-        // Hacienda (Anexo, 5.1). Las tres primeras salen de cualquier vía de ventas —CSV,
-        // conector o TPV— y llegan con M20. La ve quien hace facturas, también la sala (0137):
-        // hacer una factura no pide acceso a la parte fiscal. Quien solo consulta, como la
-        // gestoría, tiene su permiso, y lo que puede cada uno lo vuelve a mirar la API.
-        // «Del turno», «Del día» y «Por producto» eran carteles de M20 que nunca se llenaron:
-        // lo que iban a decir está en Jornadas › Información desde la 0142.
-        vistas: vistas('Tickets y facturas'),
-        permiso: 'accion.factura_de_un_ticket',
-      },
+      // **Ventas sale de Servicio** (0145; Richi, 10-nov): Tickets y facturas vive en Negocio › Ventas,
+      // con el Resumen y los Cobros. Lo de Hacienda y el dinero, en un sitio; Servicio, el día a día.
       {
         /*
           Delivery · el reparto, que entra por aquí.
@@ -666,7 +657,18 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         nombre: 'Ventas',
         icono: IconoNegocio,
         queContesta: '¿Cuánto ha entrado, y cuánto de eso se ha ido en género?',
-        vistas: [],
+        // **Tres pestañas** (0145; Richi, 10-nov): el Resumen (lo facturado, el ticket medio, el food
+        // cost y cómo se cobró), los Cobros uno a uno (lo entregado y el cambio) y Tickets y facturas,
+        // lo de Hacienda, que estaba en Servicio. Los camareros facturan en Estook TPV.
+        vistas: [
+          { id: 'resumen', nombre: 'Resumen', permiso: 'dato.ventas' },
+          { id: 'cobros', nombre: 'Cobros', permiso: 'dato.ventas' },
+          {
+            id: 'tickets-y-facturas',
+            nombre: 'Tickets y facturas',
+            permiso: 'accion.factura_de_un_ticket',
+          },
+        ],
       },
       {
         // **R2 (decisión 0053).** «Por correo al gerente: ventas, food cost, merma y

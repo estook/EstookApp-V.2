@@ -127,13 +127,6 @@ const POR_APP: Readonly<Record<string, LoDeAqui>> = {
       'Compararte con tu propio mes pasado, no con una media inventada.',
     ],
   },
-  cuaderno: {
-    donde: 'el Cuaderno',
-    podras: [
-      'Dictarle una incidencia y que la deje apuntada con su fecha y su responsable.',
-      'Que convierta una nota suelta en una tarea con fecha, si tú lo apruebas.',
-    ],
-  },
   ajustes: {
     donde: 'Ajustes',
     podras: [

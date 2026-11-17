@@ -175,8 +175,6 @@ const ANCHO: Readonly<Record<App['forma'], string>> = {
   lista: '',
   // El calendario **no lleva tope**: su rejilla es el contenido.
   calendario: 'max-w-none',
-  // Se lee y se escribe: una columna de medida legible, como cualquier documento.
-  cuaderno: 'max-w-[48rem]',
 };
 
 function Dentro({

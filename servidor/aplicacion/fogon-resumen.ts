@@ -149,7 +149,6 @@ const NOMBRE_DE_LA_APP: Readonly<Record<string, string>> = {
   equipo: 'Equipo',
   servicio: 'Servicio',
   negocio: 'Negocio',
-  cuaderno: 'Cuaderno',
   ajustes: 'Ajustes',
 };
 
@@ -170,7 +169,6 @@ const PARA_QUE_SIRVE: Readonly<Record<string, string>> = {
     'Equipo: quién está hoy, las personas y sus accesos, los fichajes y las incidencias, y el registro de jornada.',
   servicio: 'Servicio: el día a día del local y cerrar la caja.',
   negocio: 'Negocio: las ventas, los informes del día, la semana y el mes, y las reseñas.',
-  cuaderno: 'Cuaderno: notas e incidencias del local.',
   ajustes: 'Ajustes: el local, la marca, los avisos, el plan y las apps conectadas.',
 };
 

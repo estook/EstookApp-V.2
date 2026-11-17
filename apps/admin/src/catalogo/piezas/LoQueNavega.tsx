@@ -59,7 +59,7 @@ export function LoQueNavega() {
           alElegir={() => {
             setRueda(false);
           }}
-          pendientes={{ almacen: 3, servicio: 12, cuaderno: 1 }}
+          pendientes={{ almacen: 3, servicio: 12, calendario: 1 }}
         />
       </Pieza>
 

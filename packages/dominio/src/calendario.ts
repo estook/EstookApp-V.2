@@ -35,7 +35,8 @@ export const APP_DE_LA_CAPA: Readonly<Record<Capa, string>> = {
   caducidad: 'almacen',
   turno: 'equipo',
   appcc: 'servicio',
-  mantenimiento: 'cuaderno',
+  // Era de Cuaderno, que se quitó el 11-nov-2026 (0146): el mantenimiento es del APPCC.
+  mantenimiento: 'servicio',
   aviso: 'calendario',
 };
 

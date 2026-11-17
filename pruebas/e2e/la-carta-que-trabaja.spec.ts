@@ -47,6 +47,9 @@ test('agotados, leer tu carta en PDF y el equilibrio', async ({ page, request },
   await abrirSinQueSeCaiga(page, `${APP}#/carta/carta/por-secciones`);
   const croquetas = page.getByRole('button', { name: /Croquetas de jamón/ });
   await expect(croquetas.getByText('Agotado')).toBeVisible();
+  // Y con algo agotado salen las dos pestañas, «Agotados» en rojo (0146).
+  await expect(page.getByRole('tab', { name: 'Agotados' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Carta' })).toBeVisible();
 
   // «Ya hay» lo devuelve.
   await abrirSinQueSeCaiga(page, `${APP}#/carta/carta/agotados`);
@@ -55,6 +58,8 @@ test('agotados, leer tu carta en PDF y el equilibrio', async ({ page, request },
 
   // ── Leer tu carta, en PDF ──
   await abrirSinQueSeCaiga(page, `${APP}#/carta/carta/por-secciones`);
+  // Sin nada agotado, la carta se ve sin pestañas (0146).
+  await expect(page.getByRole('tab', { name: 'Agotados' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Más opciones de la carta' }).click();
   await page.getByRole('button', { name: /^Importar tu carta/ }).click();
   const leer = page.getByRole('dialog', { name: 'Importar tu carta' });

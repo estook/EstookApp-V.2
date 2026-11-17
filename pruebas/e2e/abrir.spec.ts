@@ -35,10 +35,10 @@ test('si Safari se cae por dentro, se vuelve a abrir una vez', async () => {
 
 test('si la página se estaba moviendo sola a su pestaña, se vuelve a abrir una vez', async () => {
   const { page, veces } = paginaQueFalla(
-    'page.goto: Navigation to "http://localhost:5174/#/cuaderno" is interrupted by another navigation to "http://localhost:5174/app/#/negocio/ventas"',
+    'page.goto: Navigation to "http://localhost:5174/#/calendario" is interrupted by another navigation to "http://localhost:5174/app/#/negocio/ventas"',
     null,
   );
-  await abrirSinQueSeCaiga(page, 'http://localhost:5174/#/cuaderno');
+  await abrirSinQueSeCaiga(page, 'http://localhost:5174/#/calendario');
   expect(veces()).toBe(2);
 });
 

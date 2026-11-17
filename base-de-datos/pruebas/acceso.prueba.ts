@@ -738,7 +738,6 @@ describe('M4 no ha roto M3', () => {
     expect(apps).toEqual([
       'app.calendario',
       'app.carta',
-      'app.cuaderno',
       'app.escandallos',
       'app.fogon',
       'app.panel',

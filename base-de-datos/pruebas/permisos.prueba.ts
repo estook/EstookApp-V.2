@@ -244,7 +244,8 @@ describe('dos roles sobre el mismo local', () => {
     expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'dato.coste_de_plato')).toBe(
       'ver_y_editar',
     );
-    expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'app.cuaderno')).toBe(
+    // La sala la ve de camarera, y de jefa de cocina la lleva: gana llevarla.
+    expect(await nivel('sara@ejemplo.estook.com', 'bar-centro', 'app.servicio')).toBe(
       'ver_y_editar',
     );
 

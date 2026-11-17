@@ -1183,3 +1183,10 @@
      la 0120, y lo que faltaba era más pequeño (lo que se hace desde Estook con la sesión de una persona).
      **En un análisis se separa lo comprobado en el código de lo que dice un documento**, y lo de seguridad,
      permisos o dinero se comprueba siempre antes de escribirlo (0146, sección 8).
+
+275. **Que la vuelta salga en verde no basta: tiene que verla el pull request.** En la #190 (17-nov) la vuelta
+     que lanzó «Las fotos nuevas» sobre su commit salió en verde, pero GitHub no la enlazó con el pull request,
+     que seguía esperando las tres comprobaciones obligatorias («Expected — waiting»). **Se mira el pull
+     request (`gh pr checks`), no solo la vuelta**; y si pasa, un commit vacío lanza una vuelta normal que sí
+     se enlaza. Y las vueltas de `main` que se quedan «en cola» sin ningún trabajo dentro (11-nov) no se pueden
+     cancelar ni borrar, ni desde la web ni desde la API: son de GitHub, y no frenan las demás.

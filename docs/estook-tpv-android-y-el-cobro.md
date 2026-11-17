@@ -3,7 +3,7 @@
 **Investigado el 6 de noviembre de 2026**, a petición de Richi. Las fuentes están al final, con su
 fecha. **Nada de esto se ha probado todavía con un aparato de verdad.** Lo marcado **[VERIFICAR]**
 no se programa hasta comprobarlo con el proveedor o con el aparato en la mano (regla 13 del Plan).
-La decisión que sale de aquí es la [0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), **ya contestada por Richi el mismo día** (apartado 8). **El 11-nov Richi reabrió con qué proveedor se cobra y cuánto cobra Estook: apartado 9**, que manda sobre «Stripe primero».
+La decisión que sale de aquí es la [0134](decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md), **ya contestada por Richi el mismo día** (apartado 8). **El 11-nov Richi reabrió con qué proveedor se cobra y cuánto cobra Estook: apartado 9**, que manda sobre «Stripe primero». **El 17-nov, los dos aparatos, los precios de cada proveedor y el precio de Pro: apartado 10**, lo último.
 
 ## En corto
 
@@ -350,6 +350,122 @@ suscripción, no comisión. Como referencia, Lightspeed cobra 49 € por cada ca
 (cobrar con tarjeta en el aparato) no empieza sin las dos respuestas**; T8 · 1 (la app de Android)
 no depende de ellas.
 
+## 10 · Lo que preguntó Richi el 17-nov: dos aparatos, cuánto cuesta cada proveedor y el precio de Pro
+
+**Richi, 17-nov:** «Quiero que no cobren mucho por dispositivo o comisión, y que me expliques bien
+los precios. Lo veo bien: podemos cobrar por aparato extra al mes. Pero ¿depende del administrador
+de pagos? Si compran un Sunmi y cobran comisión por compra no hay que pagar extra, pero a lo mejor
+otros sí piden un dinero al mes. Y que funcionen en Sunmi. ¿Añadimos otra opción, un Android solo
+con Tap to Pay? Dos extras: un Sunmi con impresora y NFC, y otro solo Android. Necesito saber
+costes, si se alquilan… porque habría que modificar el precio base de Pro, tal vez.»
+
+Buscado el 17-nov. **Lo que no viene de la página oficial del proveedor va marcado
+[VERIFICAR]**: son precios de comparadores o de tiendas, y se confirman por escrito antes de elegir.
+
+### 10.1 Lo primero: son dos facturas distintas, y no se mezclan
+
+Esto es lo que lía, y se aclara así:
+
+| Quién cobra               | Qué cobra                                                                                              | A quién                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| **El proveedor de pagos** | Su comisión por cada cobro con tarjeta, y a veces una cuota al mes o el aparato (comprado o alquilado) | Al local, directamente          |
+| **Estook**                | La suscripción (Pro), y, si se decide, **un fijo al mes por cada aparato que cobra con tarjeta**       | Al local, en su cuota de Estook |
+
+- **Lo que cobre el proveedor no pasa nunca por Estook**: el contrato es del local con su proveedor
+  (Estook no toca el dinero, apartado 4).
+- **Lo que cobra Estook no depende del proveedor**: es lo que vale el programa en ese aparato. Si el
+  proveedor ya cobra comisión, Estook no la cobra otra vez; y si el proveedor pide una cuota al mes,
+  esa cuota es del proveedor, no de Estook.
+- **Lo que sí depende del proveedor es lo que paga el local en total.** Por eso, al venderlo, se le
+  enseña la cuenta entera (10.4), para que elija con lo que le sale más barato.
+
+### 10.2 Los dos aparatos que propone Richi, y uno más que ya existe
+
+| Aparato                                       | Ejemplo                                                        | Qué cobra                                 | Impresora | Cuánto cuesta (orientativo)                                                                 |
+| --------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------- | --------- | ------------------------------------------------------------------------------------------- |
+| **A · TPV portátil con impresora y NFC**      | **Sunmi V3 PLUS** con Google (o el V3)                         | Sin contacto (tarjeta, móvil, reloj)      | Sí, 80 mm | **≈ 550 €** comprado, en tiendas de Europa (de 546 € + IVA a 549 € con IVA) **[VERIFICAR]** |
+| **B · Android solo, con Tap to Pay**          | El móvil Android del camarero, o una tablet con NFC            | Sin contacto                              | No        | **0 €** si ya lo tiene; un móvil compatible nuevo, desde unos 150 € **[VERIFICAR]**         |
+| **C · El datáfono del proveedor** (ya existe) | Sunmi **P3** de Viva (345 € + IVA), los de Teya, los del banco | **Todo**: chip, PIN, banda y sin contacto | Sí        | Lo vende o lo alquila el proveedor                                                          |
+
+- **A y B solo cobran sin contacto.** Las tarjetas que piden chip (pocas en España, pero las hay) se
+  cobran con un lector Bluetooth del mismo proveedor (el WisePad 3 de Stripe, 59 € + IVA) o con el
+  datáfono de siempre, que **no se quita nunca** (nivel 1 del Anexo, 10.7).
+- **A y B son el mismo programa**: Estook TPV para Android (T8 · 1). Lo único que cambia es que A
+  imprime. Para Estook son **dos formas de vincular el aparato**, «TPV portátil» y «Comandero que
+  cobra», y las dos caben en lo decidido en la 0134.
+- **C es lo de hoy, «sin conectar»**: el camarero teclea el importe en el datáfono y marca «Cobrado
+  con tarjeta» en Estook. Conectarlo «de app a app» (que Estook mande el importe solo) depende de
+  cada proveedor (10.3).
+- **¿Se alquilan?** Ningún vendedor de Sunmi en España publica alquiler. Sunmi tiene un distribuidor
+  oficial en España (Iberoti) al que se le puede pedir **[VERIFICAR]**. Los proveedores de pagos sí
+  ponen el aparato dentro de su cuota: Teya incluye sus aparatos en el plan; los bancos cobran una
+  cuota por el datáfono.
+
+### 10.3 Los proveedores, uno a uno
+
+| Proveedor                 | Comisión                                                                                    | Cuota al mes                                                                                                         | Aparato                                              | ¿Se puede conectar con Estook?                                                                                                 | ¿Funciona en un Sunmi V3 (A)?                                |
+| ------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| **Banco** (Redsys detrás) | **≈ 0,36 %** de media en restaurantes (Banco de España, 1.er trimestre 2026)                | Suele haber, por el datáfono; los comparadores hablan de 10 a 30 € **[VERIFICAR]**                                   | El suyo, en alquiler                                 | **CaixaBank (Comercia)**: documentado en público, en sus datáfonos Android y con su app «Smartphone TPV»; los demás, sin saber | Con la app «Smartphone TPV» de CaixaBank, sí **[VERIFICAR]** |
+| **Stripe**                | **1,4 % + 0,10 €**, y **+ 0,10 €** con Tap to Pay (su página oficial)                       | **Ninguna** (el móvil del lector, 9 € al mes, si se quiere)                                                          | Lectores de 59 a 289 € + IVA                         | **Sí**: un SDK para todo; ya está dentro de Estook (la cuota)                                                                  | **Sí**: nombra el V3 y el V3 MIX                             |
+| **Adyen**                 | No la publica para España; es para empresas grandes **[VERIFICAR]**                         | Sin publicar                                                                                                         | El local pone el Android                             | Sí, con su SDK                                                                                                                 | Pide «Android con NFC que no sea datáfono»                   |
+| **SumUp**                 | **1,49 %**; con su suscripción, menos (los comparadores: 19 €/mes y 0,75 %) **[VERIFICAR]** | Ninguna, o la de la suscripción                                                                                      | Lectores propios                                     | SDK de Tap to Pay **con permiso**, tras revisión                                                                               | Sin lista de aparatos                                        |
+| **Viva**                  | Sin cifra pública legible; mínimo 0,03 € por cobro; **0 % solo con su cuenta y su tarjeta** | Sin publicar                                                                                                         | Su Sunmi **P3**, 345 € + IVA                         | **Sí, de app a app**, desde Android 8.1                                                                                        | Su app, en cualquier Android con NFC                         |
+| **Teya**                  | Dentro del tramo; **1,5 %** sobre lo que pase del tramo (comparadores) **[VERIFICAR]**      | **Por tramos**: 29,90 € hasta 2.500 €/mes · 44,90 € hasta 5.000 € · 59,90 € hasta 10.000 € · 169,90 € hasta 40.000 € | Incluidos en el plan; uno más, **desde 3 a 6 €/mes** | Sin documentación pública para terceros **[VERIFICAR]**                                                                        | Sin saber                                                    |
+| **myPOS**                 | **1,45 % + 0,05 €**                                                                         | **Ninguna**                                                                                                          | De 29 a 249 €                                        | Solo apps firmadas por ellos, en sus aparatos                                                                                  | No: solo sus aparatos                                        |
+| **Square**                | 1,25 % + 0,05 €                                                                             | Ninguna                                                                                                              | Los suyos                                            | **No**: su Tap to Pay solo funciona en las apps de Square                                                                      | No                                                           |
+
+### 10.4 Lo que le cuesta al mes a un bar, con cada uno
+
+Un bar que cobra **30.000 € al mes con tarjeta en 2.000 cobros** (ticket medio de 15 €):
+
+| Con quién                          | Lo que le cuesta al mes                                      |
+| ---------------------------------- | ------------------------------------------------------------ |
+| **Su banco**                       | **≈ 110 €** de comisión, + la cuota del datáfono si la tiene |
+| **Teya** (tramo de hasta 40.000 €) | **≈ 170 €** si su tramo lo cubre todo **[VERIFICAR]**        |
+| **SumUp** con suscripción          | ≈ 245 € (0,75 % + 19 €) **[VERIFICAR]**                      |
+| **SumUp** sin suscripción          | ≈ 447 €                                                      |
+| **myPOS**                          | ≈ 535 €                                                      |
+| **Stripe**, con Tap to Pay         | **≈ 820 €** (los 0,20 € fijos de cada cobro pesan mucho)     |
+
+**Y un bar pequeño**, de **5.000 € al mes en 500 cobros** (10 €): el banco, unos 18 € más su cuota;
+Teya, 44,90 €; SumUp, unos 75 €; Stripe, unos 170 €.
+
+**Lo que sale:** para un bar, **el banco es lo más barato** con diferencia, y Teya es predecible.
+Stripe es el más fácil de conectar y el más caro en tickets pequeños.
+
+### 10.5 Lo que recomienda la IA
+
+1. **El precio de Pro no se toca: 99 € + IVA.** Pro sigue siendo Estook TPV con el datáfono que ya
+   tenga el local, sin conectar (nivel 1), que vale con cualquier banco y no le cuesta nada a nadie.
+2. **El cobro integrado se paga aparte, por aparato y al mes, sea cual sea el proveedor** (lo que
+   pidió Richi). **Una sola tarifa** para los dos aparatos (A y B), para que sea fácil de explicar:
+   **del orden de 5 a 9 € al mes por aparato [sin decidir]**. Como referencia, Teya cobra de 3 a 6 €
+   al mes por un aparato de más, y Lightspeed 49 € por una caja de más **[VERIFICAR]**.
+3. **El primer proveedor, el que conecte con el banco del local**: empezar por **CaixaBank** (su
+   documentación es pública y es el banco con más comercios), y tener **Stripe** como el camino que
+   funciona el primer día para quien no quiera esperar a su banco. **Viva**, si contesta con buenas
+   condiciones. Adyen, myPOS y Square, no.
+4. **Los dos aparatos de Richi, sí**: el **TPV portátil** (Sunmi V3 PLUS, con impresora) y el
+   **Android con Tap to Pay** (el móvil del camarero). Mismo programa y mismo precio en Estook.
+5. **Nada de esto se programa sin las condiciones por escrito** (regla 13): qué cobra el proveedor
+   al local, qué le pide a Estook para conectarse, en qué aparatos funciona y su entorno de pruebas.
+
+### 10.6 Lo que hay que preguntar a cada proveedor (para los correos de Richi)
+
+1. ¿Tenéis integración para un software de TPV de hostelería? ¿De app a app, con SDK o por la
+   nube? ¿Hay documentación y un entorno de pruebas?
+2. ¿Qué pide para ser integrador: contrato, certificación, plazo y coste para el programa?
+3. ¿En qué aparatos funciona? En concreto: **Sunmi V3 PLUS (con Google)**, Sunmi P3, y un móvil
+   Android normal con NFC.
+4. ¿Qué paga el restaurante? Comisión por cobro (tarjeta de particular y de empresa), cuota al mes,
+   **el aparato** (compra o alquiler, y cuánto), permanencia.
+5. Un ejemplo: un bar con **30.000 € al mes en 2.000 cobros**. ¿Cuánto le sale al mes?
+6. ¿Las propinas, las devoluciones y anular un cobro van por la integración?
+7. ¿Cobra algo el integrador (Estook) o se queda algo? (**Estook no quiere comisión**: solo saberlo.)
+
+**Sin decidir, y es de Richi** (cuando lleguen las respuestas, y antes de T8 · 2): con qué proveedor
+se empieza, y **cuánto es el fijo por aparato**.
+
 ## Fuentes
 
 Leídas el 6 de noviembre de 2026.
@@ -374,3 +490,16 @@ Leídas el 11 de noviembre de 2026, para el apartado 9.
 - Banco Sabadell · [La gama TPV Smart](https://www.bancsabadell.com/bsnacional/en/business/tpv/gama-tpv-smart)
 - Square · [Tarifas en España](https://squareup.com/es/es/legal/general/fees) · SumUp · [SumUp frente a myPOS](https://www.sumup.com/es-es/compare/sumup-vs-mypos/)
 - Precios de otros TPV · [Lightspeed Restaurant](https://lightspeedhq.com/es/tpv/restaurant/precios) · [Comparativa de TPV para restaurantes de 2026](https://hackceleration.com/es/labs/mejor/tpv-restaurantes)
+
+Leídas el 17 de noviembre de 2026, para el apartado 10.
+
+- Stripe · [Precios en España](https://stripe.com/es/pricing) (1,4 % + 0,10 €, Tap to Pay + 0,10 €, lectores de 59 a 289 € + IVA)
+- Teya · [Planes y precios](https://www.teya.com/es/pricing) · [Tarifas, en su ayuda](https://help.teya.com/hc/es-es/articles/42758479807249-Conoce-las-tarifas-y-precios-de-Teya)
+- Viva · [Precios en España](https://www.viva.com/es-es/pricing) · [Su Sunmi P3](https://www.viva.com/es-es/shop/terminals/vivapos-p3scan)
+- myPOS · [Precios y comisiones](https://www.mypos.com/es-es/pricing-and-fees)
+- SumUp · [SumUp frente a Stripe](https://www.sumup.com/es-es/compare/sumup-vs-stripe/) · [Tap to Pay](https://www.sumup.com/es-es/tap-to-pay/) · [SDK de Tap to Pay para Android](https://developer.sumup.com/terminal-payments/sdks/android-ttp/)
+- Adyen · [Tap to Pay en Android](https://www.adyen.com/devices/tap-to-pay-on-android) · [Su guía](https://docs.adyen.com/point-of-sale/mobile-android/build/tap-to-pay)
+- CaixaBank · [Su Tap to Pay](https://www.caixabank.es/empresa/business/tap-to-pay.html) · [La app que convierte un Android en datáfono (2023)](https://caixabank.com/en/headlines/news/caixabank-becomes-the-first-financial-institution-in-spain-to-launch-an-app-that-allows-mobile-phones-to-be-used-as-point-of-sale-devices-without-the-need-for-an-additional-device)
+- Redsys · [Pago presencial](https://redsys.es/en/pago-presencial) · [Integración inApp para Android](https://pagosonline.redsys.es/desarrolladores-inicio/documentacion-operativa/integracion-inapp-para-dispositivos-android/)
+- Sunmi · [La familia P3](https://www.sunmi.com/es/p3-family) · [Distribuidor en España (Iberoti)](https://iberoti.com/categoria-producto/marcas/sunmi/) · [V3 PLUS con Google, en una tienda](https://shopnfc.com/en/nfc-printers/801-sunmi-v3-plus-nfc-gms-edla.html)
+- Comparadores (sin valor oficial) · [Comisiones de TPV en 2026](https://rankiabusiness.com/comisiones-tpv/) · [Datáfonos libres](https://finantres.com/datafono-libre/)

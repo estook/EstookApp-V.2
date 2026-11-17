@@ -313,12 +313,12 @@ test.describe('criterio · la API a pelo', () => {
     const cuerpo = (await respuesta.json()) as { datos: { permisos: Record<string, string> } };
     const permisos = Object.keys(cuerpo.datos.permisos);
     expect(permisos.filter((p) => p.startsWith('dato.'))).toEqual([]);
-    // Y sus apps de la rueda son cinco (mas Panel y Fogon, que no son sectores): desde
-    // M9 · 2 (0087), Escandallos para ver la ficha de cada plato, sin un euro.
+    // Y sus apps de la rueda son cuatro (mas Panel y Fogon, que no son sectores): desde
+    // M9 · 2 (0087), Escandallos para ver la ficha de cada plato, sin un euro. (Eran cinco
+    // con el Cuaderno, que se quitó en la 0146.)
     expect(permisos.filter((p) => p.startsWith('app.')).sort()).toEqual([
       'app.calendario',
       'app.carta',
-      'app.cuaderno',
       'app.escandallos',
       'app.fogon',
       'app.panel',

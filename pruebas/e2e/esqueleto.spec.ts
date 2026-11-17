@@ -4,7 +4,7 @@ import { abrirSinQueSeCaiga, recargarSinQueSeCaiga, vigilarLosErrores } from './
 /**
  * M3 · aceptacion, punto por punto.
  *
- * «**Terminado cuando:** se navega por las ocho apps sin un salto raro en movil
+ * «**Terminado cuando:** se navega por las siete apps sin un salto raro en movil
  * pequeno real; la rueda funciona **con arrastre y con teclado**; deshacer
  * funciona en **tres flujos**; y todos los widgets tienen su version "todavia no
  * tengo datos".»
@@ -19,7 +19,7 @@ import { abrirSinQueSeCaiga, recargarSinQueSeCaiga, vigilarLosErrores } from './
 const APP = 'http://localhost:5174/';
 
 /**
- * Las ocho de la rueda, con **el destino en el que entra cada una**.
+ * Las siete de la rueda, con **el destino en el que entra cada una**.
  *
  * Ojo con la diferencia, que es la de M6½: el titulo de la pantalla ya no es el
  * nombre de la app, es **el destino**, porque es donde estas de verdad. El nombre
@@ -27,7 +27,7 @@ const APP = 'http://localhost:5174/';
  * lista: Equipo entra en Personas, porque su «Hoy» es M13 y entrar ahi seria
  * entrar en un cartel.
  */
-const LAS_OCHO = [
+const LAS_SIETE = [
   { id: 'almacen', nombre: 'Almacén', entra: 'Resumen' },
   { id: 'escandallos', nombre: 'Escandallos', entra: 'Resumen' },
   { id: 'carta', nombre: 'Carta', entra: 'Carta' },
@@ -36,7 +36,6 @@ const LAS_OCHO = [
   { id: 'equipo', nombre: 'Equipo', entra: 'Resumen' },
   { id: 'servicio', nombre: 'Servicio', entra: 'Jornadas' },
   { id: 'negocio', nombre: 'Negocio', entra: 'Ventas' },
-  { id: 'cuaderno', nombre: 'Cuaderno', entra: 'Incidencias' },
 ];
 
 /**
@@ -110,7 +109,7 @@ async function entrar(page: Page, correo: string) {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 }
 
-/** Entra como quien ve las ocho apps: la gerente del Bar Centro. */
+/** Entra como quien ve las siete apps: la gerente del Bar Centro. */
 async function comoGerente(page: Page) {
   await entrar(page, 'rosa@ejemplo.estook.com');
 }
@@ -126,15 +125,15 @@ async function desborda(page: Page): Promise<boolean> {
   );
 }
 
-// ── 1 · Se navega por las ocho sin un salto raro ─────────────────────────────
+// ── 1 · Se navega por las siete sin un salto raro ─────────────────────────────
 
-test.describe('las ocho apps', () => {
+test.describe('las siete apps', () => {
   test('se abren todas, con su nombre y su primera pestana, sin desbordar', async ({ page }) => {
     const errores = vigilarLosErrores(page);
 
     await comoGerente(page);
 
-    for (const app of LAS_OCHO) {
+    for (const app of LAS_SIETE) {
       await abrir(page, `/${app.id}`);
 
       // El titulo es el destino, y el nombre de la app va encima. Se comprueban
@@ -169,7 +168,7 @@ test.describe('las ocho apps', () => {
   });
 
   test('cada destino construido se abre, y ninguno lleva a un hueco', async ({ page }) => {
-    // Recorre todos los destinos de las ocho apps de un tirón: con la máquina cargada
+    // Recorre todos los destinos de las siete apps de un tirón: con la máquina cargada
     // pasaba del medio minuto de siempre (26-sep, en local). No es lentitud de una
     // pantalla —cada una tiene su espera—, es que son muchas.
     test.setTimeout(90_000);
@@ -189,7 +188,7 @@ test.describe('las ocho apps', () => {
     await comoGerente(page);
 
     let abiertos = 0;
-    for (const app of LAS_OCHO) {
+    for (const app of LAS_SIETE) {
       await abrir(page, `/${app.id}`);
 
       // Los destinos de esta app, tal como los ofrece su propia navegacion: el
@@ -244,11 +243,12 @@ test.describe('las ocho apps', () => {
     // posicion**, pero cuando se llega a el escribiendo la direccion tiene que
     // decir la verdad y con su modulo, no quedarse en blanco.
     await comoGerente(page);
-    // Antes eran los Menús, que M10 · 2 ya construyó (0104): ahora, las Tareas.
-    await abrir(page, '/calendario/tareas');
+    // Antes eran los Menús, que M10 · 2 ya construyó (0104), y después las Tareas, que se
+    // quitaron en la 0146: ahora, el APPCC.
+    await abrir(page, '/servicio/appcc');
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tareas');
-    await expect(page.getByText('M14 · Calendario').first()).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('APPCC');
+    await expect(page.getByText('M16 · Servicio, APPCC y trazabilidad').first()).toBeVisible();
   });
 
   test('siempre hay forma de volver que no es el boton del navegador', async ({ page }) => {
@@ -284,7 +284,7 @@ test.describe('las ocho apps', () => {
 
 /*
  * La rueda **es de movil**. En escritorio, B5 manda otra cosa: «barra superior y
- * menu lateral propio», con las ocho apps y sus desplegables. Por eso estas
+ * menu lateral propio», con las siete apps y sus desplegables. Por eso estas
  * pruebas fijan el ancho de un movil aunque corran en el proyecto de escritorio:
  * lo que se comprueba es la rueda, no el tamano de la ventana.
  */
@@ -296,7 +296,7 @@ test.describe('la rueda de apps', () => {
 
     await abrirLaRueda(page);
     await expect(page.getByRole('menu', { name: 'Elige una app' })).toBeVisible();
-    await expect(page.getByRole('menuitem')).toHaveCount(8);
+    await expect(page.getByRole('menuitem')).toHaveCount(7);
   });
 
   test('las apps que el rol no tiene no aparecen, y los sectores se reparten', async ({ page }) => {
@@ -304,9 +304,9 @@ test.describe('la rueda de apps', () => {
     await comoCamarera(page);
 
     await abrirLaRueda(page);
-    // Camarera: calendario, carta, servicio, cuaderno y, desde M9 · 2 (0087),
-    // Escandallos para ver la ficha de cada plato, sin un euro.
-    await expect(page.getByRole('menuitem')).toHaveCount(5);
+    // Camarera: calendario, carta, servicio y, desde M9 · 2 (0087), Escandallos para ver
+    // la ficha de cada plato, sin un euro. (Eran cinco con el Cuaderno, quitado en la 0146.)
+    await expect(page.getByRole('menuitem')).toHaveCount(4);
     await expect(page.getByRole('menuitem', { name: /Almacén/ })).toHaveCount(0);
   });
 
@@ -349,9 +349,9 @@ test.describe('la rueda de apps', () => {
     await page.keyboard.press('ArrowLeft');
     await page.keyboard.press('Enter');
 
-    // La ultima de la rueda es Cuaderno. Se mira la direccion: el titulo de la
-    // pantalla es el destino —«Incidencias»— y no el nombre de la app.
-    await expect(page).toHaveURL(new RegExp('#/cuaderno(/|$)'));
+    // La ultima de la rueda es Negocio (era Cuaderno hasta la 0146). Se mira la
+    // direccion: el titulo de la pantalla es el destino —«Ventas»— y no el nombre de la app.
+    await expect(page).toHaveURL(new RegExp('#/negocio(/|$)'));
   });
 
   test('funciona con arrastre desde el centro', async ({ page }) => {
@@ -390,7 +390,7 @@ test.describe('la rueda de apps', () => {
     await expect(page).toHaveURL(new RegExp('#/almacen(/|$)'));
   });
 
-  test('los ocho nombres caben dentro del circulo', async ({ page }) => {
+  test('los siete nombres caben dentro del circulo', async ({ page }) => {
     // Los nombres se escriben en horizontal, asi que en los sectores de las tres
     // y de las nueve crecen **hacia fuera**. «Escandallos» se salia del circulo,
     // y en una captura no se nota: se ve cuando alguien lo mira de cerca. Esto lo
@@ -623,10 +623,10 @@ test.describe('deshacer universal', () => {
 // ── 4 · Todo tiene su «todavía no tengo datos» ───────────────────────────────
 
 test.describe('estados vacios', () => {
-  test('las ocho apps dicen que ira ahi, en vez de quedarse en blanco', async ({ page }) => {
+  test('las siete apps dicen que ira ahi, en vez de quedarse en blanco', async ({ page }) => {
     await comoGerente(page);
 
-    for (const app of LAS_OCHO) {
+    for (const app of LAS_SIETE) {
       await abrir(page, `/${app.id}`);
 
       if (APPS_CON_CONTENIDO.includes(app.id)) {

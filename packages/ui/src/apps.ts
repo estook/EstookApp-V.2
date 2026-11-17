@@ -1,10 +1,8 @@
 import {
-  IconoAjustes,
   IconoAtencion,
   IconoBorrar,
   IconoCalendario,
   IconoCarta,
-  IconoCuaderno,
   IconoDocumento,
   IconoEquipo,
   IconoEscandallos,
@@ -89,9 +87,8 @@ type AppDeLaRueda = (typeof ORDEN_DE_LA_RUEDA)[number];
  * | `panel`      | Rejilla de tarjetas, la cifra manda                        |
  * | `lista`      | Lista acotada con su ficha en panel lateral, sin taparla   |
  * | `calendario` | A todo lo ancho, sin tope de anchura: la rejilla es el eje |
- * | `cuaderno`   | Una sola columna estrecha, de leer y escribir              |
  */
-export type FormaDeApp = 'panel' | 'lista' | 'calendario' | 'cuaderno';
+export type FormaDeApp = 'panel' | 'lista' | 'calendario';
 
 export interface Vista {
   /** El trozo de la ruta: `/almacen/productos/bajo-minimo`. */
@@ -115,6 +112,11 @@ export interface Vista {
    * no se sabe, no sale**: si saliera y luego se fuera, parpadea al entrar.
    */
   readonly soloSiTieneAlgo?: true;
+  /**
+   * **En rojo** (Richi, 11-nov; 0146, 1.5): «Agotados» solo sale si hay algún plato agotado, y
+   * entonces en rojo, para que se vea que algo no se puede vender.
+   */
+  readonly enRojo?: true;
 }
 
 export interface Destino {
@@ -199,9 +201,6 @@ export const MODULOS: Readonly<Record<string, string>> = {
   M9: 'M9 · Escandallos',
   M14: 'M14 · Calendario',
   M16: 'M16 · Servicio, APPCC y trazabilidad',
-  M17: 'M17 · Cuaderno',
-  M20: 'M20 · Ventas, emparejamiento y consumo',
-  M21: 'M21 · Negocio, analítica y Estook Pulse',
   M29: 'M29 · Canales de reparto e integraciones',
 };
 
@@ -399,7 +398,13 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         icono: IconoCarta,
         queContesta: '¿Qué vendo y a qué precio?',
         // **Adelantada a M9 · 1** (0086): el plato nace aquí. Los agotados, M10 · 1 (0102).
-        vistas: vistas('Por secciones', 'Todos los platos', 'Agotados'),
+        // **Sin pestañas** (Richi, 11-nov; 0146, 1.5): se entra y se ve la carta. «Todos los platos»
+        // salió; «Agotados» solo sale, en rojo, si hay algún plato agotado, y entonces la de siempre
+        // se llama «Carta». Su dirección sigue siendo `por-secciones`, para no romper ningún enlace.
+        vistas: [
+          { id: 'por-secciones', nombre: 'Carta' },
+          { id: 'agotados', nombre: 'Agotados', soloSiTieneAlgo: true, enRojo: true },
+        ],
       },
       {
         // Los canales de venta, con su comisión (0086): Uber Eats el primero.
@@ -423,15 +428,10 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         nombre: 'Análisis',
         icono: IconoNegocio,
         queContesta: '¿Qué funciona, qué pierde dinero y qué quitaría?',
-        // El equilibrio, con Omnes (M10 · 1, 0102), y tu zona, con Fogón (M10 · 2, 0104).
-        // Lo que deja cada plato necesita lo vendido: con Estook TPV (M20, 0103).
-        vistas: vistas(
-          'Equilibrio',
-          'Tu zona',
-          ['Matriz', 'M20'],
-          ['Por canal', 'M20'],
-          ['Histórico', 'M20'],
-        ),
+        // El equilibrio, con Omnes (M10 · 1, 0102), y tu zona, con Fogón (M10 · 2, 0104). Lo que deja
+        // cada plato vive en Servicio › Jornadas › Información, «Tu carta en cuatro» (0142): las tres
+        // pestañas que lo esperaban aquí se quitaron el 11-nov-2026 (0146).
+        vistas: vistas('Equilibrio', 'Tu zona'),
       },
     ],
   },
@@ -456,14 +456,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         vistas: vistas(['Mes', 'M14'], ['Semana', 'M14'], ['Día', 'M14']),
         modulo: 'M14',
       },
-      {
-        id: 'tareas',
-        nombre: 'Tareas',
-        icono: IconoReloj,
-        queContesta: '¿Qué limpiezas, revisiones y mantenimientos toca hacer?',
-        vistas: vistas(['Pendientes', 'M14'], ['Periódicas', 'M14'], ['Hechas', 'M14']),
-        modulo: 'M14',
-      },
+      // **Tareas se quitó el 11-nov-2026** (0146): las limpiezas periódicas son controles del
+      // APPCC (M16b), y las revisiones y las visitas, recordatorios del Calendario (M14).
       {
         id: 'turnos',
         nombre: 'Turnos',
@@ -681,26 +675,8 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         queContesta: '¿Cómo fue ayer, la semana pasada y el mes pasado?',
         vistas: vistas('Día', 'Semana', 'Mes'),
       },
-      {
-        // Estaba en la tabla de B5 desde el principio y **no estaba en el
-        // codigo**: el catalogo ponia «Reseñas» en su sitio y la prueba que
-        // deberia haberlo cazado llevaba los valores copiados a mano, asi que
-        // salia en verde diciendo que todo cuadraba.
-        id: 'pulse',
-        nombre: 'Pulse',
-        icono: IconoAtencion,
-        queContesta: '¿Cuál es la salud del negocio, y qué la está bajando?',
-        vistas: [],
-        modulo: 'M21',
-      },
-      {
-        id: 'costes',
-        nombre: 'Costes',
-        icono: IconoEscandallos,
-        queContesta: '¿Dónde se va el dinero?',
-        vistas: [],
-        modulo: 'M21',
-      },
+      // **Pulse y Costes se quitaron el 11-nov-2026** (0146): Pulse sale del plan, y lo de Costes
+      // ya estaba en Ventas, Mermas, Escandallos y Consumo.
       {
         // **Con la nota en Google desde R2 (0053)**: la nota, sus reseñas y cómo ha
         // ido, puesta al día cada tres días y al mirarla. Leer y contestar cada reseña
@@ -714,48 +690,14 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     ],
   },
 
-  // ── Cuaderno · M17 ─────────────────────────────────────────────────────────
-  'app.cuaderno': {
-    id: 'cuaderno',
-    nombre: 'Cuaderno',
-    permiso: 'app.cuaderno',
-    icono: IconoCuaderno,
-    acento: 'var(--color-app-cuaderno)',
-    forma: 'cuaderno',
-    queHace: 'Qué ha ocurrido, qué hay que revisar y qué debe saber el turno siguiente',
-    destinos: [
-      {
-        id: 'incidencias',
-        nombre: 'Incidencias',
-        icono: IconoAtencion,
-        queContesta: '¿Qué ha pasado y qué está sin resolver?',
-        vistas: vistas(['Abiertas', 'M17'], ['Cerradas', 'M17']),
-        modulo: 'M17',
-      },
-      {
-        id: 'notas',
-        nombre: 'Notas',
-        icono: IconoCuaderno,
-        queContesta: '¿Qué tiene que saber el turno siguiente?',
-        vistas: [],
-        modulo: 'M17',
-      },
-      {
-        id: 'equipos',
-        nombre: 'Equipos',
-        icono: IconoAjustes,
-        queContesta: '¿Qué máquinas hay y cuándo les toca revisión?',
-        vistas: [],
-        modulo: 'M17',
-      },
-    ],
-  },
+  // **Cuaderno se quitó el 11-nov-2026** (0146): lo del turno siguiente va en el Tablón, las notas
+  // personales en el Calendario y el mantenimiento en el APPCC.
 };
 
-/** Las ocho, en el orden de la rueda. */
+/** Las siete, en el orden de la rueda. */
 export const APPS: readonly App[] = ORDEN_DE_LA_RUEDA.map((permiso) => CATALOGO[permiso]);
 
-/** El Panel no es una de las ocho: es la pantalla de inicio y no entra en la rueda. */
+/** El Panel no es una de las siete: es la pantalla de inicio y no entra en la rueda. */
 export const PANEL = {
   id: 'panel',
   nombre: 'Panel',

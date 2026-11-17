@@ -63,7 +63,8 @@ async function locales(correo: string): Promise<string[]> {
 }
 
 describe('mis_permisos · lo que la rueda ensena', () => {
-  it('la camarera recibe cinco apps de la rueda, y ninguna mas', async () => {
+  it('la camarera recibe cuatro apps de la rueda, y ninguna mas', async () => {
+    // Cuatro desde que se quitó el Cuaderno (0146, migración 0118).
     // Escandallos, para ver la ficha sin un euro (M9 · 2, 0087).
     const suyos = await permisosDe('sara@ejemplo.estook.com', 'bar-centro');
     const apps = Object.keys(suyos).filter((p) => p.startsWith('app.'));
@@ -71,7 +72,6 @@ describe('mis_permisos · lo que la rueda ensena', () => {
     expect(apps.sort()).toEqual([
       'app.calendario',
       'app.carta',
-      'app.cuaderno',
       'app.escandallos',
       'app.fogon',
       'app.panel',
@@ -100,7 +100,6 @@ describe('mis_permisos · lo que la rueda ensena', () => {
       'app.equipo',
       'app.servicio',
       'app.negocio',
-      'app.cuaderno',
     ];
 
     for (const app of deLaRueda) {

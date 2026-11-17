@@ -21,7 +21,10 @@ import type { Indicador, QueSeJuzga, TipoDeAviso } from '@estook/dominio';
 export const NIVELES = ['sin_acceso', 'ver', 'ver_y_editar'] as const;
 export type Nivel = (typeof NIVELES)[number];
 
-/** Las ocho apps, mas el Panel, Fogon, Ajustes y la vista aparte de la gestoria. */
+/**
+ * Las siete apps, mas el Panel, Fogon, Ajustes y la vista aparte de la gestoria. **Cuaderno se
+ * quito el 11-nov-2026** (0146, migracion 0118): «con Calendario y Tablon lo cubrimos».
+ */
 export const PERMISOS_DE_APP = [
   'app.panel',
   'app.almacen',
@@ -31,7 +34,6 @@ export const PERMISOS_DE_APP = [
   'app.equipo',
   'app.servicio',
   'app.negocio',
-  'app.cuaderno',
   'app.fogon',
   'app.ajustes',
   'app.gestoria',
@@ -131,7 +133,6 @@ export const ORDEN_DE_LA_RUEDA = [
   'app.equipo',
   'app.servicio',
   'app.negocio',
-  'app.cuaderno',
 ] as const satisfies readonly PermisoDeApp[];
 
 export function appsVisibles(permisos: PermisosResueltos): PermisoDeApp[] {

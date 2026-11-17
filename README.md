@@ -22,7 +22,7 @@ dos semillas y levanta las cuatro aplicaciones:
 | Aplicacion | Que es                                                   | En local              |
 | ---------- | -------------------------------------------------------- | --------------------- |
 | `web`      | La web publica                                           | http://localhost:5173 |
-| `app`      | El Panel y sus ocho apps                                 | http://localhost:5174 |
+| `app`      | El Panel y sus siete apps                                | http://localhost:5174 |
 | `carta`    | La carta digital publica                                 | http://localhost:5175 |
 | `admin`    | El panel interno · **el catálogo del sistema de diseño** | http://localhost:5176 |
 

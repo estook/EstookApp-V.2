@@ -309,3 +309,48 @@ seguridad, los roles y las fugas de información cada cierto número de módulos
    le pregunta a Richi.
 8. **Los 38 documentos de pasos pasan a `docs/pasos/`**, sin cambiarles una palabra, y los que
    siguen por probar se listan en un solo registro.
+
+## 9 · Lo que siguió: las pruebas del 14-nov, «L · La limpieza» y el cobro (17-nov)
+
+**Las pruebas de Richi** (el registro, [`pruebas-pendientes.md`](../pruebas-pendientes.md)): la caja
+(la 2) y las correcciones de las facturas (la 3), **bien**. El QR en papel (la 4) espera a la
+impresora; sin internet (la 5) y el local del amigo (la 6), por hacer.
+
+**Lo que falló, y cómo queda** (la 1): con la caja cerrada, cobrar el efectivo que dejó un camarero
+decía «Falta algo por rellenar» después de teclear el PIN y elegir el billete. Richi propuso: en la
+caja, un botón para abrirla ahí mismo; en un comandero, que diga que se abre en la caja. **Es lo que
+ya hacía cobrar una mesa (0144) y lo que hace Square**: al ir a cobrar sin la caja abierta, «Abre la
+caja para cobrar» y el botón, **antes de pedir nada**. Ahora el cobro pendiente hace lo mismo, y
+la prueba de pantalla lo recorre con la caja cerrada. En un aparato sin cajón no se llega a cobrar
+efectivo (0145), y si se llegara dice «El efectivo se cobra en la caja».
+
+**«L · La limpieza», construida** (migración **0118**): fuera la app Cuaderno (con su permiso, de
+la base), Pulse, Costes, Calendario › Tareas y las tres pestañas que esperaban en Carta › Análisis;
+**la Carta se ve sin pestañas**, y «Agotados» solo sale, en rojo, cuando hay algún plato agotado.
+Estook tiene **siete apps**.
+
+**El cobro con tarjeta integrado** (Richi, 17-nov): **sí a cobrar un fijo al mes por cada aparato
+que cobre con tarjeta**, y **dos aparatos**: el TPV portátil con impresora y NFC (un Sunmi V3 PLUS) y
+un Android solo con Tap to Pay (el móvil del camarero). Pidió los precios de cada proveedor,
+explicados, y si hay que tocar el precio de Pro: está todo en
+[la investigación, apartado 10](../estook-tpv-android-y-el-cobro.md). **La IA recomienda no tocar
+Pro (99 €)** y una sola tarifa por aparato, sea cual sea el proveedor. **Sin decidir, y es de
+Richi**, cuando contesten los proveedores: con quién se empieza y cuánto es el fijo. Richi les
+escribe a todos; la IA le avisa al llegar a T8.
+
+### Lo que decidió la IA al construir L, para que Richi lo sepa
+
+1. **«Agotados» sale a quien puede marcarlos** (sala, cocina y quien lleva el local). Quien ve la
+   carta sin poder marcar lo ve marcado en cada plato, y no le sale la pestaña.
+2. **La dirección de la carta no cambia** (`/carta/carta/por-secciones`), aunque la pestaña se llame
+   «Carta»: así no se rompe ningún enlace guardado ni ningún botón que lleve ahí.
+3. **El color de Cuaderno se queda** con su nombre: es el «arena» de las secciones de la carta y uno
+   de los de las iniciales. Y su dibujo se queda para las notas de la mesa en Estook TPV.
+4. **El mantenimiento, en el Calendario, se pinta con el color de Servicio**, que es donde va el
+   APPCC.
+5. **«Próximamente» deja de salir** en el menú del ordenador: no queda ninguna app sin nada
+   construido.
+6. **La vista de la cadena** decía que sus cifras llegaban con M8, M12 y M17; ahora dice M24, que es
+   la cadena (2.3).
+7. **Lo de abrir la caja al cobrar el pendiente va en la misma rama que L**, porque es pequeño y es
+   la prueba que hizo Richi; tiene su propio commit.

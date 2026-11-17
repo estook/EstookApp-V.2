@@ -7,7 +7,8 @@ import { euros, eurosConSimbolo } from '../logica/texto.ts';
 import { Puntos, Teclado } from '../puerta/Teclado.tsx';
 import { cifraDeLaTecla } from '../puerta/teclas.ts';
 import type { CobroPendienteEnLaMesa } from '../datos/tipos.ts';
-import { idNuevo, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
+import { idNuevo, usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
+import { AbrirCaja, ErrorDeLaCaja } from './AbrirCaja.tsx';
 import { usarElPlano } from '../ganchos/usarLaSala.ts';
 import { irAlPlano } from '../navegar.ts';
 import { deEurosACentimos } from './dinero.ts';
@@ -24,6 +25,10 @@ import type { Cobrado } from './tipos.ts';
  *   2 · **¿Cuánto te da?**, con los billetes de un toque, y el cambio en grande.
  *   3 · **Cobrar**: sale el ticket por la impresora, que abre el cajón con su impulso. Se coge el cambio
  *       y el ticket, y se lleva a la mesa.
+ *
+ * **Con la caja cerrada, se abre aquí mismo** (prueba de Richi, 14-nov: salía «Falta algo por rellenar»
+ * después de teclear el PIN y elegir el billete). Es lo de cobrar una mesa (Cobrar.tsx) y lo de Square:
+ * al ir a cobrar sin la caja abierta, «Abre la caja para cobrar» y el botón, antes de pedir nada.
  */
 export function CobrarElPendiente({
   pendiente,
@@ -42,7 +47,9 @@ export function CobrarElPendiente({
   readonly alAcabar: () => void;
 }) {
   const { cliente, yo } = usarSesion();
+  const caja = usarLaCaja();
   const recargar = usarRecargarLaCaja();
+  const [abriendoLaCaja, setAbriendoLaCaja] = useState(false);
   const [pin, setPin] = useState<string | null>(conPin ? null : '');
   const [quien, setQuien] = useState<string>(yo.nombre);
   const [entregado, setEntregado] = useState<number | 'justo' | 'otro'>('justo');
@@ -81,6 +88,58 @@ export function CobrarElPendiente({
       await recargar();
     } else {
       setFallo(respuesta.error);
+    }
+  }
+
+  // ── La caja, antes que nada: sin ella no se cobra efectivo (0144) ──────────────────────
+  if (hecho === null) {
+    if (caja.isLoading || caja.data === undefined) {
+      return (
+        <Marco titulo={titulo} alVolver={alVolver}>
+          {caja.error === null ? <Cargando que="la caja" /> : <ErrorDeLaCaja />}
+        </Marco>
+      );
+    }
+    if (caja.data.cajon === null) {
+      return (
+        <Marco titulo={titulo} alVolver={alVolver}>
+          <p className="text-pantalla font-bold">El efectivo se cobra en la caja</p>
+          <p className="text-texto-suave">Este aparato no tiene cajón: llévalo a la caja.</p>
+        </Marco>
+      );
+    }
+    if (caja.data.abierta === null || abriendoLaCaja) {
+      return (
+        <Marco titulo={titulo} alVolver={alVolver}>
+          {!abriendoLaCaja ? (
+            <div className="flex flex-col items-start gap-e4">
+              <p className="text-pantalla font-bold">Abre la caja para cobrar</p>
+              <p className="text-texto-suave">
+                {eurosConSimbolo(aCobrar)} que dejó {pendiente.por} esperan a que la caja esté
+                abierta. Se abre aquí mismo, con lo que se quedó anoche.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setAbriendoLaCaja(true);
+                }}
+                className="min-h-toque-cocina rounded-grande bg-bien px-e6 text-seccion font-bold text-fondo"
+              >
+                Abrir caja
+              </button>
+            </div>
+          ) : (
+            <AbrirCaja
+              alAbrir={() => {
+                setAbriendoLaCaja(false);
+              }}
+              alVolver={() => {
+                setAbriendoLaCaja(false);
+              }}
+            />
+          )}
+        </Marco>
+      );
     }
   }
 

@@ -424,8 +424,9 @@ test('cobrar en la mesa: el comandero cobra con tarjeta y deja el efectivo, y la
   );
   const pin = caja.tuPinNuevo;
   const enLaCaja = await enElAparato(request, caja.llave, pin);
+  const elTurno = crypto.randomUUID();
   await ejecutarEnLaApi(request, enLaCaja, 'abrir_caja', {
-    turno_id: crypto.randomUUID(),
+    turno_id: elTurno,
     contado: { '5000': 2 },
   });
   const { zonaId } = await ejecutarEnLaApi<{ zonaId: string }>(
@@ -550,7 +551,15 @@ test('cobrar en la mesa: el comandero cobra con tarjeta y deja el efectivo, y la
     timeout: 15_000,
   });
 
-  // ── Y desde la pantalla del PIN: la mesa 3, que deja el comandero por la API ──
+  // ── Y desde la pantalla del PIN, **con la caja cerrada**: la mesa 3, que deja el comandero ──
+  // Lo que vio Richi el 14-nov: salía «Falta algo por rellenar» al cobrar. Ahora la caja se abre
+  // ahí mismo, antes de pedir nada, como al cobrar una mesa.
+  await ejecutarEnLaApi(request, await enElAparato(request, caja.llave, pin), 'cerrar_caja', {
+    turno_id: elTurno,
+    contado: { '5000': 2, '2000': 2 },
+    datafono: null,
+    para_manana: 10000,
+  });
   await ejecutarEnLaApi(
     request,
     await enElAparato(request, comandero.llave, pin),
@@ -572,6 +581,14 @@ test('cobrar en la mesa: el comandero cobra con tarjeta y deja el efectivo, y la
   await page.keyboard.type(pin);
   const entrar = page.getByRole('button', { name: 'Entrar sin fichar' });
   if (await entrar.isVisible({ timeout: 3_000 }).catch(() => false)) await entrar.click();
+  await expect(page.getByText('Abre la caja para cobrar')).toBeVisible({ timeout: 15_000 });
+  await foto(page, '27-el-pendiente-con-la-caja-cerrada');
+  await page.getByRole('button', { name: 'Abrir caja', exact: true }).click();
+  await page.getByRole('button', { name: 'Está correcto · Abrir caja' }).click();
+  await expect(page.getByRole('heading', { name: /^Caja abierta con/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.getByRole('button', { name: 'Seguir' }).click();
   await expect(page.getByText('¿Cuánto te da?')).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(/Ya cobrado en la mesa: Tarjeta 10,00/)).toBeVisible();
   await page.getByRole('button', { name: /^Cobrar 30,00/ }).click();

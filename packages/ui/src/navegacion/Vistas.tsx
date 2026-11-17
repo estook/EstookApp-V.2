@@ -78,10 +78,14 @@ export function Vistas({ vistas, activa, alElegir, de }: VistasProps) {
               'inline-flex min-h-[38px] shrink-0 items-center gap-e1 whitespace-nowrap rounded-redondo px-e4',
               'text-secundario font-medium transition-colors duration-[--rapido]',
               esActiva
-                ? 'bg-texto font-semibold text-superficie shadow-s2'
-                : falta
-                  ? 'cursor-not-allowed text-texto-tenue'
-                  : 'text-texto-suave hover:text-texto',
+                ? vista.enRojo === true
+                  ? 'bg-mal font-semibold text-superficie shadow-s2'
+                  : 'bg-texto font-semibold text-superficie shadow-s2'
+                : vista.enRojo === true
+                  ? 'font-semibold text-mal'
+                  : falta
+                    ? 'cursor-not-allowed text-texto-tenue'
+                    : 'text-texto-suave hover:text-texto',
             )}
             // El nombre de la elegida, en el acento **para texto**: el acento a secas no
             // llega a 4,5:1 en claro (entrega V, lo midió la prueba del contraste).

@@ -15,7 +15,6 @@ import {
   Hoja,
   LaBaldosaDeLaSeccion,
   Lista,
-  NadaConEso,
   Selector,
   Tarjeta,
   elAcentoDelColor,
@@ -107,7 +106,7 @@ const SIN_SECCION: ComoSeVe = { color: null, icono: 'utensils-crossed' };
 /** El food cost de cada plato, a quien ve costes (de Escandallos). */
 type ElCoste = NonNullable<PlatoEnLaLista['coste']>;
 
-export function LaCarta({ vista }: { readonly vista: string }) {
+export function LaCarta() {
   const consulta = usarLectura<MiCarta>('mi_carta');
   const plato = usarAbiertoEnLaDireccion('plato');
   const [anadiendo, setAnadiendo] = useState<string | null | undefined>(undefined);
@@ -231,14 +230,6 @@ export function LaCarta({ vista }: { readonly vista: string }) {
               : { sinAccionPorque: 'La carta la monta quien lleva el local.' })}
           />
         </Tarjeta>
-      ) : vista === 'todos-los-platos' ? (
-        <TodosLosPlatos
-          datos={datos}
-          conPrecio={conPrecio}
-          alAbrir={plato.abrir}
-          seVeDe={seVeDe}
-          costeDe={costeDe}
-        />
       ) : (
         <PorSecciones
           datos={datos}
@@ -616,76 +607,6 @@ function PorSecciones({
           </div>
         );
       })}
-      <Archivados datos={datos} conPrecio={conPrecio} alAbrir={alAbrir} seVeDe={seVeDe} />
-    </div>
-  );
-}
-
-// ── Todos los platos ─────────────────────────────────────────────────────────
-
-function TodosLosPlatos({
-  datos,
-  conPrecio,
-  alAbrir,
-  seVeDe,
-  costeDe,
-}: {
-  readonly datos: MiCarta;
-  readonly conPrecio: readonly UnCanal[];
-  readonly alAbrir: (id: string) => void;
-  readonly seVeDe: (plato: UnPlato) => ComoSeVe;
-  readonly costeDe: ReadonlyMap<string, ElCoste>;
-}) {
-  const [buscado, setBuscado] = useState('');
-  const nombreDeLaSeccion = useMemo(
-    () => new Map(datos.secciones.map((s) => [s.id, s.nombre])),
-    [datos.secciones],
-  );
-  const texto = buscado.trim().toLocaleLowerCase('es');
-  const sinAcentos = (t: string) => t.normalize('NFD').replace(/\p{M}/gu, '');
-  const activos = datos.platos
-    .filter((p) => p.activo)
-    .filter(
-      (p) =>
-        texto === '' || sinAcentos(p.nombre.toLocaleLowerCase('es')).includes(sinAcentos(texto)),
-    )
-    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-
-  return (
-    <div className="flex flex-col gap-e4">
-      <Tarjeta titulo="Todos los platos" cuantos={datos.platos.filter((p) => p.activo).length}>
-        <div className="px-e3 pb-e3">
-          <Campo
-            etiqueta="Buscar un plato"
-            value={buscado}
-            onChange={(evento) => {
-              setBuscado(evento.target.value);
-            }}
-          />
-        </div>
-        <Lista
-          titulo="Todos los platos"
-          elementos={activos.map((p) =>
-            fila(
-              p,
-              conPrecio,
-              alAbrir,
-              p.seccionId === null ? 'Sin sección' : (nombreDeLaSeccion.get(p.seccionId) ?? null),
-              seVeDe(p),
-              costeDe.get(p.id),
-            ),
-          )}
-          cuandoNoHay={
-            <NadaConEso
-              compacto
-              buscado={buscado}
-              alQuitar={() => {
-                setBuscado('');
-              }}
-            />
-          }
-        />
-      </Tarjeta>
       <Archivados datos={datos} conPrecio={conPrecio} alAbrir={alAbrir} seVeDe={seVeDe} />
     </div>
   );

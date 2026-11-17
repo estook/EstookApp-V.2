@@ -771,7 +771,7 @@ const COLOR_DE_LA_CAPA: Readonly<Record<string, string>> = {
   caducidad: 'var(--color-mal)',
   turno: 'var(--color-app-equipo)',
   appcc: 'var(--color-app-servicio)',
-  mantenimiento: 'var(--color-app-cuaderno)',
+  mantenimiento: 'var(--color-app-servicio)',
   aviso: 'var(--color-info)',
 };
 

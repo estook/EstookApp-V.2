@@ -39,9 +39,10 @@ import { LogoDelLocal } from './LogoDelLocal.tsx';
  * nombre al pasar por encima y, al pulsarla, sus destinos en un menú al lado. Se
  * recuerda en el aparato, porque quien lo pliega lo quiere plegado mañana.
  *
- * Las apps que todavía no tienen nada construido (Escandallos, Carta y Cuaderno
- * hasta M9, M10 y M17) no ocupan sitio entre las que funcionan: van juntas y
- * cerradas en «Próximamente». «No petarle a información y mil pestañas.»
+ * Las apps que todavía no tienen nada construido (Escandallos y Carta hasta M9, y el
+ * Cuaderno hasta que se quitó en la 0146) no ocupan sitio entre las que funcionan: van
+ * juntas y cerradas en «Próximamente». «No petarle a información y mil pestañas.» Hoy
+ * no hay ninguna, y «Próximamente» no sale.
  */
 export interface MenuDelOrdenadorProps {
   readonly apps: readonly App[];

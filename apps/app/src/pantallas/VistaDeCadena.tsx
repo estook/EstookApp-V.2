@@ -8,7 +8,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  *
  * «Un area manager **no entra en un local: entra en su conjunto**» (Roles, 2.1).
  * Es uno de los dos criterios de terminado de M4, y por eso existe esta pantalla
- * aunque las cifras que la llenan sean de M17.
+ * aunque las cifras que la llenan sean de M24 · Cadena.
  *
  * ── Lo que hay hoy, y lo que no ──────────────────────────────────────────────
  *
@@ -17,8 +17,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * el que se trabaja y no una pantalla de paso.
  *
  * No hay ventas, ni margen, ni «necesitan que vayas». No porque falte tiempo:
- * porque **esos datos no existen todavia**. Ventas es M12, margen es M8 y los
- * avisos son M22. Pintar aqui unas cifras inventadas seria lo peor que se puede
+ * porque **esos datos no existen todavia**: los trae M24 · Cadena (Plan, M24; 0146, 2.3). Pintar aqui unas cifras inventadas seria lo peor que se puede
  * hacer en esta pantalla, porque son justamente las cifras con las que un area
  * manager decide a que local va manana.
  *
@@ -29,17 +28,17 @@ const LO_QUE_LLEGARA = [
   {
     que: 'Necesitan que vayas',
     queHabra: 'los locales que se salen de objetivo, con su explicación',
-    modulo: 'M8 y M12',
+    modulo: 'M24',
   },
   {
     que: 'Comparativa entre locales',
     queHabra: 'ventas, materia prima, personal y margen, uno al lado de otro',
-    modulo: 'M17',
+    modulo: 'M24',
   },
   {
     que: 'Visitas y estándares',
     queHabra: 'las auditorías de cada local y su evolución',
-    modulo: 'más adelante',
+    modulo: 'M24',
   },
   {
     que: 'El calendario del conjunto',

@@ -37,7 +37,7 @@ const FOGON_APAGADO = /Fogón (está apagado ahora mismo|todavía no está encen
  */
 const APP = 'http://localhost:5174/';
 const CLAVE = 'estook en desarrollo';
-/** Rosa lleva Bar Centro: ve las ocho apps y puede configurar el local. */
+/** Rosa lleva Bar Centro: ve las siete apps y puede configurar el local. */
 const ROSA = 'rosa@ejemplo.estook.com';
 
 async function abrirLimpio(page: Page) {
@@ -170,17 +170,14 @@ test.describe('el menú del ordenador', () => {
       'page',
     );
 
-    // Las apps sin nada construido no se mezclan con las que funcionan. (Era la Carta
-    // hasta M9 · 1, 0086, y Escandallos hasta M9 · 2, 0087; ahora es el Cuaderno.)
     // Escandallos sale dos veces desde el 16-oct (0090): la app y su pestaña.
     await expect(
       elMenu(page).getByRole('button', { name: 'Escandallos', exact: true }),
     ).toHaveCount(2);
-    await expect(elMenu(page).getByRole('button', { name: 'Cuaderno', exact: true })).toHaveCount(
-      0,
-    );
-    await elMenu(page).getByRole('button', { name: 'Próximamente' }).click();
-    await expect(elMenu(page).getByText('Cuaderno', { exact: true })).toBeVisible();
+    // **Sin «Próximamente»** desde la 0146: la única app sin nada construido era el Cuaderno, y
+    // se quitó. (Antes lo fueron la Carta, hasta M9 · 1, y Escandallos, hasta M9 · 2.)
+    await expect(elMenu(page).getByText('Cuaderno', { exact: true })).toHaveCount(0);
+    await expect(elMenu(page).getByRole('button', { name: 'Próximamente' })).toHaveCount(0);
   });
 
   test('la campana abre los avisos, y el chat dice lo que será', async ({ page }) => {

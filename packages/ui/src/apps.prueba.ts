@@ -96,9 +96,10 @@ function tablaDelPlan(primera: string, segunda: string): Map<string, string[]> {
   return filas;
 }
 
-describe('las ocho', () => {
-  it('son ocho, ni una mas', () => {
-    expect(APPS).toHaveLength(8);
+describe('las siete', () => {
+  it('son siete, ni una mas', () => {
+    // Ocho hasta el 11-nov-2026: Cuaderno se quitó (0146, migración 0118).
+    expect(APPS).toHaveLength(7);
   });
 
   it('van en el orden de la rueda, que lo fija @estook/permisos', () => {
@@ -107,8 +108,8 @@ describe('las ocho', () => {
 
   it('cada una tiene su icono y su acento, y ninguno se repite', () => {
     // «Cada app con su icono y su acento de color» (Manifiesto, regla 11).
-    expect(new Set(APPS.map((a) => a.acento)).size).toBe(8);
-    expect(new Set(APPS.map((a) => a.icono)).size).toBe(8);
+    expect(new Set(APPS.map((a) => a.acento)).size).toBe(7);
+    expect(new Set(APPS.map((a) => a.icono)).size).toBe(7);
   });
 
   it('el acento es una variable de las fichas, nunca un color escrito a mano', () => {
@@ -339,9 +340,29 @@ describe('lo construido y lo que llega', () => {
     expect(destinosQueLlegan(laApp('almacen'))).toHaveLength(0);
   });
 
-  it('una app sin construir no tiene ningun destino en la barra', () => {
-    // El Cuaderno, hasta M17. (Eran Escandallos hasta M9 · 2, y la Carta hasta la 0086.)
-    expect(destinosConstruidos(laApp('cuaderno'))).toHaveLength(0);
+  it('el Cuaderno ya no es una app (0146): ni sale en la rueda ni se abre', () => {
+    // Era la única sin nada construido. (Lo fueron Escandallos hasta M9 · 2, y la Carta hasta la 0086.)
+    expect(appPorId('cuaderno')).toBeUndefined();
+    expect(appPorPermiso('app.cuaderno' as never)).toBeUndefined();
+  });
+
+  it('Negocio queda en Ventas, Informes y Reseñas, sin Pulse ni Costes (0146)', () => {
+    expect(laApp('negocio').destinos.map((d) => d.id)).toEqual(['ventas', 'informes', 'resenas']);
+  });
+
+  it('Calendario queda en Calendario y Turnos, sin Tareas (0146)', () => {
+    expect(laApp('calendario').destinos.map((d) => d.id)).toEqual(['calendario', 'turnos']);
+  });
+
+  it('la Carta se ve sin pestañas: «Agotados» solo si hay alguno, y en rojo (0146)', () => {
+    const carta = laApp('carta').destinos.find((d) => d.id === 'carta');
+    expect(carta?.vistas.map((v) => v.id)).toEqual(['por-secciones', 'agotados']);
+    if (carta === undefined) return;
+    // Sin agotados se ve una sola, y una pestaña sola no se enseña (0143).
+    expect(vistasQueSeEnsenan(carta, 'por-secciones', []).map((v) => v.nombre)).toEqual(['Carta']);
+    const conAgotados = vistasQueSeEnsenan(carta, 'por-secciones', ['agotados']);
+    expect(conAgotados.map((v) => v.nombre)).toEqual(['Carta', 'Agotados']);
+    expect(conAgotados[1]?.enRojo).toBe(true);
   });
 
   it('Escandallos tiene su resumen, sus escandallos y sus fichas técnicas (0090)', () => {
@@ -477,7 +498,7 @@ describe('lo construido y lo que llega', () => {
   });
 });
 
-describe('el Panel no es una de las ocho', () => {
+describe('el Panel no es una de las siete', () => {
   it('no entra en la rueda', () => {
     expect(APPS.map((a) => a.id)).not.toContain('panel');
   });
@@ -511,10 +532,10 @@ describe('la rueda se reparte entre las que el rol tiene', () => {
     Object.fromEntries(permisos.map((p) => [p, 'ver']));
 
   it('un camarero ve cuatro', () => {
-    // Las de la matriz: calendario, carta, servicio y cuaderno. El Panel no
-    // cuenta, porque no es un sector.
+    // Las de la matriz: calendario, carta, escandallos (las fichas, sin un euro) y servicio. El
+    // Panel no cuenta, porque no es un sector. (Eran cinco con el Cuaderno, quitado en la 0146.)
     const suyas = appsVisibles(
-      con('app.panel', 'app.calendario', 'app.carta', 'app.servicio', 'app.cuaderno'),
+      con('app.panel', 'app.calendario', 'app.carta', 'app.escandallos', 'app.servicio'),
     );
     expect(suyas).toHaveLength(4);
   });

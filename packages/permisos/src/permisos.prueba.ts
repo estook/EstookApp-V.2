@@ -17,7 +17,7 @@ describe('lectura de permisos resueltos', () => {
     'app.panel': 'ver',
     'app.calendario': 'ver',
     'app.carta': 'ver',
-    'app.cuaderno': 'ver_y_editar',
+    'app.servicio': 'ver_y_editar',
     'accion.fichar': 'ver_y_editar',
   };
 
@@ -29,11 +29,11 @@ describe('lectura de permisos resueltos', () => {
   it('ver no es editar', () => {
     expect(puedeVer(camarera, 'app.carta')).toBe(true);
     expect(puedeEditar(camarera, 'app.carta')).toBe(false);
-    expect(puedeEditar(camarera, 'app.cuaderno')).toBe(true);
+    expect(puedeEditar(camarera, 'app.servicio')).toBe(true);
   });
 
   it('la rueda solo ensena las apps que se tienen, sin huecos', () => {
-    expect(appsVisibles(camarera)).toEqual(['app.carta', 'app.calendario', 'app.cuaderno']);
+    expect(appsVisibles(camarera)).toEqual(['app.carta', 'app.calendario', 'app.servicio']);
     expect(appsVisibles({})).toEqual([]);
   });
 
@@ -95,12 +95,12 @@ describe('el servidor no envia lo que el rol no puede ver', () => {
 
 describe('dos roles sobre el mismo local', () => {
   it('gana el mas amplio, permiso a permiso', () => {
-    const camarera = { 'app.carta': 'ver', 'app.cuaderno': 'ver_y_editar' } as const;
+    const camarera = { 'app.carta': 'ver', 'app.servicio': 'ver_y_editar' } as const;
     const jefaDeCocina = { 'app.carta': 'ver_y_editar', 'app.almacen': 'ver_y_editar' } as const;
 
     const juntos = elMasAmplio(camarera, jefaDeCocina);
     expect(juntos['app.carta']).toBe('ver_y_editar');
-    expect(juntos['app.cuaderno']).toBe('ver_y_editar');
+    expect(juntos['app.servicio']).toBe('ver_y_editar');
     expect(juntos['app.almacen']).toBe('ver_y_editar');
   });
 

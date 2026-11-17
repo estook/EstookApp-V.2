@@ -235,8 +235,9 @@ Las cifras siempre con `font-variant-numeric: tabular-nums`. Tres tamaños de le
 | Equipo      | `users`           | `#6B4FBB`    |
 | Servicio    | `clipboard-check` | `#0F8B8D`    |
 | Negocio     | `trending-up`     | `#C4372B`    |
-| Cuaderno    | `notebook-pen`    | `#7A6A56`    |
 | Fogón       | `flame`           | `--naranja`  |
+
+**Cuaderno salió el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), migración 0118). Su color, `--color-app-cuaderno`, se queda: es el «arena» de las secciones de la carta y uno de los de las iniciales. Y el dibujo `notebook-pen` se queda para las notas de la mesa en Estook TPV.
 
 El acento se usa con moderación: el icono de la app —**en su pastilla, en la cabecera de la pantalla y de cada tarjeta**— y el sector de la rueda. **El fondo y los botones no cambian de color entre apps**, o parecerían cuatro productos distintos. Hasta la entrega V el acento iba en una línea de tres píxeles encima de cada tarjeta, y se quitó: era lo que más envejecía la aplicación ([0045](../decisiones/0045-el-aspecto-y-el-orden.md)). Y **cuando lo que lleva el acento es texto** —el destino activo de la barra del móvil— (la vista elegida va, desde la 0083, rellena del color del texto, igual en las ocho apps) va en `acentoParaTexto`, mezclado con el color del texto: el acento a secas no llega a 4,5:1 en claro, y mezclado se oscurece en claro y se aclara en oscuro ([0046](../decisiones/0046-los-vacios-el-oscuro-y-las-fotos.md)).
 
@@ -301,11 +302,10 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | Almacén     | Resumen · Productos · Compras · Mermas · Movimientos |
 | Escandallos | Resumen · Escandallos · Fichas · Análisis            |
 | Carta       | Carta · Canales · Menús · Análisis                   |
-| Calendario  | Calendario · Tareas · Turnos                         |
+| Calendario  | Calendario · Turnos                                  |
 | Equipo      | Resumen · Personas · Fichajes · Incidencias          |
 | Servicio    | Jornadas · Empleados · Delivery · APPCC              |
-| Negocio     | Ventas · Informes · Pulse · Costes · Reseñas         |
-| Cuaderno    | Incidencias · Notas · Equipos                        |
+| Negocio     | Ventas · Informes · Reseñas                          |
 
 Y sus vistas, donde las hay:
 
@@ -316,25 +316,22 @@ Y sus vistas, donde las hay:
 | Almacén · Compras         | Pedidos · Facturas · Proveedores                                    |
 | Escandallos · Escandallos | Carta · Menús · Bajo objetivo                                       |
 | Escandallos · Fichas      | Todas · Sin ficha                                                   |
-| Carta · Carta             | Por secciones · Todos los platos · Agotados                         |
-| Carta · Análisis          | Equilibrio · Tu zona · Matriz · Por canal · Histórico               |
+| Carta · Carta             | Carta · Agotados                                                    |
+| Carta · Análisis          | Equilibrio · Tu zona                                                |
 | Calendario · Calendario   | Mes · Semana · Día                                                  |
-| Calendario · Tareas       | Pendientes · Periódicas · Hechas                                    |
 | Equipo · Personas         | Con acceso · Sin entrar todavía · Retirados                         |
 | Equipo · Incidencias      | Todas · Faltas · Retrasos · Fichajes                                |
 | Servicio · Jornadas       | Información · Cierre                                                |
 | Negocio · Ventas          | Resumen · Cobros · Tickets y facturas                               |
 | Negocio · Informes        | Día · Semana · Mes                                                  |
-| Cuaderno · Incidencias    | Abiertas · Cerradas                                                 |
 
-> **Decidido el 11-nov-2026 y todavía sin construir** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)). Las dos tablas de arriba, la de iconos de B3 y los títulos de las fichas de M17 y M21 dicen **lo que hay hoy en el código** —la prueba las compara—, y cambian en la misma entrega que él:
+> **Decidido el 11-nov-2026 y todavía sin construir** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)). **«L · La limpieza» ya está en el código y en las tablas de arriba** (Cuaderno, Pulse, Costes y Tareas fuera; Carta › Carta en **Carta · Agotados**, donde «Agotados» solo sale, en rojo, si hay alguno, y sin otra pestaña no se enseña ninguna). Las tablas dicen **lo que hay hoy en el código** —la prueba las compara—, y cambian en la misma entrega que él:
 >
-> | Entrega         | Lo que cambia en la navegación                                                                                                                                                                                                                                                |
-> | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-> | L · La limpieza | **Cuaderno sale**, y quedan siete apps · Negocio queda en **Ventas · Informes · Reseñas**, sin Pulse ni Costes · Calendario pierde **Tareas** · Carta › Análisis queda en **Equilibrio · Tu zona** · Carta › Carta, **sin pestañas**; con algún agotado, **Carta · Agotados** |
-> | M14             | Calendario: **Calendario · Vacaciones · Turnos** (el orden de los dos últimos, en su maqueta)                                                                                                                                                                                 |
-> | M16b            | Servicio: **Jornadas · APPCC · Empleados · Delivery**, y APPCC con las vistas **APPCC · Historial**                                                                                                                                                                           |
-> | M12 y M11       | Carta › «⋯»: **Nueva sección · Carta online · Desde almacén · Importa tu carta**                                                                                                                                                                                              |
+> | Entrega   | Lo que cambia en la navegación                                                                      |
+> | --------- | --------------------------------------------------------------------------------------------------- |
+> | M14       | Calendario: **Calendario · Vacaciones · Turnos** (el orden de los dos últimos, en su maqueta)       |
+> | M16b      | Servicio: **Jornadas · APPCC · Empleados · Delivery**, y APPCC con las vistas **APPCC · Historial** |
+> | M12 y M11 | Carta › «⋯»: **Nueva sección · Carta online · Desde almacén · Importa tu carta**                    |
 
 **Movimientos no va en la barra** (la experiencia, [0083](../decisiones/0083-la-experiencia.md)): es un destino construido y con su dirección, pero se llega por «Revisar movimientos», debajo de las cifras del Resumen de Almacén, por «Hacer inventario» de Productos y por el buscador. Así Almacén cabe en cuatro en la barra de abajo del móvil. Y **Compras son tres** en el orden del día —se pide, llega y se paga; y a quién—: lo que ha llegado (los albaranes) es «Llegado» dentro de Pedidos, y los precios van con los proveedores.
 
@@ -513,9 +510,9 @@ ESTOOK TPV    M16a · La jornada → M20A · 1 (base y API) → T1 · La puerta 
 **Y desde aquí hasta vender, el orden del 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), sección 6). Cada línea es una entrega con su pull request; las **AUDITORÍAS** son las de E5.
 
 ```
-AHORA       L · La limpieza: fuera Cuaderno, Pulse, Costes, Tareas y las pestañas que esperan;
-            la Carta sin pestañas
-            → S1 · Cada plan, lo suyo: la primera auditoría de seguridad
+HECHO       L · La limpieza: fuera Cuaderno, Pulse, Costes, Tareas y las pestañas que esperaban;
+            la Carta sin pestañas (migración 0118)
+AHORA       S1 · Cada plan, lo suyo: la primera auditoría de seguridad
 ESTOOK TPV  → M20 · 1 · Lo vendido baja del almacén → M20 · 2 · Lo que se escapa
             → R3 · 2 · La caja, segunda parte → lo que queda de T7 (sin internet en las nativas,
               las ventas de hoy, la venta rápida, Informes y Empleados con lo cobrado)
@@ -834,9 +831,9 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 **Terminado cuando** un mes de APPCC se exporta listo para inspección; de un lote sale el listado de días y platos en que se sirvió; una temperatura fuera de rango no se cierra sin su acción correctora; recibir un pedido deja hecha la recepción del APPCC sin escribir nada dos veces; y un trabajador sin controles asignados no tiene nada que rellenar.
 
-### M17 · Cuaderno
+### M17 · Cuaderno · quitado
 
-**Quitado el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.4); el título de esta ficha cambia con el código, en «L · La limpieza». Richi: «no vale para nada; con Calendario y Tablón lo cubrimos». **Estook pasa de ocho apps a siete**; la app sale del código en «L · La limpieza». Dónde queda lo que iba a tener:
+**Quitado el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.4); la app salió del código en «L · La limpieza» (migración 0118). Richi: «no vale para nada; con Calendario y Tablón lo cubrimos». **Estook pasa de ocho apps a siete**; la app sale del código en «L · La limpieza». Dónde queda lo que iba a tener:
 
 | Lo que iba a ser de Cuaderno               | Dónde queda                                                |
 | ------------------------------------------ | ---------------------------------------------------------- |
@@ -1011,9 +1008,9 @@ _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-a
 
 ## Fase 5 · Inteligencia
 
-### M21 · Negocio, analítica y Estook Pulse
+### M21 · Negocio y analítica
 
-**Estook Pulse y Negocio › Costes, quitados el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.6 y 1.7): el módulo pasa a llamarse **«Negocio y analítica»**, y el título de esta ficha cambia con el código, en «L · La limpieza». Negocio queda en **Ventas · Informes · Reseñas**. Lo que iba a contestar Costes ya está en su sitio: el food cost en Ventas, las mermas en Almacén, lo que no deja margen en Escandallos y lo gastado en Consumo.
+**Estook Pulse y Negocio › Costes, quitados el 11-nov-2026** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), 1.6 y 1.7): el módulo pasa a llamarse **«Negocio y analítica»**, y los dos destinos salieron del código en «L · La limpieza». Negocio queda en **Ventas · Informes · Reseñas**. Lo que iba a contestar Costes ya está en su sitio: el food cost en Ventas, las mermas en Almacén, lo que no deja margen en Escandallos y lo gastado en Consumo.
 
 **Entra.** Agregados por worker: diarios, por franja, por producto, por plato, por canal y por empleado · resúmenes con objetivo y comparación · productividad · **dónde se va el margen con enlace a donde se arregla**, dentro de Informes · salud de los datos · **la exportación de datos ordenados, tipo resumen de todo** (Richi, 11-nov), en PDF, CSV y los formatos de A3, Sage, Contasol y Holded, **que es también la pantalla de la gestoría** (tiene su permiso y no tiene pantalla, [0137](../decisiones/0137-t6-2-2-1-las-facturas-y-quien-hace-que.md)) · auditoría consultable · reconstrucción completa de agregados con un comando.
 

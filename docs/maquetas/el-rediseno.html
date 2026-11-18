@@ -872,6 +872,140 @@
     font-weight: 600;
   }
 
+  /* La hoja de la mesa: «⋯» y la nota (0131), y la columna señalada. */
+  .t-icono.si {
+    background: var(--t-texto);
+    color: var(--t-fondo);
+    border-color: var(--t-texto);
+  }
+  .iconos-mesa {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin: 0 14px 10px;
+  }
+  .iconos-mesa button {
+    height: 46px;
+    border-radius: 12px;
+    border: 1px solid var(--t-borde);
+    background: var(--t-sup-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 12.5px;
+    color: var(--t-texto);
+  }
+  .iconos-mesa svg {
+    width: 18px;
+    height: 18px;
+  }
+  .iconos-mesa button.si {
+    background: var(--t-texto);
+    color: var(--t-fondo);
+    border-color: var(--t-texto);
+  }
+  .hoja-mesa {
+    margin: 0 14px 10px;
+    padding: 12px;
+    border-radius: 16px;
+    background: var(--t-sup-2);
+    border: 1px solid var(--t-borde);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .hoja-mesa h5 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .opciones-mesa {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .opcion-mesa {
+    border: 1px solid var(--t-borde);
+    background: var(--t-sup);
+    border-radius: 12px;
+    min-height: 52px;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12.5px;
+    line-height: 1.2;
+    color: var(--t-texto);
+  }
+  .opcion-mesa i {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    background: var(--t-sup-2);
+    flex: none;
+  }
+  .opcion-mesa i svg {
+    width: 17px;
+    height: 17px;
+  }
+  .opcion-mesa small {
+    display: block;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--t-tenue);
+  }
+  .opcion-mesa.roja {
+    color: var(--t-mal);
+  }
+  .opcion-mesa.roja i {
+    background: var(--t-mal-s);
+  }
+  .chips-nota {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chips-nota button {
+    border: 1px solid var(--t-borde);
+    background: var(--t-sup);
+    border-radius: 999px;
+    height: 36px;
+    padding: 0 12px;
+    font-weight: 700;
+    font-size: 12.5px;
+    color: var(--t-texto);
+  }
+  .hoja-mesa textarea {
+    font: inherit;
+    font-size: 14px;
+    border-radius: 12px;
+    border: 1px solid var(--t-borde);
+    background: var(--t-sup);
+    color: var(--t-texto);
+    padding: 10px 12px;
+    resize: none;
+  }
+  .t-lado.senalada {
+    position: relative;
+    box-shadow: inset 0 0 0 4px var(--naranja);
+  }
+  .senal {
+    margin: 12px 12px 0;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: var(--naranja);
+    color: #1d1000;
+    font-weight: 800;
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
   /* Los avisos, arriba a la derecha y en la campana. */
   .t-avisos {
     position: absolute;
@@ -2309,6 +2443,114 @@
     opacity: 0.6;
   }
 
+  /* El tip de las gráficas y lo nuevo del Panel. */
+  .tip {
+    position: absolute;
+    z-index: 7;
+    pointer-events: none;
+    background: var(--texto);
+    color: var(--fondo);
+    border-radius: 10px;
+    padding: 8px 11px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    max-width: 260px;
+    box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.5);
+  }
+  .tip b {
+    display: block;
+    font-weight: 800;
+  }
+  .hit {
+    fill: var(--texto);
+    fill-opacity: 0;
+    cursor: crosshair;
+  }
+  .hit:hover {
+    fill-opacity: 0.06;
+  }
+  [data-tip] {
+    cursor: pointer;
+  }
+  .canales-barra i {
+    display: block;
+  }
+  .lista-obj {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .lista-obj small {
+    display: block;
+    color: var(--tenue);
+    font-size: 12px;
+  }
+  .lista-obj .barra-obj {
+    margin-top: 5px;
+  }
+  .p-separador {
+    grid-row: span 1;
+    align-self: end;
+    font-weight: 800;
+    font-size: 15px;
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    border-top: 1px solid var(--borde);
+    padding-top: 14px;
+  }
+  .p-separador span {
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--tenue);
+  }
+  .w.anadir.fino {
+    flex-direction: row;
+    font-size: 14px;
+  }
+  .w.anadir.fino svg {
+    width: 20px;
+    height: 20px;
+  }
+  .leyenda-linea {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--suave);
+  }
+  .leyenda-linea span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .leyenda-linea i {
+    width: 12px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .fila-cocina {
+    display: grid;
+    grid-template-columns: 220px repeat(4, 1fr);
+    gap: 16px;
+    align-items: center;
+    height: 100%;
+  }
+  .fila-cocina > div {
+    border-left: 1px solid var(--borde);
+    padding-left: 12px;
+    font-size: 12.5px;
+    color: var(--tenue);
+    font-weight: 600;
+  }
+  .fila-cocina > div b {
+    display: block;
+    font-size: 22px;
+    color: var(--texto);
+  }
+
   /* Lo que cambia */
   .preguntas {
     display: grid;
@@ -2445,9 +2687,15 @@
       El plano ocupa todo el ancho. A la derecha, una columna con lo que pide atención; al tocar una
       mesa, esa columna se convierte en la mesa. Toca las mesas del plano.
     </p>
-    <p class="etiqueta-pantalla">Caja · PC 1280 × 800</p>
+    <p class="etiqueta-pantalla">Caja · PC 1280 × 800 · la sala</p>
     <div class="pantalla" data-w="1280" data-h="800">
       <div class="lienzo tpv"><div class="t-app" id="sala-pc"></div></div>
+    </div>
+    <p class="etiqueta-pantalla" style="margin-top: 22px">
+      Caja · PC 1280 × 800 · la mesa 5, con «⋯ Más opciones» abierto
+    </p>
+    <div class="pantalla" data-w="1280" data-h="800">
+      <div class="lienzo tpv"><div class="t-app" id="sala-mesa"></div></div>
     </div>
     <div class="notas">
       <div class="nota">
@@ -2467,22 +2715,32 @@
       <div class="nota">
         <h3><span class="chip nuevo">Nuevo</span> La columna «Ahora»</h3>
         <p>
-          Te toca, ¿cuenta? y el efectivo que espera, por orden de urgencia y con su botón. En PC
-          llena el lado que hoy queda vacío; en tablet se pliega a un botón.
+          Es la franja de la derecha de la primera pantalla, marcada en naranja. Dice qué mesa
+          necesita algo (te toca, ¿cuenta?, el efectivo que espera), por orden y con su botón. Al
+          tocar una mesa, esa franja pasa a ser la mesa. En PC llena el lado que hoy queda vacío; en
+          tablet es el botón naranja «Ahora».
         </p>
       </div>
       <div class="nota">
-        <h3><span class="chip nuevo">Nuevo</span> Repetir pedido y cambiar lo mandado</h3>
+        <h3><span class="chip cambia">Cambia</span> Los tres iconos de la mesa</h3>
         <p>
-          «Repetir pedido» vuelve a pedir lo último (las bebidas de la ronda). Tocar un plato ya
-          mandado deja cambiarlo o quitarlo; cocina recibe el aviso de cambio, como ya hace hoy.
+          Arriba de la mesa, como ya decide la 0131: <b>mover</b>, <b>la nota para cocina</b> y
+          <b>«⋯» Más opciones</b>. «Repetir pedido» va dentro de «⋯», con alergias, prisa,
+          comensales, pases, reimprimir, liberar y anular. Abajo, solo Pedir, Cuenta y Cobrar.
         </p>
       </div>
       <div class="nota">
-        <h3><span class="chip nuevo">Nuevo</span> Mesa abierta desde ayer</h3>
+        <h3><span class="chip ya">Ya está</span> Cambiar lo mandado</h3>
         <p>
-          En IKATZ la mesa 1 lleva 46 horas abierta. Una mesa de otro día sale con borde rojo y un
-          aviso al encargado para cerrarla o cobrarla.
+          Tocar un plato ya mandado deja cambiarlo o quitarlo, y cocina recibe el aviso de cambio,
+          como ya hace hoy (0132).
+        </p>
+      </div>
+      <div class="nota">
+        <h3><span class="chip nuevo">Nuevo</span> Mesa abierta más de 6 horas</h3>
+        <p>
+          En IKATZ la mesa 1 lleva 46 horas abierta. A partir de 6 horas, la mesa sale con borde
+          rojo y el encargado recibe un aviso para cobrarla o cerrarla.
         </p>
       </div>
       <div class="nota">
@@ -2556,7 +2814,7 @@
           <li><b>Cocina llama</b> (azul): suena y dice qué mesa.</li>
           <li><b>Efectivo por cobrar</b> (ámbar): «Cobrar» abre el cobro ahí mismo.</li>
           <li><b>Impresora</b> (rojo): sin papel o desconectada.</li>
-          <li><b>Mesa de otro día</b> (rojo): solo al encargado.</li>
+          <li><b>Mesa abierta más de 6 h</b> (rojo): solo al encargado.</li>
         </ul>
       </div>
       <div class="nota">
@@ -2669,12 +2927,15 @@
   <section class="seccion" data-pestana="panel" id="sec-panel" hidden>
     <h2>El Panel de Estook</h2>
     <p class="intro">
-      Menos widgets y más útiles, con foto y color. El gerente y el jefe eligen; cocina y sala ven
-      solo lo suyo. Cambia el puesto y «El primer día» para ver cómo sale sin datos.
+      Menos widgets y más útiles, con foto y color. Gerente, jefe de cocina y jefe de sala tienen
+      cada uno su Panel y eligen lo que añaden; cocina y sala ven solo lo suyo. Pasa el ratón (o el
+      dedo) por las gráficas. Cambia el puesto y «El primer día» para ver cómo sale sin datos.
     </p>
     <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px">
       <div class="interruptor" role="group" aria-label="Puesto" id="panel-rol">
         <button type="button" data-rol="gerente" aria-pressed="true">Gerente</button>
+        <button type="button" data-rol="jefe-cocina" aria-pressed="false">Jefe de cocina</button>
+        <button type="button" data-rol="jefe-sala" aria-pressed="false">Jefe de sala</button>
         <button type="button" data-rol="cocina" aria-pressed="false">Cocinero</button>
         <button type="button" data-rol="sala" aria-pressed="false">Camarera</button>
       </div>
@@ -2689,84 +2950,102 @@
     </div>
     <div class="notas">
       <div class="nota">
-        <h3><span class="chip cambia">Juntos</span> De 18 widgets a 13</h3>
+        <h3><span class="chip cambia">Fijos arriba</span> Lo de cada puesto</h3>
         <ul>
           <li>
-            <b>Las cifras del día</b>: ventas, food cost, merma y objetivos, en cuatro tarjetas.
+            <b>Gerente</b>: las cifras del día, ventas y compras, lo que más sale, secciones,
+            equipo, cobros y el almacén.
           </li>
-          <li><b>Ventas y compras</b>: las dos gráficas en una.</li>
-          <li><b>El almacén pide</b>: bajo mínimo, caduca, agotados y compras de hoy.</li>
-          <li><b>Tu día</b>: turno, fichar y tus horas.</li>
+          <li>
+            <b>Jefe de cocina</b>: food cost y merma, lo que se escapa, caducidades, bajo mínimo,
+            repartos y la cocina en el servicio.
+          </li>
+          <li>
+            <b>Jefe de sala</b>: ventas, ticket medio, mesas, espera, cuándo se vende, la sala ahora
+            y sus objetivos.
+          </li>
         </ul>
       </div>
       <div class="nota">
-        <h3><span class="chip nuevo">Nuevo</span> Con lo que ya hay</h3>
+        <h3><span class="chip nuevo">Nuevo</span> Añadidos por ti, abajo</h3>
         <p>
-          Lo que más sale (con la foto del plato), las secciones, por dónde entra y cómo se cobra.
-          Salen de Información y de los cobros: no hace falta nada nuevo en la base.
+          Debajo de «Ventas según canal», los que cada uno añade: objetivos, repartos, caducidades,
+          mis horas, agotados, el tablón… Todos del mismo tamaño, así nunca quedan huecos ni se
+          pisan. Los fijos de arriba no se mueven.
+        </p>
+      </div>
+      <div class="nota">
+        <h3><span class="chip nuevo">Nuevo</span> Gráficas que responden</h3>
+        <p>
+          Con el ratón, al pasar por encima; con el dedo, al tocar. Cada columna dice su día (o su
+          hora) y sus cifras. También la barra de canales, los objetivos y lo que se escapa.
+        </p>
+      </div>
+      <div class="nota">
+        <h3><span class="chip ya">Con lo que ya hay</span> De dónde sale</h3>
+        <p>
+          Lo que más sale, las secciones, cuándo se vende y la cocina salen de Información; lo que
+          se escapa, de «Qué ha cambiado» de Escandallos; los cobros, de la caja. Uber Eats, en
+          «Ventas según canal», cuando lo conectes (M29).
         </p>
       </div>
       <div class="nota">
         <h3><span class="chip fuera">Fuera</span> Lo que sobra</h3>
-        <p>
-          «Tus apps» (ya están en el menú) y «Valor de la cámara» suelto (va dentro de El almacén
-          pide). «Mis horas» va dentro de Tu día.
-        </p>
-      </div>
-      <div class="nota">
-        <h3><span class="chip nuevo">Nuevo</span> Canales, cuando lleguen</h3>
-        <p>
-          En «+ Añadir» hay un grupo Canales. Uber Eats sale ahí cuando lo conectes (M29), con lo
-          suyo: pedidos, lo que deja y lo que más sale ahí.
-        </p>
+        <p>«Tus apps» (ya están en el menú lateral). Lo demás se junta o pasa a «Añadidos».</p>
       </div>
     </div>
   </section>
 
   <!-- 8 · LO QUE CAMBIA --------------------------------------------------------------- -->
   <section class="seccion" data-pestana="resumen" id="sec-resumen" hidden>
-    <h2>Lo que cambia y lo que te pregunto</h2>
-    <p class="intro">
-      Lo que ya contestaste, aplicado. Lo que queda por decidir, con mi recomendación.
-    </p>
+    <h2>Lo decidido</h2>
+    <p class="intro">Lo que contestaste el 18-nov, ya aplicado en la maqueta.</p>
     <div class="preguntas">
       <div class="pregunta">
-        <h3>1 · ¿Todos cobran, o solo toman nota?</h3>
+        <h3>Todos toman nota y cobran, cada uno con su PIN</h3>
         <p>
-          Hoy el cocinero no puede tomar nota porque su puesto no lo trae (Roles 1.12). Me dijiste
-          que todos con su PIN pueden ticar: lo cambio. Lo que falta saber es si también cobran. La
-          venta rápida es ticar y cobrar en el mismo sitio.
+          Cada cobro queda a nombre de quien teclea; el gerente lo puede quitar por puesto. Los
+          Ajustes cambian según quién entra.
         </p>
-        <ol>
-          <li>
-            <span class="reco">Todos toman nota y cobran (recomendado).</span> Cada cobro queda a
-            nombre de su PIN; si falta dinero se sabe quién cobró. El gerente lo puede quitar por
-            puesto.
-          </li>
-          <li>
-            Todos toman nota y solo sala y encargados cobran. El cocinero tica, pero para cobrar
-            llama a alguien.
-          </li>
-        </ol>
       </div>
       <div class="pregunta">
-        <h3>2 · ¿Los seis colores de las mesas te valen?</h3>
+        <h3>Los seis colores sólidos de las mesas</h3>
         <p>
           Libre gris claro, te toca ámbar, esperando azul, marchar naranja, comiendo verde y
-          ¿cuenta? rosa. Son sólidos y se leen igual en oscuro y en claro.
+          ¿cuenta? rosa.
         </p>
       </div>
       <div class="pregunta">
-        <h3>3 · Lo que propongo además</h3>
+        <h3>La mesa: tres iconos arriba y tres botones abajo</h3>
+        <p>
+          Arriba, mover, la nota a cocina y «⋯ Más opciones» (con «Repetir pedido» dentro). Abajo,
+          Pedir, Cuenta y Cobrar.
+        </p>
+      </div>
+      <div class="pregunta">
+        <h3>Lo propuesto, aceptado</h3>
         <ul>
-          <li><b>La columna «Ahora»</b> en PC, con lo urgente ordenado.</li>
-          <li><b>Mesa de otro día</b>: borde rojo y aviso al encargado.</li>
-          <li>
-            <b>La pastilla de la caja</b> arriba, con lo que hay en el cajón y un toque para «Cómo
-            va».
-          </li>
-          <li><b>El Panel con siluetas</b> el primer día, cada una con el paso que la llena.</li>
+          <li><b>La columna «Ahora»</b> en PC (marcada en naranja en la sala).</li>
+          <li><b>Mesa abierta más de 6 h</b>: borde rojo y aviso al encargado.</li>
+          <li><b>La pastilla de la caja</b> arriba, con lo que hay en el cajón.</li>
+          <li><b>El Panel con siluetas</b> el primer día, con el paso que llena cada una.</li>
         </ul>
+      </div>
+      <div class="pregunta">
+        <h3>Un local que deja Pro</h3>
+        <p>
+          <b>Pasa a Esencial</b>: Estook sigue entero. De Estook TPV ve y descarga todo lo suyo
+          (tickets, facturas, cierres de caja e informes), pero no abre mesas, no cobra y no monta
+          nada: eso es de Pro. Lo único que sigue pudiendo hacer es lo que la ley le pide sobre
+          tickets ya cobrados: la factura completa de un ticket si el cliente la pide, y corregir un
+          documento ya emitido.
+        </p>
+        <p>
+          <b>Se da de baja</b>: ya está escrito en la conservación de datos. Sesenta días en solo
+          lectura para mirar y descargar todo; después, archivado, y sus tickets y facturas se
+          guardan los seis años que exige la ley. La pantalla «Tus datos», solo con lo que se puede
+          descargar, llega con M27.
+        </p>
       </div>
     </div>
     <h2 style="margin-top: 28px">Lo que cambia en los documentos</h2>
@@ -2783,8 +3062,8 @@
           <tr>
             <td>Roles, 1.12</td>
             <td>
-              Tomar nota: también cocinero y jefe de cocina (y cobrar, según la pregunta 1). Con su
-              migración.
+              Tomar nota y cobrar: todos los puestos, cocinero y jefe de cocina incluidos, cada uno
+              con su PIN. Con su migración.
             </td>
           </tr>
           <tr>
@@ -2873,6 +3152,11 @@
     pausa: '<path d="M9 5v14M15 5v14"/>',
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     lista: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    objetivo:
+      '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
+    nota: '<path d="M5 4h14v12H9l-4 4z"/><path d="M9 9h6M9 12h4"/>',
+    puntos:
+      '<circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/>',
   };
   function ic(n, extra) {
     return (
@@ -3663,12 +3947,50 @@
       '<div class="t-grupo"><h5>Para el encargado</h5>' +
       '<div class="t-fila"><span class="num" style="background:var(--t-mal-s);color:var(--t-mal)">' +
       ic('alerta', ' width="22" height="22"') +
-      '</span><span class="que"><b>Mesa 1, abierta desde el lunes</b><small>46 h · 62,40 € sin cobrar</small></span><button type="button" class="accion suave" data-abrir="1">Ver</button></div>' +
+      '</span><span class="que"><b>Mesa 1, abierta hace 46 h</b><small>Avisa a partir de 6 h · 62,40 € sin cobrar</small></span><button type="button" class="accion suave" data-abrir="1">Ver</button></div>' +
       '</div>' +
       '</div>'
     );
   }
-  function ladoMesa(n) {
+  /* «⋯» y la nota, las de la mesa (0131): se abren encima de lo pedido, sin salir de la mesa. */
+  function hojaDeLaMesa(que) {
+    const op = (ico, texto, sub, rojo) =>
+      '<button type="button" class="opcion-mesa' +
+      (rojo ? ' roja' : '') +
+      '"><i>' +
+      ic(ico) +
+      '</i><span>' +
+      texto +
+      (sub ? '<small>' + sub + '</small>' : '') +
+      '</span></button>';
+    if (que === 'nota') {
+      return (
+        '<div class="hoja-mesa"><h5>Nota para cocina</h5>' +
+        '<div class="chips-nota">' +
+        ['Sin sal', 'Poco hecho', 'Sin cebolla', 'Para compartir', 'Lo antes posible']
+          .map((c) => '<button type="button">' + c + '</button>')
+          .join('') +
+        '</div>' +
+        '<textarea id="nota-cocina" rows="2" placeholder="Escribe la nota…"></textarea>' +
+        '<button type="button" class="t-boton principal" data-hoja-mesa="">' +
+        ic('olla') +
+        'Mandar la nota a cocina</button></div>'
+      );
+    }
+    return (
+      '<div class="hoja-mesa"><h5>Más opciones de la mesa</h5><div class="opciones-mesa">' +
+      op('repetir', 'Repetir pedido', 'Vuelve a pedir lo último') +
+      op('alerta', 'Alergias', 'Las de cada persona') +
+      op('reloj', 'Tienen prisa', 'Cocina lo ve primero') +
+      op('personas', 'Comensales', '4 pax') +
+      op('olla', 'Todo junto o por pases') +
+      op('impresora', 'Reimprimir la comanda') +
+      op('puerta', 'Liberar la mesa') +
+      op('cerrar', 'Anular', 'Con permiso y motivo', true) +
+      '</div></div>'
+    );
+  }
+  function ladoMesa(n, hoja) {
     const m = MESAS.find((x) => x.n === n);
     const e = ESTADO[m.estado];
     if (m.estado === 'libre') {
@@ -3715,17 +4037,30 @@
       ' pax · ' +
       (m.quien === 'RI' ? 'Ricardo' : m.quien === 'LA' ? 'Laura' : 'Cooker') +
       '</small></div>' +
-      '<button type="button" class="t-icono" aria-label="Mover">' +
-      ic('flecha') +
-      '</button>' +
       '<button type="button" class="t-icono" data-volver aria-label="Volver">' +
       ic('cerrar') +
       '</button></div>' +
+      '<div class="iconos-mesa">' +
+      '<button type="button">' +
+      ic('flecha') +
+      'Mover</button>' +
+      '<button type="button" class="' +
+      (hoja === 'nota' ? 'si' : '') +
+      '" data-hoja-mesa="nota">' +
+      ic('nota') +
+      'Nota</button>' +
+      '<button type="button" class="' +
+      (hoja === 'mas' ? 'si' : '') +
+      '" data-hoja-mesa="mas">' +
+      ic('puntos') +
+      'Más opciones</button>' +
+      '</div>' +
       (m.ayer
         ? '<div style="margin:0 14px 8px;padding:10px 12px;border-radius:12px;background:var(--t-mal-s);color:var(--t-mal);font-weight:700;font-size:13px;display:flex;gap:8px;align-items:center">' +
           ic('alerta', ' width="18" height="18"') +
-          'Abierta desde el lunes (46 h). Cóbrala o anúlala.</div>'
+          'Lleva 46 h abierta (avisa a partir de 6 h). Cóbrala o anúlala.</div>'
         : '') +
+      (hoja ? hojaDeLaMesa(hoja) : '') +
       '<div class="t-lado-cuerpo" style="gap:0">' +
       l
         .map(
@@ -3752,11 +4087,9 @@
       '</div>' +
       '</div>' +
       '<div class="t-botones">' +
-      '<div class="dos"><button type="button" class="t-boton principal">' +
+      '<button type="button" class="t-boton principal">' +
       ic('mas') +
-      'Pedir</button><button type="button" class="t-boton">' +
-      ic('repetir') +
-      'Repetir pedido</button></div>' +
+      'Pedir</button>' +
       '<div class="dos"><button type="button" class="t-boton">' +
       ic('ticket') +
       'Cuenta</button><button type="button" class="t-boton cobrar">' +
@@ -3769,6 +4102,7 @@
     opts = opts || {};
     const el = document.getElementById(id);
     let elegida = opts.elegida || null;
+    let hoja = opts.hoja || null;
     function pintar() {
       el.innerHTML =
         barraArriba('sala', opts) +
@@ -3808,12 +4142,27 @@
         '</div>' +
         (opts.compacta
           ? ''
-          : '<aside class="t-lado">' + (elegida ? ladoMesa(elegida) : ladoAhora()) + '</aside>') +
+          : '<aside class="t-lado' +
+            (opts.senalar && !elegida ? ' senalada' : '') +
+            '">' +
+            (opts.senalar && !elegida
+              ? '<span class="senal">La columna «Ahora»: lo que pide atención, por orden</span>'
+              : '') +
+            (elegida ? ladoMesa(elegida, hoja) : ladoAhora()) +
+            '</aside>') +
         '</div>' +
         (opts.avisos ? avisosApilados() : '');
+      el.querySelectorAll('[data-hoja-mesa]').forEach((b) =>
+        b.addEventListener('click', () => {
+          const que = b.dataset.hojaMesa;
+          hoja = que === '' || hoja === que ? null : que;
+          pintar();
+        }),
+      );
       el.querySelectorAll('.mesa').forEach((g) => {
         const abrir = () => {
           elegida = Number(g.dataset.n);
+          hoja = null;
           pintar();
         };
         g.addEventListener('click', abrir);
@@ -4276,8 +4625,10 @@
       e.color +
       ';color:' +
       e.texto +
-      '">5</span><div><b>Mesa 5</b><small>Marchar 2.º · 4 pax</small></div><button type="button" class="t-icono" aria-label="Más">' +
-      ic('menu') +
+      '">5</span><div><b>Mesa 5</b><small>Marchar 2.º · 4 pax</small></div><button type="button" class="t-icono" aria-label="Nota para cocina">' +
+      ic('nota') +
+      '</button><button type="button" class="t-icono" aria-label="Más opciones de la mesa" style="margin-left:0">' +
+      ic('puntos') +
       '</button></div>' +
       '<div class="m-cuerpo">' +
       LINEAS[5]
@@ -4305,8 +4656,8 @@
       '<div class="m-botones"><div class="t-botones" style="padding:0;border:0"><div class="dos"><button type="button" class="t-boton principal">' +
       ic('mas') +
       'Pedir</button><button type="button" class="t-boton">' +
-      ic('repetir') +
-      'Repetir pedido</button></div><button type="button" class="t-boton cobrar">' +
+      ic('ticket') +
+      'Cuenta</button></div><button type="button" class="t-boton cobrar">' +
       ic('efectivo') +
       'Cobrar 54,90 €</button></div></div>';
   }
@@ -4379,7 +4730,7 @@
                 '</small></span></div>',
             )
             .join('') +
-          '<div><span class="muestra" style="background:transparent;border:3px dashed var(--t-mal);color:var(--t-mal)">!</span><span><b>De otro día</b><small>Lleva abierta desde antes de hoy</small></span></div>' +
+          '<div><span class="muestra" style="background:transparent;border:3px dashed var(--t-mal);color:var(--t-mal)">!</span><span><b>Más de 6 h</b><small>Lleva abierta más de seis horas</small></span></div>' +
           '<div><span class="muestra" style="background:rgba(0,0,0,.22);color:var(--t-texto);font-size:12px">RI</span><span><b>Su camarero</b><small>Las iniciales de quien la lleva</small></span></div>' +
           '</div></div>'
         : '<h4>Tu sesión</h4><p>Lo tuyo en este aparato. Lo demás de Ajustes lo lleva un encargado.</p>' +
@@ -4392,31 +4743,9 @@
   }
 
   /* ── 7 · El Panel ──────────────────────────────────────────────────────── */
-  function graficaVentas() {
-    const v = [1320, 1480, 1210, 1690, 2210, 2640, 1842];
-    const c = [410, 980, 300, 520, 1150, 380, 460];
-    const dias = ['J', 'V', 'S', 'D', 'L', 'M', 'X'];
-    const W = 560,
-      H = 170,
-      max = 3000,
-      x0 = 40,
-      paso = (W - x0 - 10) / 6;
-    const y = (n) => 10 + (H - 30) * (1 - n / max);
-    const linea = v.map((n, i) => (i ? 'L' : 'M') + (x0 + i * paso) + ' ' + y(n)).join(' ');
-    const area = linea + ' L' + (x0 + 6 * paso) + ' ' + y(0) + ' L' + x0 + ' ' + y(0) + ' Z';
-    const barras = c
-      .map(
-        (n, i) =>
-          '<rect x="' +
-          (x0 + i * paso - 9) +
-          '" y="' +
-          y(n) +
-          '" width="18" height="' +
-          (y(0) - y(n)) +
-          '" rx="5" fill="var(--info)" opacity=".55"/>',
-      )
-      .join('');
-    const rejilla = [0, 1000, 2000, 3000]
+  /* Las gráficas del Panel: al pasar el ratón (o tocar con el dedo) cada columna dice lo suyo. */
+  function rejillaY(x0, W, y, ticks, fmt) {
+    return ticks
       .map(
         (n) =>
           '<line x1="' +
@@ -4427,29 +4756,144 @@
           y(n) +
           '" y2="' +
           y(n) +
-          '" stroke="var(--borde)"/><text x="' +
+          '" stroke="var(--borde)"/>' +
+          '<text x="' +
           (x0 - 8) +
           '" y="' +
           (y(n) + 4) +
           '" text-anchor="end" font-size="11" fill="var(--tenue)">' +
-          n / 1000 +
-          'k</text>',
+          fmt(n) +
+          '</text>',
       )
       .join('');
-    const etiquetas = dias
+  }
+  function etiquetasX(etiquetas, xi, H, hoy) {
+    return etiquetas
       .map(
         (d, i) =>
           '<text x="' +
-          (x0 + i * paso) +
+          xi(i) +
           '" y="' +
           (H - 2) +
           '" text-anchor="middle" font-size="11" font-weight="' +
-          (i === 6 ? 800 : 500) +
+          (i === hoy ? 800 : 500) +
           '" fill="' +
-          (i === 6 ? 'var(--texto)' : 'var(--tenue)') +
+          (i === hoy ? 'var(--texto)' : 'var(--tenue)') +
           '">' +
           d +
           '</text>',
+      )
+      .join('');
+  }
+  function golpes(n, xi, paso, H, tips) {
+    return Array.from(
+      { length: n },
+      (_, i) =>
+        '<rect class="hit" x="' +
+        (xi(i) - paso / 2) +
+        '" y="0" width="' +
+        paso +
+        '" height="' +
+        (H - 16) +
+        '" data-tip="' +
+        tips[i] +
+        '"/>',
+    ).join('');
+  }
+  function graficaLinea(o) {
+    const W = 560,
+      H = 170,
+      x0 = 40;
+    const n = o.linea.length;
+    const paso = (W - x0 - 10) / (n - 1);
+    const xi = (i) => x0 + i * paso;
+    const min = o.min || 0;
+    const y = (v) => 10 + (H - 30) * (1 - (v - min) / (o.max - min));
+    const linea = o.linea.map((v, i) => (i ? 'L' : 'M') + xi(i) + ' ' + y(v)).join(' ');
+    const area = linea + ' L' + xi(n - 1) + ' ' + y(min) + ' L' + x0 + ' ' + y(min) + ' Z';
+    const barras = (o.barras || [])
+      .map(
+        (v, i) =>
+          '<rect x="' +
+          (xi(i) - 9) +
+          '" y="' +
+          y(v) +
+          '" width="18" height="' +
+          (y(0) - y(v)) +
+          '" rx="5" fill="var(--info)" opacity=".55"/>',
+      )
+      .join('');
+    const objetivo =
+      o.objetivo === undefined
+        ? ''
+        : '<line x1="' +
+          x0 +
+          '" x2="' +
+          (W - 6) +
+          '" y1="' +
+          y(o.objetivo) +
+          '" y2="' +
+          y(o.objetivo) +
+          '" stroke="var(--bien)" stroke-width="2" stroke-dasharray="6 5"/>' +
+          '<text x="' +
+          (W - 8) +
+          '" y="' +
+          (y(o.objetivo) - 6) +
+          '" text-anchor="end" font-size="11" font-weight="700" fill="var(--bien)">objetivo</text>';
+    const id = 'g' + Math.random().toString(36).slice(2, 7);
+    return (
+      '<svg viewBox="0 0 ' +
+      W +
+      ' ' +
+      H +
+      '" width="100%" height="100%" preserveAspectRatio="none" font-family="Montserrat, sans-serif">' +
+      '<defs><linearGradient id="' +
+      id +
+      '" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff7a00" stop-opacity=".28"/><stop offset="1" stop-color="#ff7a00" stop-opacity="0"/></linearGradient></defs>' +
+      rejillaY(x0, W, y, o.ticks, o.fmtTick) +
+      barras +
+      objetivo +
+      '<path d="' +
+      area +
+      '" fill="url(#' +
+      id +
+      ')"/><path d="' +
+      linea +
+      '" fill="none" stroke="#ff7a00" stroke-width="3" stroke-linejoin="round"/>' +
+      '<circle cx="' +
+      xi(o.hoy) +
+      '" cy="' +
+      y(o.linea[o.hoy]) +
+      '" r="6" fill="#ff7a00" stroke="var(--superficie)" stroke-width="3"/>' +
+      etiquetasX(o.etiquetas, xi, H, o.hoy) +
+      golpes(n, xi, paso, H, o.tips) +
+      '</svg>'
+    );
+  }
+  function graficaBarras(o) {
+    const W = 560,
+      H = 170,
+      x0 = 40;
+    const n = o.valores.length;
+    const paso = (W - x0 - 10) / n;
+    const xi = (i) => x0 + paso * (i + 0.5);
+    const y = (v) => 10 + (H - 30) * (1 - v / o.max);
+    const barras = o.valores
+      .map(
+        (v, i) =>
+          '<rect x="' +
+          (xi(i) - paso * 0.32) +
+          '" y="' +
+          y(v) +
+          '" width="' +
+          paso * 0.64 +
+          '" height="' +
+          (y(0) - y(v)) +
+          '" rx="6" fill="' +
+          (i === o.resaltar ? '#ff7a00' : 'var(--info)') +
+          '" opacity="' +
+          (i === o.resaltar ? 1 : 0.55) +
+          '"/>',
       )
       .join('');
     return (
@@ -4458,22 +4902,44 @@
       ' ' +
       H +
       '" width="100%" height="100%" preserveAspectRatio="none" font-family="Montserrat, sans-serif">' +
-      '<defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff7a00" stop-opacity=".28"/><stop offset="1" stop-color="#ff7a00" stop-opacity="0"/></linearGradient></defs>' +
-      rejilla +
+      rejillaY(x0, W, y, o.ticks, o.fmtTick) +
       barras +
-      '<path d="' +
-      area +
-      '" fill="url(#ga)"/><path d="' +
-      linea +
-      '" fill="none" stroke="#ff7a00" stroke-width="3" stroke-linejoin="round"/>' +
-      '<circle cx="' +
-      (x0 + 6 * paso) +
-      '" cy="' +
-      y(1842) +
-      '" r="6" fill="#ff7a00" stroke="var(--superficie)" stroke-width="3"/>' +
-      etiquetas +
+      etiquetasX(o.etiquetas, xi, H, o.resaltar) +
+      golpes(n, xi, paso, H, o.tips) +
       '</svg>'
     );
+  }
+  const DIAS = [
+    'Jueves 12',
+    'Viernes 13',
+    'Sábado 14',
+    'Domingo 15',
+    'Lunes 16',
+    'Martes 17',
+    'Miércoles 18 (hoy)',
+  ];
+  function graficaVentas() {
+    const v = [1320, 1480, 1210, 1690, 2210, 2640, 1842];
+    const c = [410, 980, 300, 520, 1150, 380, 460];
+    return graficaLinea({
+      linea: v,
+      barras: c,
+      max: 3000,
+      ticks: [0, 1000, 2000, 3000],
+      fmtTick: (n) => n / 1000 + 'k',
+      hoy: 6,
+      etiquetas: ['J', 'V', 'S', 'D', 'L', 'M', 'X'],
+      tips: v.map(
+        (n, i) =>
+          '<b>' +
+          DIAS[i] +
+          '</b>Ventas ' +
+          n.toLocaleString('es-ES') +
+          ' € · Compras ' +
+          c[i].toLocaleString('es-ES') +
+          ' €',
+      ),
+    });
   }
   function medidor(partes, centro, sub) {
     const R = 70,
@@ -4803,16 +5269,378 @@
           '</i><span>La cámara vale<small>4.310 € en género</small></span></div>' +
           '</div>',
       ) +
+      ventasSegunCanal() +
+      anadidos(['objetivos', 'repartos', 'caducidades', 'horas'])
+    );
+  }
+  /* Ventas según canal: la barra entera responde, cada trozo con lo suyo. */
+  function ventasSegunCanal() {
+    const c = [
+      ['Sala', 58, 1068, 'var(--naranja)'],
+      ['Barra y rápida', 22, 405, '#ffd23f'],
+      ['Para llevar', 12, 221, 'var(--info)'],
+      ['Uber Eats', 8, 148, '#06c167'],
+    ];
+    return w(
+      12,
+      2,
+      '<div style="display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:center;height:100%">' +
+        '<div>' +
+        cab('moto', 'Ventas según canal') +
+        '<small style="color:var(--tenue);font-weight:600">Lo vendido hoy en cada canal</small></div>' +
+        '<div><div class="canales">' +
+        c.map((x) => '<div><b>' + x[1] + ' %</b>' + x[0] + '</div>').join('') +
+        '</div><div class="canales-barra">' +
+        c
+          .map(
+            (x) =>
+              '<i data-tip="<b>' +
+              x[0] +
+              '</b>' +
+              x[2] +
+              ' € · ' +
+              x[1] +
+              ' % de hoy" style="width:' +
+              x[1] +
+              '%;background:' +
+              x[3] +
+              '"></i>',
+          )
+          .join('') +
+        '</div></div></div>',
+    );
+  }
+  /* Los widgets que cada uno añade van debajo de los fijos, todos del mismo tamaño. */
+  const ANADIBLES = {
+    objetivos: () =>
+      cab('objetivo', 'Objetivos', true) +
+      '<div class="lista-obj">' +
+      [
+        ['Ventas de la semana', '12.392 de 15.000 €', 83, 'var(--atencion)'],
+        ['Ventas del mes', '38.410 de 52.000 €', 74, 'var(--atencion)'],
+        ['Food cost', '29,4 % · el objetivo, 30 %', 100, 'var(--bien)'],
+      ]
+        .map(
+          (o) =>
+            '<div data-tip="<b>' +
+            o[0] +
+            '</b>' +
+            o[1] +
+            '"><span>' +
+            o[0] +
+            '<small>' +
+            o[1] +
+            '</small></span><div class="barra-obj"><i style="width:' +
+            o[2] +
+            '%;background:' +
+            o[3] +
+            '"></i></div></div>',
+        )
+        .join('') +
+      '</div>',
+    repartos: () =>
+      cab('moto', 'Repartos de hoy', true) +
+      '<div class="lista-w">' +
+      '<div><i style="background:var(--info-s);color:var(--info)">' +
+      ic('bolsa') +
+      '</i><span>Makro<small>Hoy, 17:00 · 12 productos</small></span><em>486 €</em></div>' +
+      '<div><i style="background:var(--bien-s);color:var(--bien)">' +
+      ic('hoja') +
+      '</i><span>Frutas Iker<small>Mañana, 9:00 · por pedir</small></span><em>—</em></div>' +
+      '<div><i style="background:var(--superficie-2);color:var(--suave)">' +
+      ic('copa') +
+      '</i><span>Bebidas Norte<small>Viernes · pedido enviado</small></span><em>212 €</em></div>' +
+      '</div>',
+    caducidades: () =>
+      cab('reloj', 'Caduca pronto', true) +
+      '<div class="lista-w">' +
+      '<div><i style="background:var(--mal-s);color:var(--mal)">' +
+      ic('alerta') +
+      '</i><span>Burrata<small>Mañana · 6 uds</small></span></div>' +
+      '<div><i style="background:var(--atencion-s);color:var(--atencion)">' +
+      ic('reloj') +
+      '</i><span>Nata<small>Viernes · 2 l</small></span></div>' +
+      '<div><i style="background:var(--atencion-s);color:var(--atencion)">' +
+      ic('reloj') +
+      '</i><span>Salsa de tomate<small>Viernes · 3 kg</small></span></div>' +
+      '</div>',
+    horas: () =>
+      cab('reloj', 'Mis horas') +
+      '<div class="cifra">22 h 30\'</div><small style="color:var(--tenue);font-weight:600">esta semana, de 40 h del horario</small>' +
+      '<div class="barra-obj" style="height:10px;margin-top:12px"><i style="width:56%;background:var(--naranja)"></i></div>' +
+      '<div class="tendencia" style="color:var(--suave)">Hoy, de 12:00 a 16:00</div>',
+    tablon: () =>
+      cab('tablon', 'El tablón') +
+      '<div class="lista-w"><div><i style="background:var(--naranja-suave);color:var(--naranja)">' +
+      ic('chat') +
+      '</i><span>Ricardo<small>Hoy viene Sanidad a las 17:00. Cámaras ordenadas.</small></span></div></div>',
+    agotados: () =>
+      cab('alerta', 'Agotados', true) +
+      '<div class="lista-w"><div><i style="background:var(--mal-s);color:var(--mal)">' +
+      ic('pizza') +
+      '</i><span>Calzone<small>Desde las 13:20 · vuelve mañana</small></span></div></div>',
+  };
+  function anadidos(cuales) {
+    return (
+      '<div class="p-separador" style="grid-column:span 12">Añadidos por ti<span>Van debajo, del mismo tamaño, en el orden que elijas</span></div>' +
+      cuales.map((c) => w(3, 3, ANADIBLES[c]())).join('') +
+      '<div class="w anadir fino" style="grid-column:span 12;grid-row:span 1" data-galeria>' +
+      ic('mas') +
+      'Añadir un widget</div>'
+    );
+  }
+  function panelJefeCocina(cero) {
+    if (cero) return panelGerente(true);
+    const fc = [31.2, 30.4, 32.8, 29.9, 28.7, 29.1, 29.4];
+    const merma = [12, 9, 22, 6, 14, 15, 8];
+    return (
+      kpi(
+        'olla',
+        'Food cost real',
+        '29,4 <small>%</small>',
+        '0,6 pts bajo el objetivo <span>(30 %)</span>',
+        true,
+        98,
+        'destacado',
+      ) +
+      kpi(
+        'alerta',
+        'Merma de la semana',
+        '86 <small>€</small>',
+        '+22 € <span>vs. la semana pasada</span>',
+        false,
+      ) +
+      kpi(
+        'bolsa',
+        'Compras de la semana',
+        '4.200 <small>€</small>',
+        '34 % <span>de lo vendido</span>',
+        true,
+      ) +
+      kpi(
+        'nieve',
+        'La cámara vale',
+        '4.310 <small>€</small>',
+        '−180 € <span>desde el lunes</span>',
+        true,
+      ) +
+      w(
+        7,
+        4,
+        cab(
+          'grafica',
+          'Food cost y merma',
+          true,
+          '<span class="leyenda-linea"><span><i style="background:#ff7a00"></i>Food cost</span><span><i style="background:var(--bien);height:3px;border-radius:2px"></i>Objetivo</span></span>',
+        ) +
+          '<div style="display:flex;align-items:baseline;gap:10px"><div class="cifra">29,4 %</div><small style="color:var(--tenue);font-weight:600">esta semana · merma 86 €</small></div>' +
+          '<div style="flex:1;min-height:0;margin-top:6px">' +
+          graficaLinea({
+            linea: fc,
+            min: 24,
+            max: 36,
+            ticks: [24, 28, 32, 36],
+            fmtTick: (n) => n + ' %',
+            hoy: 6,
+            objetivo: 30,
+            etiquetas: ['J', 'V', 'S', 'D', 'L', 'M', 'X'],
+            tips: fc.map(
+              (n, i) =>
+                '<b>' +
+                DIAS[i] +
+                '</b>Food cost ' +
+                String(n).replace('.', ',') +
+                ' % · merma ' +
+                merma[i] +
+                ' €',
+            ),
+          }) +
+          '</div>',
+      ) +
+      w(
+        5,
+        4,
+        cab(
+          'sube',
+          'Lo que se escapa',
+          true,
+          '<small style="color:var(--tenue);font-weight:600">los costes que suben</small>',
+        ) +
+          '<div class="lista-w">' +
+          '<div data-tip="<b>Burrata</b>La mozzarella de Makro pasó de 9,80 a 10,60 €/kg el 14-nov"><i style="background:var(--mal-s);color:var(--mal)">' +
+          ic('sube') +
+          '</i><span>Burrata<small>La mozzarella subió un 8 %</small></span><em style="color:var(--mal)">+0,40 €</em></div>' +
+          '<div data-tip="<b>Croquetas de jamón</b>Su escandallo da un 34 %; el objetivo es 30 %"><i style="background:var(--atencion-s);color:var(--atencion)">' +
+          ic('alerta') +
+          '</i><span>Croquetas de jamón<small>34 % de food cost, sobre el objetivo</small></span><em style="color:var(--atencion)">34 %</em></div>' +
+          '<div data-tip="<b>Diavola</b>El salami picante subió de 14,20 a 15,10 €/kg"><i style="background:var(--mal-s);color:var(--mal)">' +
+          ic('sube') +
+          '</i><span>Diavola<small>El salami subió un 6 %</small></span><em style="color:var(--mal)">+0,22 €</em></div>' +
+          '<div data-tip="<b>Margarita</b>La harina 00 bajó de 1,10 a 0,98 €/kg"><i style="background:var(--bien-s);color:var(--bien)">' +
+          ic('baja') +
+          '</i><span>Margarita<small>La harina bajó</small></span><em style="color:var(--bien)">−0,06 €</em></div>' +
+          '</div>',
+      ) +
+      w(4, 3, ANADIBLES.caducidades()) +
+      w(
+        4,
+        3,
+        cab('caja', 'Bajo mínimo', true) +
+          '<div class="lista-w">' +
+          '<div><i style="background:var(--mal-s);color:var(--mal)">' +
+          ic('alerta') +
+          '</i><span>Mozzarella<small>Quedan 2 kg · mínimo 5</small></span></div>' +
+          '<div><i style="background:var(--mal-s);color:var(--mal)">' +
+          ic('alerta') +
+          '</i><span>Harina 00<small>Quedan 4 kg · mínimo 10</small></span></div>' +
+          '<div><i style="background:var(--atencion-s);color:var(--atencion)">' +
+          ic('copa') +
+          '</i><span>Barril de cerveza<small>Queda 1 · mínimo 2</small></span></div>' +
+          '</div>',
+      ) +
+      w(4, 3, ANADIBLES.repartos()) +
       w(
         12,
         2,
-        '<div style="display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:center;height:100%">' +
-          '<div>' +
-          cab('moto', 'Por dónde entra') +
-          '<small style="color:var(--tenue);font-weight:600">Lo vendido hoy, por canal</small></div>' +
-          '<div><div class="canales"><div><b>58 %</b>Sala</div><div><b>22 %</b>Barra y rápida</div><div><b>12 %</b>Para llevar</div><div><b>8 %</b>Uber Eats</div></div>' +
-          '<div class="canales-barra"><i style="width:58%;background:var(--naranja)"></i><i style="width:22%;background:#ffd23f"></i><i style="width:12%;background:var(--info)"></i><i style="width:8%;background:#06c167"></i></div></div></div>',
-      )
+        '<div class="fila-cocina">' +
+          cab('olla', 'La cocina en el servicio') +
+          '<div data-tip="<b>Tiempo medio</b>Desde que llega la comanda hasta que sale el último plato"><b>14\'</b>de media por mesa</div>' +
+          '<div data-tip="<b>Lasaña de la casa</b>22\' de media esta semana"><b>Lasaña</b>la que más tarda · 22\'</div>' +
+          '<div><b>112</b>platos sacados hoy</div>' +
+          '<div><b>1</b>mesa esperando ahora</div>' +
+          '</div>',
+      ) +
+      anadidos(['objetivos', 'horas', 'agotados', 'tablon'])
+    );
+  }
+  function panelJefeSala(cero) {
+    if (cero) return panelGerente(true);
+    const horas = [180, 420, 610, 380, 120, 60, 90, 240, 520, 660, 430, 150];
+    const etiquetas = ['12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
+    return (
+      kpi(
+        'grafica',
+        'Ventas de hoy',
+        '1.842<small>,30 €</small>',
+        '+12 % <span>vs. el miércoles pasado</span>',
+        true,
+        74,
+        'destacado',
+      ) +
+      kpi(
+        'ticket',
+        'Ticket medio',
+        '28,80 <small>€</small>',
+        '+1,40 € <span>vs. la semana pasada</span>',
+        true,
+      ) +
+      kpi(
+        'sala',
+        'Mesas ahora',
+        '6 <small>· 2 por cobrar</small>',
+        '30 comensales <span>en sala</span>',
+        true,
+      ) +
+      kpi(
+        'reloj',
+        'Espera de cocina',
+        '14 <small>min</small>',
+        "+2' <span>vs. ayer</span>",
+        false,
+      ) +
+      w(
+        7,
+        4,
+        cab(
+          'grafica',
+          'Cuándo se vende',
+          true,
+          '<small style="color:var(--tenue);font-weight:600">media de los miércoles</small>',
+        ) +
+          '<div style="display:flex;align-items:baseline;gap:10px"><div class="cifra">21:00</div><small style="color:var(--tenue);font-weight:600">la hora fuerte · 660 €</small></div>' +
+          '<div style="flex:1;min-height:0;margin-top:6px">' +
+          graficaBarras({
+            valores: horas,
+            max: 800,
+            ticks: [0, 200, 400, 600, 800],
+            fmtTick: (n) => n,
+            resaltar: 9,
+            etiquetas,
+            tips: horas.map(
+              (n, i) =>
+                '<b>De ' +
+                etiquetas[i] +
+                ':00 a ' +
+                (Number(etiquetas[i]) + 1) +
+                ':00</b>' +
+                n +
+                ' € de media',
+            ),
+          }) +
+          '</div>',
+      ) +
+      w(
+        5,
+        4,
+        cab(
+          'estrella',
+          'Lo que más sale',
+          true,
+          '<small style="color:var(--tenue);font-weight:600">esta semana</small>',
+        ) +
+          '<div class="platos-top">' +
+          FOTOS_TOP.map(
+            (p) =>
+              '<div class="plato-top" data-tip="<b>' +
+              p[0] +
+              '</b>' +
+              p[1] +
+              ' · ' +
+              p[2] +
+              ' de lo vendido"><div class="foto" style="background:' +
+              p[3] +
+              '"><span>' +
+              p[2] +
+              '</span></div><b>' +
+              p[0] +
+              '</b><small>' +
+              p[1] +
+              '</small></div>',
+          ).join('') +
+          '</div>',
+      ) +
+      w(
+        4,
+        3,
+        cab('personas', 'La sala ahora', true) +
+          medidor(
+            [
+              [3, 'var(--bien)'],
+              [1, 'var(--atencion)'],
+            ],
+            '4',
+            'en sala',
+          ) +
+          '<div class="leyenda-w"><span><i style="background:var(--bien)"></i>Trabajando<em>3</em></span><span><i style="background:var(--atencion)"></i>En pausa<em>1</em></span></div>',
+      ) +
+      w(
+        4,
+        3,
+        cab('efectivo', 'Cómo se cobra') +
+          medidor(
+            [
+              [61, 'var(--info)'],
+              [32, 'var(--bien)'],
+              [7, 'var(--naranja)'],
+            ],
+            '61 %',
+            'con tarjeta',
+          ) +
+          '<div class="leyenda-w"><span><i style="background:var(--info)"></i>Tarjeta<em>61 %</em></span><span><i style="background:var(--bien)"></i>Efectivo<em>32 %</em></span><span><i style="background:var(--naranja)"></i>Bizum<em>7 %</em></span></div>',
+      ) +
+      w(4, 3, ANADIBLES.objetivos()) +
+      ventasSegunCanal() +
+      anadidos(['horas', 'agotados', 'repartos', 'caducidades'])
     );
   }
   function panelCocina(cero) {
@@ -4962,9 +5790,21 @@
       )
     );
   }
+  const PUESTOS = {
+    gerente: { nombre: 'Ricardo', puesto: 'Gerente', pinta: panelGerente, elige: true },
+    'jefe-cocina': {
+      nombre: 'Iker',
+      puesto: 'Jefe de cocina',
+      pinta: panelJefeCocina,
+      elige: true,
+    },
+    'jefe-sala': { nombre: 'Marta', puesto: 'Jefa de sala', pinta: panelJefeSala, elige: true },
+    cocina: { nombre: 'Cooker', puesto: 'Cocinero', pinta: panelCocina, elige: false },
+    sala: { nombre: 'Laura', puesto: 'Camarera', pinta: panelSala, elige: false },
+  };
   function pintarPanel(rol, datos) {
     const cero = datos === 'cero';
-    const nombre = rol === 'gerente' ? 'Ricardo' : rol === 'cocina' ? 'Cooker' : 'Laura';
+    const p = PUESTOS[rol];
     const el = document.getElementById('panel-app');
     el.innerHTML =
       '<nav class="p-menu" aria-label="Estook"><span class="marca">' +
@@ -4989,9 +5829,11 @@
       '</button></nav>' +
       '<div class="p-main" style="position:relative">' +
       '<div class="p-cab"><div><h4>Buenas tardes, ' +
-      nombre +
-      '</h4><small>Miércoles, 18 de noviembre · IKATZ</small></div><span class="hueco"></span>' +
-      (rol === 'gerente'
+      p.nombre +
+      '</h4><small>Miércoles, 18 de noviembre · IKATZ · ' +
+      p.puesto +
+      '</small></div><span class="hueco"></span>' +
+      (p.elige
         ? '<button type="button" class="p-boton">' +
           ic('calendario') +
           'Hoy</button><button type="button" class="p-boton principal" data-galeria>' +
@@ -5000,15 +5842,53 @@
         : '<button type="button" class="p-boton">' + ic('rayo') + 'Apuntar merma</button>') +
       '</div>' +
       '<div class="p-rejilla">' +
-      (rol === 'gerente'
-        ? panelGerente(cero)
-        : rol === 'cocina'
-          ? panelCocina(cero)
-          : panelSala(cero)) +
+      p.pinta(cero) +
       '</div>' +
+      '<div class="tip" hidden></div>' +
       '</div>';
-    const abrir = el.querySelectorAll('[data-galeria], .w.anadir');
-    abrir.forEach((b) => b.addEventListener('click', () => galeria(el)));
+    el.querySelectorAll('[data-galeria], .w.anadir').forEach((b) =>
+      b.addEventListener('click', () => galeria(el)),
+    );
+    escucharLosTips(el);
+    ajustarElPanel();
+  }
+  /* El tip: con el ratón al pasar, con el dedo al tocar. Las cuentas, en el tamaño real de la
+     pantalla, porque la maqueta está encogida. */
+  function escucharLosTips(el) {
+    const main = el.querySelector('.p-main');
+    const tip = main.querySelector('.tip');
+    function mostrar(ev) {
+      const t = ev.target.closest && ev.target.closest('[data-tip]');
+      if (!t || !main.contains(t)) {
+        tip.hidden = true;
+        return;
+      }
+      const r = main.getBoundingClientRect();
+      const escala = r.width / main.offsetWidth;
+      tip.innerHTML = t.getAttribute('data-tip');
+      tip.hidden = false;
+      let x = (ev.clientX - r.left) / escala + 14;
+      const y = (ev.clientY - r.top) / escala - 12;
+      if (x + tip.offsetWidth > main.offsetWidth - 8) x = x - tip.offsetWidth - 28;
+      tip.style.left = x + 'px';
+      tip.style.top = Math.max(4, y - tip.offsetHeight) + 'px';
+    }
+    main.addEventListener('pointermove', mostrar);
+    main.addEventListener('pointerdown', mostrar);
+    main.addEventListener('pointerleave', () => (tip.hidden = true));
+  }
+  /* La pantalla del Panel crece con lo que lleva: es una página que se desplaza. */
+  function ajustarElPanel() {
+    const el = document.getElementById('panel-app');
+    const pantalla = el.closest('.pantalla');
+    if (pantalla.offsetParent === null) return;
+    pantalla.dataset.h = '800';
+    encoger();
+    const main = el.querySelector('.p-main');
+    const rejilla = main.querySelector('.p-rejilla');
+    const alto = rejilla.offsetTop + rejilla.scrollHeight + 26;
+    pantalla.dataset.h = String(Math.max(800, Math.ceil(alto)));
+    encoger();
   }
   function galeria(el) {
     const capa = document.createElement('div');
@@ -5090,7 +5970,7 @@
         'moto',
         'var(--superficie-2)',
         'var(--suave)',
-        'Por dónde entra',
+        'Ventas según canal',
         'Sala, barra, para llevar y reparto',
       ) +
       it(
@@ -5134,7 +6014,7 @@
     ['aparatos', 'Móvil y tablet', 'movil'],
     ['ajustes', 'Ajustes', 'engranaje'],
     ['panel', 'El Panel', 'grafica'],
-    ['resumen', 'Lo que te pregunto', 'chat'],
+    ['resumen', 'Lo decidido', 'chat'],
   ];
   const nav = document.getElementById('pestanas');
   nav.innerHTML = PESTANAS.map(
@@ -5151,6 +6031,7 @@
       localStorage.setItem('rediseno-pestana', id);
     } catch (e) {}
     encoger();
+    if (id === 'panel') ajustarElPanel();
   }
   nav.addEventListener('click', (ev) => {
     const b = ev.target.closest('button');
@@ -5197,7 +6078,8 @@
   );
 
   pintarEntrada();
-  pintarSala('sala-pc');
+  pintarSala('sala-pc', { senalar: true });
+  pintarSala('sala-mesa', { elegida: 5, hoja: 'mas' });
   pintarRapida();
   pintarSala('avisos-pc', { avisos: true, elegida: null });
   pintarSala('sala-tablet', { compacta: true });

@@ -229,6 +229,8 @@ export async function porQueNoPasaElPago(
   if (aparato !== null && aparato.funcion !== 'fichar' && !llevaEstookTpv(paraElDominio(fila))) {
     return 'estook_tpv_es_de_pro';
   }
+  // Y lo de Estook TPV que se hace desde Estook, con la sesión de una persona (S1, 0147).
+  if (puertas.deEstookTpv && !llevaEstookTpv(paraElDominio(fila))) return 'estook_tpv_es_de_pro';
   return null;
 }
 
@@ -243,21 +245,33 @@ export async function queLleveEstookTpv(
   funcion: string,
 ): Promise<void> {
   if (funcion === 'fichar') return;
+  if (!(await laOrganizacionLlevaEstookTpv(contexto, organizacionId))) {
+    throw new FalloDeAplicacion('estook_tpv_es_de_pro');
+  }
+}
+
+/**
+ * Si la organización lleva Estook TPV (0120), para lo que una operación solo **enseña** según el
+ * plan: «Hacer una factura» en la lista de tickets sale solo con Pro (S1, 0147). Sin fila, como
+ * si lo llevara: no se esconde lo que hay por un dato que falta.
+ */
+export async function laOrganizacionLlevaEstookTpv(
+  contexto: Contexto,
+  organizacionId: string,
+): Promise<boolean> {
   // Por la 0094: sin sesión, la suscripción no se ve, y leída a pelo llegaba vacía.
   const filas = await contexto.sql<
     { plan: string | null; de_la_casa: boolean; es_ejemplo: boolean }[]
   >`select plan, de_la_casa, es_ejemplo from estook.el_plan_de(${organizacionId}::uuid)`;
   const fila = filas[0];
-  if (
-    fila !== undefined &&
-    !llevaEstookTpv({
+  return (
+    fila === undefined ||
+    llevaEstookTpv({
       plan: fila.plan as CodigoDePlan | null,
       deLaCasa: fila.de_la_casa,
       esEjemplo: fila.es_ejemplo,
     })
-  ) {
-    throw new FalloDeAplicacion('estook_tpv_es_de_pro');
-  }
+  );
 }
 
 // ── El catálogo de Stripe ────────────────────────────────────────────────────

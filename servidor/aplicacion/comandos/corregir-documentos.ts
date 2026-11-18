@@ -370,6 +370,7 @@ export const hacerFacturaDeSenal = comando<
   FacturaHecha
 >({
   nombre: 'hacer_factura_de_senal',
+  deEstookTpv: true,
   entrada: z
     .object({
       cliente: elCliente,

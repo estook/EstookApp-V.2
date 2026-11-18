@@ -226,6 +226,7 @@ export const comprobarUnNif = comando<
   ElNifComprobado
 >({
   nombre: 'comprobar_un_nif',
+  deEstookTpv: true,
   entrada: z
     .object({
       nif: z.string().trim().min(1).max(20),
@@ -269,6 +270,7 @@ export const guardarLaEmpresa = comando<
   }
 >({
   nombre: 'guardar_la_empresa',
+  deEstookTpv: true,
   entrada: entradaDeLaEmpresa,
   exige: EXIGE,
 
@@ -311,6 +313,7 @@ export const guardarLaEmpresa = comando<
 
 export const usarLaEmpresa = comando<{ empresa_id: string }, { readonly empresaId: string }>({
   nombre: 'usar_la_empresa',
+  deEstookTpv: true,
   entrada: z.object({ empresa_id: z.string().uuid() }).strict(),
   exige: EXIGE,
 
@@ -333,6 +336,7 @@ export const contestarDondeTributa = comando<
   { readonly como: LoDelLocal['como'] }
 >({
   nombre: 'contestar_donde_tributa',
+  deEstookTpv: true,
   entrada: z.object({ en_sii: z.boolean(), foral: z.enum(FORALES) }).strict(),
   exige: EXIGE,
 
@@ -364,6 +368,7 @@ export const ponerLasSeries = comando<
   { readonly series: LoDelLocal['series'] }
 >({
   nombre: 'poner_las_series',
+  deEstookTpv: true,
   entrada: z
     .object({
       ticket: z.string().max(40),
@@ -403,6 +408,7 @@ export const ponerLasSeries = comando<
 
 export const darDeAltaEnVerifacti = comando<Record<string, never>, { readonly hecha: true }>({
   nombre: 'dar_de_alta_en_verifacti',
+  deEstookTpv: true,
   entrada: z.object({}).strict(),
   exige: EXIGE,
 
@@ -502,6 +508,7 @@ const entradaDeLaFirmaEnLinea = z
  */
 export const firmarEnLinea = comando<z.infer<typeof entradaDeLaFirmaEnLinea>, LaAutorizacion>({
   nombre: 'firmar_en_linea',
+  deEstookTpv: true,
   entrada: entradaDeLaFirmaEnLinea,
   exige: EXIGE,
   // El enlace es para firmar en nombre de la empresa: no se guarda para repetirlo.
@@ -597,6 +604,7 @@ const entradaDelRepresentante = z
  */
 export const elModeloParaFirmar = comando<z.infer<typeof entradaDelRepresentante>, UnPdf>({
   nombre: 'el_modelo_para_firmar',
+  deEstookTpv: true,
   entrada: entradaDelRepresentante,
   exige: EXIGE,
   sinRecordar: true,
@@ -647,6 +655,7 @@ const TOPE_DEL_PDF = 5 * 1024 * 1024;
 
 export const mandarElModeloFirmado = comando<{ base64: string; firmante: string }, LaAutorizacion>({
   nombre: 'mandar_el_modelo_firmado',
+  deEstookTpv: true,
   entrada: z
     .object({
       base64: z
@@ -749,6 +758,7 @@ export const elegirLaModalidad = comando<
   { readonly modalidad: 'verifactu' | 'sin_envio' }
 >({
   nombre: 'elegir_la_modalidad',
+  deEstookTpv: true,
   entrada: z.object({ modalidad: z.enum(['verifactu', 'sin_envio']) }).strict(),
   exige: EXIGE,
   enElTpv: 'tambien',
@@ -766,6 +776,7 @@ export const elegirLaModalidad = comando<
 
 export const ponerPideTuFactura = comando<{ encendido: boolean }, { readonly encendido: boolean }>({
   nombre: 'poner_pide_tu_factura',
+  deEstookTpv: true,
   entrada: z.object({ encendido: z.boolean() }).strict(),
   exige: EXIGE,
 
@@ -811,6 +822,7 @@ export const darLaFacturacion = comando<
   { readonly laLleva: boolean }
 >({
   nombre: 'dar_la_facturacion',
+  deEstookTpv: true,
   entrada: z.object({ persona_id: z.string().uuid(), la_lleva: z.boolean() }).strict(),
   exige: EXIGE,
 

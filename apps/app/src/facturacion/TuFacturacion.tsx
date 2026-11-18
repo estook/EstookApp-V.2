@@ -191,6 +191,9 @@ export function TuFacturacion() {
   const lo = consulta.data;
   const llega = enQuePaso(lo);
   const e = lo.empresa;
+  // Sin Pro (S1, 0147): la facturación es de Estook TPV. Se ve como estaba y no se toca; la API
+  // lo cierra igual. Sin el dato (la API sin desplegar), como si lo llevara.
+  const sinPro = yo?.cuenta?.conEstookTpv === false;
   const cerrar = () => {
     setAbierto(null);
     void consulta.refetch();
@@ -205,6 +208,14 @@ export function TuFacturacion() {
               ? `Para que ${lo.nombreDelLocal} haga tickets y facturas con Estook TPV.`
               : `${e.nombre} · NIF ${e.nif} · ${lo.territorio === 'canarias' ? 'IGIC' : 'IVA'} · ${LAS_MODALIDADES[e.modalidad].nombre}`}
           </p>
+
+          {sinPro && (
+            <Aviso tono="info" titulo="La facturación es de Estook TPV, que es de Pro">
+              {e === null
+                ? 'Con Pro, aquí se da de alta para hacer tickets y facturas.'
+                : 'Se queda como estaba: tus tickets y facturas siguen en Servicio › Ventas, y ahí puedes hacer la factura de un ticket ya cobrado o corregirlo. Para cambiar el alta, pasa a Pro.'}
+            </Aviso>
+          )}
 
           {e?.dePruebas === true && (
             <Aviso tono="info" titulo="La empresa de pruebas de Verifacti">
@@ -246,6 +257,7 @@ export function TuFacturacion() {
               const ahora = llega === paso && lo.como.estado !== 'lista';
               const parado = lo.como.estado === 'parada' && paso >= 3;
               const puedeAbrir =
+                !sinPro &&
                 !parado &&
                 (hecho || ahora) &&
                 !((paso === 2 || paso === 5) && e?.dePruebas === true) &&
@@ -293,9 +305,9 @@ export function TuFacturacion() {
         </div>
       </Tarjeta>
 
-      <QuienHaceQue cliente={cliente} />
+      {!sinPro && <QuienHaceQue cliente={cliente} />}
 
-      {lo.quienLaLleva !== null && (
+      {!sinPro && lo.quienLaLleva !== null && (
         <QuienLaLleva
           personas={lo.quienLaLleva}
           alCambiar={() => {
@@ -306,14 +318,16 @@ export function TuFacturacion() {
 
       {/* Probar el papel (T6 · 2 · 1, 0136): con el alta lista y en pruebas, con VERI*FACTU o
           por el SII. En real no se imprime nada de mentira (Anexo 4.12). */}
-      {lo.como.estado === 'lista' && e !== null && e.entorno === 'pruebas' && <ElTicketDePrueba />}
+      {!sinPro && lo.como.estado === 'lista' && e !== null && e.entorno === 'pruebas' && (
+        <ElTicketDePrueba />
+      )}
 
       <Tarjeta titulo="«Pide tu factura» en el ticket">
         <div className="flex flex-col gap-e3">
           <Interruptor
             etiqueta="Encendido"
             puesto={lo.pideTuFactura}
-            disabled={cambiando}
+            disabled={cambiando || sinPro}
             alCambiar={(puesto) => {
               setCambiando(true);
               setError(null);

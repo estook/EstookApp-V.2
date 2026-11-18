@@ -118,6 +118,7 @@ export async function tacharEnElLocal(
 
 export const tachar = comando<{ linea_id: string }, { lineaId: string; paseFuera: boolean }>({
   nombre: 'tachar',
+  deEstookTpv: true,
   entrada: z.object({ linea_id: id }).strict(),
   exige: 'accion.cocinar',
   enElTpv: 'tambien',
@@ -159,6 +160,7 @@ export async function destacharEnElLocal(
 
 export const destachar = comando<{ linea_id: string }, { lineaId: string }>({
   nombre: 'destachar',
+  deEstookTpv: true,
   entrada: z.object({ linea_id: id }).strict(),
   exige: 'accion.cocinar',
   enElTpv: 'tambien',
@@ -180,6 +182,7 @@ async function laCuentaDeCocina(contexto: Contexto, localId: string, cuentaId: s
 
 export const todoFuera = comando<{ cuenta_id: string }, { tachados: number }>({
   nombre: 'todo_fuera',
+  deEstookTpv: true,
   entrada: z.object({ cuenta_id: id }).strict(),
   exige: 'accion.cocinar',
   enElTpv: 'tambien',
@@ -213,6 +216,7 @@ export const todoFuera = comando<{ cuenta_id: string }, { tachados: number }>({
 
 export const recuperar = comando<{ cuenta_id: string }, { destachados: number }>({
   nombre: 'recuperar',
+  deEstookTpv: true,
   entrada: z.object({ cuenta_id: id }).strict(),
   exige: 'accion.cocinar',
   enElTpv: 'tambien',

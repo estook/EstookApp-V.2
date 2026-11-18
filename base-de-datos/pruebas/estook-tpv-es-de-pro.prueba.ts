@@ -135,6 +135,54 @@ describe('Estook TPV es de Pro (0120)', () => {
   });
 });
 
+describe('S1 · lo de Estook TPV que se hace desde Estook (0147)', () => {
+  // Llamado a pelo, con la sesión de la gerente: lo que la pantalla ya esconde.
+  const LO_QUE_SE_CIERRA: readonly [string, 'consultar' | 'ejecutar', Record<string, unknown>][] = [
+    ['la_cocina', 'consultar', {}],
+    ['imprimir_un_ticket_de_prueba', 'ejecutar', {}],
+    ['poner_pide_tu_factura', 'ejecutar', { encendido: true }],
+    ['elegir_la_modalidad', 'ejecutar', { modalidad: 'verifactu' }],
+  ];
+  const llamar = async (
+    token: string,
+    [nombre, como, entrada]: (typeof LO_QUE_SE_CIERRA)[number],
+  ) =>
+    como === 'consultar'
+      ? api.consultar(token, nombre, entrada as Record<string, string>)
+      : api.ejecutar(token, nombre, entrada);
+
+  it('en Esencial, se cierra: es de Pro', async () => {
+    await conElPlan('esencial');
+    const rosa = await api.entrar(ROSA);
+    for (const op of LO_QUE_SE_CIERRA) {
+      expect(elFallo(await llamar(rosa, op)), op[0]).toBe('estook_tpv_es_de_pro');
+    }
+  });
+
+  it('en Esencial, lo suyo se sigue viendo: sus tickets y su alta', async () => {
+    await conElPlan('esencial');
+    const rosa = await api.entrar(ROSA);
+    const lista = losDatos<{ puede: { aMano: boolean; deUnTicket: boolean } }>(
+      await api.consultar(rosa, 'tickets_y_facturas', { dia: 'hoy' }),
+    );
+    // La factura de un ticket ya cobrado, sí; una nueva a mano, no.
+    expect(lista.puede).toMatchObject({ deUnTicket: true, aMano: false });
+    expect((await api.consultar(rosa, 'mi_facturacion', {})).estado).toBe('ok');
+  });
+
+  it('con Pro, la puerta no cierra nada', async () => {
+    await conElPlan('pro');
+    const rosa = await api.entrar(ROSA);
+    const lista = losDatos<{ puede: { aMano: boolean } }>(
+      await api.consultar(rosa, 'tickets_y_facturas', { dia: 'hoy' }),
+    );
+    expect(lista.puede.aMano).toBe(true);
+    for (const op of LO_QUE_SE_CIERRA) {
+      expect(elFallo(await llamar(rosa, op)), op[0]).not.toBe('estook_tpv_es_de_pro');
+    }
+  });
+});
+
 describe('el código, sacado desde Estook (0142)', () => {
   it('quien lleva el local lo saca en su móvil, y el aparato se vincula con él', async () => {
     await conElPlan('pro');

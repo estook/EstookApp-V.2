@@ -43,6 +43,7 @@ import {
   type LaHistoria,
 } from '../emitir.ts';
 import { laImpresoraDe } from '../impresion.ts';
+import { laOrganizacionLlevaEstookTpv } from '../pago.ts';
 
 /**
  * **Emitir y mirar lo emitido** (T6 · 2 · 1, decisión 0136; maquetas de T6 aprobadas el 2-nov).
@@ -90,6 +91,7 @@ export interface TicketDePrueba {
  */
 export const imprimirUnTicketDePrueba = comando<Record<string, never>, TicketDePrueba>({
   nombre: 'imprimir_un_ticket_de_prueba',
+  deEstookTpv: true,
   entrada: z.object({}).strict(),
   exige: EXIGE,
 
@@ -197,10 +199,15 @@ async function loQuePuede(contexto: Contexto, localId: string): Promise<LoQuePue
   if (!todo && !p.de_un_ticket && !p.a_mano && !p.devolver && !p.corregir && !p.anular) {
     throw new FalloDeAplicacion('sin_permiso');
   }
+  // Una factura nueva, sin ticket (a mano o de una señal), es de Estook TPV y sin Pro no se hace
+  // (S1, 0147). Lo de los tickets ya cobrados sí: la factura de uno y corregirlo.
+  const organizacionId = contexto.sesion?.organizacionId ?? null;
+  const conPro =
+    organizacionId === null || (await laOrganizacionLlevaEstookTpv(contexto, organizacionId));
   return {
     todo,
     deUnTicket: p.de_un_ticket,
-    aMano: p.a_mano,
+    aMano: p.a_mano && conPro,
     devolver: p.devolver,
     corregir: p.corregir,
     anular: p.anular,

@@ -284,6 +284,18 @@ export interface Puertas {
    */
   readonly enElTpv?: 'tambien' | 'solo';
   /**
+   * **Es de Estook TPV, y Estook TPV es de Pro** (0120; S1 · Cada plan, lo suyo, 0147). Lo que
+   * se hace en un aparato ya lo cierra la puerta del pago; esto es para lo de Estook TPV que se
+   * hace **desde Estook, con la sesión de una persona**: el alta de facturación, la factura a mano
+   * y la de una señal, el ticket de prueba y la pantalla de cocina. Sin Pro, `estook_tpv_es_de_pro`.
+   *
+   * Lo que **no** lo declara a propósito, porque un local que deja Pro no pierde lo suyo: ver y
+   * descargar sus tickets, facturas y cierres de caja, y lo que la ley pide sobre lo ya cobrado
+   * (la factura de un ticket, devolver, corregir y anular). Una prueba clasifica cada operación
+   * de Estook TPV en uno de los dos lados, para que una nueva no se quede sin decidir.
+   */
+  readonly deEstookTpv?: true;
+  /**
    * **En qué aparatos**, si no vale en todos: lo que separa la caja del comandero es el
    * cajón, y un comandero no lo abre aunque teclee el gerente (Anexo 11.3, punto 5).
    */

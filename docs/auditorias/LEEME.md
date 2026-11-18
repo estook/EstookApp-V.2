@@ -7,12 +7,12 @@
 
 ## Las que tocan
 
-| Cuál                        | Cuándo                                | Qué mira, sobre todo                                                                                                                                                                                                                                       | Cómo está |
-| --------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| **S1 · Cada plan, lo suyo** | Ahora, después de «L · La limpieza»   | Que Esencial no llegue a nada de Pro ni de Estook TPV, **en el servidor y en la base**: cada operación dice de qué plan es; una prueba recorre todo el catálogo con un local en Esencial; y las pantallas de Esencial, una a una. Y los siete puntos de E5 | Por hacer |
-| **Auditoría 2**             | Con Estook TPV entero (después de T8) | El cobro, la caja, sin internet, las apps nativas y la facturación en sus dos formas                                                                                                                                                                       | Por hacer |
-| **Auditoría 3**             | Después de M13 a M16b                 | Los datos de los empleados: contratos, sueldos, fichajes, vacaciones y notas personales                                                                                                                                                                    | Por hacer |
-| **Auditoría 4**             | Antes de vender (después de M24)      | Entera: los siete puntos de seguridad y las siete clases de prueba, y el area manager solo en sus locales                                                                                                                                                  | Por hacer |
+| Cuál                        | Cuándo                                                                                                                          | Qué mira, sobre todo                                                                                                                                                              | Cómo está                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| **S1 · Cada plan, lo suyo** | Hecha el 18-nov ([la auditoría](auditoria-2026-11-18-cada-plan-lo-suyo.md), [0147](../decisiones/0147-s1-cada-plan-lo-suyo.md)) | Que Esencial no llegue a nada de Pro ni de Estook TPV, en el servidor: las 504 operaciones, la puerta `deEstookTpv`, la prueba que clasifica cada una y las pantallas de Esencial | Hecha, en `s1-cada-plan-lo-suyo` |
+| **Auditoría 2**             | Con Estook TPV entero (después de T8)                                                                                           | El cobro, la caja, sin internet, las apps nativas y la facturación en sus dos formas                                                                                              | Por hacer                        |
+| **Auditoría 3**             | Después de M13 a M16b                                                                                                           | Los datos de los empleados: contratos, sueldos, fichajes, vacaciones y notas personales                                                                                           | Por hacer                        |
+| **Auditoría 4**             | Antes de vender (después de M24)                                                                                                | Entera: los siete puntos de seguridad y las siete clases de prueba, y el area manager solo en sus locales                                                                         | Por hacer                        |
 
 ## La lista, para no dejarse nada
 
@@ -26,22 +26,19 @@ internet · regresiones (`pnpm verifica`, `prueba:e2e:completa` y `prueba:semana
 
 **Un fallo crítico para todo lo demás.** Cada hallazgo, con su arreglo y su prueba.
 
-## Lo que se sabe hoy, antes de S1 (mirado en el código el 11-nov-2026)
+## Lo que dejó S1 (18-nov-2026)
 
-- **Hecho:** los aparatos de Estook TPV los cierra la API si el local no es de Pro: al reconocer
-  su llave (el latido, el PIN, la pantalla de cocina), al vincular uno y en todo lo que se hace tras
-  el PIN ([0120](../decisiones/0120-estook-tpv-es-de-pro.md)).
-- **Hecho:** una prueba ataca **toda** la API desde otro negocio y con cada rol, en cada pull
-  request ([0101](../decisiones/0101-la-auditoria-del-20-oct.md)).
-- **Falta:** lo que es de Estook TPV y se hace **desde Estook, con la sesión de una persona**
-  (montar la sala, el alta de facturación, lo de la caja) solo lo esconde la pantalla. No cruza
-  datos entre empresas, pero un local en Esencial podría llegar a ello llamando a la API. Es lo
-  primero de S1.
+- **Lo de un aparato** lo cierra la puerta del pago sin Pro desde la [0120](../decisiones/0120-estook-tpv-es-de-pro.md).
+- **Lo de Estook TPV hecho desde Estook**, con la sesión de una persona, lleva la puerta
+  `deEstookTpv` y también se cierra sin Pro ([0147](../decisiones/0147-s1-cada-plan-lo-suyo.md)).
+  Lo que un local que deja Pro conserva (ver y descargar lo suyo, y lo que la ley pide sobre lo ya
+  cobrado) está en una lista con su motivo, y una prueba obliga a decidir cada operación nueva.
 
 ## Las que ya se hicieron
 
 | Cuándo | Cuál                                                                            | Qué miró                                                                                               |
 | ------ | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| 18-nov | [S1 · Cada plan, lo suyo](auditoria-2026-11-18-cada-plan-lo-suyo.md)            | Los límites de cada plan en las 504 operaciones, y las pantallas de Esencial                           |
 | 28-oct | [La auditoría del 28 de octubre](auditoria-del-28-oct.md)                       | Que todo sea coherente: documentos, Estook TPV, tickets, caja, aparatos y roles                        |
 | 27-oct | [La auditoría de GitHub](la-auditoria-de-github-del-27-oct.md)                  | Las 60 últimas vueltas de la integración, cada rojo por dentro, y producción                           |
 | 20-oct | [La auditoría del 20-oct](auditoria-del-20-oct.md)                              | Estook entero, sin el TPV: seguridad, permisos, datos, cálculos, IA, pantallas y pruebas               |

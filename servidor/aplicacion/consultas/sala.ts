@@ -933,6 +933,7 @@ export async function laBarraDelLocal(
 
 export const laCocina = consulta<Record<string, never>, SalidaLaCocina>({
   nombre: 'la_cocina',
+  deEstookTpv: true,
   entrada: z.object({}).strict(),
   exige: 'accion.cocinar',
   enElTpv: 'tambien',

@@ -393,6 +393,7 @@ export const hacerFacturaAMano = comando<
   FacturaHecha
 >({
   nombre: 'hacer_factura_a_mano',
+  deEstookTpv: true,
   entrada: z
     .object({
       cliente: elCliente,
@@ -693,6 +694,7 @@ export const darUnPermiso = comando<
   { readonly hecho: true }
 >({
   nombre: 'dar_un_permiso',
+  deEstookTpv: true,
   entrada: z
     .object({
       persona_id: z.string().uuid(),

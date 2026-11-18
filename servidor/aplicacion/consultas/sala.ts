@@ -468,6 +468,11 @@ export interface PlatoDeLaCuenta {
   readonly servidoEnSala: boolean;
   /** El plato nuevo de un cambio: lo que había antes, «1 Croquetas» (0132). */
   readonly cambioDe: string | null;
+  /**
+   * Cuándo salió del aparato hacia cocina o la barra; nulo, sin mandar. Lo mandado a la vez es una
+   * ronda: «Repetir pedido» vuelve a pedir la última (el rediseño, 0148).
+   */
+  readonly mandadaEn: string | null;
 }
 
 export interface SalidaLaMesa {
@@ -566,6 +571,7 @@ export const laMesa = consulta<{ cuenta_id: string }, SalidaLaMesa>({
         alergenos: l.alergenos,
         servidoEnSala: l.servida_en_sala,
         cambioDe: l.cambio_de,
+        mandadaEn: l.mandada_en,
       })),
       pases: pases.map((p) => ({
         numero: p.numero,

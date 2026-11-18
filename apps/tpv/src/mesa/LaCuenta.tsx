@@ -112,7 +112,8 @@ export function LaCuenta({
                   {l.delMenu && (
                     <span className="text-secundario text-texto-suave"> · del menú</span>
                   )}
-                  {l.nueva && l.pase !== null && g.clave === 'nuevo' && (
+                  {/* El pase, solo si la mesa va por pases: todo junto (y la venta rápida, 0148), no. */}
+                  {porPases && l.nueva && l.pase !== null && g.clave === 'nuevo' && (
                     <span className="text-secundario text-texto-suave"> · {elPase(l.pase)}</span>
                   )}
                 </span>

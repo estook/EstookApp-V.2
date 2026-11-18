@@ -2,8 +2,9 @@
 
 **Fecha:** 18 de noviembre de 2026
 **Estado:** la maqueta, [`el-rediseno.html`](../maquetas/el-rediseno.html), **aprobada por Richi el 18-nov**
-(«me gusta la maqueta y todo lo propuesto, manos a la obra»). **Entrega 1, construida** en
-`el-rediseno-1-la-sala`, con la migración **0119**. Las entregas 2 y 3, después.
+(«me gusta la maqueta y todo lo propuesto, manos a la obra»). **Entrega 1, fusionada** (#192, con la
+migración **0119**) y probada por Richi el 18-nov («todo probado»). **Entrega 2 · 1, construida** en
+`el-rediseno-2-la-venta-rapida`, sin migración. La 2 · 2 y la 3, después.
 **Sigue:** lo que pidió Richi el 17-nov y contestó el 18-nov, antes de seguir con los módulos, para que
 lo que venga nazca con el estilo nuevo.
 **Cambia:** Roles 1.12, el Anexo (11.4, 11.5, 11.8 y 11.12), las fichas de color de `@estook/ui`, el
@@ -33,11 +34,12 @@ lo que venga nazca con el estilo nuevo.
 
 ## 2 · En tres entregas, cada una con su pull request
 
-| Entrega                 | Qué lleva                                                                                                                                                                                                                         |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1 · La sala**         | La puerta con botones, la barra de arriba con el símbolo y sus iconos, el plano con los seis colores y las sillas, la columna «Ahora» con la mesa dentro, el aviso de 6 horas, la leyenda; y **todos toman nota y cobran** (0119) |
-| **2 · La venta rápida** | El rayo en la puerta y arriba, la venta rápida con un toque por método y «Pasar a una mesa», «Repetir pedido» en «⋯», los avisos y la campana, la barra de abajo del móvil, Ajustes en tres grupos                                |
-| **3 · El Panel**        | Los widgets de cada puesto (también los jefes), los añadidos abajo, «Ventas según canal», las gráficas que responden y las siluetas del primer día                                                                                |
+| Entrega                     | Qué lleva                                                                                                                                                                                                                         |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 · La sala**             | La puerta con botones, la barra de arriba con el símbolo y sus iconos, el plano con los seis colores y las sillas, la columna «Ahora» con la mesa dentro, el aviso de 6 horas, la leyenda; y **todos toman nota y cobran** (0119) |
+| **2 · 1 · La venta rápida** | El rayo en la puerta y arriba, la venta rápida con un toque por método, «Aquí · Para llevar», el nombre o número y «Pasar a una mesa»; «Repetir pedido» en «⋯»                                                                    |
+| **2 · 2 · Avisos y móvil**  | Los avisos y la campana, la barra de abajo del móvil (Sala · Mías · Avisos · Tú) y Ajustes en tres grupos (Tú · El local · El dinero)                                                                                             |
+| **3 · El Panel**            | Los widgets de cada puesto (también los jefes), los añadidos abajo, «Ventas según canal», las gráficas que responden y las siluetas del primer día                                                                                |
 
 ## 3 · Lo que decidió la IA al construir la entrega 1
 
@@ -57,3 +59,29 @@ lo que venga nazca con el estilo nuevo.
 7. **La mesa abierta en la columna es un diálogo que no tapa nada** (`aria-modal` falso): se lee
    igual para quien no ve.
 8. **El móvil, de dos en fila** y no de tres: se toca con el pulgar.
+
+## 4 · Lo que decidió la IA al construir la entrega 2 · 1
+
+1. **La entrega 2, en dos pull requests**: la venta rápida y «Repetir pedido» primero, que son de
+   cobrar y tomar nota; los avisos, el móvil y Ajustes después, que tocan todas las pantallas. Así
+   cada una se prueba sola.
+2. **La venta rápida, solo en la caja** (`#/rapida`): es donde está el cajón (0115). En el
+   comandero no sale, ni arriba ni en la puerta.
+3. **La cuenta nace al cobrar o al pasarla a una mesa**, no al primer toque: lo ticado vive en el
+   aparato hasta entonces y sigue ahí si se bloquea a medias. Al cobrar se abre (en barra o para
+   llevar, sin pases), se manda a cocina y a la barra, y se cobra con **el cobro de siempre** (0144)
+   ya puesto en el método tocado. Si se vuelve sin cobrar, la venta queda abierta en «Para llevar»,
+   y lo dice.
+4. **«Pasar a una mesa» manda a cocina**: si la mesa está libre, se abre con lo ticado; si está
+   ocupada, lo ticado es un pedido más de esa mesa.
+5. **Sin internet, la venta rápida todavía no cobra** (T7): lo dice y lo ticado no se pierde.
+6. **Los métodos, los que el local cobra**: efectivo, tarjeta y Bizum si lo usa; lo demás (cheque,
+   dividir), en el cobro de siempre.
+7. **En el móvil, el total y los métodos, fijos al pie**: no hay que bajar para cobrar.
+8. **«Repetir pedido» repite lo último que se mandó a la vez**, y entra en lo que se pide (no se
+   manda solo): se quita o cambia algo antes. **No repite** lo quitado, los menús, lo que lleva
+   opciones ni lo que se pesa. **Está siempre en su sitio**, el primero de «⋯», apagado si no hay
+   nada que repetir: que no aparezca de golpe y empuje lo de debajo. El Anexo pasa de «Otra ronda,
+   2 toques» a **«Repetir pedido, 3 toques»** (⋯, Repetir, Mandar), por estar en «⋯» como pidió Richi.
+9. **La API dice cuándo se mandó cada plato** (`mandadaEn` en `la_mesa`): con eso se sabe qué fue
+   «lo último». Es un dato más en la respuesta, sin migración; **hay que desplegar la API**.

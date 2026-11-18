@@ -5,6 +5,7 @@ import { Boton, EstadoVacio, usarTamanoDeLetra } from '@estook/ui';
 import { usarElTemaDelTpv } from './ganchos/usarElTema.ts';
 import { LaPuerta } from './puerta/LaPuerta.tsx';
 import { InstalaEstookTpv } from './puerta/InstalaEstookTpv.tsx';
+import { LaVentaRapida } from './rapida/LaVentaRapida.tsx';
 import { ElPlano } from './plano/ElPlano.tsx';
 import { LaMesa } from './mesa/LaMesa.tsx';
 import { Fichar } from './inicio/Fichar.tsx';
@@ -89,6 +90,9 @@ function Dentro() {
         </main>
       </div>
     );
+  } else if (enLaCaja && direccion === 'rapida') {
+    // **La venta rápida** (0148): en la caja, que es donde está el cajón (0115).
+    pantalla = <LaVentaRapida />;
   } else if (mesa !== undefined) pantalla = <LaMesa key={mesa} cuentaId={mesa} />;
   // Lo demás, también `#/inicio` de antes, es la sala.
   else pantalla = <ElPlano />;

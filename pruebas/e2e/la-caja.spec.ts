@@ -7,6 +7,7 @@ import {
   ADMIN_DE_EJEMPLO,
   CLAVE_DE_EJEMPLO,
 } from '../../base-de-datos/semillas/claves-de-ejemplo.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * **R3 · 1 · La caja** (decisión 0144; maqueta del 9-nov), desde la pantalla y con una cuenta nueva
@@ -166,9 +167,9 @@ test('la caja: abrirla, cobrar en efectivo y dividido, el cajón, «Cómo va», 
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await page.getByRole('button', { name: 'Abrir caja', exact: true }).click();
-  await expect(page.getByText('Abrir caja · tu PIN')).toBeVisible();
+  await expect(page.getByText('Teclea tu PIN')).toBeVisible();
   await foto('01-el-pin');
   await page.keyboard.type(pin);
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
@@ -476,7 +477,7 @@ test('cobrar en la mesa: el comandero cobra con tarjeta y deja el efectivo, y la
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, comandero.llave);
   await abrirSinQueSeCaiga(movil, TPV);
-  await expect(movil.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(movil.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await movil.keyboard.type(pin);
   const sinFichar = movil.getByRole('button', { name: 'Entrar sin fichar' });
   if (await sinFichar.isVisible({ timeout: 3_000 }).catch(() => false)) await sinFichar.click();
@@ -523,7 +524,7 @@ test('cobrar en la mesa: el comandero cobra con tarjeta y deja el efectivo, y la
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, caja.llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await page.keyboard.type(pin);
   await page
     .getByRole('button', { name: /^Mesa 2: .*cobro pendiente en la caja/ })
@@ -577,7 +578,7 @@ test('cobrar en la mesa: el comandero cobra con tarjeta y deja el efectivo, y la
   await expect(elPendiente).toBeVisible({ timeout: 90_000 });
   await foto(page, '26-la-puerta-con-pendientes');
   await elPendiente.click();
-  await expect(page.getByText('Cobrar Mesa 3 · tu PIN')).toBeVisible();
+  await expect(page.getByText('Cobrar Mesa 3', { exact: true })).toBeVisible();
   await page.keyboard.type(pin);
   const entrar = page.getByRole('button', { name: 'Entrar sin fichar' });
   if (await entrar.isVisible({ timeout: 3_000 }).catch(() => false)) await entrar.click();

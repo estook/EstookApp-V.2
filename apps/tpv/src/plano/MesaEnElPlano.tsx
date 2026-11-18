@@ -1,6 +1,7 @@
 import type { ColorDelTiempo } from '@estook/dominio';
 import {
   IconoAdelante,
+  IconoAtencion,
   IconoComiendo,
   IconoCuaderno,
   IconoCuenta,
@@ -11,79 +12,113 @@ import {
   type Icono,
 } from '@estook/iconos';
 import type { CuentaEnElPlano, EstadoDeLaMesa, MesaDelPlano } from '../datos/tipos.ts';
-import { laPalabra, losMinutos, loQueDice, minutosCortos } from '../logica/comoVaLaMesa.ts';
+import {
+  HORAS_PARA_AVISAR,
+  laPalabra,
+  llevaDemasiado,
+  losMinutos,
+  loQueDice,
+  minutosCortos,
+} from '../logica/comoVaLaMesa.ts';
 import { euros, laHora } from '../logica/texto.ts';
 import { enderezar, estiloEnElPlano, redondeoDeLaForma } from './dibujo.tsx';
+import { lasSillas } from './sillas.ts';
 
 /**
- * **Una mesa en el plano, sin abrirla** (T2, Anexo 11.8): su nombre, **su estado con
- * color, icono y texto** (nunca solo el color, B1), cuánto lleva, sus comensales, su total
- * y **las iniciales de su camarero** en una pastilla (las mías, en el color de Servicio).
- * Si su camarero ha fichado la salida, lo dice, para que alguien se la quede.
+ * **Una mesa en el plano, sin abrirla** (T2, Anexo 11.8; rehecha en el rediseño, 0148): su nombre,
+ * **su estado con color, icono y texto** (nunca solo el color, B1), cuánto lleva, sus comensales,
+ * su total y **las iniciales de su camarero**.
  *
- * **Cómo va, de verdad** (la pausa del 5-nov, 0131): al mandar, **«Esperando»** con el tiempo
- * desde que la cocina lo recibió, en azul, ámbar y rojo como la pantalla de cocina; cuando
- * sale todo, **«Comiendo»**; y a los 15 minutos de lo último, **«¿Cuenta?»** en morado.
+ * **Colores sólidos** (Richi, 17 y 18-nov: «que se vean a la perfección, no tan opacos, que se
+ * confunden con el fondo»): seis, con el texto que contrasta encima, los mismos en oscuro y en
+ * claro. «Sin pedir» y «Sin mandar» comparten el ámbar: los dos son «te toca a ti», y la palabra
+ * dice cuál. **Esperando** es azul; si la cocina va justa o tarde (el color de su pantalla), lo
+ * dicen los minutos, en su chapa, y tarde lleva además el borde rojo.
  *
- * En la tablet y en la caja va donde se dibujó, con su forma y su giro; en el móvil, en
- * su casilla de la cuadrícula, de tres en fila.
+ * **Sus sillas**, tantas como plazas, alrededor (`sillas.ts`). Y **la mesa abierta más de seis
+ * horas**, con el borde rojo de puntos y un «!»: se quedó sin cobrar o sin cerrar.
+ *
+ * En la tablet y en la caja va donde se dibujó, con su forma y su giro; en el móvil, en su
+ * casilla de la cuadrícula.
  */
 
 interface ComoSeVe {
+  /** El color de la mesa, su texto y su borde. */
   readonly caja: string;
-  readonly texto: string;
+  /** El color de sus sillas, el mismo de la mesa con menos fuerza. */
+  readonly sillas: string;
+  /** La chapa de los minutos, si no es la de siempre (la cocina va justa o tarde). */
+  readonly minutos: string;
   readonly icono: Icono;
 }
 
+const CHAPA = 'bg-sobre-mesa-libre/20';
+
 const DE_SIEMPRE: Readonly<Record<Exclude<EstadoDeLaMesa, 'esperando'>, ComoSeVe>> = {
   libre: {
-    caja: 'border-2 border-borde-fuerte bg-superficie',
-    texto: 'text-texto-suave',
+    caja: 'border-2 border-mesa-libre-borde bg-mesa-libre text-sobre-mesa-libre',
+    sillas: 'bg-mesa-libre-borde/70',
+    minutos: CHAPA,
     icono: IconoLibre,
   },
   sin_pedir: {
-    caja: 'border-0 bg-atencion-suave',
-    texto: 'text-atencion font-semibold',
+    caja: 'bg-mesa-te-toca text-sobre-mesa-te-toca',
+    sillas: 'bg-mesa-te-toca/60',
+    minutos: CHAPA,
     icono: IconoCuaderno,
   },
   por_mandar: {
-    caja: 'border-[3px] border-atencion bg-atencion-suave',
-    texto: 'text-atencion font-bold',
+    caja: 'bg-mesa-te-toca text-sobre-mesa-te-toca',
+    sillas: 'bg-mesa-te-toca/60',
+    minutos: CHAPA,
     icono: IconoEnviar,
   },
   toca_marchar: {
-    caja: 'border-[3px] border-info bg-info-suave',
-    texto: 'text-info font-bold',
+    caja: 'bg-mesa-marchar text-sobre-mesa-marchar',
+    sillas: 'bg-mesa-marchar/60',
+    minutos: CHAPA,
     icono: IconoAdelante,
   },
   comiendo: {
-    caja: 'border-0 bg-bien-suave',
-    texto: 'text-bien font-semibold',
+    caja: 'bg-mesa-comiendo text-sobre-mesa-comiendo',
+    sillas: 'bg-mesa-comiendo/60',
+    minutos: CHAPA,
     icono: IconoComiendo,
   },
   para_cobrar: {
-    caja: 'border-2 border-app-equipo bg-app-equipo/15',
-    texto: 'text-app-equipo font-bold',
+    caja: 'bg-mesa-cuenta text-sobre-mesa-cuenta',
+    sillas: 'bg-mesa-cuenta/60',
+    minutos: CHAPA,
     icono: IconoCuenta,
   },
 };
 
-/** Esperando, del color del tiempo en cocina; sin color (nadie tacha), en azul. */
+const ESPERANDO_BASE = 'bg-mesa-esperando text-sobre-mesa-esperando';
+
+/** Esperando, en azul; los minutos, del color del tiempo en cocina. */
 const ESPERANDO: Readonly<Record<ColorDelTiempo | 'sin_color', ComoSeVe>> = {
   sin_color: {
-    caja: 'border-0 bg-info-suave',
-    texto: 'text-info font-semibold',
+    caja: ESPERANDO_BASE,
+    sillas: 'bg-mesa-esperando/60',
+    minutos: CHAPA,
     icono: IconoReloj,
   },
-  en_hora: { caja: 'border-0 bg-info-suave', texto: 'text-info font-semibold', icono: IconoReloj },
+  en_hora: {
+    caja: ESPERANDO_BASE,
+    sillas: 'bg-mesa-esperando/60',
+    minutos: CHAPA,
+    icono: IconoReloj,
+  },
   justo: {
-    caja: 'border-2 border-atencion bg-atencion-suave',
-    texto: 'text-atencion font-bold',
+    caja: ESPERANDO_BASE,
+    sillas: 'bg-mesa-esperando/60',
+    minutos: 'bg-mesa-te-toca text-sobre-mesa-te-toca',
     icono: IconoReloj,
   },
   tarde: {
-    caja: 'border-[3px] border-mal bg-mal-suave',
-    texto: 'text-mal font-bold',
+    caja: `${ESPERANDO_BASE} outline outline-[3px] outline-offset-2 outline-mal`,
+    sillas: 'bg-mesa-esperando/60',
+    minutos: 'bg-mal text-fondo',
     icono: IconoReloj,
   },
 };
@@ -117,6 +152,7 @@ function IconoDelEstado({ como }: { readonly como: ComoSeVe }) {
   return <Dibujo size={16} aria-hidden className="shrink-0" />;
 }
 
+/** Las iniciales del camarero: las mías, en blanco; las de otro, en la chapa oscura. */
 export function Pastilla({ cuenta }: { readonly cuenta: CuentaEnElPlano }) {
   if (cuenta.iniciales === null) return null;
   return (
@@ -124,7 +160,7 @@ export function Pastilla({ cuenta }: { readonly cuenta: CuentaEnElPlano }) {
       title={cuenta.camarero ?? undefined}
       className={[
         'shrink-0 rounded-redondo px-e2 py-[2px] text-etiqueta font-bold',
-        cuenta.esMia ? 'bg-app-servicio text-fondo' : 'bg-charcoal text-texto',
+        cuenta.esMia ? 'bg-mesa-libre text-sobre-mesa-libre' : 'bg-sobre-mesa-libre/25',
       ].join(' ')}
     >
       {cuenta.iniciales}
@@ -132,60 +168,85 @@ export function Pastilla({ cuenta }: { readonly cuenta: CuentaEnElPlano }) {
   );
 }
 
+/** El «!» de una mesa que lleva demasiado, arriba a la izquierda. */
+function Exclamacion() {
+  return (
+    <span
+      aria-hidden
+      className="absolute -left-e2 -top-e2 z-10 flex size-6 items-center justify-center rounded-redondo bg-mal text-fondo"
+    >
+      <IconoAtencion size={14} />
+    </span>
+  );
+}
+
 export function MesaEnElPlano({
   mesa,
   enElPlano,
+  elegida = false,
   alTocar,
 }: {
   readonly mesa: MesaDelPlano;
   /** En la tablet va donde se dibujó; en el móvil, en su casilla de la cuadrícula. */
   readonly enElPlano: boolean;
+  /** La que está abierta en la columna de la derecha (0148): se marca para no perderla. */
+  readonly elegida?: boolean;
   readonly alTocar: () => void;
 }) {
   const cuenta = mesa.cuenta;
   const como = comoSeVe(mesa.estado, cuenta?.colorDelTiempo);
   const pequena = mesa.forma === 'taburete';
   const seHaIdo = cuenta?.suCamareroSeHaIdo === true;
+  const demasiado = llevaDemasiado(cuenta);
   const linea = comoVaLaMesa(mesa);
   const minutos = cuenta === null ? null : losMinutos(mesa.estado, cuenta);
   // El efectivo que espera en la caja (0145): se ve desde lejos, en la misma mesa.
   const enCaja = (cuenta?.pendientes ?? []).length > 0;
-  return (
+  const avisos = [
+    enCaja ? 'cobro pendiente en la caja' : null,
+    seHaIdo ? `${cuenta.camarero ?? 'su camarero'} ha fichado la salida` : null,
+    demasiado ? `lleva más de ${String(HORAS_PARA_AVISAR)} horas abierta` : null,
+  ].filter((a) => a !== null);
+
+  const boton = (
     <button
       type="button"
       onClick={alTocar}
-      aria-label={`Mesa ${mesa.nombre}: ${linea}${enCaja ? ', cobro pendiente en la caja' : ''}${seHaIdo ? `, ${cuenta.camarero ?? 'su camarero'} ha fichado la salida` : ''}`}
-      style={enElPlano ? estiloEnElPlano(mesa) : undefined}
+      aria-pressed={elegida || undefined}
+      aria-label={`Mesa ${mesa.nombre}: ${linea}${avisos.length > 0 ? `, ${avisos.join(', ')}` : ''}`}
       className={[
-        'flex overflow-hidden text-texto transition-transform active:scale-[0.98]',
+        'flex overflow-hidden transition-transform active:scale-[0.98]',
         enElPlano
-          ? `absolute items-center justify-center ${redondeoDeLaForma(mesa.forma)}`
-          : 'min-h-[5.5rem] flex-col rounded-mayor p-e2 text-left',
+          ? `absolute inset-0 items-center justify-center ${redondeoDeLaForma(mesa.forma)}`
+          : 'relative min-h-[6.5rem] w-full flex-col rounded-mayor p-e3 text-left',
         como.caja,
-        seHaIdo ? 'outline outline-2 outline-mal' : '',
+        seHaIdo || demasiado ? 'outline outline-[3px] outline-offset-2 outline-mal' : '',
+        demasiado ? 'outline-dashed' : '',
+        elegida ? 'ring-4 ring-texto ring-offset-2 ring-offset-superficie' : '',
       ].join(' ')}
     >
       <span
         style={enElPlano ? enderezar(mesa.giro) : undefined}
         className={[
-          'flex min-w-0 flex-col gap-[2px]',
+          'flex min-w-0 flex-col gap-[3px]',
           enElPlano ? 'items-center p-e1 text-center' : 'w-full',
         ].join(' ')}
       >
-        <span className="flex w-full items-center justify-between gap-e1">
-          <span className="text-seccion font-bold leading-none">{mesa.nombre}</span>
+        <span
+          className={[
+            'flex w-full items-center gap-e1',
+            enElPlano ? 'justify-center' : 'justify-between',
+          ].join(' ')}
+        >
+          <span className="text-pantalla font-bold leading-none">{mesa.nombre}</span>
           {cuenta !== null && !pequena && <Pastilla cuenta={cuenta} />}
         </span>
         {!pequena && (
           <span
             className={[
-              'flex w-full min-w-0 items-center gap-e1 leading-tight',
-              // La palabra sola y pequeña, que en una casilla no cabe con los minutos: van
-              // debajo, en su color (0131). En el plano dibujado, centrada.
-              'text-etiqueta',
-              cuenta === null ? '' : 'font-bold',
+              'flex w-full min-w-0 items-center gap-e1 text-secundario font-bold leading-tight',
               enElPlano ? 'justify-center' : '',
-              como.texto,
+              cuenta === null ? 'opacity-80' : '',
             ].join(' ')}
           >
             <IconoDelEstado como={como} />
@@ -197,17 +258,23 @@ export function MesaEnElPlano({
         {cuenta !== null && !pequena && (
           <span
             className={[
-              'flex w-full min-w-0 items-center gap-e2 text-etiqueta leading-tight text-texto-suave',
+              'flex w-full min-w-0 items-center gap-e2 text-etiqueta font-semibold leading-tight opacity-90',
               enElPlano ? 'justify-center' : '',
             ].join(' ')}
           >
-            {/* Los minutos, en el color de cómo va. */}
+            {/* Los minutos, en su chapa: la de la cocina si va justa o tarde. Debajo de la palabra,
+                que en una mesa pequeña no caben los dos. */}
             {minutos !== null && (
-              <span className={['shrink-0 font-bold', como.texto].join(' ')}>
+              <span
+                className={[
+                  'shrink-0 rounded-redondo px-e1 font-bold tabular-nums',
+                  como.minutos,
+                ].join(' ')}
+              >
                 {minutosCortos(minutos)}
               </span>
             )}
-            {/* Los comensales con su muñeco, que en una casilla de tres en fila no cabe la palabra. */}
+            {/* Los comensales con su muñeco, que en una casilla pequeña no cabe la palabra. */}
             {cuenta.personas !== null && (
               <span
                 className="flex shrink-0 items-center gap-[2px]"
@@ -219,21 +286,53 @@ export function MesaEnElPlano({
                 {cuenta.personas}
               </span>
             )}
-            <span className="truncate">{euros(cuenta.totalCentimos)}</span>
+            <span className="truncate tabular-nums">{euros(cuenta.totalCentimos)} €</span>
           </span>
         )}
         {enCaja && (
-          <span className="truncate rounded-redondo bg-atencion px-e2 text-etiqueta font-bold text-fondo">
+          <span className="truncate rounded-redondo bg-mesa-libre px-e2 text-etiqueta font-bold text-sobre-mesa-libre">
             Cobro en caja
           </span>
         )}
-        {seHaIdo && !pequena && (
-          <span className="truncate text-etiqueta font-semibold text-mal">
+        {seHaIdo && !pequena && !enElPlano && (
+          <span className="truncate text-etiqueta font-bold">
             {cuenta.camarero ?? 'Su camarero'} ha fichado la salida
           </span>
         )}
       </span>
     </button>
+  );
+
+  if (!enElPlano) {
+    return (
+      <div className="relative">
+        {boton}
+        {demasiado && <Exclamacion />}
+      </div>
+    );
+  }
+
+  // En el plano: la caja dibujada lleva las sillas alrededor y la mesa dentro.
+  const sitio = estiloEnElPlano(mesa);
+  const apaisada = mesa.ancho * 16 >= mesa.fondo * 10;
+  return (
+    <div style={sitio} className="absolute">
+      {lasSillas(mesa.forma, mesa.plazas, apaisada).map((s) => (
+        <span
+          // Dos sillas no caen en el mismo sitio: su sitio es su clave.
+          key={`${String(s.x)}-${String(s.y)}`}
+          aria-hidden
+          className={['absolute h-[7px] w-[22px] rounded-redondo', como.sillas].join(' ')}
+          style={{
+            left: `${String(s.x)}%`,
+            top: `${String(s.y)}%`,
+            transform: `translate(-50%, -50%) rotate(${String(s.giro)}deg) translateY(-9px)`,
+          }}
+        />
+      ))}
+      {boton}
+      {demasiado && <Exclamacion />}
+    </div>
   );
 }
 
@@ -254,7 +353,7 @@ export function TarjetaSinMesa({
       onClick={alTocar}
       aria-label={`${cuenta.titulo}: ${linea}${(cuenta.pendientes ?? []).length > 0 ? ', cobro pendiente en la caja' : ''}`}
       className={[
-        'flex min-h-[7.5rem] flex-col gap-[2px] rounded-mayor p-e3 text-left',
+        'flex min-h-[7.5rem] flex-col gap-[3px] rounded-mayor p-e3 text-left',
         como.caja,
       ].join(' ')}
     >
@@ -262,19 +361,21 @@ export function TarjetaSinMesa({
         <span className="text-cuerpo font-bold">{cuenta.titulo}</span>
         <Pastilla cuenta={cuenta} />
       </span>
-      <span className={['flex items-center gap-e1 text-secundario', como.texto].join(' ')}>
+      <span className="flex items-center gap-e1 text-secundario font-bold">
         <IconoDelEstado como={como} />
         <span className="truncate">{linea}</span>
       </span>
       {cuenta.paraLas !== undefined && cuenta.paraLas !== null && (
         // Lo de llevar programado (0121): su hora, que es lo que importa.
-        <span className="text-secundario font-bold text-info">
+        <span className="self-start rounded-redondo bg-sobre-mesa-libre/20 px-e2 text-secundario font-bold">
           Para las {laHora(cuenta.paraLas)}
         </span>
       )}
-      <span className="text-secundario text-texto-suave">{euros(cuenta.totalCentimos)} €</span>
+      <span className="text-secundario font-semibold opacity-90">
+        {euros(cuenta.totalCentimos)} €
+      </span>
       {(cuenta.pendientes ?? []).length > 0 && (
-        <span className="self-start rounded-redondo bg-atencion px-e2 text-etiqueta font-bold text-fondo">
+        <span className="self-start rounded-redondo bg-mesa-libre px-e2 text-etiqueta font-bold text-sobre-mesa-libre">
           Cobro en caja
         </span>
       )}

@@ -254,6 +254,8 @@ const ICONOS = {
   baby: 'Infantil',
   star: 'Estrella',
   'utensils-crossed': 'Cubiertos',
+  // El rediseño (0148): «Para llevar» en la barra de arriba de Estook TPV.
+  'shopping-bag': 'ParaLlevar',
 };
 
 async function traer(nombre) {

@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * **T5 · 1 · Imprimir y el cajón** (decisión 0119; maquetas de T5), en la pantalla y con una
@@ -42,7 +43,7 @@ async function entrarEnLaCaja(page: Page, llave: string, pin: string) {
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await page.keyboard.type(pin);
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
   await expect(page.getByRole('button', { name: /^Mesa 1/ })).toBeVisible({ timeout: 15_000 });

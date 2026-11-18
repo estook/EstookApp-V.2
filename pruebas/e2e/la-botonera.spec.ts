@@ -3,6 +3,7 @@ import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
 import { laSeccion } from './la-seccion.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * **T3 · 1 · La botonera** (decisión 0111; Anexo 11.10 y 11.11), en la pantalla y con una
@@ -79,7 +80,7 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, llave);
   await abrirSinQueSeCaiga(page, `${TPV}#/ajustes/productos`);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await page.keyboard.type(pin);
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
 

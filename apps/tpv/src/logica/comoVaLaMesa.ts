@@ -54,3 +54,12 @@ export function loQueDice(estado: EstadoDeLaMesa, cuenta: CuentaEnElPlano): stri
   const palabra = laPalabra(estado, cuenta);
   return minutos === null ? palabra : `${palabra} ${minutosCortos(minutos)}`;
 }
+
+/** **Más de seis horas abierta** (el rediseño, 0148; Richi, 18-nov: «con estar abierta más de 5-6
+ * horas ya avisaría»): se quedó sin cobrar o sin cerrar. */
+export const HORAS_PARA_AVISAR = 6;
+
+/** Si la cuenta lleva abierta más de seis horas, desde que se sentaron. */
+export function llevaDemasiado(cuenta: Pick<CuentaEnElPlano, 'minutos'> | null): boolean {
+  return cuenta !== null && cuenta.minutos >= HORAS_PARA_AVISAR * 60;
+}

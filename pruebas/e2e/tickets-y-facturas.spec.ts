@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 import { APP, consultarEnLaApi, ejecutarEnLaApi, entrarEnLaApp } from './en-la-app.ts';
 import { entrarEnElAdmin } from './entrar-en-el-admin.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 const TPV = 'http://localhost:5178/';
 
@@ -509,7 +510,7 @@ test('el ticket de prueba sale con su número, y en Tickets y facturas con su QR
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, llave.llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await page.keyboard.type(pin);
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
   await page.getByRole('button', { name: 'Tickets y facturas' }).click();

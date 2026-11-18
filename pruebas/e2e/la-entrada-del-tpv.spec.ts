@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * **La entrada nueva de Estook TPV** (decisión 0118; maquetas de la entrada, 26-oct), en la
@@ -71,7 +72,7 @@ test('la entrada: la sala primero, el engranaje y mantener pulsado', async ({
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await page.keyboard.type(pin);
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
   await expect(page.getByRole('button', { name: /^Mesa 1: Libre/ })).toBeVisible({

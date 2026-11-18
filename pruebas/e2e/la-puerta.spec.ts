@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 const API = 'http://localhost:5177/api';
 const APP = 'http://localhost:5174/';
 
@@ -78,7 +79,7 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await page.getByRole('button', { name: 'Ya lo tengo apuntado' }).click();
 
   // La sesión de quien vinculó no se queda en el aparato: se queda su llave.
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   const guardado = await page.evaluate(() => ({
     llave: window.localStorage.getItem('estook.tpv.llave'),
     sesion: window.localStorage.getItem('estook.sesion'),
@@ -134,7 +135,7 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await expect(tablet.getByText('El código de vinculación')).toBeVisible({ timeout: 15_000 });
   await tablet.keyboard.type(codigo);
   // Llega con su función y su nombre: no hay que elegir nada.
-  await expect(tablet.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(tablet.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await expect(tablet.getByText(/Tablet terraza · Bar Puerta/)).toBeVisible();
 
   // ── PIN y bloqueo ──
@@ -200,7 +201,7 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
 
   // ── Y Bloquear devuelve la caja al PIN ──
   await page.getByRole('button', { name: /bloquear/i }).click();
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible();
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible();
 
   // ── ¿Has olvidado tu PIN? Un enlace al correo, sin esperar a nadie (0109) ──
   await page.getByRole('button', { name: '¿Has olvidado tu PIN?' }).click();

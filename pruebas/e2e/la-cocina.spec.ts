@@ -2,6 +2,7 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * **T4 · 1 · La cocina** (decisión 0116; maquetas de T4 1, 1b y 2), en la pantalla y con una
@@ -160,7 +161,7 @@ test('la pantalla de cocina: el ticket entero, tachar, marchar, llamar y Acabado
     window.localStorage.setItem('estook.tpv.llave', llave);
   }, caja.llave);
   await abrirSinQueSeCaiga(enLaSala, TPV);
-  await expect(enLaSala.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(enLaSala.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await enLaSala.keyboard.type(caja.tuPinNuevo);
   // Quien crea el local no ha fichado: en la caja se entra igual (0115).
   await enLaSala.getByRole('button', { name: 'Entrar sin fichar' }).click({ timeout: 15_000 });

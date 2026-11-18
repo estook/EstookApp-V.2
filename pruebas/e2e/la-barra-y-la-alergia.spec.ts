@@ -2,6 +2,7 @@ import { expect, test, type APIRequestContext, type Browser } from '@playwright/
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * **T4 · 2 · La barra y la alergia de la mesa** (decisión 0117; maquetas de T4 3, 4 y 5), en la
@@ -122,7 +123,7 @@ test('la barra y la alergia: avisar al pedir, la franja en rojo, y el ✓ con su
     window.localStorage.setItem('estook.tpv.llave', llave);
   }, caja.llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await page.keyboard.type(caja.tuPinNuevo);
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
   await page.evaluate(() => {

@@ -2,6 +2,7 @@ import { expect, test, type Locator } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * **T2 · La sala** (decisión 0110; Anexo 11.8 a 11.10), en la pantalla y con una cuenta
@@ -89,7 +90,7 @@ test('la sala: dibujarla en el TPV, abrir la mesa, pedir con los pases en pesta�
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await page.keyboard.type(pin);
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
   // Se cae en la sala, también sin mesas (0118): dice cómo dibujarla.

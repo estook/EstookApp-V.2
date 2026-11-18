@@ -1,6 +1,7 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { tokenDeAlguienNuevo, vincularUnaCaja } from './en-la-app.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * H1 · Personas y fichajes (decisiones 0057, 0062 y 0068), desde la pantalla.
@@ -123,7 +124,7 @@ test('sin correo, y fichando con su PIN en el aparato del local', async ({ page 
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
 
   // ── 3 · Ficharlo todo con el PIN, con el botón naranja, sin entrar en la caja ─
   const hacer = async (boton: string, dice: RegExp) => {

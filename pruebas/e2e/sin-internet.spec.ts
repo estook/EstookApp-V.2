@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * **T5 · 2 · 1 · Cada aparato aguanta solo** (decisión 0122), con el navegador sin red de
@@ -67,7 +68,7 @@ test('sin internet se sigue: abrir la mesa, pedir, mandar, bloquear y entrar; al
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await page.keyboard.type(pin);
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
   await expect(page.getByRole('button', { name: /^Mesa 1: Libre/ })).toBeVisible({

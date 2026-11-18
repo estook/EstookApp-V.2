@@ -104,3 +104,23 @@ export function IconoEnSuColor({
     </span>
   );
 }
+
+/**
+ * **El símbolo de Estook** (el rediseño, 0148: «en vez de la E, el logo de la marca»): el del
+ * favicon, con las barras del color del texto (`currentColor`) y la del medio en naranja. Va en
+ * su cuadro, que pone el color: claro en el oscuro y oscuro en el claro.
+ */
+export function ElSimbolo({ lado = 28 }: { readonly lado?: number }) {
+  return (
+    <svg viewBox="0 0 1024 1024" width={lado} height={lado} aria-hidden="true">
+      <g transform="translate(184.5 156) scale(0.66)" fill="currentColor">
+        <rect x="0" y="0" width="855" height="150" rx="22" />
+        <rect x="0" y="0" width="160" height="460" rx="22" />
+        <rect x="0" y="310" width="855" height="150" rx="22" />
+        <rect x="0" y="815" width="855" height="155" rx="22" />
+        <path d="M322 940 H533 L427.5 1075 Z" />
+      </g>
+      <rect x="184.5" y="532.2" width="564.3" height="102.3" rx="14.5" fill="#FF7A00" />
+    </svg>
+  );
+}

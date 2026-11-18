@@ -7,7 +7,7 @@ import {
   ADMIN_DE_EJEMPLO,
   CLAVE_DE_EJEMPLO,
 } from '../../base-de-datos/semillas/claves-de-ejemplo.ts';
-import { LA_PUERTA } from './la-puerta-del-tpv.ts';
+import { LA_PUERTA, tocarEnElTpv } from './la-puerta-del-tpv.ts';
 
 /**
  * **R3 · 1 · La caja** (decisión 0144; maqueta del 9-nov), desde la pantalla y con una cuenta nueva
@@ -573,7 +573,7 @@ test('cobrar en la mesa: el comandero cobra con tarjeta y deja el efectivo, y la
       ya_pagado: [{ forma: 'tarjeta', importe: 1000 }],
     },
   );
-  await page.getByRole('button', { name: /bloquear/i }).click();
+  await tocarEnElTpv(page, /: bloquear$/);
   const elPendiente = page.getByRole('button', { name: /^Mesa 3.*30,00/ });
   await expect(elPendiente).toBeVisible({ timeout: 90_000 });
   await foto(page, '26-la-puerta-con-pendientes');

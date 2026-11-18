@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
-import { LA_PUERTA } from './la-puerta-del-tpv.ts';
+import { LA_PUERTA, tocarEnElTpv } from './la-puerta-del-tpv.ts';
 
 /**
  * **La entrada nueva de Estook TPV** (decisión 0118; maquetas de la entrada, 26-oct), en la
@@ -78,8 +78,15 @@ test('la entrada: la sala primero, el engranaje y mantener pulsado', async ({
   await expect(page.getByRole('button', { name: /^Mesa 1: Libre/ })).toBeVisible({
     timeout: 15_000,
   });
-  await expect(page.getByRole('button', { name: 'Fichar', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Ajustes', exact: true })).toBeVisible();
+  // Fichar y Ajustes: arriba; en el móvil, en «Tú», abajo (0148).
+  if (info.project.name === 'escritorio') {
+    await expect(page.getByRole('button', { name: 'Fichar', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Ajustes', exact: true })).toBeVisible();
+  } else {
+    await expect(
+      page.getByRole('navigation', { name: 'Abajo' }).getByRole('button', { name: 'Tú' }),
+    ).toBeVisible();
+  }
   await expect(page.getByRole('button', { name: /Editar sala/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Mesas/ })).toHaveCount(0);
 
@@ -92,8 +99,8 @@ test('la entrada: la sala primero, el engranaje y mantener pulsado', async ({
   }
 
   // ── El engranaje: los grupos, y cada uno dice cómo está ──
-  await page.getByRole('button', { name: 'Ajustes', exact: true }).click();
-  await expect(page.getByRole('region', { name: 'Lo que se vende' })).toBeVisible();
+  await tocarEnElTpv(page, 'Ajustes');
+  await expect(page.getByRole('region', { name: 'El local' })).toBeVisible();
   await expect(
     page.getByRole('button', { name: /^La sala y las mesas.*1 zona · 2 mesas/ }),
   ).toBeVisible({
@@ -111,7 +118,7 @@ test('la entrada: la sala primero, el engranaje y mantener pulsado', async ({
     timeout: 15_000,
   });
   // «La sala y las mesas» es el editor del plano, que ya no está arriba.
-  await page.getByRole('button', { name: 'Ajustes', exact: true }).click();
+  await tocarEnElTpv(page, 'Ajustes');
   await page.getByRole('button', { name: /^La sala y las mesas/ }).click();
   await expect(page).toHaveURL(/#\/sala\/editar$/);
   await page.evaluate(() => {

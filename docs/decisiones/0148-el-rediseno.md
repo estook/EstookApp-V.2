@@ -3,8 +3,9 @@
 **Fecha:** 18 de noviembre de 2026
 **Estado:** la maqueta, [`el-rediseno.html`](../maquetas/el-rediseno.html), **aprobada por Richi el 18-nov**
 («me gusta la maqueta y todo lo propuesto, manos a la obra»). **Entrega 1, fusionada** (#192, con la
-migración **0119**) y probada por Richi el 18-nov («todo probado»). **Entrega 2 · 1, construida** en
-`el-rediseno-2-la-venta-rapida`, sin migración. La 2 · 2 y la 3, después.
+migración **0119**) y probada por Richi el 18-nov («todo probado»). **Entrega 2 · 1** (la venta rápida y «Repetir pedido»), fusionada (#193) con la API desplegada el
+18-nov. **Entrega 2 · 2, construida** en `el-rediseno-2-2-avisos-y-movil`, sin migración. La 3 (el
+Panel), después.
 **Sigue:** lo que pidió Richi el 17-nov y contestó el 18-nov, antes de seguir con los módulos, para que
 lo que venga nazca con el estilo nuevo.
 **Cambia:** Roles 1.12, el Anexo (11.4, 11.5, 11.8 y 11.12), las fichas de color de `@estook/ui`, el
@@ -85,3 +86,26 @@ lo que venga nazca con el estilo nuevo.
    2 toques» a **«Repetir pedido, 3 toques»** (⋯, Repetir, Mandar), por estar en «⋯» como pidió Richi.
 9. **La API dice cuándo se mandó cada plato** (`mandadaEn` en `la_mesa`): con eso se sabe qué fue
    «lo último». Es un dato más en la respuesta, sin migración; **hay que desplegar la API**.
+
+## 5 · Lo que decidió la IA al construir la entrega 2 · 2
+
+1. **Los avisos, una sola pieza para todo el TPV**: la cocina que llama, el efectivo por cobrar, la
+   impresora y la mesa de más de 6 horas dejan de ser franjas sueltas encima del plano (y dentro de
+   la mesa) y salen **arriba a la derecha**, como mucho tres; en el PC, a la izquierda de la columna
+   «Ahora», para no taparla. **En el móvil de la sala salen encima de la barra de abajo**: arriba
+   tapaban los iconos.
+2. **La «×» quita el aviso de la vista, no lo borra**: sigue en la campana hasta que se atiende
+   («Ya voy», cobrar, cambiar el papel). Una llamada nueva de la cocina vuelve a salir.
+3. **Suena y vibra lo mismo que antes**: vibra el móvil de quien atiende la mesa que llaman; la
+   impresora suena una vez en la caja. Nada nuevo que suene («un compañero, no un policía»).
+4. **La columna «Ahora» se queda como está**: es lo que toca hacer; los avisos son lo que pide
+   atención ya. El efectivo y las 6 horas salen en los dos sitios.
+5. **La barra de abajo solo en el móvil y en la sala**; en la mesa abierta manda su barra de
+   «Mandar». **«Mías» es un filtro** que se pulsa y se suelta, como el botón de encima del plano.
+6. **«Tú» lleva el tema, Ajustes y Bloquear; Fichar, solo en la caja**: la pausa se ficha donde se
+   ficha todo (0115), así que en el comandero no sale. «Tu PIN» de la maqueta no tiene pantalla
+   todavía: el PIN se cambia en Estook.
+7. **Ajustes, en Tú · El local · El dinero**: «PIN y bloqueo» va en El local (es del local, no de
+   cada uno) y la declaración responsable en El dinero, con la facturación.
+8. **Un fallo de antes, arreglado**: en el comandero el engranaje no abría nada (Ajustes solo existía
+   en la caja). Ahora abre «Tú» con el tema, y dice que lo demás se ajusta en la caja.

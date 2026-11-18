@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
-import { LA_PUERTA } from './la-puerta-del-tpv.ts';
+import { LA_PUERTA, tocarEnElTpv } from './la-puerta-del-tpv.ts';
 
 /**
  * **T5 · 2 · 1 · Cada aparato aguanta solo** (decisión 0122), con el navegador sin red de
@@ -120,7 +120,7 @@ test('sin internet se sigue: abrir la mesa, pedir, mandar, bloquear y entrar; al
   });
 
   // ── Se bloquea, y se vuelve a entrar sin internet con el mismo PIN ──
-  await page.getByRole('button', { name: /: bloquear$/ }).click();
+  await tocarEnElTpv(page, /: bloquear$/);
   await expect(
     page.getByText('Sin conexión: entra quien ya entró hoy en este aparato.'),
   ).toBeVisible({

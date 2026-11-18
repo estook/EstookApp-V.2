@@ -44,7 +44,6 @@ import {
   IconoMover,
   type Icono,
 } from '@estook/iconos';
-import { LaCocinaLlama } from '../plano/LaCocinaLlama.tsx';
 
 /**
  * Una mesa (0106, «Comanda»; T2, maqueta 9): a la izquierda, **las pestañas de los pases**
@@ -63,16 +62,6 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
   // «lo de antes aún no ha salido» saldría siempre.
   const impresoras = usarLasImpresoras(conectado);
   const sinPreguntarAlMarchar = impresoras.data?.cocinaSaleEn === 'papel';
-  // «La cocina te llama» también dentro de una mesa (0116): las de todo el plano.
-  const enElPlanoTodas =
-    plano.data === undefined
-      ? null
-      : [
-          ...plano.data.zonas.flatMap((z) =>
-            z.mesas.flatMap((m) => (m.cuenta === null ? [] : [m.cuenta])),
-          ),
-          ...plano.data.sinMesa,
-        ];
   const carta = usarLaCarta();
   const ejecutar = usarAcciones();
   const { aparato } = usarSesion();
@@ -388,7 +377,6 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
 
   return (
     <div className="flex h-pantalla flex-col bg-fondo text-texto md:flex-row">
-      {enElPlanoTodas !== null && <LaCocinaLlama flotante cuentas={enElPlanoTodas} />}
       {/* La cuenta: a la izquierda en la tablet. */}
       <section
         aria-label="La cuenta de la mesa"

@@ -13,6 +13,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { escucharLaDireccion, irA, irAlPlano, laDireccion } from '../navegar.ts';
 import { ElSimbolo, Icono } from '../iconos.tsx';
 import { BotonDeLaCaja } from '../caja/BotonDeLaCaja.tsx';
+import { BotonDeLaCampana } from '../avisos/LosAvisos.tsx';
 
 /**
  * **Arriba, siempre** (la entrada nueva, maqueta 1; rehecha en el rediseño, 0148, con la maqueta
@@ -23,17 +24,25 @@ import { BotonDeLaCaja } from '../caja/BotonDeLaCaja.tsx';
  *   · en medio, **los iconos de cada sitio**: la sala, para llevar y los tickets, con su nombre
  *     debajo. La venta rápida, el reparto y las reservas entran aquí el día que existan
  *   · a la derecha, lo de todos los días: **la caja** (0144) y **Fichar en naranja** (0115), solo
- *     en la caja; **el engranaje**, en todos (0143); y quién está, que **bloquea** de un toque
+ *     en la caja; **la campana** de los avisos (0148); **el engranaje**, en todos (0143); y quién
+ *     está, que **bloquea** de un toque. En el móvil de la sala, lo suyo va en la barra de abajo
  *
  * En el móvil, los iconos solos, sin el nombre: la barra cabe en una fila.
  */
 export function LaBarraDeArriba({
   titulo,
+  conBarraDeAbajo = false,
   children,
 }: {
   readonly titulo?: string;
+  /**
+   * En la sala, el móvil lleva **la barra de abajo** (0148): Sala, Fichar, el engranaje y Bloquear
+   * pasan allí («Sala» y «Tú»), y arriba queda lo demás.
+   */
+  readonly conBarraDeAbajo?: boolean;
   readonly children?: ReactNode;
 }) {
+  const abajo = conBarraDeAbajo ? 'max-md:hidden' : '';
   const { yo, aparato, bloquear } = usarSesion();
   const direccion = useSyncExternalStore(escucharLaDireccion, laDireccion);
   const enLaCaja = aparato.funcion === 'caja';
@@ -69,7 +78,13 @@ export function LaBarraDeArriba({
         className="order-last flex w-full justify-center gap-e1 md:order-none md:w-auto md:flex-1"
       >
         {tomaNota && (
-          <DondeIr icono={IconoRejilla} texto="Sala" puesto={enLaSala} onClick={irAlPlano} />
+          <DondeIr
+            icono={IconoRejilla}
+            texto="Sala"
+            puesto={enLaSala}
+            onClick={irAlPlano}
+            oculto={abajo}
+          />
         )}
         {/* **La venta rápida** (0148): en la caja, con su rayo en amarillo. */}
         {tomaNota && enLaCaja && (
@@ -119,12 +134,19 @@ export function LaBarraDeArriba({
             onClick={() => {
               irA('fichar');
             }}
-            className="flex min-h-toque min-w-toque items-center justify-center gap-e2 rounded-grande bg-naranja px-e3 font-bold text-sobre-naranja sm:px-e4"
+            className={`flex min-h-toque min-w-toque items-center justify-center gap-e2 rounded-grande bg-naranja px-e3 font-bold text-sobre-naranja sm:px-e4 ${abajo}`}
           >
             <Icono dibujo="reloj" lado={18} />
             {/* En el móvil, solo el reloj: la barra cabe en una fila. */}
             <span className="max-sm:hidden">Fichar</span>
           </button>
+        )}
+        {/* **La campana** (0148): los avisos, hasta que alguien los atiende. En el móvil de la
+            sala, abajo. */}
+        {tomaNota && (
+          <span className={abajo}>
+            <BotonDeLaCampana />
+          </span>
         )}
         {/* El engranaje, en todos los aparatos (0143): dentro está «Tu sesión», con el tema; lo
             demás, solo en la caja y a quien puede tocarlo. */}
@@ -138,6 +160,7 @@ export function LaBarraDeArriba({
           className={[
             'flex size-11 shrink-0 items-center justify-center rounded-grande border border-borde',
             direccion.startsWith('ajustes') ? 'bg-texto text-superficie' : 'bg-charcoal',
+            abajo,
           ].join(' ')}
         >
           <Icono dibujo="ajustes" lado={22} />
@@ -147,7 +170,7 @@ export function LaBarraDeArriba({
           onClick={bloquear}
           aria-label={`${yo.nombre}: bloquear`}
           title="Bloquear"
-          className="flex min-h-toque items-center gap-e2 rounded-grande border border-borde bg-charcoal py-e1 pl-e1 pr-e3 font-bold"
+          className={`flex min-h-toque items-center gap-e2 rounded-grande border border-borde bg-charcoal py-e1 pl-e1 pr-e3 font-bold ${abajo}`}
         >
           <span className="flex size-8 items-center justify-center rounded-medio bg-app-servicio text-etiqueta text-fondo">
             {inicialesDe(yo.nombre)}
@@ -167,9 +190,12 @@ function DondeIr({
   etiqueta = texto,
   colorDelIcono,
   puesto,
+  oculto = '',
   onClick,
 }: {
   readonly icono: IconoDeLucide;
+  /** Las clases que lo esconden donde está en otro sitio: «Sala», abajo en el móvil. */
+  readonly oculto?: string;
   readonly texto: string;
   /** El color propio del icono: el rayo de la venta rápida, siempre amarillo. */
   readonly colorDelIcono?: string;
@@ -187,6 +213,7 @@ function DondeIr({
       className={[
         'flex min-h-toque min-w-[4.5rem] flex-col items-center justify-center gap-[2px] rounded-grande px-e3 py-e1 text-etiqueta font-semibold max-md:flex-1',
         puesto ? 'bg-naranja-suave text-texto' : 'text-texto-suave hover:bg-fondo',
+        oculto,
       ].join(' ')}
     >
       <Dibujo

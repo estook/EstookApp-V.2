@@ -248,7 +248,7 @@ test('la caja para Windows: impresoras, la cuenta, marchar en papel y sin papel'
   await page.evaluate(() => {
     window.location.hash = '/';
   });
-  await expect(page.getByRole('alert').filter({ hasText: 'Sin papel en Cocina' })).toBeVisible({
+  await expect(page.getByRole('alert').filter({ hasText: 'Sin papel · Cocina' })).toBeVisible({
     timeout: 20_000,
   });
 });

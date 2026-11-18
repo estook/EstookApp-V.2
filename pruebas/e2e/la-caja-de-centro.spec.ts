@@ -6,7 +6,7 @@ import { ElCentro } from '../../apps/caja-windows/src/el-centro.ts';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
-import { LA_PUERTA } from './la-puerta-del-tpv.ts';
+import { LA_PUERTA, tocarEnElTpv } from './la-puerta-del-tpv.ts';
 
 /**
  * **T5 · 2 · 2 · La caja de centro** (decisión 0123), con un navegador de verdad: Estook deja de
@@ -162,7 +162,7 @@ test('sin internet, lo mandado llega a la caja de centro por el wifi, y al volve
 
     // ── T5 · 2 · 2 · 2: sin internet, el PIN lo mira la caja, y en la caja se ficha ──
     await page.getByRole('button', { name: 'Volver al plano' }).first().click();
-    await page.getByRole('button', { name: /: bloquear$/ }).click();
+    await tocarEnElTpv(page, /: bloquear$/);
     // Como quien no ha entrado hoy en este aparato: sin la caja, no entraría.
     await page.evaluate(() => {
       window.localStorage.removeItem('estook.tpv.quien-entro-hoy');

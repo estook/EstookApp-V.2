@@ -28,7 +28,7 @@ import { ponerElTema, usarElTemaElegido, type TemaDelTpv } from '../ganchos/usar
  *
  * **Desde R3 (0133), como los ajustes del teléfono**: cada grupo es una lista de filas de una
  * línea, con su título grande y legible; dos columnas en la tablet y una en el móvil, sin
- * huecos. Tres grupos: lo que se vende, lo que se conecta, y seguridad y Hacienda.
+ * huecos. Desde el rediseño (0148), tres grupos: Tú, El local y El dinero.
  *
  * Lo que llega con su entrega (el datáfono) **no se enseña hasta que funcione**; la caja, desde R3 · 1 (0144); las
  * impresoras y el cajón, desde T5 · 1 (0119). «Editar sala» vive aquí, en «La sala y las mesas».
@@ -44,7 +44,12 @@ interface Apartado {
   readonly ir: string;
 }
 
-const GRUPOS = ['Lo que se vende', 'Lo que se conecta', 'Seguridad y Hacienda'] as const;
+/**
+ * **Tres grupos** (el rediseño, entrega 2 · 2, 0148): **Tú** (tu sesión y el tema), para todos;
+ * **El local** (lo que se vende y se usa en servicio) y **El dinero** (la caja, la facturación, los
+ * aparatos y lo de Hacienda), según el permiso.
+ */
+const GRUPOS = ['El local', 'El dinero'] as const;
 const DE_AQUI_DENTRO: readonly string[] = [
   'productos',
   'cocina',
@@ -69,7 +74,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'Agotados',
             dibujo: 'agotado',
             tono: 'rojo',
-            grupo: 'Lo que se vende',
+            grupo: 'El local',
             ir: 'agotados',
           } as const,
         ]
@@ -81,7 +86,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'La sala y las mesas',
             dibujo: 'sala',
             tono: 'verde',
-            grupo: 'Lo que se vende',
+            grupo: 'El local',
             ir: 'sala/editar',
           },
           {
@@ -89,7 +94,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'Productos y precios',
             dibujo: 'producto',
             tono: 'naranja',
-            grupo: 'Lo que se vende',
+            grupo: 'El local',
             ir: 'ajustes/productos',
           },
           {
@@ -97,7 +102,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'Cocina y barra',
             dibujo: 'cocina',
             tono: 'ambar',
-            grupo: 'Lo que se vende',
+            grupo: 'El local',
             ir: 'ajustes/cocina',
           },
         ] as const)
@@ -109,7 +114,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'Aparatos del local',
             dibujo: 'aparatos',
             tono: 'azul',
-            grupo: 'Lo que se conecta',
+            grupo: 'El dinero',
             ir: 'ajustes/aparatos',
           } as const,
         ]
@@ -121,7 +126,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'Impresoras y cajón',
             dibujo: 'impresora',
             tono: 'naranja',
-            grupo: 'Lo que se conecta',
+            grupo: 'El local',
             ir: 'ajustes/impresoras',
           } as const,
           // La caja (R3 · 1, 0144): quién abre, el recuento, a ciegas, el fondo y las formas de pago.
@@ -130,7 +135,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'La caja',
             dibujo: 'caja',
             tono: 'verde',
-            grupo: 'Lo que se conecta',
+            grupo: 'El dinero',
             ir: 'ajustes/caja',
           } as const,
         ]
@@ -142,7 +147,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'PIN y bloqueo',
             dibujo: 'candado',
             tono: 'gris',
-            grupo: 'Seguridad y Hacienda',
+            grupo: 'El local',
             ir: 'ajustes/pin',
           } as const,
         ]
@@ -155,7 +160,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             nombre: 'Facturación',
             dibujo: 'documento',
             tono: 'naranja',
-            grupo: 'Seguridad y Hacienda',
+            grupo: 'El dinero',
             ir: 'ajustes/facturacion',
           } as const,
         ]
@@ -167,7 +172,7 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
       nombre: 'Declaración responsable',
       dibujo: 'declaracion',
       tono: 'gris',
-      grupo: 'Seguridad y Hacienda',
+      grupo: 'El dinero',
       ir: 'ajustes/declaracion',
     } as const,
   ];
@@ -332,6 +337,36 @@ const LOS_TEMAS: readonly { readonly valor: TemaDelTpv; readonly texto: string }
   { valor: 'auto', texto: 'Auto' },
 ];
 
+/** Oscuro, claro o automático, de este aparato (0143): en Ajustes y en «Tú», abajo en el móvil. */
+export function ElegirElTema({ etiquetadoPor }: { readonly etiquetadoPor: string }) {
+  const tema = usarElTemaElegido();
+  return (
+    <div
+      role="radiogroup"
+      aria-labelledby={etiquetadoPor}
+      className="flex rounded-grande bg-charcoal p-[3px]"
+    >
+      {LOS_TEMAS.map((t) => (
+        <button
+          key={t.valor}
+          type="button"
+          role="radio"
+          aria-checked={tema === t.valor}
+          onClick={() => {
+            ponerElTema(t.valor);
+          }}
+          className={[
+            'min-h-toque rounded-medio px-e4 font-bold',
+            tema === t.valor ? 'bg-superficie text-texto shadow' : 'text-texto-suave',
+          ].join(' ')}
+        >
+          {t.texto}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /**
  * **Tu sesión** (el repaso del 8-nov, 0143): **cambiar de persona** (vuelve al PIN y deja el
  * aparato listo para el siguiente), **el tema** de este aparato y, a quien vincula aparatos en
@@ -339,10 +374,9 @@ const LOS_TEMAS: readonly { readonly valor: TemaDelTpv; readonly texto: string }
  */
 function TuSesion({ desvincular }: { readonly desvincular: boolean }) {
   const { yo, aparato, bloquear } = usarSesion();
-  const tema = usarElTemaElegido();
   return (
-    <section aria-label="Tu sesión" className="flex flex-col gap-e2">
-      <h2 className="text-pantalla font-bold">Tu sesión</h2>
+    <section aria-label="Tú" className="flex flex-col gap-e2">
+      <h2 className="text-pantalla font-bold">Tú</h2>
       <div className="flex flex-col overflow-hidden rounded-mayor bg-superficie">
         <button
           type="button"
@@ -363,29 +397,7 @@ function TuSesion({ desvincular }: { readonly desvincular: boolean }) {
           <span id="el-tema" className="flex-1 text-seccion font-bold">
             Tema
           </span>
-          <div
-            role="radiogroup"
-            aria-labelledby="el-tema"
-            className="flex rounded-grande bg-charcoal p-[3px]"
-          >
-            {LOS_TEMAS.map((t) => (
-              <button
-                key={t.valor}
-                type="button"
-                role="radio"
-                aria-checked={tema === t.valor}
-                onClick={() => {
-                  ponerElTema(t.valor);
-                }}
-                className={[
-                  'min-h-toque rounded-medio px-e4 font-bold',
-                  tema === t.valor ? 'bg-superficie text-texto shadow' : 'text-texto-suave',
-                ].join(' ')}
-              >
-                {t.texto}
-              </button>
-            ))}
-          </div>
+          <ElegirElTema etiquetadoPor="el-tema" />
         </div>
         {desvincular && (
           <button

@@ -105,8 +105,14 @@ test('el comandero sin fichar no entra; se ficha en la caja; y el comandero va a
   });
   await expect(page.getByRole('button', { name: 'La sala' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Fichar', exact: true })).toHaveCount(0);
-  // Los ajustes y el inicio son de la caja: aquí, la sala.
-  for (const direccion of ['/ajustes', '/inicio', '/fichar', '/agotados']) {
+  // El engranaje, también aquí (0143): «Tú» y el tema; lo demás, en la caja (el rediseño, 0148).
+  await page.evaluate(() => {
+    window.location.hash = '/ajustes';
+  });
+  await expect(page.getByRole('region', { name: 'Tú' })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('Lo demás, en la caja')).toBeVisible();
+  // El inicio, fichar y los agotados son de la caja: aquí, la sala.
+  for (const direccion of ['/inicio', '/fichar', '/agotados']) {
     await page.evaluate((hash) => {
       window.location.hash = hash;
     }, direccion);

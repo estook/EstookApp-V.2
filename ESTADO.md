@@ -135,11 +135,10 @@ Cinco organizaciones reales y tres de ejemplo: `ikatz` (la de Richi, de la casa;
 **Ahora:**
 
 1. **El rediseño, entrega 1**: fusionar su pull request cuando esté en verde, **migrar (0119)** y **desplegar la API**. Y probarlo en la caja, la tablet y el móvil ([`pruebas-pendientes.md`](docs/pruebas-pendientes.md)).
-2. **Decir si «Fichar» se queda en la puerta** (0148, sección 3, punto 1): la maqueta no lo llevaba, pero quitarlo obliga a entrar para fichar la pausa o la salida.
-3. **Las pruebas pendientes, cuanto antes** ([`pruebas-pendientes.md`](docs/pruebas-pendientes.md)): la 2 y la 3, **bien** (14-nov); la 4 espera a la impresora; **quedan la 5 (sin internet) y la 6 (el local del amigo)**, y las importantes. Lo que salga se dice en el chat y se apunta ahí.
-4. **El cobro con tarjeta integrado** ([la investigación](docs/estook-tpv-android-y-el-cobro.md), apartado 10, con las preguntas para los correos en 10.6): Richi está escribiendo a todos. **La IA le avisa al llegar a T8**, y entonces se decide con quién se empieza y cuánto es el fijo por aparato.
-5. **Uber Eats**: el acceso de integrador está pedido y esperando respuesta. Sin él, M29 no empieza.
-6. **Contestar lo que quedó de la pausa del 8-nov** (0142, sección 8): los cambios que la IA hizo a la maqueta sin preguntar y qué correo se da a los clientes. **Y cuánto dura el logo al abrir Estook** (0130).
+2. **Las pruebas pendientes, cuanto antes** ([`pruebas-pendientes.md`](docs/pruebas-pendientes.md)): la 2 y la 3, **bien** (14-nov); la 4 espera a la impresora; **quedan la 5 (sin internet) y la 6 (el local del amigo)**, y las importantes. Lo que salga se dice en el chat y se apunta ahí.
+3. **El cobro con tarjeta integrado** ([la investigación](docs/estook-tpv-android-y-el-cobro.md), apartado 10, con las preguntas para los correos en 10.6): Richi está escribiendo a todos. **La IA le avisa al llegar a T8**, y entonces se decide con quién se empieza y cuánto es el fijo por aparato.
+4. **Uber Eats**: el acceso de integrador está pedido y esperando respuesta. Sin él, M29 no empieza.
+5. **Contestar lo que quedó de la pausa del 8-nov** (0142, sección 8): los cambios que la IA hizo a la maqueta sin preguntar y qué correo se da a los clientes. **Y cuánto dura el logo al abrir Estook** (0130).
 
 **Con fecha o con condición:**
 

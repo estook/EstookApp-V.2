@@ -618,6 +618,24 @@ export function ElPin({
       <section className="relative flex flex-1 flex-col gap-e4 border-borde bg-superficie p-e5 md:w-[34rem] md:flex-none md:border-l md:p-e7">
         {!conTeclado ? (
           <div className="flex flex-1 flex-col justify-center gap-e4">
+            {/* Sin internet se dice ya aquí, antes de tocar nada (T5 · 2 · 1 y 0124). */}
+            {sinInternet && (
+              <div className="flex flex-col items-center gap-e2">
+                {porLaCaja && (
+                  <span className="rounded-redondo bg-info-suave px-e3 py-e1 text-secundario font-bold text-info">
+                    Por la caja
+                  </span>
+                )}
+                <p
+                  role="status"
+                  className="text-center text-secundario font-semibold text-atencion"
+                >
+                  {porLaCaja
+                    ? 'Sin internet: el PIN lo mira la caja'
+                    : 'Sin conexión: entra quien ya entró hoy en este aparato.'}
+                </p>
+              </div>
+            )}
             <BotonGrande
               icono={IconoPersona}
               titulo="Entrar"
@@ -636,19 +654,23 @@ export function ElPin({
                 {hecho}
               </span>
             )}
+            {/* **Abajo, la caja, Tickets y Fichar** (Richi, 18-nov), cada uno con su icono en su color:
+                la caja en verde (en ámbar para cerrarla), los tickets en azul y fichar en naranja. */}
             <div className={`grid gap-e4 ${enLaCaja ? 'grid-cols-3' : 'grid-cols-2'}`}>
-              {/* **Fichar sin entrar** (0115), solo en la caja: la pausa y la salida en un toque. */}
-              {enLaCaja && (
+              {enLaCaja && aparato.cajaAbierta != null && (
                 <BotonGrande
-                  icono={IconoReloj}
-                  titulo="Fichar"
+                  icono={IconoDinero}
+                  titulo={aparato.cajaAbierta ? 'Cerrar caja' : 'Abrir caja'}
                   color="border border-borde bg-charcoal text-texto"
-                  alto="min-h-[6rem]"
+                  colorDelIcono={
+                    aparato.cajaAbierta
+                      ? 'bg-mesa-te-toca text-sobre-mesa-te-toca'
+                      : 'bg-mesa-comiendo text-sobre-mesa-comiendo'
+                  }
+                  alto="min-h-[7rem]"
                   pequeno
                   onClick={() => {
-                    setFichando(true);
-                    setHecho(null);
-                    setPin('');
+                    elegir('caja');
                   }}
                 />
               )}
@@ -656,21 +678,26 @@ export function ElPin({
                 icono={IconoCuenta}
                 titulo="Tickets"
                 color="border border-borde bg-charcoal text-texto"
-                alto="min-h-[6rem]"
+                colorDelIcono="bg-mesa-esperando text-sobre-mesa-esperando"
+                alto="min-h-[7rem]"
                 pequeno
                 onClick={() => {
                   elegir('tickets');
                 }}
               />
-              {enLaCaja && aparato.cajaAbierta != null && (
+              {/* **Fichar sin entrar** (0115), solo en la caja: la pausa y la salida en un toque. */}
+              {enLaCaja && (
                 <BotonGrande
-                  icono={IconoDinero}
-                  titulo={aparato.cajaAbierta ? 'Cerrar caja' : 'Abrir caja'}
+                  icono={IconoReloj}
+                  titulo="Fichar"
                   color="border border-borde bg-charcoal text-texto"
-                  alto="min-h-[6rem]"
+                  colorDelIcono="bg-naranja text-sobre-naranja"
+                  alto="min-h-[7rem]"
                   pequeno
                   onClick={() => {
-                    elegir('caja');
+                    setFichando(true);
+                    setHecho(null);
+                    setPin('');
                   }}
                 />
               )}
@@ -818,6 +845,7 @@ function BotonGrande({
   titulo,
   detalle,
   color,
+  colorDelIcono = 'bg-sobre-mesa-libre/15',
   alto,
   pequeno = false,
   onClick,
@@ -826,6 +854,8 @@ function BotonGrande({
   readonly titulo: string;
   readonly detalle?: string;
   readonly color: string;
+  /** El cuadro del icono, con su color: lo que hace que se reconozca de un vistazo. */
+  readonly colorDelIcono?: string;
   readonly alto: string;
   readonly pequeno?: boolean;
   readonly onClick: () => void;
@@ -847,11 +877,12 @@ function BotonGrande({
       <span
         aria-hidden
         className={[
-          'flex shrink-0 items-center justify-center rounded-grande bg-sobre-mesa-libre/15',
-          pequeno ? 'size-12' : 'size-16',
+          'flex shrink-0 items-center justify-center rounded-grande',
+          colorDelIcono,
+          pequeno ? 'size-14' : 'size-16',
         ].join(' ')}
       >
-        <Dibujo size={pequeno ? 24 : 32} />
+        <Dibujo size={pequeno ? 28 : 32} />
       </span>
       <span className="flex min-w-0 flex-col">
         <span className={pequeno ? 'text-cuerpo' : 'text-cifra-media'}>{titulo}</span>

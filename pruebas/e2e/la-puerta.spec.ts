@@ -136,7 +136,9 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await tablet.keyboard.type(codigo);
   // Llega con su función y su nombre: no hay que elegir nada.
   await expect(tablet.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
-  await expect(tablet.getByText(/Tablet terraza · Bar Puerta/)).toBeVisible();
+  // Su nombre y el de su local, arriba a la izquierda (0148).
+  await expect(tablet.getByText('Tablet terraza', { exact: true })).toBeVisible();
+  await expect(tablet.getByText('Bar Puerta', { exact: true })).toBeVisible();
 
   // ── PIN y bloqueo ──
   await page.getByRole('button', { name: 'Hecho' }).click();
@@ -165,7 +167,10 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await abrirSinQueSeCaiga(deNuevo, TPV);
   await expect(deNuevo.getByText('El código de vinculación')).toBeVisible({ timeout: 15_000 });
   await deNuevo.keyboard.type(otraVez);
-  await expect(deNuevo.getByText(/Tablet terraza · Bar Puerta/)).toBeVisible({ timeout: 15_000 });
+  await expect(deNuevo.getByText('Tablet terraza', { exact: true })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(deNuevo.getByText('Bar Puerta', { exact: true })).toBeVisible();
   await sinLaApp.close();
 
   // ── Cambiar lo que es, sin volver a vincular: la tablet pasa a ser la caja 2 ──

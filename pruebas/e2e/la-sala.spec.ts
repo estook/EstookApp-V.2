@@ -211,6 +211,8 @@ test('la sala: dibujarla en el TPV, abrir la mesa, pedir con los pases en pesta√
   await laMesa.getByRole('button', { name: /^Nota para cocina/ }).click();
   await page.getByLabel('Nota para cocina').fill('Tienen prisa');
   await page.getByRole('button', { name: 'Guardar la nota' }).click();
+  // Guardada, la mesa se cierra; en el PC no tapa el plano (0148): se espera a que se cierre.
+  await expect(laMesa).toBeHidden({ timeout: 15_000 });
   await page.getByRole('button', { name: /^Mesa 1: / }).click();
   await expect(page.getByRole('button', { name: 'Nota para cocina: Tienen prisa' })).toBeVisible({
     timeout: 15_000,

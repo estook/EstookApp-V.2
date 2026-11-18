@@ -41,10 +41,10 @@ lo que venga nazca con el estilo nuevo.
 
 ## 3 · Lo que decidió la IA al construir la entrega 1
 
-1. **«Fichar» se queda en la puerta**, como cuarto botón pequeño junto a Tickets y la caja. La
-   maqueta no lo llevaba, pero quitarlo deshacía la 0115 (fichar la entrada, **la pausa o la
-   salida** sin entrar): para irse habría que entrar y teclear el PIN dos veces. **Se le pregunta a
-   Richi** si lo quiere fuera.
+1. **«Fichar» se queda en la puerta**: la maqueta no lo llevaba, pero quitarlo deshacía la 0115
+   (fichar la entrada, **la pausa o la salida** sin entrar). **Richi dijo que sí el 18-nov**, con
+   los de abajo en este orden y en color: **la caja** en verde (en ámbar para cerrarla), **Tickets** en
+   azul y **Fichar** en naranja, «bonito, colorido e intuitivo», como la maqueta.
 2. **En el PC, teclear una cifra en la puerta es tocar «Entrar»**: quien tiene teclado no busca el
    botón.
 3. **La columna «Ahora» desde 1280 píxeles de ancho**; por debajo, el botón «Ahora» con su número,

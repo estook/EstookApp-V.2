@@ -70,7 +70,9 @@ export function LosAvisos() {
         <section
           aria-label="Avisos"
           className={[
-            'pointer-events-none fixed inset-x-e3 top-[calc(env(safe-area-inset-top)+4.75rem)] z-30 flex flex-col gap-e2 md:inset-x-auto md:right-e4 md:w-[24rem]',
+            'pointer-events-none fixed inset-x-e3 top-[calc(env(safe-area-inset-top)+4.75rem)] z-20 flex flex-col gap-e2 md:inset-x-auto md:right-e4 md:w-[24rem]',
+            // **Debajo de las pantallas enteras** (cobrar, abrir la caja: `z-30`): el aviso del
+            // efectivo tapaba en un iPhone pequeño el «Cobrar» de ese mismo efectivo (la #194).
             // En el móvil de la sala, encima de la barra de abajo: arriba taparía los iconos.
             enLaSala
               ? 'max-md:bottom-[calc(env(safe-area-inset-bottom)+5rem)] max-md:top-auto xl:right-[25rem]'

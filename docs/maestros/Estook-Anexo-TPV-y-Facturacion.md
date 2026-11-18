@@ -240,7 +240,7 @@ Se marca desde la comanda y desaparece de la carta y de la carta digital (M10 y 
 - **Se toca un plato al sacarlo y queda tachado con su hora.** Otro toque lo destacha, **sin PIN ni margen**: es para que la cocina se organice. La sala ve ✓ y la hora en la cuenta.
 - **Cuando sale todo el 1.º**, la mesa **baja a «Esperando a que la sala marche»**, pequeña, con su 2.º a la vista para ir preparando. **Al marcharlo la sala**, sube arriba con **«¡MARCHA EL 2.º!»** y suena distinto.
 - **Al tachar el último plato, la mesa pasa sola a «Acabados»**, su pestaña: **lo acabado no se mezcla con lo nuevo** (Richi, 26-oct: «si se vende mucho se peta»). Allí, **lo de los últimos 40 minutos se ve entero**, para encontrarlo aunque no se sepa qué mesa es, y **lo de antes, plegado**, con la mesa, la hora y una flecha. Tocar un plato lo destacha y la mesa vuelve a «En marcha».
-- **«Llamar al camarero»** en cada tarjeta: al camarero de la mesa le sale «La cocina te llama» (y le vibra el móvil) hasta que dice «Ya voy».
+- **«Llamar al camarero»** en cada tarjeta: a la sala le sale el aviso azul **«Cocina llama · Mesa 4»** (al suyo le vibra el móvil) hasta que alguien dice «Ya voy» (los avisos, 11.5).
 - **Pestañas: En marcha · Acabados**, y **Delivery** cuando el local tenga pedidos de reparto en el TPV. El pedido de reparto lleva la moto, la plataforma, el nombre, **la hora a la que pasa el repartidor** y lo que va a la bolsa, y se cierra con «Listo para el repartidor».
 - **Lo que cambia sale en la misma tarjeta**: «NUEVO» con su hora, «ANULADO» en rojo y con sonido, «CAMBIO» de nota, y «VUELVE» arriba del todo cuando un plato devuelto se rehace.
 - **Un plato cambiado** ([0132](../decisiones/0132-r2-2-servido-y-cambiar-un-plato.md)): franja naranja «CAMBIO · Lucía · 1 Croquetas → 1 Bravas», el de antes tachado con «→ Bravas» y el aviso fuerte. **Lo que marca servido la sala** (si el local lo deja, o con la cocina solo en papel): franja verde «Lucía ha marcado servido», con «Deshacer» durante 5 minutos.
@@ -1490,7 +1490,9 @@ En el aparato nuevo
 
 - **El símbolo de Estook y el local**, siempre a la izquierda (Richi: «en vez de la E, el logo de la marca»): **devuelven a la sala desde cualquier sitio**.
 - **En medio, los sitios, con su icono y su nombre**: **Sala**, **Rápida** (el rayo, solo en la caja, `#/rapida`, 3.1), **Para llevar** (la barra y lo de llevar, `#/llevar`) y **Tickets**. El reparto y las reservas entran aquí el día que existan, y no antes. En el móvil, los iconos ocupan su fila.
-- **A la derecha, lo de todos los días**: la caja (0144) y **Fichar** en naranja, solo en la caja (0115); **el engranaje**, en todos (0143); y **quién está, que bloquea de un toque** (11.4).
+- **A la derecha, lo de todos los días**: la caja (0144) y **Fichar** en naranja, solo en la caja (0115); **la campana de los avisos**; **el engranaje**, en todos (0143); y **quién está, que bloquea de un toque** (11.4).
+- **Los avisos** (entrega 2 · 2): **arriba a la derecha**, como mucho tres, cada uno con su color, su icono y el botón que lo resuelve; la «×» lo quita de la vista y **se queda en la campana** hasta que alguien lo atiende. Cuatro clases: **la cocina llama** (azul, «Ya voy»), **efectivo por cobrar** (ámbar, «Cobrar», solo en la caja), **la impresora** (rojo: sin papel, no responde o papeles sin salir) y **la mesa abierta más de 6 horas** (rojo, al encargado). Antes eran franjas encima del plano.
+- **En el móvil de la sala, la barra de abajo**: **Sala · Mías · Avisos · Tú**, donde llega el pulgar. «Tú» lleva el tema, Ajustes y Bloquear (y Fichar, en la caja); arriba quedan el símbolo, la caja y los demás sitios.
 - **Debajo, las zonas** con cuántas mesas tienen abiertas, y **«Mías»** (11.8).
 - **La columna «Ahora»**, a la derecha en el PC: lo que pide atención, por orden y con su botón — **te toca** (marchar el siguiente pase, la mesa sin pedir, lo apuntado sin mandar), **¿cuenta?**, **el efectivo por cobrar** (en la caja) y, **para el encargado**, la mesa abierta más de seis horas. **Al tocar una mesa, la columna pasa a ser la mesa**, sin tapar el plano. En la tablet es el botón naranja «Ahora» con su número; en el móvil, las franjas de siempre encima de las mesas.
 - **El plano cabe entero**, con sus sillas, al lado de la columna; **abajo**, las mesas abiertas, **la leyenda de los colores** y si la sala y la cocina van al segundo.
@@ -1738,6 +1740,8 @@ Richi, 5-nov: cada sección con **su icono y su color**, para encontrarla de un 
 - **Sin animaciones que hagan esperar**: lo que se toca responde al momento (10.13) y la red va detrás.
 
 ## 11.13 Ajustes del TPV
+
+**En tres grupos desde el rediseño** ([0148](../decisiones/0148-el-rediseno.md), entrega 2 · 2): **Tú** (cambiar de persona, el tema y desvincular este aparato), para todos y en todos los aparatos; **El local** (agotados, la sala, productos, cocina y barra, impresoras, PIN y bloqueo) y **El dinero** (aparatos, la caja, la facturación y la declaración responsable), según el permiso. La tabla de abajo es la de antes, con los mismos apartados.
 
 **Detrás del engranaje** de arriba (11.5, [0118](../decisiones/0118-la-entrada-del-tpv.md)), **solo en la caja** ([0115](../decisiones/0115-cada-aparato-a-lo-suyo.md)), con el PIN de quien puede (Roles 1.12). **Solo lo de vender**: la carta, los precios del día a día y el equipo se cambian en Estook. **En grupos, cada apartado con su dibujo y su color y una línea que dice cómo está** («2 zonas · 9 mesas», «1 caja · 2 comanderos»). **Lo que llega con su entrega no se enseña hasta que funcione.**
 

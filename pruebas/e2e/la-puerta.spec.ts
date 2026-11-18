@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
-import { LA_PUERTA } from './la-puerta-del-tpv.ts';
+import { LA_PUERTA, tocarEnElTpv } from './la-puerta-del-tpv.ts';
 const API = 'http://localhost:5177/api';
 const APP = 'http://localhost:5174/';
 
@@ -92,10 +92,9 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await expect(page.getByRole('heading', { name: /No has fichado la entrada/ })).toBeVisible();
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
   await expect(page.getByText('Tu sala aún no tiene mesas')).toBeVisible({ timeout: 15_000 });
-  // Arriba, lo de todos los días: Fichar en naranja (0115) y el engranaje.
-  await expect(page.getByRole('button', { name: 'Fichar', exact: true })).toBeVisible();
-  // «Fichar» con la caja abierta pide el PIN a todos (0121); con el suyo, lo de quien la abrió.
-  await page.getByRole('button', { name: 'Fichar', exact: true }).click();
+  // Fichar en naranja (0115): arriba; en el móvil, en «Tú» (0148). Con la caja abierta pide el PIN
+  // a todos (0121); con el suyo, lo de quien la abrió.
+  await tocarEnElTpv(page, 'Fichar');
   await expect(page.getByText('Fichar · teclea tu PIN')).toBeVisible();
   await page.keyboard.type(pin);
   await expect(page.getByText('¿Fichar la entrada?')).toBeVisible({ timeout: 15_000 });
@@ -106,8 +105,8 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await expect(page.getByRole('button', { name: 'Venta rápida', exact: true })).toBeVisible();
 
   // ── El engranaje › Aparatos del local › Añadir: la tablet de la sala ──
-  await page.getByRole('button', { name: 'Ajustes', exact: true }).click();
-  for (const grupo of ['Lo que se vende', 'Lo que se conecta', 'Seguridad y Hacienda']) {
+  await tocarEnElTpv(page, 'Ajustes');
+  for (const grupo of ['Tú', 'El local', 'El dinero']) {
     await expect(page.getByRole('region', { name: grupo })).toBeVisible();
   }
   await page.getByRole('button', { name: /^Aparatos del local/ }).click();
@@ -205,7 +204,7 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await otro.close();
 
   // ── Y Bloquear devuelve la caja al PIN ──
-  await page.getByRole('button', { name: /bloquear/i }).click();
+  await tocarEnElTpv(page, /: bloquear$/);
   await expect(page.getByText(LA_PUERTA).first()).toBeVisible();
 
   // ── ¿Has olvidado tu PIN? Un enlace al correo, sin esperar a nadie (0109) ──

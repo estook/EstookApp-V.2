@@ -168,9 +168,13 @@ test('la pantalla de cocina: el ticket entero, tachar, marchar, llamar y Acabado
   await enLaSala.evaluate(() => {
     window.location.hash = '/';
   });
-  const aviso = enLaSala.getByRole('status').filter({ hasText: 'La cocina te llama · Mesa 1' });
+  // Arriba a la derecha, con los demás avisos (el rediseño, 0148).
+  const aviso = enLaSala
+    .getByRole('region', { name: 'Avisos' })
+    .getByRole('status')
+    .filter({ hasText: 'Cocina llama · Mesa 1' });
   await expect(aviso).toBeVisible({ timeout: LO_QUE_TARDA });
-  await aviso.getByRole('button', { name: 'Ya voy' }).click();
+  await aviso.getByRole('button', { name: /^Ya voy/ }).click();
   await expect(aviso).toHaveCount(0, { timeout: LO_QUE_TARDA });
   await otro.close();
 

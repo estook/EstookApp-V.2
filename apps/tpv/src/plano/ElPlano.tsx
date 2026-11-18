@@ -17,16 +17,17 @@ import { escucharLaDireccion, irA, irALaMesa, laDireccion } from '../navegar.ts'
 import { LaColumnaAhora, cuantoPideAhora } from './LaColumnaAhora.tsx';
 import { LOS_COLORES_DE_LA_SALA } from './losColores.ts';
 import { AbrirMesa } from './AbrirMesa.tsx';
-import { LaCocinaLlama } from './LaCocinaLlama.tsx';
 import { LaFranjaSinInternet } from '../sinInternet/LaFranjaSinInternet.tsx';
 import { LaFranjaDeLaCaja } from '../sinInternet/LaFranjaDeLaCaja.tsx';
-import { DescargaLaCajaParaWindows, LasImpresorasAvisan } from './LasImpresorasAvisan.tsx';
+import { DescargaLaCajaParaWindows } from './LasImpresorasAvisan.tsx';
 import { LaVentanaDeLaMesa } from '../mesa/OpcionesDeLaMesa.tsx';
 import { MesaEnElPlano, TarjetaSinMesa } from './MesaEnElPlano.tsx';
 import { minutosCortos } from '../logica/comoVaLaMesa.ts';
 import { IconoAvisos, IconoCuenta, IconoPersona } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { ElAvisoDeWindows } from '../sinInternet/ElAvisoDeWindows.tsx';
+import { ponerSoloMias, usarSoloMias } from '../ganchos/usarElFiltroMias.ts';
+import { LaBarraDeAbajo } from '../inicio/LaBarraDeAbajo.tsx';
 
 /**
  * **Las mesas en servicio** (T2 · La sala, maqueta 8; Anexo 11.8): las salas en pestañas,
@@ -48,27 +49,6 @@ const BARRA = 'barra';
 /** Sin sala dibujada: quien puede dibujarla empieza ahí, con «Dibujar la sala». */
 const SIN_SALA = 'sin_sala';
 
-/** Lo que recuerda el aparato del filtro: en su navegador, aparte de todo lo demás. */
-const CLAVE_DEL_FILTRO = 'estook.tpv.mias';
-
-function leerElFiltro(esPersonal: boolean): boolean {
-  try {
-    const guardado = window.localStorage.getItem(CLAVE_DEL_FILTRO);
-    if (guardado === null) return esPersonal;
-    return guardado === 'si';
-  } catch {
-    return esPersonal;
-  }
-}
-
-function guardarElFiltro(soloMias: boolean): void {
-  try {
-    window.localStorage.setItem(CLAVE_DEL_FILTRO, soloMias ? 'si' : 'no');
-  } catch {
-    // En una ventana privada no se guarda: el filtro dura lo que la pantalla.
-  }
-}
-
 /** «1», «2», «10»: en el orden en que se cuentan, no en el de las letras. */
 function porSuNombre(a: { readonly nombre: string }, b: { readonly nombre: string }): number {
   return a.nombre.localeCompare(b.nombre, 'es', { numeric: true });
@@ -87,11 +67,7 @@ export function ElPlano() {
   const ancho = usarMedia('(min-width: 1280px)');
   const [conAhora, setConAhora] = useState(false);
   const [zonaElegida, setZonaElegida] = useState<string | null>(null);
-  const [soloMias, setSoloMiasEnMemoria] = useState(() => leerElFiltro(aparato.esPersonal));
-  const setSoloMias = (mias: boolean) => {
-    setSoloMiasEnMemoria(mias);
-    guardarElFiltro(mias);
-  };
+  const soloMias = usarSoloMias(aparato.esPersonal);
   const [abriendo, setAbriendo] = useState<MesaDelPlano | 'barra' | null>(null);
   const [opciones, setOpciones] = useState<string | null>(null);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
@@ -167,20 +143,11 @@ export function ElPlano() {
 
   return (
     <div className="flex min-h-pantalla flex-col bg-fondo text-texto md:h-pantalla md:min-h-0">
-      <LaBarraDeArriba />
+      <LaBarraDeArriba conBarraDeAbajo />
 
       <LaFranjaSinInternet />
       <LaFranjaDeLaCaja />
       <ElAvisoDeWindows />
-      <LaCocinaLlama
-        cuentas={[
-          ...datos.zonas.flatMap((z) =>
-            z.mesas.flatMap((m) => (m.cuenta === null ? [] : [m.cuenta])),
-          ),
-          ...datos.sinMesa,
-        ]}
-      />
-      <LasImpresorasAvisan />
       <DescargaLaCajaParaWindows />
 
       <div className="flex min-h-0 flex-1">
@@ -248,7 +215,7 @@ export function ElPlano() {
                 </BotonDeZona>
               ))}
               <div className="flex-1" />
-              <BotonMias soloMias={soloMias} mias={mias} alCambiar={setSoloMias} />
+              <BotonMias soloMias={soloMias} mias={mias} alCambiar={ponerSoloMias} />
               {!ancho && (
                 <button
                   type="button"
@@ -334,7 +301,7 @@ export function ElPlano() {
             )}
           </main>
 
-          <footer className="flex flex-wrap items-center gap-e3 px-e4 py-e3 text-secundario text-texto-suave md:px-e5">
+          <footer className="flex flex-wrap items-center gap-e3 px-e4 py-e3 text-secundario text-texto-suave max-md:pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:px-e5">
             <span>
               {cuantas === 1 ? '1 mesa abierta' : `${cuantas} mesas abiertas`}
               {comensales > 0
@@ -400,6 +367,8 @@ export function ElPlano() {
           {laColumna}
         </Hoja>
       )}
+
+      <LaBarraDeAbajo />
 
       {abriendo !== null && (
         <AbrirMesa
@@ -525,7 +494,7 @@ function BotonMias({
         alCambiar(!soloMias);
       }}
       className={[
-        'flex min-h-toque shrink-0 items-center gap-e1 rounded-grande border px-e3 font-bold',
+        'flex min-h-toque shrink-0 items-center gap-e1 rounded-grande border px-e3 font-bold max-md:hidden',
         soloMias ? 'border-texto bg-texto text-superficie' : 'border-borde bg-superficie',
       ].join(' ')}
     >

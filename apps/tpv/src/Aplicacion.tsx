@@ -19,6 +19,7 @@ import { CobroPendienteDesdeLaPuerta } from './caja/CobrarElPendiente.tsx';
 import { escucharLaDireccion, laDireccion } from './navegar.ts';
 import { ContextoAlSegundo, usarEscucharAlSegundo } from './ganchos/usarLaSala.ts';
 import { usarSesion } from './sesion/Sesion.tsx';
+import { LosAvisos } from './avisos/LosAvisos.tsx';
 
 /**
  * Estook TPV (T1 · La puerta, decisión 0107): **una aplicación aparte**, en
@@ -60,7 +61,9 @@ function Dentro() {
     pantalla = <CobroPendienteDesdeLaPuerta id={cobroPendiente} conectado={conectado} />;
   } else if (enLaCaja && direccion === 'fichar') pantalla = <Fichar />;
   else if (enLaCaja && direccion === 'agotados') pantalla = <Agotados />;
-  else if (enLaCaja && (direccion === 'ajustes' || direccion.startsWith('ajustes/'))) {
+  // **Ajustes, en todos los aparatos** (0143): en el comandero, «Tu sesión» y el tema; lo demás,
+  // solo en la caja, y eso lo decide la pantalla. Antes el engranaje del comandero no abría nada.
+  else if (direccion === 'ajustes' || direccion.startsWith('ajustes/')) {
     pantalla = <AjustesDelTpv direccion={direccion} />;
   } else if (enLaCaja && direccion === 'sala/editar' && dibuja) {
     // T2 · La sala (0110): el plano se dibuja aquí, a ojo, en la caja (0115).
@@ -97,7 +100,14 @@ function Dentro() {
   // Lo demás, también `#/inicio` de antes, es la sala.
   else pantalla = <ElPlano />;
 
-  return <ContextoAlSegundo.Provider value={conectado}>{pantalla}</ContextoAlSegundo.Provider>;
+  return (
+    <ContextoAlSegundo.Provider value={conectado}>
+      {pantalla}
+      {/* **Los avisos** (0148, entrega 2 · 2): arriba a la derecha y en la campana, en todo lo de la
+          sala. Quien no toma nota no tiene sala que atender; y el editor de la sala, a lo suyo. */}
+      {tomaNota && direccion !== 'sala/editar' && <LosAvisos />}
+    </ContextoAlSegundo.Provider>
+  );
 }
 
 export function Aplicacion() {

@@ -66,6 +66,8 @@ export function Cobrar({
   alCobrarElPendiente,
   alVolver,
   alAcabar,
+  formaDeEntrada = 'efectivo',
+  textoDeAcabar = 'Listo · la mesa queda libre',
 }: {
   readonly mesa: LaMesa | undefined;
   /** Lo pedido en esta tablet que no ha salido de ella: hay que mandarlo antes. */
@@ -77,11 +79,15 @@ export function Cobrar({
   readonly alVolver: () => void;
   /** La mesa ha quedado libre. */
   readonly alAcabar: () => void;
+  /** **Con qué se empieza** (la venta rápida, 0148): el método tocado, para cobrar de un toque. */
+  readonly formaDeEntrada?: Forma;
+  /** El botón del final cuando todo está cobrado: en la venta rápida no hay mesa que quede libre. */
+  readonly textoDeAcabar?: string;
 }) {
   const { cliente } = usarSesion();
   const caja = usarLaCaja();
   const recargar = usarRecargarLaCaja();
-  const [forma, setForma] = useState<Forma>('efectivo');
+  const [forma, setForma] = useState<Forma>(formaDeEntrada);
   const [divide, setDivide] = useState<ComoSeDivide>('iguales');
   const [partes, setPartes] = useState(2);
   const [entregado, setEntregado] = useState<number | 'justo' | 'otro'>('justo');
@@ -363,7 +369,7 @@ export function Cobrar({
               }}
               className="min-h-toque-cocina rounded-grande bg-naranja text-seccion font-bold text-sobre-naranja"
             >
-              {hecho.liberada ? 'Listo · la mesa queda libre' : 'Seguir cobrando'}
+              {hecho.liberada ? textoDeAcabar : 'Seguir cobrando'}
             </button>
           </div>
         </div>

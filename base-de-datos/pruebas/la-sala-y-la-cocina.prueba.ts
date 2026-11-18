@@ -109,6 +109,7 @@ interface Mesa {
     estado: string;
     motivoDeQuitar: string | null;
     vuelve: string | null;
+    mandadaEn: string | null;
   }[];
   pases: { numero: number; marchadoEn: string | null; haSalido: boolean }[];
   loSiguiente: { que: string; pase?: number };
@@ -592,15 +593,19 @@ describe('la mesa 6, de principio a fin', () => {
       }),
     );
     expect(laMesaDelPlano(await elPlano(saraTpv), '6').estado).toBe('por_mandar');
+    // Sin mandar, no hay cuándo: «Repetir pedido» (0148) no tiene nada que repetir.
+    expect((await laMesa(seis)).platos.map((p) => p.mandadaEn)).toEqual([null, null]);
     const mandado = losDatos<{ aCocina: number; aLaBarra: number; salen: number[] }>(
       await api.ejecutar(saraTpv, 'mandar_a_cocina', { cuenta_id: seis }),
     );
     expect(mandado).toEqual({ aCocina: 0, aLaBarra: 2, talCual: 0, salen: [], esperan: [] });
     expect(enCocina(await laCocina(), seis)).toBeNull();
-    expect((await laMesa(seis)).platos.map((p) => p.estado)).toEqual([
-      'en_la_barra',
-      'en_la_barra',
-    ]);
+    const mandados = (await laMesa(seis)).platos;
+    expect(mandados.map((p) => p.estado)).toEqual(['en_la_barra', 'en_la_barra']);
+    // **Cuándo se mandó** (0148): lo mandado a la vez lleva la misma hora, y es «lo último» que
+    // repite «Repetir pedido».
+    expect(mandados[0]?.mandadaEn).toEqual(expect.any(String));
+    expect(mandados[1]?.mandadaEn).toBe(mandados[0]?.mandadaEn);
   });
 
   it('la comida: dos de carta y dos menús, con su 1.º y su 2.º y la nota del entrecot', async () => {

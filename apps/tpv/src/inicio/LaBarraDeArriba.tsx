@@ -4,6 +4,7 @@ import {
   IconoCandado,
   IconoCuenta,
   IconoParaLlevar,
+  IconoPrisa,
   IconoRejilla,
   type Icono as IconoDeLucide,
 } from '@estook/iconos';
@@ -41,7 +42,7 @@ export function LaBarraDeArriba({
   const factura =
     puedeEditar(yo.permisos, 'accion.factura_de_un_ticket') ||
     puedeEditar(yo.permisos, 'accion.factura_a_mano');
-  const enLaSala = titulo === undefined && direccion !== 'llevar';
+  const enLaSala = titulo === undefined && direccion !== 'llevar' && direccion !== 'rapida';
   return (
     <header className="flex flex-wrap items-center gap-e3 border-b border-borde bg-superficie px-e4 py-e2 md:flex-nowrap md:px-e5">
       <button
@@ -69,6 +70,19 @@ export function LaBarraDeArriba({
       >
         {tomaNota && (
           <DondeIr icono={IconoRejilla} texto="Sala" puesto={enLaSala} onClick={irAlPlano} />
+        )}
+        {/* **La venta rápida** (0148): en la caja, con su rayo en amarillo. */}
+        {tomaNota && enLaCaja && (
+          <DondeIr
+            icono={IconoPrisa}
+            texto="Rápida"
+            etiqueta="Venta rápida"
+            colorDelIcono="text-mesa-te-toca"
+            puesto={direccion === 'rapida'}
+            onClick={() => {
+              irA('rapida');
+            }}
+          />
         )}
         {tomaNota && (
           <DondeIr
@@ -151,11 +165,14 @@ function DondeIr({
   icono: Dibujo,
   texto,
   etiqueta = texto,
+  colorDelIcono,
   puesto,
   onClick,
 }: {
   readonly icono: IconoDeLucide;
   readonly texto: string;
+  /** El color propio del icono: el rayo de la venta rápida, siempre amarillo. */
+  readonly colorDelIcono?: string;
   /** Lo que oye quien no ve, si dice más: «Tickets y facturas». */
   readonly etiqueta?: string;
   readonly puesto: boolean;
@@ -172,7 +189,11 @@ function DondeIr({
         puesto ? 'bg-naranja-suave text-texto' : 'text-texto-suave hover:bg-fondo',
       ].join(' ')}
     >
-      <Dibujo size={22} aria-hidden className={puesto ? 'text-naranja' : undefined} />
+      <Dibujo
+        size={22}
+        aria-hidden
+        className={colorDelIcono ?? (puesto ? 'text-naranja' : undefined)}
+      />
       <span>{texto}</span>
     </button>
   );

@@ -102,8 +102,8 @@ test('la puerta: vincular la caja con el correo, la tablet con su código, el PI
   await page.getByRole('button', { name: 'No, volver' }).click();
   await page.getByRole('button', { name: 'Volver', exact: true }).click();
   await expect(page.getByText('Tu sala aún no tiene mesas')).toBeVisible({ timeout: 15_000 });
-  // Lo que todavía no funciona no sale, ni apagado.
-  await expect(page.getByRole('button', { name: /^Venta rápida/ })).toHaveCount(0);
+  // En la caja, arriba, el rayo de la venta rápida (el rediseño, 0148).
+  await expect(page.getByRole('button', { name: 'Venta rápida', exact: true })).toBeVisible();
 
   // ── El engranaje › Aparatos del local › Añadir: la tablet de la sala ──
   await page.getByRole('button', { name: 'Ajustes', exact: true }).click();

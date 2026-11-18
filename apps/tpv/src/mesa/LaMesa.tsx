@@ -493,6 +493,9 @@ export function LaMesa({ cuentaId }: { readonly cuentaId: string }) {
           alCerrar={() => {
             setOpciones(null);
           }}
+          alRepetir={(lineas) => {
+            setBorrador([...borrador, ...lineas]);
+          }}
         />
       )}
 

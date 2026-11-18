@@ -165,6 +165,8 @@ export interface PlatoDeLaCuenta {
   readonly servidoEnSala?: boolean;
   /** El plato nuevo de un cambio: lo de antes, «1 Croquetas» (0132). */
   readonly cambioDe?: string | null;
+  /** Cuándo se mandó (0148): lo mandado a la vez es una ronda. Una API de antes no lo dice. */
+  readonly mandadaEn?: string | null;
 }
 
 export interface LaMesa {

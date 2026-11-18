@@ -41,6 +41,9 @@ import { elCaminoAlCentro, esteSistema, llegamosALaCaja } from '../sinInternet/l
  * **No entra con la sesión de Estook**, y no lleva a Estook: un aparato vinculado no es
  * una puerta a la gestión. El turno vive solo en la memoria: al recargar, se bloquea.
  */
+/** Adónde se entra directo desde un botón de la puerta (0144, 0145 y 0148); lo demás, a la sala. */
+const LO_QUE_SE_TOCA_EN_LA_PUERTA = /^(caja\/(abrir|cerrar)|cobro\/[0-9a-f-]{36}|rapida|facturas)$/;
+
 export function LaPuerta({ children }: { readonly children: ReactNode }) {
   const [llave, setLlave] = useState<string | null>(() => leerLaLlave());
   /** Desvinculado desde otro aparato: el nombre del local, para decirlo. */
@@ -273,7 +276,8 @@ function ConLlave({
           // **Todos a la sala** (la entrada nueva, 26-oct): ya no hay inicio de baldosas. Salvo
           // quien tocó «Abrir caja» o «Cerrar caja» al lado de Fichar (0144): entra directo a
           // hacerlo, que es para lo que tecleó su PIN. Y quien tocó un cobro pendiente (0145), a cobrarlo.
-          if (!/^(caja\/(abrir|cerrar)|cobro\/[0-9a-f-]{36})$/.test(laDireccion())) irA('');
+          // Y desde el rediseño (0148), la venta rápida y los tickets, los otros botones de la puerta.
+          if (!LO_QUE_SE_TOCA_EN_LA_PUERTA.test(laDireccion())) irA('');
           setDentro(nuevo);
         }}
       />

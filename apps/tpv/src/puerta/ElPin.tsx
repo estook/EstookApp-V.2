@@ -10,6 +10,7 @@ import {
   IconoCuenta,
   IconoDinero,
   IconoPersona,
+  IconoPrisa,
   IconoReloj,
   type Icono,
 } from '@estook/iconos';
@@ -646,6 +647,19 @@ export function ElPin({
                 elegir('entrar');
               }}
             />
+            {/* **La venta rápida** (0148), solo en la caja: ticar y cobrar, sin mesa. */}
+            {enLaCaja && (
+              <BotonGrande
+                icono={IconoPrisa}
+                titulo="Venta rápida"
+                detalle="Ticar y cobrar, sin mesa"
+                color="bg-mesa-te-toca text-sobre-mesa-te-toca"
+                alto="min-h-[6.5rem]"
+                onClick={() => {
+                  elegir('rapida');
+                }}
+              />
+            )}
             {hecho !== null && (
               <span
                 role="status"
@@ -801,10 +815,11 @@ export function ElPin({
  * **A qué se entra** (el rediseño, 0148): el botón tocado en la puerta. La dirección se pone antes
  * del PIN, y al entrar la aplicación va ahí.
  */
-type Intencion = 'entrar' | 'tickets' | 'caja';
+type Intencion = 'entrar' | 'rapida' | 'tickets' | 'caja';
 
 const DONDE_ENTRA: Readonly<Record<Intencion, (cajaAbierta: boolean) => string>> = {
   entrar: () => '/',
+  rapida: () => '/rapida',
   tickets: () => '/facturas',
   caja: (abierta) => `/caja/${abierta ? 'cerrar' : 'abrir'}`,
 };
@@ -824,6 +839,12 @@ const COMO_SE_VE_LA_INTENCION: Readonly<
     detalle: null,
     icono: IconoPersona,
     color: 'bg-naranja text-sobre-naranja',
+  }),
+  rapida: () => ({
+    titulo: 'Venta rápida',
+    detalle: null,
+    icono: IconoPrisa,
+    color: 'bg-mesa-te-toca text-sobre-mesa-te-toca',
   }),
   tickets: () => ({
     titulo: 'Tickets',

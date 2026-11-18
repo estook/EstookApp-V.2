@@ -183,6 +183,8 @@ Un bar de tapas no abre mesas, y un local con barra y comedor hace las dos cosas
 
 Los tres acaban en una venta con su ticket. Lo que cambia es cuánto vive la cuenta abierta.
 
+**La venta rápida** (el rediseño, [0148](../decisiones/0148-el-rediseno.md)) es el camino de la barra hecho pantalla, **en la caja**: se tica, se elige **«Aquí» o «Para llevar»** y se cobra con **un toque por método** (efectivo, tarjeta o Bizum, si el local lo usa), que abre el cobro de siempre ya en ese método. Lo opcional, abajo: **el nombre o el número** para cantarlo, y **«Pasar a una mesa»**, que se lleva lo ticado a esa mesa —a cocina y a la barra— sin cobrar. La cuenta nace al cobrar o al pasarla: hasta entonces lo ticado vive en el aparato y no se pierde si se bloquea. **Sin internet todavía no cobra** (T7): lo dice y lo ticado se queda.
+
 ### Abrir mesa y tomar nota
 
 **Abrir:** un toque en la mesa libre, con los comensales que se ajustan después, y **«por pases» o «todo junto»** ([0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). El camarero es **el operador** del terminal, que entró con su PIN (3.4).
@@ -1085,7 +1087,7 @@ descontado, los tiempos de cocina, Negocio y el «Tu dia» de mañana
 - **El menú del día, en el orden de la comida** (0106): «¿Cuántos menús?» y **se cuentan los platos** (1 lentejas, 1 ensalada); **primeros y segundos juntos**, con el 2.º en espera; **postre o café al final**. Las bebidas que la mesa ya pidió **entran solas en el menú** si son de las suyas, una por menú. Una mesa puede tener **menú y carta a la vez**: es una sola cuenta. Cada elección va a cocina como su plato (M10).
 - **Agotado** sale en gris y un toque no lo pide; con pocas raciones, **«Quedan 3»**, calculado con el escandallo, el stock y lo que ya está en cocina (3.1).
 - **Mantener pulsado un producto** (o el botón derecho en el ordenador; [0118](../decisiones/0118-la-entrada-del-tpv.md)): **«Se ha agotado»**, en cualquier aparato y por quien tenga permiso, y **«Con una nota para cocina»**, que lo pide en su propia línea con su nota. Lo agotado, al mantenerlo, **«Ya hay otra vez»**.
-- **«Otra ronda»**: repite lo último que pidió la mesa en dos toques. En un bar es lo que más se hace.
+- **«Repetir pedido»** (nunca «Otra ronda», 0148), en **«⋯ Más opciones»** de la mesa: lo último que se mandó a la vez entra en lo que se pide, para mandarlo con un toque o cambiar algo antes. No repite lo quitado, los menús, lo que lleva opciones ni lo que se pesa: eso se elige otra vez.
 - **«¿Pan para la mesa? · Pan para 4»**: un toque pone un pan por comensal ([0112](../decisiones/0112-el-pan-y-el-cafe.md)). **Nunca se pone solo**: en España el pan no se cobra si no se pide, así que se pregunta.
 - **Grupos de opciones que se reutilizan** —el refresco de las copas, la guarnición si el local la quiere preguntar; **nunca el punto** (0106)—, con mínimo, máximo, precio por canal y **su propio escandallo**: «extra de queso» gasta queso. Sin eso, el almacén miente. **Se configuran en Estook TPV**, plato a plato, sobre la carta que el TPV lee de Estook ([0092](../decisiones/0092-las-respuestas-de-m9-3.md)): cada extra sale **de los ingredientes del escandallo del plato** («doble de queso») **o de cualquier producto del almacén**, con su precio; una sustitución cambia un ingrediente por otro («pan sin gluten»); y **el extra libre**, fuera de la receta, lleva nombre y precio y **no descuenta género**, porque no se sabe qué es. El precio del plato y lo que cuesta siguen viniendo de Estook: el TPV no inventa un dato.
 - **Artículo libre**, con precio y permiso («varios, 3 €»), y siempre con su descripción, que el ticket la necesita.
@@ -1095,7 +1097,7 @@ descontado, los tiempos de cocina, Negocio y el «Tu dia» de mañana
 
 **En el móvil del camarero** —el comandero— es la misma pantalla en una columna: las secciones arriba, los platos en cuadrícula, y la cuenta en una hoja que sube desde abajo con el total y **Mandar** siempre a mano. Se usa con una mano. No es otra aplicación.
 
-**En la barra**, arriba del todo y siempre: **«Venta rápida»**. Se pide y se cobra sin abrir nada (3.1).
+**En la caja**, arriba y en la puerta, con su rayo amarillo: **«Venta rápida»**. Se tica y se cobra sin abrir nada (3.1).
 
 **Las bebidas, los cafés y las copas** salen en sus secciones de la botonera, con «¿Quién lo prepara? Barra» (11.11), y **se montan en Ajustes del TPV › Productos** con «Monta tus bebidas»: tal cual entero, a raciones —la copa de vino de 150 ml, la caña— o con receta —las copas, que se hacen solas con la dosis de la casa, y los cafés, que vienen hechos— (0106, apartado 2; dónde se monta, [0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)).
 
@@ -1280,7 +1282,7 @@ Que un local que viene de otro TPV **no tenga que reescribir nada**:
 - Lo que cambia en un aparato se ve en otro en menos de 2 segundos.
 - Con un canal conectado, **un pedido aceptado sale en cocina entero, con la moto y la hora del repartidor, y no pasa por el cobro**.
 - Un datáfono conectado que no responde **no para el cobro**: se cobra como en el nivel 1 y queda marcado.
-- **«Otra ronda»** repite lo último en dos toques; **un grupo de opciones** con su escandallo descuenta su género; un **producto a peso** cobra lo que pesa.
+- **«Repetir pedido»** repite lo último mandado en tres toques; **un grupo de opciones** con su escandallo descuenta su género; un **producto a peso** cobra lo que pesa.
 - **Estook TPV no se actualiza en mitad de un servicio**: con cuentas abiertas espera, y avisa si una versión es incompatible.
 - **Cada objetivo de la tabla de 10.13**, medido con un camarero que no conoce Estook.
 
@@ -1294,7 +1296,7 @@ La vara de 10.3 —cuatro platos en diez toques— no basta: un camarero decide 
 | Añadir un plato                  | 1 toque                          |
 | Contestar una opción obligatoria | 1 toque por pregunta             |
 | Mandar a cocina                  | 1 toque                          |
-| Otra ronda                       | 2 toques                         |
+| Repetir pedido                   | 3 toques (⋯, Repetir, Mandar)    |
 | Mover una mesa                   | 3 toques                         |
 | Dividir la cuenta                | De 3 a 5 toques                  |
 | Cobrar una caña en barra, exacto | 3 toques, con el ticket impreso  |
@@ -1446,7 +1448,7 @@ En el aparato nuevo
 └────────────────────────────────┴──────────────────────────────────┘
 ```
 
-- **Entrar** (naranja): el PIN y a la sala; quien no ha fichado, «Fichar la entrada y entrar». **Tickets**: directo a Tickets y facturas. **Abrir o Cerrar caja** (0144): directo a hacerlo. **Fichar** (0115): la entrada, la pausa o la salida sin entrar. **La venta rápida** (el rayo) se suma con su entrega.
+- **Entrar** (naranja): el PIN y a la sala; quien no ha fichado, «Fichar la entrada y entrar». **Tickets**: directo a Tickets y facturas. **Abrir o Cerrar caja** (0144): directo a hacerlo. **Fichar** (0115): la entrada, la pausa o la salida sin entrar. **Venta rápida** (el rayo, en amarillo, 0148): con el PIN, derecha a ticar y cobrar.
 - **A la izquierda, lo útil**: la hora, quién está fichado, cómo está la caja y **el efectivo que espera** (0145), que se toca para cobrarlo con el PIN de quien cobra. **Sin textos que expliquen lo que ya se ve.**
 
 - **El PIN lo da Estook, al azar**, donde ya se da (Mi acceso y Equipo, M1): nadie lo elige, así que nadie pone 1234. **Desde T1 se descartan al generarlo los que se adivinan**: todas las cifras iguales (111111) y las escaleras (123456, 654321). Los que ya existen no cambian. Quien no tiene PIN en ese local ve «No tienes PIN en este local: pídeselo a quien lo lleva».
@@ -1487,12 +1489,12 @@ En el aparato nuevo
 **Rehecha en el rediseño** ([0148](../decisiones/0148-el-rediseno.md), maqueta aprobada el 18-nov):
 
 - **El símbolo de Estook y el local**, siempre a la izquierda (Richi: «en vez de la E, el logo de la marca»): **devuelven a la sala desde cualquier sitio**.
-- **En medio, los sitios, con su icono y su nombre**: **Sala**, **Para llevar** (la barra y lo de llevar, `#/llevar`) y **Tickets**. La venta rápida, el reparto y las reservas entran aquí el día que existan, y no antes. En el móvil, los iconos ocupan su fila.
+- **En medio, los sitios, con su icono y su nombre**: **Sala**, **Rápida** (el rayo, solo en la caja, `#/rapida`, 3.1), **Para llevar** (la barra y lo de llevar, `#/llevar`) y **Tickets**. El reparto y las reservas entran aquí el día que existan, y no antes. En el móvil, los iconos ocupan su fila.
 - **A la derecha, lo de todos los días**: la caja (0144) y **Fichar** en naranja, solo en la caja (0115); **el engranaje**, en todos (0143); y **quién está, que bloquea de un toque** (11.4).
 - **Debajo, las zonas** con cuántas mesas tienen abiertas, y **«Mías»** (11.8).
 - **La columna «Ahora»**, a la derecha en el PC: lo que pide atención, por orden y con su botón — **te toca** (marchar el siguiente pase, la mesa sin pedir, lo apuntado sin mandar), **¿cuenta?**, **el efectivo por cobrar** (en la caja) y, **para el encargado**, la mesa abierta más de seis horas. **Al tocar una mesa, la columna pasa a ser la mesa**, sin tapar el plano. En la tablet es el botón naranja «Ahora» con su número; en el móvil, las franjas de siempre encima de las mesas.
 - **El plano cabe entero**, con sus sillas, al lado de la columna; **abajo**, las mesas abiertas, **la leyenda de los colores** y si la sala y la cocina van al segundo.
-- **Lo que tenía el inicio**, dónde está ahora: **Agotados**, en el engranaje y **manteniendo pulsado el producto** en la botonera (11.11); **Ajustes del TPV**, en el engranaje; **la venta rápida**, con su entrega del rediseño; **Ventas de hoy**, con el cobro (T7); **la pantalla de cocina para mirar**, cuando un local la pida.
+- **Lo que tenía el inicio**, dónde está ahora: **Agotados**, en el engranaje y **manteniendo pulsado el producto** en la botonera (11.11); **Ajustes del TPV**, en el engranaje; **la venta rápida**, arriba con su rayo; **Ventas de hoy**, con el cobro (T7); **la pantalla de cocina para mirar**, cuando un local la pida.
 - **Dónde cae cada uno**: **en la sala, siempre** (0118). Sin mesas dibujadas, la sala dice cómo dibujarlas y deja pedir en «Para llevar».
 
 ## 11.6 La caja
@@ -1647,7 +1649,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 - **Un toque añade uno.** Si ya está en la cuenta en ese pase, suma. **Tocar la línea**: la nota escrita, el `+` y el `−`, «Va en el» para cambiar de pase y Quitar (0106, 4).
 - **Las opciones obligatorias** (el «¿Con qué?» de una copa, la guarnición si el local la pregunta) salen al tocar el producto, una pregunta y un toque cada una (10.13), y **no se manda sin contestarlas**.
-- **«Más»** junta lo que no se usa en cada mesa: Otra ronda, Artículo libre, A peso, Invitar o descontar, Dividir, Cambiar de mesa, Juntar, Pasar a otro camarero.
+- **«Más»** junta lo que no se usa en cada mesa: Repetir pedido, Artículo libre, A peso, Invitar o descontar, Dividir, Cambiar de mesa, Juntar, Pasar a otro camarero.
 - **«Cuenta»** imprime la precuenta (3.5) y pone la mesa en «Pide la cuenta».
 - **En el móvil**, una columna: la mesa y las pestañas de los pases arriba, las secciones debajo, los productos en dos columnas, y abajo **la cuenta (con su total y lo nuevo) y el botón grande**, siempre a mano.
 

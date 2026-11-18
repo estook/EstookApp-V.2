@@ -20,6 +20,7 @@ import {
   IconoPases,
   IconoPersona,
   IconoPrisa,
+  IconoReintentar,
   type Icono,
 } from '@estook/iconos';
 import { Boton, CAJA, Cargando, Envoltorio, ErrorEnCristiano, Hoja } from '@estook/ui';
@@ -33,7 +34,9 @@ import {
 import type { CuentaEnElPlano, ElPlano } from '../datos/tipos.ts';
 import { elPase, losGruposDeLaCuenta } from '../logica/laCuenta.ts';
 import { comensales, cuantoLlevan, euros, eurosConSimbolo, losNombres } from '../logica/texto.ts';
-import { irAlPlano } from '../navegar.ts';
+import { irAlPlano, irALaMesa } from '../navegar.ts';
+import { guardarBorrador, leerBorrador, type LineaNueva } from '../logica/comanda.ts';
+import { comoLineasNuevas, loQueSeRepite, loUltimoPedido } from '../logica/repetirPedido.ts';
 import { LaCuenta } from './LaCuenta.tsx';
 import { LoServido } from './LoServido.tsx';
 import { Cobrar } from '../caja/Cobrar.tsx';
@@ -116,6 +119,7 @@ export function OpcionesDeLaMesa({
   empiezaEn = 'mesa',
   sinMandarAqui = 0,
   enLinea = false,
+  alRepetir,
 }: {
   readonly cuenta: CuentaEnElPlano;
   readonly plano: ElPlano;
@@ -130,6 +134,11 @@ export function OpcionesDeLaMesa({
   readonly sinMandarAqui?: number;
   /** En la columna de la derecha del PC, en vez de en una hoja (0148). */
   readonly enLinea?: boolean;
+  /**
+   * «Repetir pedido» desde dentro de la mesa (0148): lo repetido entra en lo que se está pidiendo.
+   * Desde el plano no hace falta: se guarda en lo que se pide de esa mesa y se entra en ella.
+   */
+  readonly alRepetir?: (lineas: readonly LineaNueva[]) => void;
 }) {
   const { porPases, notaParaCocina } = cuenta;
   const { yo, aparato } = usarSesion();
@@ -176,6 +185,7 @@ export function OpcionesDeLaMesa({
   // Los platos de la mesa: los mismos que dentro de ella (y, desde dentro, ya leídos).
   const mesa = usarLaMesa(cuenta.cuentaId, usarAlSegundo());
   const grupos = losGruposDeLaCuenta(mesa.data, []);
+  const repetible = loUltimoPedido(mesa.data?.platos ?? []);
   const hayParaLaCuenta = impresoras.data?.hayParaLaCuenta === true;
 
   /**
@@ -472,6 +482,29 @@ export function OpcionesDeLaMesa({
       {/* **«···»**: lo que se usa menos; lo que borra, al final y en rojo. */}
       {paso === 'mas' && (
         <Menu alVolver={volver} volverEsCerrar={empiezaEn !== 'mesa'}>
+          {/* **Repetir pedido** (0148): lo último que se mandó a la vez, a lo que se pide, para
+              mandarlo con un toque o cambiar algo antes. Siempre en su sitio, apagado si no hay
+              nada: que no aparezca de golpe al llegar la cuenta y empuje lo de debajo. */}
+          <OpcionDelMenu
+            icono={IconoReintentar}
+            texto="Repetir pedido"
+            apagado={repetible.length === 0}
+            {...(repetible.length > 0
+              ? { detalle: loQueSeRepite(repetible) }
+              : mesa.data === undefined
+                ? {}
+                : { detalle: 'Nada que repetir todavía' })}
+            onClick={() => {
+              const lineas = comoLineasNuevas(repetible);
+              alCerrar();
+              if (alRepetir !== undefined) {
+                alRepetir(lineas);
+                return;
+              }
+              guardarBorrador(cuenta.cuentaId, [...leerBorrador(cuenta.cuentaId), ...lineas]);
+              irALaMesa(cuenta.cuentaId);
+            }}
+          />
           <OpcionDelMenu
             icono={IconoAtencion}
             texto={alergias.length === 0 ? 'Alergias' : `Alergias · ${losNombres(alergias)}`}
@@ -906,19 +939,22 @@ function OpcionDelMenu({
   detalle,
   onClick,
   peligro = false,
+  apagado = false,
 }: {
   readonly icono: Icono;
   readonly texto: string;
   readonly detalle?: string;
   readonly onClick: () => void;
   readonly peligro?: boolean;
+  readonly apagado?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={apagado}
       className={[
-        'flex min-h-toque-cocina items-center gap-e3 rounded-grande px-e3 text-left hover:bg-fondo',
+        'flex min-h-toque-cocina items-center gap-e3 rounded-grande px-e3 text-left hover:bg-fondo disabled:opacity-45 disabled:hover:bg-transparent',
         peligro ? 'text-mal' : 'text-texto',
       ].join(' ')}
     >

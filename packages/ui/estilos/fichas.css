@@ -116,6 +116,28 @@
   --color-seccion-amarillo: #9a7400;
   --color-seccion-marron: #8a5a36;
 
+  /*
+   * ── Las mesas de Estook TPV (el rediseño, 0148) ─────────────────────────────
+   *
+   * Seis colores **sólidos**, los de la maqueta aprobada (Richi, 18-nov: «colores sólidos, da más
+   * profesionalidad»), con el texto que contrasta encima. «Sin pedir» y «Sin mandar» comparten el
+   * ámbar: los dos son «te toca a ti»; la palabra dice cuál. Son los mismos en oscuro y en claro,
+   * salvo la libre, que en claro es blanca con borde. Los mide `contraste.prueba.ts`.
+   */
+  --color-mesa-libre: #ffffff;
+  --color-mesa-libre-borde: #7c8a87;
+  --color-sobre-mesa-libre: #111c1f;
+  --color-mesa-te-toca: #f4b731;
+  --color-sobre-mesa-te-toca: #1d1600;
+  --color-mesa-esperando: #2f6fe4;
+  --color-sobre-mesa-esperando: #ffffff;
+  --color-mesa-marchar: #ff7a00;
+  --color-sobre-mesa-marchar: #1d1000;
+  --color-mesa-comiendo: #17864c;
+  --color-sobre-mesa-comiendo: #ffffff;
+  --color-mesa-cuenta: #d0346c;
+  --color-sobre-mesa-cuenta: #ffffff;
+
   /* ── Espaciado · escala de 4 ────────────────────────────────────────────── */
   --spacing-e1: 4px;
   --spacing-e2: 8px;

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * **R2 · 2 · Servido y cambiar un plato** (decisión 0132; la pausa del 5-nov, puntos 1.2 y
@@ -107,7 +108,7 @@ test('servido y cambiar un plato: la sala marca lo que lleva y cambia sin PIN', 
     window.localStorage.setItem('estook.tpv.llave', laLlave);
   }, llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await page.keyboard.type(pin);
   await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
 

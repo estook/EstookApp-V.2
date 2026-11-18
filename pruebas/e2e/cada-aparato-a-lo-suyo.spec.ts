@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { abrirSinQueSeCaiga } from './abrir.ts';
 import { cuentaNueva, pagarPro, sinElAlta, unico } from './cuenta-nueva.ts';
 import { API, consultarEnLaApi, ejecutarEnLaApi } from './en-la-app.ts';
+import { LA_PUERTA } from './la-puerta-del-tpv.ts';
 
 /**
  * **Cada aparato, a lo suyo** (decisión 0115; Richi, 25-oct), en la pantalla y con una cuenta
@@ -68,7 +69,7 @@ test('el comandero sin fichar no entra; se ficha en la caja; y el comandero va a
     window.localStorage.setItem('estook.tpv.llave', llave);
   }, comandero.llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   // En el comandero no hay «Fichar»: es de la caja.
   await expect(page.getByRole('button', { name: 'Fichar', exact: true })).toHaveCount(0);
   await page.keyboard.type(pin);
@@ -85,7 +86,7 @@ test('el comandero sin fichar no entra; se ficha en la caja; y el comandero va a
     window.localStorage.setItem('estook.tpv.llave', llave);
   }, caja.llave);
   await abrirSinQueSeCaiga(laCaja, TPV);
-  await expect(laCaja.getByText('Teclea tu PIN')).toBeVisible({ timeout: 15_000 });
+  await expect(laCaja.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
   await laCaja.getByRole('button', { name: 'Fichar', exact: true }).click();
   await expect(laCaja.getByText('Fichar · teclea tu PIN')).toBeVisible();
   await laCaja.keyboard.type(pin);
@@ -94,7 +95,7 @@ test('el comandero sin fichar no entra; se ficha en la caja; y el comandero va a
     timeout: 15_000,
   });
   // Ha fichado sin entrar: la caja sigue en el PIN.
-  await expect(laCaja.getByText('Teclea tu PIN')).toBeVisible();
+  await expect(laCaja.getByText(LA_PUERTA).first()).toBeVisible();
   await otro.close();
 
   // ── Y en el comandero, ya fichado: directo a la sala ──

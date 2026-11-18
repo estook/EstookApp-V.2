@@ -694,3 +694,35 @@ describe('B8 en Estook TPV claro', () => {
     }
   });
 });
+
+/*
+ * ── Las mesas de Estook TPV (el rediseño, 0148) ───────────────────────────────
+ *
+ * Seis colores sólidos con su texto encima: el número, la palabra y los minutos se leen con
+ * holgura en los dos temas. Y la mesa libre, que no tiene color, se separa del plano por su borde.
+ */
+const LAS_MESAS = ['libre', 'te-toca', 'esperando', 'marchar', 'comiendo', 'cuenta'] as const;
+
+describe('las mesas de Estook TPV (0148)', () => {
+  for (const [tema, de] of [
+    ['oscuro', delTpv],
+    ['claro', delTpvClaro],
+  ] as const) {
+    it(`en ${tema}, el texto de cada mesa se lee sobre su color`, () => {
+      for (const mesa of LAS_MESAS) {
+        expect(
+          contraste(de(`sobre-mesa-${mesa}`), de(`mesa-${mesa}`)),
+          mesa,
+        ).toBeGreaterThanOrEqual(TEXTO);
+      }
+    });
+
+    it(`en ${tema}, la mesa libre se ve sobre el plano`, () => {
+      expect(contraste(de('mesa-libre-borde'), de('fondo'))).toBeGreaterThanOrEqual(ICONO);
+    });
+  }
+
+  it('son seis colores distintos', () => {
+    expect(new Set(LAS_MESAS.map((m) => delTpv(`mesa-${m}`))).size).toBe(6);
+  });
+});

@@ -5,6 +5,7 @@ import { IconoFlechaDerecha } from '@estook/iconos';
 import { EstadoVacio } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { irA } from '../navegar.ts';
+import { LosColoresDeLaSala } from './LosColoresDeLaSala.tsx';
 import { LaBarraDeArriba } from '../inicio/LaBarraDeArriba.tsx';
 import { FalloDeLaSala, usarAlSegundo, usarElPlano } from '../ganchos/usarLaSala.ts';
 import { IconoEnSuColor, type Dibujo, type Tono } from '../iconos.tsx';
@@ -201,6 +202,7 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
             dibujo="candado"
             sinAccionPorque="No hay nada más que hacer aquí."
           />
+          <LosColoresDeLaSala />
         </main>
       </div>
     );
@@ -236,6 +238,7 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
               );
             })}
           </div>
+          <LosColoresDeLaSala />
         </main>
       </div>
     );

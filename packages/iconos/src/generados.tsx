@@ -599,6 +599,12 @@ export const IconoMarisco = crearIcono(
   '<path d="M14 11a2 2 0 1 1-4 0 4 4 0 0 1 8 0 6 6 0 0 1-12 0 8 8 0 0 1 16 0 10 10 0 1 1-20 0 11.93 11.93 0 0 1 2.42-7.22 2 2 0 1 1 3.16 2.44" />',
 );
 
+/** Lucide `shopping-bag` */
+export const IconoParaLlevar = crearIcono(
+  'shopping-bag',
+  '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" />',
+);
+
 /** Lucide `sliders-horizontal` */
 export const IconoFiltros = crearIcono(
   'sliders-horizontal',

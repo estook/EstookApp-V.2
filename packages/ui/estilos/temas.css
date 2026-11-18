@@ -192,6 +192,21 @@
     --color-seccion-amarillo: #f5c84c;
     --color-seccion-marron: #c08a5b;
 
+    /* Las mesas (el rediseño, 0148): sólidas; la libre, gris claro, que se ve sobre el oscuro. */
+    --color-mesa-libre: #c9d3d6;
+    --color-mesa-libre-borde: #c9d3d6;
+    --color-sobre-mesa-libre: #13201f;
+    --color-mesa-te-toca: #f4b731;
+    --color-sobre-mesa-te-toca: #1d1600;
+    --color-mesa-esperando: #2f6fe4;
+    --color-sobre-mesa-esperando: #ffffff;
+    --color-mesa-marchar: #ff7a00;
+    --color-sobre-mesa-marchar: #1d1000;
+    --color-mesa-comiendo: #17864c;
+    --color-sobre-mesa-comiendo: #ffffff;
+    --color-mesa-cuenta: #d0346c;
+    --color-sobre-mesa-cuenta: #ffffff;
+
     --sombra-tarjeta: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.35);
     --relleno-tarjeta: none;
 
@@ -246,6 +261,21 @@
 
     --color-seccion-amarillo: #9a7400;
     --color-seccion-marron: #8a5a36;
+
+    /* Las mesas (0148): las mismas; la libre, blanca con su borde, sobre el plano gris claro. */
+    --color-mesa-libre: #ffffff;
+    --color-mesa-libre-borde: #7c8a87;
+    --color-sobre-mesa-libre: #111c1f;
+    --color-mesa-te-toca: #f4b731;
+    --color-sobre-mesa-te-toca: #1d1600;
+    --color-mesa-esperando: #2f6fe4;
+    --color-sobre-mesa-esperando: #ffffff;
+    --color-mesa-marchar: #ff7a00;
+    --color-sobre-mesa-marchar: #1d1000;
+    --color-mesa-comiendo: #17864c;
+    --color-sobre-mesa-comiendo: #ffffff;
+    --color-mesa-cuenta: #d0346c;
+    --color-sobre-mesa-cuenta: #ffffff;
 
     --sombra-tarjeta: 0 1px 2px rgba(17, 28, 31, 0.06), 0 6px 18px -10px rgba(17, 28, 31, 0.18);
     --relleno-tarjeta: none;

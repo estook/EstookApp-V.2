@@ -172,6 +172,19 @@ function elPlatoEnCocina(tarjeta: Tarjeta | undefined, lineaId: string): PlatoEn
 beforeAll(async () => {
   base = await levantarBase();
   api = montarLaApi(base.bd, { alSegundo, ahora: () => reloj });
+  // **Aquí Marcos solo cocina** (0119, 0148): desde el rediseño todos toman nota y cobran, y es el
+  // local quien se lo quita a su cocina si quiere, con el recorte de cada persona. Esta prueba mira
+  // justo esa cocina que no toca la sala: sin el recorte, Marcos podría marchar como cualquiera.
+  await base.bd.query(
+    `insert into estook.recorte_de_permiso (membresia_id, local_id, permiso, nivel, motivo)
+     select m.id, m.local_id, v.permiso, 'sin_acceso', 'La cocina solo cocina (la prueba de 0106)'
+       from estook.membresia m
+       join estook.persona p on p.id = m.persona_id
+       join estook.local l on l.id = m.local_id
+      cross join (values ('accion.tomar_nota'), ('accion.cobrar')) as v (permiso)
+      where p.correo = $1 and l.codigo = 'bar-centro'`,
+    [MARCOS],
+  );
   rosa = await api.entrar(ROSA);
   sara = await api.entrar(SARA);
   marcos = await api.entrar(MARCOS);

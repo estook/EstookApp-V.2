@@ -1,22 +1,30 @@
-import type { ReactNode } from 'react';
+import { useSyncExternalStore, type ReactNode } from 'react';
 import { inicialesDe } from '@estook/dominio';
-import { IconoCandado } from '@estook/iconos';
+import {
+  IconoCandado,
+  IconoCuenta,
+  IconoParaLlevar,
+  IconoRejilla,
+  type Icono as IconoDeLucide,
+} from '@estook/iconos';
 import { puedeEditar } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import { irA, irAlPlano } from '../navegar.ts';
-import { Icono, IconoEnSuColor } from '../iconos.tsx';
-import { COMO_SE_VE_LA_FUNCION } from '../logica/comoSeVeElAparato.ts';
+import { escucharLaDireccion, irA, irAlPlano, laDireccion } from '../navegar.ts';
+import { ElSimbolo, Icono } from '../iconos.tsx';
 import { BotonDeLaCaja } from '../caja/BotonDeLaCaja.tsx';
 
 /**
- * **Arriba, siempre** (la entrada nueva, maqueta 1; Anexo 11.5): a la izquierda la «E» y el
- * local, que **devuelven a la sala desde cualquier sitio**; en medio, lo que pone cada pantalla
- * (en la sala, las zonas y «Mías»); y a la derecha solo lo de todos los días: **Fichar en
- * naranja** (0115), **el engranaje** y quién está con **Bloquear**.
+ * **Arriba, siempre** (la entrada nueva, maqueta 1; rehecha en el rediseño, 0148, con la maqueta
+ * aprobada el 18-nov): todo Estook TPV se maneja desde aquí.
  *
- * Fichar, **solo en la caja**: un comandero solo pide (0115). **El engranaje, en todos** (0143):
- * dentro está «Tu sesión» con el tema, y lo demás solo en la caja y a quien puede tocarlo. La
- * caja (abrir y cerrar), aquí desde R3 · 1 (0144), al lado de Fichar.
+ *   · a la izquierda, **el símbolo de Estook** (Richi: «en vez de la E, el logo de la marca, tiene
+ *     más sentido») y el local, que **devuelven a la sala desde cualquier sitio**
+ *   · en medio, **los iconos de cada sitio**: la sala, para llevar y los tickets, con su nombre
+ *     debajo. La venta rápida, el reparto y las reservas entran aquí el día que existan
+ *   · a la derecha, lo de todos los días: **la caja** (0144) y **Fichar en naranja** (0115), solo
+ *     en la caja; **el engranaje**, en todos (0143); y quién está, que **bloquea** de un toque
+ *
+ * En el móvil, los iconos solos, sin el nombre: la barra cabe en una fila.
  */
 export function LaBarraDeArriba({
   titulo,
@@ -26,97 +34,146 @@ export function LaBarraDeArriba({
   readonly children?: ReactNode;
 }) {
   const { yo, aparato, bloquear } = usarSesion();
+  const direccion = useSyncExternalStore(escucharLaDireccion, laDireccion);
   const enLaCaja = aparato.funcion === 'caja';
+  const tomaNota = puedeEditar(yo.permisos, 'accion.tomar_nota');
   // Hacer una factura, en cualquier aparato de sala (0137).
   const factura =
     puedeEditar(yo.permisos, 'accion.factura_de_un_ticket') ||
     puedeEditar(yo.permisos, 'accion.factura_a_mano');
+  const enLaSala = titulo === undefined && direccion !== 'llevar';
   return (
-    <header className="flex flex-wrap items-center gap-e3 border-b border-borde bg-superficie px-e4 py-e2 md:px-e5">
+    <header className="flex flex-wrap items-center gap-e3 border-b border-borde bg-superficie px-e4 py-e2 md:flex-nowrap md:px-e5">
       <button
         type="button"
         aria-label="La sala"
         onClick={irAlPlano}
-        className="flex size-11 shrink-0 items-center justify-center rounded-grande bg-naranja text-seccion font-bold text-sobre-naranja"
+        className="flex min-w-0 shrink-0 items-center gap-e3 rounded-grande text-left md:w-[13rem]"
       >
-        E
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-grande bg-texto text-fondo">
+          <ElSimbolo lado={30} />
+        </span>
+        <span className="flex min-w-0 flex-col">
+          <span className="truncate text-seccion font-bold leading-tight">
+            {titulo ?? aparato.local.nombre}
+          </span>
+          <span className="truncate text-secundario text-texto-tenue">
+            {titulo === undefined ? aparato.nombre : `${aparato.local.nombre} · ${aparato.nombre}`}
+          </span>
+        </span>
       </button>
-      <div className="flex min-w-0 flex-col">
-        <span className="truncate text-seccion font-bold">{titulo ?? aparato.local.nombre}</span>
-        <span className="flex items-center gap-e1 truncate text-secundario text-texto-tenue">
-          {/* El dibujo y el color de este aparato, los de la lista de Aparatos. */}
-          <IconoEnSuColor
-            dibujo={COMO_SE_VE_LA_FUNCION[aparato.funcion].dibujo}
-            tono={COMO_SE_VE_LA_FUNCION[aparato.funcion].tono}
-            lado={20}
+
+      <nav
+        aria-label="Estook TPV"
+        className="order-last flex w-full justify-center gap-e1 md:order-none md:w-auto md:flex-1"
+      >
+        {tomaNota && (
+          <DondeIr icono={IconoRejilla} texto="Sala" puesto={enLaSala} onClick={irAlPlano} />
+        )}
+        {tomaNota && (
+          <DondeIr
+            icono={IconoParaLlevar}
+            texto="Para llevar"
+            puesto={titulo === undefined && direccion === 'llevar'}
+            onClick={() => {
+              irA('llevar');
+            }}
           />
-          {titulo === undefined ? aparato.nombre : `${aparato.local.nombre} · ${aparato.nombre}`}
-        </span>
+        )}
+        {factura && (
+          <DondeIr
+            icono={IconoCuenta}
+            texto="Tickets"
+            etiqueta="Tickets y facturas"
+            puesto={direccion === 'facturas'}
+            onClick={() => {
+              irA('facturas');
+            }}
+          />
+        )}
+      </nav>
+
+      {children}
+
+      <div className="ml-auto flex shrink-0 items-center gap-e2 md:ml-0">
+        {/* La caja (0144): verde con la caja abierta, y dentro lo demás. Solo en la caja. */}
+        {enLaCaja && <BotonDeLaCaja />}
+        {enLaCaja && (
+          <button
+            type="button"
+            aria-label="Fichar"
+            onClick={() => {
+              irA('fichar');
+            }}
+            className="flex min-h-toque min-w-toque items-center justify-center gap-e2 rounded-grande bg-naranja px-e3 font-bold text-sobre-naranja sm:px-e4"
+          >
+            <Icono dibujo="reloj" lado={18} />
+            {/* En el móvil, solo el reloj: la barra cabe en una fila. */}
+            <span className="max-sm:hidden">Fichar</span>
+          </button>
+        )}
+        {/* El engranaje, en todos los aparatos (0143): dentro está «Tu sesión», con el tema; lo
+            demás, solo en la caja y a quien puede tocarlo. */}
+        <button
+          type="button"
+          aria-label="Ajustes"
+          title="Ajustes"
+          onClick={() => {
+            irA('ajustes');
+          }}
+          className={[
+            'flex size-11 shrink-0 items-center justify-center rounded-grande border border-borde',
+            direccion.startsWith('ajustes') ? 'bg-texto text-superficie' : 'bg-charcoal',
+          ].join(' ')}
+        >
+          <Icono dibujo="ajustes" lado={22} />
+        </button>
+        <button
+          type="button"
+          onClick={bloquear}
+          aria-label={`${yo.nombre}: bloquear`}
+          title="Bloquear"
+          className="flex min-h-toque items-center gap-e2 rounded-grande border border-borde bg-charcoal py-e1 pl-e1 pr-e3 font-bold"
+        >
+          <span className="flex size-8 items-center justify-center rounded-medio bg-app-servicio text-etiqueta text-fondo">
+            {inicialesDe(yo.nombre)}
+          </span>
+          <span className="max-lg:hidden">{yo.nombre}</span>
+          <IconoCandado size={18} aria-hidden className="text-texto-suave" />
+        </button>
       </div>
-      {/* En el móvil, lo de cada pantalla baja a su fila (0131): arriba solo quién y dónde,
-          y la barra deja sitio a las mesas, en vez de cuatro filas. */}
-      {children !== undefined && (
-        <div className="order-last flex w-full min-w-0 items-center gap-e2 md:order-none md:w-auto">
-          {children}
-        </div>
-      )}
-      <div className="flex-1" />
-      {factura && (
-        <button
-          type="button"
-          aria-label="Tickets y facturas"
-          onClick={() => {
-            irA('facturas');
-          }}
-          className="flex min-h-toque min-w-toque items-center justify-center gap-e2 rounded-redondo border border-borde px-e3 font-medium sm:px-e4"
-        >
-          <Icono dibujo="impresora" lado={18} />
-          {/* En el móvil, solo el dibujo: la barra cabe en una fila. */}
-          <span className="max-sm:hidden">Tickets</span>
-        </button>
-      )}
-      {/* La caja (0144): un botón, verde con la caja abierta, y dentro lo demás. Solo en la caja. */}
-      {enLaCaja && <BotonDeLaCaja />}
-      {enLaCaja && (
-        <button
-          type="button"
-          aria-label="Fichar"
-          onClick={() => {
-            irA('fichar');
-          }}
-          className="flex min-h-toque min-w-toque items-center justify-center gap-e2 rounded-redondo bg-naranja px-e3 font-bold text-sobre-naranja sm:px-e4"
-        >
-          <Icono dibujo="reloj" lado={18} />
-          {/* En el móvil, solo el reloj: la barra cabe en una fila. */}
-          <span className="max-sm:hidden">Fichar</span>
-        </button>
-      )}
-      {/* El engranaje, en todos los aparatos (0143): dentro está «Tu sesión», con el tema; lo
-          demás, solo en la caja y a quien puede tocarlo. */}
-      <button
-        type="button"
-        aria-label="Ajustes"
-        title="Ajustes"
-        onClick={() => {
-          irA('ajustes');
-        }}
-        className="flex size-11 shrink-0 items-center justify-center rounded-redondo bg-charcoal"
-      >
-        <Icono dibujo="ajustes" lado={22} />
-      </button>
-      <button
-        type="button"
-        onClick={bloquear}
-        aria-label={`${yo.nombre}: bloquear`}
-        className="flex min-h-toque items-center gap-e2 rounded-redondo bg-fondo py-e1 pl-e1 pr-e4 font-bold"
-      >
-        <span className="flex size-8 items-center justify-center rounded-redondo bg-charcoal text-etiqueta">
-          {inicialesDe(yo.nombre)}
-        </span>
-        {/* En el móvil, el candado; en la tablet y la caja, «Ana · Bloquear». */}
-        <IconoCandado size={18} aria-hidden className="sm:hidden" />
-        <span className="max-sm:hidden">{yo.nombre} · Bloquear</span>
-      </button>
     </header>
+  );
+}
+
+/** Un sitio de la barra: su icono grande y su nombre debajo; en el móvil, el icono solo. */
+function DondeIr({
+  icono: Dibujo,
+  texto,
+  etiqueta = texto,
+  puesto,
+  onClick,
+}: {
+  readonly icono: IconoDeLucide;
+  readonly texto: string;
+  /** Lo que oye quien no ve, si dice más: «Tickets y facturas». */
+  readonly etiqueta?: string;
+  readonly puesto: boolean;
+  readonly onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-current={puesto ? 'page' : undefined}
+      aria-label={etiqueta}
+      onClick={onClick}
+      className={[
+        'flex min-h-toque min-w-[4.5rem] flex-col items-center justify-center gap-[2px] rounded-grande px-e3 py-e1 text-etiqueta font-semibold max-md:flex-1',
+        puesto ? 'bg-naranja-suave text-texto' : 'text-texto-suave hover:bg-fondo',
+      ].join(' ')}
+    >
+      <Dibujo size={22} aria-hidden className={puesto ? 'text-naranja' : undefined} />
+      <span>{texto}</span>
+    </button>
   );
 }

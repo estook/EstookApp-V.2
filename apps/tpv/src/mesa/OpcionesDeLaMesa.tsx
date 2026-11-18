@@ -115,6 +115,7 @@ export function OpcionesDeLaMesa({
   alCobrar,
   empiezaEn = 'mesa',
   sinMandarAqui = 0,
+  enLinea = false,
 }: {
   readonly cuenta: CuentaEnElPlano;
   readonly plano: ElPlano;
@@ -127,6 +128,8 @@ export function OpcionesDeLaMesa({
   readonly empiezaEn?: PasoDeLaMesa;
   /** Lo pedido en esta tablet que aún no ha salido de ella (`comanda.ts`). */
   readonly sinMandarAqui?: number;
+  /** En la columna de la derecha del PC, en vez de en una hoja (0148). */
+  readonly enLinea?: boolean;
 }) {
   const { porPases, notaParaCocina } = cuenta;
   const { yo, aparato } = usarSesion();
@@ -341,9 +344,8 @@ export function OpcionesDeLaMesa({
   }
 
   return (
-    <Hoja
-      abierta
-      ajustada
+    <LaHojaDeLaMesa
+      enLinea={enLinea}
       alCerrar={alCerrar}
       titulo={cuenta.titulo}
       {...(paso === 'mesa' ? { acciones: iconos, pie } : {})}
@@ -739,7 +741,59 @@ export function OpcionesDeLaMesa({
           }}
         />
       )}
-    </Hoja>
+    </LaHojaDeLaMesa>
+  );
+}
+
+/**
+ * **La mesa en la columna de la derecha** (el rediseño, 0148): en el PC, la mesa tocada no tapa el
+ * plano; se abre en la columna «Ahora», con lo mismo que la hoja. En la tablet y el móvil, la hoja.
+ */
+function LaHojaDeLaMesa({
+  enLinea,
+  alCerrar,
+  titulo,
+  acciones,
+  pie,
+  children,
+}: {
+  readonly enLinea: boolean;
+  readonly alCerrar: () => void;
+  readonly titulo: string;
+  readonly acciones?: ReactNode;
+  readonly pie?: ReactNode;
+  readonly children: ReactNode;
+}) {
+  if (!enLinea) {
+    return (
+      <Hoja abierta ajustada alCerrar={alCerrar} titulo={titulo} acciones={acciones} pie={pie}>
+        {children}
+      </Hoja>
+    );
+  }
+  return (
+    // Un diálogo que no tapa nada (`aria-modal` falso): la mesa abierta al lado del plano.
+    <section
+      role="dialog"
+      aria-modal="false"
+      aria-label={titulo}
+      className="flex min-h-0 flex-1 flex-col"
+    >
+      <header className="flex shrink-0 items-center gap-e2 border-b border-borde px-e4 py-e3">
+        <h2 className="min-w-0 flex-1 truncate text-pantalla font-bold">{titulo}</h2>
+        {acciones}
+        <button
+          type="button"
+          onClick={alCerrar}
+          aria-label="Cerrar"
+          className="grid size-toque place-items-center rounded-medio text-texto-suave hover:bg-fondo"
+        >
+          <IconoCerrar size={20} aria-hidden />
+        </button>
+      </header>
+      <div className="min-h-0 flex-1 overflow-y-auto px-e4 pb-e4">{children}</div>
+      {pie !== undefined && <footer className="border-t border-borde px-e4 py-e3">{pie}</footer>}
+    </section>
   );
 }
 

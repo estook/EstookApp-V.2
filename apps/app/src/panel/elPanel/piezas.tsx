@@ -118,7 +118,8 @@ export function Tarjeta({
           {icono}
         </span>
         {/* En una tarjeta estrecha (dos cifras por fila en el móvil) el título baja a dos líneas
-            en vez de cortarse: «Merma de la semana» se lee entero. */}
+            en vez de cortarse: «Merma de la semana» se lee entero. Su botón también: si no, el
+            botón se cortaba en una línea aunque el título pudiera bajar (21-nov). */}
         <h2 className="min-w-0 truncate text-cuerpo font-bold leading-tight tracking-[-0.01em] @max-[13rem]:line-clamp-2 @max-[13rem]:whitespace-normal">
           {lleva === undefined ? (
             titulo
@@ -129,7 +130,7 @@ export function Tarjeta({
                 navegar(lleva);
               }}
               title={`Ver ${titulo.toLowerCase()}`}
-              className="max-w-full truncate rounded-chico text-left decoration-2 underline-offset-4 hover:underline focus-visible:underline"
+              className="max-w-full truncate rounded-chico text-left decoration-2 underline-offset-4 hover:underline focus-visible:underline @max-[13rem]:inline @max-[13rem]:whitespace-normal"
             >
               {titulo}
             </button>

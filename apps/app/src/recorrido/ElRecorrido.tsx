@@ -180,7 +180,13 @@ function Pasos({
   useLayoutEffect(() => {
     if (elPaso === undefined) return;
     const sitio = elSitio(elPaso.donde);
-    sitio?.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior });
+    // Lo alto (los fijos del Panel en el móvil, más altos que la pantalla) se lleva arriba: si
+    // se centra, su principio queda por encima de la pantalla y la tarjeta con él (21-nov).
+    const alto = (sitio?.getBoundingClientRect().height ?? 0) > ALTO_MAXIMO;
+    sitio?.scrollIntoView({
+      block: alto ? 'start' : 'center',
+      behavior: 'instant' as ScrollBehavior,
+    });
     medir();
   }, [elPaso, medir]);
 
@@ -226,7 +232,7 @@ function Pasos({
     caja === null
       ? { top: window.innerHeight / 2 - 100 }
       : debajo
-        ? { top: Math.min(caja.arriba + caja.alto + 12, window.innerHeight - 220) }
+        ? { top: Math.max(16, Math.min(caja.arriba + caja.alto + 12, window.innerHeight - 220)) }
         : { bottom: Math.max(window.innerHeight - caja.arriba + 12, 16) };
 
   return createPortal(

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { abrirSinQueSeCaiga, recargarSinQueSeCaiga, vigilarLosErrores } from './abrir.ts';
+import { ejecutarEnLaApi, tokenDe } from './en-la-app.ts';
 
 /**
  * M3 · aceptacion, punto por punto.
@@ -906,7 +907,31 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
 
   test('los fijos del gerente salen con su título, y la gráfica dice cada día', async ({
     page,
+    request,
   }) => {
+    // La API de pruebas arranca sin historia: sin nada, la gráfica es su silueta. Una compra
+    // de hoy la dibuja, sin depender de que otra prueba haya cobrado antes (21-nov: en GitHub
+    // pasaba o no según el orden).
+    const token = await tokenDe(request, 'rosa@ejemplo.estook.com');
+    const { productoId } = await ejecutarEnLaApi<{ productoId: string }>(
+      request,
+      token,
+      'crear_producto',
+      {
+        nombre: `Harina de la gráfica ${String(Date.now())}`,
+        formato: 'Saco de 25 kg',
+        factor: 25000,
+        unidad_de_uso: 'g',
+        rendimiento: 1,
+        precio_centimos: 2500,
+      },
+    );
+    await ejecutarEnLaApi(request, token, 'apuntar_entrada', {
+      producto_id: productoId,
+      cuanto: 1,
+      como: 'formatos',
+    });
+
     // La maqueta aprobada (el rediseño, pestaña «El Panel»): las cifras del día, ventas
     // y compras, lo que más sale, el almacén y «Ventas según canal».
     await comoGerente(page);

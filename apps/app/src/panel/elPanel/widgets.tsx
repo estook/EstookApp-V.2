@@ -1630,7 +1630,11 @@ function BajoMinimo() {
               icono={<IconoAtencion />}
               tono={p.cantidad <= 0 ? 'mal' : 'atencion'}
               titulo={p.nombre}
-              detalle={`Quedan ${conUnidadDeUso(p.cantidad, p.unidadDeUso)}${p.minimo === null ? '' : ` · mínimo ${conUnidadDeUso(p.minimo, p.unidadDeUso)}`}`}
+              detalle={
+                p.minimo === null
+                  ? `Quedan ${conUnidadDeUso(p.cantidad, p.unidadDeUso)}`
+                  : `Quedan ${conUnidadDeUso(p.cantidad, p.unidadDeUso)} · mínimo ${conUnidadDeUso(p.minimo, p.unidadDeUso)}`
+              }
             />
           ))}
         </Lista>
@@ -1657,7 +1661,10 @@ function Repartos() {
         icono: <IconoAnadir />,
         tono: 'bien' as const,
         titulo: t.proveedor,
-        detalle: `Por pedir${t.pedirAntesDe === null ? '' : ` antes de las ${t.pedirAntesDe}`} · llega ${t.llegaCuando}`,
+        detalle:
+          t.pedirAntesDe === null
+            ? `Por pedir · llega ${t.llegaCuando}`
+            : `Por pedir antes de las ${t.pedirAntesDe} · llega ${t.llegaCuando}`,
       })),
   ];
   return (

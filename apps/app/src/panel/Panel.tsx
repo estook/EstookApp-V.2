@@ -1,28 +1,52 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
+import { usarElModoDelPanel } from '../ganchos/usarElModoDelPanel.ts';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Aviso,
   Boton,
-  Etiqueta,
+  ELIGE_EL_PUESTO,
   Hoja,
+  NOMBRE_DEL_PUESTO,
   Rejilla,
-  acentoDelWidget,
-  appDelWidget,
-  appPorPermiso,
+  clases,
+  colocarLosFijos,
   elCatalogoParaAnadir,
-  usarSinNadaDentro,
+  elPuestoDe,
+  losFijos,
   widgetPorId,
+  type EstadoEnElCatalogo,
+  type FormaDelFijo,
+  type GrupoDeWidget,
+  type ModoDelPanel,
+  type Puesto,
 } from '@estook/ui';
-import { IconoAnadir, IconoRejilla } from '@estook/iconos';
-import { puedeVer, type Permiso } from '@estook/permisos';
+import {
+  IconoAlmacen,
+  IconoAnadir,
+  IconoAtencion,
+  IconoCalendario,
+  IconoCarta,
+  IconoBien,
+  IconoCubiertos,
+  IconoDinero,
+  IconoEquipo,
+  IconoEstrella,
+  IconoFlechaArriba,
+  IconoNegocio,
+  IconoReloj,
+  IconoReparto,
+  IconoTablon,
+} from '@estook/iconos';
+import { puedeEditar, puedeVer, type Permiso } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { TarjetasDelPanel } from '../pantallas/TarjetasDelPanel.tsx';
 import { CabeceraDelPanel } from './Cabecera.tsx';
 import { LoQueFalta } from './LoQueFalta.tsx';
 import { LoDeHoy } from './LoDeHoy.tsx';
+import { usarCuantasCosasHoy } from '../ganchos/usarCuantasCosasHoy.ts';
 import { Tablon } from './Tablon.tsx';
 import { EscribirEnElTablon } from './EscribirEnElTablon.tsx';
-import { Widget } from './widgets.tsx';
+import { WidgetDelPanel } from './elPanel/widgets.tsx';
 import { usarMiPanel } from '../ganchos/usarMiPanel.ts';
 import { EstookEnTuMovil } from '../sinConexion/EstookEnTuMovil.tsx';
 import { usarQueHacer } from '../ganchos/usarQueHacer.ts';
@@ -30,49 +54,46 @@ import { ApuntarMerma } from '../almacen/ApuntarMerma.tsx';
 import { Agotados } from '../carta/Agotados.tsx';
 import { InvitacionAlRecorrido } from '../recorrido/ElRecorrido.tsx';
 import { PuestaEnMarcha } from './PuestaEnMarcha.tsx';
+import { seEnsena, usarLaPuestaEnMarcha } from '../ganchos/usarLaPuestaEnMarcha.ts';
 
 /**
- * El Panel · el centro de control (Manifiesto 6, Evolución 1.0 capítulo 5).
+ * El Panel · el centro de control (Manifiesto 6; el rediseño, entrega 3 · decisión 0148).
  *
- * «No "¿cómo va todo?", sino **"¿qué necesita mi atención ahora?"**».
+ * «No "¿cómo va todo?", sino **"¿qué necesita mi atención ahora?"**». Y Richi, 18-nov: «cada
+ * puesto lo suyo, **también el jefe de cocina y el jefe de sala**; los fijos arriba y **los que se
+ * añaden, abajo y del mismo tamaño**; "Ventas según canal"; las gráficas dicen lo suyo al pasar el
+ * ratón o al tocarlas». La maqueta aprobada dibuja los cinco Paneles; este los construye:
  *
- * ── Lo que había, y por qué se ha rehecho ────────────────────────────────────
+ *   · **La cabecera**: el saludo, la fecha, el local y el puesto; y a la derecha «Hoy» (lo que
+ *     antes era la zona de atención, con su número), «Pon en marcha» mientras falte algo, y
+ *     «Añadir» (o «Apuntar merma», en la cocina y la sala).
+ *   · **Los fijos de su puesto** (`FIJOS_DEL_PUESTO`), que no se mueven, colocados sin huecos en el
+ *     PC, la tablet (en horizontal y en vertical) y el móvil (`colocarLosFijos`).
+ *   · **«Añadidos por ti»**, todos del mismo tamaño y en el orden de cada uno (lo que se guarda en
+ *     `mi_panel`), con «Añadir un widget» como una casilla más.
  *
- * Seis tarjetas fijas escritas a mano, en **una columna en el móvil**, iguales para
- * las doce clases de rol y sin poder quitar ni añadir ninguna. Y de las seis:
- *
- *   · Una pintaba **«Facturado · 0,00 €»** en la tipografía más grande de la
- *     pantalla, con el TPV sin conectar. Es exactamente lo que este proyecto tenía
- *     escrito que no se hace —«poner un cero en gris sería inventarse una cifra»—,
- *     y lo tenía escrito **dos tarjetas más abajo, en el mismo fichero**.
- *   · Dos decían mal en qué módulo llega lo suyo: que el TPV era «M13», que es
- *     Equipo, y que Negocio era «M17», que es Cuaderno.
- *   · Y una era un **andamio de pruebas de M3** —«apuntar una nota de prueba»—
- *     publicado en el Panel de un negocio de verdad.
- *
- * Ahora es lo que el Manifiesto describe: una **zona de atención fija arriba** que
- * no se puede quitar, y debajo la rejilla de cada uno, con sus widgets, sus tamaños
- * y su orden, guardada en el servidor por persona y por aparato (migración 0025).
- *
- * ── Y «salud de los datos» ya no ocupa una tarjeta ───────────────────────────
- *
- * Ocupaba un widget entero para decir una cosa: cuántos productos tienen precio.
- * Ahora es **una línea** en la zona de atención, que dice qué falta y lleva ahí; y
- * quien la quiera con su cifra tiene el widget «Productos sin precio», que puede
- * poner o no poner. Un indicador que no se puede quitar y que casi siempre está en
- * verde es sitio gastado en la pantalla que más se mira.
+ * Richi, 21-nov: «nada a lo ancho para decir poco». Por eso «Lo de hoy», el tablón, poner en
+ * marcha el local y quitar los ejemplos dejan de ser franjas encima del Panel: viven en sus hojas,
+ * a un toque, con su número a la vista.
  */
 export function Panel() {
   const { permisos } = usarSesion();
+  const tienePermiso = (permiso: Permiso) => puedeVer(permisos, permiso);
+  const puesto = elPuestoDe(tienePermiso);
+  const elige = ELIGE_EL_PUESTO[puesto];
   const mio = usarMiPanel();
   const [editando, setEditando] = useState(false);
   const [anadiendo, setAnadiendo] = useState(false);
   const [apuntandoMerma, setApuntandoMerma] = useState(false);
   const [escribiendo, setEscribiendo] = useState(false);
   const [agotando, setAgotando] = useState(false);
-  const [zonaDeAtencion, sinNadaQueAtender] = usarSinNadaDentro<HTMLElement>();
-
-  const tienePermiso = (permiso: Permiso) => puedeVer(permisos, permiso);
+  const [mirandoHoy, setMirandoHoy] = useState(false);
+  const [poniendoEnMarcha, setPoniendoEnMarcha] = useState(false);
+  const cuantasHoy = usarCuantasCosasHoy();
+  const puesta = usarLaPuestaEnMarcha();
+  const conLaPuesta = seEnsena(puesta.data);
+  const pasos = puesta.data?.pasos ?? [];
+  const hechos = pasos.filter((p) => p.hecho).length;
 
   // Se llega aquí desde una pantalla que no está entre sus apps (`PantallaDeApp`).
   const donde = useLocation();
@@ -80,27 +101,86 @@ export function Panel() {
   const vieneSinAcceso =
     (donde.state as { readonly sinAcceso?: boolean } | null)?.sinAcceso === true;
 
-  // «Apuntar una merma», desde las acciones rápidas, el buscador o Fogón. Se abre
-  // en el Panel porque el Panel lo tiene todo el mundo, y quien más mermas apunta
-  // —el camarero que rompe una copa— no tiene la app de Almacén.
+  // «Apuntar una merma», «Marcar un agotado» y «Escribir en el Tablón», desde los atajos, el
+  // buscador, Fogón o un widget: se abren aquí porque el Panel lo tiene todo el mundo.
   usarQueHacer('merma', () => {
     setApuntandoMerma(true);
   });
-
-  // «Marcar un agotado» (M10 · 1, 0102): en el Panel por lo mismo que la merma, la
-  // cocina no tiene la app Carta.
   usarQueHacer('agotado', () => {
     setAgotando(true);
   });
-
-  // Escribir en el Tablón, desde el «+», el buscador o la propia tarjeta (0049).
   usarQueHacer('tablon', () => {
     setEscribiendo(true);
   });
 
+  const fijos = losFijos(puesto, tienePermiso);
+  const conElTablonArriba = fijos.some((f) => f.id === 'tablon');
+  const puedeApuntarMerma = puedeEditar(permisos, 'accion.registrar_merma');
+
   return (
     <div className="flex flex-col gap-e4">
-      <CabeceraDelPanel />
+      <CabeceraDelPanel
+        puesto={NOMBRE_DEL_PUESTO[puesto]}
+        acciones={
+          <>
+            {(elige || cuantasHoy > 0) && (
+              <BotonDeLaCabecera
+                icono={<IconoCalendario size={18} />}
+                cuantos={cuantasHoy}
+                etiqueta={
+                  cuantasHoy === 0
+                    ? 'Hoy, sin nada que atender'
+                    : `Hoy, ${String(cuantasHoy)} ${cuantasHoy === 1 ? 'cosa' : 'cosas'} que atender`
+                }
+                alPulsar={() => {
+                  setMirandoHoy(true);
+                }}
+              >
+                Hoy
+              </BotonDeLaCabecera>
+            )}
+            {conLaPuesta && (
+              <BotonDeLaCabecera
+                icono={<AroDelPaso parte={pasos.length === 0 ? 0 : hechos / pasos.length} />}
+                etiqueta={`Pon en marcha tu local: ${String(hechos)} de ${String(pasos.length)} pasos`}
+                alPulsar={() => {
+                  setPoniendoEnMarcha(true);
+                }}
+              >
+                Pon en marcha{' '}
+                <span className="tabular-nums text-texto-suave">
+                  {hechos}/{pasos.length}
+                </span>
+              </BotonDeLaCabecera>
+            )}
+            {elige ? (
+              <BotonDeLaCabecera
+                principal
+                icono={<IconoAnadir size={18} />}
+                etiqueta="Añadir un widget"
+                alPulsar={() => {
+                  setAnadiendo(true);
+                }}
+              >
+                Añadir
+              </BotonDeLaCabecera>
+            ) : (
+              puedeApuntarMerma && (
+                <BotonDeLaCabecera
+                  principal
+                  icono={<IconoAtencion size={18} />}
+                  etiqueta="Apuntar merma"
+                  alPulsar={() => {
+                    setApuntandoMerma(true);
+                  }}
+                >
+                  Apuntar merma
+                </BotonDeLaCabecera>
+              )
+            )}
+          </>
+        }
+      />
 
       {vieneSinAcceso && (
         <Aviso
@@ -114,150 +194,152 @@ export function Panel() {
         </Aviso>
       )}
 
-      {/*
-        La zona de atención, arriba y sin poder quitarse.
+      {/* El recorrido de la primera vez (0084): se ofrece una vez por cuenta, y se va. */}
+      <div className="empty:hidden">
+        <InvitacionAlRecorrido />
+      </div>
 
-        «Por encima de los widgets hay una zona fija de atención, que no se puede
-        quitar y que se ordena sola por prioridad» (Evolución 1.0, capítulo 5).
-        Aquí viven las tarjetas de M5 —terminar de configurar, conectar el TPV,
-        quitar los ejemplos— y la línea de lo que le falta a Estook para funcionar
-        bien, que antes era un widget entero.
-      */}
-      {/*
-        En dos columnas desde 1024 px de ancho, que es el TPV de una cocina.
+      <LosFijos puesto={puesto} />
 
-        En una sola columna, la zona de atención —conectar el TPV, el equipo,
-        quitar los ejemplos— se comía **la pantalla entera** de un TPV de 768 px
-        de alto, y el Panel, que es lo que se viene a mirar, empezaba por debajo
-        del pliegue. Con dos columnas cabe todo y sobra sitio para dos filas de
-        widgets.
-
-        `items-start` para que una tarjeta corta no se estire hasta el alto de la
-        de al lado: son avisos sueltos, no una tabla.
-      */}
-      <section
-        aria-label="Lo que necesita tu atención"
-        // `grid-cols-1` y no nada: sin él la columna crece con la línea más larga que
-        // no se parte, y «3 productos sin precio» se salía por la derecha (25-sep).
-        // Y sin nada dentro no ocupa: cada envoltorio vacío se esconde, y la zona
-        // entera también, que si no dejaba sus huecos encima del Panel. La zona la
-        // esconde la página y no `:has()`, que en el iPhone no se enteraba de que
-        // «Hoy» había llegado (repaso del 25-sep, `usarSinNadaDentro`).
-        ref={zonaDeAtencion}
-        hidden={sinNadaQueAtender}
-        className="grid grid-cols-1 items-start gap-e3 lg:grid-cols-2"
-      >
-        {/* El recorrido de la primera vez (0084): se ofrece arriba, una vez por cuenta. */}
-        <div className="empty:hidden lg:col-span-2">
-          <InvitacionAlRecorrido />
-        </div>
-        {/* Y a su lado, lo que le falta a un local nuevo para arrancar (0085). */}
-        <div className="empty:hidden lg:col-span-2">
-          <PuestaEnMarcha />
-        </div>
-        {/* Lo de hoy, ordenado por el servidor (entrega O, mejora 8), de lado a lado. */}
-        <div className="empty:hidden lg:col-span-2">
-          <LoDeHoy />
-        </div>
-        {/* El Tablón del local, debajo de «Hoy» y de lado a lado (repaso del 25-sep). */}
-        <div className="empty:hidden lg:col-span-2">
-          <Tablon
-            alEscribir={() => {
-              setEscribiendo(true);
+      {elige && (
+        <section aria-label="Añadidos por ti" className="flex flex-col gap-e3">
+          {/*
+            Que un guardado que falla se vea en el sitio y en el momento, con la frase del
+            servidor y su botón: la rejilla pinta el cambio al instante, y sin esto un no se
+            veía igual que un sí hasta que alguien recargaba.
+          */}
+          {mio.noSeHaGuardado !== null && (
+            <Aviso
+              tono="mal"
+              titulo={mio.noSeHaGuardado.quePasa}
+              accion={
+                <Boton tono="secundario" onClick={mio.reintentar}>
+                  Reintentar
+                </Boton>
+              }
+            >
+              {mio.noSeHaGuardado.queSePuedeHacer} Lo que has colocado se ve, pero{' '}
+              <strong>todavía no está guardado</strong>: si recargas ahora, vuelve el de antes.
+            </Aviso>
+          )}
+          {mio.loCambioOtroAparato && (
+            <Aviso
+              tono="atencion"
+              titulo="Lo cambiaste en otro aparato"
+              accion={
+                <Boton tono="secundario" onClick={mio.recargar}>
+                  Traer el de allí
+                </Boton>
+              }
+            >
+              Este panel se ha movido desde otro sitio mientras lo tenías abierto aquí. Lo de ahora
+              no se ha guardado, para no llevarse por delante lo otro.
+            </Aviso>
+          )}
+          <Rejilla
+            uniforme
+            anadirSiempre
+            rotulo={
+              <span className="flex flex-wrap items-baseline gap-x-e3">
+                <span className="text-cuerpo font-bold text-texto">Añadidos por ti</span>
+                <span className="text-etiqueta text-texto-tenue">
+                  Del mismo tamaño, en el orden que elijas
+                </span>
+              </span>
+            }
+            puestos={mio.puestos}
+            editando={editando}
+            guardando={mio.guardando}
+            sinEditar={mio.cargando}
+            alEditar={(sigue) => {
+              setEditando(sigue);
+              // «Listo» quiere decir guarda: no se deja esperando al reloj.
+              if (!sigue) mio.guardarYa();
             }}
+            alReordenar={mio.reordenar}
+            alSoltar={mio.guardarYa}
+            alQuitar={mio.quitar}
+            alCambiarTamano={mio.cambiarTamano}
+            tamanosDe={() => ['chico']}
+            nombreDe={(id) => widgetPorId(id)?.nombre ?? id}
+            alAnadir={() => {
+              setAnadiendo(true);
+            }}
+            pintar={(p) => (
+              <div className="h-[17rem]">
+                <WidgetDelPanel id={p.id} />
+              </div>
+            )}
           />
-        </div>
-        {/* Estook en tu móvil (0070): instalarla y sus avisos, una vez cada cosa. */}
-        <div className="empty:hidden lg:col-span-2">
-          <EstookEnTuMovil />
-        </div>
-        <TarjetasDelPanel />
-        {/* Lo que falta es una línea, y va de lado a lado. */}
-        <div className="empty:hidden lg:col-span-2">
-          <LoQueFalta />
-        </div>
-      </section>
-
-      {/*
-        Que un guardado que falla se vea, que es lo que no pasaba.
-
-        La rejilla pinta el cambio al momento, así que un no del servidor se veía
-        igual que un sí hasta que alguien recargaba y se encontraba el Panel de
-        antes. Aquí sale la frase del servidor, con su botón, en la misma pantalla
-        y en el mismo momento.
-      */}
-      {mio.noSeHaGuardado !== null && (
-        <Aviso
-          tono="mal"
-          titulo={mio.noSeHaGuardado.quePasa}
-          accion={
-            <Boton tono="secundario" onClick={mio.reintentar}>
-              Reintentar
-            </Boton>
-          }
-        >
-          {mio.noSeHaGuardado.queSePuedeHacer} Lo que has colocado se ve, pero{' '}
-          <strong>todavía no está guardado</strong>: si recargas ahora, vuelve el de antes.
-        </Aviso>
+          {editando && (
+            <div className="flex flex-wrap items-center gap-e2">
+              <Boton tono="texto" onClick={mio.volverAlDeFabrica}>
+                Volver a los de mi puesto
+              </Boton>
+              <p className="text-secundario text-texto-suave">
+                Se guarda solo, y vale en todos tus aparatos de este tipo.
+              </p>
+            </div>
+          )}
+        </section>
       )}
 
-      {mio.loCambioOtroAparato && (
-        <Aviso
-          tono="atencion"
-          titulo="Lo cambiaste en otro aparato"
-          accion={
-            <Boton tono="secundario" onClick={mio.recargar}>
-              Traer el de allí
-            </Boton>
-          }
-        >
-          Este panel se ha movido desde otro sitio mientras lo tenías abierto aquí. Lo de ahora no
-          se ha guardado, para no llevarse por delante lo otro.
-        </Aviso>
-      )}
-
-      {/*
-        Los widgets se pintan **desde el primer momento** (0085), con lo último de este
-        aparato, para que pidan lo suyo en la misma petición que todo lo demás. Hasta
-        que llega lo guardado, se mira pero no se edita: se movería algo que todavía
-        no se sabe dónde está.
-      */}
-      <Rejilla
-        puestos={mio.puestos}
-        editando={editando}
-        guardando={mio.guardando}
-        sinEditar={mio.cargando}
-        alEditar={(sigue) => {
-          setEditando(sigue);
-          // «Listo» quiere decir guarda: no se deja esperando al reloj de los
-          // ochocientos milisegundos.
-          if (!sigue) mio.guardarYa();
+      {/* «Hoy»: lo que necesita atención, lo de arrancar y el tablón, en su hoja (0148). */}
+      <Hoja
+        abierta={mirandoHoy}
+        alCerrar={() => {
+          setMirandoHoy(false);
         }}
-        alReordenar={mio.reordenar}
-        alSoltar={mio.guardarYa}
-        alQuitar={mio.quitar}
-        alCambiarTamano={mio.cambiarTamano}
-        // Un solo tamaño por widget (0083): no hay nada que elegir al editar.
-        tamanosDe={(id) => [widgetPorId(id)?.tamano ?? 'ancho']}
-        nombreDe={(id) => widgetPorId(id)?.nombre ?? id}
-        alAnadir={() => {
-          setAnadiendo(true);
+        titulo="Hoy"
+      >
+        {mirandoHoy && (
+          <div className="flex flex-col gap-e4 pt-e3">
+            <div className="empty:hidden">
+              <LoDeHoy enLaHoja />
+            </div>
+            <div className="grid grid-cols-1 gap-e3 empty:hidden">
+              <TarjetasDelPanel />
+            </div>
+            <div className="empty:hidden">
+              <LoQueFalta />
+            </div>
+            {!conElTablonArriba && (
+              <div className="empty:hidden">
+                <Tablon
+                  alEscribir={() => {
+                    setEscribiendo(true);
+                  }}
+                />
+              </div>
+            )}
+            <div className="empty:hidden">
+              <EstookEnTuMovil />
+            </div>
+            {cuantasHoy === 0 && (
+              <p className="text-secundario text-texto-suave">
+                Nada que atender ahora. Lo que necesite tu atención saldrá aquí, ordenado por lo más
+                urgente.
+              </p>
+            )}
+          </div>
+        )}
+      </Hoja>
+
+      <Hoja
+        abierta={poniendoEnMarcha}
+        alCerrar={() => {
+          setPoniendoEnMarcha(false);
         }}
-        pintar={(puesto) => <Widget id={puesto.id} tamano={puesto.tamano} editando={editando} />}
-      />
+        titulo="Pon en marcha tu local"
+      >
+        {poniendoEnMarcha && (
+          <div className="pt-e3">
+            <PuestaEnMarcha />
+          </div>
+        )}
+      </Hoja>
 
-      {editando && (
-        <div className="flex flex-wrap items-center gap-e2">
-          <Boton tono="texto" onClick={mio.volverAlDeFabrica}>
-            Volver al de mi puesto
-          </Boton>
-          <p className="text-secundario text-texto-suave">
-            Se guarda solo, y vale en todos tus aparatos de este tipo.
-          </p>
-        </div>
-      )}
-
-      {/* Solo abierta: una hoja cerrada dentro de la zona de atención la llenaría. */}
+      {/* Solo abierta: una hoja cerrada dentro de la rejilla la llenaría. */}
       {escribiendo && (
         <EscribirEnElTablon
           alCerrar={() => {
@@ -285,48 +367,190 @@ export function Panel() {
         }}
       />
 
-      <AnadirWidget
-        abierta={anadiendo}
-        alCerrar={() => {
-          setAnadiendo(false);
-        }}
-        puestos={mio.puestos}
-        tienePermiso={tienePermiso}
-        alAnadir={(id) => {
-          mio.anadir(id);
-          setAnadiendo(false);
-          setEditando(true);
-        }}
-        alQuitar={mio.quitar}
-        alVolverAlDeMiPuesto={() => {
-          mio.volverAlDeFabrica();
-          setAnadiendo(false);
-          setEditando(true);
-        }}
-      />
+      {elige && (
+        <AnadirUnWidget
+          abierta={anadiendo}
+          alCerrar={() => {
+            setAnadiendo(false);
+          }}
+          puestos={mio.puestos}
+          tienePermiso={tienePermiso}
+          alAnadir={(id) => {
+            mio.anadir(id);
+          }}
+          alQuitar={mio.quitar}
+          alVolverAlDeMiPuesto={() => {
+            mio.volverAlDeFabrica();
+            setAnadiendo(false);
+          }}
+        />
+      )}
     </div>
   );
 }
 
+// ── La cabecera ───────────────────────────────────────────────────────────────────
+
+function BotonDeLaCabecera({
+  icono,
+  cuantos,
+  etiqueta,
+  principal = false,
+  alPulsar,
+  children,
+}: {
+  readonly icono: ReactNode;
+  readonly cuantos?: number;
+  readonly etiqueta: string;
+  readonly principal?: boolean;
+  readonly alPulsar: () => void;
+  readonly children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={alPulsar}
+      aria-label={etiqueta}
+      className={clases(
+        'relative inline-flex min-h-toque items-center gap-[7px] rounded-grande border px-e3 text-secundario font-bold',
+        'transition-[background-color,border-color,box-shadow] duration-[--rapido]',
+        principal
+          ? 'border-naranja bg-naranja text-sobre-naranja hover:[box-shadow:var(--sombra-tarjeta)]'
+          : 'border-borde bg-superficie text-texto hover:border-borde-fuerte',
+      )}
+    >
+      <span aria-hidden className="grid place-items-center">
+        {icono}
+      </span>
+      {children}
+      {cuantos !== undefined && cuantos > 0 && (
+        <span
+          aria-hidden
+          className="grid min-w-[1.25rem] place-items-center rounded-redondo bg-mal px-[5px] text-etiqueta font-bold leading-5 text-white"
+        >
+          {cuantos}
+        </span>
+      )}
+    </button>
+  );
+}
+
+/** El aro de «Pon en marcha»: lo hecho, de un vistazo. */
+function AroDelPaso({ parte }: { readonly parte: number }) {
+  const r = 7;
+  const largo = 2 * Math.PI * r;
+  return (
+    <svg viewBox="0 0 18 18" className="size-[18px] -rotate-90">
+      <circle cx="9" cy="9" r={r} fill="none" stroke="var(--color-borde)" strokeWidth="3" />
+      <circle
+        cx="9"
+        cy="9"
+        r={r}
+        fill="none"
+        stroke="var(--color-naranja)"
+        strokeWidth="3"
+        strokeDasharray={`${String(largo * parte)} ${String(largo)}`}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+// ── Los fijos ──────────────────────────────────────────────────────────────────────
+
+/** El alto mínimo de cada forma, en rem: las de una fila miden lo mismo, la más alta manda. */
+function elAlto(forma: FormaDelFijo, modo: ModoDelPanel): number {
+  // En el móvil cada tarjeta mide lo que lleva: una por fila, un alto fijo solo deja huecos. La
+  // gráfica sí lo necesita, para que se lea.
+  if (modo === 'movil') return forma === 'grafica' ? 17 : forma === 'cifra' ? 8.5 : 0;
+  switch (forma) {
+    case 'cifra':
+      return 10;
+    case 'grafica':
+    case 'lado':
+      return modo === 'pc' || modo === 'tablet' ? 20 : 17;
+    case 'fila':
+      return 8;
+    default:
+      return 15.5;
+  }
+}
+
 /**
- * El catálogo de widgets, para añadir.
- *
- * ── Todos, y los que ya están lo dicen (M7, repaso) ─────────────────────────
- *
- * «Valor de la cámara, acciones rápidas, bajo mínimo, caduca esta semana: salen
- *  de fábrica, pero al dar a añadir no aparecen. ¿Si las borras las pierdes para
- *  siempre?» El catálogo enseñaba **solo lo que no estaba puesto**, así que los
- *  de todos los días no salían nunca y quitar uno parecía perderlo. Ahora salen
- *  todos, por grupos y con el color de su app: los puestos con «En tu panel» y su
- *  «Quitar», y los demás con su «+». Y abajo, recuperar el de siempre.
- *
- * ── Y lo que llega, al final y sin poder pulsarse ────────────────────────────
- *
- * Los widgets que todavía no existen salen aquí abajo, en gris y con su módulo. Es
- * información útil —saber que va a haber un widget de Pulse cambia cómo te montas
- * el Panel hoy— y no es un botón mudo, porque no se puede pulsar.
+ * Los fijos del puesto, colocados para el ancho que hay. En doce columnas siempre: lo que cambia
+ * con la pantalla es cuántas ocupa cada uno (`colocarLosFijos`), y nunca queda un hueco.
  */
-function AnadirWidget({
+function LosFijos({ puesto }: { readonly puesto: Puesto }) {
+  const { permisos } = usarSesion();
+  const [caja, modo] = usarElModoDelPanel();
+  const fijos = losFijos(puesto, (p) => puedeVer(permisos, p));
+  const colocados = colocarLosFijos(fijos, modo);
+  return (
+    <div
+      ref={caja}
+      data-recorrido="panel"
+      data-modo={modo}
+      className={clases('grid grid-cols-12', modo === 'movil' ? 'gap-e3' : 'gap-e4')}
+    >
+      {colocados.map(({ fijo, columnas }) => (
+        <div
+          key={fijo.id}
+          data-widget={fijo.id}
+          data-fijo
+          className="min-w-0"
+          style={{
+            gridColumn: `span ${String(columnas)} / span ${String(columnas)}`,
+            minHeight: `${String(elAlto(fijo.forma, modo))}rem`,
+          }}
+        >
+          <WidgetDelPanel id={fijo.id} destacado={fijo.destacado === true} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── «Añadir un widget» ─────────────────────────────────────────────────────────────
+
+const COLOR_DEL_GRUPO: Readonly<Record<GrupoDeWidget, string>> = {
+  ventas: 'bg-naranja-suave text-naranja',
+  almacen: 'bg-info-suave text-info',
+  equipo: 'bg-bien-suave text-bien',
+  canales: 'bg-fondo text-texto-suave',
+};
+
+const ICONO_DEL_WIDGET: Readonly<Record<string, ReactNode>> = {
+  'cifras-del-dia': <IconoNegocio size={20} />,
+  'lo-que-mas-sale': <IconoEstrella size={20} />,
+  'por-secciones': <IconoCarta size={20} />,
+  'como-se-cobra': <IconoDinero size={20} />,
+  'mesas-ahora': <IconoCubiertos size={20} />,
+  objetivos: <IconoEstrella size={20} />,
+  'almacen-pide': <IconoAlmacen size={20} />,
+  caducidades: <IconoReloj size={20} />,
+  'bajo-minimo': <IconoAlmacen size={20} />,
+  repartos: <IconoReparto size={20} />,
+  'lo-que-se-escapa': <IconoFlechaArriba size={20} />,
+  agotados: <IconoAtencion size={20} />,
+  'menu-del-dia': <IconoCarta size={20} />,
+  'para-recomendar': <IconoEstrella size={20} />,
+  'equipo-ahora': <IconoEquipo size={20} />,
+  'tu-dia': <IconoReloj size={20} />,
+  'mis-horas': <IconoReloj size={20} />,
+  tablon: <IconoTablon size={20} />,
+  'acciones-rapidas': <IconoAnadir size={20} />,
+  calendario: <IconoCalendario size={20} />,
+  'ventas-segun-canal': <IconoReparto size={20} />,
+  'uber-eats': <IconoReparto size={20} />,
+};
+
+/**
+ * «Añadir un widget» (la maqueta): por grupos —Ventas, Almacén y cocina, Equipo y Canales—, cada uno
+ * con su icono, lo que enseña y su botón. Lo ya añadido se puede quitar; lo fijo de tu puesto lo
+ * dice; lo que llega con otro módulo sale en gris con el suyo («Con M29»). Solo lo que su rol puede
+ * ver: «Lo que elijas lo ves tú. Cada widget sale solo a quien tiene su permiso».
+ */
+function AnadirUnWidget({
   abierta,
   alCerrar,
   puestos,
@@ -344,90 +568,122 @@ function AnadirWidget({
   readonly alVolverAlDeMiPuesto: () => void;
 }) {
   const grupos = elCatalogoParaAnadir(
-    puestos.map((p) => ({ id: p.id, tamano: 'ancho' as const })),
+    puestos.map((p) => ({ id: p.id, tamano: 'chico' as const })),
     tienePermiso,
   );
 
   return (
-    <Hoja abierta={abierta} alCerrar={alCerrar} titulo="Añadir al panel">
-      <div className="flex flex-col gap-e5 pt-e3">
+    <Hoja abierta={abierta} alCerrar={alCerrar} titulo="Añadir un widget">
+      <div className="flex flex-col gap-e4 pt-e2">
+        <p className="text-secundario text-texto-suave">
+          Lo que elijas lo ves tú, abajo y del mismo tamaño. Cada widget sale solo a quien tiene su
+          permiso.
+        </p>
         {grupos.map((grupo) => (
-          <section key={grupo.grupo} aria-label={grupo.nombre}>
-            <p className="text-etiqueta font-semibold text-texto-tenue">{grupo.nombre}</p>
-            <ul className="mt-e2 grid gap-e2 sm:grid-cols-2">
-              {grupo.widgets.map(({ widget, puesto }) => {
-                const acento = acentoDelWidget(widget.id) ?? 'var(--color-naranja)';
-                const deLaApp = appDelWidget(widget.id);
-                const Icono = deLaApp === undefined ? undefined : appPorPermiso(deLaApp)?.icono;
-                const icono = (
-                  <span
+          <section key={grupo.grupo} aria-label={grupo.nombre} className="flex flex-col gap-e2">
+            <h3 className="text-etiqueta font-bold uppercase tracking-[0.08em] text-texto-tenue">
+              {grupo.nombre}
+            </h3>
+            <ul className="flex flex-col gap-e2">
+              {grupo.widgets.map(({ widget, estado }) => (
+                <li
+                  key={widget.id}
+                  className={clases(
+                    'flex min-h-[4rem] items-center gap-e3 rounded-grande border border-borde p-e3',
+                    estado === 'pronto' && 'opacity-60',
+                  )}
+                >
+                  <i
                     aria-hidden
-                    className="grid size-9 shrink-0 place-items-center rounded-medio text-white"
-                    style={{
-                      background: `linear-gradient(140deg, color-mix(in srgb, ${acento} 92%, white), color-mix(in srgb, ${acento} 70%, black))`,
-                    }}
-                  >
-                    {Icono === undefined ? <IconoRejilla size={16} /> : <Icono size={16} />}
-                  </span>
-                );
-                return (
-                  <li key={widget.id}>
-                    {puesto ? (
-                      <div className="flex min-h-[64px] items-center gap-e3 rounded-grande border border-borde bg-fondo/60 p-e3">
-                        {icono}
-                        <span className="min-w-0 flex-1">
-                          <span className="flex flex-wrap items-center gap-e2">
-                            <span className="text-cuerpo font-semibold">{widget.nombre}</span>
-                            <Etiqueta tono="bien">En tu panel</Etiqueta>
-                          </span>
-                          <span className="block text-secundario text-texto-suave">
-                            {widget.queEnsena}
-                          </span>
-                        </span>
-                        <Boton
-                          tono="texto"
-                          onClick={() => {
-                            alQuitar(widget.id);
-                          }}
-                        >
-                          Quitar
-                        </Boton>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          alAnadir(widget.id);
-                        }}
-                        className="flex h-full min-h-[64px] w-full items-center gap-e3 rounded-grande border border-borde bg-superficie p-e3 text-left transition-[border-color,box-shadow] duration-[--rapido] hover:border-borde-fuerte hover:[box-shadow:var(--sombra-tarjeta)]"
-                      >
-                        {icono}
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-cuerpo font-semibold">{widget.nombre}</span>
-                          <span className="block text-secundario text-texto-suave">
-                            {widget.queEnsena}
-                          </span>
-                        </span>
-                        <span aria-hidden="true" className="text-naranja">
-                          <IconoAnadir size={18} />
-                        </span>
-                      </button>
+                    className={clases(
+                      'grid size-10 shrink-0 place-items-center rounded-grande not-italic',
+                      COLOR_DEL_GRUPO[grupo.grupo],
                     )}
-                  </li>
-                );
-              })}
+                  >
+                    {ICONO_DEL_WIDGET[widget.id] ?? <IconoNegocio size={20} />}
+                  </i>
+                  <span className="min-w-0 flex-1 leading-snug">
+                    <span className="block text-cuerpo font-semibold">{widget.nombre}</span>
+                    <small className="block text-etiqueta text-texto-tenue">
+                      {widget.queEnsena}
+                    </small>
+                  </span>
+                  <LoQueSePuedeHacer
+                    estado={estado}
+                    pronto={widget.pronto}
+                    nombre={widget.nombre}
+                    alAnadir={() => {
+                      alAnadir(widget.id);
+                    }}
+                    alQuitar={() => {
+                      alQuitar(widget.id);
+                    }}
+                  />
+                </li>
+              ))}
             </ul>
           </section>
         ))}
 
-        {/* Nada se pierde: el de fábrica vuelve entero con un toque. */}
         <div className="flex flex-wrap items-center gap-e2 border-t border-borde pt-e3">
           <Boton tono="texto" onClick={alVolverAlDeMiPuesto}>
-            Volver al de mi puesto
+            Volver a los de mi puesto
           </Boton>
-          <p className="text-secundario text-texto-suave">Vuelven los que traía de fábrica.</p>
+          <p className="text-secundario text-texto-suave">Vuelven los añadidos de fábrica.</p>
         </div>
       </div>
     </Hoja>
   );
+}
+
+function LoQueSePuedeHacer({
+  estado,
+  pronto,
+  nombre,
+  alAnadir,
+  alQuitar,
+}: {
+  readonly estado: EstadoEnElCatalogo;
+  readonly pronto: string | undefined;
+  readonly nombre: string;
+  readonly alAnadir: () => void;
+  readonly alQuitar: () => void;
+}) {
+  switch (estado) {
+    case 'pronto':
+      return <small className="shrink-0 text-etiqueta font-bold text-texto-tenue">{pronto}</small>;
+    case 'fijo':
+      return (
+        <small className="shrink-0 text-etiqueta font-bold text-texto-tenue">En tu panel</small>
+      );
+    case 'puesto':
+      return (
+        <span className="flex shrink-0 items-center gap-e2">
+          <span className="inline-flex items-center gap-[3px] text-etiqueta font-bold text-bien">
+            <IconoBien size={14} />
+            Añadido
+          </span>
+          <button
+            type="button"
+            onClick={alQuitar}
+            aria-label={`Quitar ${nombre}`}
+            className="inline-flex h-[2.125rem] items-center rounded-medio border border-borde px-e3 text-etiqueta font-bold text-texto-suave hover:border-mal hover:bg-mal-suave hover:text-mal"
+          >
+            Quitar
+          </button>
+        </span>
+      );
+    default:
+      return (
+        <button
+          type="button"
+          onClick={alAnadir}
+          aria-label={`Añadir ${nombre}`}
+          className="inline-flex h-[2.125rem] shrink-0 items-center gap-e1 rounded-medio border border-borde bg-fondo px-e3 text-etiqueta font-bold text-texto hover:border-naranja hover:text-naranja"
+        >
+          <IconoAnadir size={14} />
+          Añadir
+        </button>
+      );
+  }
 }

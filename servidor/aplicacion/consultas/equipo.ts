@@ -300,6 +300,8 @@ export interface QuienEstaTrabajando {
   readonly entraHoyALas: string | null;
   /** Si el turno lleva demasiado abierto: casi siempre es que se olvidó salir. */
   readonly turnoSospechoso: boolean;
+  /** En su pausa de descanso ahora mismo (0148: «El equipo ahora»). */
+  readonly enPausa: boolean;
 }
 
 /** Un fichaje hecho con más de doce horas sin señal, que nadie ha revisado (0070). */
@@ -351,6 +353,7 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
         en_linea: boolean;
         entra_hoy: string | null;
         foto_clave: string | null;
+        en_pausa: boolean;
       }[]
     >`
       with equipo as (
@@ -391,7 +394,13 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
              estook.visto_por_ultima_vez(e.id) as ultimo_acceso_en,
              -- Con la app abierta y a la vista, no «con una sesión sin cerrar» (0042).
              estook.esta_en_linea(e.id) as en_linea,
-             to_char(hp.entra, 'HH24:MI') as entra_hoy
+             to_char(hp.entra, 'HH24:MI') as entra_hoy,
+             -- En su pausa ahora (el Panel, «El equipo ahora», 0148).
+             exists (
+               select 1 from estook.pausa pa
+                join estook.fichaje fp on fp.id = pa.fichaje_id
+               where pa.persona_id = e.id and pa.acabo_en is null and fp.salio_en is null
+             ) as en_pausa
         from equipo e
         left join lateral (
           select f.entro_en, f.entro_metros,
@@ -445,6 +454,7 @@ export const fichajesDeHoy = consulta<Record<string, never>, SalidaFichajesDeHoy
       enLinea: f.en_linea,
       entraHoyALas: f.entra_hoy,
       turnoSospechoso: (f.minutos ?? 0) > SOSPECHOSO_DESDE_MINUTOS,
+      enPausa: f.desde !== null && f.en_pausa,
     }));
 
     // Lo fichado sin conexión que hay que revisar: lo ve quien ve esos fichajes (las

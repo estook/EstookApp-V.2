@@ -27,7 +27,7 @@ async function entrarComoLuis(page: Page): Promise<void> {
   if ((await titulo.textContent())?.includes('¿Dónde estás hoy?') === true) {
     await page.getByRole('button', { name: 'Bar Puerto' }).click();
   }
-  await expect(titulo).toContainText('Hola');
+  await expect(titulo).toContainText(/Buen(?:os|as) (?:días|tardes|noches)/);
 }
 
 /** Una tarjeta, por su título. */
@@ -47,7 +47,9 @@ test('un jefe de cocina arranca con su Panel: fichar y sus objetivos, sin lo del
   page,
 }) => {
   await entrarComoLuis(page);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    /Buen(?:os|as) (?:días|tardes|noches)/,
+  );
   // Luis tiene el acceso recortado en su local (sin Almacén, semillas): su Panel
   // lleva lo de su puesto que puede ver, y ni un hueco por lo que no.
   await expect(page.getByRole('heading', { name: 'Tu jornada' })).toBeVisible();

@@ -97,7 +97,7 @@ describe('por qué se cambia un plato (0132)', () => {
   const carta = {
     hoy: '2026-11-06',
     montada: true,
-    loMasPedido: [],
+    recomendados: [],
     paginas: [
       {
         id: 'e',

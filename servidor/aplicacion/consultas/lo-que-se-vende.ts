@@ -7,10 +7,15 @@ import {
   elPeriodoDelServicio,
   jornadaDe,
   minutosDeCocina,
+  comoSeVeLaSeccion,
+  type ColorDeLaBotonera,
+  type IconoDeLaSeccion,
   type PeriodoDelServicio,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { loQuePuede } from '../lo-que-puede.ts';
+import { comoLista } from '../listas.ts';
+import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 import { elRelojYElFisco, elTipoDeRestauracion } from '../desviacion.ts';
 import {
   importeDe,
@@ -83,6 +88,8 @@ export interface PlatoVendido {
   /** Lo que deja, sin IVA: lo vendido menos lo que cuesta. Nulo sin escandallo o sin permiso. */
   readonly margen: number | null;
   readonly margenPorUnidad: number | null;
+  /** La miniatura firmada del plato, si tiene foto (el Panel, «Lo que más sale», 0148). */
+  readonly foto: string | null;
 }
 
 export interface Cifra {
@@ -105,7 +112,13 @@ export interface LoQueSeVende {
     readonly personas: Cifra;
   };
   readonly platos: readonly PlatoVendido[];
-  readonly secciones: readonly { readonly nombre: string; readonly ventas: number }[];
+  /** Cada sección con su icono y su color, los mismos que en el TPV y en la Carta (0143). */
+  readonly secciones: readonly {
+    readonly nombre: string;
+    readonly ventas: number;
+    readonly icono: IconoDeLaSeccion;
+    readonly color: ColorDeLaBotonera | null;
+  }[];
   /** Si quien mira puede ver lo que cuesta cada plato: sin eso, no hay «lo que más deja». */
   readonly conMargen: boolean;
   readonly sinEscandallo: { readonly platos: number; readonly ventas: number };
@@ -268,6 +281,7 @@ function losPlatosVendidos(
       ventas,
       margen,
       margenPorUnidad: margen === null || p.uds === 0 ? null : alCentimo(margen / p.uds),
+      foto: null,
     };
   });
 }
@@ -319,9 +333,42 @@ export const loQueSeVende = consulta<Entrada, LoQueSeVende>({
         ventas: f.importe === null ? 0 : sinIva(Number(f.importe), iva),
         margen: null,
         margenPorUnidad: null,
+        foto: null,
       }));
     }
     platos.sort((a, b) => b.uds - a.uds || b.ventas - a.ventas);
+
+    // La foto de los diez primeros (los que se enseñan con foto) y cómo se ve cada sección.
+    const conId = platos
+      .slice(0, 10)
+      .map((p) => p.id)
+      .filter((id) => /^[0-9a-f-]{36}$/.test(id));
+    const [deLaCarta, deLasSecciones] = await Promise.all([
+      conId.length === 0
+        ? Promise.resolve([] as { id: string; clave: string | null }[])
+        : contexto.sql<{ id: string; clave: string | null }[]>`
+            select id::text as id, coalesce(miniatura_clave, foto_clave) as clave
+              from estook.plato
+             where local_id = ${localId}::uuid and id = any(${comoLista(conId)}::text::uuid[])
+          `,
+      contexto.sql<
+        { nombre: string; color: ColorDeLaBotonera | null; icono: IconoDeLaSeccion | null }[]
+      >`
+        select nombre, color, icono from estook.seccion_de_carta where local_id = ${localId}::uuid
+      `,
+    ]);
+    const firmadas = await firmarLasFotos(
+      contexto,
+      deLaCarta.map((f) => f.clave),
+    );
+    const claveDe = new Map(deLaCarta.map((f) => [f.id, f.clave]));
+    platos = platos.map((p) =>
+      claveDe.has(p.id) ? { ...p, foto: laFirmada(firmadas, claveDe.get(p.id)) } : p,
+    );
+    const comoSeVe = (nombre: string) =>
+      comoSeVeLaSeccion(
+        deLasSecciones.find((s) => s.nombre === nombre) ?? { nombre, color: null, icono: null },
+      );
 
     const porSeccion = new Map<string, number>();
     for (const p of platos) {
@@ -367,7 +414,7 @@ export const loQueSeVende = consulta<Entrada, LoQueSeVende>({
       },
       platos,
       secciones: [...porSeccion.entries()]
-        .map(([nombre, ventas]) => ({ nombre, ventas }))
+        .map(([nombre, ventas]) => ({ nombre, ventas, ...comoSeVe(nombre) }))
         .sort((a, b) => b.ventas - a.ventas),
       conMargen,
       sinEscandallo: {

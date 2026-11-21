@@ -32,7 +32,9 @@ Y la regla técnica que lo sostiene: **el servidor no envía lo que el rol no pu
 
 Tres cosas, y las tres respetan el principio de arriba.
 
-**La zona de atención.** Encima de los widgets, una zona fija que no se puede quitar y que se ordena sola por prioridad. **Es distinta por rol**, y no es un recorte de la del gerente: es la lista de lo que esa persona puede resolver.
+**La zona de atención.** Una lista que se ordena sola por prioridad, **distinta por rol** y no un recorte de la del gerente: es lo que esa persona puede resolver. Desde el rediseño ([0148](../decisiones/0148-el-rediseno.md), entrega 3) vive en el botón **«Hoy»** de la cabecera del Panel, con su número, y no encima de los widgets: «nada a lo ancho para decir poco».
+
+**El Panel de cada puesto** (0148, entrega 3). **Los fijos de su puesto arriba**, que no se mueven, y **los que añade cada uno abajo, todos del mismo tamaño**. Cinco Paneles: el **gerente** (las cifras del día, ventas y compras, lo que más sale, secciones, equipo, cobros, el almacén y ventas según canal), el **jefe de cocina** (food cost, merma, compras y la cámara, lo que se escapa, caducidades, bajo mínimo, repartos y la cocina en el servicio), el **jefe de sala** (ventas, ticket medio, mesas, espera, cuándo se vende, lo que más sale, la sala ahora, cobros, objetivos y ventas según canal), la **cocina** (tu día, menú del día, caducidades, agotados, el tablón y atajos) y la **sala** (tu día, menú del día, agotados, para recomendar y el tablón). El gerente y los jefes añaden; la cocina y la sala ven lo suyo y nada más, **sin un euro a la vista**. El puesto sale de lo que cada uno puede ver, así que un rol a medida tiene el suyo.
 
 **El reparto de alertas.** Una alerta llega a quien puede actuar sobre ella, **no a todo el mundo**. Una alerta que llega a alguien que no puede hacer nada con ella es ruido, y el ruido enseña a ignorar.
 

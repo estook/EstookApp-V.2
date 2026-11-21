@@ -1,5 +1,4 @@
 import {
-  LO_MAS_PEDIDO,
   comoSeVeLaSeccion,
   loQueProponeElNombre,
   loQueValeEnElBoton,
@@ -47,7 +46,8 @@ export interface BotonGuardado {
   /** Nulos: los de su página. */
   readonly quienLoPrepara: QuienLoPrepara | null;
   readonly pase: PaseDeLaBotonera | null;
-  readonly fijado: boolean;
+  /** Si su plato es de los recomendados (0120): es del plato, no del botón. */
+  readonly recomendado: boolean;
 }
 
 export interface LaBotoneraGuardada {
@@ -99,14 +99,15 @@ export async function laBotoneraGuardada(
         color: ColorDeLaBotonera | null;
         quien_lo_prepara: QuienLoPrepara | null;
         pase: PaseDeLaBotonera | null;
-        fijado: boolean;
+        recomendado: boolean;
       }[]
     >`
-      select id::text as id, pagina_id::text as pagina_id, plato_id::text as plato_id, orden,
-             color, quien_lo_prepara, pase, fijado
-        from estook.boton_del_tpv
-       where local_id = ${localId}::uuid
-       order by orden, creado_en
+      select b.id::text as id, b.pagina_id::text as pagina_id, b.plato_id::text as plato_id,
+             b.orden, b.color, b.quien_lo_prepara, b.pase, p.recomendado
+        from estook.boton_del_tpv b
+        join estook.plato p on p.id = b.plato_id
+       where b.local_id = ${localId}::uuid
+       order by b.orden, b.creado_en
     `,
   ]);
   return {
@@ -130,7 +131,7 @@ export async function laBotoneraGuardada(
       color: b.color,
       quienLoPrepara: b.quien_lo_prepara,
       pase: b.pase,
-      fijado: b.fijado,
+      recomendado: b.recomendado,
     })),
   };
 }
@@ -181,36 +182,6 @@ export async function loQueValeParaElPlato(
      where p.id = ${platoId}::uuid
   `;
   return { enLaBotonera: false, ...loQueProponeElNombre(seccion[0]?.nombre ?? '') };
-}
-
-/**
- * **«Lo más pedido»** (Anexo 11.10): lo más vendido **a esta hora** (una hora antes o
- * después) en las últimas cuatro semanas, de más a menos. Solo los platos de la carta, sin
- * los de dentro de un menú ni lo quitado.
- */
-export async function loMasPedido(contexto: Contexto, localId: string): Promise<readonly string[]> {
-  const filas = await contexto.sql<{ plato_id: string }[]>`
-    with ahora as (
-      select extract(hour from ${contexto.ahora.toISOString()}::timestamptz at time zone l.zona_horaria) as hora,
-             l.zona_horaria
-        from estook.local l where l.id = ${localId}::uuid
-    )
-    select li.plato_id::text as plato_id
-      from estook.linea_de_cuenta li, ahora
-     where li.local_id = ${localId}::uuid
-       and li.plato_id is not null and li.parte_de is null and li.menu_id is null
-       and li.quitada_en is null
-       and li.pedida_en > ${contexto.ahora.toISOString()}::timestamptz
-                          - make_interval(days => ${LO_MAS_PEDIDO.semanas * 7})
-       and least(
-             abs(extract(hour from li.pedida_en at time zone ahora.zona_horaria) - ahora.hora),
-             24 - abs(extract(hour from li.pedida_en at time zone ahora.zona_horaria) - ahora.hora)
-           ) <= ${LO_MAS_PEDIDO.horasAlrededor}
-     group by li.plato_id
-     order by sum(li.cantidad) desc, max(li.pedida_en) desc
-     limit ${LO_MAS_PEDIDO.cuantos}
-  `;
-  return filas.map((f) => f.plato_id);
 }
 
 /** Si el local ya eligió cómo montar su botonera (Ajustes del TPV › Productos). */

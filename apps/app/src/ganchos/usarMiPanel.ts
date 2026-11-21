@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  TAMANO_DE_LOS_ANADIDOS,
   elPanelDeFabrica,
-  loQueSePuedePintar,
+  loGuardadoDeAhora,
   usarDeshacer,
   usarEsEscritorio,
   widgetPorId,
@@ -130,7 +131,7 @@ function loRecordado(clave: string | null): readonly WidgetPuesto[] | null {
     // la segunda vez el Panel se adelantaba vacío).
     return leido
       .filter((id): id is string => typeof id === 'string')
-      .map((id) => ({ id, tamano: widgetPorId(id)?.tamano ?? 'ancho' }));
+      .map((id) => ({ id, tamano: TAMANO_DE_LOS_ANADIDOS }));
   } catch {
     return null;
   }
@@ -212,7 +213,7 @@ export function usarMiPanel(): MiPanel {
     const guardados = datos.widgets ?? null;
     return guardados === null
       ? elPanelDeFabrica(tienePermiso)
-      : loQueSePuedePintar(guardados, tienePermiso);
+      : loGuardadoDeAhora(guardados, tienePermiso);
   }, [consulta.data, tienePermiso]);
 
   // Lo que se pinta mientras llega lo guardado: lo último de este aparato, o lo de su
@@ -223,7 +224,7 @@ export function usarMiPanel(): MiPanel {
     const recordados = loRecordado(claveRecordada);
     return recordados === null
       ? elPanelDeFabrica(tienePermiso)
-      : loQueSePuedePintar(recordados, tienePermiso);
+      : loGuardadoDeAhora(recordados, tienePermiso);
   }, [consulta.data, claveRecordada, tienePermiso]);
 
   useEffect(() => {
@@ -413,7 +414,7 @@ export function usarMiPanel(): MiPanel {
     (id: string) => {
       const widget = widgetPorId(id);
       if (widget === undefined) return;
-      cambiar([...(puestos ?? []), { id: widget.id, tamano: widget.tamano }]);
+      cambiar([...(puestos ?? []), { id: widget.id, tamano: TAMANO_DE_LOS_ANADIDOS }]);
     },
     [puestos, cambiar],
   );

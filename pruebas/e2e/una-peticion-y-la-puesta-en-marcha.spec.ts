@@ -44,7 +44,9 @@ async function enUnLocalNuevo(
 
 /** Que el Panel haya acabado de llegar: ninguna silueta y la red quieta. */
 async function elPanelHaLlegado(page: Page): Promise<void> {
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    /Buen(?:os|as) (?:días|tardes|noches)/,
+  );
   await expect(page.getByText('Tu panel', { exact: true })).toBeVisible();
   await expect(page.locator('[data-silueta]')).toHaveCount(0, { timeout: 15_000 });
   await page.waitForLoadState('networkidle');
@@ -229,14 +231,18 @@ test.describe('d · la puesta en marcha', () => {
     await puesta.getByRole('button', { name: 'No me lo recuerdes más' }).click();
     await expect(puesta).toHaveCount(0);
     await recargarSinQueSeCaiga(page);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
     await expect(page.getByRole('region', { name: 'Pon en marcha tu local' })).toHaveCount(0);
   });
 
   test('en un local que ya está en marcha, no sale', async ({ page }) => {
     // Los locales de ejemplo están en marcha desde que nacen.
     await entrarEnLaApp(page, ROSA);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
     await expect(page.getByRole('region', { name: 'Pon en marcha tu local' })).toHaveCount(0);
   });
 });

@@ -164,7 +164,7 @@ export default function RejillaQueSeEdita(props: RejillaConVacios) {
 
   const elCogido = puestos.find((p) => p.id === cogido);
   // Las mismas filas que la rejilla quieta: entrar en edición no mueve nada (0039).
-  const [caja, columnas] = usarColumnasDelPanel<HTMLDivElement>();
+  const [caja, columnas] = usarColumnasDelPanel<HTMLDivElement>(props.uniforme === true);
 
   return (
     <DndContext
@@ -189,28 +189,30 @@ export default function RejillaQueSeEdita(props: RejillaConVacios) {
           className={CLASES_DE_LA_REJILLA}
           style={{ gridTemplateColumns: `repeat(${String(columnas)}, minmax(0, 1fr))` }}
         >
-          {colocarEnFilas(puestos, columnas).map(({ puesto, columnas: ocupa }) => {
-            const indice = puestos.indexOf(puesto);
-            return (
-              <CasillaQueSeMueve
-                key={puesto.id}
-                puesto={puesto}
-                ocupa={ocupa}
-                indice={indice}
-                cogido={cogido === puesto.id}
-                conGuantes={conGuantes}
-                alMover={(hacia) => {
-                  mover(indice, hacia);
-                }}
-                esElPrimero={indice === 0}
-                esElUltimo={indice === puestos.length - 1}
-                {...props}
-              >
-                {pintar(puesto)}
-              </CasillaQueSeMueve>
-            );
-          })}
-          <HuecoDeAnadir alAnadir={alAnadir} />
+          {colocarEnFilas(puestos, columnas, props.uniforme !== true).map(
+            ({ puesto, columnas: ocupa }) => {
+              const indice = puestos.indexOf(puesto);
+              return (
+                <CasillaQueSeMueve
+                  key={puesto.id}
+                  puesto={puesto}
+                  ocupa={ocupa}
+                  indice={indice}
+                  cogido={cogido === puesto.id}
+                  conGuantes={conGuantes}
+                  alMover={(hacia) => {
+                    mover(indice, hacia);
+                  }}
+                  esElPrimero={indice === 0}
+                  esElUltimo={indice === puestos.length - 1}
+                  {...props}
+                >
+                  {pintar(puesto)}
+                </CasillaQueSeMueve>
+              );
+            },
+          )}
+          <HuecoDeAnadir alAnadir={alAnadir} largo={props.anadirSiempre === true} />
         </div>
       </SortableContext>
 

@@ -1190,3 +1190,10 @@
      request (`gh pr checks`), no solo la vuelta**; y si pasa, un commit vacío lanza una vuelta normal que sí
      se enlaza. Y las vueltas de `main` que se quedan «en cola» sin ningún trabajo dentro (11-nov) no se pueden
      cancelar ni borrar, ni desde la web ni desde la API: son de GitHub, y no frenan las demás.
+
+276. **Una migración no borra lo que lee la API de antes.** Al pasar «fijado» del botón del TPV al plato
+     (0120, 21-nov) la primera versión borraba `boton_del_tpv.fijado`. Pero el orden es fusionar, migrar y
+     **después** desplegar: en ese rato la API de antes sigue leyendo la columna al montar la carta de la sala,
+     y el TPV se habría quedado sin poder tomar nota hasta el despliegue. **La columna se deja, sin usar, y se
+     quita en una migración de después**, cuando ninguna API la lea. Lo mismo vale para renombrar una columna o
+     cambiarle el tipo: primero se añade lo nuevo, después se deja de usar lo viejo y al final se borra.

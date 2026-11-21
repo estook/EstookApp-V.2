@@ -220,6 +220,9 @@ import { lasCaras } from './consultas/las-caras.ts';
 import { laPuestaEnMarcha } from './consultas/la-puesta-en-marcha.ts';
 import { miCarta, unPlato } from './consultas/mi-carta.ts';
 import { losAgotados } from './consultas/agotados.ts';
+import { losRecomendados } from './consultas/recomendados.ts';
+import { elMenuDeHoy } from './consultas/el-menu-de-hoy.ts';
+import { recomendarPlato } from './comandos/recomendados.ts';
 import { elEquilibrioDeLaCarta } from './consultas/equilibrio.ts';
 import { marcarAgotado, quitarAgotado } from './comandos/agotados.ts';
 import {
@@ -412,6 +415,7 @@ import {
 } from './comandos/pago.ts';
 import { miLocalEnGoogle, miNotaEnGoogle } from './consultas/local-en-google.ts';
 import { elServicioPorDentro, loQueSeVende } from './consultas/lo-que-se-vende.ts';
+import { comoVaHoy } from './consultas/como-va-hoy.ts';
 import { guardarLosObjetivosDeVenta, laVentaDeCadaUno } from './consultas/empleados.ts';
 import {
   actualizarMiFichaDeGoogle,
@@ -566,6 +570,7 @@ export const catalogo = {
     [elZEnPdf.nombre]: elZEnPdf,
     // La pausa del 8-nov (0142): Información e Informes, de las mesas de Estook TPV.
     [loQueSeVende.nombre]: loQueSeVende,
+    [comoVaHoy.nombre]: comoVaHoy,
     [elServicioPorDentro.nombre]: elServicioPorDentro,
     // P3 (0142): Servicio › Empleados.
     [laVentaDeCadaUno.nombre]: laVentaDeCadaUno,
@@ -620,6 +625,8 @@ export const catalogo = {
     // M10 · 1 · La carta que trabaja (0102): los platos para marcar agotados (también
     // la cocina, sin precios) y el equilibrio de la carta, con Omnes.
     [losAgotados.nombre]: losAgotados,
+    [losRecomendados.nombre]: losRecomendados,
+    [elMenuDeHoy.nombre]: elMenuDeHoy,
     [elEquilibrioDeLaCarta.nombre]: elEquilibrioDeLaCarta,
     // M10 · 2 · Los menús (0104): la semana de cada menú, y lo que deja a quien ve costes.
     [misMenus.nombre]: misMenus,
@@ -1207,6 +1214,7 @@ export const catalogo = {
     // M10 · 1 (0102): agotar y que vuelva, y leer tu carta (sin IA, o con Fogón por
     // página). Leer no cambia nada: se cambia con los comandos de arriba.
     [marcarAgotado.nombre]: marcarAgotado,
+    [recomendarPlato.nombre]: recomendarPlato,
     [quitarAgotado.nombre]: quitarAgotado,
     [leerLaCarta.nombre]: leerLaCarta,
     [leerPaginaConFogon.nombre]: leerPaginaConFogon,

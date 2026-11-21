@@ -164,7 +164,9 @@ test('quien tiene dos locales elige uno al entrar, y su Panel carga', async ({ p
   await expect(page.getByRole('heading', { level: 1 })).toContainText('¿Dónde estás hoy?');
   await page.getByRole('button', { name: /Bar Playa/ }).click();
 
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    /Buen(?:os|as) (?:días|tardes|noches)/,
+  );
   await expect(page.getByText('Cargando tu panel')).toHaveCount(0, { timeout: 15_000 });
   await expect(page.locator('[data-widget]').first()).toBeVisible();
 });

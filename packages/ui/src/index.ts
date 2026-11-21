@@ -184,23 +184,39 @@ export type { RuedaDeAppsProps } from './navegacion/RuedaDeApps.tsx';
 // ── El Panel de cada uno (Manifiesto 6) ──────────────────────────────────────
 export {
   CUANTO_OCUPA,
-  PANEL_DEL_PUESTO,
+  TAMANO_DE_LOS_ANADIDOS,
   NOMBRE_DEL_PUESTO,
+  FIJOS_DEL_PUESTO,
+  ELIGE_EL_PUESTO,
+  ANADIDOS_DE_FABRICA,
   elPuestoDe,
+  losFijos,
+  losIdsFijos,
   elPanelDeFabrica,
   WIDGETS,
   loQueSePuedeAnadir,
   elCatalogoParaAnadir,
-  GRUPO_DEL_WIDGET,
   NOMBRE_DEL_GRUPO,
   loQueSePuedePintar,
+  loGuardadoDeAhora,
   acentoDelWidget,
   appDelWidget,
   widgetPorId,
   idDeAhora,
   MUDANZAS,
 } from './panel/catalogo.ts';
-export type { TamanoDeWidget, Widget, WidgetPuesto, Puesto } from './panel/catalogo.ts';
+export type {
+  TamanoDeWidget,
+  Widget,
+  WidgetPuesto,
+  Puesto,
+  Fijo,
+  FormaDelFijo,
+  GrupoDeWidget,
+  EstadoEnElCatalogo,
+} from './panel/catalogo.ts';
+export { colocarLosFijos, elModoDelAncho, anchoDeLaForma } from './panel/rejillaDelPuesto.ts';
+export type { ModoDelPanel, FijoColocado } from './panel/rejillaDelPuesto.ts';
 
 export { TarjetaDeIndicador } from './panel/TarjetaDeIndicador.tsx';
 export { comoSeEscribe } from './panel/comoSeEscribe.ts';

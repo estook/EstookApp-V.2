@@ -1,4 +1,4 @@
-import type { PeriodoDelServicio } from '@estook/dominio';
+import type { ColorDeLaBotonera, IconoDeLaSeccion, PeriodoDelServicio } from '@estook/dominio';
 
 /**
  * Lo que devuelven `lo_que_se_vende` y `el_servicio_por_dentro` (la pausa del 8-nov, 0142),
@@ -15,6 +15,8 @@ export interface PlatoVendido {
   readonly ventas: number;
   readonly margen: number | null;
   readonly margenPorUnidad: number | null;
+  /** La miniatura firmada, si tiene foto (0148). Opcional: la API se despliega después de la web. */
+  readonly foto?: string | null;
 }
 
 export interface Cifra {
@@ -40,7 +42,13 @@ export interface LoQueSeVende extends ElPeriodoQueSeMira {
     readonly personas: Cifra;
   };
   readonly platos: readonly PlatoVendido[];
-  readonly secciones: readonly { readonly nombre: string; readonly ventas: number }[];
+  readonly secciones: readonly {
+    readonly nombre: string;
+    readonly ventas: number;
+    /** El icono y el color de la sección (0148). Opcionales: la API va después de la web. */
+    readonly icono?: IconoDeLaSeccion;
+    readonly color?: ColorDeLaBotonera | null;
+  }[];
   readonly conMargen: boolean;
   readonly sinEscandallo: { readonly platos: number; readonly ventas: number };
   readonly ahoraMismo: {

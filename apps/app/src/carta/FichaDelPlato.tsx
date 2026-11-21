@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { centimos, comisionDe } from '@estook/dominio';
+import { TOPE_DE_RECOMENDADOS, centimos, comisionDe } from '@estook/dominio';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Aviso,
   Boton,
@@ -22,6 +23,7 @@ import {
   IconoBorrar,
   IconoDesvincular,
   IconoEscandallos,
+  IconoEstrella,
   IconoPicante,
   IconoVincular,
 } from '@estook/iconos';
@@ -92,6 +94,7 @@ export function FichaDelPlato({
   return (
     <PanelLateral abierta alCerrar={alCerrar} titulo={datos.plato.nombre}>
       {datos.plato.activo && <ElAgotado plato={datos.plato} />}
+      {datos.plato.activo && <ElRecomendado plato={datos.plato} />}
       {datos.plato.enLaCarta === false && (
         <SoloDelMenu platoId={datos.plato.id} puede={datos.puedeEditar} />
       )}
@@ -141,6 +144,55 @@ function SoloDelMenu({ platoId, puede }: { readonly platoId: string; readonly pu
         </Boton>
       )}
     </Aviso>
+  );
+}
+
+/**
+ * **Recomendar para venta** (0120; Richi, 21-nov): lo que la casa recomienda sale en
+ * «Recomendados» del TPV, para que el camarero lo ofrezca, y en «Para recomendar» del Panel de la
+ * sala. Es lo mismo que el interruptor de Ajustes del TPV › Productos. Como mucho ocho: al llegar,
+ * el servidor dice cuáles hay para quitar uno. Lo marca quien edita la Carta.
+ */
+function ElRecomendado({ plato }: { readonly plato: ElPlato['plato'] }) {
+  const { cliente, permisos } = usarSesion();
+  const refrescar = usarRefrescarLaCarta();
+  const cache = useQueryClient();
+  const [puesto, setPuesto] = useState(plato.recomendado === true);
+  const [error, setError] = useState<ErrorDeLaApi | null>(null);
+  if (!puedeEditar(permisos, 'app.carta')) {
+    return plato.recomendado === true ? (
+      <p className="mb-e4 flex items-center gap-e2 text-secundario font-semibold text-texto-suave">
+        <IconoEstrella size={16} className="text-seccion-amarillo" />
+        Recomendado por la casa
+      </p>
+    ) : null;
+  }
+  return (
+    <div className="mb-e4 flex flex-col gap-e2">
+      <Interruptor
+        etiqueta="Recomendar para venta"
+        ayuda={`Sale en «Recomendados» del TPV y en el Panel de la sala, sin lo agotado. Como mucho ${String(TOPE_DE_RECOMENDADOS)}.`}
+        puesto={puesto}
+        alCambiar={(si) => {
+          setPuesto(si);
+          setError(null);
+          void cliente
+            .ejecutar('recomendar_plato', { plato_id: plato.id, recomendado: si })
+            .then(async (respuesta) => {
+              if (!respuesta.ok) {
+                setPuesto(!si);
+                setError(respuesta.error);
+                return;
+              }
+              await Promise.all([
+                refrescar(),
+                cache.invalidateQueries({ queryKey: ['los_recomendados'] }),
+              ]);
+            });
+        }}
+      />
+      {error !== null && <ErrorEnCristiano error={error} />}
+    </div>
   );
 }
 

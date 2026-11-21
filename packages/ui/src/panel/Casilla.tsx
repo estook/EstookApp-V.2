@@ -285,7 +285,14 @@ function ControlesDeEdicion({
 }
 
 /** El hueco de añadir, dentro de la rejilla y no en un menú escondido. */
-export function HuecoDeAnadir({ alAnadir }: { readonly alAnadir: () => void }) {
+export function HuecoDeAnadir({
+  alAnadir,
+  largo = false,
+}: {
+  readonly alAnadir: () => void;
+  /** «Añadir un widget», con su nombre entero: la casilla de los añadidos (0148). */
+  readonly largo?: boolean;
+}) {
   return (
     <div className="col-span-1">
       <button
@@ -299,7 +306,7 @@ export function HuecoDeAnadir({ alAnadir }: { readonly alAnadir: () => void }) {
         )}
       >
         <IconoAnadir size={24} />
-        <span className="text-secundario font-medium">Añadir</span>
+        <span className="text-secundario font-medium">{largo ? 'Añadir un widget' : 'Añadir'}</span>
       </button>
     </div>
   );

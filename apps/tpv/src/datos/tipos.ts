@@ -276,8 +276,8 @@ export interface LaCartaDeLaSala {
   /** Si la botonera está montada; sin montar, una página por sección de la carta. */
   readonly montada: boolean;
   readonly paginas: readonly PaginaDeLaSala[];
-  /** Lo fijado y lo más vendido a esta hora (Anexo 11.10); vacío si no hay nada fijado (0133). */
-  readonly loMasPedido: readonly PlatoDeLaSala[];
+  /** Lo que la casa recomienda, sin lo agotado (0120); vacío si no recomienda nada (0133). */
+  readonly recomendados: readonly PlatoDeLaSala[];
   readonly menus: readonly MenuDeLaSala[];
 }
 
@@ -298,7 +298,8 @@ export interface BotonDeLaBotonera extends PlatoParaLaBotonera {
   /** Nulos: los de su página. */
   readonly quienLoPrepara: QuienLoPrepara | null;
   readonly pase: PaseDeLaBotonera | null;
-  readonly fijado: boolean;
+  /** Su plato es de los recomendados (0120): lo mismo que marca la Carta. */
+  readonly recomendado: boolean;
   /** Los grupos de opciones de su plato (T3 · 2). Una API de antes no lo dice. */
   readonly grupoIds?: readonly string[];
   readonly aPeso?: boolean;

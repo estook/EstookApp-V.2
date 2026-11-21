@@ -451,13 +451,21 @@ export const ACCIONES_DEL_PUESTO: Readonly<Record<Puesto, readonly string[]>> = 
     'hacer-recuento',
     'escribir-en-el-tablon',
   ],
-  jefe: [
+  'jefe-cocina': [
     'apuntar-merma',
     'recibir',
     'nuevo-pedido',
     'hacer-recuento',
     'cerrar-caja',
     'escribir-en-el-tablon',
+  ],
+  // El jefe de sala (0148): la caja, lo que se acaba y el tablón; el almacén no es suyo.
+  'jefe-sala': [
+    'cerrar-caja',
+    'marcar-agotado',
+    'escribir-en-el-tablon',
+    'apuntar-merma',
+    'buscar',
   ],
   cocina: [
     'apuntar-merma',

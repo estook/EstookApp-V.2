@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { recomendarElPlato } from '../recomendados.ts';
 import {
   CAMINOS_DE_LA_BOTONERA,
   COLORES_DE_LA_BOTONERA,
@@ -512,7 +513,8 @@ const entradaCambiarBotonDelTpv = z
     // Nulo: vuelve a valer lo de su página.
     quien_lo_prepara: quien.nullable().optional(),
     pase: pase.nullable().optional(),
-    fijado: z.boolean().optional(),
+    // Recomendar su plato (0120): es del plato, lo mismo que marca la Carta.
+    recomendado: z.boolean().optional(),
     // Moverlo a otra página.
     pagina_id: id.optional(),
   })
@@ -537,7 +539,6 @@ export const cambiarBotonDelTpv = comando<
                quien_lo_prepara = case when ${entrada.quien_lo_prepara !== undefined}
                                        then ${entrada.quien_lo_prepara ?? null} else quien_lo_prepara end,
                pase = case when ${entrada.pase !== undefined} then ${entrada.pase ?? null} else pase end,
-               fijado = coalesce(${entrada.fijado ?? null}::boolean, fijado),
                pagina_id = coalesce(${entrada.pagina_id ?? null}::uuid, pagina_id),
                orden = case when ${entrada.pagina_id !== undefined}
                             then coalesce((select max(orden) + 1 from estook.boton_del_tpv
@@ -552,6 +553,15 @@ export const cambiarBotonDelTpv = comando<
         });
       }
       throw error;
+    }
+    if (entrada.recomendado !== undefined) {
+      const suPlato = await contexto.sql<{ plato_id: string }[]>`
+        select plato_id::text as plato_id from estook.boton_del_tpv where id = ${entrada.boton_id}::uuid
+      `;
+      const platoId = suPlato[0]?.plato_id;
+      if (platoId !== undefined) {
+        await recomendarElPlato(contexto, localId, platoId, entrada.recomendado);
+      }
     }
     await anotar(contexto, 'cambiar', 'boton_del_tpv', entrada.boton_id, localId, entrada);
     return { botonId: entrada.boton_id };

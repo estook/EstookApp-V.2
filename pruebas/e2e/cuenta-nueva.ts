@@ -81,5 +81,7 @@ export async function sinElAlta(page: Page) {
   });
   expect(respuesta.ok(), await respuesta.text()).toBe(true);
   await recargarSinQueSeCaiga(page);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    /Buen(?:os|as) (?:días|tardes|noches)/,
+  );
 }

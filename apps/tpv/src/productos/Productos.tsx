@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import {
   COLORES_DE_LA_BOTONERA,
-  COMO_SE_VE_LO_MAS_PEDIDO,
+  COMO_SE_VE_LOS_RECOMENDADOS,
+  TOPE_DE_RECOMENDADOS,
   NOMBRE_DE_QUIEN_LO_PREPARA,
   QUIEN_LO_PREPARA,
   centimos,
@@ -64,7 +65,7 @@ import { moverUnPuesto, usarArrastrar } from '../ganchos/usarArrastrar.ts';
  *     nombre); se arrastran para ordenarlas. A la derecha, la que se toca: quién la prepara,
  *     que heredan sus productos, y sus productos
  *   · **los productos**: «+ De la carta», su color, lo suyo si cambia lo de su sección (el
- *     pan, de «Nadie»), «En Lo más pedido», moverlo o quitarlo
+ *     pan, de «Nadie»), «Recomendado», moverlo o quitarlo
  *   · **«Nuevos en la carta»**: lo que está en la carta y aún no en el TPV, con «Añadir»
  *   · **«Nuevo producto»**: nace también en la carta de Estook, sin escandallo
  *
@@ -265,8 +266,8 @@ function TresCaminos({ datos, orden }: { readonly datos: LaBotonera; readonly or
 
 // ═══ La botonera montada: las secciones a la izquierda, la que tocas a la derecha ═══
 
-/** «Lo más pedido», en la lista de secciones: no es una sección guardada. */
-const LO_MAS_PEDIDO = 'lo-mas-pedido';
+/** «Recomendados», en la lista de secciones: no es una sección guardada (0120). */
+const RECOMENDADOS = 'recomendados';
 
 type LaHoja =
   | { readonly que: 'icono'; readonly pagina: PaginaDeLaBotonera }
@@ -309,13 +310,14 @@ function LaBotoneraMontada({
     if (conElNuevoAbierto) irA('ajustes/productos');
   };
   const paginas = datos.paginas;
-  const marcados = paginas.flatMap((g) =>
-    g.botones.filter((b) => b.fijado).map((b) => ({ pagina: g, boton: b })),
-  );
+  // Recomendar es del plato (0120): un plato con botón en dos páginas sale una vez.
+  const marcados = paginas
+    .flatMap((g) => g.botones.filter((b) => b.recomendado).map((b) => ({ pagina: g, boton: b })))
+    .filter((m, i, todos) => todos.findIndex((x) => x.boton.platoId === m.boton.platoId) === i);
   // La que se ve a la derecha: la tocada; si no, en la tablet, la primera. En el móvil, sin
   // tocar ninguna, solo la lista.
   const existe = (id: string | null) =>
-    id !== null && (id === LO_MAS_PEDIDO || paginas.some((g) => g.id === id));
+    id !== null && (id === RECOMENDADOS || paginas.some((g) => g.id === id));
   const tocada = existe(elegida) ? elegida : null;
   const vista = tocada ?? paginas[0]?.id ?? null;
   // Lo de la hoja abierta, siempre como está ahora: tras ordenar o cambiar, no la copia vieja.
@@ -372,18 +374,18 @@ function LaBotoneraMontada({
             <h2 className="text-seccion font-bold">Secciones</h2>
             <div className="flex flex-col overflow-hidden rounded-mayor bg-superficie">
               <FilaDeSeccion
-                nombre="Lo más pedido"
-                icono={COMO_SE_VE_LO_MAS_PEDIDO.icono}
-                color={COMO_SE_VE_LO_MAS_PEDIDO.color}
+                nombre="Recomendados"
+                icono={COMO_SE_VE_LOS_RECOMENDADOS.icono}
+                color={COMO_SE_VE_LOS_RECOMENDADOS.color}
                 linea={
                   marcados.length === 0
-                    ? 'No sale: nada marcado'
-                    : `Sale · ${String(marcados.length)} ${marcados.length === 1 ? 'marcado' : 'marcados'}`
+                    ? 'No sale: nada recomendado'
+                    : `Sale · ${String(marcados.length)} de ${String(TOPE_DE_RECOMENDADOS)}`
                 }
                 apagada={marcados.length === 0}
-                vista={vista === LO_MAS_PEDIDO}
+                vista={vista === RECOMENDADOS}
                 alTocar={() => {
-                  setElegida(LO_MAS_PEDIDO);
+                  setElegida(RECOMENDADOS);
                 }}
               />
               {paginas.map((g) => (
@@ -436,10 +438,10 @@ function LaBotoneraMontada({
               ¿Cómo funciona?
             </summary>
             <p className="pt-e2">
-              <strong className="text-texto">«Lo más pedido»</strong> sale la primera en el TPV solo
-              si marcas algún producto (tócalo y enciende «En Lo más pedido»): primero lo marcado y
-              después lo que más se vende a esa hora. Sin nada marcado no sale, y el camarero llega
-              antes a las demás.
+              <strong className="text-texto">«Recomendados»</strong> sale la primera en el TPV solo
+              si la casa recomienda algo: tócalo y enciende «Recomendado», o márcalo en Estook ›
+              Carta, que es lo mismo. Como mucho {TOPE_DE_RECOMENDADOS}, y lo agotado no sale. Sin
+              nada recomendado no ocupa sitio, y el camarero llega antes a las demás.
             </p>
             <p className="pt-e2">
               Cada sección pasa a sus productos su color y quién la prepara. Un producto puede tener
@@ -461,8 +463,8 @@ function LaBotoneraMontada({
             <IconoFlechaIzquierda size={20} />
             Secciones
           </button>
-          {vista === LO_MAS_PEDIDO ? (
-            <ElDetalleDeLoMasPedido
+          {vista === RECOMENDADOS ? (
+            <ElDetalleDeLosRecomendados
               marcados={marcados}
               alTocarUnBoton={(pagina, boton) => {
                 setHoja({ que: 'boton', pagina, boton });
@@ -713,7 +715,7 @@ function ElDetalleDeLaSeccion({
                   <span className="text-secundario text-texto-suave">
                     {b.precioCentimos === null ? 'Sin precio' : euros(b.precioCentimos)}
                     {suyo ? ` · ${NOMBRE_DE_QUIEN_LO_PREPARA[b.quienLoPrepara]}` : ''}
-                    {b.fijado ? ' · ★' : ''}
+                    {b.recomendado ? ' · ★' : ''}
                   </span>
                 </button>
                 {n > 1 && (
@@ -756,8 +758,8 @@ function ElDetalleDeLaSeccion({
   );
 }
 
-/** «Lo más pedido», a la derecha: lo marcado, y cuándo sale. */
-function ElDetalleDeLoMasPedido({
+/** «Recomendados», a la derecha: lo recomendado, y cuándo sale (0120). */
+function ElDetalleDeLosRecomendados({
   marcados,
   alTocarUnBoton,
 }: {
@@ -768,27 +770,27 @@ function ElDetalleDeLoMasPedido({
   readonly alTocarUnBoton: (pagina: PaginaDeLaBotonera, boton: BotonDeLaBotonera) => void;
 }) {
   return (
-    <section aria-label="Sección Lo más pedido" className="flex flex-col gap-e4">
+    <section aria-label="Sección Recomendados" className="flex flex-col gap-e4">
       <div className="flex items-center gap-e4">
         <LaBaldosaDeLaSeccion
-          icono={COMO_SE_VE_LO_MAS_PEDIDO.icono}
-          color={COMO_SE_VE_LO_MAS_PEDIDO.color}
+          icono={COMO_SE_VE_LOS_RECOMENDADOS.icono}
+          color={COMO_SE_VE_LOS_RECOMENDADOS.color}
           lado={64}
         />
         <div className="flex min-w-0 flex-1 flex-col">
-          <h2 className="text-pantalla font-bold">Lo más pedido</h2>
+          <h2 className="text-pantalla font-bold">Recomendados</h2>
           <span className="text-secundario text-texto-suave">
             {marcados.length === 0
-              ? 'No sale en el TPV: no hay nada marcado'
-              : 'Sale la primera: lo marcado, y después lo que más se vende a esa hora'}
+              ? 'No sale en el TPV: no hay nada recomendado'
+              : `Sale la primera, sin lo agotado · ${String(marcados.length)} de ${String(TOPE_DE_RECOMENDADOS)}`}
           </span>
         </div>
       </div>
       {marcados.length === 0 ? (
         <p className="rounded-mayor border-2 border-dashed border-borde p-e4 text-cuerpo text-texto-suave">
           Para que salga, toca un producto en su sección y enciende{' '}
-          <strong className="text-texto">«En Lo más pedido»</strong>. Sin nada marcado no ocupa
-          sitio en el comandero.
+          <strong className="text-texto">«Recomendado»</strong>, o márcalo en Estook › Carta. Sin
+          nada recomendado no ocupa sitio en el comandero.
         </p>
       ) : (
         <div className="grid grid-cols-2 gap-e2 sm:grid-cols-3 xl:grid-cols-4">
@@ -1107,7 +1109,7 @@ function HojaDeBoton({
   // Lo de la hoja se ve al momento; se guarda cada toque.
   const [quien, setQuien] = useState<QuienLoPrepara | null>(boton.quienLoPrepara);
   const [color, setColor] = useState<ColorDeLaBotonera | null>(boton.color);
-  const [fijado, setFijado] = useState(boton.fijado);
+  const [recomendado, setRecomendado] = useState(boton.recomendado);
   const ids = pagina.botones.map((b) => b.botonId);
   const donde = ids.indexOf(boton.botonId);
   const cambiar = (cambios: Record<string, unknown>) =>
@@ -1258,12 +1260,15 @@ function HojaDeBoton({
           sinColor="El de la sección"
         />
         <Interruptor
-          etiqueta="En «Lo más pedido»"
-          ayuda="«Lo más pedido» sale en el TPV solo si hay algo marcado: lo marcado primero, y después lo que más se vende a esa hora."
-          puesto={fijado}
+          etiqueta="Recomendado"
+          ayuda={`Sale en «Recomendados» del TPV y en el Panel de la sala, sin lo agotado. Es lo mismo que marcar en Estook › Carta. Como mucho ${String(TOPE_DE_RECOMENDADOS)}.`}
+          puesto={recomendado}
           alCambiar={(si) => {
-            setFijado(si);
-            void cambiar({ fijado: si });
+            setRecomendado(si);
+            // Si no se puede (el tope de ocho), vuelve como estaba y lo dice el aviso.
+            void cambiar({ recomendado: si }).then((r) => {
+              if (!r.ok) setRecomendado(!si);
+            });
           }}
         />
         {paginas.length > 1 && (

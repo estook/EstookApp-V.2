@@ -399,7 +399,9 @@ test.describe('las tarjetas del Panel', () => {
 
     // Recargar no la trae: aplazada es aplazada mientras dure la sesión.
     await recargarSinQueSeCaiga(page);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
     await expect(tarjeta).toHaveCount(0);
 
     // Volver a entrar, sí. Y sin vaciar el navegador, que sería hacer trampa.
@@ -413,7 +415,9 @@ test.describe('las tarjetas del Panel', () => {
     // La pausa del 8-nov (0142), punto 4.1: Pro es Estook TPV, así que ni el Panel ni Ajustes
     // preguntan «¿cómo entran tus ventas?». Los locales de ejemplo llevan Pro.
     await entrar(page);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
     await expect(page.getByRole('heading', { name: '¿Cómo entran tus ventas?' })).toHaveCount(0);
 
     await abrirSinQueSeCaiga(page, `${APP}#/ajustes/conexiones`);
@@ -614,7 +618,9 @@ test.describe('el Panel enseña lo de Almacén', () => {
     // acceso» a la primera pantalla del día.
     await entrar(page, 'sara@ejemplo.estook.com');
 
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
     await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 2, name: 'Valor de la cámara' })).toHaveCount(
       0,
@@ -812,7 +818,9 @@ test.describe('cómo se ve · el tema y el color del local', () => {
 
       // Al Panel, que es donde vive el botón principal de verdad.
       await abrirSinQueSeCaiga(page, `${APP}#/`);
-      await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+      await expect(page.getByRole('heading', { level: 1 })).toContainText(
+        /Buen(?:os|as) (?:días|tardes|noches)/,
+      );
 
       const medido = await page.evaluate(() => {
         const acento = window

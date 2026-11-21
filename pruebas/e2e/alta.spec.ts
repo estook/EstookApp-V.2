@@ -188,7 +188,9 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     await page.getByRole('button', { name: /Entrar en/ }).click();
 
     // El Panel de su local. La quinta comprobación deja de mandar al alta.
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Pablo');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches), Pablo/,
+    );
 
     const tardo = (Date.now() - empezo) / 1000;
     // Cuatro minutos. Una máquina tarda segundos, así que esto no mide a una
@@ -347,7 +349,9 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     await expect(
       page.getByRole('heading', { level: 1, name: 'Cinco pantallas y a trabajar' }),
     ).toHaveCount(0);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
   });
 
   /**
@@ -382,7 +386,9 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     await expect(
       page.getByRole('heading', { level: 1, name: 'Cinco pantallas y a trabajar' }),
     ).toHaveCount(0);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
   });
 
   // ── La guía de instalación · dónde se ofrece y dónde no ──────────────────────

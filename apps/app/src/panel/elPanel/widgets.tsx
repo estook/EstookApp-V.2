@@ -48,7 +48,7 @@ import { usarElIndicador } from '../../ganchos/usarElIndicador.ts';
 import { usarMisObjetivos } from '../../ganchos/usarMisObjetivos.ts';
 import { usarAlmacenHoy } from '../../ganchos/usarAlmacenHoy.ts';
 import { usarElTablon } from '../../ganchos/usarElTablon.ts';
-import { usarFichar } from '../../ganchos/usarFichar.ts';
+import { loQueDiceElFichaje, usarFichar } from '../../ganchos/usarFichar.ts';
 import { BotonDePausa } from '../../equipo/BotonDePausa.tsx';
 import { comoSeLeeLaHora, comoSeLeenMinutos, type FichajesDeHoy } from '../../equipo/contrato.ts';
 import type { ComprasDeHoy } from '../../compras/contrato.ts';
@@ -271,7 +271,8 @@ function TarjetaDeCifra({
 }
 
 function Cargandose({ que }: { readonly que: string }) {
-  return <Cargando que={que} lineas={2} />;
+  // Cada widget, la forma de lo que va a llegar (0085): una cifra se espera como una cifra.
+  return <Cargando que={que} lineas={2} forma="cifra" />;
 }
 
 // ── Ventas de hoy ───────────────────────────────────────────────────────────────
@@ -952,7 +953,7 @@ function VentasYCompras() {
       }
     >
       {ventas.datos === undefined ? (
-        <Cargando que="las ventas de la semana" lineas={5} />
+        <Cargando que="las ventas de la semana" lineas={5} forma="cifra" />
       ) : sinNada ? (
         <Silueta
           icono={<IconoNegocio />}
@@ -1030,7 +1031,7 @@ function FoodCostYMerma() {
       }
     >
       {fc.datos === undefined ? (
-        <Cargando que="el food cost" lineas={5} />
+        <Cargando que="el food cost" lineas={5} forma="cifra" />
       ) : !conDato ? (
         <Silueta
           icono={<IconoOlla />}
@@ -1101,7 +1102,7 @@ function CuandoSeVende() {
       }
     >
       {datos === undefined ? (
-        <Cargando que="cuándo se vende" lineas={5} />
+        <Cargando que="cuándo se vende" lineas={5} forma="cifra" />
       ) : conVentas.length === 0 ? (
         <Silueta icono={<IconoReloj />}>
           Lo que se vende cada hora, de media, este día de la semana. Sale cuando lleves unos{' '}
@@ -1153,7 +1154,7 @@ function LoQueMasSale() {
       derecha="esta semana"
     >
       {datos === undefined ? (
-        <Cargando que="lo que más sale" lineas={3} />
+        <Cargando que="lo que más sale" lineas={3} forma="lista-foto" />
       ) : tres.length === 0 ? (
         <Silueta
           icono={<IconoEstrella />}
@@ -1233,7 +1234,7 @@ function PorSecciones() {
       derecha="esta semana"
     >
       {datos === undefined ? (
-        <Cargando que="las secciones" lineas={4} />
+        <Cargando que="las secciones" lineas={4} forma="niveles" />
       ) : secciones.length === 0 ? (
         <Silueta icono={<IconoCarta />}>
           Lo que vende cada sección de tu carta. Sale al primer cobro.
@@ -1315,7 +1316,7 @@ function ComoSeCobra() {
       derecha="hoy"
     >
       {consulta.data === undefined ? (
-        <Cargando que="los cobros" lineas={3} />
+        <Cargando que="los cobros" lineas={3} forma="anillo" />
       ) : total === 0 || mas === null || cobros === null ? (
         <Silueta icono={<IconoDinero />}>
           Tarjeta, efectivo y Bizum de lo cobrado hoy. Sale al primer cobro.
@@ -1365,7 +1366,7 @@ function MesasAhora() {
       leyendo={consulta}
     >
       {datos === undefined ? (
-        <Cargando que="las mesas" lineas={3} />
+        <Cargando que="las mesas" lineas={3} forma="lista" />
       ) : sala === null ? (
         <Silueta icono={<IconoCubiertos />}>
           Las mesas abiertas, las que esperan la cuenta y la espera media.
@@ -1423,7 +1424,7 @@ function Objetivos() {
       derecha="7 días"
     >
       {consulta.data === undefined ? (
-        <Cargando que="tus objetivos" lineas={3} />
+        <Cargando que="tus objetivos" lineas={3} forma="niveles" />
       ) : conObjetivo.length === 0 ? (
         <Silueta
           icono={<IconoEstrella />}
@@ -1433,7 +1434,8 @@ function Objetivos() {
         </Silueta>
       ) : conDato.length === 0 ? (
         <NadaQueVer>
-          Tus objetivos están puestos. Las cifras salen al cerrar la caja y con lo sacado del almacén.
+          Tus objetivos están puestos. Las cifras salen al cerrar la caja y con lo sacado del
+          almacén.
         </NadaQueVer>
       ) : (
         <ul className="flex flex-col gap-e3">
@@ -1505,7 +1507,7 @@ function ElAlmacenPide() {
       leyendo={almacen}
     >
       {datos === undefined ? (
-        <Cargando que="el almacén" lineas={4} />
+        <Cargando que="el almacén" lineas={4} forma="lista" />
       ) : datos.cuantosProductos === 0 ? (
         <Silueta
           icono={<IconoAlmacen />}
@@ -1576,7 +1578,7 @@ function CaducaPronto() {
       derecha={caducan.length > 3 ? `${String(caducan.length)} lotes` : undefined}
     >
       {almacen.data === undefined ? (
-        <Cargando que="las caducidades" lineas={3} />
+        <Cargando que="las caducidades" lineas={3} forma="lista" />
       ) : almacen.data.cuantosProductos === 0 ? (
         <Silueta icono={<IconoReloj />}>Lo que caduca en los próximos días.</Silueta>
       ) : caducan.length === 0 ? (
@@ -1610,7 +1612,7 @@ function BajoMinimo() {
       derecha={bajo.length > 3 ? `${String(bajo.length)} productos` : undefined}
     >
       {almacen.data === undefined ? (
-        <Cargando que="el almacén" lineas={3} />
+        <Cargando que="el almacén" lineas={3} forma="lista" />
       ) : almacen.data.cuantosProductos === 0 ? (
         <Silueta
           icono={<IconoAlmacen />}
@@ -1666,7 +1668,7 @@ function Repartos() {
       leyendo={consulta}
     >
       {datos === undefined ? (
-        <Cargando que="los repartos" lineas={3} />
+        <Cargando que="los repartos" lineas={3} forma="lista" />
       ) : filas.length === 0 ? (
         <NadaQueVer>Hoy no llega nada ni toca pedir.</NadaQueVer>
       ) : (
@@ -1700,7 +1702,7 @@ function LoQueSeEscapa() {
       derecha="en 30 días"
     >
       {consulta.data === undefined ? (
-        <Cargando que="lo que se escapa" lineas={4} />
+        <Cargando que="lo que se escapa" lineas={4} forma="lista" />
       ) : platos.length === 0 ? (
         <NadaQueVer>Ningún plato ha cambiado de coste en 30 días.</NadaQueVer>
       ) : (
@@ -1797,7 +1799,7 @@ function LaCocinaEnElServicio() {
       leyendo={consulta}
     >
       {consulta.data === undefined ? (
-        <Cargando que="la cocina" lineas={2} />
+        <Cargando que="la cocina" lineas={2} forma="lista" />
       ) : cocina === null ? (
         <NadaQueVer>
           Sale en el primer servicio con Estook TPV: lo que tarda, lo más lento y lo que espera.
@@ -1849,7 +1851,7 @@ function VentasSegunCanal() {
       derecha="hoy, con IVA"
     >
       {consulta.data === undefined ? (
-        <Cargando que="las ventas de cada canal" lineas={2} />
+        <Cargando que="las ventas de cada canal" lineas={2} forma="lista" />
       ) : total === 0 ? (
         <NadaQueVer>
           Lo vendido hoy en sala, en la barra, para llevar y en reparto. Sale al primer cobro con
@@ -1940,7 +1942,7 @@ function ElEquipoAhora({ titulo }: { readonly titulo: string }) {
   return (
     <Tarjeta titulo={titulo} icono={<IconoEquipo />} ir="/equipo/fichajes" leyendo={consulta}>
       {datos === undefined ? (
-        <Cargando que="el equipo" lineas={3} />
+        <Cargando que="el equipo" lineas={3} forma="anillo" />
       ) : enElTurno === 0 ? (
         <Silueta
           icono={<IconoEquipo />}
@@ -2024,6 +2026,20 @@ function TuDia({ destacado }: { readonly destacado: boolean }) {
   const fichar = usarFichar();
   const { permisos } = usarSesion();
   const mio = fichar.mio;
+  // Si no se puede leer el fichaje, se dice y se ofrece volver a leer: nunca un «cargando» para
+  // siempre (lo cuidaba «Tu jornada» desde la 0083).
+  if (fichar.noSeHaPodidoLeer) {
+    return (
+      <Tarjeta titulo="Tu día" icono={<IconoReloj />} destacado={destacado}>
+        <p className="text-secundario">No he podido leer tu fichaje.</p>
+        <div className="mt-e3">
+          <Boton tono="secundario" onClick={fichar.volverALeer}>
+            Volver a intentarlo
+          </Boton>
+        </div>
+      </Tarjeta>
+    );
+  }
   if (fichar.cargando || mio === undefined) {
     return (
       <Tarjeta titulo="Tu día" icono={<IconoReloj />} destacado={destacado}>
@@ -2108,6 +2124,12 @@ function TuDia({ destacado }: { readonly destacado: boolean }) {
       {fichar.error !== null && (
         <p className="mt-e2 text-etiqueta font-semibold text-mal">{fichar.error.quePasa}</p>
       )}
+      {/* «Entrada apuntada», o «guardada, se manda al volver la señal»: lo que acaba de pasar. */}
+      {fichar.acabaDe !== null && fichar.error === null && (
+        <p aria-live="polite" className="mt-e2 text-etiqueta font-bold">
+          {loQueDiceElFichaje(fichar.acabaDe).texto}
+        </p>
+      )}
       {puedeFichar && (
         <div className="mt-auto flex flex-wrap gap-e2 pt-e3">
           <BotonDePausa fichar={fichar} corto />
@@ -2153,7 +2175,14 @@ function MisHoras() {
   const hoyEn = (mio?.horario ?? []).filter((t) => t.dia === mio?.diaDeLaSemana);
   return (
     <Tarjeta titulo="Mis horas" icono={<IconoReloj />} ir="/mis-fichajes">
-      {mio === undefined ? (
+      {fichar.noSeHaPodidoLeer ? (
+        <div className="flex flex-1 flex-col items-start justify-center gap-e2">
+          <p className="text-secundario text-texto-suave">No he podido leer tu fichaje.</p>
+          <Boton tono="secundario" onClick={fichar.volverALeer}>
+            Volver a intentarlo
+          </Boton>
+        </div>
+      ) : mio === undefined ? (
         <Cargandose que="tus horas" />
       ) : (
         <>
@@ -2216,7 +2245,7 @@ function MenuDelDia() {
       derecha={menu?.precioCentimos == null ? undefined : eurosConCentimos(menu.precioCentimos)}
     >
       {consulta.data === undefined ? (
-        <Cargando que="el menú de hoy" lineas={3} />
+        <Cargando que="el menú de hoy" lineas={3} forma="lista-foto" />
       ) : menu === null ? (
         <Silueta
           icono={<IconoCarta />}
@@ -2295,7 +2324,7 @@ function Agotados() {
       leyendo={consulta}
     >
       {consulta.data === undefined ? (
-        <Cargando que="los agotados" lineas={2} />
+        <Cargando que="los agotados" lineas={2} forma="lista" />
       ) : agotados.length === 0 ? (
         <Silueta
           icono={<IconoEstrella />}
@@ -2356,7 +2385,7 @@ function ParaRecomendar() {
       leyendo={consulta}
     >
       {datos === undefined ? (
-        <Cargando que="lo recomendado" lineas={3} />
+        <Cargando que="lo recomendado" lineas={3} forma="lista" />
       ) : datos.platos.length === 0 ? (
         <Silueta
           icono={<IconoEstrella />}
@@ -2421,7 +2450,7 @@ function ElTablon() {
   return (
     <Tarjeta titulo="El tablón" icono={<IconoTablon />} leyendo={consulta}>
       {consulta.data === undefined ? (
-        <Cargando que="el tablón" lineas={2} />
+        <Cargando que="el tablón" lineas={2} forma="lista" />
       ) : notas.length === 0 ? (
         <Silueta
           icono={<IconoTablon />}

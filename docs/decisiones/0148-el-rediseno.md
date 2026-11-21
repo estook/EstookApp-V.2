@@ -144,7 +144,7 @@ tenía datos o la maqueta no dibujaba:
    (`MUDANZAS`: «fichar» es «Tu día», «pedidos» es «Repartos»), lo que ya es fijo no se repite
    abajo, y quien tenía justo el Panel de fábrica de antes estrena los añadidos de su puesto.
 2. **El puesto sale de los permisos**, no del nombre del rol: ventas y coste de personal, gerente;
-   ventas y almacén, jefe de cocina; ventas sin almacén, jefe de sala. Vale para un rol a medida.
+   ventas y almacén (o lo que cuesta cada plato, aunque le hayan quitado el almacén), jefe de cocina; ventas sin almacén, jefe de sala. Vale para un rol a medida.
 3. **Sin huecos en ninguna pantalla** (`colocarLosFijos`): el Panel mide su ancho (no el de la
    pantalla, que con el menú abierto es otro) y elige PC, tablet, tablet en vertical o móvil. Las
    cifras van de cuatro en cuatro en el PC y la tablet, de dos en dos en vertical y en el móvil; la

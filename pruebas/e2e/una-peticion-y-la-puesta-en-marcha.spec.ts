@@ -13,17 +13,19 @@ import { API, ejecutarEnLaApi, entrarEnLaApp, tokenDe } from './en-la-app.ts';
  */
 const ROSA = 'rosa@ejemplo.estook.com';
 /** Las consultas que el Panel de quien lleva el local pedía una a una hasta la 0085. */
+// Desde el rediseño (0148): el tablón y el alta van en la hoja de «Hoy», que no se pide hasta
+// abrirla; y llegan las cifras vivas del Panel y lo que se vende.
 const DEL_PANEL = [
   'lo_de_hoy',
-  'el_tablon',
   'mi_fichaje',
   'almacen_hoy',
   'un_indicador',
   'mis_objetivos',
   'fichajes_de_hoy',
   'mi_panel',
-  'el_alta',
   'la_puesta_en_marcha',
+  'como_va_hoy',
+  'lo_que_se_vende',
 ];
 
 /**
@@ -47,7 +49,7 @@ async function elPanelHaLlegado(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     /Buen(?:os|as) (?:días|tardes|noches)/,
   );
-  await expect(page.getByText('Tu panel', { exact: true })).toBeVisible();
+  await expect(page.getByText('Añadidos por ti', { exact: true })).toBeVisible();
   await expect(page.locator('[data-silueta]')).toHaveCount(0, { timeout: 15_000 });
   await page.waitForLoadState('networkidle');
 }
@@ -118,11 +120,11 @@ test.describe('b · las siluetas', () => {
     });
     await recargarSinQueSeCaiga(page);
 
-    // La jornada es un anillo, las ventas una cifra con su gráfica y los objetivos unos
-    // medidores: cada uno, su silueta. Ninguna «Cargando…» escrita a la vista.
-    await expect(page.locator('[data-silueta="anillo"]').first()).toBeVisible();
+    // Las ventas son una cifra, el equipo un anillo y los objetivos unas barras: cada uno, su
+    // silueta. Ninguna «Cargando…» escrita a la vista.
     await expect(page.locator('[data-silueta="cifra"]').first()).toBeVisible();
-    await expect(page.locator('[data-silueta="medidores"]').first()).toBeVisible();
+    await expect(page.locator('[data-silueta="anillo"]').first()).toBeVisible();
+    await expect(page.locator('[data-silueta="niveles"]').first()).toBeVisible();
     await expect(page.getByText('Cargando…')).toHaveCount(0);
 
     soltar();
@@ -208,6 +210,10 @@ test.describe('d · la puesta en marcha', () => {
     await pagarEsencial(page);
     await sinElAlta(page);
 
+    // Desde el rediseño (0148), un botón con su aro y lo hecho en la cabecera; su hoja, los pasos.
+    const boton = page.getByRole('button', { name: /^Pon en marcha tu local: \d+ de 5 pasos$/ });
+    await expect(boton).toHaveAccessibleName('Pon en marcha tu local: 0 de 5 pasos');
+    await boton.click();
     const puesta = page.getByRole('region', { name: 'Pon en marcha tu local' });
     await expect(puesta).toBeVisible();
     await expect(puesta).toContainText('0/5');
@@ -224,6 +230,8 @@ test.describe('d · la puesta en marcha', () => {
 
     // De vuelta en el Panel, ese paso está hecho.
     await abrirSinQueSeCaiga(page, page.url().replace(/#.*$/, '#/'));
+    await expect(boton).toHaveAccessibleName('Pon en marcha tu local: 1 de 5 pasos');
+    await boton.click();
     await expect(puesta).toContainText('1/5');
     await expect(puesta.getByRole('button', { name: /Tus proveedores · hecho/ })).toBeDisabled();
 
@@ -235,6 +243,7 @@ test.describe('d · la puesta en marcha', () => {
       /Buen(?:os|as) (?:días|tardes|noches)/,
     );
     await expect(page.getByRole('region', { name: 'Pon en marcha tu local' })).toHaveCount(0);
+    await expect(boton).toHaveCount(0);
   });
 
   test('en un local que ya está en marcha, no sale', async ({ page }) => {

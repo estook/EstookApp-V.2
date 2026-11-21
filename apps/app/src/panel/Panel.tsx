@@ -326,7 +326,8 @@ export function Panel() {
       </Hoja>
 
       <Hoja
-        abierta={poniendoEnMarcha}
+        // Con todo hecho, o con «No me lo recuerdes más», la hoja se cierra sola.
+        abierta={poniendoEnMarcha && conLaPuesta}
         alCerrar={() => {
           setPoniendoEnMarcha(false);
         }}

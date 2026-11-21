@@ -43,19 +43,16 @@ function laTarjeta(page: Page, titulo: string) {
 
 // ── 9 · El Panel de cada puesto ──────────────────────────────────────────────
 
-test('un jefe de cocina arranca con su Panel: fichar y sus objetivos, sin lo del gerente', async ({
+test('un jefe de cocina arranca con su Panel: lo de la cocina y sus objetivos, sin lo del gerente', async ({
   page,
 }) => {
   await entrarComoLuis(page);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    /Buen(?:os|as) (?:días|tardes|noches)/,
-  );
-  // Luis tiene el acceso recortado en su local (sin Almacén, semillas): su Panel
-  // lleva lo de su puesto que puede ver, y ni un hueco por lo que no.
-  await expect(page.getByRole('heading', { name: 'Tu jornada' })).toBeVisible();
+  // El Panel de su puesto (el rediseño, 0148): dice cuál es, y trae lo de la cocina.
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Jefe de cocina');
+  await expect(page.getByRole('region', { name: 'La cocina en el servicio' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Objetivos' })).toBeVisible();
   // Lo de quien lleva el local no le sale: las ventas del día son de su gerente.
-  await expect(page.getByRole('heading', { name: 'Ventas', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Ventas de hoy' })).toHaveCount(0);
 });
 
 // ── 6 · El botón «+» ─────────────────────────────────────────────────────────
@@ -88,14 +85,13 @@ test('el botón de Fogón abre una ventana pequeña: Fogón y fichar, sin atajos
 
 test('los atajos se cambian en su tarjeta del Panel', async ({ page }) => {
   await entrarComoLuis(page);
-  // La tarjeta «Atajos», del catálogo del Panel.
-  await page.getByRole('button', { name: 'Editar' }).click();
-  await page.getByRole('button', { name: 'Añadir', exact: true }).first().click();
-  const catalogo = page.getByRole('dialog', { name: 'Añadir al panel' });
-  await catalogo.getByRole('button', { name: /^Atajos/ }).click();
-  await page.getByRole('button', { name: 'Listo' }).click();
+  // La tarjeta «Tus atajos», del catálogo del Panel (desde el rediseño, un añadido).
+  await page.getByRole('button', { name: 'Añadir un widget' }).first().click();
+  const catalogo = page.getByRole('dialog', { name: 'Añadir un widget' });
+  await catalogo.getByRole('button', { name: 'Añadir Tus atajos' }).click();
+  await page.keyboard.press('Escape');
 
-  await page.getByRole('button', { name: 'Elegir qué acciones rápidas quieres' }).click();
+  await page.getByRole('button', { name: 'Elegir tus atajos' }).click();
   const elegir = page.getByRole('dialog', { name: 'Tus atajos' });
   const elLibro = elegir.getByRole('checkbox', { name: /Ver el libro de movimientos/ });
   await elLibro.check();
@@ -103,18 +99,18 @@ test('los atajos se cambian en su tarjeta del Panel', async ({ page }) => {
   await expect(elegir).toHaveCount(0);
   // Se ha guardado: al volver a abrirla, sigue marcado. (La tarjeta enseña los primeros que
   // caben, así que se mira en la hoja.)
-  await page.getByRole('button', { name: 'Elegir qué acciones rápidas quieres' }).click();
+  await page.getByRole('button', { name: 'Elegir tus atajos' }).click();
   await expect(elLibro).toBeChecked();
 
   // Y se deja como estaba, para la siguiente vez.
   await elegir.getByRole('button', { name: 'Los de mi puesto' }).click();
   await expect(elegir).toHaveCount(0);
-  await page.getByRole('button', { name: 'Elegir qué acciones rápidas quieres' }).click();
+  await page.getByRole('button', { name: 'Elegir tus atajos' }).click();
   await expect(elLibro).not.toBeChecked();
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Editar' }).click();
   await page
-    .getByRole('button', { name: /^Quitar Atajos del panel$/ })
+    .getByRole('button', { name: /^Quitar Tus atajos del panel$/ })
     .first()
     .click();
   await page.getByRole('button', { name: 'Listo' }).click();
@@ -156,12 +152,16 @@ test('lo de hoy: lo que caduca hoy sale arriba del Panel, y «Luego» lo aparta'
   });
 
   await entrarEnLaApp(page, ROSA);
-  const zona = page.getByRole('region', { name: 'Lo que necesita tu atención' });
-  // En el móvil sale plegado (25-sep), y lo que caduca puede no ser lo primero.
-  // Sin nada, «Hoy» no sale (0090): se espera a que llegue lo de hoy, como el Panel.
-  await expect(zona.getByRole('region', { name: 'Hoy' })).toBeVisible({ timeout: 15_000 });
-  const plegado = zona.getByRole('button', { name: /^Hoy/, expanded: false });
-  if ((await plegado.count()) > 0) await plegado.click();
+  // Desde el rediseño (0148) lo de hoy va en el botón «Hoy» de la cabecera, con su número,
+  // y se abre en su hoja, entero. Se espera a que llegue lo de hoy: el número sale con ello.
+  const abrirHoy = async () => {
+    await page.getByRole('button', { name: /^Hoy, \d+ cosas? que atender$/ }).click();
+    return page.getByRole('dialog', { name: 'Hoy' });
+  };
+  await expect(page.getByRole('button', { name: /^Hoy, \d+ cosas? que atender$/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  const zona = await abrirHoy();
   const caduca = zona.getByRole('listitem').filter({ hasText: /caducan? hoy/ });
   await expect(caduca).toBeVisible();
 
@@ -173,6 +173,7 @@ test('lo de hoy: lo que caduca hoy sale arriba del Panel, y «Luego» lo aparta'
   await expect(page.getByText(nombre).first()).toBeVisible();
 
   await page.goBack();
+  await abrirHoy();
   await expect(caduca).toBeVisible();
   await caduca.getByRole('button', { name: /Recordarme/ }).click();
   await expect(caduca).toHaveCount(0);

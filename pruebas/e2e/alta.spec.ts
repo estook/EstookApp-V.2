@@ -326,6 +326,8 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     await entrar(page, PABLO);
 
     // El Panel, con la tarjeta que ofrece el recado.
+    // Desde el rediseño (0148), en la hoja de «Hoy» de la cabecera.
+    await page.getByRole('button', { name: /^Hoy, / }).click();
     await expect(
       page.getByRole('heading', { name: 'Termina de configurar tu local' }),
     ).toBeVisible();
@@ -378,6 +380,8 @@ test.describe.serial('el alta de Casa Lola, que es una sola', () => {
     });
 
     await entrar(page, PABLO);
+    // Desde el rediseño (0148), la tarjeta del alta va en la hoja de «Hoy».
+    await page.getByRole('button', { name: /^Hoy, / }).click();
     await page.getByRole('button', { name: 'Invita a tu equipo' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Invita a tu equipo');
 

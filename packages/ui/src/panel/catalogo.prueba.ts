@@ -58,6 +58,13 @@ describe('el puesto sale de los permisos, no del nombre del rol', () => {
     expect(elPuestoDe(COCINERO)).toBe('cocina');
     expect(elPuestoDe(CAMARERO)).toBe('sala');
   });
+
+  it('un jefe de cocina sin Almacén sigue siendo de cocina: ve lo que cuesta cada plato', () => {
+    // Luis, en las semillas, tiene el acceso recortado: sin el Almacén salía como jefe de sala.
+    expect(elPuestoDe(con('dato.ventas', 'dato.coste_de_plato', 'app.escandallos'))).toBe(
+      'jefe-cocina',
+    );
+  });
 });
 
 describe('los fijos de cada puesto', () => {

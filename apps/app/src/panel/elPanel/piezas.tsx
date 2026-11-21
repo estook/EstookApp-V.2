@@ -472,7 +472,7 @@ export function Silueta({
             if (paso.alPulsar !== undefined) paso.alPulsar();
             else if (paso.ir !== undefined) navegar(paso.ir);
           }}
-          className="min-h-[2rem] rounded-redondo bg-naranja-suave px-e3 text-etiqueta font-bold text-naranja transition-colors duration-[--rapido] hover:bg-naranja hover:text-sobre-naranja"
+          className="min-h-[2rem] rounded-redondo bg-naranja px-e3 text-etiqueta font-bold text-sobre-naranja transition-[filter] duration-[--rapido] hover:brightness-95"
         >
           {paso.texto}
         </button>

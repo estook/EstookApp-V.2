@@ -407,12 +407,16 @@ export const NOMBRE_DEL_PUESTO: Readonly<Record<Puesto, string>> = {
 
 /**
  * El puesto de alguien, por lo que puede ver: así vale también para un rol hecho a medida.
- * Quien ve ventas y coste de personal lleva el local; quien ve ventas y el almacén, la cocina;
- * quien ve ventas sin almacén, la sala. Sin ventas: cocina si tiene el almacén, si no, sala.
+ * Quien ve ventas y coste de personal lleva el local; quien ve ventas y el almacén (o lo que cuesta
+ * cada plato, aunque le hayan quitado el almacén), la cocina; quien ve ventas sin eso, la sala. Sin ventas: cocina si tiene el almacén, si no, sala.
  */
 export function elPuestoDe(tienePermiso: (permiso: Permiso) => boolean): Puesto {
   if (tienePermiso('dato.ventas') && tienePermiso('dato.coste_de_personal')) return 'gerente';
-  if (tienePermiso('dato.ventas')) return tienePermiso('app.almacen') ? 'jefe-cocina' : 'jefe-sala';
+  if (tienePermiso('dato.ventas')) {
+    return tienePermiso('app.almacen') || tienePermiso('dato.coste_de_plato')
+      ? 'jefe-cocina'
+      : 'jefe-sala';
+  }
   if (tienePermiso('app.almacen')) return 'cocina';
   return 'sala';
 }

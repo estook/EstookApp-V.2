@@ -1,95 +1,161 @@
 import { describe, expect, it } from 'vitest';
 import type { Permiso } from '@estook/permisos';
 import {
-  GRUPO_DEL_WIDGET,
+  ANADIDOS_DE_FABRICA,
+  ELIGE_EL_PUESTO,
+  FIJOS_DEL_PUESTO,
   MUDANZAS,
-  PANEL_DEL_PUESTO,
   WIDGETS,
+  elCatalogoParaAnadir,
   elPanelDeFabrica,
   elPuestoDe,
-  elCatalogoParaAnadir,
   idDeAhora,
+  loGuardadoDeAhora,
   loQueSePuedeAnadir,
   loQueSePuedePintar,
+  losFijos,
+  losIdsFijos,
   widgetPorId,
+  type Puesto,
 } from './catalogo.ts';
 
 /**
- * El catálogo de «Añadir al panel» (M7, repaso; y la experiencia, 0083).
- *
- * «Los de fábrica no salen al dar a añadir: ¿si los borras los pierdes para
- *  siempre?» Estas pruebas son las que impiden que vuelva a pasar. Y desde la
- * experiencia, las que impiden que un Panel guardado con los widgets de antes se
- * quede vacío al recortar el catálogo.
+ * El Panel de cada puesto (el rediseño, entrega 3 · 0148): los fijos arriba y los añadidos abajo,
+ * del mismo tamaño. Y lo que protegían las de antes: que lo guardado no se pierda al cambiar el
+ * catálogo, y que nadie vea un widget que no es para su rol.
  */
 const todo = () => true;
+const con =
+  (...los: Permiso[]) =>
+  (permiso: Permiso) =>
+    los.includes(permiso);
 
-describe('el catálogo para añadir', () => {
-  it('cada widget tiene su grupo', () => {
-    const sinGrupo = WIDGETS.filter((w) => GRUPO_DEL_WIDGET[w.id] === undefined).map((w) => w.id);
-    expect(sinGrupo, 'un widget nuevo tiene que decir en qué grupo sale').toEqual([]);
+const GERENTE = todo;
+const JEFE_DE_COCINA = con(
+  'dato.ventas',
+  'app.almacen',
+  'dato.precio_de_compra',
+  'app.escandallos',
+  'dato.coste_de_plato',
+  'accion.enviar_pedidos',
+  'accion.marcar_agotado',
+  'app.equipo',
+);
+const JEFE_DE_SALA = con('dato.ventas', 'app.equipo', 'app.carta', 'accion.marcar_agotado');
+const COCINERO = con(
+  'app.almacen',
+  'accion.fichar',
+  'accion.registrar_merma',
+  'accion.marcar_agotado',
+);
+const CAMARERO = con('accion.fichar', 'accion.marcar_agotado', 'app.carta');
+
+describe('el puesto sale de los permisos, no del nombre del rol', () => {
+  it('los cinco de la maqueta', () => {
+    expect(elPuestoDe(GERENTE)).toBe('gerente');
+    expect(elPuestoDe(JEFE_DE_COCINA)).toBe('jefe-cocina');
+    expect(elPuestoDe(JEFE_DE_SALA)).toBe('jefe-sala');
+    expect(elPuestoDe(COCINERO)).toBe('cocina');
+    expect(elPuestoDe(CAMARERO)).toBe('sala');
   });
 
-  it('salen también los que ya están puestos, y lo dicen', () => {
-    const deFabrica = elPanelDeFabrica(todo);
-    const grupos = elCatalogoParaAnadir(deFabrica, todo);
-    const todos = grupos.flatMap((g) => g.widgets.map((w) => ({ ...w, id: w.widget.id })));
-    for (const puesto of deFabrica) {
-      expect(todos.find((w) => w.id === puesto.id)?.puesto, puesto.id).toBe(true);
-    }
-    expect(todos.some((w) => !w.puesto)).toBe(true);
-  });
-
-  it('los que no son para tu rol no se ofrecen', () => {
-    const todos = elCatalogoParaAnadir([], (permiso) => permiso !== 'app.equipo').flatMap(
-      (g) => g.widgets,
+  it('un jefe de cocina sin Almacén sigue siendo de cocina: ve lo que cuesta cada plato', () => {
+    // Luis, en las semillas, tiene el acceso recortado: sin el Almacén salía como jefe de sala.
+    expect(elPuestoDe(con('dato.ventas', 'dato.coste_de_plato', 'app.escandallos'))).toBe(
+      'jefe-cocina',
     );
-    expect(todos.some((w) => w.widget.permiso === 'app.equipo')).toBe(false);
-  });
-
-  it('un widget de antes ya puesto cuenta como puesto en su nuevo nombre', () => {
-    const quedan = loQueSePuedeAnadir([{ id: 'indicador-merma-7', tamano: 'chico' }], todo);
-    expect(quedan.map((w) => w.id)).not.toContain('merma');
   });
 });
 
-describe('un solo tamaño y menos widgets (la experiencia, 0083)', () => {
-  it('cada widget tiene su tamaño, y nadie lo cambia', () => {
-    for (const widget of WIDGETS) {
-      expect(['chico', 'ancho'], widget.id).toContain(widget.tamano);
+describe('los fijos de cada puesto', () => {
+  it('todos existen', () => {
+    for (const [puesto, fijos] of Object.entries(FIJOS_DEL_PUESTO)) {
+      for (const fijo of fijos) {
+        expect(
+          WIDGETS.some((w) => w.id === fijo.id),
+          `${puesto}: ${fijo.id}`,
+        ).toBe(true);
+      }
     }
-    // Lo guardado en otro tamaño se pinta en el suyo.
-    expect(loQueSePuedePintar([{ id: 'merma', tamano: 'grande' }], todo)).toEqual([
-      { id: 'merma', tamano: 'chico' },
+  });
+
+  it('cada uno ve sus fijos enteros con los permisos de su rol', () => {
+    const roles: readonly [Puesto, (p: Permiso) => boolean][] = [
+      ['gerente', GERENTE],
+      ['jefe-cocina', JEFE_DE_COCINA],
+      ['jefe-sala', JEFE_DE_SALA],
+      ['cocina', COCINERO],
+      ['sala', CAMARERO],
+    ];
+    for (const [puesto, permisos] of roles) {
+      expect(losFijos(puesto, permisos).length, puesto).toBe(FIJOS_DEL_PUESTO[puesto].length);
+    }
+  });
+
+  it('la cocina y la sala, sin un euro a la vista', () => {
+    for (const puesto of ['cocina', 'sala'] as const) {
+      for (const fijo of FIJOS_DEL_PUESTO[puesto]) {
+        const widget = WIDGETS.find((w) => w.id === fijo.id);
+        expect(widget?.permiso ?? null, `${puesto}: ${fijo.id}`).not.toBe('dato.ventas');
+      }
+    }
+  });
+
+  it('un fijo que el rol no puede ver no se pinta, y los demás siguen', () => {
+    const sinEquipo = (p: Permiso) => p !== 'app.equipo';
+    const ids = losFijos('gerente', sinEquipo).map((f) => f.id);
+    expect(ids).not.toContain('equipo-ahora');
+    expect(ids).toContain('cifra-ventas');
+  });
+});
+
+describe('los añadidos, abajo y del mismo tamaño', () => {
+  it('todos del mismo tamaño, se guarden como se guarden', () => {
+    expect(loQueSePuedePintar([{ id: 'objetivos', tamano: 'grande' }], GERENTE)).toEqual([
+      { id: 'objetivos', tamano: 'chico' },
     ]);
   });
 
-  it('las cifras de antes, de 7 y de 30 días, se convierten en su widget', () => {
-    expect(idDeAhora('indicador-merma-7')).toBe('merma');
-    expect(idDeAhora('indicador-merma-30')).toBe('merma');
-    expect(idDeAhora('indicador-ticket-medio-7')).toBe('ventas');
-    expect(idDeAhora('ventas-de-hoy')).toBe('ventas');
-    expect(idDeAhora('indicador-retrasos-30')).toBe('fichajes');
-    expect(widgetPorId('indicador-valor-camara-7')?.id).toBe('valor-de-la-camara');
+  it('lo que ya es fijo de su puesto no se repite abajo', () => {
+    const pintados = loQueSePuedePintar(
+      [
+        { id: 'lo-que-mas-sale', tamano: 'chico' },
+        { id: 'cifras-del-dia', tamano: 'chico' },
+        { id: 'tablon', tamano: 'chico' },
+      ],
+      GERENTE,
+    ).map((w) => w.id);
+    expect(pintados).toEqual(['tablon']);
   });
 
-  it('si dos de antes acaban en el mismo, se queda uno y en el sitio del primero', () => {
-    expect(
-      loQueSePuedePintar(
-        [
-          { id: 'fichar', tamano: 'chico' },
-          { id: 'indicador-ventas-7', tamano: 'ancho' },
-          { id: 'ventas-de-hoy', tamano: 'chico' },
-          { id: 'indicador-ventas-30', tamano: 'grande' },
-        ],
-        todo,
-      ),
-    ).toEqual([
-      { id: 'fichar', tamano: 'chico' },
-      { id: 'ventas', tamano: 'ancho' },
+  it('la cocina y la sala no añaden', () => {
+    expect(ELIGE_EL_PUESTO.cocina).toBe(false);
+    expect(ELIGE_EL_PUESTO.sala).toBe(false);
+    expect(loQueSePuedePintar([{ id: 'mis-horas', tamano: 'chico' }], COCINERO)).toEqual([]);
+  });
+
+  it('los de fábrica existen, se añaden y no son fijos de su puesto', () => {
+    for (const [puesto, ids] of Object.entries(ANADIDOS_DE_FABRICA)) {
+      const fijos = losIdsFijos(puesto as Puesto);
+      for (const id of ids) {
+        const widget = WIDGETS.find((w) => w.id === id);
+        expect(widget?.anadible, `${puesto}: ${id}`).toBe(true);
+        expect(fijos.has(id), `${puesto}: ${id}`).toBe(false);
+      }
+    }
+  });
+
+  it('el gerente arranca con los de la maqueta', () => {
+    expect(elPanelDeFabrica(GERENTE).map((w) => w.id)).toEqual([
+      'objetivos',
+      'repartos',
+      'caducidades',
+      'mis-horas',
     ]);
   });
+});
 
+describe('lo guardado de antes no se pierde', () => {
   it('toda mudanza lleva a un widget que existe', () => {
     for (const [antes, ahora] of Object.entries(MUDANZAS)) {
       expect(
@@ -99,86 +165,70 @@ describe('un solo tamaño y menos widgets (la experiencia, 0083)', () => {
     }
   });
 
+  it('los de antes se convierten en el suyo', () => {
+    expect(idDeAhora('fichar')).toBe('tu-dia');
+    expect(idDeAhora('pedidos')).toBe('repartos');
+    expect(idDeAhora('indicador-merma-7')).toBe('cifras-del-dia');
+    expect(widgetPorId('indicador-valor-camara-7')?.id).toBe('almacen-pide');
+  });
+
+  it('lo tocado por alguien se queda, convertido y sin repetir', () => {
+    expect(
+      loGuardadoDeAhora(
+        [
+          { id: 'fichar', tamano: 'chico' },
+          { id: 'mi-turno', tamano: 'ancho' },
+          { id: 'menu-de-hoy', tamano: 'ancho' },
+        ],
+        GERENTE,
+      ).map((w) => w.id),
+    ).toEqual(['tu-dia', 'menu-del-dia']);
+  });
+
+  it('quien tenía el Panel de fábrica de antes estrena el de su puesto', () => {
+    const deAntes = ['fichar', 'ventas', 'objetivos', 'merma', 'valor-de-la-camara', 'fichajes'];
+    expect(
+      loGuardadoDeAhora(
+        deAntes.map((id) => ({ id, tamano: 'chico' as const })),
+        GERENTE,
+      ).map((w) => w.id),
+    ).toEqual(ANADIDOS_DE_FABRICA.gerente);
+  });
+
   it('lo que se dejó de pintar no rompe el Panel: se salta', () => {
     expect(
       loQueSePuedePintar(
         [
-          { id: 'cuanto-genero', tamano: 'chico' },
-          { id: 'ultimos-movimientos', tamano: 'ancho' },
+          { id: 'mis-apps', tamano: 'chico' },
           { id: 'pulse', tamano: 'ancho' },
           { id: 'indicador-propinas-7', tamano: 'ancho' },
         ],
-        todo,
+        GERENTE,
       ),
     ).toEqual([]);
   });
-
-  it('el food cost pide ver las ventas **y** los costes', () => {
-    const soloVentas = (permiso: Permiso) => permiso === 'dato.ventas';
-    expect(
-      loQueSePuedePintar([{ id: 'indicador-food-cost-30', tamano: 'ancho' }], soloVentas),
-    ).toEqual([]);
-    expect(loQueSePuedePintar([{ id: 'ventas', tamano: 'ancho' }], soloVentas)).toEqual([
-      { id: 'ventas', tamano: 'ancho' },
-    ]);
-  });
-
-  it('las horas propias las tiene cualquiera', () => {
-    expect(loQueSePuedeAnadir([], () => false).map((w) => w.id)).toContain('mis-horas');
-  });
 });
 
-describe('el Panel de cada puesto (mejora 9)', () => {
-  const con =
-    (...los: Permiso[]) =>
-    (permiso: Permiso) =>
-      los.includes(permiso);
-
-  it('el puesto sale de los permisos, no del nombre del rol', () => {
-    expect(elPuestoDe(con('dato.ventas', 'dato.coste_de_personal', 'app.almacen'))).toBe('gerente');
-    expect(elPuestoDe(con('dato.ventas', 'app.almacen'))).toBe('jefe');
-    expect(elPuestoDe(con('app.almacen', 'accion.fichar'))).toBe('cocina');
-    expect(elPuestoDe(con('accion.fichar', 'accion.registrar_merma'))).toBe('sala');
+describe('«Añadir un widget»', () => {
+  it('por los grupos de la maqueta, con los fijos dichos y Uber Eats en gris', () => {
+    const grupos = elCatalogoParaAnadir([{ id: 'tablon', tamano: 'chico' }], GERENTE);
+    expect(grupos.map((g) => g.nombre)).toEqual([
+      'Ventas',
+      'Almacén y cocina',
+      'Equipo',
+      'Canales',
+    ]);
+    const todos = grupos.flatMap((g) => g.widgets);
+    expect(todos.find((w) => w.widget.id === 'tablon')?.estado).toBe('puesto');
+    expect(todos.find((w) => w.widget.id === 'lo-que-mas-sale')?.estado).toBe('fijo');
+    expect(todos.find((w) => w.widget.id === 'uber-eats')?.estado).toBe('pronto');
+    expect(todos.find((w) => w.widget.id === 'para-recomendar')?.estado).toBe('libre');
   });
 
-  it('todos los de fábrica existen y se pueden pintar con su tamaño', () => {
-    for (const [puesto, widgets] of Object.entries(PANEL_DEL_PUESTO)) {
-      expect(loQueSePuedePintar(widgets, todo), puesto).toEqual(widgets);
-    }
-  });
-
-  it('un cocinero arranca fichando, y sin un euro a la vista', () => {
-    const cocinero = con(
-      'app.almacen',
-      'accion.fichar',
-      'accion.registrar_merma',
-      'app.calendario',
-    );
-    const suyo = elPanelDeFabrica(cocinero).map((w) => w.id);
-    expect(suyo[0]).toBe('fichar');
-    expect(suyo).toContain('caducidades');
-    expect(suyo).not.toContain('objetivos');
-    expect(suyo).not.toContain('ventas');
-    // La merma la apunta él: le sale, sin euros (los pinta el widget, no el catálogo).
-    expect(suyo).toContain('merma');
-  });
-
-  it('quien lleva el local arranca con su reloj, lo que ha entrado y el semáforo', () => {
-    const suyo = elPanelDeFabrica(todo).map((w) => w.id);
-    expect(suyo.slice(0, 3)).toEqual(['fichar', 'ventas', 'objetivos']);
-    // El food cost ya va en el semáforo: no se repite en otra tarjeta.
-    expect(suyo).not.toContain('food-cost');
-  });
-
-  it('de fábrica, seis como mucho: el resto se añade cuando haga falta (0084)', () => {
-    for (const [puesto, widgets] of Object.entries(PANEL_DEL_PUESTO)) {
-      expect(widgets.length, puesto).toBeLessThanOrEqual(6);
-    }
-  });
-
-  it('todos los que fichan arrancan con el reloj arriba a la izquierda', () => {
-    for (const widgets of Object.values(PANEL_DEL_PUESTO)) {
-      expect(widgets[0]?.id).toBe('fichar');
-    }
+  it('lo que no es para tu rol no se ofrece', () => {
+    const quedan = loQueSePuedeAnadir([], JEFE_DE_SALA).map((w) => w.id);
+    expect(quedan).not.toContain('caducidades');
+    expect(quedan).not.toContain('lo-que-se-escapa');
+    expect(quedan).toContain('para-recomendar');
   });
 });

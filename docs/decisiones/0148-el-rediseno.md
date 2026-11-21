@@ -4,11 +4,11 @@
 **Estado:** la maqueta, [`el-rediseno.html`](../maquetas/el-rediseno.html), **aprobada por Richi el 18-nov**
 («me gusta la maqueta y todo lo propuesto, manos a la obra»). **Entrega 1, fusionada** (#192, con la
 migración **0119**) y probada por Richi el 18-nov («todo probado»). **Entrega 2 · 1** (la venta rápida y «Repetir pedido»), fusionada (#193) con la API desplegada el
-18-nov. **Entrega 2 · 2, construida** en `el-rediseno-2-2-avisos-y-movil`, sin migración. La 3 (el
-Panel), después.
+18-nov. **Entrega 2 · 2, fusionada** (#194), sin migración. La 3 (el
+Panel), construida en `el-rediseno-3-el-panel` con la migración **0120** (secciones 6 y 7).
 **Sigue:** lo que pidió Richi el 17-nov y contestó el 18-nov, antes de seguir con los módulos, para que
 lo que venga nazca con el estilo nuevo.
-**Cambia:** Roles 1.12, el Anexo (11.4, 11.5, 11.8 y 11.12), las fichas de color de `@estook/ui`, el
+**Cambia:** Roles 1.2 y 1.12, el Anexo (11.4, 11.5, 11.8, 11.10, 11.11 y 11.12), las fichas de color de `@estook/ui`, el
 [mapa](../MAPA-de-modulos.md) y ESTADO.
 
 ## 1 · Lo que contestó Richi (17 y 18-nov)
@@ -109,3 +109,55 @@ lo que venga nazca con el estilo nuevo.
    cada uno) y la declaración responsable en El dinero, con la facturación.
 8. **Un fallo de antes, arreglado**: en el comandero el engranaje no abría nada (Ajustes solo existía
    en la caja). Ahora abre «Tú» con el tema, y dice que lo demás se ajusta en la caja.
+
+## 6 · Lo que contestó Richi el 21-nov, antes de construir la entrega 3
+
+La IA repasó la pestaña «El Panel» pieza a pieza contra los datos que ya hay y preguntó lo que no
+tenía datos o la maqueta no dibujaba:
+
+- **El objetivo de hoy**: los objetivos de Estook son de la semana (`ventas_semanales`), no del
+  día. Richi: «que Estook calcule el objetivo diario según las ventas históricas de cada día, ya que
+  un sábado no vende lo mismo que un lunes»; **una barra para hoy y otra para la semana**, **la
+  rayita de dónde deberías ir** y **la previsión al cierre según el ritmo del día**. Con menos de
+  tres semanas de historial, a partes iguales entre los días que abre; la previsión, con la curva
+  de ese día de la semana y solo cuando ya se ha vendido el 10 % de un día normal.
+- **Con IVA**: las ventas del Panel, el objetivo, la previsión, los canales y los cobros van con
+  IVA, como la caja, el objetivo semanal y el semáforo. Información sigue sin IVA (0142), porque
+  allí se mira el margen.
+- **Recomendados** (migración **0120**): «Para recomendar» de la camarera enseñaba «el postre de la
+  casa», que no existía. Richi: el gerente o los jefes marcan **«Recomendar para venta»** en la
+  Carta, y salen en el TPV y en el Panel de la sala; **«solo Recomendados»**, sin lo más vendido.
+  «Lo más pedido» del TPV pasa a llamarse **«Recomendados»** y deja de mezclar lo más vendido a esa
+  hora. **Como mucho ocho**, y lo agotado no sale.
+- **La zona de atención, al botón «Hoy»**, y **nada a lo ancho para decir poco**: «Lo de hoy», el
+  tablón, quitar los ejemplos y lo que falta van en la hoja de «Hoy», con su número en el botón;
+  «Pon en marcha tu local», en su botón con el aro de lo hecho.
+- **Comparar a la misma hora** (el mismo día de la semana pasada, hasta la misma hora), **que se
+  refresque solo** (cada minuto), **fichar desde «Tu día»** y **el móvil y la tablet a medida**, en
+  vertical y en horizontal: «no una simple adaptación del escritorio».
+
+## 7 · Lo que decidió la IA al construir la entrega 3
+
+1. **Los fijos y los añadidos, en dos partes**: los fijos de cada puesto (`FIJOS_DEL_PUESTO` en
+   `@estook/ui`) no se guardan ni se mueven; lo que se guarda en `mi_panel` son los añadidos, todos
+   del mismo tamaño. **Lo guardado no se pierde**: cada widget de antes se convierte en el suyo
+   (`MUDANZAS`: «fichar» es «Tu día», «pedidos» es «Repartos»), lo que ya es fijo no se repite
+   abajo, y quien tenía justo el Panel de fábrica de antes estrena los añadidos de su puesto.
+2. **El puesto sale de los permisos**, no del nombre del rol: ventas y coste de personal, gerente;
+   ventas y almacén (o lo que cuesta cada plato, aunque le hayan quitado el almacén), jefe de cocina; ventas sin almacén, jefe de sala. Vale para un rol a medida.
+3. **Sin huecos en ninguna pantalla** (`colocarLosFijos`): el Panel mide su ancho (no el de la
+   pantalla, que con el menú abierto es otro) y elige PC, tablet, tablet en vertical o móvil. Las
+   cifras van de cuatro en cuatro en el PC y la tablet, de dos en dos en vertical y en el móvil; la
+   gráfica y lo de su lado, juntas hasta la tablet; lo que sobra de una fila se reparte.
+4. **Las gráficas, dibujadas a mano** y no con Recharts, que es lo que más se abre (0084). La
+   etiqueta sale **encima del dedo**, no se sale de la tarjeta, y arrastrando va de una columna a
+   otra; con el teclado, al llegar con el tabulador.
+5. **«Tus atajos» y «Lo que viene» pasan a añadibles**: la maqueta dice que «lo demás se junta o
+   pasa a Añadidos», y solo saca «Tus apps». «Tus apps» deja de pintarse.
+6. **La cocina ve el menú del día sin tener la Carta** (`el_menu_de_hoy`, `los_recomendados`):
+   la maqueta se lo pone, y los menús y los platos ya los lee todo el local en la base. Sin costes.
+7. **El fijado del botón se queda en la base sin usar** (la 0120 no lo borra): entre migrar y
+   desplegar la API pasa un rato, y la API de antes lo lee al montar la carta de la sala. Se quita
+   en una migración de después.
+8. **El saludo de la maqueta**, «Buenas tardes, Ricardo», con la fecha, el local y el puesto debajo.
+   El logo del local se queda (0083).

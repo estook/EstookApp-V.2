@@ -391,6 +391,11 @@ test.describe('las tarjetas del Panel', () => {
     });
     await entrar(page);
 
+    // Desde el rediseño (0148) las tarjetas del alta viven en la hoja de «Hoy».
+    const abrirHoy = async () => {
+      await page.getByRole('button', { name: /^Hoy, / }).click();
+    };
+    await abrirHoy();
     const tarjeta = page.getByRole('heading', { name: '¿Cómo entran tus ventas?' });
     await expect(tarjeta).toBeVisible();
 
@@ -399,11 +404,16 @@ test.describe('las tarjetas del Panel', () => {
 
     // Recargar no la trae: aplazada es aplazada mientras dure la sesión.
     await recargarSinQueSeCaiga(page);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
+    await abrirHoy();
     await expect(tarjeta).toHaveCount(0);
+    await page.keyboard.press('Escape');
 
     // Volver a entrar, sí. Y sin vaciar el navegador, que sería hacer trampa.
     await volverAEntrar(page);
+    await abrirHoy();
     await expect(tarjeta).toBeVisible();
   });
 
@@ -413,7 +423,9 @@ test.describe('las tarjetas del Panel', () => {
     // La pausa del 8-nov (0142), punto 4.1: Pro es Estook TPV, así que ni el Panel ni Ajustes
     // preguntan «¿cómo entran tus ventas?». Los locales de ejemplo llevan Pro.
     await entrar(page);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
     await expect(page.getByRole('heading', { name: '¿Cómo entran tus ventas?' })).toHaveCount(0);
 
     await abrirSinQueSeCaiga(page, `${APP}#/ajustes/conexiones`);
@@ -614,27 +626,29 @@ test.describe('el Panel enseña lo de Almacén', () => {
     // acceso» a la primera pantalla del día.
     await entrar(page, 'sara@ejemplo.estook.com');
 
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
     await expect(page.getByRole('heading', { level: 2, name: 'Bajo mínimo' })).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 2, name: 'Valor de la cámara' })).toHaveCount(
       0,
     );
   });
 
-  test('la zona de atención va arriba, y no se puede quitar', async ({ page }) => {
-    // «Por encima de los widgets hay una zona fija de atención, que no se puede
-    // quitar y que se ordena sola por prioridad» (Evolución 1.0, capítulo 5).
+  test('lo que necesita atención va en «Hoy», siempre en la cabecera, y no se puede quitar', async ({
+    page,
+  }) => {
+    // «Una zona fija de atención, que no se puede quitar y que se ordena sola por prioridad»
+    // (Evolución 1.0, capítulo 5). Desde el rediseño (0148) es el botón «Hoy» de la cabecera,
+    // con su número, y su hoja: «nada a lo ancho para decir poco».
     await entrar(page);
+    const hoy = page.getByRole('button', { name: /^Hoy, / });
+    await expect(hoy).toBeVisible();
 
-    // Adjunta y no «visible»: desde el 25-sep, sin nada que atender no se ve —ni un
-    // «nada urgente», ni sus huecos—, y lo que haya dentro depende de las demás pruebas.
-    // Por su etiqueta y no por su papel: escondida, un papel no se encuentra.
-    const zona = page.locator('section[aria-label="Lo que necesita tu atención"]');
-    await expect(zona).toBeAttached();
-
-    // Y en modo de edición sigue ahí: lo que se monta es la rejilla de debajo.
+    // Y en modo de edición sigue ahí: lo que se monta son los añadidos de debajo.
     await page.getByRole('button', { name: 'Editar' }).click();
-    await expect(zona).toBeAttached();
+    await expect(hoy).toBeVisible();
+    await page.getByRole('button', { name: 'Listo' }).click();
   });
 });
 
@@ -812,7 +826,9 @@ test.describe('cómo se ve · el tema y el color del local', () => {
 
       // Al Panel, que es donde vive el botón principal de verdad.
       await abrirSinQueSeCaiga(page, `${APP}#/`);
-      await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+      await expect(page.getByRole('heading', { level: 1 })).toContainText(
+        /Buen(?:os|as) (?:días|tardes|noches)/,
+      );
 
       const medido = await page.evaluate(() => {
         const acento = window
@@ -908,30 +924,21 @@ test('si el Panel no puede leer, lo dice, y no se inventa un «no puedes» ni un
 
 // ── La gráfica que no llega no se lleva la pantalla (la experiencia, 0083) ───
 
-test('si el dibujo de una gráfica no llega, la pantalla se queda y lo dice en su hueco', async ({
+test('las gráficas del Panel no se descargan aparte: sin ese trozo, se pintan igual', async ({
   page,
 }) => {
   /*
-    El dibujo de las gráficas (Recharts) se descarga aparte. Con un `lazy`, si no
-    llegaba —sin señal—, la red de la pantalla recargaba la página entera para
-    traerlo, y se llevaba por delante lo que hubiera abierto: en GitHub, la hoja de
-    fichar a mitad de fichar sin cobertura. Aquí se corta solo ese trozo.
+    El dibujo de las gráficas (Recharts) se descarga aparte, y si no llegaba —sin señal— la
+    pantalla recargaba entera (la experiencia, 0083). Desde el rediseño (0148) las gráficas del
+    Panel se dibujan a mano, sin descargar nada: aquí se cortan los trozos de las gráficas y el
+    Panel se tiene que pintar entero, con su gráfica y sin «no ha terminado de cargar».
   */
   await page.route('**/GraficaVivaDibujo-*.js', (ruta) => ruta.abort('internetdisconnected'));
+  await page.route('**/GraficaDibujo-*.js', (ruta) => ruta.abort('internetdisconnected'));
   await entrar(page);
 
-  await page
-    .locator('[data-widget="valor-de-la-camara"]')
-    .getByRole('button', { name: 'Ampliar valor de la cámara' })
-    .click();
-  const detalle = page.getByRole('dialog', { name: 'Valor de la cámara' });
-  await expect(detalle).toBeVisible();
-
-  // Sin el dibujo, el detalle sigue abierto: ni se recarga ni dice que se ha roto.
-  await expect(
-    detalle.getByText('Sin conexión: la gráfica sale al volver a cargar.'),
-  ).toBeVisible();
-  await page.waitForTimeout(1_000);
-  await expect(detalle).toBeVisible();
+  const grafica = page.locator('[data-widget="ventas-y-compras"]');
+  await expect(grafica.getByRole('heading', { level: 2, name: 'Ventas y compras' })).toBeVisible();
+  await expect(grafica.locator('svg').first()).toBeAttached();
   await expect(page.getByText('Esta pantalla no ha terminado de cargar')).toHaveCount(0);
 });

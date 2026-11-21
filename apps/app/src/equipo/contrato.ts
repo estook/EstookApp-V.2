@@ -69,6 +69,8 @@ export interface QuienEstaTrabajando {
   readonly turnoSospechoso: boolean;
   /** Su foto, firmada (0083). */
   readonly foto?: string | null;
+  /** En su pausa ahora (0148). Opcional: la API se despliega después de la web. */
+  readonly enPausa?: boolean;
 }
 
 /** Un fichaje hecho con más de doce horas sin señal, por revisar (0070). */

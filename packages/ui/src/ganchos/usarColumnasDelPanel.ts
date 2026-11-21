@@ -9,7 +9,9 @@ import { columnasParaElAncho } from '../panel/rejilla.ts';
  * que la primera vez ya salga cada widget en su fila, y se vuelve a medir al cambiar
  * de ancho. Sin medir todavía (el primer pintado en el servidor de pruebas), dos.
  */
-export function usarColumnasDelPanel<T extends HTMLElement>(): readonly [RefObject<T>, number] {
+export function usarColumnasDelPanel<T extends HTMLElement>(
+  uniforme = false,
+): readonly [RefObject<T>, number] {
   const caja = useRef<T>(null);
   const [columnas, setColumnas] = useState(2);
 
@@ -18,7 +20,7 @@ export function usarColumnasDelPanel<T extends HTMLElement>(): readonly [RefObje
     if (elemento === null) return;
     const medir = () => {
       const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-      setColumnas(columnasParaElAncho(elemento.getBoundingClientRect().width / rem));
+      setColumnas(columnasParaElAncho(elemento.getBoundingClientRect().width / rem, uniforme));
     };
     medir();
     if (typeof ResizeObserver === 'undefined') return;
@@ -27,7 +29,7 @@ export function usarColumnasDelPanel<T extends HTMLElement>(): readonly [RefObje
     return () => {
       observador.disconnect();
     };
-  }, []);
+  }, [uniforme]);
 
   return [caja, columnas] as const;
 }

@@ -30,9 +30,7 @@ const SARA = 'sara@ejemplo.estook.com';
 
 const esMovil = (page: Page) => (page.viewportSize()?.width ?? 0) < 1024;
 
-test('«Hoy» aparece aunque llegue el último y sea lo único de la zona de atención', async ({
-  page,
-}) => {
+test('«Hoy» coge su número aunque llegue el último, y su hoja lo enseña', async ({ page }) => {
   // Lo demás de la zona, vacío: sin el alta, sin la pregunta de la caja y sin «sin
   // precio». Así «Hoy» es lo único que la llena, como en el Panel de Richi.
   await consultasSueltas(page);
@@ -72,8 +70,14 @@ test('«Hoy» aparece aunque llegue el último y sea lo único de la zona de ate
 
   await entrarEnLaApp(page, ROSA);
 
-  await expect(page.getByRole('region', { name: 'Hoy' })).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByText('1 producto está por debajo del mínimo')).toBeVisible();
+  // Desde el rediseño (0148) lo de hoy es el botón «Hoy» de la cabecera: llegue cuando llegue,
+  // el botón coge su número, y su hoja lo enseña.
+  const boton = page.getByRole('button', { name: 'Hoy, 1 cosa que atender' });
+  await expect(boton).toBeVisible({ timeout: 10_000 });
+  await boton.click();
+  await expect(
+    page.getByRole('dialog', { name: 'Hoy' }).getByText('1 producto está por debajo del mínimo'),
+  ).toBeVisible();
 });
 
 test('la barra de abajo se queda en el borde aunque el visor del iPhone se cuelgue, y se aparta con el teclado', async ({
@@ -168,7 +172,7 @@ test('congelar no pregunta la caducidad: dice cuándo avisará', async ({ page }
 
 // ── 6 · El Tablón ────────────────────────────────────────────────────────────
 
-test('el Tablón: se escribe desde el «+», sale en el Panel, y cada uno lo marca leído', async ({
+test('el Tablón: se escribe desde el «+», sale en «Hoy», y cada uno lo marca leído', async ({
   page,
 }) => {
   const texto = `Reserva de 20 personas ${String(Date.now()).slice(-5)}`;
@@ -182,7 +186,13 @@ test('el Tablón: se escribe desde el «+», sale en el Panel, y cada uno lo mar
   await hoja.getByRole('button', { name: 'Poner en el tablón' }).click();
   await expect(hoja).toHaveCount(0);
 
-  const tablon = page.getByRole('region', { name: 'Tablón' });
+  // Para quien lleva el local, el tablón vive en la hoja de «Hoy» (0148): su Panel no lo
+  // lleva fijo.
+  const abrirElTablon = async () => {
+    await page.getByRole('button', { name: /^Hoy, / }).click();
+  };
+  await abrirElTablon();
+  const tablon = page.getByRole('dialog', { name: 'Hoy' }).getByRole('region', { name: 'Tablón' });
   // Solo la suya: los otros navegadores dejan sus notas en la misma base.
   const mia = tablon.getByRole('listitem').filter({ hasText: texto });
   await expect(mia).toBeVisible();
@@ -195,6 +205,7 @@ test('el Tablón: se escribe desde el «+», sale en el Panel, y cada uno lo mar
     texto: deSara,
   });
   await recargarSinQueSeCaiga(page);
+  await abrirElTablon();
   const suya = tablon.getByRole('listitem').filter({ hasText: deSara });
   await expect(suya).toBeVisible();
   await suya.getByRole('button', { name: 'Leído', exact: true }).click();

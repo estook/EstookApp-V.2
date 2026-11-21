@@ -51,7 +51,9 @@ test('quien entra por primera vez puede hacer el recorrido, y no vuelve a salirl
     window.localStorage.removeItem('estook.recorrido');
   });
   await recargarSinQueSeCaiga(page);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    /Buen(?:os|as) (?:días|tardes|noches)/,
+  );
   await expect(page.getByRole('region', { name: 'El recorrido de Estook' })).toHaveCount(0);
 });
 
@@ -71,6 +73,8 @@ test('«Ya lo conozco» lo quita sin hacerlo', async ({ page, request }, info) =
     window.localStorage.removeItem('estook.recorrido');
   });
   await recargarSinQueSeCaiga(page);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    /Buen(?:os|as) (?:días|tardes|noches)/,
+  );
   await expect(page.getByRole('region', { name: 'El recorrido de Estook' })).toHaveCount(0);
 });

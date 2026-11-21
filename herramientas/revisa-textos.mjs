@@ -75,6 +75,11 @@ function sinComentarios(texto) {
  * de CSS (`text-seccion font-semibold`) o una sola palabra en minúsculas.
  */
 function noEsUnaFrase(trozo) {
+  // Lo que va entre una etiqueta que se cierra sola y la siguiente (`<Ventas />; case
+  // 'tu-dia': return <`) empieza por punto y coma: es el final de una línea de código, no un
+  // texto. Un texto de pantalla no empieza nunca así (el Panel del rediseño, 21-nov).
+  if (/^\s*;/.test(trozo)) return true;
+
   // Fuera lo que quede delante despues de quitar lo interpolado: `${que}: todavia
   // no tengo datos` empieza por dos puntos cuando se le quita el hueco, y eso lo
   // tomaba por codigo. Era el texto que mas se lee de toda la aplicacion.

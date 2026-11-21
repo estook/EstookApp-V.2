@@ -38,6 +38,15 @@ export interface RejillaProps {
   readonly alAnadir: () => void;
   /** Si hay algo que guardar y no se ha guardado todavía. */
   readonly guardando?: boolean;
+  /**
+   * **Todos del mismo tamaño** (el rediseño, 0148: los añadidos): de cuatro en cuatro en el PC, de
+   * uno en uno en el móvil, y la última fila sin estirar, para que todos midan lo mismo.
+   */
+  readonly uniforme?: boolean;
+  /** La casilla de añadir, siempre al final y no solo al editar (los añadidos, 0148). */
+  readonly anadirSiempre?: boolean;
+  /** Lo que se lee encima, en vez de «Tu panel». */
+  readonly rotulo?: ReactNode;
 }
 
 export interface RejillaConVacios extends RejillaProps {
@@ -71,9 +80,11 @@ export const COMO_SE_LLAMA_EL_TAMANO: Readonly<Record<TamanoDeWidget, string>> =
  * ancho de una tarjeta de verdad. Con el menú a la izquierda, lo que importa es el
  * ancho que le queda al Panel, que cambia al plegar el menú.
  */
-export function columnasParaElAncho(anchoEnRem: number): number {
+export function columnasParaElAncho(anchoEnRem: number, uniforme = false): number {
   if (anchoEnRem >= 68) return 4;
   if (anchoEnRem >= 46) return 3;
+  // Del mismo tamaño, en el móvil de uno en uno: dos listas de 170 px no se leen.
+  if (uniforme && anchoEnRem < 30) return 1;
   return 2;
 }
 
@@ -107,6 +118,8 @@ export interface Colocado {
 export function colocarEnFilas(
   puestos: readonly WidgetPuesto[],
   columnas: number,
+  /** Sin estirar: la última fila se queda corta y todos miden lo mismo (los añadidos, 0148). */
+  estirar = true,
 ): readonly Colocado[] {
   const anchoDe = (puesto: WidgetPuesto) =>
     Math.min(CUANTO_OCUPA[puesto.tamano].columnas, columnas);
@@ -131,7 +144,7 @@ export function colocarEnFilas(
     // Lo que sobra de la fila se reparte, primero entre los pequeños y de uno en uno,
     // para que dos pequeños con tres columnas no queden uno de dos y otro de uno.
     const porOrdenDeEstirar = [...fila].sort((a, b) => a.columnas - b.columnas);
-    for (let k = 0; libre > 0 && porOrdenDeEstirar.length > 0; k += 1) {
+    for (let k = 0; estirar && libre > 0 && porOrdenDeEstirar.length > 0; k += 1) {
       const cual = porOrdenDeEstirar[k % porOrdenDeEstirar.length];
       if (cual === undefined) break;
       cual.columnas += 1;

@@ -28,6 +28,7 @@ import {
   IconoFlechaAbajo,
   IconoFlechaArriba,
   IconoMas,
+  IconoEstrella,
   IconoVincular,
 } from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -342,8 +343,10 @@ function fila(
   ].join(' · ');
   const alergenos = losAlergenosDe(plato);
   const agotado = plato.agotado !== null;
+  const recomendado = plato.recomendado === true;
   const conIconos =
     agotado ||
+    recomendado ||
     alergenos.length > 0 ||
     plato.picante > 0 ||
     plato.distintivos.length > 0 ||
@@ -353,6 +356,14 @@ function fila(
     <span className="flex min-w-0 items-center gap-e2">
       {/* Agotado, lo primero (M10 · 1, 0102): es lo que la sala tiene que ver. */}
       {agotado && <Etiqueta tono="mal">Agotado</Etiqueta>}
+      {/* Recomendado por la casa (0120): sale en el TPV y en el Panel de la sala. */}
+      {recomendado && (
+        <IconoEstrella
+          size={14}
+          className="shrink-0 fill-seccion-amarillo text-seccion-amarillo"
+          titulo="Recomendado"
+        />
+      )}
       {plato.vinculadoA !== null && (
         <IconoVincular
           size={14}

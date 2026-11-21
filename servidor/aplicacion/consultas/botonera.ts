@@ -34,7 +34,8 @@ export interface BotonDeLaBotonera extends PlatoParaLaBotonera {
   /** Nulos: los de su página. */
   readonly quienLoPrepara: QuienLoPrepara | null;
   readonly pase: PaseDeLaBotonera | null;
-  readonly fijado: boolean;
+  /** Su plato es de los recomendados (0120): es del plato, lo mismo que marca la Carta. */
+  readonly recomendado: boolean;
   /** Los grupos de opciones de su plato, en orden (T3 · 2). */
   readonly grupoIds: readonly string[];
   /** Su plato se vende a peso. */
@@ -145,7 +146,7 @@ export const laBotonera = consulta<Record<string, never>, SalidaLaBotonera>({
                 color: b.color,
                 quienLoPrepara: b.quienLoPrepara,
                 pase: b.pase,
-                fijado: b.fijado,
+                recomendado: b.recomendado,
                 grupoIds: (grupos.get(plato.id) ?? []).map((g) => g.id),
                 aPeso: aPesoIds.has(plato.id),
               },

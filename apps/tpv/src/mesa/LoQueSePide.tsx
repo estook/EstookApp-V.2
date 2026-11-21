@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
-  COMO_SE_VE_LO_MAS_PEDIDO,
+  COMO_SE_VE_LOS_RECOMENDADOS,
   comoSeVeElNombre,
   elDestinoDeLaLinea,
   enSuOrden,
@@ -39,8 +39,8 @@ import { LoDelProducto } from './LoDelProducto.tsx';
 
 /**
  * **Lo que se pide** (T3, maqueta 9; Anexo 11.10 y 11.11): **la botonera por secciones**,
- * cada una **con su icono y su color** (R3, 0133), con **«Lo más pedido» la primera** solo si
- * el local marcó algo (lo marcado y lo más vendido a esta hora), el buscador que tolera
+ * cada una **con su icono y su color** (R3, 0133), con **«Recomendados» la primera** solo si
+ * la casa recomienda algo (0120: lo que marcan la Carta o Ajustes del TPV), el buscador que tolera
  * erratas y la sección **Menú** los días que hay menú. Cada producto es un botón con su
  * nombre entero, su precio, la franja del color de su sección y su foto; **agotado**, en gris
  * y sin tocar.
@@ -58,7 +58,7 @@ import { LoDelProducto } from './LoDelProducto.tsx';
  */
 
 const MENU = 'menu';
-const LO_MAS_PEDIDO = 'mas-pedido';
+const RECOMENDADOS = 'recomendados';
 
 export function LoQueSePide({
   carta,
@@ -79,7 +79,7 @@ export function LoQueSePide({
 }) {
   const { yo } = usarSesion();
   const paginas = useMemo(() => carta?.paginas ?? [], [carta]);
-  const masPedido = carta?.loMasPedido ?? [];
+  const recomendados = carta?.recomendados ?? [];
   const menus = carta?.menus ?? [];
   const [pagina, setPagina] = useState<string | null>(null);
   const [buscando, setBuscando] = useState('');
@@ -89,7 +89,7 @@ export function LoQueSePide({
   const { avisar, elAviso } = usarElAvisoDeAlergia(alergias);
 
   // Sin elegir todavía: con «Bebidas» marcada (la mesa recién abierta), la primera página de lo
-  // que prepara la barra, que se sientan y piden de beber; si no, «Lo más pedido»; si no, la
+  // que prepara la barra, que se sientan y piden de beber; si no, «Recomendados»; si no, la
   // primera. «Pan y agua» no: el pan tiene su botón arriba («Pan para 4»).
   const normales = paginas.filter((g) => (g.deSiempre ?? null) === null);
   const deBeber = normales.find(
@@ -100,20 +100,20 @@ export function LoQueSePide({
   const deFabrica =
     marcada === 'bebidas' && deBeber !== undefined
       ? deBeber.id
-      : masPedido.length > 0
-        ? LO_MAS_PEDIDO
+      : recomendados.length > 0
+        ? RECOMENDADOS
         : (normales[0]?.id ?? paginas[0]?.id);
   const elegida = pagina ?? deFabrica;
-  const laDeAhora: PaginaDeLaSala | typeof MENU | typeof LO_MAS_PEDIDO | undefined =
+  const laDeAhora: PaginaDeLaSala | typeof MENU | typeof RECOMENDADOS | undefined =
     elegida === MENU && menus.length > 0
       ? MENU
-      : elegida === LO_MAS_PEDIDO && masPedido.length > 0
-        ? LO_MAS_PEDIDO
+      : elegida === RECOMENDADOS && recomendados.length > 0
+        ? RECOMENDADOS
         : (paginas.find((g) => g.id === elegida) ?? paginas[0]);
 
-  function abrir(cual: PaginaDeLaSala | typeof MENU | typeof LO_MAS_PEDIDO) {
+  function abrir(cual: PaginaDeLaSala | typeof MENU | typeof RECOMENDADOS) {
     setBuscando('');
-    if (cual === MENU || cual === LO_MAS_PEDIDO) {
+    if (cual === MENU || cual === RECOMENDADOS) {
       setPagina(cual);
       return;
     }
@@ -190,7 +190,7 @@ export function LoQueSePide({
   }
 
   // El icono y el color de la sección de cada plato: un botón sin foto lleva los suyos
-  // (0143). Lo encontrado y «Lo más pedido» vienen de varias secciones.
+  // (0143). Lo encontrado y «Recomendados» vienen de varias secciones.
   const deSuSeccion = useMemo(() => {
     const mapa = new Map<string, LaSeccionDelPlato>();
     for (const g of paginas) {
@@ -212,17 +212,17 @@ export function LoQueSePide({
           aria-label="Las secciones de la botonera"
           className="flex min-w-0 flex-1 gap-e1 overflow-x-auto [scrollbar-width:thin]"
         >
-          {masPedido.length > 0 && (
+          {recomendados.length > 0 && (
             <BotonDeSeccion
-              puesta={laDeAhora === LO_MAS_PEDIDO}
-              icono={COMO_SE_VE_LO_MAS_PEDIDO.icono}
-              color={COMO_SE_VE_LO_MAS_PEDIDO.color}
-              rotulo="Lo más"
+              puesta={laDeAhora === RECOMENDADOS}
+              icono={COMO_SE_VE_LOS_RECOMENDADOS.icono}
+              color={COMO_SE_VE_LOS_RECOMENDADOS.color}
+              ancha
               onClick={() => {
-                abrir(LO_MAS_PEDIDO);
+                abrir(RECOMENDADOS);
               }}
             >
-              Lo más pedido
+              Recomendados
             </BotonDeSeccion>
           )}
           {paginas.map((g) => (
@@ -305,10 +305,10 @@ export function LoQueSePide({
           alCambiarElBorrador={alCambiarElBorrador}
           avisar={avisar}
         />
-      ) : laDeAhora === LO_MAS_PEDIDO ? (
+      ) : laDeAhora === RECOMENDADOS ? (
         <div className="min-h-0 flex-1 overflow-y-auto p-e3">
           <LosProductos
-            platos={masPedido}
+            platos={recomendados}
             cuantos={cuantos}
             deSuSeccion={deSuSeccion}
             alergias={alergias}
@@ -413,6 +413,7 @@ function BotonDeSeccion({
   icono,
   color,
   rotulo,
+  ancha = false,
   onClick,
   children,
 }: {
@@ -421,6 +422,8 @@ function BotonDeSeccion({
   readonly color: ColorDeLaBotonera | null;
   /** Lo que se lee debajo, si el nombre entero no cabe («Lo más»). */
   readonly rotulo?: string;
+  /** «Recomendados» entero, sin abreviar: su baldosa es un poco más ancha (0120). */
+  readonly ancha?: boolean;
   readonly onClick: () => void;
   readonly children: string;
 }) {
@@ -432,7 +435,9 @@ function BotonDeSeccion({
       aria-label={children}
       title={children}
       className={[
-        'flex w-[4.25rem] shrink-0 flex-col items-center gap-[3px] rounded-grande py-e1 sm:w-[4.75rem]',
+        ancha
+          ? 'flex w-[5.75rem] shrink-0 flex-col items-center gap-[3px] rounded-grande py-e1'
+          : 'flex w-[4.25rem] shrink-0 flex-col items-center gap-[3px] rounded-grande py-e1 sm:w-[4.75rem]',
         puesta ? 'font-bold text-texto' : 'font-semibold text-texto-suave',
       ].join(' ')}
     >

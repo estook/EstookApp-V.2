@@ -34,7 +34,7 @@ const CUANTAS_A_LA_VISTA = 4;
 const LUEGO_MS = 3 * 60 * 60 * 1000;
 
 const oyentes = new Set<() => void>();
-function suscribirse(avisar: () => void): () => void {
+export function suscribirse(avisar: () => void): () => void {
   oyentes.add(avisar);
   return () => {
     oyentes.delete(avisar);
@@ -45,7 +45,7 @@ function claveDe(personaId: string): string {
   return `estook.luego.${personaId}`;
 }
 
-function leerEnCrudo(personaId: string): string | null {
+export function leerEnCrudo(personaId: string): string | null {
   try {
     return window.localStorage.getItem(claveDe(personaId));
   } catch {
@@ -53,7 +53,7 @@ function leerEnCrudo(personaId: string): string | null {
   }
 }
 
-function hastaCuando(crudo: string | null): Readonly<Record<string, number>> {
+export function hastaCuando(crudo: string | null): Readonly<Record<string, number>> {
   if (crudo === null) return {};
   try {
     const leido: unknown = JSON.parse(crudo);
@@ -108,7 +108,11 @@ function guardarAbierto(abierto: boolean): void {
   }
 }
 
-export function LoDeHoy() {
+/**
+ * `enLaHoja`: dentro de la hoja del botón «Hoy» (0148) sale abierta y entera, sin plegar: quien
+ * la abre es porque quiere verla.
+ */
+export function LoDeHoy({ enLaHoja = false }: { readonly enLaHoja?: boolean } = {}) {
   const { yo } = usarSesion();
   const consulta = usarLoDeHoy();
   const enEscritorio = usarEsEscritorio();
@@ -133,10 +137,10 @@ export function LoDeHoy() {
   if (aLaVista.length === 0) return null;
 
   const plegable = aLaVista.length > 1;
-  const abierto = !plegable || (elegido ?? enEscritorio);
+  const abierto = enLaHoja || !plegable || (elegido ?? enEscritorio);
   const lasQueSeVen = !abierto
     ? aLaVista.slice(0, 1)
-    : todas
+    : todas || enLaHoja
       ? aLaVista
       : aLaVista.slice(0, CUANTAS_A_LA_VISTA);
   const masAbajo = aLaVista.length - lasQueSeVen.length;

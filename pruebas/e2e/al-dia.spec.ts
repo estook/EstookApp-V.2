@@ -22,15 +22,18 @@ test('el Tablón se pone al día solo, sin recargar', async ({ page }) => {
   });
 
   await page.clock.install();
+  // El tablón entero, en la hoja de «Hoy» de quien lleva el local (0148): ahí salen todas las
+  // notas, y la que llega se ve aunque otras pruebas escriban a la vez.
   await entrarEnLaApp(page, ROSA);
-  const tablon = page.getByRole('region', { name: 'Tablón' });
+  await page.getByRole('button', { name: /^Hoy, / }).click();
+  const tablon = page.getByRole('dialog', { name: 'Hoy' }).getByRole('region', { name: 'Tablón' });
   await expect(tablon).toBeVisible();
 
-  const deSara = `Llega el pescado a las 11 ${String(Date.now()).slice(-5)}`;
+  const deOtra = `Llega el pescado a las 11 ${String(Date.now()).slice(-5)}`;
   await ejecutarEnLaApi(page.request, await tokenDe(page.request, SARA), 'escribir_en_el_tablon', {
-    texto: deSara,
+    texto: deOtra,
   });
 
   await page.clock.fastForward(61_000);
-  await expect(tablon.getByRole('listitem').filter({ hasText: deSara })).toBeVisible();
+  await expect(tablon.getByRole('listitem').filter({ hasText: deOtra })).toBeVisible();
 });

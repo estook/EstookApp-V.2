@@ -871,7 +871,7 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 - `linea_de_cuenta` — plato, cantidad, **precio y tipo de impuesto congelados**, **lo que lleva (sus alérgenos), congelado al pedir** (0117), modificadores elegidos (cada uno con su precio y su escandallo), nota, **comensal** (número o nulo, solo al dividir), **tanda** (el pase: 1.º, 2.º), **salió en y quién la tachó** (0106), estado (`pedida`, `en_cocina`, `salio`, `servida`, `quitada`), y autor, motivo y aprobación si se quita. **Su identificador también nace en el aparato**, y a una cuenta **se le añaden líneas, nunca se sobreescriben**
 - `traspaso_de_cuenta` — cuenta, de quién, a quién, cuándo, quién lo hizo
 - `pagina_del_tpv` — la sección de la botonera (11.11; «página» hasta R3): local, nombre, orden, color, **icono** (0104), **quién lo prepara** (`cocina`, `barra`, `nadie`), **en qué pase sale** (`bebidas`, `1`, `2`, `3`, `postre`) y **la sección de la carta de la que vino**, si vino de una (lo nuevo de esa sección entra aquí)
-- `boton_del_tpv` — sección, **el plato de la carta al que apunta** (no una copia), orden, color, quién lo prepara o el pase **solo si cambian** los de su sección, y si está **fijado en «Lo más pedido»**
+- `boton_del_tpv` — sección, **el plato de la carta al que apunta** (no una copia), orden, color, quién lo prepara o el pase **solo si cambian** los de su sección, y (hasta la 0120) si estaba **fijado en «Lo más pedido»**; desde la 0120, **recomendar es del plato** (`plato.recomendado`), lo marcan la Carta y Ajustes del TPV, y sale en «Recomendados»
 - `grupo_de_opciones` — un grupo que se usa en muchos platos (la guarnición, los extras, el «¿Con qué?»), con **cuántas se eligen** (mínimo y máximo); `opcion_de_grupo` — cada opción, con **lo que suma** y **lo que gasta del almacén** (añade un producto en su cantidad, quita un ingrediente, o los dos: cambia uno por otro; sin nada, el extra libre); `grupo_del_plato` — qué grupos pregunta cada plato, en orden ([0113](../decisiones/0113-t3-2-1-las-opciones.md))
 - En `plato`, **`a_peso`**: su precio es el del kilo. En `linea_de_cuenta`, **lo elegido, congelado al pedir** (`opciones`, con lo que gasta cada una, para que el almacén descuente lo que se sirvió) y **lo que pesó** (`peso_gramos`); el precio de la línea ya lo lleva
 - En `local`: cómo se montó la botonera (`botonera_camino`: toda la carta, elegir, de cero; nulo, sin montar) y **si lo nuevo de la carta entra solo** (`botonera_entra_solo`), que lo hace un disparador de la base. `es_bebida` de la 0082 **se quitó** al pasar a quién lo prepara y al pase (T3 · 1, migración 0086, [0111](../decisiones/0111-t3-1-la-botonera.md)) Y **las dosis de la casa** (`dosis_de_la_copa_ml`, 50; `copa_de_vino_ml`, 150), que usa «Monta tus bebidas» al montar las copas y la copa de vino; lo del TPV que vive en el local lo cambia quien tiene los Ajustes del TPV, con una función que mira ese permiso ([0114](../decisiones/0114-t3-2-2-monta-tus-bebidas.md))
@@ -1078,7 +1078,7 @@ descontado, los tiempos de cocina, Negocio y el «Tu dia» de mañana
 
 ## 10.3 Tomar nota
 
-**Cómo es la pantalla, en 11.10**: los pases en pestañas encima de la cuenta (Bebidas · 1.º · 2.º · 3.º · Postre), y la botonera por secciones (11.11), con «Lo más pedido» la primera y «Menú» los días que hay. **Sustituye a las tres pestañas Bebidas · Carta · Menú del día** de la 0106 ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)). Lo de abajo sigue valiendo tal cual.
+**Cómo es la pantalla, en 11.10**: los pases en pestañas encima de la cuenta (Bebidas · 1.º · 2.º · 3.º · Postre), y la botonera por secciones (11.11), con «Recomendados» la primera (0120) y «Menú» los días que hay. **Sustituye a las tres pestañas Bebidas · Carta · Menú del día** de la 0106 ([0107](../decisiones/0107-estook-tpv-el-tpv-entero.md)). Lo de abajo sigue valiendo tal cual.
 
 - **Un toque añade uno.** **Solo preguntan las copas** («¿Con qué?», con los refrescos del almacén) y el menú. **El punto de la carne no es una pregunta**: el TPV no sabe qué plato es carne. Va en la nota.
 - **Tocar una línea** de la cuenta: la nota escrita (con «Ej.: al punto, poco hecho, sin sal…» en gris), el pase y quitar.
@@ -1624,7 +1624,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 ```
 ┌──────────────────────────────┬───────────────────────────────────────────┐
-│ ‹ Mesa 6 · 4 com. · SA · 34′ │ [Lo más pedido] [Entrantes] [Principales]  │
+│ ‹ Mesa 6 · 4 com. · SA · 34′ │ [Recomendados] [Entrantes] [Principales]   │
 │ ! Sin frutos secos           │ [Postres] [Bebidas] [Vinos] [Menú]   [🔍]   │
 │ [Bebidas][1.º ✓][2.º][3.º][Postre]                                        │
 │  Bebidas · en la barra       │ ┌────────┐┌────────┐┌────────┐┌────────┐   │
@@ -1647,7 +1647,7 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 - **Las reglas de la 0106 no cambian**: el primer pase con algo sale al mandar y los siguientes esperan a que el camarero los marche; un pase que ya esperaba no sale solo al añadirle algo; si todo lo de antes ha salido, lo nuevo sale al momento (los postres al final); una mesa «todo junto» no tiene pestañas de pase. **Lo de llevar sale siempre todo junto** (0121): ni se pregunta al abrirlo ni se pasa a pases.
 - **El botón grande dice siempre lo siguiente** (0106, 7): Mandar · Marchar el 2.º · Cobrar.
 
-**La botonera, a la derecha** (11.11): sus secciones en baldosas **con su icono y su color** (R3, [0133](../decisiones/0133-r3-ajustes-y-secciones.md)), **«Lo más pedido» la primera, solo si el local ha marcado algún producto** (lo marcado, y después lo más vendido a esa hora en las últimas cuatro semanas; sin nada marcado no sale, para que el camarero no tenga que deslizar de más), el buscador que tolera erratas, y la sección **Menú** los días que hay menú (M10 · 2). Cada producto, un botón con su nombre entero, su precio, su color y su foto si la tiene; **agotado** en gris y sin tocar, **«Quedan 3»** cuando bajan (3.1).
+**La botonera, a la derecha** (11.11): sus secciones en baldosas **con su icono y su color** (R3, [0133](../decisiones/0133-r3-ajustes-y-secciones.md)), **«Recomendados» la primera, solo si la casa recomienda algo** (0148, sección 6; migración 0120: lo que marcan el gerente o los jefes en la Carta o en Ajustes del TPV, **solo eso, sin lo más vendido**, ocho como mucho y sin lo agotado; sin nada recomendado no sale, para que el camarero no tenga que deslizar de más), el buscador que tolera erratas, y la sección **Menú** los días que hay menú (M10 · 2). Cada producto, un botón con su nombre entero, su precio, su color y su foto si la tiene; **agotado** en gris y sin tocar, **«Quedan 3»** cuando bajan (3.1).
 
 - **Un toque añade uno.** Si ya está en la cuenta en ese pase, suma. **Tocar la línea**: la nota escrita, el `+` y el `−`, «Va en el» para cambiar de pase y Quitar (0106, 4).
 - **Las opciones obligatorias** (el «¿Con qué?» de una copa, la guarnición si el local la pregunta) salen al tocar el producto, una pregunta y un toque cada una (10.13), y **no se manda sin contestarlas**.
@@ -1706,13 +1706,13 @@ Los tickets de la jornada del local (la de M16a, con su corte), los más nuevos 
 
 Richi, 5-nov: cada sección con **su icono y su color**, para encontrarla de un vistazo. **Estook los pone solo por el nombre** y el local los cambia en Ajustes del TPV › Productos y precios › «Icono y color».
 
-- **Once colores**: los nueve de T3 (naranja, verde, azul, ámbar, rojo, rosa, morado, turquesa, arena) y dos más, **amarillo** (el de «Lo más pedido») y **marrón** (el de los cafés). Cada producto lleva **la franja del color de su sección**, también en «Lo más pedido».
+- **Once colores**: los nueve de T3 (naranja, verde, azul, ámbar, rojo, rosa, morado, turquesa, arena) y dos más, **amarillo** (el de «Recomendados») y **marrón** (el de los cafés). Cada producto lleva **la franja del color de su sección**, también en «Recomendados».
 - **Treinta iconos de comida y bebida, todos de Lucide**, descargados con `herramientas/traer-iconos.mjs`: **nunca dibujados a mano**, ni subidos por el local. La hamburguesa y la paella no existen en Lucide: van con el bocadillo y la olla.
-- **Lo que pone el nombre** (`comoSeVeElNombre`): Lo más pedido, la estrella en amarillo; Cervezas, la jarra en naranja; Vinos, la copa en morado; Cócteles, rosa; Refrescos, azul; Cafés, la taza en marrón; Desayunos y Pan, arena; Entrantes y Ensaladas, verde; Carnes, rojo; Pescados y Mariscos, turquesa; Pizzas, naranja; Bocadillos y Hamburguesas, arena; Postres y Helados, rosa. **Lo que no se reconoce, los cubiertos en gris.** Lo que elige el local manda; lo que no ha elegido sigue al nombre si se renombra.
+- **Lo que pone el nombre** (`comoSeVeElNombre`): Recomendados, la estrella en amarillo; Cervezas, la jarra en naranja; Vinos, la copa en morado; Cócteles, rosa; Refrescos, azul; Cafés, la taza en marrón; Desayunos y Pan, arena; Entrantes y Ensaladas, verde; Carnes, rojo; Pescados y Mariscos, turquesa; Pizzas, naranja; Bocadillos y Hamburguesas, arena; Postres y Helados, rosa. **Lo que no se reconoce, los cubiertos en gris.** Lo que elige el local manda; lo que no ha elegido sigue al nombre si se renombra.
 
 ### Productos y precios, en dos columnas (R3)
 
-**A la izquierda, las secciones** (se arrastran para ordenarlas, en el orden del comandero), con «Lo más pedido» arriba diciendo si sale; **a la derecha, la que se toca**: su icono y su color, su nombre, quién la prepara y sus productos tal como se ven al pedir, con «+ De la carta». En el móvil, primero la lista y al tocar una sección su detalle, con «‹ Secciones». «Página» pasó a llamarse **«Sección»**, como en la Carta de Estook: eran dos nombres para lo mismo.
+**A la izquierda, las secciones** (se arrastran para ordenarlas, en el orden del comandero), con «Recomendados» arriba diciendo si sale y cuántos de ocho; **a la derecha, la que se toca**: su icono y su color, su nombre, quién la prepara y sus productos tal como se ven al pedir, con «+ De la carta». En el móvil, primero la lista y al tocar una sección su detalle, con «‹ Secciones». «Página» pasó a llamarse **«Sección»**, como en la Carta de Estook: eran dos nombres para lo mismo.
 
 ### Lo demás de Productos
 

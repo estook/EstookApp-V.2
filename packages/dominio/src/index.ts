@@ -1185,9 +1185,8 @@ export type {
 export {
   CAMINOS_DE_LA_BOTONERA,
   COLORES_DE_LA_BOTONERA,
-  COMO_SE_VE_LO_MAS_PEDIDO,
+  COMO_SE_VE_LOS_RECOMENDADOS,
   ICONOS_DE_LA_SECCION,
-  LO_MAS_PEDIDO,
   comoSeVeElNombre,
   comoSeVeLaSeccion,
   NOMBRE_DE_QUIEN_LO_PREPARA,
@@ -1506,3 +1505,25 @@ export type {
   PorQueNoSeCobra,
   ParaQueSeAbre,
 } from './caja.ts';
+export {
+  SEMANAS_DE_HISTORIAL,
+  SEMANAS_PARA_FIARSE,
+  FRACCION_PARA_PREVER,
+  losPesosDeLaSemana,
+  elObjetivoDelDia,
+  laParteDelDiaQueSueleIrVendida,
+  laPrevisionDelCierre,
+  dondeDeberiasIr,
+  elLunesDe,
+  CANALES_DEL_PANEL,
+  NOMBRE_DEL_CANAL_DE_VENTA,
+  elCanalDeLaCuenta,
+  TOPE_DE_RECOMENDADOS,
+} from './el-panel.ts';
+export type {
+  DiaDeLaSemana,
+  VentaDelDia,
+  PesosDeLaSemana,
+  HoraDeLaCurva,
+  CanalDeVentaDelPanel,
+} from './el-panel.ts';

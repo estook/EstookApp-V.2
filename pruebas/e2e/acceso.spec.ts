@@ -89,7 +89,9 @@ test.describe('entrar', () => {
 
   test('con correo y contrasena se entra', async ({ page }) => {
     await entrar(page, 'rosa@ejemplo.estook.com');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Rosa');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches), Rosa/,
+    );
   });
 
   test('**quien no tiene contraseña se la pone con un enlace al correo**, y entra con ella', async ({
@@ -118,7 +120,9 @@ test.describe('entrar', () => {
     await expect(page.getByRole('heading', { name: 'Contraseña puesta' })).toBeVisible();
 
     await entrar(page, correo, 'una frase que recuerdo bien');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Nuria');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches), Nuria/,
+    );
   });
 
   test('con la contrasena mal, se dice y **no se borra el correo**', async ({ page }) => {
@@ -138,10 +142,14 @@ test.describe('entrar', () => {
 
   test('la sesion sobrevive a recargar', async ({ page }) => {
     await entrar(page, 'rosa@ejemplo.estook.com');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Rosa');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches), Rosa/,
+    );
 
     await recargarSinQueSeCaiga(page);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Rosa');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches), Rosa/,
+    );
   });
 
   test('y salir la cierra de verdad', async ({ page }) => {
@@ -172,7 +180,9 @@ test.describe('criterio · una camarera con dos locales elige donde esta', () =>
     await entrar(page, 'nuria@ejemplo.estook.com');
     await page.getByRole('button', { name: /Bar Puerto/ }).click();
 
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Nuria');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches), Nuria/,
+    );
     // En el Panel, debajo del saludo, pone donde esta. Se busca en un parrafo a
     // proposito: los selectores de local llevan ese mismo texto dentro de sus
     // opciones, que estan escondidas hasta que se abren.
@@ -186,15 +196,21 @@ test.describe('criterio · una camarera con dos locales elige donde esta', () =>
     // abierto el martes vuelve a Bar Puerto el miercoles.
     await entrar(page, 'nuria@ejemplo.estook.com');
     await page.getByRole('button', { name: /Bar Puerto/ }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
 
     await recargarSinQueSeCaiga(page);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
   });
 
   test('a quien solo tiene uno **no se le pregunta nada**', async ({ page }) => {
     await entrar(page, 'sara@ejemplo.estook.com');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Sara');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches), Sara/,
+    );
   });
 });
 
@@ -221,7 +237,9 @@ test.describe('criterio · un area manager entra en su consolidado', () => {
     await entrar(page, 'ignacio@ejemplo.estook.com');
     await page.getByRole('button', { name: 'Entrar' }).first().click();
 
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola, Ignacio');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches), Ignacio/,
+    );
 
     // «Una flecha permanente que devuelve al consolidado desde cualquier
     // pantalla, en un toque» (Roles, 2.2).
@@ -238,13 +256,17 @@ test.describe('criterio · un area manager entra en su consolidado', () => {
     // volveria al consolidado en el clic siguiente.
     await entrar(page, 'ignacio@ejemplo.estook.com');
     await page.getByRole('button', { name: 'Entrar' }).first().click();
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
 
     await abrirSinQueSeCaiga(page, `${APP}#/ajustes`);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Ajustes');
 
     await abrirSinQueSeCaiga(page, `${APP}#/`);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Hola');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /Buen(?:os|as) (?:días|tardes|noches)/,
+    );
   });
 });
 

@@ -105,8 +105,8 @@ export interface ComoSeVeLaSeccion {
   readonly color: ColorDeLaBotonera | null;
 }
 
-/** «Lo más pedido» va siempre con la estrella en amarillo. */
-export const COMO_SE_VE_LO_MAS_PEDIDO: ComoSeVeLaSeccion = { icono: 'star', color: 'amarillo' };
+/** «Recomendados» va siempre con la estrella en amarillo (0120). */
+export const COMO_SE_VE_LOS_RECOMENDADOS: ComoSeVeLaSeccion = { icono: 'star', color: 'amarillo' };
 
 /**
  * Lo que propone cada nombre, **en este orden** (el primero que encaja): los postres antes que
@@ -226,9 +226,6 @@ export function loQueValeEnElBoton(
 export function elDestinoDeLaLinea(quien: QuienLoPrepara): 'cocina' | 'barra' | 'ninguno' {
   return quien === 'nadie' ? 'ninguno' : quien;
 }
-
-/** Cuántos salen en «Lo más pedido», y cuántas semanas mira (Anexo 11.10). */
-export const LO_MAS_PEDIDO = { cuantos: 12, semanas: 4, horasAlrededor: 1 } as const;
 
 // ── El pan, el agua y los cafés, en su página de siempre (0112) ───────────────
 

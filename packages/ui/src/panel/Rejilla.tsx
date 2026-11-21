@@ -44,7 +44,7 @@ import { usarMantenerPulsado } from '../ganchos/usarMantenerPulsado.ts';
 const RejillaQueSeEdita = lazy(() => import('./RejillaQueSeEdita.tsx'));
 
 export function Rejilla(props: RejillaProps) {
-  const { editando, alEditar, alAnadir, guardando = false, sinEditar = false } = props;
+  const { editando, alEditar, alAnadir, guardando = false, sinEditar = false, rotulo } = props;
   const [vacios, setVacios] = useState<ReadonlySet<string>>(() => new Set());
 
   const avisarDeVacio = useCallback((id: string, vacio: boolean) => {
@@ -78,7 +78,7 @@ export function Rejilla(props: RejillaProps) {
     <div className="@container flex flex-col gap-e3" data-recorrido="panel">
       <div className="flex flex-wrap items-center justify-between gap-e2">
         <p className="text-secundario font-medium text-texto-suave">
-          {editando ? 'Arrastra para ordenar' : 'Tu panel'}
+          {editando ? 'Arrastra para ordenar' : (rotulo ?? 'Tu panel')}
           {guardando && <span className="ml-e2 normal-case tracking-normal">guardando…</span>}
         </p>
 
@@ -131,6 +131,8 @@ export function Rejilla(props: RejillaProps) {
 
 /** La rejilla sin arrastre: la de todos los días, y la de mientras llega la librería. */
 function RejillaQuieta({
+  uniforme = false,
+  anadirSiempre = false,
   puestos,
   pintar,
   editando,
@@ -142,14 +144,14 @@ function RejillaQuieta({
   vacios,
   avisarDeVacio,
 }: RejillaConVacios) {
-  const [caja, columnas] = usarColumnasDelPanel<HTMLDivElement>();
+  const [caja, columnas] = usarColumnasDelPanel<HTMLDivElement>(uniforme);
   return (
     <div
       ref={caja}
       className={CLASES_DE_LA_REJILLA}
       style={{ gridTemplateColumns: `repeat(${String(columnas)}, minmax(0, 1fr))` }}
     >
-      {colocarEnFilas(puestos, columnas).map(({ puesto, columnas: ocupa }, indice) => (
+      {colocarEnFilas(puestos, columnas, !uniforme).map(({ puesto, columnas: ocupa }, indice) => (
         <Casilla
           key={puesto.id}
           id={puesto.id}
@@ -171,7 +173,7 @@ function RejillaQuieta({
           {pintar(puesto)}
         </Casilla>
       ))}
-      {editando && <HuecoDeAnadir alAnadir={alAnadir} />}
+      {(editando || anadirSiempre) && <HuecoDeAnadir alAnadir={alAnadir} largo={anadirSiempre} />}
     </div>
   );
 }

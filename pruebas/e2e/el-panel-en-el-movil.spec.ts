@@ -58,35 +58,27 @@ async function dosCosasParaHoy(page: Page): Promise<void> {
   }
 }
 
-test('lo de hoy sale plegado en el móvil y abierto en el escritorio, y se abre tocando la cabecera', async ({
+test('lo de hoy va en el botón «Hoy» con su número, y se abre entero en su hoja (0148)', async ({
   page,
 }) => {
+  // Desde el rediseño (0148), «nada a lo ancho para decir poco» (Richi, 21-nov): lo de hoy
+  // ya no ocupa la pantalla encima del Panel, ni plegado. Es un botón con su número, y su
+  // hoja lo enseña entero, en el móvil y en el escritorio.
   await dosCosasParaHoy(page);
   await entrarEnLaApp(page, ROSA);
 
-  const hoy = page.getByRole('region', { name: 'Hoy' });
-  const cabecera = hoy.getByRole('button', { name: /^Hoy/ });
-  await expect(cabecera).toContainText(/\d+ cosas/);
-
-  if (esMovil(page)) {
-    // Plegado: una sola cosa a la vista, la más urgente.
-    await expect(cabecera).toHaveAttribute('aria-expanded', 'false');
-    await expect(hoy.getByRole('listitem')).toHaveCount(1);
-    await cabecera.click();
-  }
-  await expect(cabecera).toHaveAttribute('aria-expanded', 'true');
+  const boton = page.getByRole('button', { name: /^Hoy, \d+ cosas que atender$/ });
+  await expect(boton).toBeVisible({ timeout: 15_000 });
+  await boton.click();
+  const hoy = page.getByRole('dialog', { name: 'Hoy' }).getByRole('region', { name: 'Hoy' });
   expect(await hoy.getByRole('listitem').count()).toBeGreaterThanOrEqual(2);
-
-  // Y se recuerda en el aparato: al volver al Panel sigue como se dejó.
-  await cabecera.click();
-  await expect(cabecera).toHaveAttribute('aria-expanded', 'false');
-  await irA(page, 'equipo');
-  await irA(page, '');
-  await expect(cabecera).toHaveAttribute('aria-expanded', 'false');
-  await expect(hoy.getByRole('listitem')).toHaveCount(1);
+  // Entera: dentro de su hoja no se pliega.
+  await expect(hoy.getByRole('button', { name: /^Hoy/, expanded: false })).toHaveCount(0);
 });
 
-test('sin nada que atender, lo de hoy no sale (16-oct)', async ({ page }) => {
+test('sin nada que atender, el botón «Hoy» lo dice y su hoja también (16-oct)', async ({
+  page,
+}) => {
   // Lo de hoy lo contesta la prueba, con una sola cosa. Con lo de verdad no se puede:
   // en GitHub los tres navegadores comparten la base, y mientras esta apartaba lo de
   // Rosa, las de compras le creaban pedidos en borrador, cada uno un aviso nuevo
@@ -115,15 +107,17 @@ test('sin nada que atender, lo de hoy no sale (16-oct)', async ({ page }) => {
   );
   await entrarEnLaApp(page, ROSA);
 
-  const hoy = page.getByRole('region', { name: 'Hoy' });
+  await page.getByRole('button', { name: 'Hoy, 1 cosa que atender' }).click();
+  const hoja = page.getByRole('dialog', { name: 'Hoy' });
+  const hoy = hoja.getByRole('region', { name: 'Hoy' });
   await expect(hoy).toBeVisible();
-  // Una sola cosa no se pliega: no hay nada que esconder.
-  await expect(hoy.getByRole('button', { name: /^Hoy/ })).toHaveCount(0);
 
-  // Apartada la única, lo de hoy no sale: sin nada, ocupaba sitio a lo tonto (Richi,
-  // 16-oct, que deshace lo del 26-sep).
+  // Apartada la única, lo de hoy no sale (Richi, 16-oct), y el botón se queda sin número.
   await hoy.getByRole('button', { name: /^Recordarme/ }).click();
   await expect(hoy).toHaveCount(0);
+  await expect(hoja.getByText(/Nada que atender ahora/)).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Hoy, sin nada que atender' })).toBeVisible();
 });
 
 test('el «+» se aparta al bajar y vuelve al subir, solo en el móvil', async ({ page }) => {

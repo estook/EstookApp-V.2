@@ -15,7 +15,6 @@ import {
   loSiguienteDeLaMesa,
   losPasesDelMenu,
   LAS_PAGINAS_DE_SIEMPRE,
-  LO_MAS_PEDIDO,
   comoSeVeElNombre,
   comoSeVeLaSeccion,
   laPaginaDeSiempre,
@@ -30,7 +29,7 @@ import {
   type PaseDeLaBotonera,
   type QuienLoPrepara,
 } from '@estook/dominio';
-import { laBotoneraGuardada, loMasPedido } from '../botonera.ts';
+import { laBotoneraGuardada } from '../botonera.ts';
 import { losGruposDeLosPlatos } from '../opciones.ts';
 import { laSalaMarca, laSalaMarcaAlgo, loServidoDelLocal } from '../servido.ts';
 import { lasSalasDibujadas, type MesaDibujada, type SalaDibujada } from './plano.ts';
@@ -351,6 +350,50 @@ function elEstado(cuenta: CuentaEnElPlano | null): EstadoDeLaMesa {
   return cuenta === null ? 'libre' : cuenta.comoVa;
 }
 
+/**
+ * **Las cuentas abiertas como las pinta el plano**, cada una con cómo va (`comoVaLaMesa`), con sus
+ * platos y lo servido del local. La usan el plano y el Panel (el rediseño, entrega 3: «Mesas
+ * ahora», con las que esperan la cuenta): las dos cuentan las mesas igual.
+ */
+export async function lasCuentasAbiertasEnElPlano(contexto: Contexto, localId: string) {
+  const ids = await lasAbiertas(contexto, localId);
+  const cuentas = await lasCuentas(contexto, localId, ids);
+  const platos = porCuenta(await losPlatos(contexto, ids));
+  const pases = porCuenta(await losPases(contexto, ids));
+  const pendientes = await losPendientesPorCuenta(contexto, ids);
+  const idos = await contexto.sql<{ persona_id: string }[]>`
+    select estook.han_fichado_la_salida(${localId}::uuid)::text as persona_id
+  `;
+  const seHanIdo = new Set(idos.map((f) => f.persona_id));
+  // Los minutos del semáforo de la cocina y si la cocina tacha (0131): el plano pinta el
+  // tiempo de cada mesa como lo pinta la pantalla de cocina.
+  const [minutosDeLaCocina, servido] = await Promise.all([
+    contexto.sql<{ aviso_min: number; tarde_min: number }[]>`
+      select aviso_min, tarde_min from estook.la_cocina_del_local(${localId}::uuid)
+    `,
+    loServidoDelLocal(contexto, localId),
+  ]);
+  const cocina: LaCocinaParaElPlano = {
+    avisoMin: minutosDeLaCocina[0]?.aviso_min ?? 10,
+    tardeMin: minutosDeLaCocina[0]?.tarde_min ?? 20,
+    nadieTacha: servido.cocinaSoloEnPapel,
+    minutosParaLaCuenta: servido.minutosParaLaCuenta,
+  };
+  const enPlano = cuentas.map((c) => ({
+    fila: c,
+    cuenta: enElPlano(
+      contexto,
+      c,
+      platos.get(c.id) ?? [],
+      pases.get(c.id) ?? [],
+      seHanIdo,
+      cocina,
+      pendientes.get(c.id) ?? [],
+    ),
+  }));
+  return { enPlano, platos, servido };
+}
+
 export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
   nombre: 'el_plano',
   entrada: z.object({}).strict(),
@@ -363,48 +406,16 @@ export const elPlano = consulta<Record<string, never>, SalidaElPlano>({
     const dibuja = await contexto.sql<{ puede: boolean }[]>`
       select estook.puede_editar('accion.ajustes_del_tpv', ${localId}::uuid) as puede
     `;
-    const ids = await lasAbiertas(contexto, localId);
-    const cuentas = await lasCuentas(contexto, localId, ids);
-    const camareros = await contexto.sql<{ id: string; nombre: string }[]>`
-      select p.id::text as id, p.nombre
-        from estook.persona p
-       where p.id in (select estook.quien_lleva_el_servicio(${localId}::uuid))
-         and estook.nivel_de_permiso(p.id, ${localId}::uuid, 'accion.tomar_nota')::text = 'ver_y_editar'
-       order by p.nombre
-    `;
-    const platos = porCuenta(await losPlatos(contexto, ids));
-    const pases = porCuenta(await losPases(contexto, ids));
-    const pendientes = await losPendientesPorCuenta(contexto, ids);
-    const idos = await contexto.sql<{ persona_id: string }[]>`
-      select estook.han_fichado_la_salida(${localId}::uuid)::text as persona_id
-    `;
-    const seHanIdo = new Set(idos.map((f) => f.persona_id));
-    // Los minutos del semáforo de la cocina y si la cocina tacha (0131): el plano pinta el
-    // tiempo de cada mesa como lo pinta la pantalla de cocina.
-    const [minutosDeLaCocina, servido] = await Promise.all([
-      contexto.sql<{ aviso_min: number; tarde_min: number }[]>`
-        select aviso_min, tarde_min from estook.la_cocina_del_local(${localId}::uuid)
+    const [{ enPlano, platos, servido }, camareros] = await Promise.all([
+      lasCuentasAbiertasEnElPlano(contexto, localId),
+      contexto.sql<{ id: string; nombre: string }[]>`
+        select p.id::text as id, p.nombre
+          from estook.persona p
+         where p.id in (select estook.quien_lleva_el_servicio(${localId}::uuid))
+           and estook.nivel_de_permiso(p.id, ${localId}::uuid, 'accion.tomar_nota')::text = 'ver_y_editar'
+         order by p.nombre
       `,
-      loServidoDelLocal(contexto, localId),
     ]);
-    const cocina: LaCocinaParaElPlano = {
-      avisoMin: minutosDeLaCocina[0]?.aviso_min ?? 10,
-      tardeMin: minutosDeLaCocina[0]?.tarde_min ?? 20,
-      nadieTacha: servido.cocinaSoloEnPapel,
-      minutosParaLaCuenta: servido.minutosParaLaCuenta,
-    };
-    const enPlano = cuentas.map((c) => ({
-      fila: c,
-      cuenta: enElPlano(
-        contexto,
-        c,
-        platos.get(c.id) ?? [],
-        pases.get(c.id) ?? [],
-        seHanIdo,
-        cocina,
-        pendientes.get(c.id) ?? [],
-      ),
-    }));
     const porMesa = new Map(
       enPlano.filter((c) => c.fila.mesa_id !== null).map((c) => [c.fila.mesa_id, c.cuenta]),
     );
@@ -1034,10 +1045,11 @@ export interface SalidaLaCartaDeLaSala {
   /** Las páginas de la botonera, en su orden; sin platos, no salen. */
   readonly paginas: readonly PaginaDeLaSala[];
   /**
-   * Lo fijado y lo más vendido a esta hora en cuatro semanas (Anexo 11.10). **Vacío si el local
-   * no ha marcado nada** (R3, 0133): entonces la sección no sale en el TPV.
+   * **Recomendados** (0120; Richi, 21-nov: «solo "Recomendados"»): lo que la casa recomienda, sin
+   * lo agotado y solo lo que está en la botonera. **Vacío si no recomienda nada**: entonces la
+   * sección no sale en el TPV (R3, 0133).
    */
-  readonly loMasPedido: readonly PlatoDeLaSala[];
+  readonly recomendados: readonly PlatoDeLaSala[];
   /** Los menús que se sirven hoy, con precio y lo que vale hoy (M10 · 2). */
   readonly menus: readonly MenuDeLaSala[];
 }
@@ -1058,8 +1070,8 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
     const localId = elLocalDelServicio(contexto);
     // La jornada, no el calendario: la cena que acaba a la una es del menú del día de antes.
     const hoy = fechaOperativa(await laJornadaDeHoy(contexto, localId));
-    const [secciones, platos, sirve, menus, botonera, masPedido, grupos, aPeso] = await Promise.all(
-      [
+    const [secciones, platos, sirve, menus, botonera, recomendadosIds, grupos, aPeso] =
+      await Promise.all([
         contexto.sql<
           {
             id: string;
@@ -1078,13 +1090,15 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
       `,
         losMenusDelLocal(contexto, localId),
         laBotoneraGuardada(contexto, localId),
-        loMasPedido(contexto, localId),
+        contexto.sql<{ id: string }[]>`
+        select id::text as id from estook.plato
+         where local_id = ${localId}::uuid and recomendado and activo
+      `,
         losGruposDeLosPlatos(contexto, localId),
         contexto.sql<{ id: string }[]>`
         select id::text as id from estook.plato where local_id = ${localId}::uuid and a_peso
       `,
-      ],
-    );
+      ]);
     const aPesoIds = new Set(aPeso.map((f) => f.id));
 
     // Lo que se pide de la carta: activo, en la carta y con precio. Lo agotado sale
@@ -1210,19 +1224,12 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
       paginas = paginas.filter((g) => g.platos.length > 0);
     }
 
-    // «Lo más pedido»: lo fijado primero, y después lo más vendido a esta hora; solo lo que
-    // está en la botonera. **Solo si el local marcó algo** (Richi, 6-nov: si no, ocupa sitio y
-    // el camarero desliza de más para llegar a las secciones).
+    // «Recomendados» (0120): lo que la casa recomienda, en el orden de la botonera, sin lo agotado.
     const enPaginas = new Map(paginas.flatMap((g) => g.platos.map((p) => [p.id, p] as const)));
-    const fijados = botonera.botones
-      .filter((b) => b.fijado && enPaginas.has(b.platoId))
-      .map((b) => b.platoId);
-    const loMasPedidoAhora = (fijados.length === 0 ? [] : [...new Set([...fijados, ...masPedido])])
-      .flatMap((id) => {
-        const plato = enPaginas.get(id);
-        return plato === undefined ? [] : [plato];
-      })
-      .slice(0, Math.max(LO_MAS_PEDIDO.cuantos, fijados.length));
+    const losRecomendados = new Set(recomendadosIds.map((f) => f.id));
+    const recomendados = [...enPaginas.values()].filter(
+      (p) => losRecomendados.has(p.id) && !agotados.has(p.id),
+    );
 
     // Los menús de hoy: el del día si hoy se sirve, y los otros siempre; con precio.
     const hoyEs = elDiaDeLaSemana(hoy);
@@ -1271,6 +1278,6 @@ export const laCartaDeLaSala = consulta<Record<string, never>, SalidaLaCartaDeLa
         })),
       });
     }
-    return { hoy, montada, paginas, loMasPedido: loMasPedidoAhora, menus: delMenu };
+    return { hoy, montada, paginas, recomendados, menus: delMenu };
   },
 });

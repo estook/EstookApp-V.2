@@ -92,6 +92,8 @@ export interface UnPlato {
    * lo manda: entonces todo está en la carta.
    */
   readonly enLaCarta?: boolean;
+  /** De los recomendados de la casa (0120). Opcional: la API se despliega después de la web. */
+  readonly recomendado?: boolean;
 }
 
 export interface ElAgotado {

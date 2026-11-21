@@ -13,7 +13,7 @@ import { LA_PUERTA } from './la-puerta-del-tpv.ts';
  *   · las secciones con quién la prepara ya contestado por su nombre (Refrescos, de la barra),
  *     y su icono y su color (R3, 0133)
  *   · el pan, de «Nadie», sin tocar su sección
- *   · «Lo más pedido» no sale en el comandero hasta que se marca algo (R3)
+ *   · «Recomendados» no sale en el comandero hasta que se recomienda algo (R3; 0120)
  *   · un producto nuevo, desde el TPV, que nace también en la carta de Estook
  *   · pedir con la botonera: cada cosa a quien la prepara, y lo que dice al mandar
  */
@@ -104,8 +104,8 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
   await expect(page.getByRole('button', { name: /^Entrantes: 1 producto · Cocina/ })).toBeVisible({
     timeout: 15_000,
   });
-  // «Lo más pedido», en la lista, dice que no sale: no hay nada marcado (R3, 0133).
-  await expect(page.getByRole('button', { name: /^Lo más pedido: No sale/ })).toBeVisible();
+  // «Recomendados», en la lista, dice que no sale: no hay nada recomendado (R3, 0133; 0120).
+  await expect(page.getByRole('button', { name: /^Recomendados: No sale/ })).toBeVisible();
   const refrescos = await laSeccion(page, 'Refrescos');
   await expect(
     refrescos.getByRole('radiogroup', { name: '¿Quién lo prepara?' }).getByRole('radio', {
@@ -170,11 +170,11 @@ test('la botonera: montarla en el TPV con toda la carta, cambiar lo suyo y pedir
   await page.getByRole('button', { name: /^Mesa 1: Libre/ }).click({ timeout: 15_000 });
   await page.getByRole('button', { name: '2', exact: true }).click();
   await page.getByRole('button', { name: 'Abrir', exact: true }).click();
-  // Sin nada marcado, «Lo más pedido» no ocupa sitio en el comandero (R3, 0133).
+  // Sin nada recomendado, «Recomendados» no ocupa sitio en el comandero (R3, 0133; 0120).
   await expect(page.getByRole('button', { name: 'Entrantes', exact: true })).toBeVisible({
     timeout: 15_000,
   });
-  await expect(page.getByRole('button', { name: 'Lo más pedido', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Recomendados', exact: true })).toHaveCount(0);
   // El pan se pregunta al sentarse: un toque, uno por comensal.
   await page.getByRole('button', { name: 'Pan para 2 · 3,00' }).click({ timeout: 15_000 });
   await expect(page.getByRole('button', { name: /^Pan para 2/ })).toHaveCount(0);

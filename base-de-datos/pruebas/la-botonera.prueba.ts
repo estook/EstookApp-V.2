@@ -14,7 +14,7 @@ import { elFallo, entrarFichando, losDatos, montarLaApi, type ApiDePrueba } from
  *   · sin «entra solo», lo nuevo sale en «Nuevos en la carta», y lo que no tiene botón no se
  *     vende en el TPV
  *   · **un producto nuevo nace en la carta**, en la sección de su página, sin escandallo
- *   · «Lo más pedido»: lo fijado y lo más vendido a esta hora
+ *   · «Recomendados»: lo que la casa recomienda, del plato (0120)
  *   · quién la monta: la camarera no; el móvil de nadie tampoco; ni Estook con su sesión
  *   · la tabla de lo que se propone por el nombre, igual en la base que en el dominio
  */
@@ -47,7 +47,7 @@ interface LaCarta {
     pase: string;
     platos: { id: string; nombre: string; quienLoPrepara: string; pase: string }[];
   }[];
-  loMasPedido: { id: string; nombre: string }[];
+  recomendados: { id: string; nombre: string }[];
 }
 
 interface Botonera {
@@ -59,7 +59,13 @@ interface Botonera {
     quienLoPrepara: string;
     pase: string;
     deLaSeccion: string | null;
-    botones: { botonId: string; platoId: string; nombre: string; quienLoPrepara: string | null }[];
+    botones: {
+      botonId: string;
+      platoId: string;
+      nombre: string;
+      quienLoPrepara: string | null;
+      recomendado?: boolean;
+    }[];
   }[];
   nuevosEnLaCarta: { id: string; nombre: string; seccion: string | null }[];
   puedeCrearProductos: boolean;
@@ -379,28 +385,89 @@ describe('«Empezar de cero»: un producto nuevo', () => {
   });
 });
 
-describe('«Lo más pedido»', () => {
-  it('sin nada marcado no sale; con algo marcado, lo marcado primero y después lo más vendido', async () => {
+describe('«Recomendados» (0120)', () => {
+  it('sin nada recomendado no sale; lo recomendado, sin lo más vendido; es del plato', async () => {
     const enLaCaja = await enElAparato(llaveDeLaCaja, ROSA);
     // Arriba se han pedido dos croquetas y cuatro Coca-Colas; ahora, tres croquetas más.
     await pedirYVer(enLaCaja, ['Croquetas', 'Croquetas', 'Croquetas']);
-    // R3 (0133, Richi): «Lo más pedido» solo sale si el local marca algún plato; si no, ocupa
-    // sitio y el camarero desliza de más para llegar a las secciones.
-    expect((await laCarta(enLaCaja)).loMasPedido).toEqual([]);
+    // R3 (0133, Richi): la sección solo sale si la casa recomienda algo; si no, ocupa sitio.
+    expect((await laCarta(enLaCaja)).recomendados).toEqual([]);
     const tarta = (await laBotonera(enLaCaja)).paginas
       .flatMap((g) => g.botones)
       .find((b) => b.nombre === 'Tarta de queso');
     losDatos(
       await api.ejecutar(enLaCaja, 'cambiar_boton_del_tpv', {
         boton_id: tarta?.botonId,
-        fijado: true,
+        recomendado: true,
       }),
     );
-    expect((await laCarta(enLaCaja)).loMasPedido.slice(0, 3).map((p) => p.nombre)).toEqual([
-      'Tarta de queso',
-      'Croquetas',
-      'Coca-Cola',
+    // Richi, 21-nov: «solo "Recomendados"». Lo más vendido (las croquetas) ya no se cuela.
+    expect((await laCarta(enLaCaja)).recomendados.map((p) => p.nombre)).toEqual(['Tarta de queso']);
+    // Es del plato: la botonera lo dice en su botón, igual que lo marcaría la Carta.
+    const otraVez = (await laBotonera(enLaCaja)).paginas
+      .flatMap((g) => g.botones)
+      .find((b) => b.nombre === 'Tarta de queso');
+    expect(otraVez?.recomendado).toBe(true);
+  });
+
+  it('la Carta escribe lo mismo; ocho como mucho; lo agotado no sale; la sala lo ve', async () => {
+    const enLaCaja = await enElAparato(llaveDeLaCaja, ROSA);
+    await crearPlatos('Para recomendar', [
+      ['Uno', 500],
+      ['Dos', 500],
+      ['Tres', 500],
+      ['Cuatro', 500],
+      ['Cinco', 500],
+      ['Seis', 500],
+      ['Siete', 500],
+      ['Ocho', 500],
     ]);
+    // La tarta ya está recomendada (la prueba de arriba): con siete más son ocho.
+    for (const nombre of ['Uno', 'Dos', 'Tres', 'Cuatro', 'Cinco', 'Seis', 'Siete']) {
+      losDatos(
+        await api.ejecutar(rosa, 'recomendar_plato', {
+          plato_id: plato[nombre],
+          recomendado: true,
+        }),
+      );
+    }
+    // El noveno no: «si todo está recomendado, nada lo está» (Richi, 21-nov).
+    expect(
+      elFallo(
+        await api.ejecutar(rosa, 'recomendar_plato', { plato_id: plato.Ocho, recomendado: true }),
+      ),
+    ).toBe('faltan_datos');
+    // Quitar uno siempre se puede, y entonces entra el otro.
+    losDatos(
+      await api.ejecutar(rosa, 'recomendar_plato', { plato_id: plato.Uno, recomendado: false }),
+    );
+    losDatos(
+      await api.ejecutar(rosa, 'recomendar_plato', { plato_id: plato.Ocho, recomendado: true }),
+    );
+
+    // Lo agotado no se recomienda, ni en el TPV ni en el Panel de la sala.
+    losDatos(await api.ejecutar(rosa, 'marcar_agotado', { plato_id: plato.Dos, hasta: 'jornada' }));
+    const enElTpv = (await laCarta(enLaCaja)).recomendados.map((p) => p.nombre);
+    expect(enElTpv).not.toContain('Dos');
+    expect(enElTpv).not.toContain('Uno');
+    expect(enElTpv).toContain('Ocho');
+
+    const sara = await api.entrar(SARA);
+    const paraLaSala = losDatos<{
+      platos: { nombre: string }[];
+      agotados: number;
+      puedeElegir: boolean;
+    }>(await api.consultar(sara, 'los_recomendados'));
+    expect(paraLaSala.platos.map((p) => p.nombre)).toContain('Ocho');
+    expect(paraLaSala.platos.map((p) => p.nombre)).not.toContain('Dos');
+    expect(paraLaSala.agotados).toBe(1);
+    // La camarera lo ve, pero no lo elige: eso es de quien edita la Carta.
+    expect(paraLaSala.puedeElegir).toBe(false);
+    expect(
+      elFallo(
+        await api.ejecutar(sara, 'recomendar_plato', { plato_id: plato.Tres, recomendado: false }),
+      ),
+    ).toBe('sin_permiso');
   });
 });
 

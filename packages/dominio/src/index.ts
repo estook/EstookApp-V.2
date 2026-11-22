@@ -643,24 +643,37 @@ export type {
 export {
   CAUSAS,
   COMO_ES_LA_CAUSA,
+  CUANTOS_SE_ESCAPAN_A_LA_VISTA,
   HORAS_TRAS_EL_CORTE_QUE_SON_ANTES_DE_ABRIR,
+  LO_POCO_QUE_SE_ESCAPA,
   LO_QUE_CUADRA,
+  MARGEN_DE_LO_QUE_SE_ESCAPA,
+  MARGEN_DEL_FOOD_COST,
   PARTE_QUE_AVISA,
   causaProbable,
   cuadra,
   faltaComoParaAvisar,
   foodCostReal,
   jornadasEntre,
+  laBrechaDelFoodCost,
   loGastado,
+  loQueSeEscapa,
+  loQueSeEscapaDeUnProducto,
   loQueVale,
   primeraJornadaTrasContar,
+  seSaleDelMargen,
 } from './desviacion.ts';
 export type {
   Causa,
   CausaProbable,
   CuentaDelFoodCost,
   FoodCostReal,
+  LaBrechaDelFoodCost,
+  LoQueSeEscapa,
+  LoQueSeEscapaDeUnProducto,
   LoQueSeSabeDeLaDesviacion,
+  LoVendidoConSuCoste,
+  ProductoVigilado,
 } from './desviacion.ts';
 
 // ── El repaso del 25-sep · lo congelado va aparte (0049) ─────────────────────

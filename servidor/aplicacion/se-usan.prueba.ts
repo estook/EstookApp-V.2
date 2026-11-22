@@ -90,8 +90,11 @@ const NO_LAS_LLAMA_NADIE: Readonly<Record<string, string>> = {
   // caja traiga lo vendido plato a plato». Hasta Estook TPV, una desviación con la caja
   // apuntada a medias asusta y se deja de mirar. La prueban
   // `la-desviacion-de-los-platos.prueba.ts` y el dominio; la pantalla llega con el TPV.
+  // M20 · 2 (0151): con Estook TPV, lo vendido ya baja del libro y lo que se escapa sale de él
+  // (`la_desviacion`, «Lo que se escapa»). Esta, que lo recalculaba con la caja apuntada, no llega a
+  // pantalla: se queda por el contrato de la API y se quita en una entrega de después.
   la_desviacion_de_los_platos:
-    'Construida y probada; se enseña con Estook TPV, cuando la caja traiga lo vendido plato a plato (0086 · 3B)',
+    'Sustituida por lo que se escapa (M20 · 2, 0151); se queda por el contrato de la API',
 
   // M20A · 1 (0106): la sala y la cocina se entregaron por dentro primero (1 · 1), y la
   // sala y Ajustes › Sala ya las llaman (1 · 2). Quedan las de la cocina, que llama su

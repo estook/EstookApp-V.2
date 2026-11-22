@@ -172,6 +172,12 @@ export interface GastadoDeUnProducto {
   /** Lo apuntado como salida, venta de cámara, consumo o merma entre las dos veces. */
   readonly apuntado: number;
   readonly mermas: number;
+  /** De lo apuntado, lo que restaron las ventas de Estook TPV (M20 · 1), neto de lo devuelto. */
+  readonly vendidoEnElTpv: number;
+  /** Las unidades vendidas en Estook TPV sin escandallo entre las dos veces: datos a medias. */
+  readonly vendidosSinEscandallo: number;
+  /** Si la primera vez se contó con Estook TPV ya restando: si no, faltan ventas en el libro. */
+  readonly todoConElTpv: boolean;
   /** Lo que costó cada unidad, a precio medio, al contarlo la segunda vez. Milésimas. */
   readonly costeMilesimas: number | null;
   /** Solo lo que se vende tal cual, emparejado con la caja (y quien ve las ventas). */
@@ -204,6 +210,9 @@ interface FilaDeGastado {
   apuntado: string;
   venta_camara: string;
   mermas: string;
+  vendido_tpv: string;
+  sin_escandallo: string;
+  todo_con_el_tpv: boolean;
   entradas_a_mano: string[] | null;
   coste: string | null;
   albaranes_con_incidencias: number;
@@ -243,7 +252,21 @@ export async function loGastadoDeVerdad(
            c1.hay::text as hay1, c2.hay::text as hay2, c2.decia::text as decia2,
            f.entro::text as entro, f.apuntado::text as apuntado,
            f.venta_camara::text as venta_camara, f.mermas::text as mermas,
+           f.vendido_tpv::text as vendido_tpv,
            f.entradas_a_mano::text[] as entradas_a_mano,
+           -- Lo vendido sin escandallo entre las dos veces (M20 · 2): con eso, el libro no sabe
+           -- todo lo que salió, y lo que falta podría ser eso (0094, la A).
+           (select coalesce(sum(b.cantidad), 0)
+              from estook.linea_bajada b
+             where b.local_id = ${localId}::uuid and b.estado = 'sin_escandallo'
+               and b.bajada_en > c1.contado_en and b.bajada_en <= c2.contado_en
+           )::text as sin_escandallo,
+           -- Si al contar la primera vez Estook TPV ya restaba lo vendido: antes, las ventas no
+           -- están en el libro y todo saldría «falta».
+           coalesce(c1.contado_en >= (
+             select min(b.bajada_en) from estook.linea_bajada b
+              where b.local_id = ${localId}::uuid and b.estado = 'bajada'
+           ), false) as todo_con_el_tpv,
            coalesce(nullif(u.coste_medio_despues, 0),
                     (estook.precio_vigente(p.id)).coste_milesimas)::text as coste,
            (select count(distinct a.id)::int
@@ -271,6 +294,9 @@ export async function loGastadoDeVerdad(
           ), 0) as apuntado,
           coalesce(-sum(m.cantidad) filter (where m.tipo = 'venta'), 0) as venta_camara,
           coalesce(-sum(m.cantidad) filter (where m.tipo = 'merma'), 0) as mermas,
+          coalesce(-sum(m.cantidad) filter (
+            where m.tipo = 'consumo' and coalesce(o.origen, m.origen) = 'venta'
+          ), 0) as vendido_tpv,
           array_agg(m.cantidad::text) filter (
             where m.tipo = 'entrada' and m.cantidad > 0 and m.origen = 'a_mano'
           ) as entradas_a_mano
@@ -338,8 +364,12 @@ export async function loGastadoDeVerdad(
             .map((linea) => linea.concepto);
 
     const conceptos = caja?.emparejados.get(f.id) ?? null;
+    const vendidoEnElTpv = Number(f.vendido_tpv);
     let talCual: GastadoDeUnProducto['talCual'] = null;
-    if (caja !== null && conceptos !== null) {
+    // Lo que ya resta Estook TPV no se compara con la caja apuntada: lo vendido ya está en el
+    // libro, y restarlo otra vez daría «sobra» lo que se vendió (M20 · 2). Eso lo mira lo que se
+    // escapa, con el libro.
+    if (caja !== null && conceptos !== null && vendidoEnElTpv <= 0) {
       const vendido = Number(
         dias.reduce((suma, dia) => suma + (conceptos.vendidoPorDia.get(dia) ?? 0), 0).toFixed(4),
       );
@@ -384,6 +414,9 @@ export async function loGastadoDeVerdad(
       gastado,
       apuntado,
       mermas,
+      vendidoEnElTpv,
+      vendidosSinEscandallo: Number(f.sin_escandallo),
+      todoConElTpv: f.todo_con_el_tpv,
       costeMilesimas: f.coste === null ? null : Number(f.coste),
       talCual,
       seLeParecen: talCual === null ? seLeParecen : [],

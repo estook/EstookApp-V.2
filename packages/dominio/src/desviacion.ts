@@ -1,4 +1,4 @@
-import { centimos, type Centimos } from './dinero.ts';
+import { centimos, porFraccion, type Centimos } from './dinero.ts';
 import { sinIva } from './iva.ts';
 import { porcentajeDe } from './cierre.ts';
 import { conUnidad, enumerar, plural } from './textos.ts';
@@ -97,12 +97,12 @@ export function jornadasEntre(desde: FechaOperativa, hasta: FechaOperativa): Fec
 
 // ── El food cost real ────────────────────────────────────────────────────────
 //
-// **Sin brecha hasta M9.** El Manifiesto pone el real al lado del teórico, y la
-// brecha entre los dos es «donde está el dinero». El teórico sale de las fichas (M9,
-// 0078). Compararlo mientras tanto con lo apuntado sería caer en la 1C que se
-// descartó: en una cocina casi nadie apunta lo que cocina, y la brecha saldría
-// siempre «fuga». Hasta entonces se compara con **el objetivo de materia prima** del
-// local, con el semáforo de siempre (`comoVaFrenteAlObjetivo`).
+// El Manifiesto pone el real al lado del teórico, y la brecha entre los dos es «donde
+// está el dinero». **Con Estook TPV ya hay teórico** (M20 · 2, 0151): lo que costó lo
+// vendido según sus escandallos, en `laBrechaDelFoodCost`, al final de este fichero.
+// Sin Estook TPV no lo hay —compararlo con lo apuntado sería caer en la 1C que se
+// descartó—, y se compara con **el objetivo de materia prima** del local, con el
+// semáforo de siempre (`comoVaFrenteAlObjetivo`).
 
 /** Lo que entra en la cuenta del food cost real de un periodo, todo en céntimos. */
 export interface CuentaDelFoodCost {
@@ -291,4 +291,180 @@ export function faltaComoParaAvisar(faltaCentimos: number, gastadoCentimos: numb
   return (
     faltaCentimos > 0 && gastadoCentimos > 0 && faltaCentimos > gastadoCentimos * PARTE_QUE_AVISA
   );
+}
+
+// ── Lo que se escapa (M20 · 2, decisión 0151) ────────────────────────────────
+//
+// **Con Estook TPV, el libro ya sabe lo que tenía que salir**: cada venta resta su
+// escandallo (M20 · 1), y las mermas y lo sacado a mano ya estaban apuntados. Así que
+// lo que se escapa de un producto, entre dos inventarios, es **una resta**: lo gastado
+// de verdad (había + entró − queda) menos lo que el libro sabe por qué salió. Es lo
+// mismo que tuvo que ajustar el inventario, con el signo cambiado: no hay una cuenta
+// nueva, solo se lee la que ya había.
+//
+// **Siempre hay margen** (Richi, 22-nov: «esto no es un policía»). Ninguna cocina pesa
+// al gramo: lo que cae dentro del margen no se enseña. Es un margen fijo, el mismo para
+// todos, sin nada que ajustar; si el uso dice que se queda corto o largo, se cambia aquí
+// y en la 0151, con lo medido.
+
+/** Hasta qué parte de lo que tenía que salir se da por normal que falte: un 5 %. */
+export const MARGEN_DE_LO_QUE_SE_ESCAPA = 0.05;
+
+/** Y lo que vale menos de esto tampoco se enseña: 5 €. Faltar 30 g de perejil no es nada. */
+export const LO_POCO_QUE_SE_ESCAPA = centimos(500);
+
+/** Cuántos productos se enseñan como mucho: los que más dinero se llevan. */
+export const CUANTOS_SE_ESCAPAN_A_LA_VISTA = 3;
+
+/** Un producto vigilado: vendido en Estook TPV, y contado dos veces desde entonces. */
+export interface ProductoVigilado {
+  readonly id: string;
+  /** Lo gastado de verdad: había + entró − queda. */
+  readonly gastado: number;
+  /** Lo que el libro sabe por qué salió: lo vendido, las mermas y lo sacado a mano. */
+  readonly apuntado: number;
+  /** Lo que cuesta cada unidad, en milésimas. Nulo si no se sabe (o no se puede ver). */
+  readonly costeMilesimas: number | null;
+}
+
+export interface LoQueSeEscapaDeUnProducto {
+  readonly id: string;
+  /** Lo que falta: lo gastado que nadie sabe dónde fue. En negativo, sobra. */
+  readonly falta: number;
+  /** Lo que tenía que salir, según el libro. */
+  readonly debiaSalir: number;
+  /** La parte de lo que tenía que salir que falta, en fracción con cuatro decimales. */
+  readonly parte: number | null;
+  /** Lo que vale lo que falta, a precio medio. */
+  readonly centimos: Centimos | null;
+  /** Si se sale del margen: es lo único que se enseña. */
+  readonly seSale: boolean;
+}
+
+/**
+ * Si lo que falta se sale del margen: que falte, que pase del 5 % de lo que tenía que salir
+ * y que valga 5 € o más. Lo que sobra no se sale nunca: no es dinero que se va.
+ */
+export function seSaleDelMargen(
+  falta: number,
+  debiaSalir: number,
+  valor: Centimos | null,
+): boolean {
+  if (falta <= 0) return false;
+  if (falta <= Math.max(debiaSalir, 0) * MARGEN_DE_LO_QUE_SE_ESCAPA) return false;
+  return valor === null || valor >= LO_POCO_QUE_SE_ESCAPA;
+}
+
+export function loQueSeEscapaDeUnProducto(p: ProductoVigilado): LoQueSeEscapaDeUnProducto {
+  const falta = cantidad(p.gastado - p.apuntado);
+  const valor = loQueVale(falta, p.costeMilesimas);
+  return {
+    id: p.id,
+    falta,
+    debiaSalir: p.apuntado,
+    parte: p.apuntado > 0 ? Number((falta / p.apuntado).toFixed(4)) : null,
+    centimos: valor,
+    seSale: seSaleDelMargen(falta, p.apuntado, valor),
+  };
+}
+
+export interface LoQueSeEscapa {
+  readonly vigilados: number;
+  /** Los que se salen del margen: el que más dinero se lleva, primero. */
+  readonly seSalen: readonly LoQueSeEscapaDeUnProducto[];
+  /** Lo que valen todos los que se salen, juntos. Nulo si alguno no tiene precio. */
+  readonly centimos: Centimos | null;
+}
+
+/**
+ * Lo que se escapa de un almacén: de cada producto vigilado, si se sale del margen. Se ordena
+ * por euros, no por porcentaje (un 15 % en perejil es ruido; un 4 % en salmón cuesta miles), y
+ * sin precio, por la parte que falta.
+ */
+export function loQueSeEscapa(productos: readonly ProductoVigilado[]): LoQueSeEscapa {
+  const seSalen = productos
+    .map(loQueSeEscapaDeUnProducto)
+    .filter((p) => p.seSale)
+    .sort(
+      (a, b) =>
+        (b.centimos ?? -1) - (a.centimos ?? -1) ||
+        (b.parte ?? 0) - (a.parte ?? 0) ||
+        a.id.localeCompare(b.id),
+    );
+  const todosConPrecio = seSalen.every((p) => p.centimos !== null);
+  return {
+    vigilados: productos.length,
+    seSalen,
+    centimos: todosConPrecio
+      ? centimos(seSalen.reduce((total, p) => total + (p.centimos ?? 0), 0))
+      : null,
+  };
+}
+
+// ── El food cost de tus escandallos, junto al real (M20 · 2, 0151) ───────────
+//
+// Lo que **debería** costar lo vendido según sus escandallos, con el coste congelado de
+// cada venta (`linea_bajada`), frente a lo que costó de verdad. La diferencia es lo que
+// se tira y lo que se escapa. Solo con lo vendido que tiene escandallo: de lo demás no
+// se sabe qué lleva, y se dice qué parte de lo vendido sí lo tiene.
+
+/** Hasta cuántos puntos de diferencia entre el real y el de los escandallos es lo normal. */
+export const MARGEN_DEL_FOOD_COST = 3;
+
+export interface LoVendidoConSuCoste {
+  /** Lo que costó lo vendido con escandallo, en céntimos. */
+  readonly coste: number;
+  /** Lo vendido con escandallo, sin IVA. */
+  readonly ventasConCoste: number;
+  /** Todo lo vendido en Estook TPV en el periodo, sin IVA. */
+  readonly ventas: number;
+}
+
+export interface LaBrechaDelFoodCost extends LoVendidoConSuCoste {
+  /** El food cost de tus escandallos, en %, con un decimal. */
+  readonly teorico: number;
+  /** La parte de lo vendido que tiene escandallo, en fracción con cuatro decimales. */
+  readonly parteConEscandallo: number;
+  /** Real − escandallos, en puntos y con un decimal: lo que se resta en pantalla, cuadra. */
+  readonly puntos: number | null;
+  /** Lo que se ha ido de más (o de menos) en el periodo, en céntimos. */
+  readonly centimos: Centimos | null;
+  /** Si la diferencia cae dentro del margen, por arriba o por abajo. */
+  readonly dentroDeLoNormal: boolean | null;
+}
+
+/**
+ * La brecha entre el food cost real y el de tus escandallos. Nula si nada de lo vendido tiene
+ * escandallo: no hay con qué comparar. Sin el real (sin ventas en la caja), se da el de los
+ * escandallos y nada más.
+ */
+export function laBrechaDelFoodCost(
+  real: FoodCostReal,
+  vendido: LoVendidoConSuCoste,
+): LaBrechaDelFoodCost | null {
+  const teorico = porcentajeDe(vendido.coste, vendido.ventasConCoste);
+  if (teorico === null) return null;
+  const parteConEscandallo =
+    vendido.ventas > 0 ? Number((vendido.ventasConCoste / vendido.ventas).toFixed(4)) : 1;
+  if (real.real === null || real.ventasSinImpuesto === null || real.consumoReal < 0) {
+    return {
+      ...vendido,
+      teorico,
+      parteConEscandallo,
+      puntos: null,
+      centimos: null,
+      dentroDeLoNormal: null,
+    };
+  }
+  // Los dos llegan con un decimal: la resta, también, sin el ruido de la coma flotante.
+  const puntos = Number((real.real - teorico).toFixed(1));
+  const loQuePediran = porFraccion(real.ventasSinImpuesto, vendido.coste / vendido.ventasConCoste);
+  return {
+    ...vendido,
+    teorico,
+    parteConEscandallo,
+    puntos,
+    centimos: centimos(real.consumoReal - loQuePediran),
+    dentroDeLoNormal: Math.abs(puntos) <= MARGEN_DEL_FOOD_COST,
+  };
 }

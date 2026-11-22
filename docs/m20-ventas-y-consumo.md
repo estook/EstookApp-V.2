@@ -1,6 +1,6 @@
 # M20 · Ventas y consumo
 
-> **Estado: M20 · 1 construido el 22-nov-2026** ([0149](decisiones/0149-m20-1-lo-vendido-baja.md), migración 0121): lo vendido baja del almacén con cada cobro de Estook TPV, el ticket anulado devuelve todo y la devolución solo con «Se cobró de más». **M20 · 2, sin empezar.** Lo de abajo es el plan tal como se escribió: donde dice otra cosa, manda la 0149.
+> **Estado: M20 · 1 construido el 22-nov-2026** ([0149](decisiones/0149-m20-1-lo-vendido-baja.md), migración 0121): lo vendido baja del almacén con cada cobro de Estook TPV, el ticket anulado devuelve todo y la devolución solo con «Se cobró de más». **M20 · 2 · Lo que se escapa, construido el 22-nov** ([0151](decisiones/0151-m20-2-lo-que-se-escapa.md), sin migración), en pequeño: el food cost de tus escandallos junto al real y lo que se sale del margen, en Consumo. Lo de abajo es el plan tal como se escribió: donde dice otra cosa, mandan la 0149, la 0150 y la 0151.
 >
 > Escrito el 22-oct-2026, con M16a ya en producción (80
 > migraciones, API 102/230), y **corregido el mismo día con lo que dijo Richi**: el cierre a mano es
@@ -81,7 +81,7 @@ pantallas que se aprobaron antes, con todo lo que hacen la sala y la cocina, en 
 **M20 · 1 · Lo vendido mueve el almacén** (hecho, 0149): el motor (cada venta baja lo de su escandallo con el coste
 congelado; anular devuelve todo y devolver, solo con «Se cobró de más», sin borrar nada), emparejar por parecido, lo
 de los apartados 3.1 a 3.5, y **Servicio › Ventas** con «Del día» y «Por producto». **M20 · 2 · Lo que
-se escapa y lo que deja cada plato**: la desviación con los cuatro filtros de
+se escapa y lo que deja cada plato** (hecho en pequeño, [0151](decisiones/0151-m20-2-lo-que-se-escapa.md): margen fijo, sin campana ni calibración ni canal; la carta en cuatro ya estaba, 0142). Lo escrito el 22-oct: la desviación con los cuatro filtros de
 [`como-detecta-estook-lo-que-se-escapa.md`](como-detecta-estook-lo-que-se-escapa.md) (nada de avisos
 con datos a medias ni mientras aprende, un mes en silencio antes de encenderlo), la calibración en una
 pregunta de tres botones, el food cost teórico junto al real, y **estrella, caballo, puzzle y perro

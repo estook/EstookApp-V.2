@@ -36,6 +36,8 @@ export function mediaPorDia(totalCentimos: number, dias: number): Centimos {
  */
 
 export const MOTIVOS_DE_MERMA = [
+  // Lo que se quita al limpiar o pelar (0150): sin aprovechamiento, es merma, y tiene su nombre.
+  'limpieza',
   'caducado',
   'mal_estado',
   'roto',
@@ -70,6 +72,7 @@ export type PartidaDeMerma = (typeof PARTIDAS_DE_MERMA)[number];
  * servicio lo que pasa es que se cae algo.
  */
 export const NOMBRE_DEL_MOTIVO_DE_MERMA: Readonly<Record<MotivoDeMerma, string>> = {
+  limpieza: 'Al limpiarlo',
   caducado: 'Ha caducado',
   mal_estado: 'Estaba malo',
   roto: 'Se ha caído o roto',
@@ -83,6 +86,7 @@ export const NOMBRE_DEL_MOTIVO_DE_MERMA: Readonly<Record<MotivoDeMerma, string>>
 
 /** Una frase por motivo, para que no haya que adivinar cuál es cuál. */
 export const QUE_ES_CADA_MOTIVO: Readonly<Record<MotivoDeMerma, string>> = {
+  limpieza: 'Piel, espinas, huesos, recortes: lo que se quita al limpiar o pelar',
   caducado: 'Se pasó de fecha antes de gastarlo',
   mal_estado: 'Llegó mal, se cortó, olía mal',
   roto: 'Se cayó al suelo, se rompió el envase',

@@ -17,8 +17,8 @@ sin que nadie apunte nada (Richi, 10-nov: «tiene que ser un reloj suizo»):
 - **Lo elegido al pedir cuenta**: «sin cebolla» no resta la cebolla; la tónica de la copa, sí; cambiar
   el pan por uno sin gluten hace las dos cosas (lo congeló la línea al pedirlo, T3 · 2).
 - **El menú del día** resta los platos que se eligieron dentro.
-- **En bruto**: la receta pide gramos limpios y la cámara guarda kilos en bruto. 280 g de atún limpio con
-  un 70 % aprovechable son 400 g que salen.
+- **Lo que pide, sale**: 100 g de atún en el escandallo son 100 g del almacén. La primera versión restaba «en
+  bruto» con el aprovechamiento; Richi lo quitó de toda la app antes de fusionar ([0150](0150-fuera-el-aprovechamiento.md)).
 - **Lo de dentro de una elaboración**, por lo que rinde; **una tanda**, por sus raciones.
 - **Del lote que antes caduca**, como cualquier salida (0078).
 - **Con el coste de ese momento**, congelado en el libro: lo que costó un plato el día que se vendió no

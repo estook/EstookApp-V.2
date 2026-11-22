@@ -7,12 +7,8 @@ import {
   NOMBRE_DE_LA_ZONA,
   TIPOS_DE_IVA_DE_COMPRA,
   llevaCategorias,
-  milesimas,
   comoHaCambiado,
-  comoPorcentaje,
-  comoPrecioPorUnidad,
   comoSeCompraDe,
-  costeLimpio,
   comoSeDiceElTipo,
   comoSePide,
   conUnidadAproximada,
@@ -63,7 +59,6 @@ import {
   IconoCongelado,
   IconoDinero,
   IconoEditar,
-  IconoEscandallos,
   IconoHistorial,
   IconoInfo,
   IconoQuitar,
@@ -103,10 +98,10 @@ import {
  *      se acaba). Cuadrar la cámara se abre desde ahí —«¿no cuadra?»—
  *   3. Los dos botones: ha salido y ha llegado
  *   4. Plegado, cada cosa con su resumen a la vista: el precio, las caducidades,
- *      los movimientos, el aprovechamiento y los demás datos
+ *      los movimientos y los demás datos
  *
  * El orden no es decorativo: quien abre esto en mitad de un servicio viene a
- * apuntar algo, no a editar un rendimiento.
+ * apuntar algo, no a editar la ficha.
  */
 export function FichaDeProducto({
   productoId,
@@ -122,7 +117,7 @@ export function FichaDeProducto({
   const { cliente, permisos } = usarSesion();
   const cache = useQueryClient();
 
-  const [haciendo, setHaciendo] = useState<QueSeMueve | 'precio' | 'rendimiento' | null>(null);
+  const [haciendo, setHaciendo] = useState<QueSeMueve | 'precio' | null>(null);
   const [editando, setEditando] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [noticia, setNoticia] = useState<string | null>(null);
@@ -237,17 +232,6 @@ export function FichaDeProducto({
           )}
 
           {/*
-            ── Aquí había un aviso sobre el aprovechamiento, y se va ──────────
-            Decía «el aprovechamiento está sin comprobar, corrígelo en la ficha de
-            abajo», en amarillo y en todos los productos creados a mano, que son
-            casi todos. «Nadie sabe cuánto se aprovecha al llegar, sino cuando está
-            trabajando»: no es algo que se conteste en una casilla, es algo que se
-            **mide** —con las mermas que se apuntan y, en M9, con la ficha técnica
-            de cada plato—. Así que ni se pregunta ni se reclama: la etiqueta «sin
-            verificar» sigue en la lista, que es lo que es.
-          */}
-
-          {/*
             ── La ficha, rehecha (repaso del 16-oct) ───────────────────────────
 
             Richi, con la del barril: «es muy fea y desordenada; debería ser la ficha
@@ -255,7 +239,7 @@ export function FichaDeProducto({
             más organizados». Estaba al revés: la cifra de lo que hay arriba, sin
             contexto, repetida dos veces («4602 g» y «● 4602 g Lo que hay»), una rejilla
             de cinco frases con «95,2381 g al día», y debajo, abiertas y de golpe, cinco
-            tarjetas: precio, libro, lotes, ficha y aprovechamiento.
+            tarjetas: precio, libro, lotes y ficha.
 
             Ahora, de arriba abajo, lo que hace un inventario de verdad (MarketMan,
             Apicbase): **qué es** (foto, categoría, proveedor, envase, alérgenos),
@@ -746,27 +730,6 @@ export function FichaDeProducto({
               )}
             </Plegable>
 
-            {/*
-              ── El aprovechamiento ─────────────────────────────────────────
-              Cuánto se aprovecha de lo que se compra, que multiplica el coste de todo
-              lo que lo lleve: con su cifra, con si está medido o supuesto, y **con el
-              botón de medirlo**. Un dato que no se puede corregir desde donde se lee
-              es un dato que nadie corrige.
-            */}
-            <Plegable
-              titulo="Aprovechamiento"
-              icono={<IconoEscandallos size={18} />}
-              resumen={`${comoPorcentaje(datos.producto.rendimiento)} · ${datos.producto.sinVerificar ? 'supuesto, sin medir' : 'medido en esta cocina'}`}
-            >
-              <ElAprovechamiento
-                producto={datos.producto}
-                puedeTocar={puedeTocar}
-                alMedirlo={() => {
-                  setHaciendo('rendimiento');
-                }}
-              />
-            </Plegable>
-
             {/* ── Lo demás de la ficha: solo lo que dice algo ───────────── */}
             <Plegable titulo="Más datos" icono={<IconoInfo size={18} />}>
               <dl className="grid grid-cols-[auto_1fr] gap-x-e4 gap-y-e1 text-secundario">
@@ -881,7 +844,7 @@ export function FichaDeProducto({
           )}
 
           <MoverGenero
-            que={haciendo === 'precio' || haciendo === 'rendimiento' ? null : haciendo}
+            que={haciendo === 'precio' ? null : haciendo}
             producto={datos.producto}
             puedeVerPrecios={datos.puedeVerPrecios}
             preciosConIva={datos.preciosConIva}
@@ -900,20 +863,6 @@ export function FichaDeProducto({
             abierta={haciendo === 'precio'}
             producto={datos}
             proveedores={proveedores}
-            alCerrar={() => {
-              setHaciendo(null);
-            }}
-            alHecho={(frase) => {
-              setHaciendo(null);
-              setNoticia(frase);
-              void refrescar();
-            }}
-            alFallar={setError}
-          />
-
-          <MedirElAprovechamiento
-            abierta={haciendo === 'rendimiento'}
-            producto={datos}
             alCerrar={() => {
               setHaciendo(null);
             }}
@@ -1230,68 +1179,6 @@ function BarraDelMinimo({
   );
 }
 
-/**
- * El aprovechamiento, con su cifra y su botón.
- *
- * «Un rendimiento mal puesto es el error más caro del sistema» (Auditoría 1.2),
- * porque multiplica: el pulpo de 0,80 a 0,65 sube su coste un 23 % de golpe, en
- * todos los platos que lo lleven. De ahí venía la etiqueta «sin verificar», y de
- * ahí viene esto: el dato, dicho donde se lee, y con qué se arregla al lado.
- */
-function ElAprovechamiento({
-  producto,
-  puedeTocar,
-  alMedirlo,
-}: {
-  readonly producto: ProductoEnLista;
-  readonly puedeTocar: boolean;
-  readonly alMedirlo: () => void;
-}) {
-  const medido = !producto.sinVerificar;
-
-  return (
-    <div className="flex flex-wrap items-start justify-between gap-e3 rounded-medio border border-borde bg-fondo p-e3">
-      <div className="min-w-0">
-        <p className="text-secundario text-texto-suave">Se aprovecha</p>
-        <p className="text-seccion font-semibold">
-          {comoPorcentaje(producto.rendimiento)}{' '}
-          <span className="text-secundario font-normal text-texto-suave">
-            {medido ? 'medido en esta cocina' : 'supuesto, sin medir'}
-          </span>
-        </p>
-        {/*
-          Lo que sale lo limpio (0099): es el coste que usa el escandallo, y aquí se dice
-          aparte del precio. El precio es lo pagado; esto, lo que cuesta lo que llega al plato.
-        */}
-        {producto.rendimiento < 1 &&
-          producto.costeMilesimas !== null &&
-          producto.costeMilesimas !== undefined && (
-            <p className="mt-e1 text-secundario">
-              Lo limpio sale a{' '}
-              <strong className="font-semibold">
-                {comoPrecioPorUnidad(
-                  costeLimpio(milesimas(producto.costeMilesimas), producto.rendimiento),
-                  producto.unidadDeUso,
-                )}
-              </strong>{' '}
-              <span className="text-texto-suave">sin IVA · es lo que cuenta en los platos</span>
-            </p>
-          )}
-        <p className="mt-e1 text-etiqueta text-texto-tenue">
-          {medido
-            ? 'De cada kilo que entra, lo que llega al plato después de limpiarlo. Con esto se calcula lo que cuesta cada plato.'
-            : 'Se da por hecho que se aprovecha todo, que casi nunca es verdad. Cuando lo midas, el coste de este producto y el de los platos que lo lleven cambian con él.'}
-        </p>
-      </div>
-      {puedeTocar && (
-        <Boton tono="secundario" onClick={alMedirlo}>
-          {medido ? 'Cambiarlo' : 'Lo he medido'}
-        </Boton>
-      )}
-    </div>
-  );
-}
-
 // ── Cambiar el precio ────────────────────────────────────────────────────────
 
 function CambiarPrecio({
@@ -1575,10 +1462,6 @@ function CorregirLaFicha({
 
   if (!abierta) return null;
 
-  // El aprovechamiento **no se pregunta aquí**, y viaja tal cual estaba: el
-  // comando guarda la ficha entera, y mandar otro valor sería cambiarlo sin que
-  // nadie lo haya pedido. Se mide, no se teclea (ver la cabecera del alta).
-  const nuevoRendimiento = ficha.rendimiento;
   // Si no se ha tocado cómo se compra, viaja lo que había tal cual: un producto
   // con el envase «Saco de harina de 25 kg» no se renombra a «Saco de 25 kg» por
   // corregir una errata en el nombre.
@@ -1623,7 +1506,6 @@ function CorregirLaFicha({
           }
         : {}),
       ...(iva === ivaDeAntes ? {} : { iva_de_compra: iva === '' ? null : Number(iva) }),
-      rendimiento: nuevoRendimiento,
       categoria_fiscal: categoriaFiscal,
       alergenos: producto.alergenos,
       peso_variable: pesoVariable,
@@ -1632,11 +1514,6 @@ function CorregirLaFicha({
       proveedor_id: proveedorId === '' ? null : proveedorId,
       notas: notas.trim() === '' ? null : notas.trim(),
       congelado_aguanta_meses: Number(mesesCongelado),
-      // `verificado` **no va**, y antes iba. Cambiar cuánto trae una caja no es
-      // medir cuánto se aprovecha de ella: son dos datos distintos que se
-      // multiplican en la misma fórmula, y darlos por medidos juntos es lo que
-      // hacía que la marca de «sin medir» no significara nada. Se mide donde se
-      // mide, en «Cuánto se aprovecha».
     });
 
     setGuardando(false);
@@ -1694,10 +1571,9 @@ function CorregirLaFicha({
             cargando={guardando}
             textoCargando="Guardando"
             onClick={() => {
-              // «Cambiar un rendimiento **pide confirmación enseñando el impacto
-              //  antes de guardar**» (Auditoría 2.2), porque el rendimiento
-              //  multiplica: pasar el pulpo de 0,80 a 0,65 sube su coste un 23 %
-              //  de golpe, en todos los platos que lo lleven.
+              // Cambiar cuánto trae lo que se compra **pide confirmación enseñando el
+              // impacto antes de guardar** (Auditoría 2.2): mueve el coste de cada unidad,
+              // en todos los platos que lo lleven.
               if (cambiaElCoste && !confirmando) {
                 setConfirmando(true);
                 return;
@@ -1720,8 +1596,8 @@ function CorregirLaFicha({
       <div className="flex flex-col gap-e3 pt-e3">
         {confirmando && cambiaElCoste && (
           <Aviso tono="atencion" titulo="Esto cambia lo que cuesta el producto">
-            {impactoDelCambio(ficha.factor, ficha.rendimiento, nuevoFactor, nuevoRendimiento)} Los
-            platos que lo lleven cambiarán de coste en cuanto existan sus fichas. ¿Seguimos?
+            {impactoDelCambio(ficha.factor, nuevoFactor)} Los platos que lo lleven cambiarán de
+            coste en cuanto existan sus fichas. ¿Seguimos?
           </Aviso>
         )}
 
@@ -1907,14 +1783,7 @@ function sinCerosDeMas(numero: number): string {
 }
 
 /** La frase del impacto: cuánto sube o baja el coste por unidad de uso. */
-function impactoDelCambio(
-  factorAntes: number,
-  rendimientoAntes: number,
-  factorAhora: number,
-  rendimientoAhora: number,
-): string {
-  const antes = factorAntes * rendimientoAntes;
-  const ahora = factorAhora * rendimientoAhora;
+function impactoDelCambio(antes: number, ahora: number): string {
   if (antes <= 0 || ahora <= 0) return 'El coste por unidad de uso va a cambiar.';
 
   // El coste es inversamente proporcional a las unidades útiles.
@@ -1934,18 +1803,13 @@ function impactoDelCambio(
  * ── Por qué esto existe ──────────────────────────────────────────────────────
  *
  * Porque el comando guarda **la ficha entera** —y por buenas razones, escritas en
- * su propio fichero— pero ahora hay tres pantallas que cambian **un solo campo**:
- * el precio de venta, el aprovechamiento y la corrección de la ficha. Si cada una
- * compusiera su cuerpo, el día que se añada un campo nuevo dos de las tres se lo
- * dejarían por el camino, en silencio y sin que ninguna prueba lo viera.
+ * su propio fichero— pero hay más de una pantalla que cambia **un solo campo**. Si
+ * cada una compusiera su cuerpo, el día que se añada un campo nuevo alguna se lo
+ * dejaría por el camino, en silencio y sin que ninguna prueba lo viera.
  *
  * Es exactamente el fallo que ya pasó una vez en esta pantalla: corregir una
  * errata en el nombre le borraba al producto su categoría, su proveedor y sus
  * notas. Un cuerpo, un sitio.
- *
- * `verificado` **no va aquí a propósito**: sin mandarlo, el servidor no toca el
- * aprovechamiento, que es lo que hace que la marca de «sin medir» signifique
- * algo. Lo manda quien lo cambia, y nadie más.
  */
 function laFichaEntera(producto: UnProducto): Record<string, unknown> {
   const ficha = producto.producto;
@@ -1956,7 +1820,6 @@ function laFichaEntera(producto: UnProducto): Record<string, unknown> {
     formato: ficha.formato,
     factor: ficha.factor,
     unidad_de_uso: ficha.unidadDeUso,
-    rendimiento: ficha.rendimiento,
     categoria_fiscal: ficha.categoriaFiscal,
     alergenos: producto.alergenos,
     peso_variable: ficha.pesoVariable,
@@ -1973,187 +1836,6 @@ function laFichaEntera(producto: UnProducto): Record<string, unknown> {
 function losMesesDeCongelado(elQueTiene: number): readonly { valor: string; texto: string }[] {
   const meses = [...new Set([1, 2, 3, 4, 6, 9, 12, 18, 24, elQueTiene])].sort((a, b) => a - b);
   return meses.map((n) => ({ valor: String(n), texto: plural(n, 'mes', 'meses') }));
-}
-
-// ── Medir el aprovechamiento ─────────────────────────────────────────────────
-
-/**
- * Cuánto se aprovecha de lo que entra.
- *
- * ── Por qué se pregunta así y no con un porcentaje ─────────────────────────
- *
- * Porque nadie sabe que su pulpo rinde un 62 %. Lo que sí sabe cualquiera es que
- * **de una caja de cinco kilos, limpios salen tres**. Así que se pregunta eso y la
- * cuenta la hace Estook, que es lo que este producto hace en todas partes.
- *
- * Y se enseña el impacto **antes de guardar**, porque el aprovechamiento
- * multiplica: «un rendimiento mal puesto es el error más caro del sistema»
- * (Auditoría 1.2). Bajarlo de 100 % a 60 % sube el coste de este producto un 67 %,
- * y con él el de todos los platos que lo lleven.
- */
-function MedirElAprovechamiento({
-  abierta,
-  producto,
-  alCerrar,
-  alHecho,
-  alFallar,
-}: {
-  readonly abierta: boolean;
-  readonly producto: UnProducto;
-  readonly alCerrar: () => void;
-  readonly alHecho: (frase: string) => void;
-  readonly alFallar: (error: ErrorDeLaApi) => void;
-}) {
-  const { cliente } = usarSesion();
-  const { sePuedeDeshacer } = usarDeshacer();
-  const volverALeer = usarVolverALeerElProducto(producto.producto.id);
-  const ficha = producto.producto;
-
-  const [entra, setEntra] = useState('');
-  const [sale, setSale] = useState('');
-  const [guardando, setGuardando] = useState(false);
-
-  if (!abierta) return null;
-
-  const cuantoEntra = Number(entra.replace(',', '.'));
-  const cuantoSale = Number(sale.replace(',', '.'));
-  const valen =
-    Number.isFinite(cuantoEntra) &&
-    Number.isFinite(cuantoSale) &&
-    cuantoEntra > 0 &&
-    cuantoSale > 0 &&
-    cuantoSale <= cuantoEntra;
-  const nuevo = valen ? Number((cuantoSale / cuantoEntra).toFixed(4)) : null;
-  // Cuánto sube o baja el coste. Es la cuenta del propio motor: el coste es
-  // `precio ÷ (factor × rendimiento)`, así que dividir el rendimiento entre dos
-  // dobla el coste.
-  const cuantoCambiaElCoste = nuevo === null ? null : ficha.rendimiento / nuevo - 1;
-
-  async function guardar(rendimiento: number, medido: boolean, { esDeshacer = false } = {}) {
-    setGuardando(true);
-    const respuesta = await cliente.ejecutar('cambiar_producto', {
-      ...laFichaEntera(producto),
-      rendimiento,
-      verificado: medido,
-    });
-    setGuardando(false);
-
-    if (!respuesta.ok) {
-      if (esDeshacer) throw new Error(respuesta.error.codigo);
-      alFallar(respuesta.error);
-      return;
-    }
-
-    if (esDeshacer) {
-      await volverALeer();
-      return;
-    }
-
-    const antes = ficha.rendimiento;
-    const estabaMedido = !ficha.sinVerificar;
-    sePuedeDeshacer({
-      que: `«${ficha.nombre}» aprovecha un ${comoPorcentaje(rendimiento)}`,
-      deshacer: () => guardar(antes, estabaMedido, { esDeshacer: true }),
-    });
-
-    alHecho(
-      `Guardado: se aprovecha un ${comoPorcentaje(rendimiento)}. El coste de este producto se mueve con él.`,
-    );
-  }
-
-  return (
-    <Hoja
-      abierta
-      alCerrar={alCerrar}
-      titulo="Cuánto se aprovecha"
-      pie={
-        <Botones>
-          <Boton tono="texto" onClick={alCerrar}>
-            Dejarlo
-          </Boton>
-          <Boton
-            tono="principal"
-            disabled={nuevo === null || guardando}
-            cargando={guardando}
-            textoCargando="Guardando"
-            onClick={() => {
-              if (nuevo !== null) void guardar(nuevo, true);
-            }}
-          >
-            Guardarlo
-          </Boton>
-        </Botones>
-      }
-    >
-      <div className="flex flex-col gap-e3 pt-e3">
-        <p className="text-cuerpo text-texto-suave">
-          No hace falta saber el porcentaje: pesa lo que entra y pesa lo que queda limpio, y de ahí
-          sale. Es lo que hace que lo que cuesta un plato sea verdad y no una suposición.
-        </p>
-
-        <div className="grid gap-e3 sm:grid-cols-2">
-          <Campo
-            etiqueta="Lo que entra"
-            tipo="numero"
-            autoFocus
-            detras={ficha.unidadDeUso}
-            ayuda="Lo que has puesto en la balanza."
-            value={entra}
-            onChange={(e) => {
-              setEntra(e.currentTarget.value);
-            }}
-          />
-          <Campo
-            etiqueta="Lo que queda limpio"
-            tipo="numero"
-            detras={ficha.unidadDeUso}
-            ayuda="Ya sin piel, sin espinas, sin lo que se tire."
-            value={sale}
-            onChange={(e) => {
-              setSale(e.currentTarget.value);
-            }}
-          />
-        </div>
-
-        {nuevo !== null && (
-          <Aviso
-            tono={
-              cuantoCambiaElCoste !== null && Math.abs(cuantoCambiaElCoste) > 0.05
-                ? 'atencion'
-                : 'info'
-            }
-            titulo={`Se aprovecha un ${comoPorcentaje(nuevo)}`}
-          >
-            {cuantoCambiaElCoste === null || Math.abs(cuantoCambiaElCoste) < 0.005 ? (
-              <>Es lo que tenía puesto, así que no cambia nada.</>
-            ) : (
-              <>
-                Con esto, lo que cuesta usar «{ficha.nombre}»{' '}
-                <strong>
-                  {cuantoCambiaElCoste > 0 ? 'sube' : 'baja'} un{' '}
-                  {comoPorcentaje(Math.abs(cuantoCambiaElCoste))}
-                </strong>
-                , y con él el de todos los platos que lo lleven en cuanto existan sus fichas.
-              </>
-            )}
-          </Aviso>
-        )}
-
-        {!ficha.sinVerificar && (
-          <div>
-            <Boton
-              tono="texto"
-              onClick={() => {
-                void guardar(ficha.rendimiento, false);
-              }}
-            >
-              Esto no lo he medido: marcarlo como supuesto
-            </Boton>
-          </div>
-        )}
-      </div>
-    </Hoja>
-  );
 }
 
 /** «12 %», de una variación de 0,12 (la del dominio, `comoHaCambiado`). */

@@ -77,8 +77,6 @@ export interface ProductoEnLista {
   readonly formato: string | null;
   readonly unidadDeUso: string;
   readonly factor: number;
-  readonly rendimiento: number;
-  readonly sinVerificar: boolean;
   readonly pesoVariable: boolean;
   readonly esEjemplo: boolean;
   readonly activo: boolean;
@@ -217,8 +215,6 @@ interface FilaDeProducto {
   formato: string | null;
   unidad_de_uso: string;
   factor: string;
-  rendimiento: string;
-  sin_verificar: boolean;
   peso_variable: boolean;
   es_ejemplo: boolean;
   activo: boolean;
@@ -402,8 +398,8 @@ async function leerProductos(
            p.id, p.nombre, c.nombre as categoria, p.categoria_id, p.proveedor_id,
            p.categoria_fiscal::text as categoria_fiscal, p.notas, p.formato,
            p.unidad_de_uso::text as unidad_de_uso,
-           p.factor::text as factor, p.rendimiento::text as rendimiento,
-           p.sin_verificar, p.peso_variable, p.es_ejemplo, p.activo,
+           p.factor::text as factor,
+           p.peso_variable, p.es_ejemplo, p.activo,
            pv.nombre as proveedor, p.codigo_de_barras,
            p.minimo::text as minimo,
            p.minimo_calculado,
@@ -593,8 +589,6 @@ function componer(
     formato: fila.formato,
     unidadDeUso,
     factor: Number(fila.factor),
-    rendimiento: Number(fila.rendimiento),
-    sinVerificar: fila.sin_verificar,
     pesoVariable: fila.peso_variable,
     esEjemplo: fila.es_ejemplo,
     activo: fila.activo,

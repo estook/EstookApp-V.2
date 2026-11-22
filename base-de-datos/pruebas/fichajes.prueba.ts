@@ -295,8 +295,8 @@ describe('la merma', () => {
   beforeAll(async () => {
     const centro = await base.localPorCodigo('bar-centro');
     const [puesto] = await comoDuena<{ id: string }>(
-      `insert into estook.producto (local_id, nombre, unidad_de_uso, factor, rendimiento)
-       values ($1, 'Pulpo de prueba', 'kg', 1, 1)
+      `insert into estook.producto (local_id, nombre, unidad_de_uso, factor)
+       values ($1, 'Pulpo de prueba', 'kg', 1)
        returning id::text as id`,
       [centro],
     );

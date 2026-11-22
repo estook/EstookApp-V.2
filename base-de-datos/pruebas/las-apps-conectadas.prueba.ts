@@ -130,7 +130,6 @@ describe('cada producto es de una zona, y cada uno trabaja con la suya', () => {
           formato: null,
           factor: 1,
           unidad_de_uso: 'kg',
-          rendimiento: 1,
           categoria_fiscal: 'alimento',
           alergenos: [],
           peso_variable: false,

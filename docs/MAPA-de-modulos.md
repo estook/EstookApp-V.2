@@ -48,9 +48,9 @@ su maqueta aprobada antes del código**, y **las AUDITORÍAS son las del Plan, E
 
 ### Ahora
 
-| Entrega                                   | Qué es                                                                                                                                                                            | Cómo está                                                                                                   | Dónde está escrito                                                                                  |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| **M20 · 1 · Lo vendido baja del almacén** | Cada cobro resta lo de su escandallo, en bruto y con el coste de ese día; el ticket anulado devuelve todo y la devolución, solo con «Se cobró de más»; Por producto; una sola vez | **Construido** en `m20-1-lo-vendido-baja`, con la migración 0121 (y la 0122, fuera el fijado); por fusionar | [0149](decisiones/0149-m20-1-lo-vendido-baja.md); [la maqueta](maquetas/m20-1-lo-vendido-baja.html) |
+| Entrega                                   | Qué es                                                                                                                                                                            | Cómo está                                                                                                                                                                                             | Dónde está escrito                                                                                  |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **M20 · 1 · Lo vendido baja del almacén** | Cada cobro resta lo de su escandallo, tal cual y con el coste de ese día; el ticket anulado devuelve todo y la devolución, solo con «Se cobró de más»; Por producto; una sola vez | **Construido** en `m20-1-lo-vendido-baja`, con la migración 0121 (y la 0122, fuera el fijado, y la 0123, fuera el aprovechamiento: [0150](decisiones/0150-fuera-el-aprovechamiento.md)); por fusionar | [0149](decisiones/0149-m20-1-lo-vendido-baja.md); [la maqueta](maquetas/m20-1-lo-vendido-baja.html) |
 
 ### Estook TPV, hasta el final
 
@@ -134,7 +134,7 @@ Lo que ya existe a medias y el módulo que lo acaba. Vivía en `ESTADO.md` hasta
 | Leer el albarán de una foto                                | **Hecho** (Fogón 1)    | Al recibir, con Fogón (0098)                                   |
 | Avisos de fichar por push, y que fuera de turno no suene   | **Mejoras · I**        | La campana (R1) y el horario de siempre, que el widget ya dice |
 | Lo gastado de verdad, food cost real y desviación          | **M8**, la 2.ª         | Contar en dos pasos, el valor en una fecha y FEFO (0078)       |
-| Desviación de los platos y calibración del aprovechamiento | **M20** (0092)         | Lo contado con su hora, y la pantalla que deja M8 (0078)       |
+| Desviación de los platos (sin aprovechamiento, 0150)       | **M20** (0092)         | Lo contado con su hora, y la pantalla que deja M8 (0078)       |
 | Descontar lo vendido del inventario                        | **M20**                | El cierre guarda los platos con el nombre normalizado          |
 | Los terminales del local                                   | **Hecho** (T1, 0108)   | Caja, comandero y fichar; cocina y barra se vinculan con T4    |
 | Leer los platos de la carta subida y proponer los cambios  | **Hecho** (M10 · 1)    | Del PDF sin IA o de las fotos con Fogón (0102)                 |

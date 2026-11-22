@@ -182,7 +182,7 @@ export async function lasElaboracionesDelLocal(
 
 /**
  * Los productos del local con lo que necesita una ficha: su unidad, sus alérgenos y,
- * **solo con `conCostes`**, lo que cuesta una unidad de uso con su aprovechamiento:
+ * **solo con `conCostes`**, lo que cuesta una unidad de uso:
  * el precio medio del Almacén, y si lo que hay entró sin coste, el de hoy (la misma
  * regla que el valor de la cámara y el food cost real).
  */
@@ -209,10 +209,9 @@ export async function losProductosDeLasFichas(
                c.nombre as categoria,
                p.contenido_por_unidad::text as contenido,
                p.unidad_del_contenido::text as unidad_del_contenido,
-               -- Lo pagado por cada unidad en bruto, entre lo que se aprovecha (0099): el
-               -- plato lleva gramos limpios. La cámara se valora sin dividir.
-               round(coalesce(nullif(e.coste_milesimas, 0), v.coste_milesimas)
-                     / p.rendimiento)::text as coste
+               -- Lo pagado por cada unidad, como la cámara: sin aprovechamiento (0150). Lo
+               -- que pide el escandallo es lo que sale, y lo que se tira es merma.
+               coalesce(nullif(e.coste_milesimas, 0), v.coste_milesimas)::text as coste
           from estook.producto p
           left join estook.categoria_de_producto c on c.id = p.categoria_id
           left join lateral (
@@ -512,9 +511,8 @@ export async function elLibroDeOtroDia(
   const fecha = jornadaDe(instante, zonaHoraria, corte);
   const [costes, guardadas] = await Promise.all([
     contexto.sql<{ id: string; coste: string | null }[]>`
-      -- Entre lo que se aprovecha, como el de hoy (0099).
-      select p.id, round(coalesce(nullif(m.coste_medio_despues, 0), v.coste_milesimas)
-                         / p.rendimiento)::text as coste
+      -- Lo pagado por cada unidad, como el de hoy (0150).
+      select p.id, coalesce(nullif(m.coste_medio_despues, 0), v.coste_milesimas)::text as coste
         from estook.producto p
         left join lateral (
           select x.coste_medio_despues from estook.movimiento_de_stock x

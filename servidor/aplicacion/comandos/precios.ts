@@ -39,7 +39,6 @@ export const entradaPonerPrecio = z
      */
     formato: z.string().trim().max(120).nullable().optional(),
     factor: z.number().positive().max(1_000_000).optional(),
-    rendimiento: z.number().positive().max(1).optional(),
   })
   .strict();
 
@@ -69,13 +68,11 @@ export const ponerPrecio = comando<EntradaPonerPrecio, SalidaPonerPrecio>({
         formato: string | null;
         factor: string;
         unidad_de_uso: string;
-        rendimiento: string;
         proveedor_id: string | null;
       }[]
     >`
       select local_id, nombre, formato, factor::text as factor,
-             unidad_de_uso::text as unidad_de_uso, rendimiento::text as rendimiento,
-             proveedor_id
+             unidad_de_uso::text as unidad_de_uso, proveedor_id
         from estook.producto
        where id = ${entrada.producto_id}
     `;
@@ -101,7 +98,6 @@ export const ponerPrecio = comando<EntradaPonerPrecio, SalidaPonerPrecio>({
       precioCentimos: entrada.precio_centimos,
       formato: entrada.formato ?? producto.formato,
       factor: entrada.factor ?? Number(producto.factor),
-      rendimiento: entrada.rendimiento ?? Number(producto.rendimiento),
       origen: 'a_mano',
     });
 

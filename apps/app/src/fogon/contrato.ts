@@ -109,6 +109,7 @@ export interface MermaLeida {
   } | null;
   readonly cuanto: number | null;
   readonly motivo:
+    | 'limpieza'
     | 'caducado'
     | 'mal_estado'
     | 'roto'

@@ -93,37 +93,18 @@ export function esAlergeno(valor: unknown): valor is Alergeno {
  *
  * «Confundir unidad de compra con unidad de uso es la primera causa de
  *  escandallos falsos. Por eso el alta obliga a decir las dos y **enseña el
- *  resultado**: "caja de 3 kg ÷ 3.000 g × 0,85 de rendimiento = 0,0039 €/g"»
- * (Auditoría 1.2).
+ *  resultado**» (Auditoría 1.2): «Caja 3 kg = 3.000 g para usar».
  *
  * Esto compone esa frase. No calcula el coste —eso es `costePorUnidadDeUso`, que
  * tiene un único dueño en `coste.ts`— sino que **explica de dónde sale**, que es
- * lo que hace que alguien note que se ha equivocado antes de guardarlo.
+ * lo que hace que alguien note que se ha equivocado antes de guardarlo. Sin
+ * aprovechamiento desde el 22-nov (0150): lo que se compra es lo que se usa.
  */
 export function comoSaleElCoste(referencia: {
   readonly formato: string;
   readonly factor: number;
   readonly unidadDeUso: UnidadDeUso;
-  readonly rendimiento: number;
 }): string {
-  const { formato, factor, unidadDeUso, rendimiento } = referencia;
-  const cuantas = `${factor.toLocaleString('es-ES')} ${unidadDeUso}`;
-
-  if (rendimiento >= 1) {
-    return `${formato} = ${cuantas} para usar.`;
-  }
-
-  // `Math.trunc` y no `Math.round`: esto es una frase explicativa —«te quedan
-  // unos 4.250 ml»— y la regla 9 reserva `Math.round` a los motores de dinero.
-  // Un gramo arriba o abajo en un texto que ya dice «en torno al» no cambia nada.
-  // Con poco dentro, con dos decimales: la maceta de albahaca (1 ud al 50 %) decía
-  // «te quedan unos 0 ud» (20-oct). Lo de siempre, entero.
-  const sinDecimales = factor * rendimiento;
-  const utiles =
-    sinDecimales >= 10 ? Math.trunc(sinDecimales) : Math.trunc(sinDecimales * 100) / 100;
-  const merma = Math.trunc((1 - rendimiento) * 100);
-  return (
-    `${formato} = ${cuantas}, y al limpiarlo se pierde en torno al ${merma} %: ` +
-    `te quedan unos ${utiles.toLocaleString('es-ES')} ${unidadDeUso}.`
-  );
+  const { formato, factor, unidadDeUso } = referencia;
+  return `${formato} = ${factor.toLocaleString('es-ES')} ${unidadDeUso} para usar.`;
 }

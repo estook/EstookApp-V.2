@@ -14,7 +14,7 @@ import { elFallo, entrarFichando, losDatos, montarLaApi, type ApiDePrueba } from
  * **M20 · 1 · Lo vendido baja del almacén** (decisión 0149, migración 0121), contra la base y con el
  * Verifacti de mentira. Cobra una camarera, que no lleva Almacén:
  *
- *   · cobrar resta el escandallo de cada plato, en bruto, con su coste congelado; el plato sin
+ *   · cobrar resta el escandallo de cada plato, tal cual, con su coste congelado; el plato sin
  *     escandallo cuenta en dinero y no resta nada
  *   · el mismo cobro dos veces no resta dos veces
  *   · si restar falla, el cobro sigue, y el siguiente cobro lo vuelve a intentar
@@ -157,7 +157,7 @@ beforeAll(async () => {
   ).llave;
   rosaEnEstook = await api.entrar(ROSA);
 
-  // El género: 5 kg de carne a 12 €/kg, y 2 kg de cebolla a 2 €/kg con un 80 % aprovechable.
+  // El género: 5 kg de carne a 12 €/kg, y 2 kg de cebolla a 2 €/kg.
   carne = losDatos<{ productoId: string }>(
     await api.ejecutar(rosaEnEstook, 'crear_producto', {
       nombre: 'Carne de hamburguesa M20',
@@ -174,7 +174,6 @@ beforeAll(async () => {
       formato: 'Kilo',
       factor: 1000,
       unidad_de_uso: 'g',
-      rendimiento: 0.8,
       precio_centimos: 200,
       cantidad_inicial: 2000,
     }),
@@ -242,15 +241,15 @@ afterAll(async () => {
 let primero: { cobroId: string; documentoId: string };
 
 describe('cobrar resta del almacén', () => {
-  it('dos hamburguesas y un pulpo: resta la carne y la cebolla en bruto; el pulpo, nada', async () => {
+  it('dos hamburguesas y un pulpo: resta lo que pide el escandallo; el pulpo, nada', async () => {
     primero = await cobrarUnaMesa(
       0,
       [{ nombre: 'Hamburguesa', cantidad: 2 }, { nombre: 'Pulpo' }],
       4050,
     );
-    // 2 × 180 g de carne; 2 × 40 g de cebolla limpia, con un 80 %, son 100 g en bruto.
+    // 2 × 180 g de carne y 2 × 40 g de cebolla: lo que pide el escandallo (0150).
     expect(await loQueHay(carne)).toBe(4640);
-    expect(await loQueHay(cebolla)).toBe(1900);
+    expect(await loQueHay(cebolla)).toBe(1920);
 
     const movimientos = await comoDuena<{
       tipo: string;
@@ -276,7 +275,7 @@ describe('cobrar resta del almacén', () => {
       {
         tipo: 'consumo',
         origen: 'venta',
-        cantidad: '-100.0000',
+        cantidad: '-80.0000',
         motivo: 'Vendido · Mesa 1',
         persona: SARA,
       },
@@ -292,9 +291,9 @@ describe('cobrar resta del almacén', () => {
          from estook.linea_bajada where cobro_id = $1 order by nombre`,
       [primero.cobroId],
     );
-    // 360 g × 1.200 milésimas + 100 g × 200 milésimas = 452.000 milésimas: 4,52 €.
+    // 360 g × 1.200 milésimas + 80 g × 200 milésimas = 448.000 milésimas: 4,48 €.
     expect(bajadas).toEqual([
-      { nombre: 'Hamburguesa M20', estado: 'bajada', coste: '452000', importe: 2400 },
+      { nombre: 'Hamburguesa M20', estado: 'bajada', coste: '448000', importe: 2400 },
       { nombre: 'Pulpo M20', estado: 'sin_escandallo', coste: null, importe: 1650 },
     ]);
     const [cola] = await comoDuena<{ n: number }>(
@@ -473,8 +472,8 @@ describe('lo que se lee', () => {
     // La tabla suma exactamente su total.
     expect(r.ventas).toBe(r.productos.reduce((s, p) => s + p.ventas, 0));
     expect(r.sinEscandallo).toBe(1);
-    // Cada hamburguesa costó 180 g × 12 €/kg + 50 g × 2 €/kg = 2,26 €.
-    expect(hamburguesa?.coste).toBe(9 * 226);
+    // Cada hamburguesa costó 180 g × 12 €/kg + 40 g × 2 €/kg = 2,24 €.
+    expect(hamburguesa?.coste).toBe(9 * 224);
   });
 
   it('Vendidos sin escandallo: el pulpo, y deja de salir al crearle uno', async () => {

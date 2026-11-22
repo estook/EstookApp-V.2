@@ -41,12 +41,12 @@ import { centimos } from './dinero.ts';
  * calculadora no dan lo mismo, el que se equivoca es el motor.
  */
 
-// 10 kg de carne a 60 € de los que quedan 8 kg útiles: 7,50 €/kg reales (Plan, M9).
+// 10 kg de carne a 75 €: 7,50 €/kg. Sin aprovechamiento (0150).
 const CARNE: ProductoDelEscandallo = {
   id: 'carne',
   nombre: 'Carne picada',
   unidad: 'kg',
-  costeMilesimas: costePorUnidadDeUso(centimos(6000), { factor: 10, rendimiento: 0.8 }),
+  costeMilesimas: costePorUnidadDeUso(centimos(7500), { factor: 10 }),
   alergenos: [],
 };
 // Pan de hamburguesa: 0,40 € la unidad.
@@ -162,7 +162,7 @@ describe('las unidades', () => {
 });
 
 describe('lo que cuesta', () => {
-  it('180 g de carne con su aprovechamiento son 1,35 €, como a mano', () => {
+  it('180 g de carne son 1,35 €, como a mano', () => {
     const receta = costeDeLaReceta([linea({ productoId: 'carne' }, 180, 'g')], EL_LIBRO);
     // 7,50 €/kg × 0,18 kg = 1,35 €.
     expect(aCentimos(receta.milesimas ?? 0)).toBe(135);

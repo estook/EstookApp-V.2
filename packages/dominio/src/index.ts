@@ -76,15 +76,13 @@ export {
 
 export type { FechaOperativa, HoraDeCorte, JornadaEntera, TramoQueSeMira } from './tiempo.ts';
 
-// ── M2 · unidades y coste · precio ÷ (factor × rendimiento) ───────────────────
+// ── M2 · unidades y coste · precio ÷ factor ─────────────────────────────────────────────────────
 export {
   SIN_EXISTENCIAS,
   FACTOR_SIN_VERIFICAR,
-  RENDIMIENTO_SIN_VERIFICAR,
   milesimas,
   cantidad,
   costePorUnidadDeUso,
-  costeLimpio,
   costeDeLinea,
   costeDeLineaDesdeCompra,
   precioMedioPonderado,

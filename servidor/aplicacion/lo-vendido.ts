@@ -361,7 +361,7 @@ function lasOpciones(opciones: unknown): OpcionQueBaja[] {
   });
 }
 
-/** Las recetas, las elaboraciones y los productos con su unidad y lo que se aprovecha. */
+/** Las recetas, las elaboraciones y los productos con su unidad. */
 async function elLibroQueBaja(
   contexto: Contexto,
   localId: string,
@@ -369,14 +369,7 @@ async function elLibroQueBaja(
   readonly libro: LibroQueBaja;
   readonly recetaDelPlato: Awaited<ReturnType<typeof elLibroDelLocal>>['recetaDelPlato'];
 }> {
-  const [elLibro, rendimientos] = await Promise.all([
-    elLibroDelLocal(contexto, localId, false),
-    contexto.sql<{ id: string; rendimiento: string }[]>`
-      select id::text as id, rendimiento::text as rendimiento
-        from estook.producto where local_id = ${localId}::uuid
-    `,
-  ]);
-  const deCadaUno = new Map(rendimientos.map((r) => [r.id, Number(r.rendimiento)]));
+  const elLibro = await elLibroDelLocal(contexto, localId, false);
   const productos = new Map<string, ProductoQueBaja>(
     [...elLibro.productos.values()].map((p) => [
       p.id,
@@ -384,7 +377,6 @@ async function elLibroQueBaja(
         id: p.id,
         unidad: p.unidad,
         contenido: p.contenido ?? null,
-        rendimiento: deCadaUno.get(p.id) ?? 1,
       },
     ]),
   );

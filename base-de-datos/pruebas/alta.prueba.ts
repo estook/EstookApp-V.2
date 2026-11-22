@@ -255,11 +255,9 @@ describe('el catálogo de referencia', () => {
     );
     expect(conteo?.cuantos ?? 0).toBeGreaterThan(250);
 
-    // Sin factor no hay «precio ÷ (factor × rendimiento)», que es para lo que
-    // existe este catálogo.
+    // Sin factor no hay «precio ÷ factor», que es para lo que existe este catálogo.
     const malos = await comoDuena<{ codigo: string }>(
-      `select codigo from estook.producto_de_referencia
-        where factor <= 0 or rendimiento <= 0 or rendimiento > 1`,
+      `select codigo from estook.producto_de_referencia where factor <= 0`,
     );
     expect(malos).toEqual([]);
   });

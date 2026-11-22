@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 22 de noviembre, después** ([0150](../decisiones/0150-fuera-el-aprovechamiento.md)), sin cambiar de versión, **decidido por Richi**: fuera el aprovechamiento de toda la app. El **Manifiesto** (catálogo, ficha del producto y la fórmula del coste: `precio ÷ factor`), el **Plan** (M6 y M9) y la **Auditoría de flujos** (1.2, 2.2 pasa a «se cambia cuánto trae lo que se compra», el alta y su lista final) lo dicen; lo que se tira al limpiar es merma.
+
 **El 22 de noviembre** ([0149](../decisiones/0149-m20-1-lo-vendido-baja.md)), sin cambiar de versión, **decidido con Richi** (la A de las devoluciones): el **Plan** pone en B5 la pestaña **Por producto** de Negocio · Ventas, marca M20 · 1 construido en su ficha y cambia la regla de anulaciones y devoluciones (el ticket anulado devuelve todo; la devolución, solo con «Se cobró de más»), y en la cabecera de D, M20 · 1 pasa a «Ahora»; el **Anexo** dice en 5.4 y 7.7 que el género vuelve según el motivo y que cada plato baja del almacén al cobrar, en un punto de guardado; la **Auditoría de flujos** lo dice en el esquema del cobro.
 
 **El 17 de noviembre** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md), sección 9), sin cambiar de versión: el **Plan** pone en B3 y B5 las siete apps de «L · La limpieza» (sin Cuaderno, Pulse, Costes ni Tareas, y Carta › Carta en «Carta · Agotados»), los títulos de M17 («quitado») y M21 («Negocio y analítica»), y L como hecha en el orden.

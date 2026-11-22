@@ -139,9 +139,9 @@ export interface ProductoDelEscandallo extends UnidadDelProducto {
   readonly nombre: string;
   readonly unidad: UnidadDeUso;
   /**
-   * Lo que cuesta una unidad de uso, **ya con su aprovechamiento**, en milésimas de
-   * céntimo (el precio medio del Almacén, o el de hoy si entró sin coste). Nulo si
-   * no tiene ningún precio.
+   * Lo que cuesta una unidad de uso, en milésimas de céntimo (el precio medio del
+   * Almacén, o el de hoy si entró sin coste), sin aprovechamiento (0150). Nulo si no
+   * tiene ningún precio.
    */
   readonly costeMilesimas: number | null;
   readonly alergenos: readonly string[];

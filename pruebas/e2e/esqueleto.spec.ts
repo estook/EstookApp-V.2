@@ -922,7 +922,6 @@ test.describe('el Panel de cada uno, que es uno solo', () => {
         formato: 'Saco de 25 kg',
         factor: 25000,
         unidad_de_uso: 'g',
-        rendimiento: 1,
         precio_centimos: 2500,
       },
     );

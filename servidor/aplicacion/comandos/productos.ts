@@ -29,8 +29,8 @@ import {
  * «Se da de alta un producto en 30 segundos» es el primer criterio de terminado
  * del módulo. Lo que lo hace posible no es este fichero: es que **la mitad cara
  * ya la hizo M5** con el catálogo de referencia. Escribes «aceite», eliges, y
- * llegan hechos el formato, el factor, la unidad de uso, el rendimiento, la
- * categoría fiscal y los alérgenos. Aquí solo se copia la fila y se le pone el
+ * llegan hechos el formato, el factor, la unidad de uso, la categoría fiscal y
+ * los alérgenos. Aquí solo se copia la fila y se le pone el
  * precio.
  *
  * Por eso `crear_producto` acepta un `de_referencia` **y también** todos los
@@ -58,7 +58,6 @@ export const entradaCrearProducto = z
     formato: z.string().trim().max(120).nullable().optional(),
     factor: z.number().positive().max(1_000_000).optional(),
     unidad_de_uso: z.enum(UNIDADES_DE_USO).optional(),
-    rendimiento: z.number().positive().max(1).optional(),
     categoria_fiscal: z
       .enum([
         'alimento',
@@ -144,7 +143,6 @@ export type EntradaCrearProducto = z.infer<typeof entradaCrearProducto>;
 export interface SalidaCrearProducto {
   readonly productoId: string;
   readonly nombre: string;
-  readonly sinVerificar: boolean;
   readonly conPrecio: boolean;
   /** Lo que ha quedado en camara, si se dijo cuanto habia. */
   readonly cantidadInicial: number;
@@ -156,25 +154,20 @@ interface Plantilla {
   readonly formato: string | null;
   readonly factor: number;
   readonly unidadDeUso: string;
-  readonly rendimiento: number;
   readonly categoriaFiscal: string;
   readonly alergenos: readonly string[];
   readonly categoria: string | null;
   readonly referenciaId: string | null;
-  /** El catálogo trae el factor y el rendimiento medidos por alguien, no supuestos. */
-  readonly verificable: boolean;
 }
 
 const A_MANO: Plantilla = {
   formato: null,
   factor: 1,
   unidadDeUso: 'ud',
-  rendimiento: 1,
   categoriaFiscal: 'alimento',
   alergenos: [],
   categoria: null,
   referenciaId: null,
-  verificable: false,
 };
 
 async function laPlantilla(contexto: Contexto, referenciaId: string | null): Promise<Plantilla> {
@@ -187,13 +180,12 @@ async function laPlantilla(contexto: Contexto, referenciaId: string | null): Pro
       formato: string;
       factor: string;
       unidad_de_uso: string;
-      rendimiento: string;
       categoria_fiscal: string;
       alergenos: string[];
     }[]
   >`
     select id, categoria, formato, factor::text as factor,
-           unidad_de_uso::text as unidad_de_uso, rendimiento::text as rendimiento,
+           unidad_de_uso::text as unidad_de_uso,
            categoria_fiscal::text as categoria_fiscal, alergenos
       from estook.producto_de_referencia
      where id = ${referenciaId}
@@ -210,12 +202,10 @@ async function laPlantilla(contexto: Contexto, referenciaId: string | null): Pro
     formato: fila.formato,
     factor: Number(fila.factor),
     unidadDeUso: fila.unidad_de_uso,
-    rendimiento: Number(fila.rendimiento),
     categoriaFiscal: fila.categoria_fiscal,
     alergenos: fila.alergenos,
     categoria: fila.categoria,
     referenciaId: fila.id,
-    verificable: true,
   };
 }
 
@@ -268,19 +258,12 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
 
     const plantilla = await laPlantilla(contexto, entrada.de_referencia ?? null);
 
-    const rendimiento = entrada.rendimiento ?? plantilla.rendimiento;
     const unidadDeUso = entrada.unidad_de_uso ?? plantilla.unidadDeUso;
     const { factor, formato } = sinPrecioDeUnGramo(
       unidadDeUso,
       entrada.factor ?? plantilla.factor,
       entrada.formato ?? plantilla.formato,
     );
-
-    // «Si faltan, se asume factor 1 y rendimiento 1, y el producto queda marcado
-    //  como sin verificar, porque un rendimiento mal puesto es el error más caro
-    //  del sistema» (Auditoría 1.2). Lo que viene del catálogo tampoco está
-    //  verificado por esta cocina: es una propuesta buena, y se dice.
-    const sinVerificar = !plantilla.verificable && entrada.rendimiento === undefined;
 
     const categoriaId =
       entrada.categoria_id ?? (await categoriaPorNombre(contexto, localId, plantilla.categoria));
@@ -301,9 +284,9 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
 
     const creados = await contexto.sql<{ id: string }[]>`
       insert into estook.producto (
-        local_id, categoria_id, nombre, formato, factor, unidad_de_uso, rendimiento,
+        local_id, categoria_id, nombre, formato, factor, unidad_de_uso,
         categoria_fiscal, alergenos, peso_variable, codigo_de_barras, minimo,
-        proveedor_id, producto_de_referencia_id, sin_verificar, notas,
+        proveedor_id, producto_de_referencia_id, notas,
         iva_de_compra, contenido_por_unidad, unidad_del_contenido, zona
       )
       values (
@@ -313,7 +296,6 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
         ${formato},
         ${factor},
         ${unidadDeUso}::estook.unidad_de_uso,
-        ${rendimiento},
         ${entrada.categoria_fiscal ?? plantilla.categoriaFiscal}::estook.categoria_fiscal,
         ${entrada.alergenos ?? plantilla.alergenos},
         ${entrada.peso_variable ?? false},
@@ -321,7 +303,6 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
         ${entrada.minimo ?? null},
         ${entrada.proveedor_id ?? null},
         ${plantilla.referenciaId},
-        ${sinVerificar},
         ${entrada.notas ?? null},
         ${entrada.iva_de_compra ?? null},
         ${entrada.contenido_por_unidad ?? null},
@@ -344,7 +325,7 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
       await contexto.sql`
         insert into estook.precio_de_producto (
           producto_id, proveedor_id, precio_centimos, formato, factor, unidad_de_uso,
-          rendimiento, coste_milesimas, desde, origen, creado_por
+          coste_milesimas, desde, origen, creado_por
         )
         values (
           ${productoId},
@@ -353,7 +334,6 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
           ${formato},
           ${factor},
           ${unidadDeUso}::estook.unidad_de_uso,
-          ${rendimiento},
           ${costeDeCompra(entrada.precio_centimos ?? 0, factor)},
           ${hoy}::date,
           ${plantilla.referenciaId === null ? 'a_mano' : 'catalogo'}::estook.origen_de_precio,
@@ -366,7 +346,7 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
       select estook.anotar(
         ${organizacionId}::uuid, 'crear', 'producto', ${productoId},
         ${localId}::uuid, null,
-        ${JSON.stringify({ nombre: entrada.nombre, de_referencia: plantilla.referenciaId, sin_verificar: sinVerificar })}::text::jsonb,
+        ${JSON.stringify({ nombre: entrada.nombre, de_referencia: plantilla.referenciaId })}::text::jsonb,
         null
       )
     `;
@@ -457,7 +437,6 @@ export const crearProducto = comando<EntradaCrearProducto, SalidaCrearProducto>(
     return {
       productoId,
       nombre: entrada.nombre,
-      sinVerificar,
       conPrecio,
       cantidadInicial,
       ejemplosQueQuedan: ejemplos[0]?.contar_ejemplos ?? 0,
@@ -475,7 +454,12 @@ export const entradaCambiarProducto = z
     formato: z.string().trim().max(120).nullable(),
     factor: z.number().positive().max(1_000_000),
     unidad_de_uso: z.enum(UNIDADES_DE_USO),
-    rendimiento: z.number().positive().max(1),
+    /**
+     * **Se acepta y no se usa** (0150): no hay aprovechamiento. Lo mandan las pantallas de antes
+     * de la 0123, que pueden seguir abiertas en algún móvil; se quita con la migración que borre la
+     * columna.
+     */
+    rendimiento: z.number().positive().max(1).optional(),
     categoria_fiscal: z.enum([
       'alimento',
       'bebida_alcoholica',
@@ -493,15 +477,7 @@ export const entradaCambiarProducto = z
     minimo: z.number().min(0).nullable(),
     proveedor_id: z.string().uuid().nullable(),
     notas: z.string().trim().max(2000).nullable(),
-    /**
-     * Si el aprovechamiento es **una medida de esta cocina** o una suposición.
-     *
-     * Tres estados, y los tres hacen falta: `true` lo da por medido, `false` lo
-     * vuelve a dejar por medir, y **sin mandarlo no se toca**. Esa tercera es la
-     * que faltaba: sin ella, guardar la ficha para corregir una errata volvía a
-     * marcar el producto como sin verificar, y la etiqueta naranja no se podía
-     * quitar desde ninguna parte.
-     */
+    /** **Se acepta y no se usa** (0150): marcaba el aprovechamiento como medido. Como `rendimiento`. */
     verificado: z.boolean().optional(),
     /**
      * De dónde es: cocina, sala o limpieza (0035).
@@ -545,7 +521,7 @@ export type EntradaCambiarProducto = z.infer<typeof entradaCambiarProducto>;
 
 export interface SalidaCambiarProducto {
   readonly productoId: string;
-  /** Si ha cambiado el factor o el rendimiento, que es lo que multiplica. */
+  /** Si ha cambiado el factor, que es lo que mueve el coste de cada unidad. */
   readonly cambiaElCoste: boolean;
   /** Si cambió el envase, el precio nuevo del envase, con lo mismo por kilo (0099). */
   readonly precioQueSigue: number | null;
@@ -577,12 +553,11 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
         local_id: string;
         nombre: string;
         factor: string;
-        rendimiento: string;
         unidad_de_uso: string;
         con_movimientos: boolean;
       }[]
     >`
-      select p.local_id, p.nombre, p.factor::text as factor, p.rendimiento::text as rendimiento,
+      select p.local_id, p.nombre, p.factor::text as factor,
              p.unidad_de_uso::text as unidad_de_uso,
              exists (
                select 1 from estook.movimiento_de_stock m where m.producto_id = p.id
@@ -640,28 +615,11 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       entrada.factor,
       entrada.formato,
     );
-    const cambiaElCoste =
-      Number(previo.factor) !== factor || Number(previo.rendimiento) !== entrada.rendimiento;
+    const cambiaElCoste = Number(previo.factor) !== factor;
     const cambiaElIva = entrada.iva_de_compra !== undefined;
     const cambiaElContenido = entrada.contenido_por_unidad !== undefined;
     const cambiaLaZona = entrada.zona !== undefined;
     const cambiaLoCongelado = entrada.congelado_aguanta_meses !== undefined;
-
-    /**
-     * ── «Sin verificar», que se volvía a poner solo ──────────────────────────
-     *
-     * Esto decía `sin_verificar = verificado === true ? false : !cambiaElCoste`,
-     * y esa segunda mitad es un fallo de verdad: **corregir una errata en el
-     * nombre volvía a marcar el producto como sin verificar**, porque no había
-     * cambiado la cuenta. La etiqueta naranja salía en todos los productos, no se
-     * podía quitar desde ninguna parte y volvía sola en cuanto se guardaba la
-     * ficha. Era imposible que significara nada.
-     *
-     * Ahora son tres estados y no dos: si no llega `verificado`, **no se toca**.
-     * Se pone a mano —«lo he medido»— o se quita a mano, y esa es la única forma
-     * de que la marca quiera decir algo.
-     */
-    const sinVerificarNuevo = entrada.verificado === undefined ? null : !entrada.verificado;
 
     const cambiados = await contexto.sql<{ id: string }[]>`
       update estook.producto
@@ -670,7 +628,6 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
              formato          = ${formato},
              factor           = ${factor},
              unidad_de_uso    = ${entrada.unidad_de_uso}::estook.unidad_de_uso,
-             rendimiento      = ${entrada.rendimiento},
              categoria_fiscal = ${entrada.categoria_fiscal}::estook.categoria_fiscal,
              alergenos        = ${entrada.alergenos},
              peso_variable    = ${entrada.peso_variable},
@@ -693,9 +650,6 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
              congelado_aguanta_meses = case when ${cambiaLoCongelado}
                                             then ${entrada.congelado_aguanta_meses ?? null}::smallint
                                             else congelado_aguanta_meses end,
-             sin_verificar    = case when ${sinVerificarNuevo === null}
-                                     then sin_verificar
-                                     else ${sinVerificarNuevo ?? false} end,
              -- El mínimo cambiado a mano deja de rehacerlo Estook (M8 · 0078): lo
              -- que pone una persona no lo pisa el reloj del lunes. En el set, la
              -- columna de la derecha es la de antes.
@@ -727,8 +681,8 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       select estook.anotar(
         ${organizacionId}::uuid, 'cambiar', 'producto', ${entrada.producto_id},
         ${previo.local_id}::uuid,
-        ${JSON.stringify({ nombre: previo.nombre, factor: Number(previo.factor), rendimiento: Number(previo.rendimiento) })}::text::jsonb,
-        ${JSON.stringify({ nombre: entrada.nombre, factor, rendimiento: entrada.rendimiento })}::text::jsonb,
+        ${JSON.stringify({ nombre: previo.nombre, factor: Number(previo.factor) })}::text::jsonb,
+        ${JSON.stringify({ nombre: entrada.nombre, factor })}::text::jsonb,
         null
       )
     `;
@@ -764,7 +718,6 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
           precioCentimos: precio,
           formato,
           factor,
-          rendimiento: entrada.rendimiento,
           origen: 'a_mano',
           soloSiCambia: true,
         });
@@ -774,8 +727,7 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
       }
     }
 
-    // **El rendimiento multiplica** (Auditoría 2.2): pasar el pulpo de 0,80 a
-    // 0,65 sube su coste un 23 % de golpe, en todos los platos que lo lleven. Por
+    // **El factor mueve el coste de cada unidad**, en todos los platos que lo lleven. Por
     // eso el evento dice si el coste se mueve, y no solo que la ficha cambió.
     await publicar(contexto.sql, {
       tipo: 'producto.cambiado',
@@ -785,7 +737,6 @@ export const cambiarProducto = comando<EntradaCambiarProducto, SalidaCambiarProd
         productoId: entrada.producto_id,
         cambiaElCoste,
         factor,
-        rendimiento: entrada.rendimiento,
         // Lo que aguanta congelado mueve los avisos de lo que ya está en el
         // congelador (0049).
         cambiaLoCongelado,

@@ -65,7 +65,6 @@ function laFichaDe(productoId: string, nombre: string, unidadDeUso: string) {
     formato: null,
     factor: 1,
     unidad_de_uso: unidadDeUso,
-    rendimiento: 1,
     categoria_fiscal: 'alimento',
     alergenos: [],
     peso_variable: false,
@@ -291,37 +290,13 @@ describe('lo que sale dice si se vendió, y el dinero lo cuenta la caja', () => 
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 3 · «Sin verificar» deja de volver solo
+// 3 · Sin aprovechamiento (0150): lo que manda una pantalla de antes no cambia nada
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('el aprovechamiento se mide, y deja de volver a marcarse solo', () => {
+describe('sin aprovechamiento (0150)', () => {
   let pulpo: string;
 
-  const laFicha = (nombre: string) => ({
-    nombre,
-    categoria_id: null,
-    formato: null,
-    factor: 1,
-    unidad_de_uso: 'kg',
-    rendimiento: 1,
-    categoria_fiscal: 'alimento',
-    alergenos: [],
-    peso_variable: false,
-    codigo_de_barras: null,
-    minimo: null,
-    proveedor_id: null,
-    notas: null,
-  });
-
-  async function sinVerificar(): Promise<boolean> {
-    const [fila] = await comoDuena<{ sin_verificar: boolean }>(
-      'select sin_verificar from estook.producto where id = $1',
-      [pulpo],
-    );
-    return fila?.sin_verificar === true;
-  }
-
-  it('nace sin medir, que es la verdad', async () => {
+  it('un producto nace sin aprovechamiento, y la ficha no lo enseña', async () => {
     pulpo = losDatos<{ productoId: string }>(
       await api.ejecutar(rosa, 'crear_producto', {
         nombre: 'Pulpo de las bases',
@@ -329,39 +304,65 @@ describe('el aprovechamiento se mide, y deja de volver a marcarse solo', () => {
         cantidad_inicial: 5,
       }),
     ).productoId;
-    expect(await sinVerificar()).toBe(true);
+    const ficha = losDatos<{ producto: Record<string, unknown> }>(
+      await api.consultar(rosa, 'un_producto', { producto_id: pulpo }),
+    );
+    expect(ficha.producto).not.toHaveProperty('rendimiento');
+    expect(ficha.producto).not.toHaveProperty('sinVerificar');
   });
 
-  it('se marca como medido cuando alguien lo mide', async () => {
-    await api.ejecutar(rosa, 'cambiar_producto', {
-      ...laFicha('Pulpo de las bases'),
-      producto_id: pulpo,
-      rendimiento: 0.62,
-      verificado: true,
+  it('crear un producto con aprovechamiento ya no se acepta', async () => {
+    const intento = await api.ejecutar(rosa, 'crear_producto', {
+      nombre: 'Atún con aprovechamiento',
+      unidad_de_uso: 'kg',
+      rendimiento: 0.7,
     });
-    expect(await sinVerificar()).toBe(false);
+    expect(elFallo(intento)).toBe('faltan_datos');
   });
 
-  it('y corregir una errata en el nombre NO lo vuelve a marcar', async () => {
-    // Este era el fallo: el servidor ponía `sin_verificar = !cambiaElCoste`, así
-    // que guardar la ficha sin tocar la cuenta lo marcaba otra vez. La etiqueta
-    // naranja salía en todos los productos y no había forma de quitarla.
-    await api.ejecutar(rosa, 'cambiar_producto', {
-      ...laFicha('Pulpo de las bases, limpio'),
-      producto_id: pulpo,
-      rendimiento: 0.62,
-    });
-    expect(await sinVerificar()).toBe(false);
+  it('lo que manda una pantalla de antes se acepta y no se guarda', async () => {
+    const cambiado = losDatos<{ cambiaElCoste: boolean }>(
+      await api.ejecutar(rosa, 'cambiar_producto', {
+        ...laFichaDe(pulpo, 'Pulpo de las bases', 'kg'),
+        rendimiento: 0.62,
+        verificado: true,
+      }),
+    );
+    expect(cambiado.cambiaElCoste).toBe(false);
+    const [fila] = await comoDuena<{ rendimiento: string }>(
+      'select rendimiento::text as rendimiento from estook.producto where id = $1',
+      [pulpo],
+    );
+    expect(Number(fila?.rendimiento)).toBe(1);
   });
 
-  it('y se puede volver a dejar por medir, a mano', async () => {
-    await api.ejecutar(rosa, 'cambiar_producto', {
-      ...laFicha('Pulpo de las bases, limpio'),
-      producto_id: pulpo,
-      rendimiento: 0.62,
-      verificado: false,
+  it('lo que se tira al limpiar se apunta como merma «Al limpiarlo», que es pérdida', async () => {
+    losDatos(
+      await api.ejecutar(rosa, 'apuntar_merma', {
+        producto_id: pulpo,
+        cuanto: 0.5,
+        motivo: 'limpieza',
+      }),
+    );
+    const [merma] = await comoDuena<{
+      tipo: string;
+      motivo_de_merma: string;
+      cantidad: string;
+      partida: string;
+    }>(
+      `select tipo::text as tipo, motivo_de_merma::text as motivo_de_merma,
+              cantidad::text as cantidad,
+              estook.partida_de_la_merma(motivo_de_merma)::text as partida
+         from estook.movimiento_de_stock
+        where producto_id = $1 and tipo = 'merma'`,
+      [pulpo],
+    );
+    expect(merma).toEqual({
+      tipo: 'merma',
+      motivo_de_merma: 'limpieza',
+      cantidad: '-0.5000',
+      partida: 'perdida',
     });
-    expect(await sinVerificar()).toBe(true);
   });
 });
 

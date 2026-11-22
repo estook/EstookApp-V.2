@@ -30,8 +30,7 @@ escandallo**. En los pasos los llamamos «el plato» y «el otro».
    cuántos productos, quién cobró y lo que valía en rojo.
 4. Tócala: **debe desplegarse** lo que restó cada producto.
 5. Abre otra vez los dos ingredientes: **lo que hay debe haber bajado justo** dos veces lo que pide el
-   escandallo. Si el ingrediente tiene aprovechamiento (por ejemplo, un 80 %), baja algo más: lo que se tira
-   al limpiarlo.
+   escandallo, ni un gramo más: ya no hay aprovechamiento (0150).
 6. En los filtros del Historial, toca **Ventas**: **debe salir** esa misma línea.
 
 **Si falla:** dime qué ingrediente, cuánto había, cuánto pide el escandallo y cuánto hay ahora.
@@ -65,6 +64,19 @@ escandallo**. En los pasos los llamamos «el plato» y «el otro».
    (ese plato se cocinó y se tiró).
 
 **Si falla:** dime con qué motivo y qué pasó en el Historial.
+
+## 6 · Sin aprovechamiento
+
+1. **Almacén › Productos**, abre cualquier producto: **no debe salir** la tarjeta «Aprovechamiento» ni «sin
+   verificar».
+2. **Escandallos**, un plato con un ingrediente que antes tenía aprovechamiento (por ejemplo, el atún): su
+   coste **debe ser** los gramos del escandallo por el precio del kilo, sin más. Si antes salía más caro, es
+   esto.
+3. **La merma al limpiar**: en un producto, **Ha salido género**. En «No se ha aprovechado» **debe salir**
+   **Al limpiarlo** el primero. Apunta lo que se ha tirado: lo que hay baja eso, y sale en **Almacén ›
+   Mermas** como «Al limpiarlo», en Pérdida.
+
+**Si falla:** dime qué producto y qué ves.
 
 ## Lo que no hace falta probar
 

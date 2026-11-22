@@ -43,7 +43,6 @@ test('monta tus bebidas: la caña, la Coca-Cola y una copa, y pedirlas', async (
       formato: 'Caja',
       factor,
       unidad_de_uso: unidad,
-      rendimiento: 1,
       precio_centimos: 3000,
       categoria_id: await familia(categoria),
     });

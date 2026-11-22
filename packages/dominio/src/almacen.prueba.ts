@@ -190,17 +190,16 @@ describe('lo contado que no parece lo que hay (20-oct)', () => {
   });
 });
 
-describe('al cambiar el precio, con factor y rendimiento distintos de 1', () => {
-  // El segundo criterio de terminado de M6, literal: «al cambiar el precio, el
-  // coste por unidad de uso y el medio ponderado cambian bien en un producto
-  // con factor y rendimiento distintos de 1».
+describe('al cambiar el precio, con un factor distinto de 1', () => {
+  // El segundo criterio de terminado de M6: «al cambiar el precio, el coste por
+  // unidad de uso y el medio ponderado cambian bien en un producto con factor
+  // distinto de 1». Sin aprovechamiento desde el 22-nov (0150).
   //
-  // Pulpo congelado: caja de 5 kg, o sea 5.000 g, con un 55 % de rendimiento
-  // porque se le va la cabeza, la piel y el agua de la coccion.
-  const conversion = { factor: 5000, rendimiento: 0.55 };
+  // Pulpo cocido: bandeja de 2,75 kg, o sea 2.750 g.
+  const conversion = { factor: 2750 };
 
-  it('el coste por unidad de uso sale de precio ÷ (factor × rendimiento)', () => {
-    // 60 € la caja: 6.000 centimos entre 2.750 g utiles = 2,18 centimos/g,
+  it('el coste por unidad de uso sale de precio ÷ factor', () => {
+    // 60 € la bandeja: 6.000 centimos entre 2.750 g = 2,18 centimos/g,
     // que en milesimas son 2.182.
     const antes = costePorUnidadDeUso(centimos(6000), conversion);
     expect(antes).toBe(2182);
@@ -477,19 +476,12 @@ describe('lo que pesa cada día de la semana (R2 · 0053)', () => {
 });
 
 describe('cómo sale el coste, dicho (20-oct)', () => {
-  it('la maceta de albahaca no dice «te quedan unos 0 ud»', () => {
-    expect(
-      comoSaleElCoste({ formato: 'Maceta', factor: 1, unidadDeUso: 'ud', rendimiento: 0.5 }),
-    ).toBe('Maceta = 1 ud, y al limpiarlo se pierde en torno al 50 %: te quedan unos 0,5 ud.');
-    expect(
-      comoSaleElCoste({
-        formato: 'Caja de 5 kg',
-        factor: 5000,
-        unidadDeUso: 'g',
-        rendimiento: 0.85,
-      }),
-    ).toBe(
-      'Caja de 5 kg = 5000 g, y al limpiarlo se pierde en torno al 15 %: te quedan unos 4250 g.',
+  it('dice lo que trae cada envase, sin aprovechamiento (0150)', () => {
+    expect(comoSaleElCoste({ formato: 'Maceta', factor: 1, unidadDeUso: 'ud' })).toBe(
+      'Maceta = 1 ud para usar.',
+    );
+    expect(comoSaleElCoste({ formato: 'Caja de 5 kg', factor: 5000, unidadDeUso: 'g' })).toBe(
+      'Caja de 5 kg = 5000 g para usar.',
     );
   });
 });

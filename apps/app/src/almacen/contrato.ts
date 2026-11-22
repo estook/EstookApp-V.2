@@ -38,8 +38,6 @@ export interface ProductoEnLista {
   readonly formato: string | null;
   readonly unidadDeUso: string;
   readonly factor: number;
-  readonly rendimiento: number;
-  readonly sinVerificar: boolean;
   readonly pesoVariable: boolean;
   readonly esEjemplo: boolean;
   readonly activo: boolean;
@@ -262,7 +260,6 @@ export interface ReferenciaDelCatalogo {
   readonly formato: string;
   readonly factor: number;
   readonly unidadDeUso: string;
-  readonly rendimiento: number;
   readonly categoriaFiscal: string;
   readonly alergenos: readonly Alergeno[];
   readonly comoSale: string;
@@ -340,8 +337,7 @@ const MASCULINAS_EN_A = new Set(['día']);
  *     sale cada uno: «50,00 € la caja de 5 kg · 10,00 €/kg».
  *   · `otro`: la otra cifra, para el que la busque: «Sin IVA, 45,45 €».
  *
- * El aprovechamiento no entra aquí: lo pagado es lo pagado (0099). Lo que sale el kilo
- * limpio lo dice el aprovechamiento, y lo usa el escandallo.
+ * Lo pagado es lo pagado (0099): sin aprovechamiento en ningún sitio (0150).
  */
 export function elPrecioComoLoApuntas(precio: {
   readonly precioCentimos: number;
@@ -360,7 +356,7 @@ export function elPrecioComoLoApuntas(precio: {
   const porUnidad =
     precio.factor > 0 && precio.factor !== 1 && precio.formato !== null
       ? comoPrecioPorUnidad(
-          costePorUnidadDeUso(delantero, { factor: precio.factor, rendimiento: 1 }),
+          costePorUnidadDeUso(delantero, { factor: precio.factor }),
           precio.unidadDeUso,
         )
       : null;

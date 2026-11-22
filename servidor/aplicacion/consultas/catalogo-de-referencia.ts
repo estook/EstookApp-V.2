@@ -7,8 +7,8 @@ import { consulta } from '../contrato.ts';
  *
  * «Al crear un producto, el buscador consulta un catálogo de referencia de unos
  *  250 productos habituales de hostelería española. Escribes "aceite de oliva" y
- *  salen las variantes con su unidad de compra, su factor, su rendimiento
- *  aproximado, su categoría y sus alérgenos ya puestos» (Manifiesto 8).
+ *  salen las variantes con su unidad de compra, su factor, su categoría y sus
+ *  alérgenos ya puestos» (Manifiesto 8; sin aprovechamiento desde la 0150).
  *
  * ── Lo que esta consulta NO hace, y es lo importante ─────────────────────────
  *
@@ -35,7 +35,6 @@ export interface ProductoDeReferencia {
   readonly formato: string;
   readonly factor: number;
   readonly unidadDeUso: UnidadDeUso;
-  readonly rendimiento: number;
   readonly categoriaFiscal: string;
   readonly alergenos: readonly Alergeno[];
   /**
@@ -92,14 +91,12 @@ export const catalogoDeReferencia = consulta<EntradaCatalogo, SalidaCatalogo>({
         formato: string;
         factor: string;
         unidad_de_uso: string;
-        rendimiento: string;
         categoria_fiscal: string;
         alergenos: string[];
       }[]
     >`
       select id, codigo, nombre, categoria, formato,
              factor::text as factor, unidad_de_uso::text as unidad_de_uso,
-             rendimiento::text as rendimiento,
              categoria_fiscal::text as categoria_fiscal, alergenos
         from estook.producto_de_referencia
        where (${entrada.categoria ?? null}::text is null or categoria = ${entrada.categoria ?? null})
@@ -133,7 +130,6 @@ export const catalogoDeReferencia = consulta<EntradaCatalogo, SalidaCatalogo>({
     return {
       productos: productos.map((p) => {
         const factor = Number(p.factor);
-        const rendimiento = Number(p.rendimiento);
         const unidadDeUso = p.unidad_de_uso as UnidadDeUso;
 
         return {
@@ -144,10 +140,9 @@ export const catalogoDeReferencia = consulta<EntradaCatalogo, SalidaCatalogo>({
           formato: p.formato,
           factor,
           unidadDeUso,
-          rendimiento,
           categoriaFiscal: p.categoria_fiscal,
           alergenos: p.alergenos as Alergeno[],
-          comoSale: comoSaleElCoste({ formato: p.formato, factor, unidadDeUso, rendimiento }),
+          comoSale: comoSaleElCoste({ formato: p.formato, factor, unidadDeUso }),
         };
       }),
       categorias: categorias.map((c) => ({ nombre: c.categoria, cuantos: c.cuantos })),

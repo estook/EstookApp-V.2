@@ -21,8 +21,8 @@ import type { UnidadDeUso } from './referencia.ts';
  *     escrito para 25 resta la veinticincoava parte.
  *   · **Lo de dentro de una elaboración**, por lo que rinde: 50 g de una salsa que rinde 2 l restan
  *     la cuarentava parte de lo que lleva.
- *   · **El aprovechamiento** (0099): la receta pide gramos limpios y la cámara guarda kilos en bruto.
- *     280 g de atún limpio, con un 70 % aprovechable, son 400 g que salen de la cámara.
+ *   · **Lo que pide, sale** (0150): 100 g de atún en el escandallo son 100 g de atún del almacén. Lo
+ *     que se tira al limpiar se apunta como merma, al recibirlo o al limpiarlo; aquí no se calcula.
  *   · **Lo elegido al pedirlo** (T3 · 2): «sin cebolla» no resta la cebolla de la receta; el «¿Con
  *     qué?» de la copa resta la tónica; cambiar el pan por uno sin gluten hace las dos cosas.
  *   · **Lo vendido a peso**: el escandallo de un plato a peso es el de un kilo, porque su precio es el
@@ -33,11 +33,9 @@ import type { UnidadDeUso } from './referencia.ts';
  * cajas sin decir cuánto trae) tampoco: se resta lo que se sabe y se cuenta lo que falta.
  */
 
-/** Lo que hace falta de un producto para restarlo: su unidad y lo que se aprovecha de él. */
+/** Lo que hace falta de un producto para restarlo: su unidad (y lo que trae cada una). */
 export interface ProductoQueBaja extends UnidadDelProducto {
   readonly id: string;
-  /** Lo aprovechable, de 0 a 1 (0,7 es un 70 %). Fuera de rango, se toma entero. */
-  readonly rendimiento: number;
 }
 
 export interface LibroQueBaja {
@@ -86,11 +84,6 @@ export function aCuatroDecimales(n: number): number {
 
 const PROFUNDIDAD_MAXIMA = 12;
 
-function loAprovechable(producto: ProductoQueBaja): number {
-  const r = producto.rendimiento;
-  return Number.isFinite(r) && r > 0 && r <= 1 ? r : 1;
-}
-
 /** Lo que resta un plato vendido, con todo lo de arriba. */
 export function loQueBajaUnPlato(plato: PlatoCobrado, libro: LibroQueBaja): LoQueBaja {
   const porProducto = new Map<string, number>();
@@ -100,7 +93,7 @@ export function loQueBajaUnPlato(plato: PlatoCobrado, libro: LibroQueBaja): LoQu
     porProducto.set(productoId, (porProducto.get(productoId) ?? 0) + cuanto);
   };
 
-  /** Un producto en una cantidad de receta (limpia), a lo que sale de la cámara (en bruto). */
+  /** Un producto en una cantidad de receta, a lo que sale del almacén, en la unidad del producto. */
   const unProducto = (productoId: string, cantidad: number, unidad: UnidadDeUso, veces: number) => {
     const producto = libro.productos.get(productoId);
     const enSuUnidad =
@@ -109,7 +102,7 @@ export function loQueBajaUnPlato(plato: PlatoCobrado, libro: LibroQueBaja): LoQu
       faltan += 1;
       return;
     }
-    sumar(productoId, (enSuUnidad * veces) / loAprovechable(producto));
+    sumar(productoId, enSuUnidad * veces);
   };
 
   const bajar = (

@@ -294,7 +294,6 @@ export function NuevoProducto({
       // El IVA solo viaja si no es el de su categoría: si mañana cambia la ley,
       // los que siguen «el de su categoría» cambian solos.
       ...(ivaElegido !== null && ivaElegido !== ivaPropuesto ? { iva_de_compra: ivaElegido } : {}),
-      // El rendimiento **no se manda**: el producto nace «sin verificar» (M6½).
       ...(hayAlgo ? { cantidad_inicial: hayNumero } : {}),
       ...(minimoNumero === null ? {} : { minimo: minimoNumero }),
       ...(caducaEl === '' || !conCaducidad ? {} : { caduca_el: caducaEl }),
@@ -640,16 +639,6 @@ export function NuevoProducto({
                 }}
               />
             )}
-
-            {/*
-              Y lo que **no** se pregunta aquí, dicho. «Nadie sabe cuánto se
-              aprovecha al llegar, sino cuando está trabajando»: el producto nace
-              marcado sin verificar y se corrige en su ficha el día que se sabe.
-            */}
-            <p className="text-secundario text-texto-tenue">
-              El aprovechamiento —cuánto queda después de limpiar o pelar— se corrige en la ficha
-              cuando lo sepas. Hasta entonces sale como «sin verificar».
-            </p>
 
             <div>
               <Boton

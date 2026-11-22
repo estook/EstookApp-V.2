@@ -16,24 +16,21 @@ import {
  */
 const libro: LibroQueBaja = {
   productos: new Map([
-    ['carne', { id: 'carne', unidad: 'kg', rendimiento: 1 }],
-    ['pan', { id: 'pan', unidad: 'ud', rendimiento: 1 }],
-    ['cebolla', { id: 'cebolla', unidad: 'kg', rendimiento: 0.8 }],
-    ['atun', { id: 'atun', unidad: 'kg', rendimiento: 0.7 }],
-    ['barril', { id: 'barril', unidad: 'l', rendimiento: 1 }],
-    ['tonica', { id: 'tonica', unidad: 'ud', rendimiento: 1 }],
-    ['ginebra', { id: 'ginebra', unidad: 'ml', rendimiento: 1 }],
-    ['jamon', { id: 'jamon', unidad: 'kg', rendimiento: 1 }],
-    ['tomate', { id: 'tomate', unidad: 'kg', rendimiento: 1 }],
-    ['aceite', { id: 'aceite', unidad: 'l', rendimiento: 1 }],
-    ['lentejas', { id: 'lentejas', unidad: 'kg', rendimiento: 1 }],
+    ['carne', { id: 'carne', unidad: 'kg' }],
+    ['pan', { id: 'pan', unidad: 'ud' }],
+    ['cebolla', { id: 'cebolla', unidad: 'kg' }],
+    ['atun', { id: 'atun', unidad: 'kg' }],
+    ['barril', { id: 'barril', unidad: 'l' }],
+    ['tonica', { id: 'tonica', unidad: 'ud' }],
+    ['ginebra', { id: 'ginebra', unidad: 'ml' }],
+    ['jamon', { id: 'jamon', unidad: 'kg' }],
+    ['tomate', { id: 'tomate', unidad: 'kg' }],
+    ['aceite', { id: 'aceite', unidad: 'l' }],
+    ['lentejas', { id: 'lentejas', unidad: 'kg' }],
     // Bandejas de 200 g: la receta la pide en gramos.
-    [
-      'albahaca',
-      { id: 'albahaca', unidad: 'ud', rendimiento: 1, contenido: { cantidad: 200, unidad: 'g' } },
-    ],
+    ['albahaca', { id: 'albahaca', unidad: 'ud', contenido: { cantidad: 200, unidad: 'g' } }],
     // Por cajas, sin decir cuánto trae cada una: los gramos no se pueden pasar.
-    ['setas', { id: 'setas', unidad: 'ud', rendimiento: 1 }],
+    ['setas', { id: 'setas', unidad: 'ud' }],
   ]),
   elaboraciones: new Map([
     [
@@ -66,14 +63,14 @@ function vendido(cosas: Partial<PlatoCobrado>): PlatoCobrado {
 }
 
 describe('lo que resta un plato vendido', () => {
-  it('dos hamburguesas restan dos veces su receta, la cebolla en bruto', () => {
+  it('dos hamburguesas restan dos veces su receta, ni un gramo más', () => {
     const r = loQueBajaUnPlato(vendido({ cantidad: 2, receta: hamburguesa }), libro);
     expect(r.sinEscandallo).toBe(false);
     expect(r.faltan).toBe(0);
     expect(r.porProducto.get('carne')).toBe(0.36);
     expect(r.porProducto.get('pan')).toBe(2);
-    // 40 g limpios × 2, con un 80 % aprovechable: 100 g en bruto.
-    expect(r.porProducto.get('cebolla')).toBe(0.1);
+    // 40 g × 2: lo que pide el escandallo, sin aprovechamiento (0150).
+    expect(r.porProducto.get('cebolla')).toBe(0.08);
   });
 
   it('«sin cebolla» no resta la cebolla', () => {
@@ -85,17 +82,17 @@ describe('lo que resta un plato vendido', () => {
     expect(r.porProducto.get('carne')).toBe(0.18);
   });
 
-  it('280 g de atún limpio, con un 70 % aprovechable, son 400 g de la cámara', () => {
+  it('100 g de atún en el escandallo son 100 g de atún del almacén (0150)', () => {
     const r = loQueBajaUnPlato(
       vendido({
         receta: {
           raciones: 1,
-          lineas: [{ productoId: 'atun', elaboracionId: null, cantidad: 280, unidad: 'g' }],
+          lineas: [{ productoId: 'atun', elaboracionId: null, cantidad: 100, unidad: 'g' }],
         },
       }),
       libro,
     );
-    expect(r.porProducto.get('atun')).toBe(0.4);
+    expect(r.porProducto.get('atun')).toBe(0.1);
   });
 
   it('la copa resta su dosis y la tónica que se eligió, una por cada copa', () => {

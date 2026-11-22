@@ -596,7 +596,6 @@ describe('el mínimo calculado se propone, se acepta y se apaga a mano', () => {
         formato: ficha['formato'],
         factor: ficha['factor'],
         unidad_de_uso: ficha['unidadDeUso'],
-        rendimiento: ficha['rendimiento'],
         categoria_fiscal: ficha['categoriaFiscal'],
         alergenos: [],
         peso_variable: ficha['pesoVariable'],

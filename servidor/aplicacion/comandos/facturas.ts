@@ -124,14 +124,13 @@ async function conciliarLaFactura(
       facturado: string | null;
       formato: string | null;
       factor: string;
-      rendimiento: string;
       unidad_de_uso: string;
     }[]
   >`
     select l.id::text as id, l.albaran_id, l.producto_id, p.nombre as producto,
            l.formatos::text as formatos, l.cantidad::text as cantidad,
            l.importe_centimos::text as importe, l.importe_facturado_centimos::text as facturado,
-           p.formato, p.factor::text as factor, p.rendimiento::text as rendimiento,
+           p.formato, p.factor::text as factor,
            p.unidad_de_uso::text as unidad_de_uso
       from estook.linea_de_albaran l
       join estook.producto p on p.id = l.producto_id
@@ -213,7 +212,6 @@ async function conciliarLaFactura(
       precioCentimos: precio,
       formato: linea.formato,
       factor: Number(linea.factor),
-      rendimiento: Number(linea.rendimiento),
       origen: 'factura',
       referencia: { facturaId: factura.id, numero: factura.numero, albaranId: linea.albaran_id },
       soloSiCambia: true,

@@ -69,6 +69,7 @@ export const MOTIVOS_DE_SALIDA = [
   'vendido',
   'gastado',
   'traspaso',
+  'limpieza',
   'caducado',
   'mal_estado',
   'roto',
@@ -117,6 +118,14 @@ export const QUE_ES_CADA_SALIDA: Readonly<Record<MotivoDeSalida, QueEsUnaSalida>
     que: 'Se lo ha llevado otro local del grupo',
     tipo: 'salida',
     motivoDeMerma: null,
+    pideNota: false,
+  },
+  limpieza: {
+    familia: 'se_pierde',
+    nombre: 'Al limpiarlo',
+    que: 'Piel, espinas, huesos, recortes: lo que se quita al limpiar o pelar',
+    tipo: 'merma',
+    motivoDeMerma: 'limpieza',
     pideNota: false,
   },
   caducado: {

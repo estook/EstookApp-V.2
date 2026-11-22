@@ -592,13 +592,13 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M6 · Almacén
 
-**Entra.** Productos con formato, unidad de uso, factor, rendimiento, peso variable, código de barras, tipo impositivo, alérgenos y mínimo · libro de movimientos con lote · ajuste manual como movimiento · precios con vigencia y precio medio ponderado · entrada por todas las vías · lotes y caducidades · ficha completa.
+**Entra.** Productos con formato, unidad de uso, factor, peso variable, código de barras, tipo impositivo, alérgenos y mínimo · libro de movimientos con lote · ajuste manual como movimiento · precios con vigencia y precio medio ponderado · entrada por todas las vías · lotes y caducidades · ficha completa.
 
 **Y su capa inteligente.** Consumo medio y velocidad de consumo por producto, calculados por consulta. **Días de cobertura y previsión de agotamiento con fecha y hora.** Histórico de precio por proveedor.
 
 **Reglas críticas.** El stock nunca se escribe directo. Un producto sin precio se usa y queda marcado. **El stock negativo se permite y se marca.**
 
-**Terminado cuando.** Se da de alta un producto en 30 segundos; al cambiar el precio, el coste por unidad de uso y el medio ponderado cambian bien en un producto con factor y rendimiento distintos de 1; el stock se reconstruye entero desde los movimientos; y la previsión de agotamiento acierta el día en un producto con consumo estable.
+**Terminado cuando.** Se da de alta un producto en 30 segundos; al cambiar el precio, el coste por unidad de uso y el medio ponderado cambian bien en un producto con factor distinto de 1; el stock se reconstruye entero desde los movimientos; y la previsión de agotamiento acierta el día en un producto con consumo estable.
 
 ### M6½ · La capa de producto
 
@@ -667,7 +667,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 | **Escandallo** (M9, se calcula) | Cuánto cuesta hoy: coste, food cost, margen y beneficio                                                | Nada escrito a mano: sale de la ficha y del Almacén |
 
 - **Los tres cuelgan del mismo plato por su identificador**, nunca por el nombre: renombrar el plato no lo separa de su ficha ni de su escandallo. **El plato se crea una vez, en la Carta** (0086), y aparece en Escandallos como «sin ficha» hasta que se desgrana.
-- **«Añadir plato» en Escandallos** trae su ficha técnica con sus cantidades, y el coste de cada ingrediente sale **del Almacén**: el precio de compra por su formato, llevado a la unidad de uso y **con su aprovechamiento** —10 kg de carne a 60 € de los que quedan 8 kg utilizables son 7,50 €/kg reales—. Nadie calcula a mano el coste de un ingrediente; **se puede poner a mano** cuando no hay compra (una cesión, una muestra), y queda marcado como escrito a mano.
+- **«Añadir plato» en Escandallos** trae su ficha técnica con sus cantidades, y el coste de cada ingrediente sale **del Almacén**: el precio de compra por su formato, llevado a la unidad de uso —10 kg de carne a 75 € son 7,50 €/kg—, **sin aprovechamiento** ([0150](../decisiones/0150-fuera-el-aprovechamiento.md)): lo que pide el escandallo es lo que sale, y lo que se tira al limpiar es merma. Nadie calcula a mano el coste de un ingrediente; **se puede poner a mano** cuando no hay compra (una cesión, una muestra), y queda marcado como escrito a mano.
 - **Todo se recalcula solo y solo lo afectado** (el grafo de recálculo): cambia un precio de compra → los escandallos que lo llevan; cambia una cantidad de la ficha → su escandallo; cambia el precio de la carta → su margen y su food cost; un plato nuevo puede nacer con ficha y después con escandallo.
 - **Estook calcula; la IA solo propone** coincidencias —«"Queso cheddar" de la ficha parece "Cheddar lonchas" del Almacén»— y **las vinculaciones definitivas se hacen por identificador y las confirma una persona**. Lo que se puede contar no se le pregunta a un modelo: cuesta uso y se equivoca.
 

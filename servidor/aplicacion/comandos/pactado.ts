@@ -47,11 +47,10 @@ export const pactarPrecio = comando<EntradaPactarPrecio, { pactadoId: string }>(
         formato: string | null;
         factor: string;
         unidad_de_uso: string;
-        rendimiento: string;
       }[]
     >`
       select local_id, nombre, formato, factor::text as factor,
-             unidad_de_uso::text as unidad_de_uso, rendimiento::text as rendimiento
+             unidad_de_uso::text as unidad_de_uso
         from estook.producto where id = ${entrada.producto_id}
     `;
     const producto = productos[0];
@@ -77,19 +76,18 @@ export const pactarPrecio = comando<EntradaPactarPrecio, { pactadoId: string }>(
     `;
 
     const factor = Number(producto.factor);
-    const rendimiento = Number(producto.rendimiento);
 
     // Desde la jornada del local, no `current_date` (regla 10, 0096).
     const hoy = await laJornadaDelProducto(contexto, entrada.producto_id);
     const puestos = await contexto.sql<{ id: string }[]>`
       insert into estook.precio_pactado (
         producto_id, proveedor_id, precio_centimos, formato, factor, unidad_de_uso,
-        rendimiento, coste_milesimas, desde, hasta, nota, creado_por
+        coste_milesimas, desde, hasta, nota, creado_por
       )
       values (
         ${entrada.producto_id}, ${entrada.proveedor_id}, ${entrada.precio_centimos},
         ${producto.formato}, ${factor}, ${producto.unidad_de_uso}::estook.unidad_de_uso,
-        ${rendimiento}, ${costeDeCompra(entrada.precio_centimos, factor)},
+        ${costeDeCompra(entrada.precio_centimos, factor)},
         ${hoy}::date, ${entrada.hasta ?? null}::date, ${entrada.nota ?? null}, ${contexto.personaId}
       )
       returning id

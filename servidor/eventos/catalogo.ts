@@ -37,7 +37,7 @@ export const EVENTOS = [
   // que mas cuelga de el:
   //
   //   producto.creado       M9 lo puede meter en una ficha, el buscador lo indexa
-  //   producto.cambiado     si cambia el factor o el rendimiento, **multiplica**:
+  //   producto.cambiado     si cambia el factor, **multiplica**:
   //                         el coste de todos los platos que lo llevan se mueve
   //   producto.desactivado  las fichas que lo llevan quedan marcadas (M9)
   //   precio.cambiado       la cascada entera de la Auditoria 2.1: elaboraciones,

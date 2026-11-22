@@ -465,7 +465,6 @@ export const recibirAlbaran = comando<EntradaRecibirAlbaran, SalidaRecibirAlbara
           precioCentimos: precioFormato,
           formato: p.producto.formato,
           factor: p.producto.factor,
-          rendimiento: p.producto.rendimiento,
           origen: 'albaran',
           referencia,
           soloSiCambia: true,

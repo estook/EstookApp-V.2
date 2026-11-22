@@ -92,13 +92,12 @@ let salsa: string;
 
 describe('lo que hay antes', () => {
   it('el almacén y la carta de Rosa', async () => {
-    // 10 kg a 60 € con un 80 % útil: 7,50 €/kg de verdad.
+    // 10 kg a 75 €: 7,50 €/kg, sin aprovechamiento (0150).
     carne = await unProducto({
       nombre: 'Carne picada ficha',
       factor: 10,
       unidad_de_uso: 'kg',
-      rendimiento: 0.8,
-      precio_centimos: 6000,
+      precio_centimos: 7500,
     });
     pan = await unProducto({
       nombre: 'Pan brioche ficha',

@@ -37,7 +37,6 @@ export interface FichaBasica {
   readonly nombre: string;
   readonly factor: number;
   readonly unidadDeUso: string;
-  readonly rendimiento: number;
   readonly formato: string | null;
   readonly proveedorId: string | null;
   readonly pesoVariable: boolean;
@@ -90,7 +89,6 @@ export async function elProductoBloqueado(
       nombre: string;
       factor: string;
       unidad_de_uso: string;
-      rendimiento: string;
       formato: string | null;
       proveedor_id: string | null;
       peso_variable: boolean;
@@ -101,7 +99,7 @@ export async function elProductoBloqueado(
   >`
     select p.id, p.local_id, p.nombre,
            p.factor::text as factor, p.unidad_de_uso::text as unidad_de_uso,
-           p.rendimiento::text as rendimiento, p.formato, p.proveedor_id,
+           p.formato, p.proveedor_id,
            p.peso_variable, p.es_ejemplo,
            l.zona_horaria, to_char(l.hora_de_corte, 'HH24:MI') as hora_de_corte
       from estook.producto p
@@ -122,7 +120,6 @@ export async function elProductoBloqueado(
     nombre: fila.nombre,
     factor: Number(fila.factor),
     unidadDeUso: fila.unidad_de_uso,
-    rendimiento: Number(fila.rendimiento),
     formato: fila.formato,
     proveedorId: fila.proveedor_id,
     pesoVariable: fila.peso_variable,
@@ -459,12 +456,9 @@ export function porQueNoSeAnula(
 /**
  * `precio ÷ factor`: lo que se pagó por cada gramo, mililitro o unidad que entra.
  *
- * **Sin el aprovechamiento, y es a propósito** (Richi, 19-oct, 0099). Hasta entonces
- * era `precio ÷ (factor × rendimiento)`, y ese número valoraba también la cámara,
- * las mermas y las compras: un kilo de atún pagado a 18,18 € «valía» 25,97 € porque
- * se aprovecha un 70 %. Lo que hay en cámara son kilos en bruto, y valen lo que dice
- * la factura. El aprovechamiento solo cuenta al costear un plato, que pide gramos
- * limpios: eso lo hace `losProductosDeLasFichas`, dividiendo entre el de hoy.
+ * **Lo que entra vale lo que dice la factura**: un kilo de atún pagado a 18,18 € vale
+ * 18,18 € en la cámara, en las mermas y en los platos. Desde el 22-nov no hay
+ * aprovechamiento en ningún sitio (0150): lo que se tira al limpiar se apunta como merma.
  *
  * Se envuelve aquí porque todos los sitios que ponen un precio o apuntan una entrada
  * tienen que guardar exactamente el mismo número. Y porque el motor rechaza un factor
@@ -476,7 +470,7 @@ export function costeDeCompra(precioCentimos: number, factor: number): number {
     // `centimos` exige un entero, y lo que llega ya lo es: los comandos lo
     // validan con `z.number().int()` y la base lo guarda en `bigint`. Redondear
     // aquí sería tapar un fallo en vez de verlo.
-    return costePorUnidadDeUso(centimos(precioCentimos), { factor, rendimiento: 1 });
+    return costePorUnidadDeUso(centimos(precioCentimos), { factor });
   } catch {
     throw new FalloDeAplicacion('faltan_datos', {
       campos: ['factor'],
@@ -501,7 +495,6 @@ export interface PrecioQueSePone {
   readonly precioCentimos: number;
   readonly formato: string | null;
   readonly factor: number;
-  readonly rendimiento: number;
   readonly origen: OrigenDePrecio;
   /** El papel del que sale: `{ albaranId, numero }`, `{ facturaId }`. */
   readonly referencia?: Record<string, unknown> | null;
@@ -610,11 +603,11 @@ export async function ponerUnPrecio(
   const puestos = await contexto.sql<{ id: string }[]>`
     insert into estook.precio_de_producto (
       producto_id, proveedor_id, precio_centimos, formato, factor, unidad_de_uso,
-      rendimiento, coste_milesimas, desde, origen, referencia, creado_por
+      coste_milesimas, desde, origen, referencia, creado_por
     )
     values (
       ${precio.productoId}, ${precio.proveedorId}, ${precio.precioCentimos}, ${precio.formato},
-      ${precio.factor}, ${precio.unidadDeUso}::estook.unidad_de_uso, ${precio.rendimiento},
+      ${precio.factor}, ${precio.unidadDeUso}::estook.unidad_de_uso,
       ${coste}, ${hoy}::date, ${precio.origen}::estook.origen_de_precio,
       ${referencia}::text::jsonb, ${contexto.personaId}
     )
@@ -678,7 +671,7 @@ export async function ponerUnPrecio(
  * ve con datos que ya están.
  *
  * **Los códigos son del catálogo de la 0021 y de ahí sale todo lo demás**:
- * formato, factor, unidad de uso, rendimiento y alérgenos. Copiarlos aquí sería
+ * formato, factor, unidad de uso y alérgenos. Copiarlos aquí sería
  * tener dos veces el mismo dato y verlos discrepar el día que se corrija uno.
  * Lo único que se pone aquí es el precio, porque el catálogo no lleva precios a
  * propósito: los precios son de cada local y de cada proveedor.
@@ -773,13 +766,12 @@ async function sembrarUnEjemplo(
       formato: string;
       factor: string;
       unidad_de_uso: string;
-      rendimiento: string;
       categoria_fiscal: string;
       alergenos: string[];
     }[]
   >`
     select id, nombre, categoria, formato, factor::text as factor,
-           unidad_de_uso::text as unidad_de_uso, rendimiento::text as rendimiento,
+           unidad_de_uso::text as unidad_de_uso,
            categoria_fiscal::text as categoria_fiscal, alergenos
       from estook.producto_de_referencia
      where codigo = ${ejemplo.codigo}
@@ -802,13 +794,11 @@ async function sembrarUnEjemplo(
   `;
 
   const factor = Number(referencia.factor);
-  const rendimiento = Number(referencia.rendimiento);
 
   const creados = await contexto.sql<{ id: string }[]>`
     insert into estook.producto (
-      local_id, categoria_id, nombre, formato, factor, unidad_de_uso, rendimiento,
-      categoria_fiscal, alergenos, minimo, producto_de_referencia_id,
-      sin_verificar, es_ejemplo
+      local_id, categoria_id, nombre, formato, factor, unidad_de_uso,
+      categoria_fiscal, alergenos, minimo, producto_de_referencia_id, es_ejemplo
     )
     values (
       ${localId},
@@ -817,12 +807,10 @@ async function sembrarUnEjemplo(
       ${referencia.formato},
       ${factor},
       ${referencia.unidad_de_uso}::estook.unidad_de_uso,
-      ${rendimiento},
       ${referencia.categoria_fiscal}::estook.categoria_fiscal,
       ${referencia.alergenos},
       ${ejemplo.minimo},
       ${referencia.id},
-      true,
       true
     )
     returning id
@@ -847,12 +835,12 @@ async function sembrarUnEjemplo(
 
   await contexto.sql`
     insert into estook.precio_de_producto (
-      producto_id, precio_centimos, formato, factor, unidad_de_uso, rendimiento,
+      producto_id, precio_centimos, formato, factor, unidad_de_uso,
       coste_milesimas, desde, origen, creado_por
     )
     values (
       ${productoId}, ${ejemplo.precioCentimos}, ${referencia.formato}, ${factor},
-      ${referencia.unidad_de_uso}::estook.unidad_de_uso, ${rendimiento},
+      ${referencia.unidad_de_uso}::estook.unidad_de_uso,
       ${coste}, ${hoy}::date, 'catalogo', ${contexto.personaId}
     )
   `;

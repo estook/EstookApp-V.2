@@ -503,7 +503,6 @@ test('el catálogo de referencia devuelve la ficha ya rellena', async ({ request
         formato: string;
         factor: number;
         unidadDeUso: string;
-        rendimiento: number;
         alergenos: string[];
         comoSale: string;
       }[];
@@ -519,7 +518,7 @@ test('el catálogo de referencia devuelve la ficha ya rellena', async ({ request
   expect(aove?.formato).toBeTruthy();
   expect(aove?.factor).toBeGreaterThan(0);
   expect(aove?.unidadDeUso).toBe('ml');
-  expect(aove?.rendimiento).toBe(1);
+  expect(aove).not.toHaveProperty('rendimiento');
 
   // Y con la cuenta explicada, que es lo que hace que alguien note un error
   // antes de guardarlo.

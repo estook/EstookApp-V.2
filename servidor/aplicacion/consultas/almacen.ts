@@ -3,6 +3,7 @@ import {
   AVISO_DE_LO_CONGELADO_EN_DIAS,
   ZONAS,
   VENTANA_DE_CONSUMO,
+  aCentimos,
   cantidad as cuantasHay,
   comoEsta,
   comoPrecioPorUnidad,
@@ -11,7 +12,9 @@ import {
   cuandoCae,
   diasDeCobertura,
   fechaEnElLocal,
+  horaDeCorte,
   horaEnElLocal,
+  jornadaDe,
   ivaDeCompraPorDefecto,
   masDias,
   milesimas as enMilesimas,
@@ -74,8 +77,6 @@ export interface ProductoEnLista {
   readonly formato: string | null;
   readonly unidadDeUso: string;
   readonly factor: number;
-  readonly rendimiento: number;
-  readonly sinVerificar: boolean;
   readonly pesoVariable: boolean;
   readonly esEjemplo: boolean;
   readonly activo: boolean;
@@ -214,8 +215,6 @@ interface FilaDeProducto {
   formato: string | null;
   unidad_de_uso: string;
   factor: string;
-  rendimiento: string;
-  sin_verificar: boolean;
   peso_variable: boolean;
   es_ejemplo: boolean;
   activo: boolean;
@@ -399,8 +398,8 @@ async function leerProductos(
            p.id, p.nombre, c.nombre as categoria, p.categoria_id, p.proveedor_id,
            p.categoria_fiscal::text as categoria_fiscal, p.notas, p.formato,
            p.unidad_de_uso::text as unidad_de_uso,
-           p.factor::text as factor, p.rendimiento::text as rendimiento,
-           p.sin_verificar, p.peso_variable, p.es_ejemplo, p.activo,
+           p.factor::text as factor,
+           p.peso_variable, p.es_ejemplo, p.activo,
            pv.nombre as proveedor, p.codigo_de_barras,
            p.minimo::text as minimo,
            p.minimo_calculado,
@@ -590,8 +589,6 @@ function componer(
     formato: fila.formato,
     unidadDeUso,
     factor: Number(fila.factor),
-    rendimiento: Number(fila.rendimiento),
-    sinVerificar: fila.sin_verificar,
     pesoVariable: fila.peso_variable,
     esEjemplo: fila.es_ejemplo,
     activo: fila.activo,
@@ -1753,6 +1750,10 @@ export interface MovimientoDelLibro {
   readonly anulado: boolean;
   readonly esAnulacion: boolean;
   readonly sePuedeAnular: boolean;
+  /** El cobro de Estook TPV que restó (o devolvió) esto (0149): la pantalla los junta por él. */
+  readonly cobro?: string;
+  /** Lo que valía, en céntimos, al coste medio de ese momento. Solo a quien ve dinero. */
+  readonly valorCentimos?: number;
 }
 
 export const entradaMovimientos = z
@@ -1819,10 +1820,17 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
     const localId = elLocal(contexto);
     const conPrecios = await puedeVerPrecios(contexto, localId);
 
-    const zonas = await contexto.sql<{ zona_horaria: string }[]>`
-      select zona_horaria from estook.local where id = ${localId}
+    // **Hoy es la jornada, con la hora de corte**, como la fecha de cada línea (lección 277): con el
+    // día del calendario, lo apuntado a la 01:30 —que es de la jornada de hoy— salía en «Ayer».
+    const zonas = await contexto.sql<{ zona_horaria: string; hora_de_corte: string }[]>`
+      select zona_horaria, to_char(hora_de_corte, 'HH24:MI') as hora_de_corte
+        from estook.local where id = ${localId}
     `;
-    const hoy = fechaEnElLocal(contexto.ahora, zonas[0]?.zona_horaria ?? 'Europe/Madrid');
+    const hoy = jornadaDe(
+      contexto.ahora,
+      zonas[0]?.zona_horaria ?? 'Europe/Madrid',
+      horaDeCorte(zonas[0]?.hora_de_corte ?? '05:00'),
+    );
 
     // «**Toda lista larga esta acotada**» (Auditoria, parte 8). Cincuenta por
     // defecto, doscientos como mucho, y se dice si hay mas. El libro de un local
@@ -1851,6 +1859,8 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
         lote_id: string | null;
         anula: string | null;
         anulado: boolean;
+        cobro: string | null;
+        coste_medio: string;
       }[]
     >`
       -- La línea que revaloró la cámara (0076) no es un ajuste de nada: se dice lo que es.
@@ -1872,16 +1882,21 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
              exists (
                select 1 from estook.movimiento_de_stock a
                 where a.referencia ? 'anula' and a.referencia ->> 'anula' = m.id::text
-             ) as anulado
+             ) as anulado,
+             -- Lo que restó un cobro de Estook TPV (0149): se junta por cobro en la pantalla.
+             case when m.tipo = 'consumo' and m.origen = 'venta' then m.referencia ->> 'cobro' end
+               as cobro,
+             m.coste_medio_despues::text as coste_medio
         from estook.movimiento_de_stock m
         join estook.producto p on p.id = m.producto_id
         left join estook.persona pe on pe.id = m.persona_id
         left join estook.lote l on l.id = m.lote_id
        where p.local_id = ${localId}
          -- «Ajustes» lleva también lo que corrigió un inventario (9-oct): los dos son
-         -- «el libro decía una cosa y había otra».
+         -- «el libro decía una cosa y había otra». Y «Ventas», lo vendido en Estook TPV (0149).
          and (${entrada.tipo ?? null}::text is null or m.tipo::text = ${entrada.tipo ?? null}
-              or (${entrada.tipo ?? null}::text = 'ajuste' and m.tipo = 'recuento'))
+              or (${entrada.tipo ?? null}::text = 'ajuste' and m.tipo = 'recuento')
+              or (${entrada.tipo ?? null}::text = 'venta' and m.tipo = 'consumo'))
          and (${entrada.producto_id ?? null}::uuid is null
               or m.producto_id = ${entrada.producto_id ?? null}::uuid)
          and (${entrada.desde ?? null}::date is null
@@ -1918,6 +1933,7 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
           lote: f.lote,
           esEjemplo: f.es_ejemplo,
           ...loDeAnular(f, hoy),
+          ...(f.cobro === null ? {} : { cobro: f.cobro }),
         };
         // El coste **no se esconde: no se manda**. Es la regla que ordena este
         // fichero entero, y un cocinero tiene esta pantalla igual que las demas.
@@ -1925,6 +1941,15 @@ export const misMovimientos = consulta<EntradaMovimientos, SalidaMovimientos>({
           ? {
               ...linea,
               costeMilesimas: f.coste_milesimas === null ? null : Number(f.coste_milesimas),
+              // Lo que valía lo que salió o volvió de una venta, al coste medio de ese momento
+              // (una salida no lo mueve: el de después es el de antes). En céntimos.
+              ...(f.cobro === null
+                ? {}
+                : {
+                    valorCentimos: Number(
+                      aCentimos(Math.abs(Number(f.cantidad)) * Number(f.coste_medio)),
+                    ),
+                  }),
             }
           : linea;
       }),

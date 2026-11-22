@@ -322,7 +322,7 @@ Y sus vistas, donde las hay:
 | Equipo · Personas         | Con acceso · Sin entrar todavía · Retirados                         |
 | Equipo · Incidencias      | Todas · Faltas · Retrasos · Fichajes                                |
 | Servicio · Jornadas       | Información · Cierre                                                |
-| Negocio · Ventas          | Resumen · Cobros · Tickets y facturas                               |
+| Negocio · Ventas          | Resumen · Cobros · Por producto · Tickets y facturas                |
 | Negocio · Informes        | Día · Semana · Mes                                                  |
 
 > **Decidido el 11-nov-2026 y todavía sin construir** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)). **«L · La limpieza» ya está en el código y en las tablas de arriba** (Cuaderno, Pulse, Costes y Tareas fuera; Carta › Carta en **Carta · Agotados**, donde «Agotados» solo sale, en rojo, si hay alguno, y sin otra pestaña no se enseña ninguna). Las tablas dicen **lo que hay hoy en el código** —la prueba las compara—, y cambian en la misma entrega que él:
@@ -511,9 +511,9 @@ ESTOOK TPV    M16a · La jornada → M20A · 1 (base y API) → T1 · La puerta 
 
 ```
 HECHO       L · La limpieza: fuera Cuaderno, Pulse, Costes, Tareas y las pestañas que esperaban;
-            la Carta sin pestañas (migración 0118)
-AHORA       S1 · Cada plan, lo suyo: la primera auditoría de seguridad
-ESTOOK TPV  → M20 · 1 · Lo vendido baja del almacén → M20 · 2 · Lo que se escapa
+            la Carta sin pestañas (migración 0118) · S1 · Cada plan, lo suyo · el rediseño (0148)
+AHORA       M20 · 1 · Lo vendido baja del almacén (0149)
+ESTOOK TPV  → M20 · 2 · Lo que se escapa
             → R3 · 2 · La caja, segunda parte → lo que queda de T7 (sin internet en las nativas,
               las ventas de hoy, la venta rápida, Informes y Empleados con lo cobrado)
             → T6 · 3 · NO VERI*FACTU → T8 · Android (con el proveedor de cobro decidido)
@@ -592,13 +592,13 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M6 · Almacén
 
-**Entra.** Productos con formato, unidad de uso, factor, rendimiento, peso variable, código de barras, tipo impositivo, alérgenos y mínimo · libro de movimientos con lote · ajuste manual como movimiento · precios con vigencia y precio medio ponderado · entrada por todas las vías · lotes y caducidades · ficha completa.
+**Entra.** Productos con formato, unidad de uso, factor, peso variable, código de barras, tipo impositivo, alérgenos y mínimo · libro de movimientos con lote · ajuste manual como movimiento · precios con vigencia y precio medio ponderado · entrada por todas las vías · lotes y caducidades · ficha completa.
 
 **Y su capa inteligente.** Consumo medio y velocidad de consumo por producto, calculados por consulta. **Días de cobertura y previsión de agotamiento con fecha y hora.** Histórico de precio por proveedor.
 
 **Reglas críticas.** El stock nunca se escribe directo. Un producto sin precio se usa y queda marcado. **El stock negativo se permite y se marca.**
 
-**Terminado cuando.** Se da de alta un producto en 30 segundos; al cambiar el precio, el coste por unidad de uso y el medio ponderado cambian bien en un producto con factor y rendimiento distintos de 1; el stock se reconstruye entero desde los movimientos; y la previsión de agotamiento acierta el día en un producto con consumo estable.
+**Terminado cuando.** Se da de alta un producto en 30 segundos; al cambiar el precio, el coste por unidad de uso y el medio ponderado cambian bien en un producto con factor distinto de 1; el stock se reconstruye entero desde los movimientos; y la previsión de agotamiento acierta el día en un producto con consumo estable.
 
 ### M6½ · La capa de producto
 
@@ -667,7 +667,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 | **Escandallo** (M9, se calcula) | Cuánto cuesta hoy: coste, food cost, margen y beneficio                                                | Nada escrito a mano: sale de la ficha y del Almacén |
 
 - **Los tres cuelgan del mismo plato por su identificador**, nunca por el nombre: renombrar el plato no lo separa de su ficha ni de su escandallo. **El plato se crea una vez, en la Carta** (0086), y aparece en Escandallos como «sin ficha» hasta que se desgrana.
-- **«Añadir plato» en Escandallos** trae su ficha técnica con sus cantidades, y el coste de cada ingrediente sale **del Almacén**: el precio de compra por su formato, llevado a la unidad de uso y **con su aprovechamiento** —10 kg de carne a 60 € de los que quedan 8 kg utilizables son 7,50 €/kg reales—. Nadie calcula a mano el coste de un ingrediente; **se puede poner a mano** cuando no hay compra (una cesión, una muestra), y queda marcado como escrito a mano.
+- **«Añadir plato» en Escandallos** trae su ficha técnica con sus cantidades, y el coste de cada ingrediente sale **del Almacén**: el precio de compra por su formato, llevado a la unidad de uso —10 kg de carne a 75 € son 7,50 €/kg—, **sin aprovechamiento** ([0150](../decisiones/0150-fuera-el-aprovechamiento.md)): lo que pide el escandallo es lo que sale, y lo que se tira al limpiar es merma. Nadie calcula a mano el coste de un ingrediente; **se puede poner a mano** cuando no hay compra (una cesión, una muestra), y queda marcado como escrito a mano.
 - **Todo se recalcula solo y solo lo afectado** (el grafo de recálculo): cambia un precio de compra → los escandallos que lo llevan; cambia una cantidad de la ficha → su escandallo; cambia el precio de la carta → su margen y su food cost; un plato nuevo puede nacer con ficha y después con escandallo.
 - **Estook calcula; la IA solo propone** coincidencias —«"Queso cheddar" de la ficha parece "Cheddar lonchas" del Almacén»— y **las vinculaciones definitivas se hacen por identificador y las confirma una persona**. Lo que se puede contar no se le pregunta a un modelo: cuesta uso y se equivoca.
 
@@ -902,7 +902,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 ### M20 · Ventas, emparejamiento y consumo
 
-**En plan desde el 22-oct**, en dos entregas: [`m20-ventas-y-consumo.md`](../m20-ventas-y-consumo.md). Los platos uno a uno llegan de Estook TPV (M20C) o de un conector (M18), no del cierre a mano; por eso **va con M20C**, donde nace la venta (lo contestó Richi el 22-oct, [0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). Y con ventas plato a plato, **«Gastado en cocina» y «Vendido a un cliente» (0037) dejan de restar**, para no contar nada dos veces.
+**M20 · 1, construido el 22-nov** ([0149](../decisiones/0149-m20-1-lo-vendido-baja.md), migración 0121): cada cobro de Estook TPV resta el escandallo de sus platos, en bruto, con lo elegido al pedir y con el coste de ese momento, en un punto de guardado que nunca frena el cobro; «Vendidos sin escandallo» en Escandallos; **Negocio › Ventas › Por producto**; y «Sacar» sin lo vendido ni lo cocinado cuando las ventas ya restan. Revo y el fichero de otro TPV entran por el mismo motor con M18. **M20 · 2**, lo que se escapa, después. **En plan desde el 22-oct**, en dos entregas: [`m20-ventas-y-consumo.md`](../m20-ventas-y-consumo.md). Los platos uno a uno llegan de Estook TPV (M20C) o de un conector (M18), no del cierre a mano; por eso **va con M20C**, donde nace la venta (lo contestó Richi el 22-oct, [0106](../decisiones/0106-estook-tpv-la-sala-y-la-cocina.md)). Y con ventas plato a plato, **«Gastado en cocina» y «Vendido a un cliente» (0037) dejan de restar**, para no contar nada dos veces.
 
 **Entra.** Pantalla de ventas con **el origen y su fiabilidad siempre a la vista** · emparejamiento de artículos con propuesta por parecido y confirmación · explosión de menús y modificadores · caminos manuales explicados por marca y por sistema · foto del Z y total del día · consumo teórico descontando del almacén · lo no emparejado cuenta en dinero y no descuenta género, avisado · **lo que deja cada plato, por canal: estrella, caballo, puzzle y perro**, con su precio recomendado y los candidatos a retirar (de M10, 0103: «no te olvides», dijo Richi). **Desde la pausa del 8-nov** ([0142](../decisiones/0142-la-pausa-del-8-nov.md)) vive en **Servicio › Jornadas › Información**, como «Tu carta en cuatro», junto a lo que más sale, lo que más factura y lo que más deja; Carta › Análisis enlaza ahí.
 
@@ -916,7 +916,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 
 - **Un solo motor de consumo para todas las vías.** La venta que nace en Estook TPV (M20C) entra con su plato ya emparejado —es un plato de la carta— y pasa por el mismo motor que la del CSV o la del conector. Nadie escribe un segundo motor.
 - **Cuándo descuenta:** al cerrarse la venta —**cobrada**, o jornada importada—. **En Estook TPV la venta nace al cobrar**, no al emitirse el ticket: si Hacienda tarda o no hay conexión, el género ya ha salido ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md)). Una mesa abierta no descuenta, pero **sí compromete**: «Quedan N» es lo que hay menos lo que está pedido y sin cobrar.
-- **Anulaciones y devoluciones** generan los movimientos contrarios con el mismo coste que se congeló. Nunca se borra un movimiento.
+- **Anulaciones y devoluciones** (0149, la A de Richi): **el ticket anulado devuelve todo**, a sus lotes, porque nunca debió existir. **Una devolución devuelve el género solo con «Se cobró de más»**, lo único que no salió de la cocina; con «Mal hecho», «No lo quiso» u «Otro», el plato salió y se gastó. Cuatro motivos, ninguno más. Nunca se borra un movimiento: lo que vuelve es una línea nueva.
 - **Emparejar tarde:** al confirmar un emparejamiento se ofrece aplicar las ventas pendientes de ese artículo, valoradas con el precio medio **de su fecha**, no con el de hoy. Siempre bajo petición, nunca solo (hallazgo 6).
 - **Menú sin desglose:** si la vía no dice qué platos se eligieron, el local configura un reparto estimado, y esas salidas se marcan como estimadas.
 - **Modificadores sin configurar** se guardan, no descuentan y salen en una lista con cuántas veces han aparecido.

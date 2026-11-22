@@ -128,12 +128,11 @@ Si lo está, y es de lo caro, Estook **pregunta una vez**, en una tarjeta de Con
 campana):
 
 > **El pulpo pierde unos 2 kg al mes (64 €).** ¿Por qué crees que es?
-> **[ Rinde menos de lo puesto ]** **[ Se sirve de más ]** **[ No lo sé ]**
+> **[ Se tira al limpiar ]** **[ Se sirve de más ]** **[ No lo sé ]**
 
-- **«Rinde menos»** solo sale si el producto tiene aprovechamiento (se limpia, se cuece). Propone
-  el número: «En tus últimos inventarios rinde un 62 %, no el 70 %. ¿Lo cambio?». **Un toque**, y
-  el coste de los platos pasa a ser el de verdad (con la confirmación que ya pide la Auditoría de
-  flujos, 2.2).
+- **«Se tira al limpiar»**: no hay aprovechamiento que corregir ([0150](decisiones/0150-fuera-el-aprovechamiento.md));
+  lo que se quita al limpiar es merma. Estook lo recuerda en una línea —«apúntalo como merma al
+  limpiarlo, o al recibirlo guarda solo lo limpio»— y no vuelve a preguntar ese mes.
 - **«Se sirve de más»**: **la receta no se toca nunca**. Queda la fuga a la vista en el resumen,
   con lo que cuesta al mes, hasta que deje de pasar.
 - **«No lo sé»**: no vuelve a preguntar hasta dentro de un mes.
@@ -148,8 +147,9 @@ complicar Estook.
 - **Cuándo**: **como mucho uno por inventario cerrado**, con todos los productos juntos. Nunca uno
   por producto, nunca de noche.
 - **Cómo**: «Para mirar», **no una alarma roja**. Una línea por producto, **lo que cuesta y qué
-  mirar**: «Pulpo: faltan 2 kg (64 €). Lo normal en tu cocina es ±0,5 kg. Mira las raciones, la
-  merma sin apuntar o el aprovechamiento». El porqué largo, plegado en una «i».
+  mirar**: «Pulpo: faltan 2 kg (64 €). Lo normal en tu cocina es ±0,5 kg. Mira las raciones o la
+  merma sin apuntar». **Siempre hay un margen** (Richi, 22-nov: «no siempre va a ser clavado, esto
+  no es un policía»): lo que cae dentro de lo normal de esa cocina no se avisa nunca. El porqué largo, plegado en una «i».
 - **«Ya sé por qué»**, opcional, con cuatro motivos: **error al contar** (ese periodo deja de contar
   para aprender), **un evento o invitación**, **merma sin apuntar**, **otra cosa**. Nadie está
   obligado a contestar.

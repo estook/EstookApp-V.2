@@ -8,7 +8,7 @@ import {
   esMerma,
   noPareceLoQueHay,
   esVenta,
-  losDeLaFamilia,
+  losQueQuedan,
   partidaDe,
   type MotivoDeMerma,
   type MotivoDeSalida,
@@ -122,8 +122,11 @@ function ElFormulario({
   readonly alHecho: (frase: string) => void;
   readonly alFallar: (error: ErrorDeLaApi) => void;
 }) {
-  const { cliente, permisos } = usarSesion();
+  const { cliente, permisos, yo } = usarSesion();
   const deLaLista = producto.precioCentimos ?? null;
+  // **Nada se resta dos veces** (M20 · 1, 0149): si las ventas del local ya restan solas, lo vendido
+  // y lo cocinado no se ofrecen. Se empieza en lo que queda más a mano.
+  const loVendidoBaja = yo?.local?.loVendidoBaja === true;
 
   const [cuanto, setCuanto] = useState('');
   const [como, setComo] = useState<'formatos' | 'unidades_de_uso'>(
@@ -134,7 +137,7 @@ function ElFormulario({
   const [quedarseConElPrecio, setQuedarseConElPrecio] = useState(false);
   const [lote, setLote] = useState('');
   const [caduca, setCaduca] = useState('');
-  const [porQue, setPorQue] = useState<MotivoDeSalida>('gastado');
+  const [porQue, setPorQue] = useState<MotivoDeSalida>(loVendidoBaja ? 'traspaso' : 'gastado');
   const [guardando, setGuardando] = useState(false);
   /** Lo que hay según el servidor, si al apuntar resultó que la lista iba atrasada. */
   const [hayDeVerdad, setHayDeVerdad] = useState<number | null>(null);
@@ -420,7 +423,9 @@ function ElFormulario({
                   Por qué sale
                 </p>
 
-                {FAMILIAS_DE_SALIDA.map((familia) => (
+                {FAMILIAS_DE_SALIDA.filter(
+                  (familia) => losQueQuedan(familia, loVendidoBaja).length > 0,
+                ).map((familia) => (
                   <div key={familia} className="flex flex-col gap-e2">
                     <p className="text-secundario font-semibold">
                       {NOMBRE_DE_LA_FAMILIA[familia]}
@@ -429,7 +434,7 @@ function ElFormulario({
                       </span>
                     </p>
                     <div className="flex flex-wrap gap-e2">
-                      {losDeLaFamilia(familia).map((cual) => {
+                      {losQueQuedan(familia, loVendidoBaja).map((cual) => {
                         const puesto = cual === porQue;
                         return (
                           <button
@@ -465,6 +470,13 @@ function ElFormulario({
                       ].toLowerCase()}
                     </strong>
                     .
+                  </p>
+                )}
+
+                {/* Para quien busca lo que ya no está (0149): una línea, y solo entonces. */}
+                {loVendidoBaja && (
+                  <p className="text-secundario text-texto-suave">
+                    Lo vendido y lo cocinado ya lo resta cada cobro de Estook TPV.
                   </p>
                 )}
               </div>

@@ -651,12 +651,14 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         nombre: 'Ventas',
         icono: IconoNegocio,
         queContesta: '¿Cuánto ha entrado, y cuánto de eso se ha ido en género?',
-        // **Tres pestañas** (0145; Richi, 10-nov): el Resumen (lo facturado, el ticket medio, el food
-        // cost y cómo se cobró), los Cobros uno a uno (lo entregado y el cambio) y Tickets y facturas,
-        // lo de Hacienda, que estaba en Servicio. Los camareros facturan en Estook TPV.
+        // **Cuatro pestañas** (0145; Richi, 10-nov): el Resumen (lo facturado, el ticket medio, el food
+        // cost y cómo se cobró), los Cobros uno a uno (lo entregado y el cambio), **Por producto** (lo
+        // cobrado plato a plato con lo que costó, M20 · 1, 0149) y Tickets y facturas, lo de Hacienda,
+        // que estaba en Servicio. Los camareros facturan en Estook TPV.
         vistas: [
           { id: 'resumen', nombre: 'Resumen', permiso: 'dato.ventas' },
           { id: 'cobros', nombre: 'Cobros', permiso: 'dato.ventas' },
+          { id: 'por-producto', nombre: 'Por producto', permiso: 'dato.ventas' },
           {
             id: 'tickets-y-facturas',
             nombre: 'Tickets y facturas',

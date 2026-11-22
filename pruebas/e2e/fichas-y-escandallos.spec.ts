@@ -49,13 +49,12 @@ test('se desgrana un plato, el escandallo dice lo que deja en cada canal y la fi
   // Lo que hay antes: el Almacén con sus precios, y la hamburguesa en la Carta.
   const producto = (datos: Record<string, unknown>) =>
     ejecutarEnLaApi<{ productoId: string }>(request, token, 'crear_producto', datos);
-  // 10 kg a 75 € con un 80 % útil: 9,375 €/kg de verdad.
+  // 10 kg a 93,75 €: 9,375 €/kg, sin aprovechamiento (0150).
   await producto({
     nombre: 'Carne picada',
     factor: 10,
     unidad_de_uso: 'kg',
-    rendimiento: 0.8,
-    precio_centimos: 7500,
+    precio_centimos: 9375,
   });
   await producto({
     nombre: 'Pan brioche',

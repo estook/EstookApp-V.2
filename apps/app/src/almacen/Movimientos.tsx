@@ -20,12 +20,13 @@ import {
   Tarjeta,
   clases,
 } from '@estook/ui';
-import { IconoBuscar } from '@estook/iconos';
+import { IconoBuscar, IconoFlechaAbajo } from '@estook/iconos';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarListaLarga } from '../ganchos/usarListaLarga.ts';
 import { usarQueEspere } from '../ganchos/usarQueEspere.ts';
 import {
   COMO_SE_LLAMA_EL_MOVIMIENTO,
+  comoDinero,
   comoSeLeeElDia,
   conUnidadDeUso,
   type MisMovimientos,
@@ -277,16 +278,25 @@ export function Movimientos({
             </h2>
 
             <ul className="flex flex-col gap-e1 rounded-medio border border-borde bg-superficie">
-              {delDia.map((m) => (
-                <li key={m.id} className="border-b border-borde last:border-b-0">
-                  <Linea
-                    movimiento={m}
-                    alAbrir={() => {
-                      alAbrirProducto(m.productoId);
-                    }}
-                  />
-                </li>
-              ))}
+              {juntarLasVentas(delDia).map((cosa) =>
+                cosa.tipo === 'venta' ? (
+                  <li
+                    key={`venta-${cosa.lineas[0]?.id ?? cosa.cobro}`}
+                    className="border-b border-borde last:border-b-0"
+                  >
+                    <VentaJunta lineas={cosa.lineas} alAbrirProducto={alAbrirProducto} />
+                  </li>
+                ) : (
+                  <li key={cosa.linea.id} className="border-b border-borde last:border-b-0">
+                    <Linea
+                      movimiento={cosa.linea}
+                      alAbrir={() => {
+                        alAbrirProducto(cosa.linea.productoId);
+                      }}
+                    />
+                  </li>
+                ),
+              )}
             </ul>
           </section>
         ))
@@ -334,9 +344,12 @@ export function Movimientos({
 function Linea({
   movimiento,
   alAbrir,
+  dentroDeUnCobro = false,
 }: {
   readonly movimiento: MovimientoDelLibro;
   readonly alAbrir: () => void;
+  /** Dentro de «Vendido · Mesa 4» (0149): qué es, quién y por qué ya lo dice el cobro. */
+  readonly dentroDeUnCobro?: boolean;
 }) {
   const suma = movimiento.cantidad > 0;
   const comoSeLlama = COMO_SE_LLAMA_EL_MOVIMIENTO[movimiento.tipo] ?? movimiento.tipo;
@@ -350,7 +363,9 @@ function Linea({
       <span className="flex flex-wrap items-baseline gap-e2">
         <span className="text-cuerpo font-medium">{movimiento.producto}</span>
         {movimiento.esEjemplo && <Etiqueta>ejemplo</Etiqueta>}
-        <span className="text-secundario text-texto-suave">{comoSeLlama}</span>
+        {!dentroDeUnCobro && (
+          <span className="text-secundario text-texto-suave">{comoSeLlama}</span>
+        )}
         {/* Lo anulado sigue aquí, tachado, y deja de contar (3-oct, 0055). Se anula
             desde la ficha del producto, que es lo que abre esta línea. */}
         {movimiento.anulado === true && <Etiqueta>Anulado</Etiqueta>}
@@ -375,16 +390,128 @@ function Linea({
         <span className="text-texto-suave">
           quedaron {conUnidadDeUso(movimiento.cantidadDespues, movimiento.unidadDeUso)}
         </span>
-        {movimiento.quien !== null && <span className="text-texto-suave">{movimiento.quien}</span>}
+        {!dentroDeUnCobro && movimiento.quien !== null && (
+          <span className="text-texto-suave">{movimiento.quien}</span>
+        )}
         {movimiento.lote !== null && (
           <span className="text-texto-suave">lote {movimiento.lote}</span>
         )}
       </span>
 
-      {movimiento.motivo !== null && movimiento.motivo !== '' && (
+      {!dentroDeUnCobro && movimiento.motivo !== null && movimiento.motivo !== '' && (
         <span className="text-secundario text-texto-suave">«{movimiento.motivo}»</span>
       )}
     </button>
+  );
+}
+
+type CosaDelDia =
+  | { readonly tipo: 'linea'; readonly linea: MovimientoDelLibro }
+  | {
+      readonly tipo: 'venta';
+      readonly cobro: string;
+      readonly lineas: readonly MovimientoDelLibro[];
+    };
+
+/**
+ * **Cada cobro, una línea** (M20 · 1, 0149): lo que restó (o devolvió) un mismo cobro de Estook TPV
+ * se junta, en vez de una línea por producto. Llegan seguidas —se apuntan a la vez y con la hora del
+ * cobro—, así que basta con juntar las que van una detrás de otra con el mismo cobro y el mismo motivo.
+ */
+function juntarLasVentas(lineas: readonly MovimientoDelLibro[]): readonly CosaDelDia[] {
+  const cosas: CosaDelDia[] = [];
+  for (const linea of lineas) {
+    const ultima = cosas.at(-1);
+    if (
+      linea.cobro !== undefined &&
+      ultima?.tipo === 'venta' &&
+      ultima.cobro === linea.cobro &&
+      ultima.lineas[0]?.motivo === linea.motivo
+    ) {
+      cosas[cosas.length - 1] = { ...ultima, lineas: [...ultima.lineas, linea] };
+    } else if (linea.cobro !== undefined) {
+      cosas.push({ tipo: 'venta', cobro: linea.cobro, lineas: [linea] });
+    } else {
+      cosas.push({ tipo: 'linea', linea });
+    }
+  }
+  return cosas;
+}
+
+function laHora(instante: string): string {
+  return new Date(instante).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}
+
+/**
+ * **Lo que restó un cobro**: «Vendido · Mesa 4», la hora, cuántos productos y lo que valía. Tocándola
+ * se despliega lo de cada producto, y cada uno abre su ficha.
+ */
+function VentaJunta({
+  lineas,
+  alAbrirProducto,
+}: {
+  readonly lineas: readonly MovimientoDelLibro[];
+  readonly alAbrirProducto: (id: string) => void;
+}) {
+  const [abierta, setAbierta] = useState(false);
+  const primera = lineas[0];
+  if (primera === undefined) return null;
+  const vuelve = primera.cantidad > 0;
+  const conValor = lineas.every((l) => l.valorCentimos !== undefined);
+  const valor = lineas.reduce((s, l) => s + (l.valorCentimos ?? 0), 0);
+  const productos = lineas.length === 1 ? '1 producto' : `${String(lineas.length)} productos`;
+  return (
+    <div className="flex flex-col">
+      <button
+        type="button"
+        aria-expanded={abierta}
+        onClick={() => {
+          setAbierta(!abierta);
+        }}
+        className="flex w-full min-h-toque items-center gap-e3 px-e3 py-e2 text-left hover:bg-fondo"
+      >
+        <span className="flex min-w-0 flex-1 flex-col gap-e1">
+          <span className="text-cuerpo font-medium">{primera.motivo ?? 'Vendido'}</span>
+          <span className="text-secundario text-texto-suave">
+            {laHora(primera.ocurrioEn)} · {productos}
+            {primera.quien === null ? '' : ` · ${primera.quien}`}
+          </span>
+        </span>
+        {conValor && (
+          <span
+            className={clases(
+              'shrink-0 tabular-nums font-semibold',
+              vuelve ? 'text-bien' : 'text-mal',
+            )}
+          >
+            {vuelve ? '+' : '−'}
+            {comoDinero(valor)}
+          </span>
+        )}
+        <IconoFlechaAbajo
+          size={16}
+          className={clases(
+            'shrink-0 text-texto-suave transition-transform',
+            abierta && 'rotate-180',
+          )}
+        />
+      </button>
+      {abierta && (
+        <ul className="flex flex-col border-t border-borde bg-fondo">
+          {lineas.map((m) => (
+            <li key={m.id} className="border-b border-borde last:border-b-0">
+              <Linea
+                movimiento={m}
+                dentroDeUnCobro
+                alAbrir={() => {
+                  alAbrirProducto(m.productoId);
+                }}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 

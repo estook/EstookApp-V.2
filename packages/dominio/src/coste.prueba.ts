@@ -11,15 +11,15 @@ import {
   valorDeLasExistencias,
 } from './coste.ts';
 
-/** El ejemplo que trae la propia Auditoria de flujos. */
-const CAJA_DE_ACEITE = { factor: 3000, rendimiento: 0.85 };
+/** El ejemplo que trae la propia Auditoria de flujos, sin aprovechamiento (0150). */
+const CAJA_DE_ACEITE = { factor: 3000 };
 
 describe('coste por unidad de uso', () => {
-  it('reproduce el ejemplo del documento: caja de 3 kg, 85 % de rendimiento', () => {
-    // 10 € ÷ (3.000 g × 0,85) = 0,0039 €/g, que se lee por kilo: 3,92 €/kg.
+  it('caja de 3 kg a 10 €: precio ÷ factor, sin aprovechamiento', () => {
+    // 10 € ÷ 3.000 g = 0,0033 €/g, que se lee por kilo: 3,33 €/kg.
     const coste = costePorUnidadDeUso(desdeEuros(10), CAJA_DE_ACEITE);
-    expect(coste).toBe(392);
-    expect(comoPrecioPorUnidad(coste, 'g')).toBe('3,92 €/kg');
+    expect(coste).toBe(333);
+    expect(comoPrecioPorUnidad(coste, 'g')).toBe('3,33 €/kg');
   });
 
   it('se enseña con dos decimales, y lo que no llega al céntimo, por cien', () => {
@@ -31,34 +31,27 @@ describe('coste por unidad de uso', () => {
     expect(comoPrecioPorUnidad(milesimas(400), 'ud')).toBe('0,40 € cada 100 ud');
   });
 
-  it('sin factor ni rendimiento, el precio es el precio', () => {
-    const coste = costePorUnidadDeUso(desdeEuros(2.5), { factor: 1, rendimiento: 1 });
+  it('sin factor, el precio es el precio', () => {
+    const coste = costePorUnidadDeUso(desdeEuros(2.5), { factor: 1 });
     expect(coste).toBe(250_000);
   });
 
-  it('el rendimiento encarece: lo que se tira lo pagan los que quedan', () => {
-    const entero = costePorUnidadDeUso(desdeEuros(10), { factor: 1000, rendimiento: 1 });
-    const conMerma = costePorUnidadDeUso(desdeEuros(10), { factor: 1000, rendimiento: 0.5 });
-    expect(conMerma).toBe(entero * 2);
+  it('lo que se tira al limpiar no encarece el kilo: es merma (0150)', () => {
+    // Un kilo a 10 € vale 10 € el kilo, se limpie o no.
+    expect(costePorUnidadDeUso(desdeEuros(10), { factor: 1000 })).toBe(1000);
   });
 
-  it('rechaza un factor o un rendimiento imposibles', () => {
-    expect(() => costePorUnidadDeUso(desdeEuros(10), { factor: 0, rendimiento: 1 })).toThrow(
-      /factor/i,
-    );
-    expect(() => costePorUnidadDeUso(desdeEuros(10), { factor: 100, rendimiento: 0 })).toThrow(
-      /rendimiento/i,
-    );
-    expect(() => costePorUnidadDeUso(desdeEuros(10), { factor: 100, rendimiento: 1.5 })).toThrow(
-      /rendimiento/i,
-    );
+  it('rechaza un factor imposible', () => {
+    expect(() => costePorUnidadDeUso(desdeEuros(10), { factor: 0 })).toThrow(/factor/i);
+    expect(() => costePorUnidadDeUso(desdeEuros(10), { factor: -3 })).toThrow(/factor/i);
   });
 });
 
 describe('coste de una linea de escandallo', () => {
   it('235 g de ese aceite', () => {
+    // 235 g × 333 milésimas = 0,78 €.
     const coste = costePorUnidadDeUso(desdeEuros(10), CAJA_DE_ACEITE);
-    expect(costeDeLinea(coste, cantidad(235))).toBe(92);
+    expect(costeDeLinea(coste, cantidad(235))).toBe(78);
   });
 
   it('el atajo desde la compra da lo mismo, sin redondeo intermedio', () => {
@@ -72,7 +65,7 @@ describe('coste de una linea de escandallo', () => {
 
   it('con cantidades muy pequenas no se va a cero', () => {
     // 2 g de azafran a 3.000 € el kilo.
-    const azafran = costePorUnidadDeUso(desdeEuros(3000), { factor: 1000, rendimiento: 1 });
+    const azafran = costePorUnidadDeUso(desdeEuros(3000), { factor: 1000 });
     expect(costeDeLinea(azafran, cantidad(2))).toBe(600);
   });
 

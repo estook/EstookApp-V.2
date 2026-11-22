@@ -1197,3 +1197,12 @@
      y el TPV se habría quedado sin poder tomar nota hasta el despliegue. **La columna se deja, sin usar, y se
      quita en una migración de después**, cuando ninguna API la lea. Lo mismo vale para renombrar una columna o
      cambiarle el tipo: primero se añade lo nuevo, después se deja de usar lo viejo y al final se borra.
+
+277. **Lo que pasó un día se cuenta en ese día, no en el de lo que lo contiene.** Negocio › Ventas › Cobros
+     decía «Hoy no se ha cobrado nada» con cuatro cobros hechos ese día (22-nov, IKATZ): la consulta contaba
+     cada cobro en la fecha en que **se abrió su caja**, y la caja llevaba abierta desde el 18. «Cómo se
+     cobra» del Panel hacía lo mismo, y el Historial del almacén escribía «Hoy» con el día del calendario
+     mientras cada línea lleva la jornada, con su hora de corte. **Cada cosa se cuenta en la jornada en que
+     ocurrió** (la del cobro, la del movimiento), calculada con la zona y la hora de corte del local; la
+     fecha de la caja es la de su Z. Lo vigila `lo-vendido-baja.prueba.ts`, que abre la caja cinco días
+     antes de cobrar y se vio fallar con el arreglo quitado (0149).

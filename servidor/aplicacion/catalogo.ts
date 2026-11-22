@@ -415,6 +415,7 @@ import {
 } from './comandos/pago.ts';
 import { miLocalEnGoogle, miNotaEnGoogle } from './consultas/local-en-google.ts';
 import { elServicioPorDentro, loQueSeVende } from './consultas/lo-que-se-vende.ts';
+import { losVendidosPorProducto, vendidosSinEscandallo } from './consultas/lo-vendido.ts';
 import { comoVaHoy } from './consultas/como-va-hoy.ts';
 import { guardarLosObjetivosDeVenta, laVentaDeCadaUno } from './consultas/empleados.ts';
 import {
@@ -572,6 +573,9 @@ export const catalogo = {
     [loQueSeVende.nombre]: loQueSeVende,
     [comoVaHoy.nombre]: comoVaHoy,
     [elServicioPorDentro.nombre]: elServicioPorDentro,
+    // M20 · 1 (0149): lo cobrado plato a plato, y lo vendido sin escandallo.
+    [losVendidosPorProducto.nombre]: losVendidosPorProducto,
+    [vendidosSinEscandallo.nombre]: vendidosSinEscandallo,
     // P3 (0142): Servicio › Empleados.
     [laVentaDeCadaUno.nombre]: laVentaDeCadaUno,
     // La puerta del admin (0041): quién soy ahí, quién más entra y lo que se ha hecho.

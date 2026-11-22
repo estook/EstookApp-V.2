@@ -37,6 +37,7 @@ import {
   ResumenDelEquipo,
   TicketsYFacturas,
   LosCobros,
+  PorProducto,
   Ventas,
 } from './lasPantallas.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -328,6 +329,10 @@ function Contenido({
   // (T6 · 2 · 1, 0136; antes en Servicio) y el Resumen.
   if (app.id === 'negocio' && destino.id === 'ventas' && vista?.id === 'cobros') {
     return <LosCobros />;
+  }
+  // M20 · 1 (0149): lo cobrado plato a plato, con lo que costó el día que se vendió.
+  if (app.id === 'negocio' && destino.id === 'ventas' && vista?.id === 'por-producto') {
+    return <PorProducto />;
   }
   if (app.id === 'negocio' && destino.id === 'ventas' && vista?.id === 'tickets-y-facturas') {
     return <TicketsYFacturas />;

@@ -57,7 +57,7 @@ Para cada uno: **quién lo crea, quién lo consume, qué pasa si falta y qué pa
 
 **PRECIO DE COMPRA.** _Lo crea:_ recepción de un pedido, foto de albarán, factura de proveedor o alta manual. _Lo consume:_ coste por unidad de uso · valor del almacén · gasto por proveedor · comparativa entre locales. _Si falta:_ el producto se usa igual, cuenta cero y **sale marcado en amarillo** en todas las fichas que lo llevan. Nunca bloquea. _Si cambia:_ abre vigencia nueva, la anterior queda en el histórico, y dispara el recálculo de todo lo que cuelga. **Trampa conocida:** el precio de la factura y el del albarán no siempre coinciden. **Manda la factura**, y el recálculo se aplica desde la fecha del albarán.
 
-**FORMATO, FACTOR Y RENDIMIENTO.** _Los crea:_ el alta del producto, con propuesta del catálogo de referencia. _Los consume:_ el coste por unidad de uso, y con él todo lo demás. _Si faltan:_ se asume factor 1 y rendimiento 1, y el producto queda marcado como **«sin verificar»**, porque un rendimiento mal puesto es el error más caro del sistema. _Si cambian:_ recálculo de todos los platos que lo llevan, con aviso al jefe de cocina. **Trampa conocida:** confundir unidad de compra con unidad de uso es la primera causa de escandallos falsos. Por eso el alta obliga a decir las dos y enseña el resultado: «caja de 3 kg ÷ 3.000 g × 0,85 de rendimiento = 0,0039 €/g».
+**FORMATO Y FACTOR.** _Los crea:_ el alta del producto, con propuesta del catálogo de referencia. _Los consume:_ el coste por unidad de uso, y con él todo lo demás. _Si faltan:_ se asume factor 1. _Si cambian:_ recálculo de todos los platos que lo llevan, con aviso al jefe de cocina. **Trampa conocida:** confundir unidad de compra con unidad de uso es la primera causa de escandallos falsos. Por eso el alta obliga a decir las dos y enseña el resultado: «Caja 3 kg = 3.000 g para usar». **Sin aprovechamiento** desde el 22-nov-2026 ([0150](../decisiones/0150-fuera-el-aprovechamiento.md)): lo que se tira al limpiar es merma.
 
 **GRAMAJE DE UN INGREDIENTE EN UNA FICHA.** _Lo crea:_ el jefe de cocina en Escandallos. _Lo consume:_ coste del plato · consumo teórico · alérgenos · valor nutricional · hoja de producción. _Si falta:_ el plato existe sin ficha, se vende, cuenta en dinero y sale marcado. _Si cambia:_ **crea versión nueva.** Los costes históricos no se tocan; las ventas pasadas siguen valoradas con la versión vigente ese día.
 
@@ -116,11 +116,11 @@ Entra un albaran con el aceite un 12 % mas caro
 
 **Lo que ve el usuario:** al confirmar la recepción, un aviso corto: «El aceite ha subido un 12 %. Afecta a 7 platos; 2 se quedan bajo objetivo.» Con un botón para verlos.
 
-## 2.2 Se cambia el rendimiento de un producto
+## 2.2 Se cambia cuánto trae lo que se compra
 
-Igual que el anterior, pero **más peligroso, porque el rendimiento multiplica**. Pasar el pulpo de 0,80 a 0,65 sube su coste un 23 % de golpe.
+Igual que el anterior, pero **más peligroso, porque el factor divide**: pasar la caja de 5 kg a 4 kg sube el coste de cada gramo un 25 % de golpe. (Hasta el 22-nov-2026 esto valía para el aprovechamiento, que ya no existe: [0150](../decisiones/0150-fuera-el-aprovechamiento.md).)
 
-Por eso: cambiar un rendimiento **pide confirmación enseñando el impacto antes de guardar**: «Esto sube el coste de 4 platos entre un 18 % y un 24 %. ¿Seguimos?»
+Por eso: cambiar cuánto trae **pide confirmación enseñando el impacto antes de guardar**: «El coste por unidad de uso sube en torno a un 25 %. ¿Seguimos?»
 
 ## 2.3 Se cambia el gramaje de una ficha
 
@@ -281,7 +281,6 @@ Producto, en que se mide, cuanto trae, precio de todo, cuanto hay, caduca el
 ├─ si hay caducidad, se crea su lote
 ├─ lo que hay entra en el libro: una ENTRADA de origen «alta», a su coste
 ├─ la camara lo cuenta al instante, y el valor de la camara sube
-└─ el aprovechamiento nace en el 100 %, marcado «sin medir»
 ```
 
 **NO se toca:** ninguna ficha, porque todavía no lleva ninguna. Y **el stock no se escribe**: se apunta, como todo.
@@ -415,7 +414,8 @@ Cobrar → uno o varios PAGOS (efectivo, datafono, mixto); si se divide, un cobr
 │   ├─ la VENTA (M20): aqui nace, no al emitirse el ticket
 │   └─ el efectivo, como movimiento de caja en el turno de caja o en la bolsa
 ├─ la cuenta queda cobrada y la mesa libre
-├─ evento venta.cerrada → M20 descuenta el genero con la ficha vigente ese dia
+├─ M20 · 1 (0149): cada plato resta su escandallo de ese dia, en el mismo cobro
+│   y en un punto de guardado: si falla, el cobro sigue y lo reintenta el siguiente
 ├─ FUERA de la transaccion: el documento se manda a Hacienda por el proveedor,
 │   con una clave que impide registrarlo dos veces → REGISTRADO, con su QR
 │   ├─ se imprime el ticket con su QR y la leyenda
@@ -748,7 +748,7 @@ Al cerrar cada módulo se comprueban las que apliquen. **Cada línea es una prue
 ## Datos y cascada
 
 - Cambiar un precio recalcula **solo lo afectado** y no toca ningún histórico.
-- Cambiar un rendimiento avisa del impacto **antes** de guardar.
+- Cambiar cuánto trae lo que se compra avisa del impacto **antes** de guardar.
 - Cambiar un gramaje crea versión y deja intacta la anterior.
 - Una venta de hace un mes sigue valorada con la ficha que estaba vigente ese día.
 - Reconstruir los agregados desde cero da **exactamente los mismos números**.

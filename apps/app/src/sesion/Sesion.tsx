@@ -64,6 +64,11 @@ export interface QuienSoy {
     readonly direccionDeLaCarta: string;
     /** Si sirve menús (0103): nulo, no lo ha dicho; falso, Carta › Menús no sale. */
     readonly sirveMenus: boolean | null;
+    /**
+     * Si sus ventas ya restan solas del almacén (M20 · 1, 0149): «Sacar género» no ofrece
+     * lo vendido ni lo cocinado. Opcional mientras la API no esté desplegada.
+     */
+    readonly loVendidoBaja?: boolean;
   } | null;
   readonly organizaciones: readonly { readonly id: string; readonly nombre: string }[];
   readonly locales: readonly {

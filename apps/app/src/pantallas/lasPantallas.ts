@@ -60,6 +60,10 @@ export const Informacion = perezosa(
   async () => (await import('../servicio/Informacion.tsx')).Informacion,
 );
 export const Ventas = perezosa(async () => (await import('../servicio/Ventas.tsx')).Ventas);
+// Negocio › Ventas › Por producto (M20 · 1, 0149): lo cobrado plato a plato, con lo que costó.
+export const PorProducto = perezosa(
+  async () => (await import('../servicio/PorProducto.tsx')).PorProducto,
+);
 // Negocio › Ventas › Cobros (0145): cada cobro con lo entregado y el cambio.
 export const LosCobros = perezosa(
   async () => (await import('../servicio/LosCobros.tsx')).LosCobros,

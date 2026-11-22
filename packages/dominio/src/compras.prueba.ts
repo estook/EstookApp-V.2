@@ -379,8 +379,7 @@ describe('lo que ha llegado', () => {
     });
     expect(linea.cantidadDeUso).toBe(30);
     expect(linea.importeCentimos).toBe(4800);
-    // 16 € / 10 kg = 1,60 €/kg, en milésimas de céntimo: lo que dice el albarán. El
-    // aprovechamiento solo cuenta en el plato.
+    // 16 € / 10 kg = 1,60 €/kg, en milésimas de céntimo: lo que dice el albarán.
     expect(linea.costeMilesimas).toBe(160_000);
   });
 

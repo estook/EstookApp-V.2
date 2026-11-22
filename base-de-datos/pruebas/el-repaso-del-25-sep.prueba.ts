@@ -171,7 +171,6 @@ describe('lo congelado', () => {
         formato: string | null;
         factor: number;
         unidadDeUso: string;
-        rendimiento: number;
         categoriaFiscal: string;
         pesoVariable: boolean;
         codigoDeBarras: string | null;
@@ -187,7 +186,6 @@ describe('lo congelado', () => {
       formato: producto.formato,
       factor: producto.factor,
       unidad_de_uso: producto.unidadDeUso,
-      rendimiento: producto.rendimiento,
       categoria_fiscal: producto.categoriaFiscal,
       alergenos: [],
       peso_variable: producto.pesoVariable,

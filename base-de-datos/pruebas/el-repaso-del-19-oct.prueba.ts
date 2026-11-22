@@ -8,7 +8,8 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  * Richi: «he añadido contramuslos de pollo, pongo que hay 20 kg y me dice que vale
  * 91.000 €». Detrás había tres cosas, y cada una tiene aquí su prueba:
  *
- *   · **Lo que hay vale lo que se pagó**: el aprovechamiento solo cuenta en el plato.
+ *   · **Lo que hay vale lo que se pagó**, en la cámara y en el plato (sin aprovechamiento
+ *     desde la 0150).
  *   · **Nadie compra a tanto el gramo**: un producto en gramos sin envase va por kilos.
  *   · **El precio sigue al envase**: cambiar «caja de 5 kg» por «caja de 10 kg» no
  *     cambia lo que cuesta el kilo.
@@ -54,19 +55,18 @@ async function laCamara(productoId: string): Promise<{ cantidad: number; coste: 
 describe('lo que hay vale lo que se pagó', () => {
   let atun: string;
 
-  it('un kilo de atún pagado a 18,18 € vale 18,18 €, aunque se aproveche un 70 %', async () => {
+  it('un kilo de atún pagado a 18,18 € vale 18,18 €', async () => {
     atun = losDatos<{ productoId: string }>(
       await api.ejecutar(rosa, 'crear_producto', {
         nombre: 'Atún repaso',
         formato: 'Kilo',
         factor: 1000,
         unidad_de_uso: 'g',
-        rendimiento: 0.7,
         precio_centimos: 1818,
         cantidad_inicial: 1000,
       }),
     ).productoId;
-    // 18,18 € el kilo son 1.818 milésimas de céntimo el gramo: sin el aprovechamiento.
+    // 18,18 € el kilo son 1.818 milésimas de céntimo el gramo.
     expect(await laCamara(atun)).toEqual({ cantidad: 1000, coste: 1818 });
 
     const [precio] = await comoDuena<{ coste: string }>(
@@ -90,7 +90,7 @@ describe('lo que hay vale lo que se pagó', () => {
     expect(await laCamara(atun)).toEqual({ cantidad: 2000, coste: 1909 });
   });
 
-  it('en el plato sí cuenta el aprovechamiento: 100 g limpios cuestan lo de 143 g en bruto', async () => {
+  it('en el plato, 100 g son 100 g: cuestan lo pagado, sin aprovechamiento (0150)', async () => {
     const [plato] = losDatos<{ creados: { platoId: string }[] }>(
       await api.ejecutar(rosa, 'crear_platos', {
         seccion_id: null,
@@ -109,9 +109,9 @@ describe('lo que hay vale lo que se pagó', () => {
       receta: { lineas: { costeCentimos?: number | null }[] };
       escandallo?: { costeCentimos: number | null };
     }>(await api.consultar(rosa, 'una_ficha', { plato_id: plato?.platoId ?? '' }));
-    // 100 g × 19,09 €/kg ÷ 0,7 = 2,73 €.
-    expect(ficha.receta.lineas[0]?.costeCentimos).toBe(273);
-    expect(ficha.escandallo?.costeCentimos).toBe(273);
+    // 100 g × 19,09 €/kg = 1,91 €.
+    expect(ficha.receta.lineas[0]?.costeCentimos).toBe(191);
+    expect(ficha.escandallo?.costeCentimos).toBe(191);
   });
 });
 
@@ -164,7 +164,6 @@ describe('el precio sigue al envase', () => {
         formato: 'Caja de 10 kg',
         factor: 10_000,
         unidad_de_uso: 'g',
-        rendimiento: 1,
         categoria_fiscal: 'alimento',
         alergenos: [],
         peso_variable: false,

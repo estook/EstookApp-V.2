@@ -23,7 +23,7 @@ export type PasoDelRecalculo = (typeof ORDEN_DEL_RECALCULO)[number];
 export const DISPARADORES = [
   /** Llegó un albarán, o se corrigió una factura. */
   'precio_de_compra',
-  /** Cambió el formato, el factor o el rendimiento de un producto. */
+  /** Cambió el formato o el factor de un producto. */
   'conversion_del_producto',
   /** Cambió el gramaje de una elaboración. */
   'receta_de_elaboracion',

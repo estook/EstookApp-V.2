@@ -95,14 +95,13 @@ export const quitarIvaALosPrecios = comando<{ confirmado: true }, SalidaQuitarIv
         unidad_de_uso: string;
         formato: string | null;
         factor: string;
-        rendimiento: string;
         iva: string | null;
         categoria_fiscal: string;
       }[]
     >`
       select pr.producto_id, pr.proveedor_id, pr.precio_centimos::text as precio,
              p.nombre, p.unidad_de_uso::text as unidad_de_uso, p.formato,
-             p.factor::text as factor, p.rendimiento::text as rendimiento,
+             p.factor::text as factor,
              p.iva_de_compra::text as iva, p.categoria_fiscal::text as categoria_fiscal
         from estook.precio_de_producto pr
         join estook.producto p on p.id = pr.producto_id
@@ -131,7 +130,6 @@ export const quitarIvaALosPrecios = comando<{ confirmado: true }, SalidaQuitarIv
         precioCentimos: sinIva(centimos(Number(v.precio)), tipo),
         formato: v.formato,
         factor: Number(v.factor),
-        rendimiento: Number(v.rendimiento),
         origen: 'a_mano',
         referencia: { motivo: 'se_quito_el_iva', tipo },
         soloSiCambia: true,

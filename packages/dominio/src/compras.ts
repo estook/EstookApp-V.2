@@ -487,11 +487,8 @@ export interface LineaRecibida {
  * cosa. Es la única forma de que el pescado no salga más barato de lo que costó.
  */
 export function lineaRecibida(linea: LineaQueLlega): LineaRecibida {
-  // **Lo que entra vale lo que se pagó** (0099): el coste de la línea va sin el
-  // aprovechamiento, que solo cuenta al costear un plato. Antes el kilo de atún
-  // entraba a 25,97 € habiéndose pagado a 18,18 €.
-  const rendimiento = 1;
-
+  // **Lo que entra vale lo que se pagó** (0099, 0150): el kilo de atún pagado a
+  // 18,18 € entra a 18,18 €.
   if (linea.pesoVariable) {
     const cuanto = Math.max(0, linea.cantidadDeUso ?? 0);
     const importe =
@@ -499,9 +496,7 @@ export function lineaRecibida(linea: LineaQueLlega): LineaRecibida {
         ? null
         : centimos(linea.importeCentimos);
     const coste =
-      importe === null || cuanto <= 0
-        ? null
-        : costePorUnidadDeUso(importe, { factor: cuanto, rendimiento });
+      importe === null || cuanto <= 0 ? null : costePorUnidadDeUso(importe, { factor: cuanto });
     const precioFormato =
       importe === null || cuanto <= 0 ? null : porCantidad(importe, linea.factor / cuanto);
 
@@ -524,8 +519,7 @@ export function lineaRecibida(linea: LineaQueLlega): LineaRecibida {
     formatos,
     cantidadDeUso: Number((formatos * linea.factor).toFixed(4)),
     importeCentimos: precio === null ? null : porCantidad(precio, formatos),
-    costeMilesimas:
-      precio === null ? null : costePorUnidadDeUso(precio, { factor: linea.factor, rendimiento }),
+    costeMilesimas: precio === null ? null : costePorUnidadDeUso(precio, { factor: linea.factor }),
     precioFormatoCentimos: precio,
   };
 }

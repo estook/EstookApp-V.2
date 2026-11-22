@@ -533,7 +533,7 @@ Glop entrega las claves de conexion a peticion del titular.
 
 Estook **no mete nada en tu almacén.** Te lo rellena cuando tú se lo pides.
 
-Al crear un producto, el buscador consulta un catálogo de referencia de unos 250 productos habituales de hostelería española. Escribes «aceite de oliva» y salen las variantes con su unidad de compra, su factor, su rendimiento aproximado, su categoría y sus alérgenos ya puestos. Aceptas, pones tu precio y tu proveedor: **un producto bien definido en quince segundos en vez de en dos minutos**, y sin el error clásico de confundir la unidad de compra con la de uso.
+Al crear un producto, el buscador consulta un catálogo de referencia de unos 250 productos habituales de hostelería española. Escribes «aceite de oliva» y salen las variantes con su unidad de compra, su factor, su categoría y sus alérgenos ya puestos. Aceptas, pones tu precio y tu proveedor: **un producto bien definido en quince segundos en vez de en dos minutos**, y sin el error clásico de confundir la unidad de compra con la de uso.
 
 Lo mismo con las recetas de referencia. Nadie obliga, y lo que no se usa no existe.
 
@@ -609,15 +609,15 @@ La pantalla de inicio de la app: lo que hay que atender ahora. Bajo mínimo **co
 
 ## Productos
 
-Cada producto guarda nombre, categoría, foto, unidad de compra («caja 3 kg»), unidad de uso (g/ml/ud), factor, rendimiento, peso variable, código de barras, tipo impositivo, alérgenos, mínimo en cámara y proveedor principal.
+Cada producto guarda nombre, categoría, foto, unidad de compra («caja 3 kg»), unidad de uso (g/ml/ud), factor, peso variable, código de barras, tipo impositivo, alérgenos, mínimo en cámara y proveedor principal.
 
 > **Y no se pregunta todo eso al darlo de alta.** El alta pregunta, con estas palabras: **producto**, **en qué se mide** (kg, L, unidades…), **cuánto trae** —en unidades, «cuántas unidades vienen»— y **el precio de todo eso**. Debajo, la cuenta hecha: «sale a 1,20 €/kg». Y dos cosas que antes faltaban: **cuánto hay ahora**, que entra en el libro como su primera línea, y **cuándo caduca lo más próximo**. Proveedor y categoría, opcionales.
 >
-> **Cuánto se aprovecha no se pregunta**: nadie lo sabe al dar de alta, y un número inventado ahí encarece o abarata todas las fichas que lo lleven. Nace en el 100 % y lo corrige la calibración, con inventarios de verdad ([decisión 0028](../decisiones/0028-el-alta-pregunta-cuanto-hay.md)). Y **cuántos gramos lleva una ración no es del producto: es de la ficha técnica** ([decisión 0021](../decisiones/0021-el-producto-se-mide-en-una-unidad.md)).
+> **No hay «cuánto se aprovecha»** (Richi, 22-nov-2026, [0150](../decisiones/0150-fuera-el-aprovechamiento.md)): **lo que entra es lo que se guarda, y lo que pide el escandallo es lo que sale**. Llega un kilo de atún: se guarda un kilo. Lo que se tira al limpiarlo se apunta como merma, al recibirlo (se guarda lo limpio y el resto es merma) o al limpiarlo después. Sin porcentajes ni cuentas para la plantilla. Y **cuántos gramos lleva una ración no es del producto: es de la ficha técnica** ([decisión 0021](../decisiones/0021-el-producto-se-mide-en-una-unidad.md)).
 
 **En la lista, dos botones por producto:** un **+ verde** —ha llegado género, con el precio de siempre ya escrito; si ha cambiado, se guarda como precio nuevo desde hoy y el de antes queda en el histórico— y un **− rojo** —ha salido, y se dice por qué: gastado o vendido, una merma con su motivo, a otro local u otra cosa—. Todo acaba en el libro de movimientos, con quién y cuándo. Y en la ficha, un enlace pequeño: **«¿No cuadra lo que hay? Corrígelo»**.
 
-> **Coste real por unidad de uso = precio ÷ (factor × rendimiento)**
+> **Coste por unidad de uso = precio ÷ factor**
 > Es lo que usan los escandallos. El precio del formato no costea nunca.
 
 **El stock: la cifra manda, el historial explica.** Siempre visible y siempre editable a mano. Si el jefe de cocina dice que hay 4 kg, hay 4 kg: se apunta el ajuste con quién y cuándo. **Nunca se bloquea a nadie por cuadrar.** Por dentro, ese ajuste es un movimiento más del libro.

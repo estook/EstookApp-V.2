@@ -32,6 +32,7 @@ import {
 } from '../aprobaciones.ts';
 import { elRelojYElFisco, elTipoDeRestauracion } from '../desviacion.ts';
 import { prepararUnDocumento } from '../emitir.ts';
+import { bajarLoPendiente, ponerEnLaCola } from '../lo-vendido.ts';
 import { cuandoEnElLocal, loDelLocalParaImprimir } from '../impresion.ts';
 import {
   elLocalDelServicio,
@@ -804,10 +805,14 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
                 ${contexto.sesion?.aparato?.terminalId ?? null}::uuid,
                 ${contexto.ahora.toISOString()}::timestamptz)
       `;
+      // Con su sitio en el ticket (0149): las líneas del ticket son las de precio, en este orden.
+      // Una devolución dice «la línea 2», y así se sabe qué plato es.
+      const enElTicket = cubre.lineasDelCobro.filter((l) => l.precio_centimos > 0);
       for (const l of cubre.lineasDelCobro) {
+        const posicion = enElTicket.indexOf(l);
         await contexto.sql`
-          insert into estook.cobro_de_linea (cobro_id, linea_id)
-          values (${entrada.cobro_id}::uuid, ${l.id}::uuid)
+          insert into estook.cobro_de_linea (cobro_id, linea_id, posicion)
+          values (${entrada.cobro_id}::uuid, ${l.id}::uuid, ${posicion < 0 ? null : posicion})
         `;
       }
       for (const p of pagos) {
@@ -835,6 +840,11 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
          where id = ${cubre.cuenta.id}::uuid
       `;
     }
+    // **Lo vendido baja del almacén** (M20 · 1, 0149): a la cola con el cobro, y se resta en un punto
+    // de guardado aparte. Si falla, el cobro sigue y lo intenta el siguiente. Nunca lanza.
+    await ponerEnLaCola(contexto, localId, 'cobro', entrada.cobro_id);
+    await bajarLoPendiente(contexto, localId);
+
     // **El cajón lo abre la impresora** de esta caja, con su impulso. Un comandero no tiene cajón.
     const cajonAbierto =
       caja.conCajon && pagos.some((p) => abreElCajon(p.forma))

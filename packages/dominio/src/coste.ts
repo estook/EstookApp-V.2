@@ -5,13 +5,17 @@ import { centimos, type Centimos } from './dinero.ts';
  *
  * La fórmula de la que cuelga todo el dinero de Estook (Auditoría, parte 1):
  *
- *     coste por unidad de uso  =  precio de compra ÷ (factor × rendimiento)
+ *     coste por unidad de uso  =  precio de compra ÷ factor
  *
- * Con el ejemplo del propio documento: una caja de 3 kg a 10 €, con un 85 % de
- * rendimiento, sale a 0,0039 €/g. Se compra en cajas y se cocina en gramos; el
- * factor convierte, y el rendimiento descuenta lo que se va en la merma de
- * limpieza. Confundir la unidad de compra con la de uso es, según el documento,
- * «la primera causa de escandallos falsos».
+ * Una caja de 3 kg a 10 € sale a 0,0033 €/g. Se compra en cajas y se cocina en
+ * gramos, y el factor convierte. Confundir la unidad de compra con la de uso es,
+ * según la Auditoría, «la primera causa de escandallos falsos».
+ *
+ * ── Sin aprovechamiento (Richi, 22-nov, 0150) ───────────────────────────────
+ *
+ * Hasta el 22-nov se dividía también entre «lo que se aprovecha» de cada producto.
+ * Ya no: **lo que entra es lo que se guarda, y lo que pide el escandallo es lo que
+ * sale**. Lo que se tira al limpiar se apunta como merma, al recibir o al limpiar.
  *
  * ── La trampa de precisión ───────────────────────────────────────────────────
  *
@@ -55,52 +59,28 @@ export function cantidad(valor: number): Cantidad {
 
 export const SIN_EXISTENCIAS = cantidad(0);
 
-/**
- * Cuando falta el factor o el rendimiento se asume 1, y el producto queda
- * marcado como «sin verificar»: un rendimiento mal puesto es, según la
- * Auditoría, «el error más caro del sistema».
- */
+/** Cuando falta el factor se asume 1, y el producto queda marcado como «sin verificar». */
 export const FACTOR_SIN_VERIFICAR = 1;
-export const RENDIMIENTO_SIN_VERIFICAR = 1;
 
 export interface Conversion {
   /** Cuántas unidades de uso trae una unidad de compra. Una caja de 3 kg: 3000. */
   readonly factor: number;
-  /** Qué proporción se aprovecha. Un 85 % es 0,85. */
-  readonly rendimiento: number;
 }
 
-function comprobarConversion({ factor, rendimiento }: Conversion): void {
+function comprobarConversion({ factor }: Conversion): void {
   if (!Number.isFinite(factor) || factor <= 0) {
     throw new Error(`El factor tiene que ser mayor que cero y ha llegado ${factor}.`);
   }
-  if (!Number.isFinite(rendimiento) || rendimiento <= 0 || rendimiento > 1) {
-    throw new Error(
-      `El rendimiento va entre 0 y 1, donde 0,85 es un 85 %. Ha llegado ${rendimiento}.`,
-    );
-  }
 }
 
 /**
- * `precio ÷ (factor × rendimiento)`, en milésimas de céntimo.
+ * `precio ÷ factor`, en milésimas de céntimo.
  *
- * Una caja de 3 kg a 10 € con un 85 % de rendimiento: 0,0039 €/g, que son
- * 392 milésimas de céntimo por gramo.
+ * Una caja de 3 kg a 10 €: 0,0033 €/g, que son 333 milésimas de céntimo por gramo.
  */
 export function costePorUnidadDeUso(precioDeCompra: Centimos, conversion: Conversion): Milesimas {
   comprobarConversion(conversion);
-  const unidadesUtiles = conversion.factor * conversion.rendimiento;
-  return milesimas(Math.round((precioDeCompra * MILESIMAS_POR_CENTIMO) / unidadesUtiles));
-}
-
-/**
- * Lo que cuesta una unidad **limpia**, de lo que costó en bruto (19-oct, 0099). Lo que
- * hay en cámara vale lo pagado (`precio ÷ factor`); el plato lleva gramos limpios, y
- * cada uno cuesta lo de `1 ÷ rendimiento` gramos en bruto.
- */
-export function costeLimpio(enBruto: Milesimas, rendimiento: number): Milesimas {
-  comprobarConversion({ factor: 1, rendimiento });
-  return milesimas(Math.round(enBruto / rendimiento));
+  return milesimas(Math.round((precioDeCompra * MILESIMAS_POR_CENTIMO) / conversion.factor));
 }
 
 /**
@@ -121,8 +101,7 @@ export function costeDeLineaDesdeCompra(
   cuanto: Cantidad,
 ): Centimos {
   comprobarConversion(conversion);
-  const unidadesUtiles = conversion.factor * conversion.rendimiento;
-  return centimos(Math.round(Number(((precioDeCompra * cuanto) / unidadesUtiles).toFixed(6))));
+  return centimos(Math.round(Number(((precioDeCompra * cuanto) / conversion.factor).toFixed(6))));
 }
 
 /**

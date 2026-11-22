@@ -6,7 +6,7 @@ import { abrirSinQueSeCaiga, recargarSinQueSeCaiga } from './abrir.ts';
  *
  * «**Terminado cuando.** Se da de alta un producto en 30 segundos; al cambiar el
  *  precio, el coste por unidad de uso y el medio ponderado cambian bien en un
- *  producto con factor y rendimiento distintos de 1; el stock se reconstruye
+ *  producto con factor distinto de 1; el stock se reconstruye
  *  entero desde los movimientos; y la previsión de agotamiento acierta el día en
  *  un producto con consumo estable.»
  *
@@ -290,8 +290,8 @@ test('se da de alta un producto en menos de treinta segundos', async ({ page }) 
   const hoja = page.getByRole('dialog', { name: 'Un producto nuevo' });
 
   // **La mitad cara la hizo M5**: se escribe «aceite» y el catálogo de
-  // referencia devuelve la ficha rellena, con su formato, su factor, su
-  // rendimiento y sus alérgenos. Ese catálogo estaba hecho y probado desde M5 y
+  // referencia devuelve la ficha rellena, con su formato, su factor y sus
+  // alérgenos. Ese catálogo estaba hecho y probado desde M5 y
   // **no lo llamaba ninguna pantalla**: esta es la primera.
   await hoja.getByLabel('¿Qué producto es?').fill('aceite de oliva');
 
@@ -324,7 +324,7 @@ test('se da de alta un producto en menos de treinta segundos', async ({ page }) 
   expect(cuanto, `el alta ha tardado ${cuanto.toFixed(1)} s`).toBeLessThan(30);
 });
 
-// ── 2 · El precio, con factor y rendimiento distintos de 1 ───────────────────
+// ── 2 · El precio, con un factor distinto de 1 ───────────────────────────────
 
 test('al cambiar el precio, el coste por unidad de uso cambia bien', async ({ request }) => {
   // Se hace por la API y no por la pantalla porque lo que se comprueba es la
@@ -332,13 +332,12 @@ test('al cambiar el precio, el coste por unidad de uso cambia bien', async ({ re
   // formateo en vez del cálculo.
   const token = await tokenDe(request, ROSA);
 
-  // Pulpo: caja de 5 kg = 5.000 g, con un 55 % de rendimiento.
+  // Pulpo: caja de 5 kg = 5.000 g.
   const creado = await ejecutar<{ productoId: string }>(request, token, 'crear_producto', {
     nombre: `Pulpo de prueba ${Date.now()}`,
     formato: 'Caja de 5 kg',
     factor: 5000,
     unidad_de_uso: 'g',
-    rendimiento: 0.55,
     precio_centimos: 6000,
   });
 
@@ -351,8 +350,8 @@ test('al cambiar el precio, el coste por unidad de uso cambia bien', async ({ re
     'un_producto',
     { producto_id: productoId },
   );
-  // Lo pagado (0099): 6.000 céntimos entre 5.000 g = 1,2 céntimos el gramo. El
-  // aprovechamiento (55 %) lo pone el escandallo, no la cámara.
+  // Lo pagado (0099): 6.000 céntimos entre 5.000 g = 1,2 céntimos el gramo. Sin
+  // aprovechamiento (0150).
   expect(antes.datos?.producto.costeMilesimas).toBe(1200);
 
   // Sube un 20 %.
@@ -394,7 +393,6 @@ test('el precio medio ponderado se mueve al entrar género, no al editar la list
     formato: 'Saco de 25 kg',
     factor: 25000,
     unidad_de_uso: 'g',
-    rendimiento: 1,
     precio_centimos: 2500,
   });
   const productoId = creado.datos?.productoId ?? '';
@@ -534,7 +532,6 @@ test('un cocinero ve el género de su local y ni un solo precio', async ({ reque
     formato: 'Brik de 1 l',
     factor: 1000,
     unidad_de_uso: 'ml',
-    rendimiento: 1,
     precio_centimos: 320,
   });
 
@@ -679,7 +676,6 @@ test('si el jefe de cocina dice que hay 4, hay 4', async ({ page, request }) => 
     formato: 'Saco de 10 kg',
     factor: 10000,
     unidad_de_uso: 'g',
-    rendimiento: 0.85,
     precio_centimos: 1150,
   });
   await ejecutar(request, token, 'apuntar_entrada', {
@@ -725,7 +721,6 @@ test('el stock negativo se permite, y sale marcado', async ({ request }) => {
     formato: 'Manojo',
     factor: 1,
     unidad_de_uso: 'ud',
-    rendimiento: 1,
   });
   const productoId = creado.datos?.productoId ?? '';
 
@@ -842,7 +837,6 @@ test('corregir el nombre no le borra al producto lo demás', async ({ request })
     formato: 'Caja de 6 botellas',
     factor: 6,
     unidad_de_uso: 'ud',
-    rendimiento: 1,
     categoria_fiscal: 'bebida_alcoholica',
     categoria_id: categoria.datos?.categoriaId,
     proveedor_id: proveedor.datos?.proveedorId,
@@ -880,7 +874,6 @@ test('corregir el nombre no le borra al producto lo demás', async ({ request })
     formato: 'Caja de 6 botellas',
     factor: 6,
     unidad_de_uso: 'ud',
-    rendimiento: 1,
     categoria_fiscal: antes.datos?.producto.categoriaFiscal,
     alergenos: [],
     peso_variable: false,
@@ -940,7 +933,6 @@ test('renombrar a un nombre ya usado no da «se nos ha roto algo»', async ({ re
     formato: null,
     factor: 1,
     unidad_de_uso: 'ud',
-    rendimiento: 1,
     categoria_fiscal: 'alimento',
     alergenos: [],
     peso_variable: false,
@@ -1293,7 +1285,7 @@ test('un producto se da de alta con nombre, unidad y precio, sin hacer cuentas',
   // y había que entrar en su ficha a apuntar una entrada.
   await hoja.getByLabel('Cuánto hay ahora', { exact: true }).fill('12');
 
-  // Y el aprovechamiento **no se pregunta**: nadie lo sabe al dar de alta.
+  // Y el aprovechamiento **no existe** (0150): lo que se tira al limpiar es merma.
   await expect(hoja.getByLabel(/se aprovecha/)).toHaveCount(0);
 
   await hoja.getByRole('button', { name: 'Guardar el producto' }).click();
@@ -1589,7 +1581,7 @@ test('el IVA de los precios: se elige cómo se escriben y a los de antes se les 
   expect(despues.datos?.producto.precioCentimos).toBe(1000);
 });
 
-// ── 7½ · La ficha, repasada: lo que deja, el aprovechamiento y deshacer ─────
+// ── 7½ · La ficha, repasada: lo que deja, sin aprovechamiento y deshacer ────
 
 /**
  * ── Las tres cosas que Richi no encontraba en la ficha ──────────────────────
@@ -1598,12 +1590,12 @@ test('el IVA de los precios: se elige cómo se escriben y a los de antes se les 
  *     ingredientes sueltos.» Y no se venden: eso vive en la carta (0035).
  *   · «El diseño de la tarjeta de producto es demasiado sencillo, los botones no
  *     existen.» Cada sección es ahora una tarjeta con su título y su botón.
- *   · «Hay un tag naranja que dice "sin verificar" y no sé cómo quitarlo.» El
- *     dato vive donde se lee y **con qué se arregla al lado**.
+ *   · «Hay un tag naranja que dice "sin verificar" y no sé cómo quitarlo.» Ya no
+ *     existe: el aprovechamiento salió de Estook el 22-nov (0150).
  *   · «El deshacer ha desaparecido.» Está, en lo que se edita y se puede volver
  *     a editar: la ficha, el precio de compra y el de venta.
  */
-test('la ficha no vende ingredientes, deja medir el aprovechamiento y se puede deshacer', async ({
+test('la ficha no vende ingredientes, no habla de aprovechamiento y se puede deshacer', async ({
   page,
   request,
 }) => {
@@ -1660,30 +1652,9 @@ test('la ficha no vende ingredientes, deja medir el aprovechamiento y se puede d
     timeout: 15_000,
   });
 
-  // ── El aprovechamiento: se lee, y se mide desde aquí ─────────────────────
-  await expect(ficha.getByText(/supuesto, sin medir/).first()).toBeVisible();
-  await ficha.getByText('Aprovechamiento', { exact: true }).click();
-  await ficha.getByRole('button', { name: 'Lo he medido' }).click();
-  const medir = page.getByRole('dialog', { name: 'Cuánto se aprovecha' });
-  await medir.getByLabel(/^Lo que entra/).fill('10');
-  await medir.getByLabel(/^Lo que queda limpio/).fill('8');
-  await expect(medir.getByText('Se aprovecha un 80 %')).toBeVisible();
-  await medir.getByRole('button', { name: 'Guardarlo' }).click();
-  await expect(medir).toHaveCount(0);
-  await expect(ficha.getByText(/medido en esta cocina/).first()).toBeVisible({
-    timeout: 15_000,
-  });
-
-  // Y corregir una errata en el nombre **no** lo vuelve a marcar como supuesto,
-  // que es lo que hacía que la etiqueta naranja saliera en todos los productos.
-  await ficha.getByRole('button', { name: 'Editar', exact: true }).click();
-  const corregir = page.getByRole('dialog', { name: 'Corregir la ficha' });
-  await corregir.getByLabel(/^Producto/).fill(`${nombre} frío`);
-  await corregir.getByRole('button', { name: /^Guardar/ }).click();
-  await expect(corregir).toHaveCount(0);
-  await expect(ficha.getByText(/medido en esta cocina/).first()).toBeVisible({
-    timeout: 15_000,
-  });
+  // ── Sin aprovechamiento (0150): ni la tarjeta ni «sin verificar» ─────────
+  await expect(ficha.getByText('Aprovechamiento', { exact: true })).toHaveCount(0);
+  await expect(ficha.getByText(/sin medir|sin verificar|se aprovecha/)).toHaveCount(0);
 });
 
 // ── 7¾ · Las zonas, congelar una parte y el recuento ────────────────────────

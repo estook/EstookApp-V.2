@@ -69,6 +69,7 @@ export const MOTIVOS_DE_SALIDA = [
   'vendido',
   'gastado',
   'traspaso',
+  'limpieza',
   'caducado',
   'mal_estado',
   'roto',
@@ -117,6 +118,14 @@ export const QUE_ES_CADA_SALIDA: Readonly<Record<MotivoDeSalida, QueEsUnaSalida>
     que: 'Se lo ha llevado otro local del grupo',
     tipo: 'salida',
     motivoDeMerma: null,
+    pideNota: false,
+  },
+  limpieza: {
+    familia: 'se_pierde',
+    nombre: 'Al limpiarlo',
+    que: 'Piel, espinas, huesos, recortes: lo que se quita al limpiar o pelar',
+    tipo: 'merma',
+    motivoDeMerma: 'limpieza',
     pideNota: false,
   },
   caducado: {
@@ -196,6 +205,21 @@ export function esMotivoDeSalida(valor: unknown): valor is MotivoDeSalida {
 /** Los motivos de una familia, en el orden del catálogo. */
 export function losDeLaFamilia(familia: FamiliaDeSalida): readonly MotivoDeSalida[] {
   return MOTIVOS_DE_SALIDA.filter((motivo) => QUE_ES_CADA_SALIDA[motivo].familia === familia);
+}
+
+/**
+ * **Lo que ya resta cada cobro de Estook TPV** (M20 · 1, 0149): lo vendido y lo cocinado. En un local
+ * cuyas ventas restan solas, estos dos salen de «Sacar género»: apuntarlos otra vez lo restaría dos
+ * veces. Las mermas, la comida del personal, las invitaciones y lo que se lleva otro local se quedan.
+ */
+export const YA_LO_RESTA_LA_VENTA: ReadonlySet<MotivoDeSalida> = new Set(['vendido', 'gastado']);
+
+/** Los motivos de una familia que se pueden elegir: sin los de la venta si ya restan solas. */
+export function losQueQuedan(
+  familia: FamiliaDeSalida,
+  loVendidoBaja: boolean,
+): readonly MotivoDeSalida[] {
+  return losDeLaFamilia(familia).filter((m) => !loVendidoBaja || !YA_LO_RESTA_LA_VENTA.has(m));
 }
 
 /** Si esta salida es una venta, que es la única que puede traer dinero. */

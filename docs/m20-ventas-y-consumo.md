@@ -1,6 +1,8 @@
 # M20 · Ventas y consumo
 
-> **Estado: plan, sin construir.** Escrito el 22-oct-2026, con M16a ya en producción (80
+> **Estado: M20 · 1 construido el 22-nov-2026** ([0149](decisiones/0149-m20-1-lo-vendido-baja.md), migración 0121): lo vendido baja del almacén con cada cobro de Estook TPV, el ticket anulado devuelve todo y la devolución solo con «Se cobró de más». **M20 · 2, sin empezar.** Lo de abajo es el plan tal como se escribió: donde dice otra cosa, manda la 0149.
+>
+> Escrito el 22-oct-2026, con M16a ya en producción (80
 > migraciones, API 102/230), y **corregido el mismo día con lo que dijo Richi**: el cierre a mano es
 > una prueba y no trae platos; los platos llegarán **de Estook TPV o de Revo conectado**. **Se hace con
 > el cobro (M20C)**: lo contestó Richi el 22-oct ([0106](decisiones/0106-estook-tpv-la-sala-y-la-cocina.md), apartado 4).
@@ -76,8 +78,8 @@ pantallas que se aprobaron antes, con todo lo que hacen la sala y la cocina, en 
 
 ## 5 · Lo que será M20 cuando toque, en dos entregas
 
-**M20 · 1 · Lo vendido mueve el almacén**: el motor (cada venta baja lo de su escandallo con el coste
-congelado; anular o devolver hace el movimiento contrario, sin borrar nada), emparejar por parecido, lo
+**M20 · 1 · Lo vendido mueve el almacén** (hecho, 0149): el motor (cada venta baja lo de su escandallo con el coste
+congelado; anular devuelve todo y devolver, solo con «Se cobró de más», sin borrar nada), emparejar por parecido, lo
 de los apartados 3.1 a 3.5, y **Servicio › Ventas** con «Del día» y «Por producto». **M20 · 2 · Lo que
 se escapa y lo que deja cada plato**: la desviación con los cuatro filtros de
 [`como-detecta-estook-lo-que-se-escapa.md`](como-detecta-estook-lo-que-se-escapa.md) (nada de avisos

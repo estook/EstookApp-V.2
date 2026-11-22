@@ -1013,8 +1013,8 @@ async function unProductoDePrueba(
   const localId = await base.localPorCodigo('bar-centro');
 
   const [fila] = await comoDuena<{ id: string }>(
-    `insert into estook.producto (local_id, nombre, formato, factor, unidad_de_uso, rendimiento)
-     values ($1, $2, 'Caja de 5 kg', 5000, 'g', 0.9500)
+    `insert into estook.producto (local_id, nombre, formato, factor, unidad_de_uso)
+     values ($1, $2, 'Caja de 5 kg', 5000, 'g')
      returning id`,
     [localId, nombre ?? `Producto de prueba ${cuantos}`],
   );
@@ -1078,9 +1078,9 @@ async function ponPrecio(
   await comoDuena(
     `insert into estook.precio_de_producto
        (producto_id, proveedor_id, precio_centimos, formato, factor, unidad_de_uso,
-        rendimiento, coste_milesimas, desde, origen)
-     select p.id, $2::uuid, $3::bigint, p.formato, p.factor, p.unidad_de_uso, p.rendimiento,
-            round($3::numeric * 1000 / (p.factor * p.rendimiento)), current_date, 'a_mano'
+        coste_milesimas, desde, origen)
+     select p.id, $2::uuid, $3::bigint, p.formato, p.factor, p.unidad_de_uso,
+            round($3::numeric * 1000 / p.factor), current_date, 'a_mano'
        from estook.producto p where p.id = $1`,
     [productoId, proveedorId, precio],
   );

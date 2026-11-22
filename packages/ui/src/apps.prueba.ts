@@ -471,17 +471,19 @@ describe('lo construido y lo que llega', () => {
     expect(dondeEntraEnElDestino(nadaHecho)?.id).toBe('resumen');
   });
 
-  it('Negocio · Ventas entra por el Resumen, y Servicio ya no tiene Ventas (0145)', () => {
+  it('Negocio · Ventas entra por el Resumen, y Servicio ya no tiene Ventas (0145, 0149)', () => {
     const ventas = laApp('negocio').destinos.find((d) => d.id === 'ventas');
     if (ventas === undefined) throw new Error('Negocio ya no tiene Ventas');
     expect(vistasConstruidas(ventas).map((v) => v.id)).toEqual([
       'resumen',
       'cobros',
+      'por-producto',
       'tickets-y-facturas',
     ]);
     expect(dondeEntraEnElDestino(ventas)?.id).toBe('resumen');
     // Lo del dinero, para quien ve las ventas; los tickets, para quien hace facturas.
     expect(ventas.vistas.map((v) => v.permiso)).toEqual([
+      'dato.ventas',
       'dato.ventas',
       'dato.ventas',
       'accion.factura_de_un_ticket',

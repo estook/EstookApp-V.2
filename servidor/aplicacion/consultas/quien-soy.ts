@@ -14,6 +14,7 @@ import { decidirDestino, guardarContexto } from '../acceso.ts';
 import { comoEstaAhora, laSuscripcionDe, paraElDominio } from '../pago.ts';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { rolesQuePuedeDar } from '../jerarquia.ts';
+import { DIAS_QUE_SE_MIRAN } from '../lo-vendido.ts';
 
 /**
  * Quien soy, donde estoy y que puedo (M4).
@@ -119,6 +120,12 @@ export interface QuienSoy {
      * que cualquier pantalla.
      */
     readonly sirveMenus: boolean | null;
+    /**
+     * Si sus ventas ya restan solas del almacén (M20 · 1, 0149): algún cobro de Estook TPV ha
+     * restado su escandallo en los últimos treinta días. Entonces «Sacar género» no ofrece
+     * «Vendido a un cliente» ni «Gastado en cocina». Opcional: una API sin desplegar no lo trae.
+     */
+    readonly loVendidoBaja?: boolean;
   } | null;
 
   /** Para el selector: todo lo que alcanza. */
@@ -422,11 +429,18 @@ async function leerLocal(
       logo_clave: string | null;
       direccion_de_la_carta: string;
       sirve_menus: boolean | null;
+      lo_vendido_baja: boolean;
     }[]
   >`
     select l.id, l.nombre, l.codigo, a.nombre as area,
            l.color_de_marca, l.color_en_la_app, l.logo_clave, l.direccion_de_la_carta,
-           l.sirve_menus
+           l.sirve_menus,
+           -- La misma pregunta que loVendidoBaja (lo-vendido.ts), en la misma lectura.
+           exists (
+             select 1 from estook.linea_bajada b
+              where b.local_id = l.id and b.estado = 'bajada'
+                and b.bajada_en > now() - make_interval(days => ${DIAS_QUE_SE_MIRAN})
+           ) as lo_vendido_baja
       from estook.local l
       left join estook.area a on a.id = l.area_id
      where l.id = ${id}
@@ -453,6 +467,7 @@ async function leerLocal(
     logo,
     direccionDeLaCarta: fila.direccion_de_la_carta,
     sirveMenus: fila.sirve_menus,
+    loVendidoBaja: fila.lo_vendido_baja,
   };
 }
 

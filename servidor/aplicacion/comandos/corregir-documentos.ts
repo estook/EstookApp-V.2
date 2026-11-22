@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   MOTIVO_DE_DEVOLUCION,
+  VUELVE_AL_ALMACEN_CON,
   elNumeroEntero,
   fechaEnElLocal,
   laDevolucion,
@@ -29,6 +30,7 @@ import {
 } from '../emitir.ts';
 import { sacarDelCajonLoDevuelto } from '../caja.ts';
 import { enLaBase } from '../facturacion.ts';
+import { bajarLoPendiente, ponerEnLaCola } from '../lo-vendido.ts';
 import { enNombreDelSistema } from '../pago.ts';
 import {
   elCliente,
@@ -71,6 +73,20 @@ async function elDocumentoDelLocal(
 
 function porqueNo(porque: string): FalloDeAplicacion {
   return new FalloDeAplicacion('faltan_datos', { porque });
+}
+
+/** El cobro de Estook TPV del que salió este ticket, o nulo si no salió de un cobro. */
+async function elCobroDelTicket(
+  contexto: Parameters<typeof losDocumentos>[0],
+  documentoId: string,
+): Promise<string | null> {
+  const filas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ id: string }[]>`
+      select id::text as id from estook.cobro where documento_id = ${documentoId}::uuid
+    `,
+  );
+  return filas[0]?.id ?? null;
 }
 
 // ── Devolver ──────────────────────────────────────────────────────────────────────
@@ -171,6 +187,21 @@ export const devolverElDocumento = comando<
       total: d.total,
       motivo: elMotivo,
     });
+    // **Al almacén solo vuelve lo cobrado de más** (0149, la A de Richi): tres cañas cobradas y dos
+    // servidas. Lo «mal hecho» o lo que «no quiso» salió de la cocina y se gastó.
+    if (entrada.motivo === VUELVE_AL_ALMACEN_CON) {
+      const partes = d.apuntes
+        .filter((a) => a.cantidad > 0)
+        .map((a) => ({ linea: a.linea, cantidad: a.cantidad }));
+      const cobroId = await elCobroDelTicket(contexto, doc.id);
+      if (cobroId !== null && partes.length > 0) {
+        await ponerEnLaCola(contexto, localId, 'devolucion', cobroId, {
+          documentoId: hecho.id,
+          partes,
+        });
+        await bajarLoPendiente(contexto, localId);
+      }
+    }
     return {
       documentoId: hecho.id,
       numero: hecho.numero,
@@ -285,6 +316,12 @@ export const anularElDocumento = comando<
       `,
     );
     if (fila === undefined) throw new Error('La anulación no se pidió.');
+    // **Lo que restó del almacén vuelve entero** (0149): el ticket nunca debió existir.
+    const cobroId = await elCobroDelTicket(contexto, doc.id);
+    if (cobroId !== null) {
+      await ponerEnLaCola(contexto, localId, 'anulacion', cobroId);
+      await bajarLoPendiente(contexto, localId);
+    }
     if (doc.modalidad === 'fuera_sii') {
       await enNombreDelSistema(contexto, () =>
         apuntarElPasoDeAnular(contexto, doc, fila.id, {

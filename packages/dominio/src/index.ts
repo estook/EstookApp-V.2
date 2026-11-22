@@ -290,6 +290,26 @@ export type {
   VendidoConSuReceta,
 } from './escandallo.ts';
 
+// ── M20 · 1 · lo vendido baja del almacén (0149) ─────────────────────────────
+export {
+  VUELVE_AL_ALMACEN_CON,
+  aCuatroDecimales,
+  elFoodCost,
+  loQueBajaUnPlato,
+  loQueVuelve,
+  loVendidoPorProducto,
+} from './lo-vendido.ts';
+export type {
+  LibroQueBaja,
+  LineaCobrada,
+  LoQueBaja,
+  LoVendidoPorProducto,
+  OpcionQueBaja,
+  PlatoCobrado,
+  ProductoQueBaja,
+  ProductoVendido,
+} from './lo-vendido.ts';
+
 // ── Entrega O · lo de hoy, por urgencia (0047) ───────────────────────────────
 export { NOMBRE_DEL_ESCALON, loDeHoy, ordenarLoDeHoy } from './hoy.ts';
 export type { Escalon, AppDeLoDeHoy, CosaDeHoy, LoQueHayHoy, MiTurnoDeHoy } from './hoy.ts';
@@ -555,8 +575,10 @@ export {
   NOMBRE_DE_LA_FAMILIA,
   QUE_ES_CADA_FAMILIA,
   QUE_ES_CADA_SALIDA,
+  YA_LO_RESTA_LA_VENTA,
   esMotivoDeSalida,
   losDeLaFamilia,
+  losQueQuedan,
   esVenta,
   esMerma,
 } from './salida.ts';

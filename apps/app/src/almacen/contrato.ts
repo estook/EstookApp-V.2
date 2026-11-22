@@ -436,7 +436,7 @@ export const COMO_SE_LLAMA_EL_MOVIMIENTO: Readonly<Record<string, string>> = {
   ajuste: 'Ajuste de cámara',
   merma: 'Merma',
   venta: 'Vendido',
-  consumo: 'Consumido al vender',
+  consumo: 'Vendido en Estook TPV',
   recuento: 'Inventario',
   // Una vez, el 19-oct (0076): lo que había, a lo pagado hoy. No mueve cantidad.
   revalorado: 'Revalorado a lo pagado',
@@ -474,6 +474,10 @@ export interface MovimientoDelLibro {
   readonly anulado?: boolean;
   readonly esAnulacion?: boolean;
   readonly sePuedeAnular?: boolean;
+  /** El cobro de Estook TPV que lo restó o lo devolvió (M20 · 1, 0149): se juntan por él. */
+  readonly cobro?: string;
+  /** Lo que valía, en céntimos, al coste de ese momento. Solo a quien ve dinero. */
+  readonly valorCentimos?: number;
 }
 
 export interface MisMovimientos {

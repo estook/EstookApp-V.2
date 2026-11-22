@@ -569,10 +569,15 @@ export const losCobros = consulta<
           join estook.persona pc on pc.id = c.cobrado_por
           left join estook.persona pm on pm.id = cu.camarero_id
           join facturacion.documento d on d.id = c.documento_id
+          join estook.local l on l.id = c.local_id
          where c.local_id = ${localId}::uuid
            and (${turno}::uuid is null or c.turno_id = ${turno}::uuid)
+           -- **El día del cobro, no el de la caja** (22-nov, lección 277): una caja abierta el 18 y
+           -- sin cerrar se llevaba al 18 lo cobrado el 22, y «Hoy» salía vacío. Cada cobro cuenta en
+           -- la jornada en que se cobró, con la hora de corte del local.
            and (${turno}::uuid is not null
-                or t.fecha_operativa between ${desde}::date and ${hasta}::date)
+                or ((c.cobrado_en at time zone l.zona_horaria) - l.hora_de_corte::interval)::date
+                     between ${desde}::date and ${hasta}::date)
          order by c.cobrado_en desc
       `,
     );

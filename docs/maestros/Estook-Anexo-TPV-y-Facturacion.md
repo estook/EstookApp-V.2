@@ -668,7 +668,7 @@ Desde el ticket, en un toque: nombre o razón social, NIF y domicilio. Se emite 
 
 Rectificativa R5 sobre el ticket, en la serie de rectificativas, con su registro. Salida de caja con motivo. **El género vuelve al libro de movimientos solo si vuelve de verdad**, y lo dice quien hace la devolución: un plato ya servido no vuelve a la cámara.
 
-**Desde T6 · 2 · 2 · 2** ([0140](../decisiones/0140-t6-2-2-2-las-correcciones.md)): todo, una parte (una de dos raciones) o lo cobrado de más, R5 sobre un ticket y R1 sobre una factura, y **la base no deja devolver más de lo que queda de cada línea**. **La salida de caja y el género llegan con el cobro, T7.**
+**Desde T6 · 2 · 2 · 2** ([0140](../decisiones/0140-t6-2-2-2-las-correcciones.md)): todo, una parte (una de dos raciones) o lo cobrado de más, R5 sobre un ticket y R1 sobre una factura, y **la base no deja devolver más de lo que queda de cada línea**. **La salida de caja llegó con R3 · 1 (0144); el género, con M20 · 1** ([0149](../decisiones/0149-m20-1-lo-vendido-baja.md)): quien devuelve ya lo dice con el motivo, sin una pregunta más. **Solo «Se cobró de más» devuelve el género** (no salió de la cocina); con «Mal hecho», «No lo quiso» u «Otro», el plato se gastó. El ticket anulado devuelve todo.
 
 ## 5.5 Caja
 
@@ -922,8 +922,8 @@ Orientativo: **manda el esquema real**. Todo lo operativo vive en el esquema **`
 
 ## 7.7 Cómo se une con el resto de Estook
 
-- **Al cobrar** se crea la `venta` de M20 con `origen = 'estook_tpv'` y su cobro. **No espera al documento** ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md)).
-- Una rectificativa por devolución genera los movimientos contrarios, **si el género vuelve de verdad**.
+- **Al cobrar, cada plato baja del almacén** con su escandallo (M20 · 1, [0149](../decisiones/0149-m20-1-lo-vendido-baja.md)): en el mismo cobro, en un punto de guardado que nunca lo frena, y una sola vez (`linea_bajada`). **No espera al documento** ([0058](../decisiones/0058-el-cobro-los-pagos-y-la-caja.md)).
+- Una rectificativa por devolución genera los movimientos contrarios, **si el género vuelve de verdad**: con el motivo «Se cobró de más» (0149).
 - **Un canje F3 no toca el stock.**
 - Los tiempos de `linea_de_cuenta` alimentan la ficha de M9 y la analítica de M21 **por consulta**, sin copiarse.
 - Un plato marcado agotado escribe en donde ya vive el agotado de M10, no en una tabla nueva.

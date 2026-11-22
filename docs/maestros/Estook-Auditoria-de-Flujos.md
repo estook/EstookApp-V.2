@@ -415,7 +415,8 @@ Cobrar → uno o varios PAGOS (efectivo, datafono, mixto); si se divide, un cobr
 │   ├─ la VENTA (M20): aqui nace, no al emitirse el ticket
 │   └─ el efectivo, como movimiento de caja en el turno de caja o en la bolsa
 ├─ la cuenta queda cobrada y la mesa libre
-├─ evento venta.cerrada → M20 descuenta el genero con la ficha vigente ese dia
+├─ M20 · 1 (0149): cada plato resta su escandallo de ese dia, en el mismo cobro
+│   y en un punto de guardado: si falla, el cobro sigue y lo reintenta el siguiente
 ├─ FUERA de la transaccion: el documento se manda a Hacienda por el proveedor,
 │   con una clave que impide registrarlo dos veces → REGISTRADO, con su QR
 │   ├─ se imprime el ticket con su QR y la leyenda

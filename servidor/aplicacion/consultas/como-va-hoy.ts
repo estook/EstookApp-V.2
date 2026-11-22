@@ -325,8 +325,11 @@ export const comoVaHoy = consulta<Record<string, never>, ComoVaHoy>({
           select p.forma, sum(p.importe)::text as importe
             from estook.pago p
             join estook.cobro c on c.id = p.cobro_id
-            join estook.turno_de_caja t on t.id = c.turno_id
-           where c.local_id = ${localId}::uuid and t.fecha_operativa = ${hoy}::date
+            join estook.local l on l.id = c.local_id
+           -- El día del cobro, no el de su caja (lección 277): igual que Negocio › Ventas › Cobros.
+           where c.local_id = ${localId}::uuid
+             and ((c.cobrado_en at time zone l.zona_horaria) - l.hora_de_corte::interval)::date
+                   = ${hoy}::date
            group by p.forma
         `,
       );

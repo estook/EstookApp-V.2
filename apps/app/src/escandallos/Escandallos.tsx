@@ -403,6 +403,8 @@ function Resumen({
         </Tarjeta>
       )}
 
+      <VendidosSinEscandallo datos={datos} alAbrir={alAbrir} />
+
       {sinEscandallo.length > 0 && (
         <Tarjeta
           titulo="Sin escandallo"
@@ -456,6 +458,68 @@ function Resumen({
         </Tarjeta>
       )}
     </Mosaico>
+  );
+}
+
+// ── Vendidos sin escandallo (M20 · 1, 0149; 0095) ────────────────────────────
+
+interface LosVendidosSinEscandallo {
+  readonly platos: readonly {
+    readonly platoId: string;
+    readonly nombre: string;
+    readonly uds: number;
+  }[];
+  readonly uds: number;
+}
+
+/**
+ * **Lo que se ha cobrado esta semana sin escandallo** (0095: «3 platos vendidos sin escandallo»):
+ * se vendió y contó en dinero, pero no restó nada del almacén. Tocándolo se abre el plato para crear
+ * su escandallo, que resta desde la siguiente venta. Sin un euro: lo ve también la cocina. Solo sale
+ * si hay alguno.
+ */
+function VendidosSinEscandallo({
+  datos,
+  alAbrir,
+}: {
+  readonly datos: MisFichas;
+  readonly alAbrir: (ficha: QueFicha) => void;
+}) {
+  const lectura = usarLectura<LosVendidosSinEscandallo>('vendidos_sin_escandallo');
+  const vendidos = lectura.data?.platos ?? [];
+  if (vendidos.length === 0) return null;
+  const seVe = seVeDe(datos);
+  const deLaCarta = new Map(datos.platos.map((p) => [p.id, p]));
+  const elementos: ElementoDeLista[] = vendidos.flatMap((v) => {
+    const plato = deLaCarta.get(v.platoId);
+    if (plato === undefined) return [];
+    const fila = filaDePlato(plato, alAbrir, seVe(plato));
+    return [
+      {
+        ...fila,
+        detalle: (
+          <span className="tabular-nums">
+            {v.uds === 1 ? '1 vendido esta semana' : `${String(v.uds)} vendidos esta semana`}
+          </span>
+        ),
+        derecha: <Etiqueta tono="atencion">Crear escandallo</Etiqueta>,
+      },
+    ];
+  });
+  if (elementos.length === 0) return null;
+  return (
+    <Tarjeta
+      titulo="Vendidos sin escandallo"
+      cuantos={elementos.length}
+      acento={ACENTO}
+      icono={<IconoAtencion size={18} />}
+      pegado
+    >
+      <p className="px-e4 pb-e2 text-secundario text-texto-suave">
+        Esta semana no han restado nada del almacén.
+      </p>
+      <Lista titulo="Vendidos sin escandallo" elementos={elementos} cuandoNoHay={null} />
+    </Tarjeta>
   );
 }
 

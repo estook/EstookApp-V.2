@@ -1434,6 +1434,21 @@ try {
           ? ''
           : `${atascados[0].cuantos} sin terminar: ¿está desplegada la API con la 0108?`,
     );
+    // Lo vendido que no ha bajado del almacén (0149): se reintenta con cada cobro del local, así que
+    // algo con más de una hora es un fallo que se repite, no un corte de un momento.
+    const sinBajar = await conexion`
+      select count(*)::int as cuantos from estook.lo_vendido_por_bajar
+       where desde < now() - interval '1 hour'
+    `.catch(() => null);
+    comprobar(
+      'y nada vendido lleva más de una hora sin bajar del almacén',
+      sinBajar?.[0]?.cuantos === 0,
+      sinBajar === null
+        ? 'falta la 0121'
+        : sinBajar[0].cuantos === 0
+          ? ''
+          : `${sinBajar[0].cuantos} sin bajar: míralo en Sentry («lo vendido no ha bajado del almacén»)`,
+    );
     // Lo que pidió un cliente y no le llega (0141): Hacienda ya lo tiene y el correo no sale.
     const correos = await conexion`
       select count(*)::int as cuantos from facturacion.correo_por_mandar c

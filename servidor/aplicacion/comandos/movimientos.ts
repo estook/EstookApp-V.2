@@ -3,6 +3,7 @@ import {
   MOTIVOS_DE_SALIDA,
   QUE_ES_CADA_SALIDA,
   QUE_HAGO_CON_LO_QUE_FALTA,
+  YA_LO_RESTA_LA_VENTA,
   ZONAS,
   ajusteHasta,
   cantidad,
@@ -16,6 +17,7 @@ import {
 import { publicar } from '../../eventos/bandeja.ts';
 import { cerrarElInventario, guardarLoContado, type Cerrado } from '../inventario.ts';
 import { avisarSiFalta } from '../desviacion.ts';
+import { loVendidoBaja } from '../lo-vendido.ts';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import {
@@ -299,6 +301,16 @@ export const apuntarSalida = comando<EntradaApuntarSalida, SalidaDeMovimiento>({
 
     const porQue = entrada.por_que ?? 'gastado';
     const queEs = QUE_ES_CADA_SALIDA[porQue];
+
+    // **Nada se resta dos veces** (0149): si las ventas del local ya restan solas, lo vendido y lo
+    // cocinado ya ha salido del almacén con cada cobro.
+    if (YA_LO_RESTA_LA_VENTA.has(porQue) && (await loVendidoBaja(contexto, producto.localId))) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        campos: ['por_que'],
+        porque:
+          'Lo vendido y lo cocinado ya lo resta cada cobro de Estook TPV. Si se ha tirado, elige por qué.',
+      });
+    }
 
     // El motivo que se lee en el libro sale del catálogo, y la nota se le suma
     // detrás. Escribirlo en la pantalla dejaría dos sitios diciendo cómo se

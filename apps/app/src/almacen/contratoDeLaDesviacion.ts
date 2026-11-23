@@ -47,6 +47,30 @@ export interface Emparejado {
   readonly unidadDeUso: string | null;
 }
 
+/** Un producto que se sale del margen (M20 · 2, 0151). */
+export interface ProductoQueSeEscapa {
+  readonly id: string;
+  readonly nombre: string;
+  readonly unidadDeUso: string;
+  readonly falta: number;
+  readonly debiaSalir: number;
+  /** En fracción: 0,54 es un 54 %. */
+  readonly parte: number | null;
+  readonly centimos?: number | null;
+}
+
+/** Lo que se escapa, con Estook TPV restando lo vendido (M20 · 2, 0151). */
+export interface LoQueSeEscapaEnElAlmacen {
+  readonly desde: string | null;
+  readonly hasta: string | null;
+  readonly vigilados: number;
+  readonly seSalen: readonly ProductoQueSeEscapa[];
+  readonly centimos?: number | null;
+  readonly sinEscandallo: readonly string[];
+  readonly platosSinEscandallo: number;
+  readonly aMedias: number;
+}
+
 export interface LaDesviacion {
   readonly hoy: string;
   readonly puedeVerPrecios: boolean;
@@ -55,6 +79,22 @@ export interface LaDesviacion {
   readonly contadosUnaVez: number;
   readonly porEmparejar: readonly LineaPorEmparejar[];
   readonly emparejados: readonly Emparejado[];
+  /** Opcional: una API de antes de M20 · 2 no lo manda. */
+  readonly seEscapa?: LoQueSeEscapaEnElAlmacen | null;
+}
+
+/** El food cost de tus escandallos junto al real (M20 · 2, 0151). Importes sin IVA, en céntimos. */
+export interface ElFoodCostDeLosEscandallos {
+  readonly coste: number;
+  readonly ventasConCoste: number;
+  readonly ventas: number;
+  /** En %, con un decimal. */
+  readonly teorico: number;
+  /** En fracción. */
+  readonly parteConEscandallo: number;
+  readonly puntos: number | null;
+  readonly centimos: number | null;
+  readonly dentroDeLoNormal: boolean | null;
 }
 
 export interface ElFoodCostReal {
@@ -84,6 +124,8 @@ export interface ElFoodCostReal {
   readonly productos: number;
   readonly parteContada: number | null;
   readonly soloSusZonas: boolean;
+  /** Opcional: una API de antes de M20 · 2 no lo manda. */
+  readonly escandallos?: ElFoodCostDeLosEscandallos | null;
 }
 
 /** «1 oct», de un instante o de una fecha operativa. */

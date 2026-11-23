@@ -662,7 +662,7 @@ Y algo que casi ningún programa hace: **la factura del proveedor se concilia co
 - **Inventario cíclico:** cada semana las referencias que suman el 80 % del valor, el resto una vez al mes.
 - **El stock mínimo se calcula, no se escribe:** `consumo medio diario × días hasta el próximo reparto + 20 % de seguridad`, recalculado cada semana.
 - **Al consumir, primero lo que antes caduca.** Con varios lotes manda la fecha, no el orden de llegada.
-- **El food cost, teórico y real, uno al lado del otro.** El real sale de `(inventario inicial + compras − inventario final) ÷ ventas`. La brecha es donde está el dinero: por debajo de dos puntos es normal, por encima de tres hay algo que mirar, por encima de ocho hay una fuga.
+- **El food cost, teórico y real, uno al lado del otro.** El real sale de `(inventario inicial + compras − inventario final) ÷ ventas`. La brecha es donde está el dinero: por debajo de dos puntos es normal, por encima de tres hay algo que mirar, por encima de ocho hay una fuga. En Estook, con Estook TPV, los dos salen en Almacén › Movimientos › Consumo, y hasta tres puntos se da por bueno ([0151](../decisiones/0151-m20-2-lo-que-se-escapa.md)).
 - **La desviación dice por qué.** Estook propone la causa más probable: consumo de personal sin registrar, error de escandallo, unidad de conteo distinta, recepción mal registrada o diferencia entre albarán y factura.
 - **Quien compra no tiene por qué cerrar el inventario.** Es un permiso aparte.
 - **La calibración:** si la cocina sirve un 6 % más de pulpo cada semana, eso pasa a ser el factor del producto. Necesita tres inventarios; hasta entonces sale como «aprendiendo».

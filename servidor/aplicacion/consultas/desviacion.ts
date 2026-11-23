@@ -3,9 +3,14 @@ import {
   comoVaFrenteAlObjetivo,
   fechaEnElLocal,
   foodCostReal,
+  laBrechaDelFoodCost,
+  loQueSeEscapa,
   loQueVale,
+  loVendidoPorProducto,
   type CausaProbable,
   type FechaOperativa,
+  type LaBrechaDelFoodCost,
+  type LineaCobrada,
   type Semaforo,
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -20,8 +25,11 @@ import {
   loGastadoDeVerdad,
   losDosUltimosInventarios,
   type LimitesDelPeriodo,
+  type GastadoDeUnProducto,
   type LineaPorEmparejar,
 } from '../desviacion.ts';
+import { loQuePuede } from '../lo-que-puede.ts';
+import { loVendidoBaja } from '../lo-vendido.ts';
 import { puedeVerPrecios } from './almacen.ts';
 
 /**
@@ -29,9 +37,11 @@ import { puedeVerPrecios } from './almacen.ts';
  *
  *   la_desviacion       lo gastado de verdad de cada producto entre sus dos últimos
  *                       inventarios, y la desviación de lo que se vende tal cual,
- *                       con su causa; y las líneas de la caja por emparejar
+ *                       con su causa; las líneas de la caja por emparejar; y, con
+ *                       Estook TPV, lo que se escapa (M20 · 2, 0151)
  *   el_food_cost_real   (lo que había + lo comprado − lo que queda) ÷ lo vendido sin
- *                       IVA, entre los dos últimos inventarios o en un mes
+ *                       IVA, entre los dos últimos inventarios o en un mes; y, con
+ *                       Estook TPV, el de tus escandallos al lado (M20 · 2, 0151)
  *
  * **El dinero, solo a quien ve precios de compra; lo vendido, solo a quien ve las
  * ventas** (0078, «lo que decido yo» 7). Quien cierra inventarios sin esos permisos
@@ -86,6 +96,43 @@ export interface Emparejado {
   readonly unidadDeUso: string | null;
 }
 
+/** Un producto que se sale del margen (M20 · 2, 0151). */
+export interface ProductoQueSeEscapa {
+  readonly id: string;
+  readonly nombre: string;
+  readonly unidadDeUso: string;
+  /** Lo que falta: lo gastado que el libro no sabe dónde fue. */
+  readonly falta: number;
+  /** Lo que tenía que salir: lo vendido, las mermas y lo sacado a mano. */
+  readonly debiaSalir: number;
+  /** La parte de lo que tenía que salir que falta, en fracción. */
+  readonly parte: number | null;
+  /** Con precios de compra: lo que vale lo que falta. */
+  readonly centimos?: number | null;
+}
+
+/**
+ * Lo que se escapa del almacén entre los dos últimos inventarios, con Estook TPV (M20 · 2,
+ * 0151). Solo los productos que restan las ventas, contados dos veces desde que el TPV resta,
+ * y sin nada vendido sin escandallo entre medias (0094, la A).
+ */
+export interface LoQueSeEscapaEnElAlmacen {
+  /** Entre qué dos inventarios, de los productos vigilados. Nulo si no hay ninguno. */
+  readonly desde: string | null;
+  readonly hasta: string | null;
+  readonly vigilados: number;
+  /** Los que se salen del margen, el que más dinero se lleva primero. */
+  readonly seSalen: readonly ProductoQueSeEscapa[];
+  /** Con precios de compra: lo que valen todos los que se salen. */
+  readonly centimos?: number | null;
+  /** Los platos que se vendieron sin escandallo entre esos inventarios (cinco como mucho). */
+  readonly sinEscandallo: readonly string[];
+  /** Cuántos platos distintos fueron: puede haber más de los cinco que se nombran. */
+  readonly platosSinEscandallo: number;
+  /** Los productos que se venden y no se vigilan por esos platos. */
+  readonly aMedias: number;
+}
+
 export interface SalidaLaDesviacion {
   readonly hoy: FechaOperativa;
   readonly puedeVerPrecios: boolean;
@@ -96,9 +143,92 @@ export interface SalidaLaDesviacion {
   /** Con las ventas: lo que la caja vende y nadie ha dicho qué es. */
   readonly porEmparejar: readonly LineaPorEmparejar[];
   readonly emparejados: readonly Emparejado[];
+  /** Con Estook TPV restando lo vendido: lo que se escapa. Nulo sin él. */
+  readonly seEscapa: LoQueSeEscapaEnElAlmacen | null;
 }
 
 const enEuros = loQueVale;
+
+/** Cuántos platos sin escandallo se nombran como mucho: los demás, «y N más». */
+const PLATOS_QUE_SE_NOMBRAN = 5;
+
+/**
+ * Lo que se escapa (M20 · 2): de los productos que restan las ventas, los que se salen del
+ * margen. **El cálculo es del dominio** (`loQueSeEscapa`); aquí solo se elige qué se vigila.
+ */
+async function loQueSeEscapaDe(
+  contexto: Contexto,
+  localId: string,
+  productos: readonly GastadoDeUnProducto[],
+  conPrecios: boolean,
+): Promise<LoQueSeEscapaEnElAlmacen> {
+  // Se vigila lo que vende el TPV, contado dos veces con él ya restando. La lejía no: no la
+  // resta ninguna venta, y todo lo gastado saldría «falta».
+  const conElTpv = productos.filter((p) => p.vendidoEnElTpv > 0 && p.todoConElTpv);
+  const vigilados = conElTpv.filter((p) => p.vendidosSinEscandallo === 0);
+  const aMedias = conElTpv.filter((p) => p.vendidosSinEscandallo > 0);
+
+  const cuenta = loQueSeEscapa(
+    vigilados.map((p) => ({
+      id: p.id,
+      gastado: p.gastado,
+      apuntado: p.apuntado,
+      costeMilesimas: conPrecios ? p.costeMilesimas : null,
+    })),
+  );
+  const deCadaUno = new Map(vigilados.map((p) => [p.id, p]));
+
+  const desde = vigilados.reduce<string | null>(
+    (min, p) => (min === null || p.desde < min ? p.desde : min),
+    null,
+  );
+  const hasta = vigilados.reduce<string | null>(
+    (max, p) => (max === null || p.hasta > max ? p.hasta : max),
+    null,
+  );
+
+  // Los platos sin escandallo, de la ventana de los que se quedaron a medias.
+  let sinEscandallo: string[] = [];
+  let platosSinEscandallo = 0;
+  const primero = aMedias[0];
+  if (primero !== undefined) {
+    const de = aMedias.reduce((min, p) => (p.desde < min ? p.desde : min), primero.desde);
+    const a = aMedias.reduce((max, p) => (p.hasta > max ? p.hasta : max), primero.hasta);
+    const platos = await contexto.sql<{ nombre: string }[]>`
+      select coalesce(max(p.nombre), max(b.nombre)) as nombre
+        from estook.linea_bajada b
+        left join estook.plato p on p.id = b.plato_id
+       where b.local_id = ${localId}::uuid and b.estado = 'sin_escandallo'
+         and b.bajada_en > ${de}::timestamptz and b.bajada_en <= ${a}::timestamptz
+       group by coalesce(b.plato_id::text, b.nombre)
+       order by sum(b.cantidad) desc, 1
+    `;
+    platosSinEscandallo = platos.length;
+    sinEscandallo = platos.slice(0, PLATOS_QUE_SE_NOMBRAN).map((p) => p.nombre);
+  }
+
+  return {
+    desde,
+    hasta,
+    vigilados: cuenta.vigilados,
+    seSalen: cuenta.seSalen.map((e) => {
+      const p = deCadaUno.get(e.id);
+      return {
+        id: e.id,
+        nombre: p?.nombre ?? '',
+        unidadDeUso: p?.unidadDeUso ?? '',
+        falta: e.falta,
+        debiaSalir: e.debiaSalir,
+        parte: e.parte,
+        ...(conPrecios ? { centimos: e.centimos } : {}),
+      };
+    }),
+    ...(conPrecios ? { centimos: cuenta.centimos } : {}),
+    sinEscandallo,
+    platosSinEscandallo,
+    aMedias: aMedias.length,
+  };
+}
 
 export const laDesviacion = consulta<Record<string, never>, SalidaLaDesviacion>({
   nombre: 'la_desviacion',
@@ -177,6 +307,10 @@ export const laDesviacion = consulta<Record<string, never>, SalidaLaDesviacion>(
         `
       : [];
 
+    const seEscapa = (await loVendidoBaja(contexto, localId))
+      ? await loQueSeEscapaDe(contexto, localId, productos, conPrecios)
+      : null;
+
     return {
       hoy,
       puedeVerPrecios: conPrecios,
@@ -191,6 +325,7 @@ export const laDesviacion = consulta<Record<string, never>, SalidaLaDesviacion>(
         porVenta: Number(e.por_venta),
         unidadDeUso: e.unidad_de_uso,
       })),
+      seEscapa,
     };
   },
 });
@@ -250,6 +385,70 @@ export interface SalidaElFoodCostReal {
   readonly productos: number;
   readonly parteContada: number | null;
   readonly soloSusZonas: boolean;
+  /**
+   * Con Estook TPV, el food cost de tus escandallos y la diferencia con el real (M20 · 2, 0151).
+   * Nulo sin ventas en el TPV, sin permiso para ver lo que cuesta un plato, o si solo ves unas
+   * zonas: el real sería de tus zonas y el de los escandallos, de todo.
+   */
+  readonly escandallos: LaBrechaDelFoodCost | null;
+}
+
+/**
+ * El food cost de tus escandallos en unas jornadas: lo vendido en Estook TPV, con el coste que
+ * tenía al venderse (`linea_bajada`), con la misma cuenta que Negocio › Ventas › Por producto.
+ */
+async function laBrechaDe(
+  contexto: Contexto,
+  localId: string,
+  desde: FechaOperativa,
+  hasta: FechaOperativa,
+  real: ReturnType<typeof foodCostReal>,
+  tipoDeImpuesto: number | null,
+): Promise<LaBrechaDelFoodCost | null> {
+  const puede = await loQuePuede(contexto, localId, ['dato.coste_de_plato']);
+  if (!puede.ver('dato.coste_de_plato')) return null;
+  const filas = await contexto.sql<
+    {
+      linea_id: string;
+      plato_id: string | null;
+      menu_id: string | null;
+      menu_de: string | null;
+      nombre: string;
+      cantidad: number;
+      importe_centimos: number;
+      estado: LineaCobrada['estado'];
+      coste_milesimas: string | null;
+    }[]
+  >`
+    select b.linea_id::text as linea_id, b.plato_id::text as plato_id,
+           b.menu_id::text as menu_id, b.menu_de::text as menu_de, b.nombre,
+           b.cantidad, b.importe_centimos, b.estado,
+           b.coste_milesimas::text as coste_milesimas
+      from estook.linea_bajada b
+     where b.local_id = ${localId}::uuid
+       and b.jornada between ${desde}::date and ${hasta}::date
+  `;
+  if (filas.length === 0) return null;
+  const vendido = loVendidoPorProducto(
+    filas.map((f) => ({
+      lineaId: f.linea_id,
+      platoId: f.plato_id,
+      menuId: f.menu_id,
+      menuDe: f.menu_de,
+      nombre: f.nombre,
+      seccion: null,
+      cantidad: f.cantidad,
+      importeCentimos: f.importe_centimos,
+      estado: f.estado,
+      costeMilesimas: f.coste_milesimas === null ? null : Number(f.coste_milesimas),
+    })),
+    tipoDeImpuesto,
+  );
+  return laBrechaDelFoodCost(real, {
+    coste: vendido.coste,
+    ventasConCoste: vendido.ventasConCoste,
+    ventas: vendido.ventas,
+  });
 }
 
 export const elFoodCostReal = consulta<EntradaElFoodCostReal, SalidaElFoodCostReal>({
@@ -298,6 +497,10 @@ export const elFoodCostReal = consulta<EntradaElFoodCostReal, SalidaElFoodCostRe
 
     const leida = await laCuentaDelFoodCost(contexto, localId, limites);
     const real = foodCostReal(leida.cuenta);
+    const ultimo = hasta > hoy ? hoy : hasta;
+    const escandallos = leida.soloSusZonas
+      ? null
+      : await laBrechaDe(contexto, localId, desde, ultimo, real, leida.cuenta.tipoDeImpuesto);
 
     const objetivos = await contexto.sql<{ valor: string | null }[]>`
       select valor::text as valor from estook.objetivo
@@ -311,7 +514,7 @@ export const elFoodCostReal = consulta<EntradaElFoodCostReal, SalidaElFoodCostRe
     return {
       periodo,
       desde,
-      hasta: hasta > hoy ? hoy : hasta,
+      hasta: ultimo,
       hoy,
       inventarios:
         inventarios === null ? null : { desde: inventarios.desde, hasta: inventarios.hasta },
@@ -335,6 +538,7 @@ export const elFoodCostReal = consulta<EntradaElFoodCostReal, SalidaElFoodCostRe
       productos: leida.productos,
       parteContada: leida.parteContada,
       soloSusZonas: leida.soloSusZonas,
+      escandallos,
     };
   },
 });

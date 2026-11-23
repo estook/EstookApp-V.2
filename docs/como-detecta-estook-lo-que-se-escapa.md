@@ -1,7 +1,14 @@
 # Cómo detecta Estook lo que se escapa, y cuándo avisa
 
-> **Estado: diseño, sin construir.** Se construye con **M20**, cuando Estook TPV dé las ventas
-> plato a plato ([0092](decisiones/0092-las-respuestas-de-m9-3.md)). Lo pidió Richi el 17-oct-2026
+> **Estado: construido en pequeño con M20 · 2** ([0151](decisiones/0151-m20-2-lo-que-se-escapa.md), 22-nov-2026).
+> **Donde esta página dice otra cosa, manda la 0151**: lo que se escapa es lo gastado menos lo que el libro
+> sabe por qué salió; **un margen fijo** (un 5 % y 5 € por producto; 3 puntos de food cost) en vez de aprender
+> «lo normal» de cada producto; **sin campana** y **sin la pregunta de tres botones**; y todo en Almacén ›
+> Movimientos › Consumo. Los filtros 1 (datos fiables, con la A de la 0094) y 4 (ordenar por euros) se
+> construyeron como aquí; el 2, el 3 y el quinto caso, no, por lo que pidió Richi: «no quiero sobrecargar la
+> app». Lo de abajo queda como el diseño completo, por si el uso pide más. Lo escrito el 17-oct sigue igual
+> desde aquí: se diseñó cuando Estook TPV aún no daba las ventas plato a plato
+> ([0092](decisiones/0092-las-respuestas-de-m9-3.md)). Lo pidió Richi el 17-oct-2026
 > con la respuesta 3C de M9 · 3: **sin porcentajes inventados, sin falsas alarmas, contando con que
 > al principio no hay datos para aprender**, y **sin complicar Estook** ([0093](decisiones/0093-como-detecta-estook-lo-que-se-escapa.md)).
 > Sus dos preguntas, contestadas el 18-oct ([0094](decisiones/0094-la-prueba-de-la-plantilla.md)).

@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 22 de noviembre, por la noche** ([0151](../decisiones/0151-m20-2-lo-que-se-escapa.md)), sin cambiar de versión, **decidido con Richi** («no quiero sobrecargar la app»): M20 · 2 en pequeño. El **Plan** marca M20 · 1 en producción y M20 · 2 construido, y quita M20 · 2 del orden pendiente; el **Manifiesto** (el food cost, teórico y real) dice dónde salen los dos y que hasta tres puntos se da por bueno.
+
 **El 22 de noviembre, después** ([0150](../decisiones/0150-fuera-el-aprovechamiento.md)), sin cambiar de versión, **decidido por Richi**: fuera el aprovechamiento de toda la app. El **Manifiesto** (catálogo, ficha del producto y la fórmula del coste: `precio ÷ factor`), el **Plan** (M6 y M9) y la **Auditoría de flujos** (1.2, 2.2 pasa a «se cambia cuánto trae lo que se compra», el alta y su lista final) lo dicen; lo que se tira al limpiar es merma.
 
 **El 22 de noviembre** ([0149](../decisiones/0149-m20-1-lo-vendido-baja.md)), sin cambiar de versión, **decidido con Richi** (la A de las devoluciones): el **Plan** pone en B5 la pestaña **Por producto** de Negocio · Ventas, marca M20 · 1 construido en su ficha y cambia la regla de anulaciones y devoluciones (el ticket anulado devuelve todo; la devolución, solo con «Se cobró de más»), y en la cabecera de D, M20 · 1 pasa a «Ahora»; el **Anexo** dice en 5.4 y 7.7 que el género vuelve según el motivo y que cada plato baja del almacén al cobrar, en un punto de guardado; la **Auditoría de flujos** lo dice en el esquema del cobro.

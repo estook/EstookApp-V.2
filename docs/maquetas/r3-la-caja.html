@@ -1,3 +1,5 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>R3 · La caja</title>
 <meta name="claude:viewport-fit-sides" content="cover" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1630,6 +1632,692 @@
       transform: scale(0.97);
     }
   }
+
+  /* ══ R3 · 2, corregida el 23-nov con el rediseño (0148) ══════════════════════
+     La barra de arriba, los avisos y la sala son los del rediseño; el cobro, el
+     cierre y los Ajustes, los de R3 · 1 tal como están construidos. */
+  #vista-r32 .tpv {
+    --t-rayo: #ffd23f;
+    --m-libre: #c9d3d6;
+    --m-libre-texto: #13201f;
+    --m-tetoca: #f4b731;
+    --m-esperando: #2f6fe4;
+    --m-comiendo: #17864c;
+    --m-cuenta: #d0346c;
+  }
+  #vista-r32 .tpv.claro {
+    --t-rayo: #b58600;
+    --m-libre: #ffffff;
+    --m-libre-texto: #111c1f;
+  }
+  .cambios {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+    gap: 10px;
+  }
+  .cambio-r {
+    background: var(--superficie);
+    border-radius: 16px;
+    box-shadow: var(--sombra);
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 4px 12px;
+    align-items: start;
+  }
+  .cambio-r .ico-r {
+    grid-row: span 2;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--naranja-suave);
+    color: var(--naranja);
+    display: grid;
+    place-items: center;
+  }
+  .cambio-r .ico-r svg {
+    width: 19px;
+    height: 19px;
+  }
+  .cambio-r b {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+  .cambio-r span {
+    font-size: 13px;
+    color: var(--suave);
+    line-height: 1.4;
+  }
+  .entregas-r {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 10px;
+  }
+  .entrega-r {
+    background: var(--superficie);
+    border-radius: 16px;
+    box-shadow: var(--sombra);
+    padding: 14px 16px;
+    display: grid;
+    gap: 6px;
+  }
+  .entrega-r h3 {
+    font-size: 15.5px;
+    font-weight: 800;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .entrega-r p {
+    font-size: 13.5px;
+    color: var(--suave);
+  }
+
+  /* La barra de arriba del rediseño */
+  .rb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--t-sup);
+    border-bottom: 1px solid var(--t-borde);
+    min-height: 64px;
+  }
+  .rb-marca {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+  }
+  .rb-marca .simbolo {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: var(--t-texto);
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .rb-marca b {
+    display: block;
+    font-size: 14.5px;
+    line-height: 1.15;
+  }
+  .rb-marca small {
+    display: block;
+    font-size: 11.5px;
+    color: var(--t-tenue);
+    line-height: 1.2;
+  }
+  .rb-nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+  }
+  .rb-nav span {
+    min-width: 72px;
+    height: 48px;
+    border-radius: 13px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--t-suave);
+  }
+  .rb-nav span svg {
+    width: 20px;
+    height: 20px;
+  }
+  .rb-nav span.activo {
+    background: var(--t-naranja-s);
+    color: var(--naranja);
+  }
+  .rb-nav span.rayo svg {
+    color: var(--t-rayo);
+  }
+  .rb-der {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .rb-icono {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    border: 1px solid var(--t-borde);
+    background: var(--t-sup-2);
+    display: grid;
+    place-items: center;
+    color: var(--t-texto);
+    padding: 0;
+  }
+  .rb-icono svg {
+    width: 20px;
+    height: 20px;
+  }
+  .rb-icono .bolita {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--m-cuenta);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--t-sup);
+  }
+  .rb-caja {
+    height: 44px;
+    border-radius: 13px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 14px;
+    border: 0;
+    background: var(--t-bien);
+    color: var(--t-sobre-bien);
+  }
+  .rb-caja i {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: var(--t-sobre-bien);
+  }
+  .rb-fichar {
+    height: 44px;
+    border-radius: 13px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 800;
+    font-size: 14px;
+    background: var(--naranja);
+    color: #1d1000;
+  }
+  .rb-fichar svg {
+    width: 18px;
+    height: 18px;
+  }
+  .rb-quien {
+    height: 44px;
+    border-radius: 13px;
+    border: 1px solid var(--t-borde);
+    background: var(--t-sup-2);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 9px 0 5px;
+    font-weight: 700;
+    font-size: 13.5px;
+  }
+  .rb-quien .cara {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    font-size: 11.5px;
+    font-weight: 800;
+    background: #3d5860;
+    color: #fff;
+  }
+  .rb-quien svg {
+    width: 16px;
+    height: 16px;
+    color: var(--t-tenue);
+  }
+
+  /* La sala del rediseño, en pequeño */
+  .rs {
+    position: relative;
+    padding: 12px;
+    display: grid;
+    gap: 10px;
+    min-height: 420px;
+    align-content: start;
+  }
+  .rs-zonas {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .rs-zonas span {
+    border: 1px solid var(--t-borde);
+    background: var(--t-sup);
+    color: var(--t-suave);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .rs-zonas span.si {
+    background: var(--t-texto);
+    color: var(--t-fondo);
+    border-color: var(--t-texto);
+  }
+  .rs-plano {
+    position: relative;
+    height: 330px;
+    border-radius: 16px;
+    border: 1px solid var(--t-borde);
+    background-color: color-mix(in srgb, var(--t-fondo) 70%, var(--t-sup));
+    background-image: radial-gradient(var(--t-borde) 1.2px, transparent 1.3px);
+    background-size: 22px 22px;
+  }
+  .rs-mesa {
+    position: absolute;
+    width: 92px;
+    height: 74px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #fff;
+  }
+  .rs-mesa b {
+    display: block;
+    font-size: 20px;
+  }
+  .rs-mesa.libre {
+    background: var(--m-libre);
+    color: var(--m-libre-texto);
+  }
+  .rs-mesa.comiendo {
+    background: var(--m-comiendo);
+  }
+  .rs-mesa.esperando {
+    background: var(--m-esperando);
+  }
+  .rs-mesa.tetoca {
+    background: var(--m-tetoca);
+    color: #1d1600;
+  }
+  .rs-mesa.cuenta {
+    background: var(--m-cuenta);
+  }
+  .rs-avisos {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: min(350px, calc(100% - 24px));
+    display: grid;
+    gap: 9px;
+    z-index: 3;
+  }
+  .ra {
+    display: flex;
+    gap: 11px;
+    align-items: center;
+    padding: 10px 10px 10px 12px;
+    border-radius: 16px;
+    background: var(--t-sup);
+    border: 1px solid var(--t-borde);
+    box-shadow: 0 14px 34px -12px rgba(0, 0, 0, 0.55);
+  }
+  .ra .ico {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .ra .ico svg {
+    width: 21px;
+    height: 21px;
+  }
+  .ra .txt {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.3;
+  }
+  .ra .txt b {
+    display: block;
+    font-size: 14px;
+  }
+  .ra .txt small {
+    font-size: 12.5px;
+    color: var(--t-tenue);
+  }
+  .ra .hace {
+    border: 0;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 11px;
+    font-weight: 800;
+    font-size: 13px;
+  }
+  .ra .x {
+    border: 0;
+    background: transparent;
+    color: var(--t-tenue);
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+  }
+  .ra .x svg {
+    width: 15px;
+    height: 15px;
+  }
+  .rs-menu {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    width: min(290px, calc(100% - 24px));
+    background: var(--t-sup);
+    border: 1px solid var(--t-borde);
+    border-radius: 18px;
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+    z-index: 4;
+    box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.6);
+  }
+  .rs-hoja {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--t-fondo) 82%, transparent);
+    display: grid;
+    place-items: center;
+    padding: 14px;
+    z-index: 5;
+  }
+  .rs-hoja > div {
+    width: min(440px, 100%);
+    background: var(--t-sup);
+    border: 1px solid var(--t-borde);
+    border-radius: 20px;
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+    box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.7);
+  }
+  .rs-pie {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: var(--t-tenue);
+  }
+  .rs-toast {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    background: var(--t-texto);
+    color: var(--t-fondo);
+    border-radius: 999px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    z-index: 6;
+    max-width: calc(100% - 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* El ticket de papel */
+  .papel {
+    background: #fffef9;
+    color: #1a1a1a;
+    border-radius: 6px;
+    padding: 18px 18px 22px;
+    font-family: 'Courier New', ui-monospace, monospace;
+    font-size: 12.5px;
+    line-height: 1.5;
+    box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.5);
+    max-width: 330px;
+    width: 100%;
+    justify-self: center;
+    position: relative;
+  }
+  .papel .c {
+    text-align: center;
+  }
+  .papel .f {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .papel .f span:last-child {
+    white-space: nowrap;
+  }
+  .papel hr {
+    border: 0;
+    border-top: 1px dashed #9a9a9a;
+    margin: 8px 0;
+  }
+  .papel .grueso {
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .papel .nuevo {
+    background: #fff1e5;
+    outline: 2px solid #ff7a00;
+    outline-offset: 1px;
+    border-radius: 3px;
+  }
+  .papel .qrs {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 10px;
+  }
+  .papel .qr {
+    width: 64px;
+    height: 64px;
+    background:
+      linear-gradient(90deg, #1a1a1a 50%, transparent 50%) 0 0 / 8px 8px,
+      linear-gradient(#1a1a1a 50%, transparent 50%) 0 0 / 8px 8px;
+    opacity: 0.85;
+    border: 4px solid #fffef9;
+    outline: 1px solid #1a1a1a;
+  }
+
+  /* Pequeñas piezas del cobro, la entrega y el cierre */
+  .nuevo-r {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--naranja);
+    color: #111c1f;
+    border-radius: 999px;
+    padding: 2px 7px;
+    white-space: nowrap;
+  }
+  .pedir {
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+    text-align: center;
+    background: var(--t-sup-2);
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .pedir .teclado {
+    grid-template-columns: repeat(3, 54px);
+  }
+  .pedir .teclado span {
+    height: 46px;
+    font-size: 19px;
+  }
+  .reparto {
+    display: grid;
+    gap: 6px;
+  }
+  .reparto button {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    border: 2px solid var(--t-borde);
+    background: var(--t-sup);
+    border-radius: 12px;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .reparto button .marca-r {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 2px solid var(--t-borde);
+    display: grid;
+    place-items: center;
+    color: var(--t-sobre-bien);
+  }
+  .reparto button[aria-pressed='true'] .marca-r {
+    background: var(--t-bien);
+    border-color: var(--t-bien);
+  }
+  .reparto button[aria-pressed='false'] {
+    opacity: 0.6;
+  }
+  .reparto button small {
+    font-weight: 600;
+    color: var(--t-tenue);
+    margin-left: 6px;
+  }
+  .reparto button b {
+    font-variant-numeric: tabular-nums;
+  }
+  .tramo-dia {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--borde);
+    font-size: 13.5px;
+  }
+  .tramo-dia:last-child {
+    border-bottom: 0;
+  }
+  .tramo-dia small {
+    display: block;
+    color: var(--tenue);
+    font-size: 12px;
+  }
+  .tramo-dia .ini-app {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--superficie-2);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 12px;
+  }
+  .noti {
+    background: color-mix(in srgb, var(--superficie) 88%, transparent);
+    border-radius: 18px;
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 3px 10px;
+    box-shadow: var(--sombra);
+  }
+  .noti .app-ico {
+    grid-row: span 3;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #111c1f;
+    display: grid;
+    place-items: center;
+  }
+  .noti .cab-n {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--tenue);
+    font-weight: 600;
+  }
+  .noti b {
+    font-size: 14px;
+  }
+  .noti span {
+    font-size: 13px;
+    color: var(--suave);
+  }
+  .bloqueo {
+    background: linear-gradient(160deg, #1d3a42, #0f1719 70%);
+    padding: 26px 12px 18px;
+    display: grid;
+    gap: 14px;
+    min-height: 520px;
+    align-content: start;
+  }
+  .bloqueo .hora {
+    text-align: center;
+    color: #f1efea;
+    font-size: 54px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .bloqueo .fecha {
+    text-align: center;
+    color: #c4cfd1;
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-top: -6px;
+  }
+  @media (max-width: 760px) {
+    .rb-nav,
+    .rb-fichar,
+    .rb-quien b,
+    .rb-marca div {
+      display: none;
+    }
+    .rb {
+      justify-content: space-between;
+    }
+    /* En el móvil, las mesas de dos en fila, como el TPV (0148), y los avisos abajo. */
+    .rs {
+      padding-bottom: 210px;
+    }
+    .rs-plano {
+      height: auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px;
+    }
+    .rs-mesa {
+      position: static;
+      width: auto;
+      height: 64px;
+    }
+    .rs-avisos {
+      top: auto;
+      bottom: 12px;
+    }
+  }
 </style>
 
 <svg width="0" height="0" style="position: absolute" aria-hidden="true">
@@ -1700,11 +2388,14 @@
         </p>
       </div>
     </div>
-    <span class="pildora p-nar">Maqueta para aprobar · 9-nov</span>
+    <span class="pildora p-nar">Aprobada el 9-nov · R3 · 2 corregida el 23-nov</span>
   </header>
 
   <nav class="pestanas" role="tablist" aria-label="Partes de la maqueta">
-    <button role="tab" id="tab-imprescindible" aria-selected="true" data-tab="imprescindible">
+    <button role="tab" id="tab-r32" aria-selected="true" data-tab="r32">
+      R3 · 2 · corregida <span class="cuenta">para aprobar</span>
+    </button>
+    <button role="tab" id="tab-imprescindible" aria-selected="false" data-tab="imprescindible">
       Lo imprescindible
     </button>
     <button role="tab" id="tab-extra" aria-selected="false" data-tab="extra">
@@ -1715,8 +2406,283 @@
     </button>
   </nav>
 
+  <!-- ═══════════════════════ R3 · 2, CORREGIDA EL 23-NOV ═══════════════════════ -->
+  <section id="vista-r32" class="envoltura" style="gap: 34px">
+    <div class="barra-control">
+      <nav class="tramos" aria-label="R3 · 2 por partes">
+        <a href="#r-cambia"><b>·</b>Lo que cambia</a>
+        <a href="#r-avisar"><b>1</b>Retirar</a>
+        <a href="#r-cobrar"><b>2</b>Cobrar</a>
+        <a href="#r-entregar"><b>3</b>Entregar</a>
+        <a href="#r-cerrar"><b>4</b>Cerrar</a>
+        <a href="#r-estook"><b>5</b>En Estook</a>
+        <a href="#r-ajustes"><b>6</b>Ajustes</a>
+      </nav>
+      <div>
+        <span class="etiqueta-seg">Estook TPV</span>
+        <span class="segmentado" role="group" aria-label="Tema de Estook TPV">
+          <button type="button" data-tema="oscuro" aria-pressed="true">Oscuro</button>
+          <button type="button" data-tema="claro" aria-pressed="false">Claro</button>
+        </span>
+      </div>
+    </div>
+
+    <!-- Lo que cambia desde el 9-nov -->
+    <section class="tramo" id="r-cambia">
+      <header>
+        <span class="n">·</span>
+        <h2>Lo que cambia desde el 9-nov</h2>
+        <p>
+          Lo de R3 · 2 es lo que aprobaste (E2, E3 y E5 a E8). Esto es lo que mueven el rediseño
+          (0148) y cobrar en la mesa (0145), que llegaron después. Lo demás, igual.
+        </p>
+      </header>
+      <div class="cambios" id="r-lista-cambios"></div>
+      <div class="entregas-r">
+        <article class="entrega-r">
+          <h3><span class="pildora p-nar">PR 1</span>R3 · 2 · 1 · La caja</h3>
+          <p>
+            El aviso de retirar, el aviso del descuadre, las propinas, escribir el total y entregar
+            la caja. Todo es del cajón: no toca el ticket.
+          </p>
+        </article>
+        <article class="entrega-r">
+          <h3><span class="pildora p-nar">PR 2</span>R3 · 2 · 2 · Los descuentos</h3>
+          <p>
+            Cambia lo que se manda a Hacienda (el IVA ya rebajado), los permisos y los tres sitios
+            donde se cobra. Mejor probarlo solo.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 1 · RETIRAR -->
+    <section class="tramo" id="r-avisar">
+      <header>
+        <span class="n">1</span>
+        <h2>El aviso de retirar · E2</h2>
+        <p>
+          Sale con los demás avisos, arriba a la derecha, y se queda en la campana. Solo en la caja
+          y solo a quien la lleva. «Retirar» abre «Sacar dinero» ya rellenado.
+        </p>
+      </header>
+      <div class="lienzo">
+        <div class="pieza" style="flex-basis: 100%">
+          <div class="titulo">
+            La sala de la caja · 21:12
+            <span class="segmentado" role="group" aria-label="Qué se ve">
+              <button type="button" data-r-sala="aviso" aria-pressed="true">El aviso</button>
+              <button type="button" data-r-sala="retirar" aria-pressed="false">
+                Al tocar «Retirar»
+              </button>
+              <button type="button" data-r-sala="menu" aria-pressed="false">El botón «Caja»</button>
+            </span>
+          </div>
+          <div class="tpv" id="r-sala"></div>
+          <p class="nota" id="r-sala-nota"></p>
+        </div>
+        <div class="pieza estrecha">
+          <div class="titulo">Cómo va · Caja 1 · 21:05</div>
+          <div class="tpv">
+            <div class="cuerpo" id="r-x"></div>
+          </div>
+          <p class="nota">
+            Con la entrega, «Cómo va» empieza en lo que recibió Ana. Las propinas suman en lo que
+            debería haber: están en el cajón.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · COBRAR -->
+    <section class="tramo" id="r-cobrar">
+      <header>
+        <span class="n">2</span>
+        <h2>Cobrar · el descuento (E8) y la propina (E5)</h2>
+        <p>
+          El cobro de siempre. «Descuento», solo si el local lo enciende. «Quédate el cambio», con
+          efectivo. Igual en la caja, en la venta rápida y en el comandero.
+        </p>
+      </header>
+      <div class="lienzo">
+        <div class="pieza" style="flex-basis: 720px">
+          <div class="titulo">
+            Mesa 12 · 14:10
+            <span class="segmentado" role="group" aria-label="Quién cobra">
+              <button type="button" data-r-quien="marcos" aria-pressed="true">
+                Cobra Marcos · jefe de sala
+              </button>
+              <button type="button" data-r-quien="sara" aria-pressed="false">
+                Cobra Sara · camarera
+              </button>
+            </span>
+          </div>
+          <div class="tpv" id="r-cobro"></div>
+          <p class="nota" id="r-cobro-nota"></p>
+        </div>
+        <div class="pieza estrecha" style="max-width: 360px">
+          <div class="titulo">El ticket que sale</div>
+          <div id="r-papel"></div>
+          <p class="nota">
+            El descuento va en una línea y el IVA, ya rebajado: VeriFactu no tiene campo de
+            descuento (Anexo 4.9). La propina no va en el ticket: solo se apunta en la caja.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · ENTREGAR -->
+    <section class="tramo" id="r-entregar">
+      <header>
+        <span class="n">3</span>
+        <h2>Entregar la caja · E7</h2>
+        <p>
+          El cambio de turno sin cerrar: quien la deja cuenta a ciegas, quien la recibe teclea su
+          PIN y la caja sigue abierta a su nombre, con lo contado. El datáfono, solo por la noche.
+        </p>
+      </header>
+      <div class="lienzo">
+        <div class="pieza" style="flex-basis: 760px">
+          <div class="titulo">Entregar la caja · Caja 1 · 17:30</div>
+          <div class="tpv">
+            <div class="barra">
+              <span class="local">IKATZ<small>Caja 1 · abierta por Marcos, 12:02</small></span>
+              <span class="hueco"></span>
+              <div
+                class="pasos"
+                id="r-ent-pasos"
+                role="group"
+                aria-label="Pasos de la entrega"
+              ></div>
+            </div>
+            <div class="cuerpo" id="r-ent"></div>
+          </div>
+          <p class="nota">
+            Quien recibe tiene que poder llevar la caja (o cualquiera, con «También camareros»). El
+            arqueo de Marcos queda a su nombre y sale en el Z y en Estook.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 · CERRAR -->
+    <section class="tramo" id="r-cerrar">
+      <header>
+        <span class="n">4</span>
+        <h2>Cerrar · escribir el total (E6) y repartir las propinas (E5)</h2>
+        <p>
+          Los cuatro pasos de siempre. En el primero, «Escribir el total» si el local lo enciende;
+          en el último, las propinas del día y entre quién se reparten.
+        </p>
+      </header>
+      <div class="lienzo">
+        <div class="pieza" style="flex-basis: 760px">
+          <div class="titulo">
+            Cerrar caja · Caja 1 · 23:58
+            <span class="segmentado" role="group" aria-label="Qué paso se ve">
+              <button type="button" data-r-cierre="1" aria-pressed="true">1 · Contar</button>
+              <button type="button" data-r-cierre="4" aria-pressed="false">4 · El resultado</button>
+            </span>
+          </div>
+          <div class="tpv">
+            <div class="barra">
+              <span class="local">IKATZ<small>Caja 1 · de Ana desde las 17:30</small></span>
+              <span class="hueco"></span>
+              <div class="pasos" id="r-cie-pasos" aria-hidden="true"></div>
+            </div>
+            <div class="cuerpo" id="r-cie"></div>
+          </div>
+          <p class="nota" id="r-cie-nota"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · EN ESTOOK -->
+    <section class="tramo" id="r-estook">
+      <header>
+        <span class="n">5</span>
+        <h2>En Estook · el aviso del descuadre (E3) y el día</h2>
+        <p>
+          Si un cierre o una entrega falta o sobra más de 10 €, al gerente le llega un aviso al
+          móvil y a la campana, uno por cierre. Al tocarlo, abre ese día en Cierres de caja.
+        </p>
+      </header>
+      <div class="lienzo">
+        <div class="pieza estrecha">
+          <div class="titulo">El móvil del gerente · 23:59</div>
+          <div class="movil">
+            <div class="estado" style="background: #10262c; color: #f1efea">
+              <span>23:59</span><span>●●● 5G</span>
+            </div>
+            <div class="bloqueo">
+              <div class="hora">23:59</div>
+              <div class="fecha">Lunes, 23 de noviembre</div>
+              <div class="noti">
+                <span class="app-ico" id="r-app-ico"></span>
+                <span class="cab-n"><span>ESTOOK · IKATZ</span><span>ahora</span></span>
+                <b>Caja 1 · faltan 12,00 €</b>
+                <span>Cerró Ana a las 23:58. Toca para ver el cierre.</span>
+              </div>
+            </div>
+          </div>
+          <p class="nota">
+            El de Marcos (faltan 2,00 €) no avisa: no pasa de 10 €. Se ve igual en Estook, en ámbar.
+          </p>
+        </div>
+        <div class="pieza estrecha">
+          <div class="titulo">Servicio › Jornada › Cierres de caja · al tocarlo</div>
+          <div class="movil">
+            <div class="estado"><span>23:59</span><span>●●● 5G</span></div>
+            <div class="cab-app">
+              <div class="fila">
+                <span class="icono-app">S</span><b style="flex: 1">Lunes 23 nov</b>
+                <span style="color: var(--tenue); font-size: 13px">IKATZ</span>
+              </div>
+            </div>
+            <div class="dentro" id="r-estook-dia"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · AJUSTES -->
+    <section class="tramo" id="r-ajustes">
+      <header>
+        <span class="n">6</span>
+        <h2>Ajustes del TPV › El dinero › La caja</h2>
+        <p>
+          Donde ya está la caja desde el rediseño. Lo nuevo, marcado. Toca los interruptores:
+          cambian el cobro y el cierre de arriba.
+        </p>
+      </header>
+      <div class="tpv">
+        <div class="barra">
+          <span class="local">Ajustes del TPV<small>El dinero › La caja</small></span>
+        </div>
+        <div class="ajustes-rejilla" id="r-ajustes-rejilla"></div>
+      </div>
+      <details class="porque">
+        <summary>¿Por qué así?</summary>
+        <ul>
+          <li>
+            <b>Apagado de fábrica</b> lo que muchos locales no usan: descontar, escribir el total y
+            repartir propinas. Encendido, lo que ayuda sin pedir nada: «Quédate el cambio».
+          </li>
+          <li>
+            <b>Los avisos no paran a nadie</b>: el de retirar se quita con la «×» y sigue en la
+            campana; el del descuadre va al móvil del gerente, no a la caja.
+          </li>
+          <li>
+            <b>Las mismas cifras de la maqueta del 9-nov</b>: 800 € para retirar, 10 € para avisar y
+            el 10 % del jefe de sala. El gerente las cambia aquí.
+          </li>
+        </ul>
+      </details>
+    </section>
+  </section>
+
   <!-- ═══════════════════════ LO IMPRESCINDIBLE ═══════════════════════ -->
-  <section id="vista-imprescindible" class="envoltura" style="gap: 34px">
+  <section id="vista-imprescindible" class="envoltura" style="gap: 34px" hidden>
     <div class="barra-control">
       <nav class="tramos" aria-label="El día en la caja">
         <a href="#t-abrir"><b>1</b>Abrir</a>
@@ -2623,9 +3589,9 @@
     }
 
     // ── Pestañas (con el hash, para poder mandar el enlace) ───
-    var TABS = ['imprescindible', 'extra', 'despues'];
+    var TABS = ['r32', 'imprescindible', 'extra', 'despues'];
     function abrirTab(nombre) {
-      if (TABS.indexOf(nombre) < 0) nombre = 'imprescindible';
+      if (TABS.indexOf(nombre) < 0) nombre = 'r32';
       TABS.forEach(function (t) {
         $('#vista-' + t).hidden = t !== nombre;
         $('#tab-' + t).setAttribute('aria-selected', t === nombre ? 'true' : 'false');
@@ -4365,5 +5331,1562 @@
     });
     pintarExtras();
     pintarResumen();
+  })();
+</script>
+<script>
+  /* ══ R3 · 2, corregida el 23-nov ═════════════════════════════════════════════
+     Un día de IKATZ, el lunes 23 de noviembre, y todas las cifras salen de él:
+       · Marcos abre la Caja 1 a las 12:02 con 150,00 €.
+       · Mañana: 412,60 € cobrados en efectivo, 6,50 € de propinas (1,75 € son de la
+         Mesa 12) y 35,00 € sacados para el pan → debería haber 534,10 €.
+       · 17:30, entrega a Ana: Marcos cuenta 532,10 € → faltan 2,00 €. Ana sigue con 532,10 €.
+       · Tarde hasta las 21:12: 316,30 € en efectivo y 12,00 € de propinas → 860,40 €:
+         pasa de 800 € y sale «Retirar». Ana saca 700,00 € a la caja fuerte → 160,40 €.
+       · Hasta el cierre: 210,00 € más en efectivo → debería haber 370,40 €. Ana escribe
+         358,40 € → faltan 12,00 € → aviso al gerente (pasa de 10 €).
+       · El día: 938,90 € en efectivo + 1.402,20 € con tarjeta = 2.341,10 €; 74 tickets;
+         2 descuentos (4,25 € + 3,00 € = 7,25 €); 18,50 € de propinas; faltan 14,00 €. */
+  (function () {
+    'use strict';
+
+    function eur(c) {
+      var neg = c < 0;
+      c = Math.abs(Math.round(c));
+      var e = Math.floor(c / 100);
+      var cc = String(c % 100).padStart(2, '0');
+      return (neg ? '−' : '') + String(e).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + cc + ' €';
+    }
+    function aCentimos(t) {
+      var n = parseFloat(String(t).replace(/[€\s]/g, '').replace(/\./g, '').replace(',', '.'));
+      return isFinite(n) ? Math.max(0, Math.round(n * 100)) : 0;
+    }
+    function enCasilla(c) {
+      return eur(c).replace(' €', '');
+    }
+    function $(s, r) {
+      return (r || document).querySelector(s);
+    }
+    function $$(s, r) {
+      return Array.prototype.slice.call((r || document).querySelectorAll(s));
+    }
+    var TR = {
+      sala: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+      rayo: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+      bolsa: '<path d="M6 8h12l-1 13H7z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+      ticket: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+      campana: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+      candado:
+        '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+      engranaje:
+        '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+      reloj: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      cajon:
+        '<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M3 13h18M10 16h4M7 8V5h10v3"/>',
+      fuerte:
+        '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5v1M12 14.5v1M8.5 12h1M14.5 12h1M6 20v1.5M18 20v1.5"/>',
+      olla: '<path d="M4 10h16v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M2 10h20M9 6c0-1 1-1 1-2M14 6c0-1 1-1 1-2"/>',
+      efectivo:
+        '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v.01M18 15v.01"/>',
+      tarjeta: '<rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20M6 15h4"/>',
+      dividir: '<circle cx="12" cy="12" r="9"/><path d="M12 3v18M12 12l6.4 6.4"/>',
+      cerrar: '<path d="M6 6l12 12M18 6 6 18"/>',
+      ok: '<path d="m5 12 4 4 10-10"/>',
+      personas:
+        '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
+      lapiz: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+      flecha: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+      porciento:
+        '<path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',
+    };
+    function ic(n, extra) {
+      return (
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' +
+        (extra || '') +
+        '>' +
+        (TR[n] || '') +
+        '</svg>'
+      );
+    }
+    function simbolo(lado, color) {
+      return (
+        '<svg viewBox="0 0 1024 1024" width="' +
+        lado +
+        '" height="' +
+        lado +
+        '" aria-label="Estook"><g transform="translate(184.5 156) scale(0.66)" fill="' +
+        color +
+        '"><rect x="0" y="0" width="855" height="150" rx="22"/><rect x="0" y="0" width="160" height="460" rx="22"/><rect x="0" y="310" width="855" height="150" rx="22"/><rect x="0" y="815" width="855" height="155" rx="22"/><path d="M322 940 H533 L427.5 1075 Z"/></g><rect x="184.5" y="532.2" width="564.3" height="102.3" rx="14.5" fill="#FF7A00"/></svg>'
+      );
+    }
+    var NUEVO = '<span class="nuevo-r">Nuevo</span>';
+    function pulsar(grupo, boton) {
+      $$('button', grupo).forEach(function (b) {
+        b.setAttribute('aria-pressed', b === boton ? 'true' : 'false');
+      });
+    }
+
+    // Lo que se enciende en Ajustes (tramo 6). En la maqueta, encendido para que se vea.
+    var AJ = { total: true, propina: true, reparto: true, descuento: true };
+
+    // ── Lo que cambia ──────────────────────────────────────────
+    var CAMBIOS = [
+      [
+        'campana',
+        'Los avisos, en su sitio nuevo',
+        'Arriba a la derecha y en la campana, como los del rediseño. El de retirar, solo a quien lleva la caja.',
+      ],
+      [
+        'fuerte',
+        '«Retirar», ya rellenado',
+        'Abre «Sacar dinero» con un motivo nuevo, «A la caja fuerte», y propone dejar el fondo de siempre.',
+      ],
+      [
+        'personas',
+        'Todos cobran, y el comandero también',
+        'El descuento está donde se cobra: la caja, la venta rápida y el comandero. Quien no puede, lo pide y un encargado teclea su PIN.',
+      ],
+      [
+        'ticket',
+        'El descuento, en el ticket',
+        'Una línea con su motivo y el IVA ya rebajado. Más cifras (5, 10 o 15 % o euros) y cuatro motivos.',
+      ],
+      [
+        'efectivo',
+        '«Quédate el cambio», también en lo pendiente',
+        'Cuando la caja cobra el efectivo que dejó un camarero desde la mesa (0145).',
+      ],
+      [
+        'flecha',
+        '«Entregar la caja», dibujada',
+        'Contar a ciegas, el PIN de quien la recibe y la diferencia. Sin «a otro encargado»: con «También camareros» puede no serlo.',
+      ],
+      [
+        'lapiz',
+        'Escribir el total, en los tres recuentos',
+        'Al abrir, al entregar y al cerrar, no solo al cerrar.',
+      ],
+      [
+        'personas',
+        'Las propinas, con nombres',
+        'Entre los que han fichado hoy, y se quita a alguien con un toque. Es la pregunta del chat.',
+      ],
+    ];
+    $('#r-lista-cambios').innerHTML = CAMBIOS.map(function (c) {
+      return (
+        '<div class="cambio-r"><span class="ico-r">' +
+        ic(c[0]) +
+        '</span><b>' +
+        c[1] +
+        '</b><span>' +
+        c[2] +
+        '</span></div>'
+      );
+    }).join('');
+    $('#r-app-ico').innerHTML = simbolo(26, '#f1efea');
+
+    // ── 1 · La sala y el aviso de retirar ──────────────────────
+    var sala = {
+      modo: 'aviso',
+      retirado: false,
+      quitadoCocina: false,
+      motivo: 'A la caja fuerte',
+      cuanto: 70000,
+    };
+    function barraRediseno(quien) {
+      return (
+        '<header class="rb">' +
+        '<div class="rb-marca"><span class="simbolo">' +
+        simbolo(28, 'var(--t-fondo)') +
+        '</span><div><b>IKATZ</b><small>Caja 1</small></div></div>' +
+        '<nav class="rb-nav" aria-label="Estook TPV"><span class="activo">' +
+        ic('sala') +
+        'Sala</span><span class="rayo">' +
+        ic('rayo') +
+        'Rápida</span><span>' +
+        ic('bolsa') +
+        'Llevar</span><span>' +
+        ic('ticket') +
+        'Tickets</span></nav>' +
+        '<div class="rb-der">' +
+        '<button type="button" class="rb-icono" aria-label="Avisos">' +
+        ic('campana') +
+        (quien.avisos > 0 ? '<span class="bolita">' + quien.avisos + '</span>' : '') +
+        '</button>' +
+        '<button type="button" class="rb-caja" id="r-boton-caja" aria-expanded="' +
+        (sala.modo === 'menu') +
+        '"><i></i>Caja</button>' +
+        '<span class="rb-fichar">' +
+        ic('reloj') +
+        'Fichar</span>' +
+        '<span class="rb-icono" aria-hidden="true">' +
+        ic('engranaje') +
+        '</span>' +
+        '<span class="rb-quien"><span class="cara">AN</span><b>Ana</b>' +
+        ic('candado') +
+        '</span>' +
+        '</div></header>'
+      );
+    }
+    function aviso(o) {
+      return (
+        '<div class="ra"><span class="ico" style="background:' +
+        o.fondo +
+        ';color:' +
+        o.tinta +
+        '">' +
+        ic(o.ico) +
+        '</span><span class="txt"><b>' +
+        o.titulo +
+        '</b><small>' +
+        o.sub +
+        '</small></span>' +
+        '<button type="button" class="hace" style="background:' +
+        o.bf +
+        ';color:' +
+        o.bt +
+        '"' +
+        (o.id ? ' id="' + o.id + '"' : '') +
+        '>' +
+        o.boton +
+        '</button>' +
+        '<button type="button" class="x" aria-label="Quitar de la vista"' +
+        (o.idx ? ' id="' + o.idx + '"' : '') +
+        '>' +
+        ic('cerrar') +
+        '</button></div>'
+      );
+    }
+    var NOTAS_SALA = {
+      aviso:
+        'Ámbar, como el efectivo por cobrar. La «×» lo quita de la vista y sigue en la campana; vuelve a salir si el cajón vuelve a pasar de 800 €. No suena ni para nada.',
+      retirar:
+        'Propone lo que sobra del fondo de siempre (150,00 €), en billetes de 50 €: 860,40 − 150,00 = 710,40 → 700,00 €. Se cambia si se quiere. Queda en el Z con quién y cuándo.',
+      menu: '«Entregar la caja» entra entre «Cómo va» y «Cerrar caja». Lo demás, como ya está.',
+    };
+    function pintarSala() {
+      var avisos = [];
+      if (!sala.quitadoCocina)
+        avisos.push(
+          aviso({
+            ico: 'olla',
+            fondo: 'var(--m-esperando)',
+            tinta: '#fff',
+            titulo: 'Cocina llama · Mesa 4',
+            sub: 'Llaman a Sara',
+            boton: 'Ya voy',
+            bf: 'var(--t-sup-2)',
+            bt: 'var(--t-texto)',
+            idx: 'r-x-cocina',
+          }),
+        );
+      if (!sala.retirado)
+        avisos.push(
+          aviso({
+            ico: 'fuerte',
+            fondo: 'var(--m-tetoca)',
+            tinta: '#1d1600',
+            titulo: 'El cajón pasa de 800 €',
+            sub: 'Caja 1 · lleva lo que sobra a la caja fuerte',
+            boton: 'Retirar',
+            bf: 'var(--t-atencion)',
+            bt: 'var(--t-sobre-atencion)',
+            id: 'r-retirar',
+            idx: 'r-x-retirar',
+          }),
+        );
+      var mesas = [
+        ['comiendo', 1, 'Comiendo', 5, 8],
+        ['libre', 2, '', 25, 8],
+        ['cuenta', 3, '¿Cuenta? 3′', 45, 8],
+        ['esperando', 4, 'Esperando', 5, 54],
+        ['libre', 5, '', 25, 54],
+        ['tetoca', 6, 'Te toca', 45, 54],
+      ];
+      var html =
+        barraRediseno({ avisos: avisos.length }) +
+        '<div class="rs">' +
+        '<div class="rs-zonas"><span class="si">Salón · 6</span><span>Terraza · 0</span><span>Para llevar · 1</span></div>' +
+        '<div class="rs-plano" aria-hidden="true">' +
+        mesas
+          .map(function (m) {
+            return (
+              '<div class="rs-mesa ' +
+              m[0] +
+              '" style="left:' +
+              m[3] +
+              '%;top:' +
+              m[4] +
+              '%"><span><b>' +
+              m[1] +
+              '</b>' +
+              m[2] +
+              '</span></div>'
+            );
+          })
+          .join('') +
+        '</div>' +
+        '<div class="rs-pie"><span>4 mesas abiertas · 13 comensales</span><span>Al segundo</span></div>';
+      if (sala.modo === 'aviso' && avisos.length > 0)
+        html += '<div class="rs-avisos">' + avisos.join('') + '</div>';
+      if (sala.modo === 'menu')
+        html +=
+          '<div class="rs-menu" role="menu">' +
+          '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding:0 4px"><b>Caja 1</b><span class="t-tenue t-peq">de Ana · desde 17:30</span></div>' +
+          '<button type="button" class="bt ancho">Abrir el cajón</button>' +
+          '<button type="button" class="bt ancho">Cómo va</button>' +
+          '<button type="button" class="bt ancho" data-r-ir="#r-entregar">Entregar la caja ' +
+          NUEVO +
+          '</button>' +
+          '<button type="button" class="bt ancho ambar" data-r-ir="#r-cerrar">Cerrar caja</button>' +
+          '</div>';
+      if (sala.modo === 'retirar') {
+        var motivos = [
+          'Compras',
+          'Un proveedor',
+          'A la caja fuerte',
+          'Propinas',
+          'Al banco',
+          'Otro',
+        ];
+        html +=
+          '<div class="rs-hoja"><div role="dialog" aria-label="Abrir el cajón">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="t-h">Abrir el cajón</span><button type="button" class="bt peq hueco-borde" id="r-hoja-no">Ahora no</button></div>' +
+          '<div class="chips" role="group" aria-label="Para qué se abre"><button type="button" class="chip" aria-pressed="false">Cambio</button><button type="button" class="chip" aria-pressed="true">Sacar dinero</button><button type="button" class="chip" aria-pressed="false">Meter dinero</button></div>' +
+          '<div class="t-suave t-peq" style="font-weight:700">Para qué</div>' +
+          '<div class="chips" role="group" aria-label="Motivo">' +
+          motivos
+            .map(function (m) {
+              return (
+                '<button type="button" class="chip" data-r-motivo="' +
+                m +
+                '" aria-pressed="' +
+                (sala.motivo === m) +
+                '">' +
+                m +
+                (m === 'A la caja fuerte' ? ' ' + NUEVO : '') +
+                '</button>'
+              );
+            })
+            .join('') +
+          '</div>' +
+          '<label class="campo-t" for="r-cuanto"><span>Cuánto</span><input id="r-cuanto" inputmode="decimal" value="' +
+          enCasilla(sala.cuanto) +
+          '"></label>' +
+          '<button type="button" class="bt naranja ancho" id="r-sacar">Sacar ' +
+          eur(sala.cuanto) +
+          ' · Abrir el cajón</button>' +
+          '</div></div>';
+      }
+      if (sala.toast) html += '<div class="rs-toast" role="status">' + sala.toast + '</div>';
+      html += '</div>';
+      var el = $('#r-sala');
+      el.innerHTML = html;
+      $('#r-sala-nota').textContent = NOTAS_SALA[sala.modo];
+
+      var bc = $('#r-boton-caja', el);
+      bc.addEventListener('click', function () {
+        ponerSala(sala.modo === 'menu' ? 'aviso' : 'menu');
+      });
+      var r = $('#r-retirar', el);
+      if (r)
+        r.addEventListener('click', function () {
+          ponerSala('retirar');
+        });
+      var xc = $('#r-x-cocina', el);
+      if (xc)
+        xc.addEventListener('click', function () {
+          sala.quitadoCocina = true;
+          sala.toast = 'Sigue en la campana';
+          pintarSala();
+        });
+      var xr = $('#r-x-retirar', el);
+      if (xr)
+        xr.addEventListener('click', function () {
+          sala.retirado = true;
+          sala.toast = 'Sigue en la campana';
+          pintarSala();
+        });
+      $$('[data-r-motivo]', el).forEach(function (b) {
+        b.addEventListener('click', function () {
+          sala.motivo = b.dataset.rMotivo;
+          pintarSala();
+        });
+      });
+      var cu = $('#r-cuanto', el);
+      if (cu)
+        cu.addEventListener('change', function () {
+          sala.cuanto = aCentimos(cu.value);
+          pintarSala();
+        });
+      var no = $('#r-hoja-no', el);
+      if (no)
+        no.addEventListener('click', function () {
+          ponerSala('aviso');
+        });
+      var sa = $('#r-sacar', el);
+      if (sa)
+        sa.addEventListener('click', function () {
+          sala.retirado = true;
+          sala.toast =
+            eur(sala.cuanto) + ' · ' + sala.motivo.toLowerCase() + ' · apuntado para el Z';
+          ponerSala('aviso', true);
+        });
+      $$('[data-r-ir]', el).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var d = $(b.dataset.rIr);
+          if (d) d.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+    function ponerSala(modo, conToast) {
+      sala.modo = modo;
+      if (!conToast) sala.toast = null;
+      if (modo === 'aviso' && !conToast) {
+        sala.retirado = false;
+        sala.quitadoCocina = false;
+      }
+      var g = $('[data-r-sala="aviso"]').parentNode;
+      pulsar(g, $('[data-r-sala="' + modo + '"]'));
+      pintarSala();
+    }
+    $$('[data-r-sala]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        ponerSala(b.dataset.rSala);
+      });
+    });
+    pintarSala();
+
+    // «Cómo va» de Ana
+    function pintarX() {
+      $('#r-x').innerHTML =
+        '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><span class="t-h">Caja 1 · cómo va</span><span class="t-tenue t-peq">21:05</span></div>' +
+        '<div class="tarjeta-t">' +
+        '<div class="renglon"><span>Recibida de Marcos · 17:30 ' +
+        NUEVO +
+        '</span><b>532,10 €</b></div>' +
+        '<div class="renglon"><span>Cobrado en efectivo</span><b>316,30 €</b></div>' +
+        (AJ.propina
+          ? '<div class="renglon"><span>Propinas en efectivo ' +
+            NUEVO +
+            '</span><b>12,00 €</b></div>'
+          : '') +
+        '<div class="renglon fuerte"><span>Debería haber en el cajón</span><b>' +
+        (AJ.propina ? '860,40 €' : '848,40 €') +
+        '</b></div></div>' +
+        '<div class="tarjeta-t">' +
+        '<div class="renglon"><span>Con tarjeta</span><b>455,10 €</b></div>' +
+        '<div class="renglon"><span>Tickets</span><b>29</b></div>' +
+        (AJ.descuento
+          ? '<div class="renglon"><span>Descuentos · Sara, lo aprobó Ana ' +
+            NUEVO +
+            '</span><b>1 · 3,00 €</b></div>'
+          : '') +
+        '</div>';
+    }
+    pintarX();
+
+    // ── 2 · Cobrar ─────────────────────────────────────────────
+    var LINEAS = [
+      [2, 'Menú del día', 2800],
+      [2, 'Caña', 500],
+      [1, 'Agua', 150],
+      [1, 'Tarta de queso', 550],
+      [2, 'Café', 250],
+    ];
+    var TOTAL = LINEAS.reduce(function (s, l) {
+      return s + l[2];
+    }, 0); // 42,50 €
+    var LIMITE_JEFE = 10; // %
+    var MOTIVOS_DESC = ['Cliente habitual', 'Se ha tardado', 'Un error nuestro', 'Otro'];
+    var cobro;
+    function reiniciarCobro() {
+      cobro = {
+        abriendo: false,
+        cuanto: null, // { tipo: 'pct'|'eur', valor }
+        motivo: null,
+        pidiendo: false,
+        desc: null, // { texto, importe, motivo, aprobado }
+        forma: 'efectivo',
+        te: 4000,
+        propina: false,
+        hecho: null,
+      };
+    }
+    reiniciarCobro();
+    var quien = 'marcos';
+    function importeDe(c) {
+      if (c === null) return 0;
+      return c.tipo === 'pct' ? Math.round((TOTAL * c.valor) / 100) : Math.min(c.valor, TOTAL);
+    }
+    function porcentajeDe(c) {
+      return c.tipo === 'pct' ? c.valor : (importeDe(c) * 100) / TOTAL;
+    }
+    function textoDe(c) {
+      return c.tipo === 'pct' ? c.valor + ' %' : eur(c.valor);
+    }
+    function billetes(importe) {
+      var cand = {};
+      [500, 1000, 2000].forEach(function (p) {
+        var a = Math.ceil(importe / p) * p;
+        if (a > importe) cand[a] = 1;
+      });
+      [500, 1000, 2000, 5000, 10000, 20000, 50000].forEach(function (r) {
+        if (r > importe) cand[r] = 1;
+      });
+      return Object.keys(cand)
+        .map(Number)
+        .sort(function (a, b) {
+          return a - b;
+        })
+        .slice(0, 3);
+    }
+    function quienAprueba() {
+      if (quien === 'sara') return { quien: 'Marcos', puesto: 'un encargado' };
+      if (cobro.cuanto && porcentajeDe(cobro.cuanto) > LIMITE_JEFE)
+        return { quien: 'Nerea', puesto: 'el gerente' };
+      return null;
+    }
+    function pintarCobro() {
+      if (!AJ.descuento) {
+        cobro.desc = null;
+        cobro.abriendo = false;
+        cobro.pidiendo = false;
+      }
+      if (!AJ.propina) cobro.propina = false;
+      var d = cobro.desc ? cobro.desc.importe : 0;
+      var A = TOTAL - d;
+      var izq =
+        LINEAS.map(function (l) {
+          return (
+            '<div class="linea"><span class="cant">' +
+            l[0] +
+            '</span><span>' +
+            l[1] +
+            '</span><b>' +
+            eur(l[2]) +
+            '</b></div>'
+          );
+        }).join('') +
+        (cobro.desc
+          ? '<div class="linea" style="color:var(--t-info)"><span class="cant"></span><span>Descuento ' +
+            cobro.desc.texto +
+            ' · ' +
+            cobro.desc.motivo.toLowerCase() +
+            '</span><b>−' +
+            eur(d) +
+            '</b></div>'
+          : '') +
+        '<div class="linea" style="border-top:1px solid var(--t-borde);border-radius:0;margin-top:4px;padding-top:10px"><span class="cant"></span><span style="font-weight:800">Total</span><b style="font-size:17px">' +
+        eur(A) +
+        '</b></div>';
+      var der = '';
+      if (cobro.hecho) {
+        der =
+          '<div class="hecho-ok"><span class="ok-circulo">✓</span><span class="t-h">' +
+          cobro.hecho.titulo +
+          '</span><span class="t-suave">' +
+          cobro.hecho.texto +
+          '</span>' +
+          (cobro.hecho.cambio > 0
+            ? '<div class="cambio" style="width:100%"><span>Cambio</span><span class="grande">' +
+              eur(cobro.hecho.cambio) +
+              '</span></div>'
+            : '') +
+          '<button type="button" class="bt hueco-borde peq" id="r-otra">Volver a probar</button></div>';
+      } else {
+        der +=
+          '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="t-suave" style="font-weight:700">A cobrar</span><span class="grande">' +
+          eur(A) +
+          '</span></div>';
+        if (AJ.descuento && cobro.forma !== 'dividir') {
+          if (cobro.desc) {
+            der +=
+              '<div class="aviso a-info"><span>Descuento ' +
+              cobro.desc.texto +
+              ' · ' +
+              cobro.desc.motivo +
+              (cobro.desc.aprobado
+                ? '<br><span style="font-weight:600;opacity:.85">Lo aprobó ' +
+                  cobro.desc.aprobado +
+                  '</span>'
+                : '') +
+              '</span><span style="display:flex;gap:8px;align-items:center"><b>−' +
+              eur(d) +
+              '</b><button type="button" class="bt peq hueco-borde" id="r-quitar-desc">Quitar</button></span></div>';
+          } else if (cobro.pidiendo) {
+            var ap = quienAprueba();
+            der +=
+              '<div class="pedir"><b>Lo aprueba ' +
+              ap.puesto +
+              '</b><span class="t-suave t-peq">Descuento ' +
+              textoDe(cobro.cuanto) +
+              ' · ' +
+              cobro.motivo +
+              ' · −' +
+              eur(importeDe(cobro.cuanto)) +
+              '</span>' +
+              '<div class="puntos" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>' +
+              '<div class="teclado" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span class="vacia"></span><span>0</span><span>⌫</span></div>' +
+              '<div class="fila-bt" style="width:100%"><button type="button" class="bt hueco-borde" id="r-pedir-no">Sin descuento</button><button type="button" class="bt verde" id="r-pedir-si">' +
+              ap.quien +
+              ' teclea su PIN</button></div></div>';
+          } else if (cobro.abriendo) {
+            var opciones = [
+              [{ tipo: 'pct', valor: 5 }, '−5 %'],
+              [{ tipo: 'pct', valor: 10 }, '−10 %'],
+              [{ tipo: 'pct', valor: 15 }, '−15 %'],
+              [{ tipo: 'eur', valor: 300 }, 'Euros'],
+            ];
+            var listo = cobro.cuanto !== null && cobro.motivo !== null;
+            var ap2 = cobro.cuanto
+              ? quienAprueba()
+              : quien === 'sara'
+                ? { puesto: 'un encargado' }
+                : null;
+            der +=
+              '<div class="tarjeta-t">' +
+              '<div class="t-suave t-peq" style="font-weight:700">Cuánto</div>' +
+              '<div class="chips" role="group" aria-label="Cuánto">' +
+              opciones
+                .map(function (o, i) {
+                  var si =
+                    cobro.cuanto !== null &&
+                    cobro.cuanto.tipo === o[0].tipo &&
+                    (o[0].tipo === 'eur' || cobro.cuanto.valor === o[0].valor);
+                  return (
+                    '<button type="button" class="chip" data-r-cuanto="' +
+                    i +
+                    '" aria-pressed="' +
+                    si +
+                    '">' +
+                    o[1] +
+                    '</button>'
+                  );
+                })
+                .join('') +
+              '</div>' +
+              (cobro.cuanto && cobro.cuanto.tipo === 'eur'
+                ? '<label class="campo-t" for="r-desc-eur"><span>Euros</span><input id="r-desc-eur" inputmode="decimal" value="' +
+                  enCasilla(cobro.cuanto.valor) +
+                  '"></label>'
+                : '') +
+              '<div class="t-suave t-peq" style="font-weight:700">Por qué</div>' +
+              '<div class="chips" role="group" aria-label="Por qué">' +
+              MOTIVOS_DESC.map(function (m) {
+                return (
+                  '<button type="button" class="chip" data-r-motivo-d="' +
+                  m +
+                  '" aria-pressed="' +
+                  (cobro.motivo === m) +
+                  '">' +
+                  m +
+                  '</button>'
+                );
+              }).join('') +
+              '</div>' +
+              '<div class="fila-bt"><button type="button" class="bt hueco-borde" id="r-desc-no">Sin descuento</button><button type="button" class="bt naranja" id="r-desc-si"' +
+              (listo ? '' : ' disabled') +
+              '>' +
+              (ap2
+                ? 'Pedírselo a ' + ap2.puesto
+                : 'Descontar' + (cobro.cuanto ? ' −' + eur(importeDe(cobro.cuanto)) : '')) +
+              '</button></div></div>';
+          } else {
+            der +=
+              '<button type="button" class="bt peq hueco-borde" id="r-abrir-desc" style="justify-self:start">' +
+              ic('porciento', ' width="16" height="16"') +
+              'Descuento</button>';
+          }
+        }
+        var formas = [
+          ['efectivo', 'Efectivo'],
+          ['tarjeta', 'Tarjeta'],
+          ['dividir', 'Dividir'],
+        ];
+        der +=
+          '<div class="formas" role="group" aria-label="Forma de pago">' +
+          formas
+            .map(function (f) {
+              return (
+                '<button type="button" data-r-forma="' +
+                f[0] +
+                '" aria-pressed="' +
+                (cobro.forma === f[0]) +
+                '">' +
+                ic(f[0]) +
+                f[1] +
+                '</button>'
+              );
+            })
+            .join('') +
+          '</div>';
+        if (cobro.forma === 'efectivo') {
+          var bs = billetes(A);
+          if (cobro.te !== A && bs.indexOf(cobro.te) < 0) cobro.te = bs[0];
+          der +=
+            '<div class="t-suave t-peq" style="font-weight:700">Te da</div><div class="rapidos" role="group" aria-label="Lo que te da" style="grid-template-columns:repeat(4,minmax(0,1fr))">' +
+            '<button type="button" data-r-te="' +
+            A +
+            '" aria-pressed="' +
+            (cobro.te === A) +
+            '">Justo</button>' +
+            bs
+              .map(function (b) {
+                return (
+                  '<button type="button" data-r-te="' +
+                  b +
+                  '" aria-pressed="' +
+                  (cobro.te === b) +
+                  '">' +
+                  enCasilla(b) +
+                  '</button>'
+                );
+              })
+              .join('') +
+            '</div>';
+          var cambio = cobro.te - A;
+          if (cambio <= 0) cobro.propina = false;
+          der +=
+            cambio > 0
+              ? '<div class="cambio"><span>' +
+                (cobro.propina ? 'Propina' : 'Cambio') +
+                '</span><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><span class="grande">' +
+                eur(cambio) +
+                '</span>' +
+                (AJ.propina
+                  ? '<button type="button" class="bt peq ' +
+                    (cobro.propina ? 'hueco-borde' : 'verde') +
+                    '" id="r-propina">' +
+                    (cobro.propina ? 'Dar el cambio' : 'Quédate el cambio') +
+                    '</button>'
+                  : '') +
+                '</span></div>'
+              : '<div class="aviso a-gris" style="min-height:58px"><span>Justo, sin cambio</span></div>';
+          der +=
+            '<button type="button" class="bt naranja ancho" id="r-cobrar" style="min-height:60px;font-size:18px">Cobrar ' +
+            eur(A) +
+            '</button>';
+        } else if (cobro.forma === 'tarjeta') {
+          der +=
+            '<div class="tarjeta-t" style="justify-items:center;text-align:center;justify-content:center;flex-direction:column;align-items:center"><span class="t-suave">Cóbralo en el datáfono</span><span class="grande">' +
+            eur(A) +
+            '</span></div>' +
+            '<button type="button" class="bt naranja ancho" id="r-cobrar" style="min-height:60px;font-size:18px">Cobrado en el datáfono</button>';
+        } else {
+          der +=
+            '<div class="aviso a-gris"><span>Dividir, como ya funciona. Si hay un descuento puesto, cada parte sale ya rebajada.</span></div>';
+        }
+      }
+      $('#r-cobro').innerHTML =
+        '<div class="barra"><span class="local">IKATZ<small>Caja 1</small></span><span class="hueco"></span><span class="t-tenue t-peq" style="font-weight:700">Cobrar · Mesa 12 · 4 personas</span><button type="button" class="bt peq hueco-borde">Volver</button></div>' +
+        '<div class="cobro"><div class="cuenta">' +
+        izq +
+        '</div><div class="derecha">' +
+        der +
+        '</div></div>';
+      var notas = {
+        marcos:
+          'Marcos es jefe de sala: descuenta hasta el 10 % sin pedir nada. Con −15 %, lo aprueba el gerente con su PIN, ahí mismo.',
+        sara: 'Sara no puede descontar: lo pide y Marcos teclea su PIN ahí mismo. Una aprobación vale para una cosa, una vez (Anexo 3.4).',
+      };
+      $('#r-cobro-nota').textContent = AJ.descuento
+        ? notas[quien]
+        : 'Con «Dejar descontar» apagado, el botón no sale. Toca el interruptor en Ajustes (tramo 6).';
+      enganchar();
+      pintarPapel(A, d);
+    }
+    function enganchar() {
+      var c = $('#r-cobro');
+      function en(id, fn) {
+        var b = $('#' + id, c);
+        if (b) b.addEventListener('click', fn);
+      }
+      en('r-abrir-desc', function () {
+        cobro.abriendo = true;
+        pintarCobro();
+      });
+      en('r-desc-no', function () {
+        cobro.abriendo = false;
+        cobro.cuanto = null;
+        cobro.motivo = null;
+        pintarCobro();
+      });
+      en('r-pedir-no', function () {
+        cobro.pidiendo = false;
+        cobro.abriendo = false;
+        cobro.cuanto = null;
+        cobro.motivo = null;
+        pintarCobro();
+      });
+      function aplicar(aprobado) {
+        cobro.desc = {
+          texto: textoDe(cobro.cuanto),
+          importe: importeDe(cobro.cuanto),
+          motivo: cobro.motivo,
+          aprobado: aprobado,
+        };
+        cobro.abriendo = false;
+        cobro.pidiendo = false;
+        cobro.te = 4000;
+        cobro.propina = false;
+        pintarCobro();
+      }
+      en('r-desc-si', function () {
+        if (quienAprueba()) {
+          cobro.pidiendo = true;
+          cobro.abriendo = false;
+          pintarCobro();
+        } else aplicar(null);
+      });
+      en('r-pedir-si', function () {
+        aplicar(quienAprueba().quien);
+      });
+      en('r-quitar-desc', function () {
+        cobro.desc = null;
+        cobro.cuanto = null;
+        cobro.motivo = null;
+        cobro.propina = false;
+        pintarCobro();
+      });
+      en('r-propina', function () {
+        cobro.propina = !cobro.propina;
+        pintarCobro();
+      });
+      en('r-otra', function () {
+        reiniciarCobro();
+        pintarCobro();
+      });
+      en('r-cobrar', function () {
+        var A = TOTAL - (cobro.desc ? cobro.desc.importe : 0);
+        if (cobro.forma === 'efectivo') {
+          var sobra = cobro.te - A;
+          cobro.hecho = cobro.propina
+            ? {
+                titulo: 'Cobrado en efectivo',
+                texto: 'El cajón se ha abierto y ' + eur(sobra) + ' quedan apuntados como propina.',
+                cambio: 0,
+              }
+            : { titulo: 'Cobrado en efectivo', texto: 'El cajón se ha abierto.', cambio: sobra };
+        } else
+          cobro.hecho = {
+            titulo: 'Cobrado con tarjeta',
+            texto: 'El ticket ya está impreso.',
+            cambio: 0,
+          };
+        pintarCobro();
+      });
+      var opciones = [
+        { tipo: 'pct', valor: 5 },
+        { tipo: 'pct', valor: 10 },
+        { tipo: 'pct', valor: 15 },
+        { tipo: 'eur', valor: 300 },
+      ];
+      $$('[data-r-cuanto]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.cuanto = opciones[+b.dataset.rCuanto];
+          pintarCobro();
+        });
+      });
+      $$('[data-r-motivo-d]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.motivo = b.dataset.rMotivoD;
+          pintarCobro();
+        });
+      });
+      var ie = $('#r-desc-eur', c);
+      if (ie)
+        ie.addEventListener('change', function () {
+          cobro.cuanto = { tipo: 'eur', valor: Math.min(aCentimos(ie.value), TOTAL) };
+          pintarCobro();
+        });
+      $$('[data-r-forma]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.forma = b.dataset.rForma;
+          cobro.propina = false;
+          pintarCobro();
+        });
+      });
+      $$('[data-r-te]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cobro.te = +b.dataset.rTe;
+          cobro.propina = false;
+          pintarCobro();
+        });
+      });
+    }
+    function pintarPapel(A, d) {
+      // En sala, todo al 10 % (lo investigado, A11): la base y la cuota salen del total ya rebajado.
+      var base = Math.round(A / 1.1);
+      var cuota = A - base;
+      var pago = '';
+      if (cobro.forma === 'tarjeta')
+        pago = '<div class="f"><span>Tarjeta</span><span>' + eur(A) + '</span></div>';
+      else if (cobro.forma === 'efectivo') {
+        pago = '<div class="f"><span>Efectivo</span><span>' + eur(A) + '</span></div>';
+        if (!cobro.propina && cobro.te > A)
+          pago +=
+            '<div class="f"><span>Entregado ' +
+            eur(cobro.te) +
+            '</span><span>Cambio ' +
+            eur(cobro.te - A) +
+            '</span></div>';
+      }
+      $('#r-papel').innerHTML =
+        '<div class="papel">' +
+        '<div class="c grueso">IKATZ</div>' +
+        '<div class="c">Factura simplificada T-000412</div>' +
+        '<div class="c">23/11/2026 14:10 · Mesa 12 · ' +
+        (quien === 'sara' ? 'Sara' : 'Marcos') +
+        '</div><hr>' +
+        LINEAS.map(function (l) {
+          return (
+            '<div class="f"><span>' +
+            l[0] +
+            ' ' +
+            l[1] +
+            '</span><span>' +
+            enCasilla(l[2]) +
+            '</span></div>'
+          );
+        }).join('') +
+        (cobro.desc
+          ? '<div class="f nuevo"><span>Descuento ' +
+            cobro.desc.texto +
+            ' · ' +
+            cobro.desc.motivo.toLowerCase() +
+            '</span><span>−' +
+            enCasilla(d) +
+            '</span></div>'
+          : '') +
+        '<hr><div class="f grueso"><span>TOTAL</span><span>' +
+        eur(A) +
+        '</span></div>' +
+        '<div class="f' +
+        (cobro.desc ? ' nuevo' : '') +
+        '"><span>IVA 10 % · base ' +
+        enCasilla(base) +
+        '</span><span>' +
+        enCasilla(cuota) +
+        '</span></div>' +
+        pago +
+        '<hr><div class="qrs"><div style="text-align:center"><div class="qr"></div><small>VERI*FACTU</small></div><div style="text-align:center"><div class="qr"></div><small>Pide tu factura</small></div></div>' +
+        '</div>';
+    }
+    $$('[data-r-quien]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        quien = b.dataset.rQuien;
+        pulsar(b.parentNode, b);
+        reiniciarCobro();
+        pintarCobro();
+      });
+    });
+    pintarCobro();
+
+    // ── Contar billete a billete (la entrega y el cierre) ──────
+    var DEN = [5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5];
+    function nombreDen(d) {
+      return d >= 100 ? d / 100 + ' €' : '0,' + String(d).padStart(2, '0') + ' €';
+    }
+    function totalDe(c) {
+      return DEN.reduce(function (s, d) {
+        return s + d * (c[d] || 0);
+      }, 0);
+    }
+    function contador(raiz, cuentas, alCambiar) {
+      raiz.innerHTML =
+        '<div class="rejilla-den">' +
+        DEN.map(function (d) {
+          return (
+            '<div class="den" data-d="' +
+            d +
+            '"><span class="v">' +
+            nombreDen(d) +
+            '</span><span class="ctl"><button type="button" aria-label="Uno menos de ' +
+            nombreDen(d) +
+            '">−</button><input type="number" min="0" inputmode="numeric" aria-label="' +
+            nombreDen(d) +
+            '" value="' +
+            (cuentas[d] || 0) +
+            '"><button type="button" aria-label="Uno más de ' +
+            nombreDen(d) +
+            '">+</button></span><span class="sub">' +
+            eur(d * (cuentas[d] || 0)) +
+            '</span></div>'
+          );
+        }).join('') +
+        '</div>';
+      $$('.den', raiz).forEach(function (caja) {
+        var d = +caja.dataset.d;
+        var en = $('input', caja);
+        var bs = $$('button', caja);
+        function poner(n) {
+          cuentas[d] = Math.max(0, Math.min(9999, n | 0));
+          en.value = cuentas[d];
+          $('.sub', caja).textContent = eur(d * cuentas[d]);
+          alCambiar();
+        }
+        bs[0].addEventListener('click', function () {
+          poner((cuentas[d] || 0) - 1);
+        });
+        bs[1].addEventListener('click', function () {
+          poner((cuentas[d] || 0) + 1);
+        });
+        en.addEventListener('input', function () {
+          poner(parseInt(en.value || '0', 10));
+        });
+      });
+    }
+    function tono(dif) {
+      return dif === 0 ? 'a-bien' : Math.abs(dif) > 1000 ? 'a-mal' : 'a-aten';
+    }
+    function frase(dif, que) {
+      if (dif === 0) return '<span><b>' + que + '</b> · cuadra</span>';
+      return (
+        '<span><b>' +
+        que +
+        '</b> · ' +
+        (dif < 0 ? 'faltan' : 'sobran') +
+        '</span><b>' +
+        eur(Math.abs(dif)) +
+        '</b>'
+      );
+    }
+    function pasos(raiz, nombres, actual, activos) {
+      raiz.innerHTML = nombres
+        .map(function (n, i) {
+          var num = i + 1;
+          return (
+            '<button type="button"' +
+            (activos ? ' data-paso="' + num + '"' : ' tabindex="-1"') +
+            ' class="' +
+            (num < actual ? 'hecho' : num === actual ? 'si' : '') +
+            '"' +
+            (activos && num > actual ? ' disabled' : '') +
+            '>' +
+            num +
+            ' ' +
+            n +
+            '</button>'
+          );
+        })
+        .join('');
+    }
+
+    // ── 3 · Entregar la caja ───────────────────────────────────
+    var DEBERIA_ENT = 53410;
+    var ent;
+    function reiniciarEnt() {
+      ent = {
+        paso: 1,
+        aMano: false,
+        escrito: 53210,
+        cuentas: { 5000: 6, 2000: 7, 1000: 5, 500: 4, 200: 8, 100: 4, 50: 3, 20: 2, 10: 2, 5: 0 }, // 532,10 €
+        malPin: false,
+        motivo: null,
+        listo: false,
+      };
+    }
+    reiniciarEnt();
+    function contadoEnt() {
+      return ent.aMano ? ent.escrito : totalDe(ent.cuentas);
+    }
+    function pintarEnt() {
+      if (!AJ.total) ent.aMano = false;
+      pasos(
+        $('#r-ent-pasos'),
+        ['Contar', 'Quién la recibe', 'Listo'],
+        ent.listo ? 4 : ent.paso,
+        true,
+      );
+      $$('#r-ent-pasos [data-paso]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var n = +b.dataset.paso;
+          if (n <= ent.paso && !ent.listo) {
+            ent.paso = n;
+            pintarEnt();
+          }
+        });
+      });
+      var c = $('#r-ent');
+      var contado = contadoEnt();
+      if (ent.listo) {
+        c.innerHTML =
+          '<div class="hecho-ok"><span class="ok-circulo">✓</span><span class="t-h">Caja entregada</span><span class="t-suave">Ana ya cobra con ella. El arqueo de Marcos está en el Z y en Estook.</span><button type="button" class="bt hueco-borde peq" id="r-ent-otra">Volver a probar</button></div>';
+        $('#r-ent-otra', c).addEventListener('click', function () {
+          reiniciarEnt();
+          pintarEnt();
+        });
+        return;
+      }
+      if (ent.paso === 1) {
+        c.innerHTML =
+          '<div><div class="t-h">Cuenta lo que hay en el cajón</div><div class="t-suave t-peq">Lo que debería haber sale al final.</div></div>' +
+          (AJ.total
+            ? '<div class="chips" role="group" aria-label="Cómo contar"><button type="button" class="chip" data-r-ent-modo="b" aria-pressed="' +
+              !ent.aMano +
+              '">Billete a billete</button><button type="button" class="chip" data-r-ent-modo="t" aria-pressed="' +
+              ent.aMano +
+              '">Escribir el total</button></div>'
+            : '') +
+          (ent.aMano
+            ? '<label class="campo-t" for="r-ent-total" style="max-width:420px"><span>Total contado</span><input id="r-ent-total" inputmode="decimal" value="' +
+              enCasilla(ent.escrito) +
+              '"></label>'
+            : '<div class="contador" id="r-ent-contador"></div>') +
+          '<div class="suma"><div><span class="t-tenue t-peq">Contado</span><div class="cifra" id="r-ent-suma">' +
+          eur(contado) +
+          '</div></div><button type="button" class="bt naranja" id="r-ent-seguir">Seguir</button></div>';
+        if (!ent.aMano)
+          contador($('#r-ent-contador', c), ent.cuentas, function () {
+            $('#r-ent-suma', c).textContent = eur(totalDe(ent.cuentas));
+          });
+        var it = $('#r-ent-total', c);
+        if (it)
+          it.addEventListener('change', function () {
+            ent.escrito = aCentimos(it.value);
+            $('#r-ent-suma', c).textContent = eur(ent.escrito);
+          });
+        $$('[data-r-ent-modo]', c).forEach(function (b) {
+          b.addEventListener('click', function () {
+            ent.aMano = b.dataset.rEntModo === 't';
+            pintarEnt();
+          });
+        });
+        $('#r-ent-seguir', c).addEventListener('click', function () {
+          if (it) ent.escrito = aCentimos(it.value);
+          ent.paso = 2;
+          pintarEnt();
+        });
+        return;
+      }
+      if (ent.paso === 2) {
+        c.innerHTML =
+          '<div class="pedir" style="max-width:420px;width:100%;justify-self:center;margin:0 auto">' +
+          '<b style="font-size:18px">¿Quién se queda con la caja?</b><span class="t-suave t-peq">Que teclee su PIN quien la recibe.</span>' +
+          (ent.malPin
+            ? '<div class="aviso a-mal" style="justify-content:center;text-align:center">Sara no puede llevar la caja. Que teclee su PIN un encargado.</div>'
+            : '') +
+          '<div class="puntos" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>' +
+          '<div class="teclado" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span class="vacia"></span><span>0</span><span>⌫</span></div>' +
+          '<div class="fila-bt" style="width:100%"><button type="button" class="bt hueco-borde" id="r-ent-sara">Sara teclea el suyo</button><button type="button" class="bt verde" id="r-ent-ana">Ana teclea el suyo</button></div></div>';
+        $('#r-ent-sara', c).addEventListener('click', function () {
+          ent.malPin = true;
+          pintarEnt();
+        });
+        $('#r-ent-ana', c).addEventListener('click', function () {
+          ent.malPin = false;
+          ent.paso = 3;
+          pintarEnt();
+        });
+        return;
+      }
+      var dif = contado - DEBERIA_ENT;
+      c.innerHTML =
+        '<div class="tarjeta-t" style="max-width:460px"><div class="renglon"><span>Debería haber</span><b>' +
+        eur(DEBERIA_ENT) +
+        '</b></div><div class="renglon"><span>Ha contado Marcos</span><b>' +
+        eur(contado) +
+        '</b></div><div class="aviso ' +
+        tono(dif) +
+        '" style="width:100%">' +
+        frase(dif, 'Efectivo') +
+        '</div></div>' +
+        (dif !== 0
+          ? '<div class="t-suave t-peq" style="font-weight:700">¿Por qué? Si lo sabes (no hace falta)</div><div class="chips" role="group" aria-label="Motivo">' +
+            ['Error al dar el cambio', 'Propina sin apuntar', 'No se sabe']
+              .map(function (m) {
+                return (
+                  '<button type="button" class="chip" data-r-ent-motivo="' +
+                  m +
+                  '" aria-pressed="' +
+                  (ent.motivo === m) +
+                  '">' +
+                  m +
+                  '</button>'
+                );
+              })
+              .join('') +
+            '</div>'
+          : '') +
+        '<div class="aviso a-gris" style="max-width:460px"><span>Sigue abierta a nombre de <b>Ana</b>, con ' +
+        eur(contado) +
+        '.</span></div>' +
+        (Math.abs(dif) > 1000
+          ? '<p class="t-tenue t-peq">Pasa de 10 €: al gerente le llega el aviso.</p>'
+          : '<p class="t-tenue t-peq">No pasa de 10 €: no avisa a nadie. Se ve en Estook.</p>') +
+        '<div class="fila-bt" style="max-width:460px"><button type="button" class="bt hueco-borde" id="r-ent-imp">Imprimir el arqueo</button><button type="button" class="bt naranja" id="r-ent-listo">Listo</button></div>';
+      $$('[data-r-ent-motivo]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          ent.motivo = ent.motivo === b.dataset.rEntMotivo ? null : b.dataset.rEntMotivo;
+          pintarEnt();
+        });
+      });
+      $('#r-ent-imp', c).addEventListener('click', function () {
+        $('#r-ent-imp', c).textContent = 'Sale por la impresora';
+      });
+      $('#r-ent-listo', c).addEventListener('click', function () {
+        ent.listo = true;
+        pintarEnt();
+      });
+    }
+    pintarEnt();
+
+    // ── 4 · Cerrar: escribir el total y las propinas ───────────
+    var DEBERIA_CIE = 37040;
+    var TARJETA_DIA = 140220;
+    var PROPINAS_DIA = 1850;
+    var FICHADOS = [
+      ['Marcos', 'Sala'],
+      ['Sara', 'Sala'],
+      ['Ana', 'Sala'],
+      ['Iker', 'Cocina'],
+      ['Jon', 'Cocina'],
+    ];
+    var cie;
+    function reiniciarCie() {
+      cie = {
+        paso: 1,
+        aMano: true,
+        escrito: 35840,
+        cuentas: { 5000: 3, 2000: 6, 1000: 5, 500: 4, 200: 6, 100: 5, 50: 2, 20: 2, 10: 0, 5: 0 }, // 358,40 €
+        motivo: null,
+        marcados: [true, true, true, true, true],
+        repartidas: false,
+      };
+    }
+    reiniciarCie();
+    function contadoCie() {
+      return cie.aMano && AJ.total ? cie.escrito : totalDe(cie.cuentas);
+    }
+    function partes(total, n) {
+      // A partes iguales; los céntimos que sobran, a los primeros.
+      var base = Math.floor(total / n);
+      var resto = total - base * n;
+      var r = [];
+      for (var i = 0; i < n; i++) r.push(base + (i < resto ? 1 : 0));
+      return r;
+    }
+    function pintarCie() {
+      pasos(
+        $('#r-cie-pasos'),
+        ['Contar', 'El datáfono', 'Para mañana', 'El resultado'],
+        cie.paso,
+        false,
+      );
+      var c = $('#r-cie');
+      var contado = contadoCie();
+      var nota = $('#r-cie-nota');
+      if (cie.paso === 1) {
+        var aMano = cie.aMano && AJ.total;
+        c.innerHTML =
+          '<div class="aviso a-info"><span>Queda 1 mesa abierta: lo que cobre en efectivo irá a la caja de mañana.</span></div>' +
+          (AJ.total
+            ? '<div class="chips" role="group" aria-label="Cómo contar"><button type="button" class="chip" data-r-cie-modo="b" aria-pressed="' +
+              !aMano +
+              '">Billete a billete</button><button type="button" class="chip" data-r-cie-modo="t" aria-pressed="' +
+              aMano +
+              '">Escribir el total</button></div>'
+            : '') +
+          (aMano
+            ? '<label class="campo-t" for="r-cie-total" style="max-width:420px"><span>Total contado</span><input id="r-cie-total" inputmode="decimal" value="' +
+              enCasilla(cie.escrito) +
+              '"></label>'
+            : '<div class="contador" id="r-cie-contador"></div>') +
+          '<div class="suma"><div><span class="t-tenue t-peq">Contado</span><div class="cifra" id="r-cie-suma">' +
+          eur(contado) +
+          '</div></div><span class="t-tenue t-peq" style="max-width:240px">Lo que debería haber sale al final.</span><button type="button" class="bt naranja" id="r-cie-seguir">Seguir</button></div>';
+        if (!aMano)
+          contador($('#r-cie-contador', c), cie.cuentas, function () {
+            $('#r-cie-suma', c).textContent = eur(totalDe(cie.cuentas));
+          });
+        var it = $('#r-cie-total', c);
+        if (it)
+          it.addEventListener('change', function () {
+            cie.escrito = aCentimos(it.value);
+            $('#r-cie-suma', c).textContent = eur(cie.escrito);
+          });
+        $$('[data-r-cie-modo]', c).forEach(function (b) {
+          b.addEventListener('click', function () {
+            cie.aMano = b.dataset.rCieModo === 't';
+            pintarCie();
+          });
+        });
+        $('#r-cie-seguir', c).addEventListener('click', function () {
+          if (it) cie.escrito = aCentimos(it.value);
+          ponerCie(4);
+        });
+        nota.textContent = AJ.total
+          ? 'Sigue a ciegas: escribir el total no enseña lo que debería haber. Escribe 358,40 o cuenta billete a billete: los dos dan lo mismo.'
+          : 'Con «Contar escribiendo el total» apagado, solo billete a billete, como hoy.';
+        return;
+      }
+      var dif = contado - DEBERIA_CIE;
+      var difT = 0;
+      var html =
+        '<div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">' +
+        '<div class="tarjeta-t"><div class="renglon"><span>Debería haber</span><b>' +
+        eur(DEBERIA_CIE) +
+        '</b></div><div class="renglon"><span>Has contado</span><b>' +
+        eur(contado) +
+        '</b></div><div class="aviso ' +
+        tono(dif) +
+        '" style="width:100%">' +
+        frase(dif, 'Efectivo') +
+        '</div></div>' +
+        '<div class="tarjeta-t"><div class="renglon"><span>Con tarjeta, hoy en Estook</span><b>' +
+        eur(TARJETA_DIA) +
+        '</b></div><div class="renglon"><span>El datáfono</span><b>' +
+        eur(TARJETA_DIA) +
+        '</b></div><div class="aviso ' +
+        tono(difT) +
+        '" style="width:100%">' +
+        frase(difT, 'Tarjeta') +
+        '</div></div></div>';
+      if (dif !== 0)
+        html +=
+          '<div class="t-suave t-peq" style="font-weight:700">¿Por qué? Si lo sabes (no hace falta)</div><div class="chips" role="group" aria-label="Motivo de la diferencia">' +
+          ['Error al dar el cambio', 'Propina sin apuntar', 'No se sabe']
+            .map(function (m) {
+              return (
+                '<button type="button" class="chip" data-r-cie-motivo="' +
+                m +
+                '" aria-pressed="' +
+                (cie.motivo === m) +
+                '">' +
+                m +
+                '</button>'
+              );
+            })
+            .join('') +
+          '</div>';
+      if (AJ.propina) {
+        if (AJ.reparto) {
+          var n = cie.marcados.filter(Boolean).length;
+          var ps = n > 0 ? partes(PROPINAS_DIA, n) : [];
+          var k = 0;
+          html +=
+            '<div class="tarjeta-t" style="flex-direction:column;align-items:stretch">' +
+            '<div class="renglon fuerte"><span>Propinas en efectivo de hoy ' +
+            NUEVO +
+            '</span><b>' +
+            eur(PROPINAS_DIA) +
+            '</b></div>' +
+            '<span class="t-tenue t-peq">Entre los que han fichado hoy. Toca a alguien para quitarlo.</span>' +
+            '<div class="reparto">' +
+            FICHADOS.map(function (f, i) {
+              var si = cie.marcados[i];
+              var parte = si ? ps[k++] : 0;
+              return (
+                '<button type="button" data-r-fichado="' +
+                i +
+                '" aria-pressed="' +
+                si +
+                '"' +
+                (cie.repartidas ? ' disabled' : '') +
+                '><span class="marca-r">' +
+                (si ? ic('ok', ' width="14" height="14"') : '') +
+                '</span><span>' +
+                f[0] +
+                '<small>' +
+                f[1] +
+                '</small></span><b>' +
+                (si ? eur(parte) : '—') +
+                '</b></button>'
+              );
+            }).join('') +
+            '</div>' +
+            (cie.repartidas
+              ? '<div class="aviso a-bien"><span>Repartidas entre ' +
+                n +
+                '. Salen en el Z.</span></div>'
+              : '<button type="button" class="bt verde" id="r-repartir"' +
+                (n === 0 ? ' disabled' : '') +
+                '>Repartirlas</button>') +
+            '</div>';
+        } else {
+          html +=
+            '<div class="aviso a-gris"><span>Propinas en efectivo de hoy</span><b>' +
+            eur(PROPINAS_DIA) +
+            '</b></div>';
+        }
+      }
+      html +=
+        '<div class="tarjeta-t" style="max-width:460px"><div class="renglon"><span>Se queda para mañana</span><b>150,00 €</b></div><div class="renglon fuerte"><span>Retiras</span><b>' +
+        eur(contado - 15000) +
+        '</b></div>' +
+        (AJ.propina
+          ? '<span class="t-tenue t-peq">De ahí salen las propinas: ' +
+            eur(PROPINAS_DIA) +
+            '.</span>'
+          : '') +
+        '</div>' +
+        '<div class="fila-bt"><button type="button" class="bt hueco-borde" id="r-cie-z">Imprimir el Z</button><button type="button" class="bt naranja" id="r-cie-listo" style="flex-grow:2">Listo</button></div>' +
+        '<p class="t-tenue t-peq">A nombre de Ana, 23:58. ' +
+        (Math.abs(dif) > 1000
+          ? 'Pasa de 10 €: al gerente le llega el aviso (tramo 5).'
+          : 'No pasa de 10 €: no avisa a nadie.') +
+        '</p>';
+      c.innerHTML = html;
+      $$('[data-r-cie-motivo]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          cie.motivo = cie.motivo === b.dataset.rCieMotivo ? null : b.dataset.rCieMotivo;
+          pintarCie();
+        });
+      });
+      $$('[data-r-fichado]', c).forEach(function (b) {
+        b.addEventListener('click', function () {
+          var i = +b.dataset.rFichado;
+          cie.marcados[i] = !cie.marcados[i];
+          pintarCie();
+        });
+      });
+      var rp = $('#r-repartir', c);
+      if (rp)
+        rp.addEventListener('click', function () {
+          cie.repartidas = true;
+          pintarCie();
+        });
+      $('#r-cie-z', c).addEventListener('click', function () {
+        $('#r-cie-z', c).textContent = 'El Z sale por la impresora';
+      });
+      $('#r-cie-listo', c).addEventListener('click', function () {
+        reiniciarCie();
+        ponerCie(1);
+      });
+      nota.textContent = AJ.reparto
+        ? '18,50 € entre cinco: 3,70 € cada uno. Quita a Iker y a Jon y salen 6,17 €, 6,17 € y 6,16 €. Estook no da el dinero: apunta el reparto para el Z.'
+        : 'Con «Repartirlas al cerrar» apagado, solo se dice cuánto hay de propinas.';
+    }
+    function ponerCie(paso) {
+      cie.paso = paso;
+      pulsar($('[data-r-cierre="1"]').parentNode, $('[data-r-cierre="' + paso + '"]'));
+      pintarCie();
+    }
+    $$('[data-r-cierre]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        ponerCie(+b.dataset.rCierre);
+      });
+    });
+    pintarCie();
+
+    // ── 5 · En Estook: el día ──────────────────────────────────
+    function pintarDia() {
+      $('#r-estook-dia').innerHTML =
+        '<div class="tarjeta"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>El día entero</b><span class="pildora p-mal">Faltan 14,00 €</span></div>' +
+        '<div class="linea-z"><span>Cobrado<small>938,90 € en efectivo · 1.402,20 € con tarjeta</small></span><b>2.341,10 €</b></div>' +
+        '<div class="linea-z"><span>Tickets</span><b>74</b></div>' +
+        (AJ.descuento
+          ? '<div class="linea-z"><span>Descuentos ' +
+            NUEVO +
+            '<small>Marcos, 4,25 € · Sara, 3,00 €, lo aprobó Ana</small></span><b>2 · 7,25 €</b></div>'
+          : '') +
+        (AJ.propina
+          ? '<div class="linea-z"><span>Propinas en efectivo ' +
+            NUEVO +
+            '<small>' +
+            (AJ.reparto ? 'Repartidas entre 5 · 3,70 € cada uno' : 'Sin repartir en la caja') +
+            '</small></span><b>18,50 €</b></div>'
+          : '') +
+        '</div>' +
+        '<div class="tarjeta"><b>Caja 1 · con una entrega ' +
+        NUEVO +
+        '</b>' +
+        '<div class="tramo-dia"><span class="ini-app">MA</span><span><b>Marcos</b> · 12:02 a 17:30<small>Entregada a Ana · su arqueo</small></span><span class="pildora p-aten">Faltan 2,00 €</span></div>' +
+        '<div class="tramo-dia"><span class="ini-app">AN</span><span><b>Ana</b> · 17:30 a 23:58<small>Cerrada · su Z</small></span><span class="pildora p-mal">Faltan 12,00 €</span></div>' +
+        '</div>' +
+        '<div class="tarjeta"><b>Lo que salió del cajón</b>' +
+        '<div class="linea-z"><span>Un proveedor · el pan<small>Marcos, 13:40</small></span><b>−35,00 €</b></div>' +
+        '<div class="linea-z"><span>A la caja fuerte ' +
+        NUEVO +
+        '<small>Ana, 21:12 · tras el aviso</small></span><b>−700,00 €</b></div>' +
+        '</div>';
+    }
+    pintarDia();
+
+    // ── 6 · Ajustes ────────────────────────────────────────────
+    function inter(id, nombre, detalle, encendido, nuevo) {
+      return (
+        '<div class="ajuste"><span>' +
+        (nuevo
+          ? '<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' + nombre + NUEVO + '</span>'
+          : nombre) +
+        (detalle ? '<small>' + detalle + '</small>' : '') +
+        '</span><button type="button" class="interruptor"' +
+        (id ? ' data-r-aj="' + id + '"' : '') +
+        ' aria-pressed="' +
+        encendido +
+        '" aria-label="' +
+        nombre.replace(/<[^>]+>/g, '') +
+        '"></button></div>'
+      );
+    }
+    function pintarAjustes() {
+      $('#r-ajustes-rejilla').innerHTML =
+        '<section class="apartado"><h3>Abrir y cerrar</h3>' +
+        '<div class="ajuste columna"><span>Quién puede abrir y cerrar la caja</span><span class="segmentado-t" role="group" aria-label="Quién puede abrir y cerrar la caja"><button type="button" aria-pressed="true">Encargados</button><button type="button" aria-pressed="false">También camareros</button></span></div>' +
+        inter(null, 'Recuento obligatorio al abrir', 'Apagado: «Contar» o «Está correcto»', false) +
+        '<div class="renglon"><span>El fondo de siempre</span><b>150,00 €</b></div></section>' +
+        '<section class="apartado"><h3>Al contar el cajón</h3>' +
+        inter(null, 'Contar a ciegas', 'No se ve lo que debería haber hasta acabar', true) +
+        inter(
+          'total',
+          'Contar escribiendo el total',
+          'Al abrir, al entregar y al cerrar',
+          AJ.total,
+          true,
+        ) +
+        '</section>' +
+        '<section class="apartado"><h3>Propinas en efectivo ' +
+        NUEVO +
+        '</h3>' +
+        inter(
+          'propina',
+          '«Quédate el cambio» al cobrar',
+          'Se apunta en la caja, fuera del ticket',
+          AJ.propina,
+        ) +
+        inter(
+          'reparto',
+          'Repartirlas al cerrar',
+          'A partes iguales entre los que han fichado hoy',
+          AJ.reparto,
+        ) +
+        '</section>' +
+        '<section class="apartado"><h3>Descuentos al cobrar ' +
+        NUEVO +
+        '</h3>' +
+        inter('descuento', 'Dejar descontar', 'Apagado de fábrica', AJ.descuento) +
+        (AJ.descuento
+          ? '<div class="renglon"><span>El jefe de sala, hasta</span><b>10 %</b></div><p class="t-tenue t-peq">El gerente, sin límite. Los demás lo piden y lo aprueba un encargado con su PIN. Cada descuento sale en el Z con quién lo hizo.</p>'
+          : '<p class="t-suave t-peq">Para quitar euros o un % al cobrar, con su motivo. Si no descuentas nunca, déjalo apagado y no saldrá.</p>') +
+        '</section>' +
+        '<section class="apartado"><h3>Avisos ' +
+        NUEVO +
+        '</h3><div class="renglon"><span>Retirar, si el cajón pasa de</span><b>800,00 €</b></div><div class="renglon"><span>Al gerente, si falta o sobra más de</span><b>10,00 €</b></div></section>' +
+        '<section class="apartado"><h3>Formas de pago</h3><div class="ajuste"><span>Efectivo y tarjeta</span><b class="t-tenue t-peq">Siempre</b></div>' +
+        inter(null, 'Bizum', 'Al móvil del local. Estook solo lo apunta', false) +
+        inter(
+          null,
+          'Cheque restaurante',
+          'Pluxee, Edenred, Up… Al cerrar se cuentan aparte',
+          false,
+        ) +
+        '</section>' +
+        '<p class="t-tenue t-peq" style="grid-column:1/-1">En la maqueta, descontar, escribir el total y repartir vienen encendidos para que se vean arriba. En un local nuevo, apagados.</p>';
+      $$('[data-r-aj]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var k = b.dataset.rAj;
+          AJ[k] = !AJ[k];
+          pintarAjustes();
+          pintarX();
+          reiniciarCobro();
+          pintarCobro();
+          pintarEnt();
+          pintarCie();
+          pintarDia();
+        });
+      });
+    }
+    pintarAjustes();
   })();
 </script>

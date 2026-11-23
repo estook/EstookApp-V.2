@@ -104,11 +104,19 @@ export async function aprobarConElPin(
  * responsabilidad del cobro es de esa persona»). No cambia quién está dentro. El intento se guarda,
  * acierte o no, como al entrar (0068). Devuelve su id y su nombre.
  */
+/** Lo que se puede pedir a un PIN tecleado en la caja. */
+export type PermisoDelPin = 'accion.cobrar' | 'accion.llevar_la_caja' | 'accion.tomar_nota';
+
 export async function quienEsElPin(
   contexto: Contexto,
   pin: string,
-  permiso: 'accion.cobrar',
+  /**
+   * Lo que tiene que poder hacer: cobrar (0145), o llevar la caja para recibirla (E7, 0152). Con una
+   * lista, basta con uno: con «También camareros», recibe la caja también quien toma nota.
+   */
+  permiso: PermisoDelPin | readonly PermisoDelPin[],
 ): Promise<{ readonly personaId: string; readonly nombre: string }> {
+  const permisos: readonly PermisoDelPin[] = typeof permiso === 'string' ? [permiso] : permiso;
   const terminalId = contexto.sesion?.aparato?.terminalId ?? null;
   if (terminalId === null) {
     throw new FalloDeAplicacion('sin_permiso', {
@@ -142,17 +150,22 @@ export async function quienEsElPin(
   }
   const filas = await enNombreDelSistema(
     contexto,
-    () => contexto.sql<{ nivel: string; nombre: string }[]>`
-      select estook.nivel_de_permiso(${elPin.persona_id}::uuid, ${aparato.local_id}::uuid, ${permiso})::text
-               as nivel,
+    () => contexto.sql<{ puede: boolean; nombre: string }[]>`
+      select exists (
+               select 1 from unnest(${permisos as string[]}::text[]) as q(permiso)
+                where estook.nivel_de_permiso(${elPin.persona_id}::uuid, ${aparato.local_id}::uuid,
+                                              q.permiso)::text = 'ver_y_editar'
+             ) as puede,
              p.nombre
         from estook.persona p where p.id = ${elPin.persona_id}::uuid
     `,
   );
   const quien = filas[0];
-  if (quien?.nivel !== 'ver_y_editar') {
+  if (quien?.puede !== true) {
     throw new FalloDeAplicacion('sin_permiso', {
-      porque: 'Ese PIN no puede cobrar en este local.',
+      porque: permisos.includes('accion.cobrar')
+        ? 'Ese PIN no puede cobrar en este local.'
+        : 'Ese PIN no puede llevar la caja: que lo teclee un encargado.',
     });
   }
   await contexto.sql`select estook.anotar_intento_en_terminal(${terminalId}::uuid, true)`;

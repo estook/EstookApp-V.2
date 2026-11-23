@@ -6,7 +6,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { LoApruebaUnEncargado } from '../mesa/LoApruebaUnEncargado.tsx';
 import { eurosConSimbolo } from '../logica/texto.ts';
 import { AvisoDeLaCaja, ErrorDeLaCaja } from './AbrirCaja.tsx';
-import { deEurosACentimos } from './dinero.ts';
+import { deEurosACentimos, enLaCasilla } from './dinero.ts';
 import { idNuevo, pideEncargado, usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
 
 const PARA_QUE: readonly { readonly que: ParaQueSeAbre; readonly nombre: string }[] = [
@@ -20,15 +20,28 @@ const PARA_QUE: readonly { readonly que: ParaQueSeAbre; readonly nombre: string 
  * lo que no es una venta, que **siempre pregunta para qué**. Cambio (sin importe), sacar o meter
  * dinero con su para qué. Queda con quién, cuándo y por qué, y sale en el X y en el Z. Si quien está
  * no puede, lo aprueba un encargado con su PIN ahí mismo.
+ *
+ * **Desde «Retirar»** (E2, 0152) llega ya rellenado: sacar, «A la caja fuerte» y lo que se propone.
  */
-export function AbrirElCajon({ alAcabar }: { readonly alAcabar: () => void }) {
+export function AbrirElCajon({
+  alAcabar,
+  retirar = null,
+}: {
+  readonly alAcabar: () => void;
+  /** Lo que se propone sacar a la caja fuerte, si se llega desde el aviso de retirar. */
+  readonly retirar?: number | null;
+}) {
   const { yo, cliente } = usarSesion();
   const caja = usarLaCaja();
   const recargar = usarRecargarLaCaja();
   const [movimientoId, setMovimientoId] = useState(idNuevo);
   const [que, setQue] = useState<ParaQueSeAbre>('sacar');
-  const [importe, setImporte] = useState('');
-  const [motivo, setMotivo] = useState<string>('Un proveedor');
+  const [importe, setImporte] = useState(
+    retirar === null || retirar <= 0 ? '' : enLaCasilla(retirar),
+  );
+  const [motivo, setMotivo] = useState<string>(
+    retirar === null ? 'Un proveedor' : 'A la caja fuerte',
+  );
   const [nota, setNota] = useState('');
   const [ocupado, setOcupado] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);

@@ -1527,6 +1527,11 @@ export {
   PARA_QUE_SE_ABRE,
   MOTIVOS_PARA_SACAR,
   MOTIVOS_PARA_METER,
+  RETIRAR_DESDE_DE_FABRICA,
+  AVISAR_DESDE_DE_FABRICA,
+  loQueSeProponeRetirar,
+  avisaDelDescuadre,
+  repartirAPartesIguales,
 } from './caja.ts';
 export type {
   ElRecuento,

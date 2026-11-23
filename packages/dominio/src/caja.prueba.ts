@@ -14,6 +14,10 @@ import {
   nombreDeLaDenominacion,
   porQueNoSeCobra,
   sinLosCeros,
+  MOTIVOS_PARA_SACAR,
+  avisaDelDescuadre,
+  loQueSeProponeRetirar,
+  repartirAPartesIguales,
 } from './caja.ts';
 
 describe('la caja (0144)', () => {
@@ -169,5 +173,52 @@ describe('la caja (0144)', () => {
     expect(laLineaDeUnaParte('Mesa 12', 1, 4)).toBe(
       'Servicio de restauración · Mesa 12 · parte 1 de 4',
     );
+  });
+});
+
+describe('la caja, segunda parte (0152)', () => {
+  it('las propinas suman en lo que debería haber: están en el cajón', () => {
+    // El día de la maqueta: Ana recibe 532,10 €, cobra 316,30 € y le dejan 12,00 € de propinas.
+    expect(
+      loQueDeberiaHaber({
+        fondo: 53210,
+        efectivo: 31630,
+        metido: 0,
+        sacado: 0,
+        devuelto: 0,
+        propinas: 1200,
+      }),
+    ).toBe(86040);
+  });
+
+  it('propone retirar lo que pasa del fondo, en billetes de 50 €', () => {
+    expect(
+      loQueSeProponeRetirar({ enElCajon: 86040, fondoDeSiempre: 15000, fondoDeLaCaja: 53210 }),
+    ).toBe(70000);
+    // Sin fondo de siempre, el de la caja.
+    expect(
+      loQueSeProponeRetirar({ enElCajon: 86040, fondoDeSiempre: null, fondoDeLaCaja: 15000 }),
+    ).toBe(70000);
+    expect(
+      loQueSeProponeRetirar({ enElCajon: 10000, fondoDeSiempre: 15000, fondoDeLaCaja: 15000 }),
+    ).toBe(0);
+  });
+
+  it('avisa al gerente con más de la cifra, a favor o en contra; con la cifra justa, no', () => {
+    expect(avisaDelDescuadre(-1200, 1000)).toBe(true);
+    expect(avisaDelDescuadre(1001, 1000)).toBe(true);
+    expect(avisaDelDescuadre(-1000, 1000)).toBe(false);
+    expect(avisaDelDescuadre(-200, 1000)).toBe(false);
+  });
+
+  it('reparte a partes iguales y siempre suma el total', () => {
+    expect(repartirAPartesIguales(1850, 5)).toEqual([370, 370, 370, 370, 370]);
+    expect(repartirAPartesIguales(1850, 3)).toEqual([617, 617, 616]);
+    expect(repartirAPartesIguales(1, 3)).toEqual([1, 0, 0]);
+    expect(repartirAPartesIguales(1850, 0)).toEqual([]);
+  });
+
+  it('se puede sacar a la caja fuerte', () => {
+    expect(MOTIVOS_PARA_SACAR).toContain('A la caja fuerte');
   });
 });

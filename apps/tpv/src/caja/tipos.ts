@@ -12,6 +12,12 @@ export interface AjustesDeLaCaja {
   readonly fondoDeSiempre: number | null;
   readonly conBizum: boolean;
   readonly conCheque: boolean;
+  /** R3 · 2 · 1 (0152). Una API de antes no los dice: se toman los de fábrica. */
+  readonly contarEscribiendo?: boolean;
+  readonly propinaAlCobrar?: boolean;
+  readonly repartirPropinas?: boolean;
+  readonly retirarDesde?: number;
+  readonly avisarDesde?: number;
 }
 
 export interface LaCajaDelAparato {
@@ -30,10 +36,16 @@ export interface LaCajaDelAparato {
   readonly puedoLlevarla: boolean;
   readonly puedoAbrirElCajon: boolean;
   readonly mesasAbiertas: number;
+  /** «Retirar» (E2, 0152): el cajón pasa de la cifra. Una API de antes no lo dice. */
+  readonly retirar?: {
+    readonly propuesta: number;
+    readonly desde: number;
+    readonly vez: number;
+  } | null;
 }
 
 export interface UnMovimiento {
-  readonly tipo: 'cambio' | 'sacar' | 'meter' | 'devolucion';
+  readonly tipo: 'cambio' | 'sacar' | 'meter' | 'devolucion' | 'propina';
   readonly importe: number;
   readonly motivo: string | null;
   readonly nota: string | null;
@@ -56,6 +68,9 @@ export interface ComoVaLaCaja {
   readonly deberiaHaber: number;
   readonly cajonSinVenta: number;
   readonly movimientos: readonly UnMovimiento[];
+  /** E5 y E7 (0152). Una API de antes no los dice. */
+  readonly propinas?: number;
+  readonly recibidaDe?: string | null;
 }
 
 export interface CajaAbierta {
@@ -80,6 +95,34 @@ export interface LaCajaCerrada {
   readonly retiras: number;
   readonly diaCerrado: boolean;
   readonly quedanAbiertas: readonly string[];
+  /** Las propinas del día en este cajón y, si toca, entre quiénes repartirlas (E5, 0152). */
+  readonly propinas?: number;
+  readonly reparto?: {
+    readonly fichados: readonly UnFichado[];
+    readonly hecho: readonly UnaParte[];
+  } | null;
+}
+
+export interface UnFichado {
+  readonly personaId: string;
+  readonly nombre: string;
+  readonly puesto: string | null;
+}
+
+export interface UnaParte {
+  readonly nombre: string;
+  readonly importe: number;
+}
+
+/** Lo que contesta entregar la caja (E7, 0152). */
+export interface LaCajaEntregada {
+  readonly turnoId: string;
+  readonly nuevoTurnoId: string;
+  readonly deberiaHaber: number;
+  readonly contado: number;
+  readonly diferencia: number;
+  readonly recibe: string;
+  readonly yaEstaba: boolean;
 }
 
 export interface Cobrado {
@@ -90,6 +133,8 @@ export interface Cobrado {
   readonly queda: number;
   readonly liberada: boolean;
   readonly cajonAbierto: boolean;
+  /** La propina que se quedó (E5, 0152). */
+  readonly propina?: number;
 }
 
 /** Lo que contesta dejar el efectivo pendiente en la caja (0145). */

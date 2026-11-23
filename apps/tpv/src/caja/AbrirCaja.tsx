@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
-import { elTotalContado, enDinero } from '@estook/dominio';
+import { enDinero } from '@estook/dominio';
 import { Cargando, ErrorEnCristiano } from '@estook/ui';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { LoApruebaUnEncargado } from '../mesa/LoApruebaUnEncargado.tsx';
 import { eurosConSimbolo } from '../logica/texto.ts';
 import { irA } from '../navegar.ts';
-import { ContarElCajon } from './ContarElCajon.tsx';
+import { ContarOEscribir } from './ContarOEscribir.tsx';
+import { SIN_CONTAR, elTotalDe, loContadoParaLaApi, type LoContado } from './loContado.ts';
 import { idNuevo, pideEncargado, usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
-import type { CajaAbierta, ElRecuento } from './tipos.ts';
+import type { CajaAbierta } from './tipos.ts';
 
 /**
  * **Abrir caja** (Anexo 11.6; maqueta del 9-nov, tramo 1; Richi, 9-nov): se propone lo que se dejó
@@ -30,10 +31,10 @@ export function AbrirCaja({
   const recargar = usarRecargarLaCaja();
   const [turnoId] = useState(idNuevo);
   const [contando, setContando] = useState(false);
-  const [recuento, setRecuento] = useState<ElRecuento>({});
+  const [loContado, setLoContado] = useState<LoContado>(SIN_CONTAR);
   const [ocupado, setOcupado] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
-  const [aprobar, setAprobar] = useState<{ contado: ElRecuento | null } | null>(null);
+  const [aprobar, setAprobar] = useState<{ contado: LoContado | null } | null>(null);
   const [hecho, setHecho] = useState<CajaAbierta | null>(null);
 
   if (caja.isLoading || caja.data === undefined) {
@@ -68,14 +69,15 @@ export function AbrirCaja({
   const ultima = c.loDeLaUltimaVez;
   const siempreSeCuenta = c.ajustes.recuentoAlAbrir || ultima === null;
   const cuenta = contando || siempreSeCuenta;
-  const total = elTotalContado(recuento);
+  // Escrito mal, -1: no deja abrir.
+  const total = elTotalDe(loContado) ?? -1;
 
-  async function abrir(contado: ElRecuento | null, pin?: string): Promise<ErrorDeLaApi | null> {
+  async function abrir(contado: LoContado | null, pin?: string): Promise<ErrorDeLaApi | null> {
     setOcupado(true);
     setFallo(null);
     const respuesta = await cliente.ejecutar<CajaAbierta>('abrir_caja', {
       turno_id: turnoId,
-      ...(contado === null ? {} : { contado }),
+      ...(contado === null ? {} : loContadoParaLaApi(contado)),
       ...(pin === undefined ? {} : { pin_del_encargado: pin }),
     });
     setOcupado(false);
@@ -101,7 +103,7 @@ export function AbrirCaja({
         motivo={
           aprobar.contado === null
             ? `Con ${eurosConSimbolo(ultima ?? 0)}, lo que se quedó anoche`
-            : `Con ${eurosConSimbolo(elTotalContado(aprobar.contado))}, contados`
+            : `Con ${eurosConSimbolo(elTotalDe(aprobar.contado) ?? 0)}, contados`
         }
         alAprobar={(pin) => abrir(aprobar.contado, pin)}
         alCancelar={() => {
@@ -188,11 +190,15 @@ export function AbrirCaja({
         </div>
       ) : (
         <>
-          <ContarElCajon recuento={recuento} alCambiar={setRecuento} />
+          <ContarOEscribir
+            valor={loContado}
+            alCambiar={setLoContado}
+            sePuedeEscribir={c.ajustes.contarEscribiendo === true}
+          />
           <div className="flex flex-wrap items-center justify-between gap-e3 rounded-grande bg-superficie p-e4">
             <span className="text-texto-suave">En el cajón</span>
             <span className="text-cifra-media font-bold tabular-nums">
-              {eurosConSimbolo(total)}
+              {total < 0 ? '—' : eurosConSimbolo(total)}
             </span>
           </div>
           {ultima !== null && total > 0 && total !== ultima && (
@@ -209,10 +215,10 @@ export function AbrirCaja({
           <button
             type="button"
             disabled={ocupado || total <= 0}
-            onClick={() => void abrir(recuento)}
+            onClick={() => void abrir(loContado)}
             className="min-h-toque-cocina rounded-grande bg-bien text-seccion font-bold text-fondo disabled:opacity-60"
           >
-            {ocupado ? 'Abriendo…' : `Abrir caja con ${eurosConSimbolo(total)}`}
+            {ocupado ? 'Abriendo…' : `Abrir caja con ${eurosConSimbolo(Math.max(0, total))}`}
           </button>
         </>
       )}

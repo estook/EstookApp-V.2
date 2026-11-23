@@ -742,8 +742,10 @@ entregas:
   para ver. Las pruebas de arriba que le tocan, en `la-caja.prueba.ts`: el mismo cobro dos veces
   cobra una; la cuenta que cambió no se cobra a ciegas; dividir en tres suma lo mismo; y el arqueo
   cuadra al céntimo.
-- **R3 · 2**: el aviso de retirar, el aviso del descuadre, las propinas, escribir el total al
-  contar, entregar la caja a otro encargado y los descuentos al cobrar.
+- **R3 · 2 · 1** ([0152](decisiones/0152-r3-2-1-la-caja-segunda-parte.md), migración 0124): el aviso de
+  retirar, el aviso del descuadre al gerente, las propinas con su reparto, escribir el total al contar y
+  entregar la caja a otro sin cerrar el día. Sus pruebas, en `la-caja-segunda-parte.prueba.ts`.
+- **R3 · 2 · 2**: los descuentos al cobrar, con la maqueta corregida el 23-nov.
 
 **Sin internet, en las apps nativas** (Richi, 11-nov; [0146](decisiones/0146-la-reorganizacion-del-11-nov.md),
 3.3): no se interrumpe la facturación; lo cobrado y sus registros se guardan **en la máquina** y se

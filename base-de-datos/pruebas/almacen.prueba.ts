@@ -815,6 +815,7 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'es_la_pantalla_del_local',
       'es_una_caja_viva',
       'esta_en_linea',
+      'fichados_del_dia',
       'fichados_en_el_aparato',
       'guardar_la_empresa',
       'han_fichado_la_salida',

@@ -5,9 +5,9 @@ import {
   MOTIVOS_DE_LA_DIFERENCIA,
   NOMBRE_DEL_MOTIVO_DE_LA_DIFERENCIA,
   comoCuadra,
-  elTotalContado,
   enDinero,
   loQueSeProponeParaManana,
+  repartirAPartesIguales,
   type MotivoDeLaDiferencia,
 } from '@estook/dominio';
 import { Cargando, ErrorEnCristiano } from '@estook/ui';
@@ -15,11 +15,12 @@ import { usarSesion } from '../sesion/Sesion.tsx';
 import { FalloDeLaSala } from '../ganchos/usarLaSala.ts';
 import { LoApruebaUnEncargado } from '../mesa/LoApruebaUnEncargado.tsx';
 import { eurosConSimbolo } from '../logica/texto.ts';
-import { ContarElCajon } from './ContarElCajon.tsx';
+import { ContarOEscribir } from './ContarOEscribir.tsx';
+import { SIN_CONTAR, elTotalDe, loContadoParaLaApi, type LoContado } from './loContado.ts';
 import { AvisoDeLaCaja, ErrorDeLaCaja } from './AbrirCaja.tsx';
 import { deEurosACentimos, enLaCasilla } from './dinero.ts';
 import { pideEncargado, usarLaCaja, usarRecargarLaCaja } from '../ganchos/usarLaCaja.ts';
-import type { ComoVaLaCaja, ElRecuento, LaCajaCerrada } from './tipos.ts';
+import type { ComoVaLaCaja, LaCajaCerrada, UnaParte } from './tipos.ts';
 
 type Paso = 1 | 2;
 const LOS_PASOS = ['Contar', 'Para mañana', 'El resultado'] as const;
@@ -31,13 +32,16 @@ const LOS_PASOS = ['Contar', 'Para mañana', 'El resultado'] as const;
  * con pagos integrados lo sabe el propio aparato. **La diferencia se ve con la caja ya cerrada**: así nadie vuelve a contar
  * hasta cuadrar. No bloquea nada y queda a nombre de quien cierra; después, un motivo de un toque si
  * se sabe, e «Imprimir el Z».
+ *
+ * **R3 · 2 · 1** (0152): se cuenta también escribiendo el total, si el local lo deja (E6); y el
+ * resultado dice las propinas del día y, si el local las reparte, entre quiénes (E5).
  */
 export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
   const { yo, cliente } = usarSesion();
   const caja = usarLaCaja();
   const recargar = usarRecargarLaCaja();
   const [paso, setPaso] = useState<Paso>(1);
-  const [recuento, setRecuento] = useState<ElRecuento>({});
+  const [loContado, setLoContado] = useState<LoContado>(SIN_CONTAR);
   const [manana, setManana] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
@@ -73,11 +77,12 @@ export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
     );
   }
 
-  const contado = elTotalContado(recuento);
+  // Escrito mal, -1: no deja seguir.
+  const contado = elTotalDe(loContado) ?? -1;
   const propuesto = loQueSeProponeParaManana({
     fondoDeSiempre: c.ajustes.fondoDeSiempre,
     loDeLaUltimaVez: abierta.fondo,
-    contado,
+    contado: Math.max(0, contado),
   });
   const paraManana = manana === null ? propuesto : (deEurosACentimos(manana) ?? -1);
 
@@ -87,7 +92,7 @@ export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
     setFallo(null);
     const respuesta = await cliente.ejecutar<LaCajaCerrada>('cerrar_caja', {
       turno_id: abierta.turnoId,
-      contado: recuento,
+      ...loContadoParaLaApi(loContado),
       datafono: null,
       para_manana: paraManana,
       ...(pin === undefined ? {} : { pin_del_encargado: pin }),
@@ -163,12 +168,16 @@ export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
               : lo que cobren en efectivo irá a la caja de mañana.
             </p>
           )}
-          <ContarElCajon recuento={recuento} alCambiar={setRecuento} />
+          <ContarOEscribir
+            valor={loContado}
+            alCambiar={setLoContado}
+            sePuedeEscribir={c.ajustes.contarEscribiendo === true}
+          />
           <div className="flex flex-wrap items-center justify-between gap-e3 rounded-grande bg-superficie p-e4">
             <div className="flex flex-col">
               <span className="text-secundario text-texto-tenue">Contado</span>
               <span className="text-cifra-media font-bold tabular-nums">
-                {eurosConSimbolo(contado)}
+                {contado < 0 ? '—' : eurosConSimbolo(contado)}
               </span>
             </div>
             <span className="max-w-[16rem] text-secundario text-texto-tenue">
@@ -180,10 +189,11 @@ export function CerrarCaja({ alAcabar }: { readonly alAcabar: () => void }) {
             </span>
             <button
               type="button"
+              disabled={contado < 0}
               onClick={() => {
                 setPaso(2);
               }}
-              className="min-h-toque-cocina rounded-grande bg-naranja px-e6 text-seccion font-bold text-sobre-naranja"
+              className="min-h-toque-cocina rounded-grande bg-naranja px-e6 text-seccion font-bold text-sobre-naranja disabled:opacity-50"
             >
               Seguir
             </button>
@@ -326,11 +336,20 @@ function ElResultado({
         </div>
       )}
 
+      {(cerrada.propinas ?? 0) > 0 && (
+        <LasPropinas cerrada={cerrada} propinas={cerrada.propinas ?? 0} />
+      )}
+
       <section className="flex flex-col gap-e2 rounded-grande border border-borde bg-superficie p-e4">
         <Renglon que="Se queda para mañana" cuanto={cerrada.paraManana} />
         <div className="border-t border-borde pt-e2">
           <Renglon que="Retiras" cuanto={cerrada.retiras} fuerte />
         </div>
+        {(cerrada.propinas ?? 0) > 0 && (
+          <span className="text-secundario text-texto-tenue">
+            De ahí salen las propinas: {eurosConSimbolo(cerrada.propinas ?? 0)}.
+          </span>
+        )}
       </section>
 
       <p className="text-secundario text-texto-suave">
@@ -358,6 +377,136 @@ function ElResultado({
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * **Las propinas del día** (E5, 0152; maqueta corregida del 23-nov): cuánto hay y, si el local las
+ * reparte, entre los que han fichado hoy, sala y cocina (Richi, 23-nov). Salen todos marcados y se quita
+ * a alguien con un toque. Estook no da el dinero: apunta el reparto para el Z.
+ */
+function LasPropinas({
+  cerrada,
+  propinas,
+}: {
+  readonly cerrada: LaCajaCerrada;
+  readonly propinas: number;
+}) {
+  const { cliente } = usarSesion();
+  const reparto = cerrada.reparto ?? null;
+  const [quitados, setQuitados] = useState<ReadonlySet<string>>(new Set());
+  const [hecho, setHecho] = useState<readonly UnaParte[]>(reparto?.hecho ?? []);
+  const [ocupado, setOcupado] = useState(false);
+  const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
+
+  if (reparto === null || (reparto.fichados.length === 0 && hecho.length === 0)) {
+    return (
+      <p className="flex justify-between rounded-grande bg-superficie p-e3 font-bold">
+        <span className="text-texto-suave">Propinas en efectivo de hoy</span>
+        <span className="tabular-nums">{eurosConSimbolo(propinas)}</span>
+      </p>
+    );
+  }
+  const entre = reparto.fichados.filter((f) => !quitados.has(f.personaId));
+  const partes = repartirAPartesIguales(propinas, entre.length);
+
+  async function repartir() {
+    setOcupado(true);
+    setFallo(null);
+    const r = await cliente.ejecutar<{ reparto: readonly UnaParte[] }>('repartir_las_propinas', {
+      turno_id: cerrada.turnoId,
+      personas: entre.map((f) => f.personaId),
+    });
+    setOcupado(false);
+    if (r.ok) setHecho(r.datos.reparto);
+    else setFallo(r.error);
+  }
+
+  return (
+    <section
+      aria-label="Las propinas"
+      className="flex flex-col gap-e3 rounded-grande border border-borde bg-superficie p-e4"
+    >
+      <div className="flex items-baseline justify-between gap-e3">
+        <span className="font-bold">Propinas en efectivo de hoy</span>
+        <span className="font-bold tabular-nums">{eurosConSimbolo(propinas)}</span>
+      </div>
+      {hecho.length > 0 ? (
+        <>
+          <ul className="flex flex-col gap-e1">
+            {hecho.map((p) => (
+              <li key={p.nombre} className="flex justify-between">
+                <span>{p.nombre}</span>
+                <span className="font-bold tabular-nums">{eurosConSimbolo(p.importe)}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="rounded-grande bg-bien-suave p-e3 font-bold text-bien">
+            Repartidas entre {hecho.length}. Salen en el Z.
+          </p>
+        </>
+      ) : (
+        <>
+          <span className="text-secundario text-texto-tenue">
+            Entre los que han fichado hoy. Toca a alguien para quitarlo.
+          </span>
+          <ul className="flex flex-col gap-e2">
+            {reparto.fichados.map((f) => {
+              const dentro = !quitados.has(f.personaId);
+              const parte = dentro ? (partes[entre.indexOf(f)] ?? 0) : null;
+              return (
+                <li key={f.personaId}>
+                  <button
+                    type="button"
+                    aria-pressed={dentro}
+                    onClick={() => {
+                      setQuitados((q) => {
+                        const n = new Set(q);
+                        if (n.has(f.personaId)) n.delete(f.personaId);
+                        else n.add(f.personaId);
+                        return n;
+                      });
+                    }}
+                    className={`grid min-h-toque w-full grid-cols-[1.75rem_1fr_auto] items-center gap-e3 rounded-grande border-2 border-borde px-e3 text-left font-bold ${
+                      dentro ? '' : 'opacity-60'
+                    }`}
+                  >
+                    <span
+                      aria-hidden
+                      className={`flex size-6 items-center justify-center rounded-chico border-2 ${
+                        dentro ? 'border-bien bg-bien text-fondo' : 'border-borde'
+                      }`}
+                    >
+                      {dentro ? '✓' : ''}
+                    </span>
+                    <span>
+                      {f.nombre}
+                      {f.puesto !== null && (
+                        <span className="ml-e2 text-secundario font-normal text-texto-tenue">
+                          {f.puesto}
+                        </span>
+                      )}
+                    </span>
+                    <span className="tabular-nums">
+                      {parte === null ? '—' : eurosConSimbolo(parte)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {fallo !== null && <ErrorEnCristiano error={fallo} />}
+          <button
+            type="button"
+            disabled={ocupado || entre.length === 0}
+            onClick={() => void repartir()}
+            className="min-h-toque-cocina rounded-grande bg-bien text-seccion font-bold text-fondo disabled:opacity-50"
+          >
+            {ocupado ? 'Repartiendo…' : 'Repartirlas'}
+          </button>
+        </>
+      )}
+    </section>
   );
 }
 

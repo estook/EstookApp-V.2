@@ -5,7 +5,7 @@ import { usarLaCaja } from '../ganchos/usarLaCaja.ts';
 
 /**
  * **La caja, arriba en la sala** (Anexo 11.5; maqueta del 9-nov, tramo 3): un solo botón, verde con
- * la caja abierta; dentro, abrir el cajón, «Cómo va» y cerrar caja. Con la caja sin abrir, «Abrir
+ * la caja abierta; dentro, abrir el cajón, «Cómo va», entregar la caja (0152) y cerrar caja. Con la caja sin abrir, «Abrir
  * caja»; con la de ayer abierta, en ámbar, para cerrarla. Solo en la caja: un comandero no tiene
  * cajón.
  */
@@ -103,6 +103,15 @@ export function BotonDeLaCaja() {
               Cómo va
             </button>
           )}
+          {/* El cambio de turno sin cerrar (E7, 0152): quien la recibe teclea su PIN. */}
+          <button
+            type="button"
+            role="menuitem"
+            onClick={ir('caja/entregar')}
+            className="min-h-toque-cocina rounded-grande bg-charcoal font-bold"
+          >
+            Entregar la caja
+          </button>
           <button
             type="button"
             role="menuitem"

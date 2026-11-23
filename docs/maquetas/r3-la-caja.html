@@ -2538,7 +2538,7 @@
         <h2>Entregar la caja · E7</h2>
         <p>
           El cambio de turno sin cerrar: quien la deja cuenta a ciegas, quien la recibe teclea su
-          PIN y la caja sigue abierta a su nombre, con lo contado. El datáfono, solo por la noche.
+          PIN y la caja sigue abierta a su nombre, con lo contado. La tarjeta no se cuenta.
         </p>
       </header>
       <div class="lienzo">
@@ -2571,8 +2571,9 @@
         <span class="n">4</span>
         <h2>Cerrar · escribir el total (E6) y repartir las propinas (E5)</h2>
         <p>
-          Los cuatro pasos de siempre. En el primero, «Escribir el total» si el local lo enciende;
-          en el último, las propinas del día y entre quién se reparten.
+          Los tres pasos de siempre (la tarjeta no se cuenta, 11-nov). En el primero, «Escribir el
+          total» si el local lo enciende; en el último, las propinas del día y entre quién se
+          reparten.
         </p>
       </header>
       <div class="lienzo">
@@ -2581,7 +2582,7 @@
             Cerrar caja · Caja 1 · 23:58
             <span class="segmentado" role="group" aria-label="Qué paso se ve">
               <button type="button" data-r-cierre="1" aria-pressed="true">1 · Contar</button>
-              <button type="button" data-r-cierre="4" aria-pressed="false">4 · El resultado</button>
+              <button type="button" data-r-cierre="3" aria-pressed="false">3 · El resultado</button>
             </span>
           </div>
           <div class="tpv">
@@ -6567,12 +6568,7 @@
       return r;
     }
     function pintarCie() {
-      pasos(
-        $('#r-cie-pasos'),
-        ['Contar', 'El datáfono', 'Para mañana', 'El resultado'],
-        cie.paso,
-        false,
-      );
+      pasos($('#r-cie-pasos'), ['Contar', 'Para mañana', 'El resultado'], cie.paso, false);
       var c = $('#r-cie');
       var contado = contadoCie();
       var nota = $('#r-cie-nota');
@@ -6613,7 +6609,7 @@
         });
         $('#r-cie-seguir', c).addEventListener('click', function () {
           if (it) cie.escrito = aCentimos(it.value);
-          ponerCie(4);
+          ponerCie(3);
         });
         nota.textContent = AJ.total
           ? 'Sigue a ciegas: escribir el total no enseña lo que debería haber. Escribe 358,40 o cuenta billete a billete: los dos dan lo mismo.'
@@ -6621,7 +6617,6 @@
         return;
       }
       var dif = contado - DEBERIA_CIE;
-      var difT = 0;
       var html =
         '<div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">' +
         '<div class="tarjeta-t"><div class="renglon"><span>Debería haber</span><b>' +
@@ -6633,15 +6628,9 @@
         '" style="width:100%">' +
         frase(dif, 'Efectivo') +
         '</div></div>' +
-        '<div class="tarjeta-t"><div class="renglon"><span>Con tarjeta, hoy en Estook</span><b>' +
+        '<div class="tarjeta-t"><div class="renglon"><span>Con tarjeta</span><b>' +
         eur(TARJETA_DIA) +
-        '</b></div><div class="renglon"><span>El datáfono</span><b>' +
-        eur(TARJETA_DIA) +
-        '</b></div><div class="aviso ' +
-        tono(difT) +
-        '" style="width:100%">' +
-        frase(difT, 'Tarjeta') +
-        '</div></div></div>';
+        '</b></div></div></div>';
       if (dif !== 0)
         html +=
           '<div class="t-suave t-peq" style="font-weight:700">¿Por qué? Si lo sabes (no hace falta)</div><div class="chips" role="group" aria-label="Motivo de la diferencia">' +
@@ -6808,7 +6797,10 @@
       return (
         '<div class="ajuste"><span>' +
         (nuevo
-          ? '<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' + nombre + NUEVO + '</span>'
+          ? '<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+            nombre +
+            NUEVO +
+            '</span>'
           : nombre) +
         (detalle ? '<small>' + detalle + '</small>' : '') +
         '</span><button type="button" class="interruptor"' +

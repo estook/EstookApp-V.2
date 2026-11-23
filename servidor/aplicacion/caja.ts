@@ -1,11 +1,16 @@
 import {
+  AVISAR_DESDE_DE_FABRICA,
+  RETIRAR_DESDE_DE_FABRICA,
   abrirElCajonEnPapel,
   laCajaEnPapel,
+  laDiferenciaEnTexto,
   lasFormasEncendidas,
   loQueDeberiaHaber,
   type FormaDePago,
   type PapelCompuesto,
 } from '@estook/dominio';
+import { apuntarUnFallo } from '../infraestructura/fallos.ts';
+import { avisar, losQueLoQuieren, quienesPuedenRecibir } from './avisos.ts';
 import { FalloDeAplicacion, type Contexto } from './contrato.ts';
 import { enNombreDelSistema } from './pago.ts';
 import {
@@ -128,7 +133,7 @@ export async function loDeLaUltimaVez(contexto: Contexto, cajonId: string): Prom
 // ── Lo que lleva una caja ──────────────────────────────────────────────────────────
 
 export interface UnMovimientoDeLaCaja {
-  readonly tipo: 'cambio' | 'sacar' | 'meter' | 'devolucion';
+  readonly tipo: 'cambio' | 'sacar' | 'meter' | 'devolucion' | 'propina';
   readonly importe: number;
   readonly motivo: string | null;
   readonly nota: string | null;
@@ -146,13 +151,16 @@ export interface LoQueLlevaLaCaja {
   readonly metido: number;
   readonly sacado: number;
   readonly devuelto: number;
+  /** Las propinas en efectivo que se han quedado en el cajón (E5, 0152). */
+  readonly propinas: number;
   readonly cajonSinVenta: number;
+  /** Lo que ha movido el cajón, **sin las propinas**: esas van en una línea, no una por cobro. */
   readonly movimientos: readonly UnMovimientoDeLaCaja[];
 }
 
 /**
- * **Lo que lleva una caja**: lo cobrado por forma de pago (del cobro de cada ticket), los tickets y lo
- * que ha movido el cajón. Es lo que dice el X, y lo que se congela en el Z al cerrarla.
+ * **Lo que lleva una caja**: lo cobrado por forma de pago (del cobro de cada ticket), los tickets, lo
+ * que ha movido el cajón y las propinas. Es lo que dice el X, y lo que se congela en el Z al cerrarla.
  */
 export async function loQueLlevaLaCaja(
   contexto: Contexto,
@@ -202,12 +210,15 @@ export async function loQueLlevaLaCaja(
     metido: deTipo('meter'),
     sacado: deTipo('sacar'),
     devuelto: deTipo('devolucion'),
+    propinas: deTipo('propina'),
     cajonSinVenta: movimientos.filter((m) => m.tipo === 'cambio').length,
-    movimientos: movimientos.map((m) => ({
-      ...m,
-      quien: m.quien.trim().split(/\s+/)[0] ?? m.quien,
-      aprobado: m.aprobado === null ? null : (m.aprobado.trim().split(/\s+/)[0] ?? m.aprobado),
-    })),
+    movimientos: movimientos
+      .filter((m) => m.tipo !== 'propina')
+      .map((m) => ({
+        ...m,
+        quien: m.quien.trim().split(/\s+/)[0] ?? m.quien,
+        aprobado: m.aprobado === null ? null : (m.aprobado.trim().split(/\s+/)[0] ?? m.aprobado),
+      })),
   };
 }
 
@@ -219,6 +230,7 @@ export function loQueDeberiaHaberEn(fondo: number, lleva: LoQueLlevaLaCaja): num
     metido: lleva.metido,
     sacado: lleva.sacado,
     devuelto: lleva.devuelto,
+    propinas: lleva.propinas,
   });
 }
 
@@ -231,6 +243,16 @@ export interface LosAjustesDeLaCaja {
   readonly fondoDeSiempre: number | null;
   readonly conBizum: boolean;
   readonly conCheque: boolean;
+  /** E6: además de billete a billete, escribir el total. */
+  readonly contarEscribiendo: boolean;
+  /** E5: «Quédate el cambio» al cobrar en efectivo. */
+  readonly propinaAlCobrar: boolean;
+  /** E5: repartir las propinas al cerrar. */
+  readonly repartirPropinas: boolean;
+  /** E2: desde cuánto en el cajón sale «Retirar». */
+  readonly retirarDesde: number;
+  /** E3: desde cuánto de diferencia se avisa al gerente. */
+  readonly avisarDesde: number;
 }
 
 export const AJUSTES_DE_FABRICA: LosAjustesDeLaCaja = {
@@ -240,6 +262,11 @@ export const AJUSTES_DE_FABRICA: LosAjustesDeLaCaja = {
   fondoDeSiempre: null,
   conBizum: false,
   conCheque: false,
+  contarEscribiendo: false,
+  propinaAlCobrar: true,
+  repartirPropinas: false,
+  retirarDesde: RETIRAR_DESDE_DE_FABRICA,
+  avisarDesde: AVISAR_DESDE_DE_FABRICA,
 };
 
 /** Los ajustes de la caja de un local, o los de fábrica. Los lee también quien cobra. */
@@ -257,9 +284,15 @@ export async function losAjustesDeLaCaja(
         fondo_de_siempre: number | null;
         con_bizum: boolean;
         con_cheque: boolean;
+        contar_escribiendo: boolean;
+        propina_al_cobrar: boolean;
+        repartir_propinas: boolean;
+        retirar_desde: number;
+        avisar_desde: number;
       }[]
     >`
-      select caja_la_abren, recuento_al_abrir, contar_a_ciegas, fondo_de_siempre, con_bizum, con_cheque
+      select caja_la_abren, recuento_al_abrir, contar_a_ciegas, fondo_de_siempre, con_bizum, con_cheque,
+             contar_escribiendo, propina_al_cobrar, repartir_propinas, retirar_desde, avisar_desde
         from estook.ajustes_del_tpv where local_id = ${localId}::uuid
     `,
   );
@@ -272,6 +305,11 @@ export async function losAjustesDeLaCaja(
     fondoDeSiempre: f.fondo_de_siempre,
     conBizum: f.con_bizum,
     conCheque: f.con_cheque,
+    contarEscribiendo: f.contar_escribiendo,
+    propinaAlCobrar: f.propina_al_cobrar,
+    repartirPropinas: f.repartir_propinas,
+    retirarDesde: f.retirar_desde,
+    avisarDesde: f.avisar_desde,
   };
 }
 
@@ -390,7 +428,9 @@ export function elMovimientoEnTexto(m: UnMovimientoDeLaCaja): string {
         ? 'Meter'
         : m.tipo === 'devolucion'
           ? 'Devuelto'
-          : 'Cajón para cambio';
+          : m.tipo === 'propina'
+            ? 'Propina'
+            : 'Cajón para cambio';
   return [que, m.motivo, m.nota].filter((t) => t !== null && t !== '').join(' · ');
 }
 
@@ -399,7 +439,7 @@ export function losMovimientosParaElPapel(
   movimientos: readonly UnMovimientoDeLaCaja[],
 ): { que: string; importe: number }[] {
   return movimientos
-    .filter((m) => m.tipo !== 'cambio')
+    .filter((m) => m.tipo !== 'cambio' && m.tipo !== 'propina')
     .map((m) => ({
       que: elMovimientoEnTexto(m),
       importe: m.tipo === 'meter' ? m.importe : -m.importe,
@@ -465,4 +505,156 @@ export async function loCobradoDeLaCuenta(
     partes:
       de === null ? null : { de, pagadas: aPartes.map((c) => c.parte ?? 0).sort((a, b) => a - b) },
   };
+}
+
+// ── R3 · 2 · 1: entregar la caja, las propinas y el aviso del descuadre (0152) ─────
+
+/**
+ * **Las cajas de una cadena de entregas** (E7, 0152): esta y las que se le entregaron antes, hacia
+ * atrás, por `recibida_de`. Marcos abre, entrega a Ana y Ana cierra: la cadena de la de Ana son las dos.
+ * Es lo que reparte las propinas del día de ese cajón.
+ */
+export async function laCadenaDeLaCaja(
+  contexto: Contexto,
+  turnoId: string,
+): Promise<readonly string[]> {
+  const filas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ id: string }[]>`
+      with recursive cadena(id, recibida_de, paso) as (
+        select id, recibida_de, 0 from estook.turno_de_caja where id = ${turnoId}::uuid
+        union all
+        select t.id, t.recibida_de, c.paso + 1
+          from estook.turno_de_caja t join cadena c on t.id = c.recibida_de
+         where c.paso < 50
+      )
+      select id::text as id from cadena order by paso
+    `,
+  );
+  return filas.map((f) => f.id);
+}
+
+/** Las propinas en efectivo de unas cajas: las de la cadena, al cerrar. */
+export async function lasPropinasDe(
+  contexto: Contexto,
+  turnos: readonly string[],
+): Promise<number> {
+  if (turnos.length === 0) return 0;
+  const filas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ propinas: number }[]>`
+      select coalesce(sum(importe), 0)::integer as propinas from estook.movimiento_de_caja
+       where tipo = 'propina' and turno_id = any(${turnos as string[]}::uuid[])
+    `,
+  );
+  return filas[0]?.propinas ?? 0;
+}
+
+export interface UnFichadoDelDia {
+  readonly personaId: string;
+  readonly nombre: string;
+  /** «Sala», «Cocina» o «Gerente»: para que quien reparte sepa quién es quién. */
+  readonly puesto: string | null;
+}
+
+const PUESTO_DEL_ROL: Readonly<Record<string, string>> = {
+  camarero: 'Sala',
+  jefe_de_sala: 'Sala',
+  cocinero: 'Cocina',
+  jefe_de_cocina: 'Cocina',
+  gerente: 'Gerente',
+};
+
+/**
+ * **Los que han fichado ese día en el local** (E5, 0152): entre ellos se reparten las propinas, sala y
+ * cocina (Richi, 23-nov, con la maqueta corregida). Quien reparte quita a quien no entre, con un toque.
+ */
+export async function losFichadosDelDia(
+  contexto: Contexto,
+  localId: string,
+  fecha: string,
+): Promise<readonly UnFichadoDelDia[]> {
+  const filas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ persona_id: string; nombre: string; rol: string | null }[]>`
+      select persona_id::text as persona_id, nombre, rol
+        from estook.fichados_del_dia(${localId}::uuid, ${fecha}::date)
+    `,
+  );
+  return filas.map((f) => ({
+    personaId: f.persona_id,
+    nombre: nombreCorto(f.nombre),
+    puesto: f.rol === null ? null : (PUESTO_DEL_ROL[f.rol] ?? null),
+  }));
+}
+
+/** Cómo se repartieron las propinas de una caja, o vacío si no se repartieron. */
+export async function elRepartoDe(
+  contexto: Contexto,
+  turnoId: string,
+): Promise<readonly { readonly nombre: string; readonly importe: number }[]> {
+  const filas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ nombre: string; importe: number }[]>`
+      select p.nombre, r.importe
+        from estook.reparto_de_propinas r join estook.persona p on p.id = r.persona_id
+       where r.turno_id = ${turnoId}::uuid
+       order by r.importe desc, p.nombre
+    `,
+  );
+  return filas.map((f) => ({ nombre: nombreCorto(f.nombre), importe: f.importe }));
+}
+
+/**
+ * **El aviso del descuadre** (E3, 0152): si una caja se cierra o se entrega con más diferencia que la
+ * cifra del local, al gerente le llega un aviso a la campana y al móvil, **uno por caja**: «Caja 1 ·
+ * faltan 12,00 €». Lleva al día en Cierres de caja. **Nunca rompe nada**: un aviso que no sale no
+ * deshace el cierre.
+ */
+export async function avisarDelDescuadre(
+  contexto: Contexto,
+  que: {
+    readonly localId: string;
+    readonly turnoId: string;
+    readonly cajon: string;
+    readonly fecha: string;
+    readonly diferencia: number;
+    /** «Cerró Ana a las 23:58» o «Marcos entregó a Ana a las 17:30». */
+    readonly detalle: string;
+  },
+): Promise<void> {
+  try {
+    const [local] = await enNombreDelSistema(
+      contexto,
+      () => contexto.sql<{ organizacion_id: string }[]>`
+        select organizacion_id::text as organizacion_id from estook.local where id = ${que.localId}::uuid
+      `,
+    );
+    if (local === undefined) return;
+    await avisar(
+      contexto,
+      {
+        tipo: 'caja.descuadre',
+        organizacionId: local.organizacion_id,
+        localId: que.localId,
+        clave: que.turnoId,
+        texto: () => ({
+          titulo: `${que.cajon} · ${laDiferenciaEnTexto(que.diferencia).toLowerCase()}`,
+          detalle: que.detalle,
+        }),
+        ir: `/servicio/jornada/cierre?dia=${que.fecha}`,
+        quien: null,
+      },
+      await losQueLoQuieren(
+        contexto,
+        'caja.descuadre',
+        await quienesPuedenRecibir(contexto, que.localId, 'caja.descuadre'),
+      ),
+    );
+  } catch (fallo) {
+    await apuntarUnFallo(fallo, {
+      mensaje: 'no se ha podido avisar del descuadre de una caja',
+      correlacionId: contexto.correlacionId,
+    });
+  }
 }

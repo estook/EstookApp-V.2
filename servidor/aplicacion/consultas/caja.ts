@@ -4,6 +4,7 @@ import {
   elNumeroEntero,
   enDinero,
   laDiferenciaEnTexto,
+  loQueSeProponeRetirar,
 } from '@estook/dominio';
 import { documentoDelZ } from '@estook/documentos';
 import { hacerElPdf, hechoEl, laMarcaDelLocal, type UnPdf } from '../documentos.ts';
@@ -14,6 +15,7 @@ import { enNombreDelSistema } from '../pago.ts';
 import { elLocalDelServicio, elTituloDeLaCuenta, laJornadaDeHoy } from '../sala.ts';
 import {
   elCajonDelAparato,
+  elRepartoDe,
   lasFormasDelLocal,
   laCajaAbiertaDe,
   loDeLaUltimaVez,
@@ -60,6 +62,16 @@ export interface LaCajaDelAparato {
   readonly puedoAbrirElCajon: boolean;
   /** Las mesas que siguen abiertas: al cerrar caja se avisa, sin parar. */
   readonly mesasAbiertas: number;
+  /**
+   * **«Retirar»** (E2, 0152): el cajón pasa de la cifra del local. Solo a quien lleva la caja, y con lo
+   * que se propone sacar a la caja fuerte. `vez` cuenta lo ya sacado: si se retira y vuelve a pasar,
+   * es otro aviso y vuelve a salir. Nulo si no toca.
+   */
+  readonly retirar: {
+    readonly propuesta: number;
+    readonly desde: number;
+    readonly vez: number;
+  } | null;
 }
 
 export const laCaja = consulta<Record<string, never>, LaCajaDelAparato>({
@@ -91,6 +103,24 @@ export const laCaja = consulta<Record<string, never>, LaCajaDelAparato>({
             laCajaAbiertaDe(contexto, cajon.id),
             loDeLaUltimaVez(contexto, cajon.id),
           ]);
+    const puedoLlevarla = puedo[0]?.llevarla === true;
+    let retirar: LaCajaDelAparato['retirar'] = null;
+    if (abierta !== null && puedoLlevarla && abierta.fecha >= hoy) {
+      const lleva = await loQueLlevaLaCaja(contexto, abierta.id);
+      const enElCajon = loQueDeberiaHaberEn(abierta.fondo, lleva);
+      const propuesta = loQueSeProponeRetirar({
+        enElCajon,
+        fondoDeSiempre: ajustes.fondoDeSiempre,
+        fondoDeLaCaja: abierta.fondo,
+      });
+      if (enElCajon > ajustes.retirarDesde && propuesta > 0) {
+        retirar = {
+          propuesta,
+          desde: ajustes.retirarDesde,
+          vez: lleva.movimientos.filter((m) => m.tipo === 'sacar').length,
+        };
+      }
+    }
     return {
       cajon,
       abierta:
@@ -107,9 +137,10 @@ export const laCaja = consulta<Record<string, never>, LaCajaDelAparato>({
       loDeLaUltimaVez: ultima,
       ajustes,
       formas: lasFormasDelLocal(ajustes),
-      puedoLlevarla: puedo[0]?.llevarla === true,
+      puedoLlevarla,
       puedoAbrirElCajon: puedo[0]?.cajon === true,
       mesasAbiertas: mesas[0]?.cuantas ?? 0,
+      retirar,
     };
   },
 });
@@ -128,6 +159,10 @@ export interface ComoVaLaCaja {
   readonly deberiaHaber: number;
   readonly cajonSinVenta: number;
   readonly movimientos: readonly UnMovimientoDeLaCaja[];
+  /** Las propinas en efectivo que hay en el cajón (E5, 0152). */
+  readonly propinas: number;
+  /** De quién se recibió, si llegó entregada (E7, 0152): el fondo es lo que contó al entregarla. */
+  readonly recibidaDe: string | null;
 }
 
 /** **«Cómo va»**, el X (Anexo 11.6): lo ven quien lleva la caja. Nada se cierra al mirarlo. */
@@ -146,6 +181,15 @@ export const comoVaLaCaja = consulta<Record<string, never>, ComoVaLaCaja>({
       throw new FalloDeAplicacion('faltan_datos', { porque: 'La caja no está abierta.' });
     }
     const lleva = await loQueLlevaLaCaja(contexto, caja.id);
+    const recibida = await enNombreDelSistema(
+      contexto,
+      () => contexto.sql<{ nombre: string }[]>`
+        select p.nombre from estook.turno_de_caja n
+          join estook.turno_de_caja a on a.id = n.recibida_de
+          join estook.persona p on p.id = a.cerrada_por
+         where n.id = ${caja.id}::uuid
+      `,
+    );
     return {
       turnoId: caja.id,
       cajon: cajon.nombre,
@@ -160,6 +204,8 @@ export const comoVaLaCaja = consulta<Record<string, never>, ComoVaLaCaja>({
       deberiaHaber: loQueDeberiaHaberEn(caja.fondo, lleva),
       cajonSinVenta: lleva.cajonSinVenta,
       movimientos: lleva.movimientos,
+      propinas: lleva.propinas,
+      recibidaDe: recibida[0] === undefined ? null : nombreCorto(recibida[0].nombre),
     };
   },
 });
@@ -219,6 +265,10 @@ interface FilaDelTurno {
   readonly deberia_haber: number | null;
   readonly diferencia: number | null;
   readonly motivo: MotivoDeLaDiferencia | null;
+  readonly cajon_id: string;
+  readonly propinas: number | null;
+  readonly entregada_a: string | null;
+  readonly recibida_de: string | null;
 }
 
 async function losTurnos(
@@ -236,11 +286,15 @@ async function losTurnos(
            t.fondo, t.contado_al_abrir, t.lo_de_la_ultima_vez, t.contado_total, t.datafono,
            t.para_manana, t.efectivo_cobrado, t.tarjeta_cobrada, t.bizum_cobrado, t.cheque_cobrado,
            t.metido, t.sacado, t.devuelto, t.tickets, t.cajon_sin_venta, t.deberia_haber,
-           t.diferencia, t.motivo_de_la_diferencia as motivo
+           t.diferencia, t.motivo_de_la_diferencia as motivo, t.cajon_id::text as cajon_id,
+           t.propinas, pe.nombre as entregada_a, pr.nombre as recibida_de
       from estook.turno_de_caja t
       join estook.cajon c on c.id = t.cajon_id
       join estook.persona pa on pa.id = t.abierta_por
       left join estook.persona pc on pc.id = t.cerrada_por
+      left join estook.persona pe on pe.id = t.entregada_a
+      left join estook.turno_de_caja tr on tr.id = t.recibida_de
+      left join estook.persona pr on pr.id = tr.cerrada_por
      where t.local_id = ${localId}::uuid
        and t.fecha_operativa between ${desde}::date and ${hasta}::date
      order by t.fecha_operativa desc, t.abierta_en
@@ -328,7 +382,8 @@ export const cierresDeCaja = consulta<{ dia?: string | undefined }, LosCierresDe
           0,
         ),
         diferencia: cerradas.reduce((s, t) => s + (t.diferencia ?? 0), 0),
-        cajas: deEseDia.length,
+        // Una caja entregada a media tarde sigue siendo una caja: la entregada no cuenta (E7).
+        cajas: deEseDia.filter((t) => t.entregada_a === null).length,
         ultimaCerro: nombreCorto(ultima.cerro ?? ''),
         ultimaHora: ultima.cerrada_en ?? '',
         abierto: cerradas.length < deEseDia.length,
@@ -363,6 +418,13 @@ export interface UnaCajaCerrada {
   readonly paraManana: number | null;
   readonly tickets: number;
   readonly cajonSinVenta: number;
+  /** Las propinas en efectivo de esta caja (E5, 0152). */
+  readonly propinas: number;
+  /** E7: a quién se entregó («Ana») o de quién se recibió («Marcos»). */
+  readonly entregadaA: string | null;
+  readonly recibidaDe: string | null;
+  /** Cómo se repartieron las propinas al cerrarla. */
+  readonly reparto: readonly { readonly nombre: string; readonly importe: number }[];
 }
 
 export interface ElDiaDeCaja {
@@ -376,6 +438,7 @@ export interface ElDiaDeCaja {
   readonly diferencia: number;
   readonly cajonSinVenta: number;
   readonly devuelto: number;
+  readonly propinas: number;
   readonly cajas: readonly UnaCajaCerrada[];
 }
 
@@ -392,7 +455,10 @@ export const unDiaDeCaja = consulta<{ fecha: string }, ElDiaDeCaja>({
       throw new FalloDeAplicacion('no_existe', { porque: 'Ese día no se abrió la caja.' });
     const cajas: UnaCajaCerrada[] = [];
     for (const t of turnos) {
-      const lleva = await enNombreDelSistema(contexto, () => loQueLlevaLaCaja(contexto, t.id));
+      const [lleva, reparto] = await Promise.all([
+        enNombreDelSistema(contexto, () => loQueLlevaLaCaja(contexto, t.id)),
+        elRepartoDe(contexto, t.id),
+      ]);
       const cerrada = t.cerrada_en !== null;
       cajas.push({
         turnoId: t.id,
@@ -420,6 +486,10 @@ export const unDiaDeCaja = consulta<{ fecha: string }, ElDiaDeCaja>({
         paraManana: t.para_manana,
         tickets: cerrada ? (t.tickets ?? 0) : lleva.tickets,
         cajonSinVenta: cerrada ? (t.cajon_sin_venta ?? 0) : lleva.cajonSinVenta,
+        propinas: cerrada ? (t.propinas ?? lleva.propinas) : lleva.propinas,
+        entregadaA: t.entregada_a === null ? null : nombreCorto(t.entregada_a),
+        recibidaDe: t.recibida_de === null ? null : nombreCorto(t.recibida_de),
+        reparto,
       });
     }
     const suma = (f: (c: UnaCajaCerrada) => number) => cajas.reduce((s, c) => s + f(c), 0);
@@ -436,6 +506,7 @@ export const unDiaDeCaja = consulta<{ fecha: string }, ElDiaDeCaja>({
       devuelto: suma((c) =>
         c.movimientos.filter((m) => m.tipo === 'devolucion').reduce((s, m) => s + m.importe, 0),
       ),
+      propinas: suma((c) => c.propinas),
       cajas,
     };
   },
@@ -680,10 +751,18 @@ export const elZEnPdf = consulta<{ turno_id: string }, UnPdf>({
       cerro:
         t.cerro === null || t.cerrada_en === null
           ? null
-          : quienYCuando(t.cerro, t.cerrada_en, marca.zonaHoraria),
+          : `${quienYCuando(t.cerro, t.cerrada_en, marca.zonaHoraria)}${
+              t.entregada_a === null ? '' : ` · entregada a ${nombreCorto(t.entregada_a)}`
+            }`,
       delCajon: [
-        { que: 'Fondo', importe: enDinero(t.fondo) },
+        {
+          que: t.recibida_de === null ? 'Fondo' : `Recibida de ${nombreCorto(t.recibida_de)}`,
+          importe: enDinero(t.fondo),
+        },
         { que: 'Cobrado en efectivo', importe: enDinero(efectivo) },
+        ...((t.propinas ?? lleva.propinas) > 0
+          ? [{ que: 'Propinas en efectivo', importe: `+${enDinero(t.propinas ?? lleva.propinas)}` }]
+          : []),
         ...losMovimientosParaElPapel(lleva.movimientos).map((m) => ({
           que: m.que,
           importe: `${m.importe < 0 ? '−' : '+'}${enDinero(Math.abs(m.importe))}`,

@@ -343,6 +343,9 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   'fogon.revision': ['app.fogon', 'app.almacen'],
   // A quien lleva la facturación: es quien puede corregirlo (0137).
   'documento.rechazado': ['accion.alta_de_facturacion'],
+  // Al gerente (E3, 0152): quien lleva los Ajustes del TPV y ve las ventas. Gerente, area manager y
+  // dirección; no el jefe de sala, que es quien cierra.
+  'caja.descuadre': ['accion.ajustes_del_tpv', 'dato.ventas'],
 };
 
 export function puedeRecibirElAviso(

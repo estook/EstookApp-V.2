@@ -12,7 +12,7 @@ import { AbrirCaja, ErrorDeLaCaja } from './AbrirCaja.tsx';
 import { usarElPlano } from '../ganchos/usarLaSala.ts';
 import { irAlPlano } from '../navegar.ts';
 import { deEurosACentimos } from './dinero.ts';
-import { losBilletesQueLoCubren } from './Cobrar.tsx';
+import { ElCambio, losBilletesQueLoCubren } from './Cobrar.tsx';
 import type { Cobrado } from './tipos.ts';
 
 /**
@@ -54,6 +54,8 @@ export function CobrarElPendiente({
   const [quien, setQuien] = useState<string>(yo.nombre);
   const [entregado, setEntregado] = useState<number | 'justo' | 'otro'>('justo');
   const [otro, setOtro] = useState('');
+  /** «Quédate el cambio» (E5, 0152), también aquí: el cliente puede dejarlo en la caja. */
+  const [propina, setPropina] = useState(false);
   const [cobroId] = useState(idNuevo);
   const [ocupado, setOcupado] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
@@ -81,6 +83,7 @@ export function CobrarElPendiente({
       pendiente_id: pendiente.id,
       entregado: daAhora,
       ...(pin === null || pin === '' ? {} : { pin }),
+      ...(propina && cambio > 0 ? { propina: cambio } : {}),
     });
     setOcupado(false);
     if (respuesta.ok) {
@@ -180,6 +183,11 @@ export function CobrarElPendiente({
               </span>
             </div>
           )}
+          {(hecho.propina ?? 0) > 0 && (
+            <p className="rounded-grande bg-bien-suave p-e3 font-bold text-bien">
+              {eurosConSimbolo(hecho.propina ?? 0)} quedan apuntados como propina.
+            </p>
+          )}
           <p className="text-texto-suave">
             {hecho.cajonAbierto ? 'El cajón se ha abierto. ' : ''}El ticket{' '}
             <b className="tabular-nums text-texto">{hecho.numero}</b> sale por la impresora: llévalo
@@ -234,6 +242,7 @@ export function CobrarElPendiente({
               aria-pressed={entregado === b}
               onClick={() => {
                 setEntregado(b);
+                setPropina(false);
               }}
               className={`min-h-toque-cocina rounded-grande border-2 font-bold tabular-nums ${
                 entregado === b ? 'border-naranja bg-naranja-suave' : 'border-borde'
@@ -258,10 +267,12 @@ export function CobrarElPendiente({
           </label>
         )}
         {cambio > 0 ? (
-          <div className="flex items-center justify-between rounded-grande bg-bien-suave p-e4 text-bien">
-            <span className="text-seccion font-bold">Cambio</span>
-            <span className="text-cifra font-bold tabular-nums">{eurosConSimbolo(cambio)}</span>
-          </div>
+          <ElCambio
+            cambio={cambio}
+            propina={propina}
+            sePuede={caja.data?.ajustes.propinaAlCobrar !== false}
+            alCambiar={setPropina}
+          />
         ) : cambio === 0 ? (
           <p className="rounded-grande bg-superficie p-e4 text-texto-suave">Justo, sin cambio</p>
         ) : (

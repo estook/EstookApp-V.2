@@ -7,16 +7,18 @@ import { cuantoLlevan, eurosConSimbolo } from '../logica/texto.ts';
  * **Los avisos del TPV** (el rediseño, entrega 2 · 2, decisión 0148; maqueta aprobada el 18-nov):
  * lo que antes salía en franjas sueltas encima de la sala, junto y con su color, su icono y el botón
  * que lo resuelve. Salen arriba a la derecha, **como mucho tres**, y **se quedan en la campana**
- * hasta que alguien los atiende. Cuatro clases, y nada más («un compañero, no un policía»):
+ * hasta que alguien los atiende. Cinco clases, y nada más («un compañero, no un policía»):
  *
  *   · **la cocina llama** (azul, 0116): «Ya voy»
  *   · **efectivo por cobrar** (ámbar, 0145), solo en la caja: «Cobrar», con el PIN de quien cobra
  *   · **la impresora** (rojo, 0119): sin papel, no responde o papeles sin salir; «Ver» en la caja
  *   · **mesa abierta más de 6 horas** (rojo), solo al encargado: «Ver»
+ *   · **retirar** (ámbar, E2, 0152), solo en la caja y a quien la lleva: el cajón pasa de la cifra del
+ *     local; «Retirar» abre el cajón ya rellenado para la caja fuerte
  *
  * Cálculo puro: qué avisos hay ahora y en qué orden. Pintarlos, sonar y vibrar es de `LosAvisos`.
  */
-export type ClaseDeAviso = 'cocina' | 'efectivo' | 'impresora' | 'seis_horas';
+export type ClaseDeAviso = 'cocina' | 'efectivo' | 'impresora' | 'seis_horas' | 'retirar';
 
 export type LoQueHace =
   | { readonly tipo: 'ya_voy'; readonly cuentaId: string }
@@ -39,11 +41,21 @@ export function losAvisosDeAhora({
   impresoras,
   enLaCaja,
   esEncargado,
+  retirar,
 }: {
   readonly cuentas: readonly CuentaEnElPlano[];
   readonly impresoras: ComoEstanLasImpresoras['avisos'];
   readonly enLaCaja: boolean;
   readonly esEncargado: boolean;
+  /**
+   * El cajón pasa de la cifra (E2, 0152), como lo dice `la_caja`. `vez` cuenta lo ya sacado: si se
+   * retira y vuelve a pasar, es otro aviso y vuelve a salir aunque el de antes se quitara de la vista.
+   */
+  readonly retirar?: {
+    readonly turnoId: string;
+    readonly desde: number;
+    readonly vez: number;
+  } | null;
 }): readonly AvisoDelTpv[] {
   const cocina = cuentas
     .filter((c) => c.cocinaLlamaEn !== null)
@@ -101,7 +113,22 @@ export function losAvisosDeAhora({
       }))
     : [];
 
-  return [...cocina, ...efectivo, ...papel, ...seis];
+  const caja = retirar ?? null;
+  const fuerte: AvisoDelTpv[] =
+    enLaCaja && caja !== null
+      ? [
+          {
+            id: `retirar:${caja.turnoId}:${String(caja.vez)}`,
+            clase: 'retirar',
+            titulo: `El cajón pasa de ${eurosConSimbolo(caja.desde).replace(',00', '')}`,
+            detalle: 'Lleva lo que sobra a la caja fuerte',
+            boton: { texto: 'Retirar', hace: { tipo: 'ir', donde: 'caja/retirar' } },
+            mio: false,
+          },
+        ]
+      : [];
+
+  return [...cocina, ...efectivo, ...fuerte, ...papel, ...seis];
 }
 
 /** Los que salen arriba: como mucho tres, sin los que se han quitado de la vista. */

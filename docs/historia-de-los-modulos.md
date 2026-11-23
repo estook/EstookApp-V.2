@@ -3488,6 +3488,21 @@ Richi el 10 y el 11-nov (migración 0117):
 Las pruebas: `la-caja.prueba.ts` (veinticuatro, contra la base) y `la-caja.spec.ts` (dos recorridos de
 pantalla, uno con el comandero en su propio navegador).
 
+### R3 · 2 · 1 · La caja, segunda parte
+
+_23 de noviembre de 2026._ Decisión [0152](decisiones/0152-r3-2-1-la-caja-segunda-parte.md), con la maqueta de R3
+corregida ese día tras el rediseño (migración 0124, dos comandos nuevos):
+
+- **«Retirar»**: con más de la cifra del local en el cajón, un aviso ámbar a quien lleva la caja, que abre el cajón
+  ya rellenado para la caja fuerte.
+- **El aviso del descuadre**, al gerente, a la campana y al móvil, uno por caja.
+- **«Quédate el cambio»**: la propina se apunta en la caja, fuera del ticket, y al cerrar **se reparte** entre los
+  que han fichado ese día, sala y cocina.
+- **Escribir el total** al abrir, al entregar y al cerrar, y **entregar la caja** a otro sin cerrar el día.
+
+Las pruebas: `la-caja-segunda-parte.prueba.ts` (nueve, contra la base), `caja.prueba.ts` del dominio y
+`la-caja-segunda-parte.spec.ts`, de pantalla. Los descuentos (E8) van en R3 · 2 · 2.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

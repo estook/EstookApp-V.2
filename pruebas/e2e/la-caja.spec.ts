@@ -202,12 +202,12 @@ test('la caja: abrirla, cobrar en efectivo y dividido, el cajón, «Cómo va», 
     .getByRole('group', { name: 'Lo que te da' })
     .getByRole('button', { name: '50 €', exact: true })
     .click();
-  await expect(cobrar.getByText('Cambio')).toBeVisible();
+  await expect(cobrar.getByText('Cambio', { exact: true })).toBeVisible();
   await expect(cobrar).toContainText('10,00');
   await foto('04-cobrar-en-efectivo');
   await page.getByRole('button', { name: /^Cobrar 40,00/ }).click();
   await expect(page.getByText(/T-CJ-\d{4}-000001/)).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText('Cambio')).toBeVisible();
+  await expect(page.getByText('Cambio', { exact: true })).toBeVisible();
   await foto('05-cobrado');
   await page.getByRole('button', { name: 'Listo · la mesa queda libre' }).click();
   await expect(page.getByRole('button', { name: /^Mesa 1: Libre/ })).toBeVisible({
@@ -541,7 +541,7 @@ test('cobrar en la mesa: el comandero cobra con tarjeta y deja el efectivo, y la
     .getByRole('group', { name: 'Lo que te da' })
     .getByRole('button', { name: '50 €', exact: true })
     .click();
-  await expect(page.getByText('Cambio')).toBeVisible();
+  await expect(page.getByText('Cambio', { exact: true })).toBeVisible();
   await foto(page, '24-caja-cuanto-te-da');
   await page.getByRole('button', { name: /^Cobrar 40,00/ }).click();
   await expect(page.getByText(/T-MS-\d{4}-000002/)).toBeVisible({ timeout: 15_000 });

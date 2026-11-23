@@ -3,6 +3,7 @@ import {
   IconoAtencion,
   IconoAvisos,
   IconoBien,
+  IconoCaja,
   IconoCerrar,
   IconoDinero,
   IconoImprimir,
@@ -37,6 +38,7 @@ const COMO_SE_VE: Readonly<
   efectivo: { icono: IconoDinero, color: 'bg-mesa-te-toca text-sobre-mesa-te-toca' },
   impresora: { icono: IconoImprimir, color: 'bg-mal-suave text-mal' },
   seis_horas: { icono: IconoAtencion, color: 'bg-mal-suave text-mal' },
+  retirar: { icono: IconoCaja, color: 'bg-mesa-te-toca text-sobre-mesa-te-toca' },
 };
 
 /** Los avisos apilados y la hoja de la campana. Va una vez, para todo lo de la sala. */
@@ -160,7 +162,9 @@ function ElAviso({
             'min-h-toque shrink-0 rounded-medio px-e3 text-secundario font-bold',
             a.clase === 'efectivo'
               ? 'bg-mesa-cuenta text-sobre-mesa-cuenta'
-              : 'border border-borde bg-fondo',
+              : a.clase === 'retirar'
+                ? 'bg-atencion text-fondo'
+                : 'border border-borde bg-fondo',
           ].join(' ')}
         >
           {a.boton.texto}

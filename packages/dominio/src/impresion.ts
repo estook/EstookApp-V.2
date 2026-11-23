@@ -673,6 +673,12 @@ export interface LaCajaEnElPapel {
   readonly cajonSinVenta: number;
   /** Reimpreso: sale con «COPIA». */
   readonly copia: boolean;
+  /** Las propinas en efectivo del cajón (E5, 0152): una línea, no una por cobro. */
+  readonly propinas?: number;
+  /** El cambio de turno (E7, 0152): «Entregada a Ana» o «Recibida de Marcos». */
+  readonly entrega?: string | null;
+  /** Cómo se repartieron las propinas al cerrar (E5, 0152). */
+  readonly reparto?: readonly { readonly nombre: string; readonly importe: number }[];
 }
 
 /**
@@ -700,9 +706,13 @@ export function laCajaEnPapel(c: LaCajaEnElPapel): PapelCompuesto {
   piezas.push(RAYA);
   piezas.push(texto(`Abrió: ${c.abrio}`));
   if (c.cerro !== null) piezas.push(texto(`Cerró: ${c.cerro}`));
+  if (c.entrega !== undefined && c.entrega !== null) piezas.push(texto(c.entrega));
   piezas.push(RAYA);
   piezas.push(linea('Fondo', c.fondo));
   piezas.push(linea('Cobrado en efectivo', c.efectivo));
+  if (c.propinas !== undefined && c.propinas > 0) {
+    piezas.push(linea('Propinas en efectivo', c.propinas));
+  }
   for (const m of c.movimientos) piezas.push(linea(m.que, m.importe));
   piezas.push(linea('Debería haber', c.deberiaHaber, true));
   if (c.contado !== null) piezas.push(linea('Contado', c.contado, true));
@@ -729,6 +739,11 @@ export function laCajaEnPapel(c: LaCajaEnElPapel): PapelCompuesto {
     piezas.push(RAYA);
     piezas.push(linea('Se queda para mañana', c.paraManana));
     piezas.push(linea('Se retira', c.contado - c.paraManana, true));
+  }
+  if (c.reparto !== undefined && c.reparto.length > 0) {
+    piezas.push(RAYA);
+    piezas.push(texto('Propinas repartidas', { negrita: true }));
+    for (const r of c.reparto) piezas.push(linea(r.nombre, r.importe));
   }
   piezas.push(CORTAR);
   return papel(piezas);

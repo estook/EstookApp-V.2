@@ -1206,3 +1206,10 @@
      ocurrió** (la del cobro, la del movimiento), calculada con la zona y la hora de corte del local; la
      fecha de la caja es la de su Z. Lo vigila `lo-vendido-baja.prueba.ts`, que abre la caja cinco días
      antes de cobrar y se vio fallar con el arreglo quitado (0149).
+
+278. **Que la API lo haga «como el sistema» no le deja ver lo que la persona no ve.** Al repartir las propinas
+     entre los que han fichado, la lista solo traía a la camarera que cerraba: la seguridad por filas de los
+     fichajes (0027) le deja ver los suyos, y `enNombreDelSistema` no lo salta en esa tabla. La prueba contra la
+     base lo vio con dos fichados y uno en la lista (23-nov). **Para leer de otros lo justo, una función con
+     privilegio que devuelve solo eso** (`fichados_del_dia`: el nombre y el rol, a quien ve la caja), en la lista
+     de funciones con privilegio que vigila `almacen.prueba.ts` (0152).

@@ -67,8 +67,18 @@ export function ComoVa() {
       {impreso !== null && <p className="font-bold text-bien">{impreso}</p>}
       {fallo !== null && <ErrorEnCristiano error={fallo} />}
       <section className="flex flex-col gap-e2 rounded-grande border border-borde bg-superficie p-e4">
-        <RenglonDeLaCaja que={`Fondo · ${c.abiertaPor}, ${laHora(c.desde)}`} cuanto={c.fondo} />
+        <RenglonDeLaCaja
+          que={
+            c.recibidaDe == null
+              ? `Fondo · ${c.abiertaPor}, ${laHora(c.desde)}`
+              : `Recibida de ${c.recibidaDe} · ${laHora(c.desde)}`
+          }
+          cuanto={c.fondo}
+        />
         <RenglonDeLaCaja que="Cobrado en efectivo" cuanto={c.efectivo} />
+        {(c.propinas ?? 0) > 0 && (
+          <RenglonDeLaCaja que="Propinas en efectivo" cuanto={c.propinas ?? 0} />
+        )}
         {sacadoYMetido.map((m, i) => (
           <RenglonDeLaCaja
             // Dos del mismo tipo en el mismo segundo no pueden compartir clave.

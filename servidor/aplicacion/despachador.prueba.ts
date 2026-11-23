@@ -1141,6 +1141,9 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'quitar_el_cobro_pendiente',
         'quien_cobra_con_este_pin',
         'elegir_donde_imprime',
+        // R3 · 2 · 1 (0152): entregar la caja y repartir las propinas, en la caja.
+        'entregar_la_caja',
+        'repartir_las_propinas',
       ].sort(),
     );
   });

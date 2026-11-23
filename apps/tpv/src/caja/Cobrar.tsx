@@ -92,6 +92,8 @@ export function Cobrar({
   const [partes, setPartes] = useState(2);
   const [entregado, setEntregado] = useState<number | 'justo' | 'otro'>('justo');
   const [otro, setOtro] = useState('');
+  /** «Quédate el cambio» (E5, 0152): lo que sobra del efectivo, de propina. */
+  const [propina, setPropina] = useState(false);
   const [enEfectivo, setEnEfectivo] = useState('20,00');
   const [enCheques, setEnCheques] = useState('');
   const [restoCon, setRestoCon] = useState<'efectivo' | 'tarjeta' | null>(null);
@@ -186,6 +188,7 @@ export function Cobrar({
     importe: number,
     pagos: readonly UnPago[],
     turnoId: string | undefined = turnoElegido,
+    dePropina = 0,
   ) {
     setOcupado(true);
     setFallo(null);
@@ -223,9 +226,11 @@ export function Cobrar({
       ...queCubre,
       pagos,
       ...(enLaMesa && turnoId !== undefined ? { turno_id: turnoId } : {}),
+      ...(dePropina > 0 ? { propina: dePropina } : {}),
     });
     setOcupado(false);
     if (respuesta.ok) {
+      setPropina(false);
       setHecho(respuesta.datos);
       setCobroId(idNuevo());
       setMarcadas(new Set());
@@ -339,6 +344,11 @@ export function Cobrar({
                 {eurosConSimbolo(hecho.cambio)}
               </span>
             </div>
+          )}
+          {(hecho.propina ?? 0) > 0 && (
+            <p className="rounded-grande bg-bien-suave p-e3 font-bold text-bien">
+              {eurosConSimbolo(hecho.propina ?? 0)} quedan apuntados como propina.
+            </p>
           )}
           <p className="text-texto-suave">
             {hecho.cajonAbierto ? 'El cajón se ha abierto. ' : ''}El ticket{' '}
@@ -563,6 +573,7 @@ export function Cobrar({
                     aria-pressed={entregado === b}
                     onClick={() => {
                       setEntregado(b);
+                      setPropina(false);
                     }}
                     className={`min-h-toque-cocina rounded-grande border-2 font-bold tabular-nums ${
                       entregado === b ? 'border-naranja bg-naranja-suave' : 'border-borde'
@@ -580,12 +591,12 @@ export function Cobrar({
                 <CasillaDeEuros etiqueta="Te da" valor={otro} alCambiar={setOtro} />
               )}
               {cambio > 0 ? (
-                <div className="flex items-center justify-between rounded-grande bg-bien-suave p-e4 text-bien">
-                  <span className="text-seccion font-bold">Cambio</span>
-                  <span className="text-cifra font-bold tabular-nums">
-                    {eurosConSimbolo(cambio)}
-                  </span>
-                </div>
+                <ElCambio
+                  cambio={cambio}
+                  propina={propina}
+                  sePuede={c.ajustes.propinaAlCobrar !== false}
+                  alCambiar={setPropina}
+                />
               ) : cambio === 0 ? (
                 <p className="rounded-grande bg-superficie p-e4 text-texto-suave">
                   Justo, sin cambio
@@ -600,9 +611,13 @@ export function Cobrar({
                 apagado={cambio < 0 || queda <= 0}
                 texto={`Cobrar ${eurosConSimbolo(queda)}`}
                 alTocar={() =>
-                  void cobrar({ que: 'toda' }, queda, [
-                    { forma: 'efectivo', importe: queda, entregado: entregadoAhora },
-                  ])
+                  void cobrar(
+                    { que: 'toda' },
+                    queda,
+                    [{ forma: 'efectivo', importe: queda, entregado: entregadoAhora }],
+                    turnoElegido,
+                    propina && cambio > 0 ? cambio : 0,
+                  )
                 }
               />
             </>
@@ -999,5 +1014,44 @@ function CasillaDeEuros({
         className="w-[9ch] bg-transparent text-right text-cifra-larga font-bold tabular-nums outline-none"
       />
     </label>
+  );
+}
+
+/**
+ * **El cambio, o la propina** (E5, 0152; maqueta del 9-nov): con «Quédate el cambio», lo que sobra se
+ * queda de propina y se apunta en la caja, **fuera del ticket**. Un toque, y otro para deshacerlo.
+ */
+export function ElCambio({
+  cambio,
+  propina,
+  sePuede,
+  alCambiar,
+}: {
+  readonly cambio: number;
+  readonly propina: boolean;
+  readonly sePuede: boolean;
+  readonly alCambiar: (propina: boolean) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-e3 rounded-grande bg-bien-suave p-e4 text-bien">
+      <span className="text-seccion font-bold">{propina ? 'Propina' : 'Cambio'}</span>
+      <span className="flex flex-wrap items-center justify-end gap-e3">
+        <span className="text-cifra font-bold tabular-nums">{eurosConSimbolo(cambio)}</span>
+        {sePuede && (
+          <button
+            type="button"
+            aria-pressed={propina}
+            onClick={() => {
+              alCambiar(!propina);
+            }}
+            className={`min-h-toque rounded-redondo px-e4 font-bold ${
+              propina ? 'border-2 border-bien text-bien' : 'bg-bien text-fondo'
+            }`}
+          >
+            {propina ? 'Dar el cambio' : 'Quédate el cambio'}
+          </button>
+        )}
+      </span>
+    </div>
   );
 }

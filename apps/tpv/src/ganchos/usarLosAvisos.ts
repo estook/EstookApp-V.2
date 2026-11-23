@@ -2,6 +2,7 @@ import { useMemo, useSyncExternalStore } from 'react';
 import { puedeEditar } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAlSegundo, usarElPlano, usarLasImpresoras } from './usarLaSala.ts';
+import { usarLaCaja } from './usarLaCaja.ts';
 import { losAvisosDeAhora, type AvisoDelTpv } from '../avisos/losAvisos.ts';
 
 /**
@@ -53,6 +54,11 @@ export function usarLosAvisos(): readonly AvisoDelTpv[] {
   const tomaNota = puedeEditar(yo.permisos, 'accion.tomar_nota');
   const plano = usarElPlano(conectado);
   const impresoras = usarLasImpresoras(conectado, tomaNota);
+  // «Retirar» (E2, 0152) sale de la caja: solo en el aparato con cajón, y la API solo lo dice a quien
+  // la lleva.
+  const caja = usarLaCaja();
+  const retirar = aparato.funcion === 'caja' ? (caja.data?.retirar ?? null) : null;
+  const turnoId = caja.data?.abierta?.turnoId ?? null;
   return useMemo(() => {
     const datos = plano.data;
     const cuentas =
@@ -69,6 +75,7 @@ export function usarLosAvisos(): readonly AvisoDelTpv[] {
       impresoras: impresoras.data?.avisos ?? [],
       enLaCaja: aparato.funcion === 'caja',
       esEncargado: puedeEditar(yo.permisos, 'accion.quitar_de_cocina'),
+      retirar: retirar === null || turnoId === null ? null : { ...retirar, turnoId },
     });
-  }, [plano.data, impresoras.data, aparato.funcion, yo.permisos]);
+  }, [plano.data, impresoras.data, aparato.funcion, yo.permisos, retirar, turnoId]);
 }

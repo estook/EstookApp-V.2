@@ -20,6 +20,9 @@ import { BotonDelDocumento } from '../documentos/BotonDelDocumento.tsx';
  *   · **hoy, en vivo**: lo que hay ahora en cada cajón
  *   · **un día por fila**, con su total y si cuadra («Con diferencia» y «Buscar un día»)
  *   · al tocarlo, **el día entero arriba** y **cada caja con su Z** (como Toast; Richi, 9-nov)
+ *
+ * **R3 · 2 · 1** (0152): una caja entregada a media tarde sale en dos tarjetas, la de quien la entregó
+ * con su arqueo y la de quien la recibió; y las propinas en efectivo, con cómo se repartieron.
  */
 
 interface UnaCajaDeHoy {
@@ -45,7 +48,7 @@ interface LosCierres {
   readonly dias: readonly UnDia[];
 }
 interface UnMovimiento {
-  readonly tipo: 'cambio' | 'sacar' | 'meter' | 'devolucion';
+  readonly tipo: 'cambio' | 'sacar' | 'meter' | 'devolucion' | 'propina';
   readonly importe: number;
   readonly motivo: string | null;
   readonly nota: string | null;
@@ -74,6 +77,11 @@ interface UnaCaja {
   readonly paraManana: number | null;
   readonly tickets: number;
   readonly cajonSinVenta: number;
+  /** R3 · 2 · 1 (0152). Una API de antes no los dice. */
+  readonly propinas?: number;
+  readonly entregadaA?: string | null;
+  readonly recibidaDe?: string | null;
+  readonly reparto?: readonly { readonly nombre: string; readonly importe: number }[];
 }
 interface ElDia {
   readonly fecha: string;
@@ -86,6 +94,7 @@ interface ElDia {
   readonly diferencia: number;
   readonly cajonSinVenta: number;
   readonly devuelto: number;
+  readonly propinas?: number;
   readonly cajas: readonly UnaCaja[];
 }
 
@@ -338,7 +347,13 @@ function UnDiaDeCaja({
   return (
     <div className="flex flex-col gap-e4">
       {cabecera}
-      <Tarjeta titulo={d.cajas.length > 1 ? 'Todo el día · las dos cajas' : 'Todo el día'}>
+      <Tarjeta
+        titulo={
+          new Set(d.cajas.map((c) => c.cajon)).size > 1
+            ? 'Todo el día · las dos cajas'
+            : 'Todo el día'
+        }
+      >
         <div className="flex flex-col gap-e2">
           <div className="flex items-baseline justify-between gap-e3">
             <span className="text-texto-suave">Cobrado</span>
@@ -358,11 +373,17 @@ function UnDiaDeCaja({
           <div className="flex flex-wrap gap-e3 text-secundario text-texto-suave">
             <span>Cajón sin venta {d.cajonSinVenta}</span>
             {d.devuelto > 0 && <span>Devuelto {enDinero(d.devuelto)}</span>}
+            {(d.propinas ?? 0) > 0 && <span>Propinas en efectivo {enDinero(d.propinas ?? 0)}</span>}
           </div>
         </div>
       </Tarjeta>
       {d.cajas.map((c) => (
-        <Tarjeta key={c.turnoId} titulo={c.cajon}>
+        <Tarjeta
+          key={c.turnoId}
+          titulo={
+            c.entregadaA != null || c.recibidaDe != null ? `${c.cajon} · ${c.abrio}` : c.cajon
+          }
+        >
           <div className="flex flex-col">
             {c.diferencia !== null && (
               <div className="flex items-center justify-between gap-e3 pb-e2">
@@ -375,11 +396,13 @@ function UnDiaDeCaja({
               </div>
             )}
             <Linea
-              que="Abrió"
-              detalle={`${c.abrio} · ${laHora(c.abiertaEn)}${c.abiertaContando ? ' · contando' : ''}`}
+              que={c.recibidaDe == null ? 'Abrió' : `La recibió de ${c.recibidaDe}`}
+              detalle={`${c.abrio} · ${laHora(c.abiertaEn)}${
+                c.abiertaContando && c.recibidaDe == null ? ' · contando' : ''
+              }`}
               cuanto={enDinero(c.fondo)}
             />
-            {c.alAbrirHabia !== null && c.alAbrirHabia !== 0 && (
+            {c.recibidaDe == null && c.alAbrirHabia !== null && c.alAbrirHabia !== 0 && (
               <Linea
                 que="Al abrir había"
                 detalle="frente a lo que se dejó"
@@ -387,8 +410,11 @@ function UnDiaDeCaja({
               />
             )}
             <Linea que="Cobrado en efectivo" cuanto={enDinero(c.efectivo)} />
+            {(c.propinas ?? 0) > 0 && (
+              <Linea que="Propinas en efectivo" cuanto={`+${enDinero(c.propinas ?? 0)}`} />
+            )}
             {c.movimientos
-              .filter((m) => m.tipo !== 'cambio')
+              .filter((m) => m.tipo !== 'cambio' && m.tipo !== 'propina')
               .map((m, i) => (
                 <Linea
                   key={`${m.tipo}-${String(i)}`}
@@ -400,7 +426,7 @@ function UnDiaDeCaja({
             <Linea que="Debería haber" cuanto={enDinero(c.deberiaHaber)} />
             {c.contado !== null && (
               <Linea
-                que="Contado"
+                que={c.entregadaA == null ? 'Contado' : `Contado al entregarla a ${c.entregadaA}`}
                 detalle={`${c.cerro ?? ''} · ${c.cerradaEn === null ? '' : laHora(c.cerradaEn)}`}
                 cuanto={enDinero(c.contado)}
               />
@@ -408,8 +434,17 @@ function UnDiaDeCaja({
             <Linea que="Con tarjeta" cuanto={enDinero(c.tarjeta)} />
             {c.bizum > 0 && <Linea que="Bizum" cuanto={enDinero(c.bizum)} />}
             {c.cheque > 0 && <Linea que="Cheques" cuanto={enDinero(c.cheque)} />}
-            {c.paraManana !== null && (
+            {c.paraManana !== null && c.entregadaA == null && (
               <Linea que="Se quedó para mañana" cuanto={enDinero(c.paraManana)} />
+            )}
+            {(c.reparto ?? []).length > 0 && (
+              <Linea
+                que="Propinas repartidas"
+                detalle={(c.reparto ?? [])
+                  .map((r) => `${r.nombre} ${enDinero(r.importe)}`)
+                  .join(' · ')}
+                cuanto={enDinero((c.reparto ?? []).reduce((s, r) => s + r.importe, 0))}
+              />
             )}
             <Linea que="Tickets" cuanto={String(c.tickets)} />
             <Linea que="Cajón sin venta" cuanto={String(c.cajonSinVenta)} />

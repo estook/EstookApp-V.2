@@ -164,3 +164,10 @@ pantalla nueva (`pruebas/e2e/la-caja.spec.ts`) que abre la caja, cobra en efecti
 
 - **«Descargar su Z» y «Sus tickets»**, los dos botones de cada caja dentro de un día, en Estook › Cierres de caja.
   El Z se puede reimprimir en la caja («Imprimir el Z»); descargarlo en Estook y saltar a sus tickets, no todavía.
+
+## 8 · R3 · 2, en dos (23-nov)
+
+Con el rediseño (0148) y cobrar en la mesa (0145) de por medio, la maqueta se corrigió el 23-nov (pestaña
+«R3 · 2 · corregida») y Richi la aprobó con **R3 · 2 en dos entregas**: **R3 · 2 · 1 · La caja** (E2, E3, E5, E6
+y E7; [0152](0152-r3-2-1-la-caja-segunda-parte.md)) y **R3 · 2 · 2 · Los descuentos** (E8), que cambian lo que se
+manda a Hacienda. El cierre sigue sin datáfono (0145): la corrección lo quitó de la maqueta.

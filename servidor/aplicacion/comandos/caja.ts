@@ -2,6 +2,8 @@ import { z } from 'zod';
 import {
   FORMAS_DE_PAGO,
   MOTIVOS_DE_LA_DIFERENCIA,
+  avisaDelDescuadre,
+  repartirAPartesIguales,
   MOTIVOS_PARA_METER,
   MOTIVOS_PARA_SACAR,
   POR_QUE_NO_SE_COBRA,
@@ -44,20 +46,27 @@ import {
 import { soloEnLaCaja } from './aparatos.ts';
 import {
   abrirElCajonDeEsteAparato,
+  avisarDelDescuadre,
   elCajonDelAparato,
   elCajonOFallo,
+  elRepartoDe,
   imprimirLaCaja,
+  laCadenaDeLaCaja,
   laCajaAbiertaDe,
   laCajaEnPapel,
   lasFormasDelLocal,
+  lasPropinasDe,
   loDeLaUltimaVez,
   loQueDeberiaHaberEn,
   loQueLlevaLaCaja,
   losAjustesDeLaCaja,
+  losFichadosDelDia,
   losMovimientosParaElPapel,
   nombreCorto,
   puedeLlevarLaCaja,
   quienYCuando,
+  type LosAjustesDeLaCaja,
+  type UnFichadoDelDia,
 } from '../caja.ts';
 
 /**
@@ -74,7 +83,11 @@ import {
  *   explicar_la_diferencia     el motivo de un toque, después, una vez
  *   imprimir_como_va           el X, en papel
  *   imprimir_el_z              el Z de una caja cerrada (otra vez, sale «COPIA»)
- *   guardar_ajustes_de_la_caja quién abre, el recuento, a ciegas, el fondo, Bizum y el cheque
+ *   guardar_ajustes_de_la_caja quién abre, el recuento, a ciegas, el fondo, Bizum y el cheque; y desde
+ *                              R3 · 2 · 1 (0152), escribir el total, las propinas y los dos avisos
+ *   entregar_la_caja           el cambio de turno sin cerrar el día: se cuenta a ciegas y sigue abierta
+ *                              a nombre de quien la recibe, con lo contado (E7, 0152)
+ *   repartir_las_propinas      al cerrar, las propinas a partes iguales entre los que han fichado (E5)
  *
  * **Todo en la caja** (el aparato con cajón) y con quien tecleó su PIN. Abrir, cerrar y el cajón los
  * hace quien puede; si quien está no puede, lo aprueba un encargado con su PIN ahí mismo.
@@ -85,6 +98,36 @@ const id = z.string().uuid();
 const loContado = z
   .record(z.string(), z.number().int().min(0).max(9999))
   .refine(esLoContado, 'Solo billetes y monedas de euro, contados enteros.');
+
+/** E6 (0152): el total ya contado a mano, en lugar de billete a billete. */
+const elTotalEscrito = z.number().int().min(0).max(100000000);
+
+/**
+ * **Lo contado, de una forma o de la otra** (E6, 0152): billete a billete, o escribiendo el total si el
+ * local lo deja. Devuelve el recuento que se guarda (nulo si se escribió el total) y el total.
+ */
+function loQueSeConto(
+  ajustes: { readonly contarEscribiendo: boolean },
+  contado: ElRecuento | null | undefined,
+  escrito: number | undefined,
+): { readonly recuento: ElRecuento | null; readonly total: number } | null {
+  if (contado != null && escrito !== undefined) {
+    throw new FalloDeAplicacion('faltan_datos', {
+      porque: 'Cuenta de una forma: billete a billete o escribiendo el total.',
+    });
+  }
+  if (escrito !== undefined) {
+    if (!ajustes.contarEscribiendo) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'En este local se cuenta billete a billete.',
+      });
+    }
+    return { recuento: null, total: escrito };
+  }
+  if (contado == null) return null;
+  const recuento = sinLosCeros(contado);
+  return { recuento, total: elTotalContado(recuento) };
+}
 
 // ── Lo de todos ────────────────────────────────────────────────────────────────────
 
@@ -164,6 +207,8 @@ export const entradaAbrirCaja = z
     turno_id: id,
     /** Billete a billete. Sin él, «Está correcto»: lo que se dejó la última vez. */
     contado: loContado.nullable().optional(),
+    /** O el total ya contado, si el local lo deja (E6, 0152). */
+    contado_total: elTotalEscrito.optional(),
     pin_del_encargado: z.string().optional(),
   })
   .strict();
@@ -230,8 +275,9 @@ export const abrirCaja = comando<EntradaAbrirCaja, CajaAbierta>({
 
     const ajustes = await losAjustesDeLaCaja(contexto, localId);
     const ultima = await loDeLaUltimaVez(contexto, cajon.id);
-    const contado: ElRecuento | null =
-      entrada.contado == null ? null : sinLosCeros(entrada.contado);
+    const conto = loQueSeConto(ajustes, entrada.contado, entrada.contado_total);
+    // Escribiendo el total se guarda un recuento vacío: dice «se contó», y el fondo lleva el total.
+    const contado: ElRecuento | null = conto === null ? null : (conto.recuento ?? {});
     if (contado === null && ajustes.recuentoAlAbrir) {
       throw new FalloDeAplicacion('faltan_datos', {
         porque: 'En este local se cuenta siempre al abrir: cuenta el cajón.',
@@ -242,7 +288,7 @@ export const abrirCaja = comando<EntradaAbrirCaja, CajaAbierta>({
         porque: 'Es la primera vez: cuenta con cuánto empiezas.',
       });
     }
-    const fondo = contado === null ? (ultima ?? 0) : elTotalContado(contado);
+    const fondo = conto === null ? (ultima ?? 0) : conto.total;
 
     await comoQuien(
       contexto,
@@ -357,6 +403,8 @@ export const entradaCobrar = z
     entregado: z.number().int().min(1).max(10000000).optional(),
     /** El PIN de quien cobra: el cobro queda a su nombre aunque la caja la tenga otro (0145). */
     pin: z.string().optional(),
+    /** «Quédate el cambio» (E5, 0152): lo que sobra del efectivo se queda de propina. */
+    propina: z.number().int().min(1).max(100000).optional(),
   })
   .strict();
 export type EntradaCobrar = z.infer<typeof entradaCobrar>;
@@ -375,6 +423,8 @@ export interface Cobrado {
   readonly yaEstaba: boolean;
   /** Quién cobró: quien tecleó su PIN, o quien está en el aparato. */
   readonly cobradoPor: string;
+  /** Lo que se quedó de propina (E5, 0152); cero sin ella. El cambio ya la descuenta. */
+  readonly propina: number;
 }
 
 interface CobroAnterior {
@@ -649,6 +699,7 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
         cajonAbierto: false,
         yaEstaba: true,
         cobradoPor: yaCobrado.cobrado_por,
+        propina: 0,
       };
     }
 
@@ -747,6 +798,22 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
     if (no !== null)
       throw new FalloDeAplicacion('faltan_datos', { porque: POR_QUE_NO_SE_COBRA[no] });
 
+    // **La propina** (E5, 0152): solo del cambio del efectivo, en la caja y si el local lo deja. No va
+    // en el ticket (Anexo 5.1): se apunta en el cajón para que cuadre.
+    const propina = entrada.propina ?? 0;
+    if (propina > 0) {
+      const cambio = elCambio(pagos);
+      if (!caja.conCajon || !ajustes.propinaAlCobrar || propina > cambio) {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: !caja.conCajon
+            ? 'La propina en efectivo se apunta en la caja.'
+            : !ajustes.propinaAlCobrar
+              ? 'En este local no se apuntan propinas al cobrar.'
+              : 'La propina sale del cambio: no puede ser más.',
+        });
+      }
+    }
+
     // ── El ticket ────────────────────────────────────────────────────────────────────
     const fisco = await elRelojYElFisco(contexto, localId);
     const hoy = fechaEnElLocal(contexto.ahora, fisco.zonaHoraria);
@@ -828,6 +895,16 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
            where id = ${pendiente.id}::uuid
         `;
       }
+      if (propina > 0) {
+        await contexto.sql`
+          insert into estook.movimiento_de_caja
+            (id, turno_id, local_id, tipo, importe, motivo, cobro_id, hecho_por, hecho_desde, en)
+          values (gen_random_uuid(), ${caja.id}::uuid, ${localId}::uuid, 'propina', ${propina},
+                  ${`Propina · ${cubre.titulo}`.slice(0, 120)}, ${entrada.cobro_id}::uuid,
+                  ${cobradoPor}::uuid, ${contexto.sesion?.aparato?.terminalId ?? null}::uuid,
+                  ${contexto.ahora.toISOString()}::timestamptz)
+        `;
+      }
     });
 
     const quedaDespues = cubre.queda - cubre.importe;
@@ -858,6 +935,7 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
       ...(cubre.parte === null ? {} : { parte: cubre.parte.parte, de: cubre.parte.de }),
       ...(pendiente === null ? {} : { pendiente: pendiente.id }),
       ...(cobradoPor === enElAparato ? {} : { cobrado_por: cobradoPor }),
+      ...(propina > 0 ? { propina } : {}),
       liberada,
     });
     await tocarElServicio(contexto, localId);
@@ -865,12 +943,13 @@ export const cobrar = comando<EntradaCobrar, Cobrado>({
       cobroId: entrada.cobro_id,
       documentoId: hecho.id,
       numero: hecho.numero,
-      cambio: elCambio(pagos),
+      cambio: elCambio(pagos) - propina,
       queda: quedaDespues,
       liberada,
       cajonAbierto,
       yaEstaba: false,
       cobradoPor,
+      propina,
     };
   },
 });
@@ -1152,7 +1231,10 @@ export const moverDinero = comando<
 export const entradaCerrarCaja = z
   .object({
     turno_id: id,
-    contado: loContado,
+    /** Billete a billete… */
+    contado: loContado.optional(),
+    /** …o el total ya contado, si el local lo deja (E6, 0152). */
+    contado_total: elTotalEscrito.optional(),
     /** El total del cierre del datáfono; nulo si hoy no se usó. */
     datafono: z.number().int().min(0).max(100000000).nullable(),
     para_manana: z.number().int().min(0).max(10000000),
@@ -1178,7 +1260,35 @@ export interface LaCajaCerrada {
   readonly diaCerrado: boolean;
   /** Las que siguen abiertas el mismo día: «Comedor». */
   readonly quedanAbiertas: readonly string[];
+  /** Las propinas en efectivo del día en este cajón: las suyas y las de las cajas que se le entregaron. */
+  readonly propinas: number;
+  /**
+   * **Repartirlas** (E5, 0152), si el local lo deja y hay propinas: los que han fichado ese día, y lo
+   * repartido si ya se hizo. Nulo si no toca.
+   */
+  readonly reparto: {
+    readonly fichados: readonly UnFichadoDelDia[];
+    readonly hecho: readonly { readonly nombre: string; readonly importe: number }[];
+  } | null;
   readonly yaEstaba: boolean;
+}
+
+/** Las propinas de una caja que se cierra y, si toca, a quién se pueden repartir. */
+async function lasPropinasYElReparto(
+  contexto: Contexto,
+  localId: string,
+  turnoId: string,
+  fecha: string,
+  ajustes: LosAjustesDeLaCaja,
+): Promise<Pick<LaCajaCerrada, 'propinas' | 'reparto'>> {
+  const propinas = await lasPropinasDe(contexto, await laCadenaDeLaCaja(contexto, turnoId));
+  if (propinas === 0) return { propinas, reparto: null };
+  const hecho = await elRepartoDe(contexto, turnoId);
+  if (!ajustes.repartirPropinas && hecho.length === 0) return { propinas, reparto: null };
+  return {
+    propinas,
+    reparto: { fichados: await losFichadosDelDia(contexto, localId, fecha), hecho },
+  };
 }
 
 /**
@@ -1202,7 +1312,20 @@ export const cerrarCaja = comando<EntradaCerrarCaja, LaCajaCerrada>({
     const cajon = await elCajonOFallo(contexto);
 
     const ya = await elZ(contexto, localId, entrada.turno_id);
-    if (ya !== null) return { ...ya, yaEstaba: true };
+    if (ya !== null) {
+      const ajustesDeAntes = await losAjustesDeLaCaja(contexto, localId);
+      return {
+        ...ya,
+        ...(await lasPropinasYElReparto(
+          contexto,
+          localId,
+          entrada.turno_id,
+          ya.fecha,
+          ajustesDeAntes,
+        )),
+        yaEstaba: true,
+      };
+    }
 
     const caja = await laCajaAbiertaDe(contexto, cajon.id);
     if (caja === null || caja.id !== entrada.turno_id) {
@@ -1221,8 +1344,11 @@ export const cerrarCaja = comando<EntradaCerrarCaja, LaCajaCerrada>({
       },
     );
 
-    const contado = sinLosCeros(entrada.contado);
-    const contadoTotal = elTotalContado(contado);
+    const ajustes = await losAjustesDeLaCaja(contexto, localId);
+    const conto = loQueSeConto(ajustes, entrada.contado, entrada.contado_total);
+    if (conto === null) throw new FalloDeAplicacion('faltan_datos', { porque: 'Cuenta el cajón.' });
+    const contado = conto.recuento;
+    const contadoTotal = conto.total;
     if (entrada.para_manana > contadoTotal) {
       throw new FalloDeAplicacion('faltan_datos', {
         porque: 'Para mañana no se puede dejar más de lo que has contado.',
@@ -1242,10 +1368,11 @@ export const cerrarCaja = comando<EntradaCerrarCaja, LaCajaCerrada>({
                cerrada_por = ${personaId}::uuid,
                cerrada_desde = ${contexto.sesion?.aparato?.terminalId ?? null}::uuid,
                cerrada_aprobada_por = ${aprobadoPor}::uuid,
-               contado = ${JSON.stringify(contado)}::text::jsonb,
+               contado = ${contado === null ? null : JSON.stringify(contado)}::text::jsonb,
                contado_total = ${contadoTotal},
                datafono = ${entrada.datafono},
                para_manana = ${entrada.para_manana},
+               propinas = ${lleva.propinas},
                efectivo_cobrado = ${lleva.efectivo},
                tarjeta_cobrada = ${lleva.tarjeta},
                bizum_cobrado = ${lleva.bizum},
@@ -1277,11 +1404,26 @@ export const cerrarCaja = comando<EntradaCerrarCaja, LaCajaCerrada>({
     await apuntar(contexto, 'cerrar_caja', 'turno_de_caja', caja.id, localId, {
       cajon: cajon.nombre,
       contado: contadoTotal,
+      escrito: contado === null,
       deberia_haber: deberia,
       diferencia,
       para_manana: entrada.para_manana,
       ...(aprobadoPor === null ? {} : { aprobada_por: aprobadoPor }),
     });
+    // **El aviso del descuadre** (E3, 0152): al gerente, si pasa de la cifra del local. Uno por caja.
+    if (avisaDelDescuadre(diferencia, ajustes.avisarDesde)) {
+      await avisarDelDescuadre(contexto, {
+        localId,
+        turnoId: caja.id,
+        cajon: cajon.nombre,
+        fecha: caja.fecha,
+        diferencia,
+        detalle: await (async () => {
+          const { quien, hora } = await quienYAQueHora(contexto, localId, personaId);
+          return `Cerró ${quien} a las ${hora}.`;
+        })(),
+      });
+    }
     await tocarElServicio(contexto, localId);
     return {
       turnoId: caja.id,
@@ -1297,17 +1439,38 @@ export const cerrarCaja = comando<EntradaCerrarCaja, LaCajaCerrada>({
       retiras: contadoTotal - entrada.para_manana,
       diaCerrado,
       quedanAbiertas: quedan.map((q) => q.nombre),
+      ...(await lasPropinasYElReparto(contexto, localId, caja.id, caja.fecha, ajustes)),
       yaEstaba: false,
     };
   },
 });
+
+/** Quién y a qué hora, en la del local: lo que dice el aviso del descuadre («Cerró Ana a las 23:58»). */
+async function quienYAQueHora(
+  contexto: Contexto,
+  localId: string,
+  personaId: string,
+): Promise<{ readonly quien: string; readonly hora: string }> {
+  const [local, quien] = await Promise.all([
+    loDelLocalParaImprimir(contexto, localId),
+    enNombreDelSistema(
+      contexto,
+      () => contexto.sql<{ nombre: string }[]>`
+        select nombre from estook.persona where id = ${personaId}::uuid
+      `,
+    ),
+  ]);
+  const hora =
+    local === null ? '' : (cuandoEnElLocal(contexto.ahora, local.zonaHoraria).split(' ')[1] ?? '');
+  return { quien: nombreCorto(quien[0]?.nombre ?? ''), hora };
+}
 
 /** El Z de una caja ya cerrada de este local, como lo devolvió al cerrarla; nulo si sigue abierta. */
 async function elZ(
   contexto: Contexto,
   localId: string,
   turnoId: string,
-): Promise<Omit<LaCajaCerrada, 'yaEstaba'> | null> {
+): Promise<(Omit<LaCajaCerrada, 'yaEstaba' | 'propinas' | 'reparto'> & { fecha: string }) | null> {
   const filas = await enNombreDelSistema(
     contexto,
     () => contexto.sql<
@@ -1353,6 +1516,7 @@ async function elZ(
     retiras: z.contado_total - z.para_manana,
     diaCerrado: abiertas.length === 0,
     quedanAbiertas: abiertas.map((a) => a.nombre),
+    fecha: z.fecha,
   };
 }
 
@@ -1470,6 +1634,297 @@ export const explicarLaDiferencia = comando<
   },
 });
 
+// ═══ Entregar la caja a otro, sin cerrarla (E7, 0152) ═══════════════════════════════
+
+export const entradaEntregarLaCaja = z
+  .object({
+    /** La caja que se entrega: la abierta de este cajón. */
+    turno_id: id,
+    /** La que nace para quien la recibe. Nace en el aparato: repetir no entrega dos veces. */
+    nuevo_turno_id: id,
+    contado: loContado.optional(),
+    contado_total: elTotalEscrito.optional(),
+    /** El PIN de quien la recibe: es quien se queda con ella, y tiene que poder llevarla. */
+    pin: z.string().max(12),
+  })
+  .strict();
+export type EntradaEntregarLaCaja = z.infer<typeof entradaEntregarLaCaja>;
+
+export interface LaCajaEntregada {
+  readonly turnoId: string;
+  readonly nuevoTurnoId: string;
+  readonly deberiaHaber: number;
+  readonly contado: number;
+  readonly diferencia: number;
+  /** Quien la recibe: «Ana». */
+  readonly recibe: string;
+  readonly yaEstaba: boolean;
+}
+
+/**
+ * **Entregar la caja** (E7, 0152; maqueta corregida del 23-nov): el cambio de turno sin cerrar. Quien la
+ * deja cuenta **a ciegas** (billete a billete o escribiendo el total); quien la recibe teclea su PIN; la
+ * caja de quien la deja se cierra con su arqueo **y el día no se cierra**; la de quien la recibe nace con
+ * lo contado como fondo. La diferencia se ve después, como al cerrar, y si pasa de la cifra del local,
+ * avisa al gerente. **Sin datáfono**: la tarjeta no se cuenta (Richi, 11-nov).
+ */
+export const entregarLaCaja = comando<EntradaEntregarLaCaja, LaCajaEntregada>({
+  nombre: 'entregar_la_caja',
+  entrada: entradaEntregarLaCaja,
+  exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
+  enLosAparatos: ['caja'],
+
+  async ejecutar(contexto, entrada) {
+    soloEnLaCaja(contexto);
+    const localId = elLocalDelServicio(contexto);
+    const personaId = contexto.personaId;
+    if (personaId === null) throw new FalloDeAplicacion('sin_sesion');
+    const cajon = await elCajonOFallo(contexto);
+
+    // La misma entrega otra vez (la respuesta se perdió): lo de entonces.
+    const antes = await enNombreDelSistema(
+      contexto,
+      () => contexto.sql<
+        { deberia_haber: number; contado_total: number; diferencia: number; recibe: string }[]
+      >`
+        select a.deberia_haber, a.contado_total, a.diferencia, p.nombre as recibe
+          from estook.turno_de_caja n
+          join estook.turno_de_caja a on a.id = n.recibida_de
+          join estook.persona p on p.id = n.abierta_por
+         where n.id = ${entrada.nuevo_turno_id}::uuid and a.id = ${entrada.turno_id}::uuid
+           and n.local_id = ${localId}::uuid
+      `,
+    );
+    const yaEntregada = antes[0];
+    if (yaEntregada !== undefined) {
+      return {
+        turnoId: entrada.turno_id,
+        nuevoTurnoId: entrada.nuevo_turno_id,
+        deberiaHaber: yaEntregada.deberia_haber,
+        contado: yaEntregada.contado_total,
+        diferencia: yaEntregada.diferencia,
+        recibe: nombreCorto(yaEntregada.recibe),
+        yaEstaba: true,
+      };
+    }
+
+    const caja = await laCajaAbiertaDe(contexto, cajon.id);
+    if (caja === null || caja.id !== entrada.turno_id) {
+      throw new FalloDeAplicacion('no_existe', {
+        porque: 'Esa caja no está abierta en este cajón.',
+      });
+    }
+    if (caja.fecha < (await laJornadaDeHoy(contexto, localId))) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'La caja de ayer no se entrega: se cierra, contando el cajón.',
+      });
+    }
+    const ajustes = await losAjustesDeLaCaja(contexto, localId);
+    const conto = loQueSeConto(ajustes, entrada.contado, entrada.contado_total);
+    if (conto === null) throw new FalloDeAplicacion('faltan_datos', { porque: 'Cuenta el cajón.' });
+
+    // **Quien la recibe**: su PIN, y que pueda llevar la caja (o cualquiera, con «También camareros»).
+    const recibe = await quienEsElPin(
+      contexto,
+      entrada.pin,
+      ajustes.cajaLaAbren === 'todos'
+        ? ['accion.llevar_la_caja', 'accion.tomar_nota']
+        : ['accion.llevar_la_caja'],
+    );
+    if (recibe.personaId === personaId) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'La caja ya la llevas tú: que teclee su PIN quien la recibe.',
+      });
+    }
+
+    const lleva = await loQueLlevaLaCaja(contexto, caja.id);
+    const deberia = loQueDeberiaHaberEn(caja.fondo, lleva);
+    const diferencia = conto.total - deberia;
+    const ahora = contexto.ahora.toISOString();
+    const terminalId = contexto.sesion?.aparato?.terminalId ?? null;
+    const recuento = conto.recuento === null ? null : JSON.stringify(conto.recuento);
+
+    // Lo hace el sistema con los dos nombres: quien la deja y quien la recibe, que es quien la abre.
+    await enNombreDelSistema(contexto, async () => {
+      await contexto.sql`
+        update estook.turno_de_caja
+           set cerrada_en = ${ahora}::timestamptz,
+               cerrada_por = ${personaId}::uuid,
+               cerrada_desde = ${terminalId}::uuid,
+               contado = ${recuento}::text::jsonb,
+               contado_total = ${conto.total},
+               para_manana = ${conto.total},
+               efectivo_cobrado = ${lleva.efectivo},
+               tarjeta_cobrada = ${lleva.tarjeta},
+               bizum_cobrado = ${lleva.bizum},
+               cheque_cobrado = ${lleva.cheque},
+               metido = ${lleva.metido},
+               sacado = ${lleva.sacado},
+               devuelto = ${lleva.devuelto},
+               propinas = ${lleva.propinas},
+               tickets = ${lleva.tickets},
+               cajon_sin_venta = ${lleva.cajonSinVenta},
+               deberia_haber = ${deberia},
+               diferencia = ${diferencia},
+               entregada_a = ${recibe.personaId}::uuid
+         where id = ${caja.id}::uuid and cerrada_en is null
+      `;
+      await contexto.sql`
+        insert into estook.turno_de_caja
+          (id, local_id, cajon_id, fecha_operativa, abierta_en, abierta_por, abierta_desde, fondo,
+           contado_al_abrir, lo_de_la_ultima_vez, recibida_de)
+        values (${entrada.nuevo_turno_id}::uuid, ${localId}::uuid, ${cajon.id}::uuid,
+                ${caja.fecha}::date, ${ahora}::timestamptz, ${recibe.personaId}::uuid,
+                ${terminalId}::uuid, ${conto.total}, ${recuento ?? '{}'}::text::jsonb, ${conto.total},
+                ${caja.id}::uuid)
+      `;
+    });
+
+    await apuntar(contexto, 'entregar_la_caja', 'turno_de_caja', caja.id, localId, {
+      cajon: cajon.nombre,
+      a: recibe.personaId,
+      nueva: entrada.nuevo_turno_id,
+      contado: conto.total,
+      escrito: conto.recuento === null,
+      deberia_haber: deberia,
+      diferencia,
+    });
+    if (avisaDelDescuadre(diferencia, ajustes.avisarDesde)) {
+      await avisarDelDescuadre(contexto, {
+        localId,
+        turnoId: caja.id,
+        cajon: cajon.nombre,
+        fecha: caja.fecha,
+        diferencia,
+        detalle: await (async () => {
+          const { quien, hora } = await quienYAQueHora(contexto, localId, personaId);
+          return `${quien} la entregó a ${nombreCorto(recibe.nombre)} a las ${hora}.`;
+        })(),
+      });
+    }
+    await tocarElServicio(contexto, localId);
+    return {
+      turnoId: caja.id,
+      nuevoTurnoId: entrada.nuevo_turno_id,
+      deberiaHaber: deberia,
+      contado: conto.total,
+      diferencia,
+      recibe: nombreCorto(recibe.nombre),
+      yaEstaba: false,
+    };
+  },
+});
+
+// ═══ Repartir las propinas al cerrar (E5, 0152) ═════════════════════════════════════
+
+export const entradaRepartirLasPropinas = z
+  .object({
+    /** La caja que se acaba de cerrar. */
+    turno_id: id,
+    /** Entre quiénes: los que han fichado ese día, menos a quien se haya quitado. */
+    personas: z.array(id).min(1).max(60),
+  })
+  .strict();
+export type EntradaRepartirLasPropinas = z.infer<typeof entradaRepartirLasPropinas>;
+
+/**
+ * **Repartir las propinas** (E5, 0152): las propinas en efectivo del día en ese cajón, a partes iguales
+ * entre los que han fichado ese día, sala y cocina (Richi, 23-nov). Estook **no da el dinero**: apunta
+ * cuánto le toca a cada uno para el Z y Cierres de caja. Una vez por caja.
+ */
+export const repartirLasPropinas = comando<
+  EntradaRepartirLasPropinas,
+  { readonly reparto: readonly { readonly nombre: string; readonly importe: number }[] }
+>({
+  nombre: 'repartir_las_propinas',
+  entrada: entradaRepartirLasPropinas,
+  exige: 'accion.tomar_nota',
+  enElTpv: 'solo',
+  enLosAparatos: ['caja'],
+
+  async ejecutar(contexto, entrada) {
+    const localId = elLocalDelServicio(contexto);
+    const personaId = contexto.personaId;
+    if (personaId === null) throw new FalloDeAplicacion('sin_sesion');
+    const ajustes = await losAjustesDeLaCaja(contexto, localId);
+    if (!ajustes.repartirPropinas) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'En este local las propinas no se reparten en la caja.',
+      });
+    }
+
+    const hecho = await enNombreDelSistema(contexto, async () => {
+      // La caja, bloqueada mientras se reparte: dos toques a la vez no reparten dos veces.
+      const filas = await contexto.sql<
+        { cerrada_por: string | null; entregada_a: string | null; fecha: string }[]
+      >`
+        select cerrada_por::text as cerrada_por, entregada_a::text as entregada_a,
+               fecha_operativa::text as fecha
+          from estook.turno_de_caja
+         where id = ${entrada.turno_id}::uuid and local_id = ${localId}::uuid
+         for update
+      `;
+      const turno = filas[0];
+      if (turno?.cerrada_por == null) {
+        throw new FalloDeAplicacion('no_existe', { porque: 'Esa caja no está cerrada.' });
+      }
+      if (turno.entregada_a !== null) {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: 'Las propinas se reparten al cerrar la caja, no al entregarla.',
+        });
+      }
+      // Lo reparte quien la cerró, o quien lleva la caja.
+      const puede = await contexto.sql<{ puede: boolean }[]>`
+        select estook.puede_llevar_la_caja(${localId}::uuid) as puede
+      `;
+      if (turno.cerrada_por !== personaId && puede[0]?.puede !== true) {
+        throw new FalloDeAplicacion('sin_permiso');
+      }
+      const antes = await elRepartoDe(contexto, entrada.turno_id);
+      if (antes.length > 0) return { reparto: antes, propinas: 0 };
+
+      const propinas = await lasPropinasDe(
+        contexto,
+        await laCadenaDeLaCaja(contexto, entrada.turno_id),
+      );
+      if (propinas === 0) {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: 'Hoy no hay propinas que repartir.',
+        });
+      }
+      const fichados = await losFichadosDelDia(contexto, localId, turno.fecha);
+      const elegidos = new Set(entrada.personas);
+      const entre = fichados.filter((f) => elegidos.has(f.personaId));
+      if (entre.length !== elegidos.size) {
+        throw new FalloDeAplicacion('lo_cambio_otra_persona', {
+          porque: 'Alguno no ha fichado hoy en este local: mira la lista otra vez.',
+        });
+      }
+      const importes = repartirAPartesIguales(propinas, entre.length);
+      for (const [i, f] of entre.entries()) {
+        await contexto.sql`
+          insert into estook.reparto_de_propinas
+            (turno_id, local_id, persona_id, importe, repartido_por, en)
+          values (${entrada.turno_id}::uuid, ${localId}::uuid, ${f.personaId}::uuid,
+                  ${importes[i] ?? 0}, ${personaId}::uuid, ${contexto.ahora.toISOString()}::timestamptz)
+        `;
+      }
+      return {
+        reparto: entre.map((f, i) => ({ nombre: f.nombre, importe: importes[i] ?? 0 })),
+        propinas,
+      };
+    });
+    if (hecho.propinas > 0) {
+      await apuntar(contexto, 'repartir_las_propinas', 'turno_de_caja', entrada.turno_id, localId, {
+        propinas: hecho.propinas,
+        entre: hecho.reparto.length,
+      });
+    }
+    return { reparto: hecho.reparto };
+  },
+});
+
 // ═══ El X y el Z en papel ═══════════════════════════════════════════════════════════
 
 export const imprimirComoVa = comando<Record<string, never>, { readonly impreso: boolean }>({
@@ -1489,6 +1944,7 @@ export const imprimirComoVa = comando<Record<string, never>, { readonly impreso:
     const local = await loDelLocalParaImprimir(contexto, localId);
     if (local === null) throw new FalloDeAplicacion('local_ajeno');
     const lleva = await loQueLlevaLaCaja(contexto, caja.id);
+    const recibida = await deQuienSeRecibio(contexto, caja.id);
     const papel = laCajaEnPapel({
       local: local.nombre,
       caja: cajon.nombre,
@@ -1510,10 +1966,26 @@ export const imprimirComoVa = comando<Record<string, never>, { readonly impreso:
       tickets: lleva.tickets,
       cajonSinVenta: lleva.cajonSinVenta,
       copia: false,
+      propinas: lleva.propinas,
+      entrega: recibida === null ? null : `Recibida de ${recibida}`,
     });
     return { impreso: await imprimirLaCaja(contexto, localId, papel) };
   },
 });
+
+/** De quién se recibió una caja (E7): «Marcos», o nulo si se abrió contando. */
+async function deQuienSeRecibio(contexto: Contexto, turnoId: string): Promise<string | null> {
+  const filas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ nombre: string }[]>`
+      select p.nombre from estook.turno_de_caja n
+        join estook.turno_de_caja a on a.id = n.recibida_de
+        join estook.persona p on p.id = a.cerrada_por
+       where n.id = ${turnoId}::uuid
+    `,
+  );
+  return filas[0] === undefined ? null : nombreCorto(filas[0].nombre);
+}
 
 export const imprimirElZ = comando<{ turno_id: string }, { readonly impreso: boolean }>({
   nombre: 'imprimir_el_z',
@@ -1546,6 +2018,8 @@ export const imprimirElZ = comando<{ turno_id: string }, { readonly impreso: boo
           para_manana: number;
           tickets: number;
           cajon_sin_venta: number;
+          propinas: number | null;
+          entregada_a: string | null;
           impreso_antes: boolean;
         }[]
       >`
@@ -1556,7 +2030,7 @@ export const imprimirElZ = comando<{ turno_id: string }, { readonly impreso: boo
                t.cerrada_por::text as cerrada_por,
                t.fondo, t.efectivo_cobrado, t.tarjeta_cobrada, t.bizum_cobrado, t.cheque_cobrado,
                t.deberia_haber, t.contado_total, t.diferencia, t.datafono, t.para_manana, t.tickets,
-               t.cajon_sin_venta,
+               t.cajon_sin_venta, t.propinas, pe.nombre as entregada_a,
                exists (select 1 from estook.auditoria a
                         where a.entidad = 'turno_de_caja' and a.entidad_id = t.id::text
                           and a.accion = 'imprimir_el_z') as impreso_antes
@@ -1564,6 +2038,7 @@ export const imprimirElZ = comando<{ turno_id: string }, { readonly impreso: boo
           join estook.cajon c on c.id = t.cajon_id
           join estook.persona pa on pa.id = t.abierta_por
           join estook.persona pc on pc.id = t.cerrada_por
+          left join estook.persona pe on pe.id = t.entregada_a
          where t.id = ${entrada.turno_id}::uuid and t.local_id = ${localId}::uuid
            and t.cerrada_en is not null
       `,
@@ -1576,7 +2051,11 @@ export const imprimirElZ = comando<{ turno_id: string }, { readonly impreso: boo
     }
     const local = await loDelLocalParaImprimir(contexto, localId);
     if (local === null) throw new FalloDeAplicacion('local_ajeno');
-    const lleva = await loQueLlevaLaCaja(contexto, entrada.turno_id);
+    const [lleva, recibida, reparto] = await Promise.all([
+      loQueLlevaLaCaja(contexto, entrada.turno_id),
+      deQuienSeRecibio(contexto, entrada.turno_id),
+      elRepartoDe(contexto, entrada.turno_id),
+    ]);
     const papel = laCajaEnPapel({
       local: local.nombre,
       caja: z.cajon,
@@ -1598,6 +2077,14 @@ export const imprimirElZ = comando<{ turno_id: string }, { readonly impreso: boo
       tickets: z.tickets,
       cajonSinVenta: z.cajon_sin_venta,
       copia: z.impreso_antes,
+      propinas: z.propinas ?? lleva.propinas,
+      entrega:
+        z.entregada_a !== null
+          ? `Entregada a ${nombreCorto(z.entregada_a)}`
+          : recibida === null
+            ? null
+            : `Recibida de ${recibida}`,
+      reparto,
     });
     const impreso = await imprimirLaCaja(contexto, localId, papel);
     if (impreso)
@@ -1616,6 +2103,12 @@ export const entradaAjustesDeLaCaja = z
     fondo_de_siempre: z.number().int().min(0).max(10000000).nullable(),
     con_bizum: z.boolean(),
     con_cheque: z.boolean(),
+    // R3 · 2 · 1 (0152). Sin ellos (un TPV de antes), se quedan como estaban.
+    contar_escribiendo: z.boolean().optional(),
+    propina_al_cobrar: z.boolean().optional(),
+    repartir_propinas: z.boolean().optional(),
+    retirar_desde: z.number().int().min(5000).max(10000000).optional(),
+    avisar_desde: z.number().int().min(100).max(1000000).optional(),
   })
   .strict();
 export type EntradaAjustesDeLaCaja = z.infer<typeof entradaAjustesDeLaCaja>;
@@ -1633,11 +2126,16 @@ export const guardarAjustesDeLaCaja = comando<EntradaAjustesDeLaCaja, EntradaAju
     await contexto.sql`
       insert into estook.ajustes_del_tpv
         (local_id, caja_la_abren, recuento_al_abrir, contar_a_ciegas, fondo_de_siempre, con_bizum,
-         con_cheque, cambiado_por, cambiado_en)
+         con_cheque, contar_escribiendo, propina_al_cobrar, repartir_propinas, retirar_desde,
+         avisar_desde, cambiado_por, cambiado_en)
       values (${localId}::uuid, ${entrada.caja_la_abren}, ${entrada.recuento_al_abrir},
               ${entrada.contar_a_ciegas}, ${entrada.fondo_de_siempre}, ${entrada.con_bizum},
-              ${entrada.con_cheque}, ${contexto.personaId}::uuid,
-              ${contexto.ahora.toISOString()}::timestamptz)
+              ${entrada.con_cheque}, coalesce(${entrada.contar_escribiendo ?? null}::boolean, false),
+              coalesce(${entrada.propina_al_cobrar ?? null}::boolean, true),
+              coalesce(${entrada.repartir_propinas ?? null}::boolean, false),
+              coalesce(${entrada.retirar_desde ?? null}::integer, 80000),
+              coalesce(${entrada.avisar_desde ?? null}::integer, 1000),
+              ${contexto.personaId}::uuid, ${contexto.ahora.toISOString()}::timestamptz)
       on conflict (local_id) do update
         set caja_la_abren = excluded.caja_la_abren,
             recuento_al_abrir = excluded.recuento_al_abrir,
@@ -1645,6 +2143,16 @@ export const guardarAjustesDeLaCaja = comando<EntradaAjustesDeLaCaja, EntradaAju
             fondo_de_siempre = excluded.fondo_de_siempre,
             con_bizum = excluded.con_bizum,
             con_cheque = excluded.con_cheque,
+            contar_escribiendo = coalesce(${entrada.contar_escribiendo ?? null}::boolean,
+                                          ajustes_del_tpv.contar_escribiendo),
+            propina_al_cobrar = coalesce(${entrada.propina_al_cobrar ?? null}::boolean,
+                                         ajustes_del_tpv.propina_al_cobrar),
+            repartir_propinas = coalesce(${entrada.repartir_propinas ?? null}::boolean,
+                                         ajustes_del_tpv.repartir_propinas),
+            retirar_desde = coalesce(${entrada.retirar_desde ?? null}::integer,
+                                     ajustes_del_tpv.retirar_desde),
+            avisar_desde = coalesce(${entrada.avisar_desde ?? null}::integer,
+                                    ajustes_del_tpv.avisar_desde),
             cambiado_por = excluded.cambiado_por,
             cambiado_en = excluded.cambiado_en
     `;

@@ -3,6 +3,7 @@ import {
   cerrarCaja,
   cobrar,
   dejarElCobroEnLaCaja,
+  entregarLaCaja,
   explicarLaDiferencia,
   guardarAjustesDeLaCaja,
   imprimirComoVa,
@@ -10,6 +11,7 @@ import {
   moverDinero,
   quienCobraConEstePin,
   quitarElCobroPendiente,
+  repartirLasPropinas,
 } from './comandos/caja.ts';
 import {
   cierresDeCaja,
@@ -1150,6 +1152,9 @@ export const catalogo = {
     [dejarElCobroEnLaCaja.nombre]: dejarElCobroEnLaCaja,
     [quitarElCobroPendiente.nombre]: quitarElCobroPendiente,
     [quienCobraConEstePin.nombre]: quienCobraConEstePin,
+    // R3 · 2 · 1 (0152): entregar la caja sin cerrarla y repartir las propinas.
+    [entregarLaCaja.nombre]: entregarLaCaja,
+    [repartirLasPropinas.nombre]: repartirLasPropinas,
     [imprimirLaCuenta.nombre]: imprimirLaCuenta,
     [reimprimirLaComanda.nombre]: reimprimirLaComanda,
     [laColaDeLaCaja.nombre]: laColaDeLaCaja,

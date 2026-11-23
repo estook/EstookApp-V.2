@@ -513,8 +513,9 @@ ESTOOK TPV    M16a · La jornada → M20A · 1 (base y API) → T1 · La puerta 
 HECHO       L · La limpieza: fuera Cuaderno, Pulse, Costes, Tareas y las pestañas que esperaban;
             la Carta sin pestañas (migración 0118) · S1 · Cada plan, lo suyo · el rediseño (0148)
             · M20 · 1 · Lo vendido baja del almacén (0149), sin aprovechamiento (0150)
-AHORA       M20 · 2 · Lo que se escapa (0151)
-ESTOOK TPV  → R3 · 2 · La caja, segunda parte → lo que queda de T7 (sin internet en las nativas,
+            · M20 · 2 · Lo que se escapa (0151)
+AHORA       R3 · 2 · 1 · La caja, segunda parte (0152)
+ESTOOK TPV  → R3 · 2 · 2 · Los descuentos → lo que queda de T7 (sin internet en las nativas,
               las ventas de hoy, la venta rápida, Informes y Empleados con lo cobrado)
             → T6 · 3 · NO VERI*FACTU → T8 · Android (con el proveedor de cobro decidido)
             → AUDITORÍA 2 → M29 · Uber Eats (cuando den el acceso)

@@ -58,14 +58,54 @@ export interface LoQueMueveElCajon {
   readonly sacado: number;
   /** Lo devuelto en efectivo desde la caja. */
   readonly devuelto: number;
+  /** Las propinas en efectivo que se quedaron en el cajón (E5, 0152). Sin ellas, ninguna. */
+  readonly propinas?: number;
 }
 
 /**
- * **Lo que debería haber en el cajón** (0144): el fondo + lo cobrado en efectivo + lo metido − lo
- * sacado − lo devuelto. Los cheques y Bizum van aparte: no son efectivo.
+ * **Lo que debería haber en el cajón** (0144): el fondo + lo cobrado en efectivo + lo metido + las
+ * propinas − lo sacado − lo devuelto. Las propinas cuentan porque están dentro (0152): sin ellas, cada
+ * «Quédate el cambio» sería un sobrante. Los cheques y Bizum van aparte: no son efectivo.
  */
 export function loQueDeberiaHaber(c: LoQueMueveElCajon): number {
-  return c.fondo + c.efectivo + c.metido - c.sacado - c.devuelto;
+  return c.fondo + c.efectivo + c.metido + (c.propinas ?? 0) - c.sacado - c.devuelto;
+}
+
+// ── Los avisos de la caja (E2 y E3, 0152) ─────────────────────────────────────────
+
+/** Desde cuánto en el cajón sale «Retirar», de fábrica: 800 € (maqueta del 9-nov). */
+export const RETIRAR_DESDE_DE_FABRICA = 80000;
+/** Desde cuánto de diferencia se avisa al gerente, de fábrica: 10 €, la raya del rojo. */
+export const AVISAR_DESDE_DE_FABRICA = 1000;
+
+/**
+ * **Lo que se propone retirar** (E2, 0152): lo que pasa del fondo de siempre, **en billetes de 50 €**,
+ * que es lo que se lleva a la caja fuerte; el resto se queda para dar cambio. Sin fondo de siempre, el
+ * de esta caja. Con 860,40 € y un fondo de 150 €: 710,40 € → 700 €. Nunca menos de cero.
+ */
+export function loQueSeProponeRetirar(a: {
+  readonly enElCajon: number;
+  readonly fondoDeSiempre: number | null;
+  readonly fondoDeLaCaja: number;
+}): number {
+  const fondo = a.fondoDeSiempre ?? a.fondoDeLaCaja;
+  return Math.max(0, Math.floor((a.enElCajon - fondo) / 5000) * 5000);
+}
+
+/** Si una diferencia pide avisar al gerente: **más** de la cifra, a favor o en contra. */
+export function avisaDelDescuadre(diferencia: number, desde: number): boolean {
+  return Math.abs(diferencia) > desde;
+}
+
+/**
+ * **Las propinas a partes iguales** (E5, 0152): el total entre cuántos, y los céntimos que sobran, uno
+ * a cada uno de los primeros. 18,50 € entre tres: 6,17 €, 6,17 € y 6,16 €. Siempre suma el total.
+ */
+export function repartirAPartesIguales(total: number, cuantos: number): number[] {
+  if (cuantos <= 0) return [];
+  const base = Math.floor(total / cuantos);
+  const sobran = total - base * cuantos;
+  return Array.from({ length: cuantos }, (_, i) => base + (i < sobran ? 1 : 0));
 }
 
 /** Desde cuánto una diferencia sale en rojo, y no en ámbar: la misma cifra que el aviso (E3). */
@@ -251,6 +291,8 @@ export type ParaQueSeAbre = (typeof PARA_QUE_SE_ABRE)[number];
 export const MOTIVOS_PARA_SACAR = [
   'Compras',
   'Un proveedor',
+  // Lo que se retira a media jornada cuando el cajón pasa de la cifra (E2, 0152).
+  'A la caja fuerte',
   'Propinas',
   'Al banco',
   'Otro',

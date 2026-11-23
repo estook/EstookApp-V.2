@@ -69,6 +69,8 @@ export const TIPOS_DE_AVISO = [
   'fogon.revision',
   // ── T6 · 2 · 2 · 1 (decisión 0137) ─────────────────────────────────────
   'documento.rechazado',
+  // ── R3 · 2 · 1 (decisión 0152) ──────────────────────────────────────────
+  'caja.descuadre',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -424,6 +426,17 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     deTuEquipo: false,
     correoDeFabrica: false,
     movilDeFabrica: false,
+  },
+  // El descuadre de la caja (E3, 0152): uno por cierre o entrega, si falta o sobra más de la cifra
+  // del local (10 € de fábrica). **Al móvil**, que es lo que se aprobó: sin él, el descuadre solo se
+  // ve si se entra a mirarlo. Y al dueño también: con un local, el gerente suele ser él.
+  'caja.descuadre': {
+    nombre: 'Una caja cierra con descuadre',
+    explica: 'Si falta o sobra más de la cifra de Ajustes del TPV › La caja, uno por cierre.',
+    grupo: 'Negocio',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: true,
   },
 };
 

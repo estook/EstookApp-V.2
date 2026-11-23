@@ -282,6 +282,8 @@ describe('los avisos al móvil (I · 0070)', () => {
       'chat.confirmar',
       // M8 (0078): que vuelvas a contar algo, mientras sigues en la cámara.
       'inventario.recontar',
+      // R3 · 2 · 1 (0152): la caja cierra con descuadre; sin el móvil, solo se ve si se entra a mirar.
+      'caja.descuadre',
     ]);
   });
 

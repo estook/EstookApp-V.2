@@ -504,7 +504,7 @@ describe('entregar la caja (E7)', () => {
     const dia = losDatos<{
       propinas: number;
       cajas: { entregadaA: string | null; recibidaDe: string | null; reparto: unknown[] }[];
-    }>(await api.consultar(rosaEnEstook, 'un_dia_de_caja', { fecha: hoy }));
+    }>(await api.consultar(rosaEnEstook, 'un_dia_de_caja', { fecha: hoy ?? '' }));
     expect(dia.propinas).toBe(800);
     expect(dia.cajas.map((c) => [c.entregadaA, c.recibidaDe])).toEqual([
       ['Rosa', null],

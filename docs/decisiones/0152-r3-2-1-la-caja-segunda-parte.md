@@ -2,8 +2,9 @@
 
 **Fecha:** 23 de noviembre de 2026
 **Estado:** la maqueta de R3 ([r3-la-caja.html](../maquetas/r3-la-caja.html)), aprobada el 9-nov, **corregida
-el 23-nov con el rediseño y aprobada por Richi** («Aprobada, empieza»), con las dos entregas. Construida en
-`r3-2-la-caja` con la migración **0124**. API: **139 consultas y 373 comandos** (dos comandos nuevos).
+el 23-nov con el rediseño y aprobada por Richi** («Aprobada, empieza»), con las dos entregas. **En producción**
+(#198, fusionada el 23-nov): migración **0124** y API con **139 consultas y 373 comandos** (dos comandos nuevos),
+leídas el 23-nov.
 **Sigue:** la [0144](0144-r3-la-caja.md) (R3, y sus extras E2, E3 y E5 a E8), la [0145](0145-cobrar-en-la-mesa-y-negocio-ventas.md)
 (el comandero cobra y deja el efectivo en la caja) y la [0148](0148-el-rediseno.md) (todos cobran, los avisos en
 una sola pieza, Ajustes en Tú · El local · El dinero).

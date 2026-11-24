@@ -2486,6 +2486,401 @@
     display: inline-grid;
     margin-right: 6px;
   }
+  /* ══ Turnos, rehecho (24-nov): cada zona con su degradado, nada de chips iguales ══ */
+  :root {
+    --g-sala: linear-gradient(135deg, #5ee6b0 0%, #22b77d 60%, #13935f 100%);
+    --g-cocina: linear-gradient(135deg, #ffd36e 0%, #ffab2e 55%, #f08a00 100%);
+    --g-barra: linear-gradient(135deg, #c3adff 0%, #9277ff 55%, #6f4fe8 100%);
+    --g-fogon: linear-gradient(120deg, #ff8a1f 0%, #f264a8 50%, #8b6cff 100%);
+  }
+  .turnos-pc {
+    display: grid;
+    gap: 12px;
+  }
+  .barra-turnos {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .barra-turnos h4 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .barra-turnos .hueco {
+    flex: 1;
+  }
+  .boton-fogon {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #fff;
+    padding: 9px 14px;
+    border-radius: 12px;
+    background: var(--g-fogon);
+    box-shadow: 0 10px 20px -12px rgba(242, 100, 168, 0.9);
+  }
+  .alertas-t {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .alerta-t {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 6px 12px 6px 6px;
+    border-radius: 12px;
+    background: var(--superficie);
+    box-shadow: var(--sombra-suave);
+  }
+  .cuadrante {
+    background: var(--superficie);
+    border-radius: 18px;
+    box-shadow: var(--sombra-suave);
+    padding: 10px;
+    overflow-x: auto;
+  }
+  .cuadrante-in {
+    display: grid;
+    grid-template-columns: 150px repeat(7, minmax(78px, 1fr)) 108px;
+    gap: 4px;
+    min-width: 860px;
+    align-items: stretch;
+  }
+  .cuadrante-in .cd {
+    display: grid;
+    justify-items: center;
+    padding: 6px 0;
+    border-radius: 12px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--tenue);
+  }
+  .cuadrante-in .cd b {
+    font-size: 0.95rem;
+    color: var(--texto);
+  }
+  .cuadrante-in .cd.hoy {
+    background: var(--g-horas);
+    color: #111c1f;
+  }
+  .cuadrante-in .cd.hoy b {
+    color: #111c1f;
+  }
+  .cuadrante-in .cd.cierra {
+    opacity: 0.55;
+  }
+  .zona-t {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 4px 2px;
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+  .zona-t small {
+    font-weight: 600;
+    color: var(--tenue);
+  }
+  .quien-t {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 4px;
+    min-width: 0;
+  }
+  .quien-t small {
+    display: block;
+    font-weight: 600;
+    color: var(--tenue);
+    font-size: 0.66rem;
+  }
+  .celda {
+    border-radius: 12px;
+    background: var(--superficie-2);
+    display: grid;
+    gap: 3px;
+    padding: 3px;
+    min-height: 46px;
+    align-content: center;
+  }
+  .celda.cerrado {
+    background: repeating-linear-gradient(
+      135deg,
+      var(--superficie-2) 0 7px,
+      var(--borde-suave) 7px 14px
+    );
+    color: var(--tenue);
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-align: center;
+  }
+  .celda.libre {
+    color: var(--tenue);
+    font-size: 0.66rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .bloque {
+    border-radius: 9px;
+    color: #fff;
+    padding: 4px 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  .bloque small {
+    display: block;
+    font-weight: 600;
+    opacity: 0.9;
+    font-size: 0.6rem;
+  }
+  .bloque.sala {
+    background: var(--g-sala);
+  }
+  .bloque.cocina {
+    background: var(--g-cocina);
+    color: #3a2400;
+  }
+  .bloque.mini {
+    padding: 2px 6px;
+    font-size: 0.64rem;
+  }
+  .vac-banda {
+    grid-column: span 7;
+    border-radius: 12px;
+    background: var(--g-vac);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    min-height: 46px;
+    position: relative;
+    overflow: hidden;
+  }
+  .vac-banda .ola {
+    position: absolute;
+    right: 12px;
+    opacity: 0.25;
+  }
+  .horas-t {
+    display: grid;
+    align-content: center;
+    gap: 4px;
+    padding: 0 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  .horas-t small {
+    font-weight: 600;
+    color: var(--tenue);
+    font-size: 0.64rem;
+  }
+  .medidor {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--borde-suave);
+    overflow: hidden;
+  }
+  .medidor i {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+  }
+  .cobertura {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 150px repeat(7, minmax(78px, 1fr)) 108px;
+    gap: 4px;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--borde-suave);
+  }
+  .cob-celda {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    align-items: center;
+  }
+  .cob-celda span {
+    min-width: 26px;
+    border-radius: 8px;
+    padding: 3px 0;
+    text-align: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+  }
+  .cs {
+    background: var(--bien-s);
+    color: var(--bien);
+  }
+  .cc {
+    background: var(--atencion-s);
+    color: var(--atencion);
+  }
+  .cc.poco {
+    background: var(--mal-s);
+    color: var(--mal);
+  }
+  .resumen-t {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  /* El día por horas, en el móvil: una barra de color por persona. */
+  .eje {
+    display: grid;
+    grid-template-columns: 62px minmax(0, 1fr);
+    gap: 6px;
+    font-size: 0.6rem;
+    color: var(--tenue);
+    font-weight: 700;
+  }
+  .eje .marcas {
+    display: flex;
+    justify-content: space-between;
+  }
+  .fila-h {
+    display: grid;
+    grid-template-columns: 62px minmax(0, 1fr);
+    gap: 6px;
+    align-items: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .pista {
+    position: relative;
+    height: 26px;
+    border-radius: 9px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--superficie-2) 0 calc(100% / 12 - 1px),
+      var(--borde-suave) calc(100% / 12 - 1px) calc(100% / 12)
+    );
+  }
+  .pista .tramo-h {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 9px;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  .tramo-h.sala {
+    background: var(--g-sala);
+  }
+  .tramo-h.cocina {
+    background: var(--g-cocina);
+    color: #3a2400;
+  }
+  .ahora-linea {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    background: #ff3b30;
+    border-radius: 1px;
+  }
+  .dia-t {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    background: var(--superficie);
+    border-radius: 16px;
+    padding: 8px 10px;
+    box-shadow: var(--sombra-suave);
+    font-size: 0.78rem;
+  }
+  .dia-t .f {
+    display: grid;
+    justify-items: center;
+    line-height: 1.1;
+    font-size: 0.62rem;
+    font-weight: 800;
+    color: var(--tenue);
+    text-transform: uppercase;
+  }
+  .dia-t .f b {
+    font-size: 1.05rem;
+    color: var(--texto);
+  }
+  .dia-t.hoy {
+    outline: 2px solid #ff8a1f;
+  }
+  .dia-t.cerrado {
+    background: transparent;
+    box-shadow: none;
+    color: var(--tenue);
+  }
+  .dia-t .tramos {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 560px) {
+    .resumen-t {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .plegable summary .ico.gv,
+  .t-cab .ico.gv {
+    background: var(--g-vac);
+  }
+  .plegable summary .ico.gh,
+  .t-cab .ico.gh {
+    background: var(--g-horas);
+  }
+  .plegable summary .ico.gt {
+    background: var(--g-turno);
+  }
+  .plegable summary .ico.gl,
+  .t-cab .ico.gl {
+    background: var(--g-limpieza);
+  }
+  .plegable summary .ico.gs,
+  .t-cab .ico.gs {
+    background: var(--g-sanidad);
+  }
+  .plegable summary .ico.gr2 {
+    background: var(--g-reserva);
+  }
+  .bloque {
+    white-space: nowrap;
+  }
+  .dia-t .tramos {
+    flex-wrap: nowrap;
+  }
+  .dia-t .tramos .bloque {
+    flex: none;
+    display: inline-block;
+    width: auto;
+    min-width: 0;
+  }
   @media (max-width: 900px) {
     .cal-pc {
       grid-template-columns: minmax(0, 1fr);
@@ -3472,7 +3867,7 @@
             <div class="cuerpo">
               <div class="tarjeta">
                 <div class="t-cab">
-                  <span class="ico"
+                  <span class="ico gh" style="color: #fff"
                     ><svg width="15" height="15"><use href="#i-estrella" /></svg></span
                   ><b>Objetivos</b><small>7 días</small
                   ><span class="flecha"
@@ -3485,7 +3880,7 @@
               </div>
               <div class="tarjeta">
                 <div class="t-cab">
-                  <span class="ico"
+                  <span class="ico gs" style="color: #fff"
                     ><svg width="15" height="15"><use href="#i-reloj" /></svg></span
                   ><b>Caduca pronto</b><small>6 lotes</small
                   ><span class="flecha"
@@ -3526,7 +3921,7 @@
               </div>
               <div class="tarjeta">
                 <div class="t-cab">
-                  <span class="ico"
+                  <span class="ico gl" style="color: #fff"
                     ><svg width="15" height="15"><use href="#i-bici" /></svg></span
                   ><b>Repartos de hoy</b
                   ><span class="flecha"
@@ -4243,21 +4638,39 @@
                 <span class="avatar">AE</span>
                 <div><b>Ane Etxeberria</b><small>Camarera · Sala</small></div>
               </div>
-              <div class="cuatro">
-                <div class="dato"><small>Jornada</small><b>40 h</b><span>a la semana</span></div>
-                <div class="dato">
-                  <small>Contrato</small><b>Indefinido</b><span>completa</span>
+              <div class="baldosas">
+                <div class="baldosa gh" style="min-height: 96px">
+                  <svg class="marca-agua" width="70" height="70"><use href="#i-reloj" /></svg
+                  ><span class="ic"
+                    ><svg width="15" height="15"><use href="#i-reloj" /></svg></span
+                  ><small>Jornada</small><b>40 <span>h</span></b
+                  ><span class="sub">a la semana</span>
                 </div>
-                <div class="dato">
-                  <small>Incorporación</small><b>12 mar 2024</b><span>2 años y 8 meses</span>
+                <div class="baldosa gt" style="min-height: 96px">
+                  <svg class="marca-agua" width="70" height="70"><use href="#i-doc" /></svg
+                  ><span class="ic"
+                    ><svg width="15" height="15"><use href="#i-doc" /></svg></span
+                  ><small>Contrato</small><b style="font-size: 1.05rem">Indefinido</b
+                  ><span class="sub">jornada completa</span>
                 </div>
-                <div class="dato">
-                  <small>Vacaciones</small><b>12 días</b><span>disponibles</span>
+                <div class="baldosa gr2" style="min-height: 96px">
+                  <svg class="marca-agua" width="70" height="70"><use href="#i-calendario" /></svg
+                  ><span class="ic"
+                    ><svg width="15" height="15"><use href="#i-calendario" /></svg></span
+                  ><small>Incorporación</small><b style="font-size: 1.05rem">12 mar 2024</b
+                  ><span class="sub">2 años y 8 meses</span>
+                </div>
+                <div class="baldosa gv" style="min-height: 96px">
+                  <svg class="marca-agua" width="70" height="70"><use href="#i-palmera" /></svg
+                  ><span class="ic"
+                    ><svg width="15" height="15"><use href="#i-palmera" /></svg></span
+                  ><small>Vacaciones</small><b>12 <span>días</span></b
+                  ><span class="sub">disponibles</span>
                 </div>
               </div>
               <details class="plegable">
                 <summary>
-                  <span class="ico" style="background: var(--mal-s); color: var(--mal)"
+                  <span class="ico gs" style="color: #fff"
                     ><svg width="15" height="15"><use href="#i-aviso" /></svg></span
                   ><span class="t">Incidencias</span><span class="burbuja">2</span
                   ><svg class="chev" width="14" height="14"><use href="#i-flecha" /></svg>
@@ -4265,7 +4678,7 @@
               </details>
               <details class="plegable">
                 <summary>
-                  <span class="ico"
+                  <span class="ico gr2" style="color: #fff"
                     ><svg width="15" height="15"><use href="#i-persona" /></svg></span
                   ><span class="t">Información personal</span
                   ><svg width="13" height="13" style="color: var(--tenue)">
@@ -4283,7 +4696,7 @@
               </details>
               <details class="plegable">
                 <summary>
-                  <span class="ico"
+                  <span class="ico gt" style="color: #fff"
                     ><svg width="15" height="15"><use href="#i-doc" /></svg></span
                   ><span class="t">Información laboral</span
                   ><svg width="13" height="13" style="color: var(--tenue)">
@@ -4293,7 +4706,7 @@
               </details>
               <details class="plegable" open>
                 <summary>
-                  <span class="ico"
+                  <span class="ico gh" style="color: #fff"
                     ><svg width="15" height="15"><use href="#i-billete" /></svg></span
                   ><span class="t">Nóminas</span
                   ><svg width="13" height="13" style="color: var(--tenue)">
@@ -4317,8 +4730,8 @@
               </details>
               <details class="plegable" open>
                 <summary>
-                  <span class="ico" style="background: var(--bien-s); color: var(--bien)"
-                    ><svg width="15" height="15"><use href="#i-calendario" /></svg></span
+                  <span class="ico gv" style="color: #fff"
+                    ><svg width="15" height="15"><use href="#i-palmera" /></svg></span
                   ><span class="t">Vacaciones y solicitudes<small>12 de 30 disponibles</small></span
                   ><svg class="chev" width="14" height="14"><use href="#i-flecha" /></svg>
                 </summary>
@@ -4341,7 +4754,7 @@
               </details>
               <details class="plegable">
                 <summary>
-                  <span class="ico"
+                  <span class="ico gl" style="color: #fff"
                     ><svg width="15" height="15"><use href="#i-reloj" /></svg></span
                   ><span class="t"
                     >Historial de jornadas<small>128 h 30 min en noviembre</small></span
@@ -4645,7 +5058,9 @@
                   <div class="sd">
                     X<b>25</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
                   </div>
-                  <div class="sd">J<b>26</b><span class="puntos"></span></div>
+                  <div class="sd">
+                    J<b>26</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
+                  </div>
                   <div class="sd">
                     V<b>27</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
                   </div>
@@ -4785,7 +5200,9 @@
                   <div class="sd">
                     X<b>25</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
                   </div>
-                  <div class="sd">J<b>26</b><span class="puntos"></span></div>
+                  <div class="sd">
+                    J<b>26</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
+                  </div>
                   <div class="sd">
                     V<b>27</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
                   </div>
@@ -5493,6 +5910,596 @@
         </div>
       </div>
     </div>
+    <!-- Turnos, rehecho -->
+    <div class="pantalla ancha">
+      <div class="explica">
+        <span class="n">6</span>
+        <span class="etiqueta e-arreglo">Turnos, rehecho</span>
+        <h3>El horario, que se lea de un vistazo</h3>
+        <p>
+          Hoy es una tabla con todos los turnos en el mismo naranja claro y cabeceras grises. Ahora
+          cada zona tiene su color, las vacaciones se ven como vacaciones y el día que cerráis está
+          sombreado. A la derecha, las horas de cada uno frente a su contrato; abajo, cuántos hay
+          cada día.
+        </p>
+        <ul class="claves">
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Sala en verde, cocina en ámbar,
+            barra en violeta; los partidos, en dos bloques
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Vacaciones: una banda azul playa
+            con su palmera, de punta a punta
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Horas frente a contrato: verde si
+            cuadra, naranja si falta o sobra
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Arriba, solo las alertas que
+            importan, y «Hacer el cuadrante con Fogón»
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>El coste en vivo, solo para quien
+            tiene su permiso
+          </li>
+        </ul>
+        <div class="causa">
+          <b>Las cuentas de la semana</b>
+          Sala: 40 + 40 + 40 + 28 = 148 h. Cocina: 40 + 37 + 0 = 77 h. En total, 225 h; a 15,60 € la
+          hora de media, 3.510 €. El lunes cerráis; el domingo, solo a mediodía.
+        </div>
+      </div>
+      <div class="dibujos">
+        <div class="ventana" style="grid-template-columns: 150px minmax(0, 1fr)">
+          <div class="lateral">
+            <div class="marca"><i>E</i>Estook</div>
+            <span class="activa"
+              ><svg width="16" height="16"><use href="#i-calendario" /></svg>Calendario</span
+            >
+            <span class="sub">Calendario</span>
+            <span class="sub" style="color: #fff; font-weight: 700">Turnos</span>
+          </div>
+          <div class="contenido turnos-pc">
+            <div class="barra-turnos">
+              <span class="flechas"
+                ><span
+                  ><svg width="13" height="13"><use href="#i-izq" /></svg></span
+                ><span
+                  ><svg width="13" height="13"><use href="#i-flecha" /></svg></span
+              ></span>
+              <h4>23 – 29 de noviembre</h4>
+              <span class="pildora p-aten">Borrador</span>
+              <span class="hueco"></span>
+              <span class="boton-fogon"
+                ><svg width="14" height="14"><use href="#i-chispa" /></svg>Hacer el cuadrante con
+                Fogón</span
+              >
+              <span
+                class="boton-g"
+                style="
+                  padding: 9px 16px;
+                  font-size: 0.8rem;
+                  background: var(--g-turno);
+                  box-shadow: 0 10px 18px -10px rgba(31, 181, 122, 0.9);
+                "
+                >Publicar</span
+              >
+            </div>
+            <div class="alertas-t">
+              <span class="alerta-t"
+                ><span class="icono-g ch gs"
+                  ><svg width="13" height="13"><use href="#i-aviso" /></svg></span
+                >Cocina con 1 el miércoles 25 y el domingo 29</span
+              >
+              <span class="alerta-t"
+                ><span class="icono-g ch gh"
+                  ><svg width="13" height="13"><use href="#i-reloj" /></svg></span
+                >Leire 28 h de 30 · Unai 37 h de 40</span
+              >
+              <span class="alerta-t"
+                ><span class="icono-g ch gv"
+                  ><svg width="13" height="13"><use href="#i-palmera" /></svg></span
+                >Josu, de vacaciones toda la semana</span
+              >
+            </div>
+            <div class="cuadrante">
+              <div class="cuadrante-in">
+                <span></span>
+                <span class="cd cierra">Lun<b>23</b></span>
+                <span class="cd hoy">Mar<b>24</b></span>
+                <span class="cd">Mié<b>25</b></span>
+                <span class="cd">Jue<b>26</b></span>
+                <span class="cd">Vie<b>27</b></span>
+                <span class="cd">Sáb<b>28</b></span>
+                <span class="cd">Dom<b>29</b></span>
+                <span class="cd">Horas</span>
+
+                <div class="zona-t">
+                  <span class="icono-g ch" style="background: var(--g-sala)"
+                    ><svg width="13" height="13"><use href="#i-sala" /></svg></span
+                  >Sala<small>4 personas · 148 h</small>
+                </div>
+
+                <div class="quien-t">
+                  <span
+                    class="avatar ch"
+                    style="background: linear-gradient(135deg, #7ff0c0, #1fb57a)"
+                    >MI</span
+                  >
+                  <div>Mikel<small>Jefe de sala</small></div>
+                </div>
+                <div class="celda cerrado">Cerrado</div>
+                <div class="celda">
+                  <span class="bloque sala">12–20<small>8 h</small></span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">12–20<small>8 h</small></span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">12–20<small>8 h</small></span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">16–24<small>8 h</small></span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">16–24<small>8 h</small></span>
+                </div>
+                <div class="celda libre">Libre</div>
+                <div class="horas-t">
+                  40 h<small>de 40</small
+                  ><span class="medidor"
+                    ><i style="width: 100%; background: var(--g-turno)"></i
+                  ></span>
+                </div>
+
+                <div class="quien-t">
+                  <span class="avatar ch">AE</span>
+                  <div>Ane<small>Camarera</small></div>
+                </div>
+                <div class="celda cerrado">Cerrado</div>
+                <div class="celda">
+                  <span class="bloque sala">13–23<small>10 h</small></span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">13–17<small>4 h</small></span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">13–19<small>6 h</small></span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala mini">13–17</span
+                  ><span class="bloque sala mini">20–24</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala mini">13–17</span
+                  ><span class="bloque sala mini">20–24</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">13–17<small>4 h</small></span>
+                </div>
+                <div class="horas-t">
+                  40 h<small>de 40</small
+                  ><span class="medidor"
+                    ><i style="width: 100%; background: var(--g-turno)"></i
+                  ></span>
+                </div>
+
+                <div class="quien-t">
+                  <span
+                    class="avatar ch"
+                    style="background: linear-gradient(135deg, #7ad7ff, #2a8bff)"
+                    >IL</span
+                  >
+                  <div>Iker<small>Camarero</small></div>
+                </div>
+                <div class="celda cerrado">Cerrado</div>
+                <div class="celda">
+                  <span class="bloque sala">13–23<small>10 h</small></span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">13–23<small>10 h</small></span>
+                </div>
+                <div class="celda libre">Libre</div>
+                <div class="celda">
+                  <span class="bloque sala mini">13–17</span
+                  ><span class="bloque sala mini">20–24</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala mini">13–17</span
+                  ><span class="bloque sala mini">20–24</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">13–17<small>4 h</small></span>
+                </div>
+                <div class="horas-t">
+                  40 h<small>de 40</small
+                  ><span class="medidor"
+                    ><i style="width: 100%; background: var(--g-turno)"></i
+                  ></span>
+                </div>
+
+                <div class="quien-t">
+                  <span
+                    class="avatar ch"
+                    style="background: linear-gradient(135deg, #ffa3cf, #f264a8)"
+                    >LS</span
+                  >
+                  <div>Leire<small>Camarera · 30 h</small></div>
+                </div>
+                <div class="celda cerrado">Cerrado</div>
+                <div class="celda libre">Libre</div>
+                <div class="celda">
+                  <span class="bloque sala">20–24<small>4 h</small></span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala mini">13–17</span
+                  ><span class="bloque sala mini">20–24</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">20–24<small>4 h</small></span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala mini">13–17</span
+                  ><span class="bloque sala mini">20–24</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque sala">13–17<small>4 h</small></span>
+                </div>
+                <div class="horas-t" style="color: var(--atencion)">
+                  28 h<small>de 30 · faltan 2</small
+                  ><span class="medidor"
+                    ><i style="width: 93%; background: var(--g-horas)"></i
+                  ></span>
+                </div>
+
+                <div class="zona-t">
+                  <span class="icono-g ch" style="background: var(--g-cocina)"
+                    ><svg width="13" height="13"><use href="#i-brillo" /></svg></span
+                  >Cocina<small>3 personas · 77 h</small>
+                </div>
+
+                <div class="quien-t">
+                  <span
+                    class="avatar ch"
+                    style="background: linear-gradient(135deg, #ffd36e, #f08a00)"
+                    >AM</span
+                  >
+                  <div>Amaia<small>Jefa de cocina</small></div>
+                </div>
+                <div class="celda cerrado">Cerrado</div>
+                <div class="celda">
+                  <span class="bloque cocina mini">12–16</span
+                  ><span class="bloque cocina mini">19–23</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque cocina mini">12–16</span
+                  ><span class="bloque cocina mini">19–23</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque cocina mini">12–16</span
+                  ><span class="bloque cocina mini">19–23</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque cocina mini">12–16</span
+                  ><span class="bloque cocina mini">19–23</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque cocina mini">12–16</span
+                  ><span class="bloque cocina mini">19–23</span>
+                </div>
+                <div class="celda libre">Libre</div>
+                <div class="horas-t">
+                  40 h<small>de 40</small
+                  ><span class="medidor"
+                    ><i style="width: 100%; background: var(--g-turno)"></i
+                  ></span>
+                </div>
+
+                <div class="quien-t">
+                  <span
+                    class="avatar ch"
+                    style="background: linear-gradient(135deg, #ffb48a, #ff6a3d)"
+                    >UN</span
+                  >
+                  <div>Unai<small>Cocinero</small></div>
+                </div>
+                <div class="celda cerrado">Cerrado</div>
+                <div class="celda">
+                  <span class="bloque cocina mini">12–16</span
+                  ><span class="bloque cocina mini">19–23</span>
+                </div>
+                <div class="celda libre">Libre</div>
+                <div class="celda">
+                  <span class="bloque cocina mini">12–16</span
+                  ><span class="bloque cocina mini">19–23</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque cocina mini">12–16</span
+                  ><span class="bloque cocina mini">19–23</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque cocina mini">12–16</span
+                  ><span class="bloque cocina mini">19–23</span>
+                </div>
+                <div class="celda">
+                  <span class="bloque cocina">12–17<small>5 h</small></span>
+                </div>
+                <div class="horas-t" style="color: var(--atencion)">
+                  37 h<small>de 40 · faltan 3</small
+                  ><span class="medidor"
+                    ><i style="width: 92.5%; background: var(--g-horas)"></i
+                  ></span>
+                </div>
+
+                <div class="quien-t">
+                  <span
+                    class="avatar ch"
+                    style="background: linear-gradient(135deg, #a8e6ff, #2a8bff)"
+                    >JO</span
+                  >
+                  <div>Josu<small>Ayudante · 20 h</small></div>
+                </div>
+                <div class="vac-banda">
+                  <svg width="18" height="18"><use href="#i-palmera" /></svg>Vacaciones · del 23 al
+                  29 de noviembre<svg class="ola" width="60" height="40"><use href="#i-ola" /></svg>
+                </div>
+                <div class="horas-t">
+                  0 h<small>de vacaciones</small
+                  ><span class="medidor"
+                    ><i style="width: 100%; background: var(--g-vac)"></i
+                  ></span>
+                </div>
+
+                <div class="cobertura">
+                  <span class="quien-t" style="color: var(--suave)">Quiénes hay</span>
+                  <span
+                    class="cob-celda"
+                    style="color: var(--tenue); font-size: 0.64rem; font-weight: 700"
+                    >Cerrado</span
+                  >
+                  <span class="cob-celda"
+                    ><span class="cs">S 3</span><span class="cc">C 2</span></span
+                  >
+                  <span class="cob-celda"
+                    ><span class="cs">S 4</span><span class="cc poco">C 1</span></span
+                  >
+                  <span class="cob-celda"
+                    ><span class="cs">S 3</span><span class="cc">C 2</span></span
+                  >
+                  <span class="cob-celda"
+                    ><span class="cs">S 4</span><span class="cc">C 2</span></span
+                  >
+                  <span class="cob-celda"
+                    ><span class="cs">S 4</span><span class="cc">C 2</span></span
+                  >
+                  <span class="cob-celda"
+                    ><span class="cs">S 3</span><span class="cc poco">C 1</span></span
+                  >
+                  <span class="horas-t">225 h<small>la semana</small></span>
+                </div>
+              </div>
+            </div>
+            <div class="resumen-t">
+              <div class="baldosa gh" style="min-height: 0">
+                <small>Horas de la semana</small><b>225 <span>h</span></b
+                ><span class="sub">148 sala · 77 cocina</span>
+              </div>
+              <div
+                class="baldosa"
+                style="min-height: 0; background: linear-gradient(135deg, #3b4a52, #111c1f)"
+              >
+                <small>Coste estimado</small><b>3.510 <span>€</span></b
+                ><span class="sub">a 15,60 €/h de media · solo con permiso</span>
+              </div>
+              <div class="baldosa gv" style="min-height: 0">
+                <small>De vacaciones</small><b>1 <span>persona</span></b
+                ><span class="sub">Josu, toda la semana</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Turnos en el móvil -->
+    <div class="pantalla">
+      <div class="explica">
+        <span class="n">7</span>
+        <span class="etiqueta e-arreglo">Turnos en el móvil</span>
+        <h3>En el móvil: tu semana, y el día por horas</h3>
+        <p>
+          Siete columnas no caben en un móvil. El equipo ve «Solo el mío», un día por tarjeta. Quien
+          lleva el horario ve el día por horas: una barra de color por persona y una línea roja con
+          la hora de ahora, como la vista de día de los buenos calendarios.
+        </p>
+        <ul class="claves">
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Se ve de un vistazo quién está a
+            cada hora y dónde quedan huecos
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Tocar una barra abre el turno para
+            cambiarlo
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Arriba, la semana: se toca otro
+            día y cambia
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Los de vacaciones y los que
+            libran, abajo, con su color
+          </li>
+        </ul>
+      </div>
+      <div class="dibujos">
+        <div>
+          <div class="movil" style="min-height: 620px">
+            <div class="estado"><span>11:10</span><span>82 %</span></div>
+            <div class="cab"><span class="logo">IKATZ</span><b>Turnos</b></div>
+            <div class="cuerpo">
+              <div class="segmentos"><span>Todos</span><span class="si">Solo el mío</span></div>
+              <div class="dia-t cerrado">
+                <span class="f">Lun<b>23</b></span
+                ><span>El local cierra</span><span></span>
+              </div>
+              <div class="dia-t hoy">
+                <span class="f">Mar<b>24</b></span
+                ><span class="tramos"><span class="bloque sala">13:00 – 23:00</span></span
+                ><span class="hora" style="font-weight: 800">10 h</span>
+              </div>
+              <div class="dia-t">
+                <span class="f">Mié<b>25</b></span
+                ><span class="tramos"><span class="bloque sala">13:00 – 17:00</span></span
+                ><span style="font-weight: 800">4 h</span>
+              </div>
+              <div class="dia-t">
+                <span class="f">Jue<b>26</b></span
+                ><span class="tramos"><span class="bloque sala">13:00 – 19:00</span></span
+                ><span style="font-weight: 800">6 h</span>
+              </div>
+              <div class="dia-t">
+                <span class="f">Vie<b>27</b></span
+                ><span class="tramos"
+                  ><span class="bloque sala mini">13 – 17</span
+                  ><span class="bloque sala mini">20 – 24</span></span
+                ><span style="font-weight: 800">8 h</span>
+              </div>
+              <div class="dia-t">
+                <span class="f">Sáb<b>28</b></span
+                ><span class="tramos"
+                  ><span class="bloque sala mini">13 – 17</span
+                  ><span class="bloque sala mini">20 – 24</span></span
+                ><span style="font-weight: 800">8 h</span>
+              </div>
+              <div class="dia-t">
+                <span class="f">Dom<b>29</b></span
+                ><span class="tramos"><span class="bloque sala">13:00 – 17:00</span></span
+                ><span style="font-weight: 800">4 h</span>
+              </div>
+              <div class="baldosa gh" style="min-height: 0">
+                <small>Tu semana</small><b>40 <span>h de 40</span></b
+                ><span class="sub">Con Mikel e Iker el martes</span>
+              </div>
+            </div>
+          </div>
+          <p class="pie-dibujo">Ane · «Solo el mío»</p>
+        </div>
+        <div>
+          <div class="movil" style="min-height: 620px">
+            <div class="estado"><span>18:40</span><span>82 %</span></div>
+            <div class="cab">
+              <span class="logo">IKATZ</span><b>Turnos · martes 24</b
+              ><span class="pildora p-bien">Publicado</span>
+            </div>
+            <div class="cuerpo">
+              <div class="cal-hero" style="padding: 10px 12px">
+                <div class="semana">
+                  <div class="sd" style="opacity: 0.5">L<b>23</b><span class="puntos"></span></div>
+                  <div class="sd hoy">
+                    M<b>24</b
+                    ><span class="puntos"
+                      ><i style="background: #22b77d"></i><i style="background: #ffab2e"></i
+                    ></span>
+                  </div>
+                  <div class="sd">
+                    X<b>25</b
+                    ><span class="puntos"
+                      ><i style="background: #22b77d"></i><i style="background: #ff5a6e"></i
+                    ></span>
+                  </div>
+                  <div class="sd">
+                    J<b>26</b
+                    ><span class="puntos"
+                      ><i style="background: #22b77d"></i><i style="background: #ffab2e"></i
+                    ></span>
+                  </div>
+                  <div class="sd">
+                    V<b>27</b
+                    ><span class="puntos"
+                      ><i style="background: #22b77d"></i><i style="background: #ffab2e"></i
+                    ></span>
+                  </div>
+                  <div class="sd">
+                    S<b>28</b
+                    ><span class="puntos"
+                      ><i style="background: #22b77d"></i><i style="background: #ffab2e"></i
+                    ></span>
+                  </div>
+                  <div class="sd">
+                    D<b>29</b
+                    ><span class="puntos"
+                      ><i style="background: #22b77d"></i><i style="background: #ff5a6e"></i
+                    ></span>
+                  </div>
+                </div>
+              </div>
+              <div class="eje">
+                <span></span
+                ><span class="marcas"
+                  ><span>12</span><span>15</span><span>18</span><span>21</span><span>24</span></span
+                >
+              </div>
+              <span class="lbl">Sala · 3</span>
+              <div class="fila-h">
+                <span>Mikel</span
+                ><span class="pista"
+                  ><span class="tramo-h sala" style="left: 0; width: 66.67%">12–20</span
+                  ><span class="ahora-linea" style="left: 55.6%"></span
+                ></span>
+              </div>
+              <div class="fila-h">
+                <span>Ane</span
+                ><span class="pista"
+                  ><span class="tramo-h sala" style="left: 8.33%; width: 83.33%">13–23</span
+                  ><span class="ahora-linea" style="left: 55.6%"></span
+                ></span>
+              </div>
+              <div class="fila-h">
+                <span>Iker</span
+                ><span class="pista"
+                  ><span class="tramo-h sala" style="left: 8.33%; width: 83.33%">13–23</span
+                  ><span class="ahora-linea" style="left: 55.6%"></span
+                ></span>
+              </div>
+              <span class="lbl">Cocina · 2</span>
+              <div class="fila-h">
+                <span>Amaia</span
+                ><span class="pista"
+                  ><span class="tramo-h cocina" style="left: 0; width: 33.33%">12–16</span
+                  ><span class="tramo-h cocina" style="left: 58.33%; width: 33.33%">19–23</span
+                  ><span class="ahora-linea" style="left: 55.6%"></span
+                ></span>
+              </div>
+              <div class="fila-h">
+                <span>Unai</span
+                ><span class="pista"
+                  ><span class="tramo-h cocina" style="left: 0; width: 33.33%">12–16</span
+                  ><span class="tramo-h cocina" style="left: 58.33%; width: 33.33%">19–23</span
+                  ><span class="ahora-linea" style="left: 55.6%"></span
+                ></span>
+              </div>
+              <div class="capas" style="margin-top: 4px">
+                <span class="capa"
+                  ><i class="gv"
+                    ><svg width="11" height="11"><use href="#i-palmera" /></svg></i
+                  >Josu · vacaciones</span
+                >
+                <span class="capa"><i style="background: var(--borde)"></i>Leire · libra</span>
+              </div>
+              <div class="aviso" style="background: var(--atencion-s); color: var(--atencion)">
+                <svg width="16" height="16"><use href="#i-aviso" /></svg>
+                <div>
+                  <b>De 16:00 a 19:00, cocina sin nadie</b>Es el hueco entre servicios: si alguien
+                  prepara, ponlo aquí.
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="pie-dibujo">Richi · el martes por horas · la línea roja, las 18:40</p>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- ═════════════════════════ A5 · RESERVAS ═════════════════════════ -->
@@ -5770,12 +6777,13 @@
             de hora, para que no lleguen 20 a la vez a la cocina
           </li>
           <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Correo de confirmación al momento
-            y recordatorio 24 h antes con «Confirmo» y «Cancelar»
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Al reservar, su reserva con un
+            código de 4 cifras; con su teléfono y el código vuelve a la misma web y la confirma o la
+            cancela
           </li>
           <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Sin hora libre: «Avísame si se
-            libera», y si alguien cancela le llega al primero
+            <svg width="15" height="15"><use href="#i-ok" /></svg>«Pedir que confirmen», en Ajustes:
+            si no la confirma a tiempo, se cancela y la mesa queda libre
           </li>
           <li>
             <svg width="15" height="15"><use href="#i-ok" /></svg>Sin cookies; la casilla de recibir
@@ -5822,11 +6830,49 @@
                 >Reservar para 3 · sáb 28 · 21:15</span
               >
               <span style="font-size: 0.72rem; color: var(--tenue); text-align: center"
-                >¿No ves tu hora? <u>Avísame si se libera</u></span
+                >¿Ya tienes reserva? <u>Confírmala o cancélala</u></span
               >
             </div>
           </div>
           <p class="pie-dibujo">Lo que ve el cliente · el sábado ya está casi lleno</p>
+        </div>
+        <div>
+          <div class="movil web-r" style="min-height: 600px">
+            <div class="estado"><span>17:02</span><span>82 %</span></div>
+            <div class="portada" style="height: 90px">
+              <span class="logo">IKATZ</span>
+              <div><b>Tu reserva</b><small>IKATZ Restaurant · Donostia</small></div>
+            </div>
+            <div class="cuerpo">
+              <div class="baldosa gr2" style="min-height: 0; padding: 14px">
+                <svg class="marca-agua" width="90" height="90"><use href="#i-calendario" /></svg>
+                <small>Sábado 28 de noviembre</small>
+                <b>21:15</b>
+                <span class="sub">Itziar Gil · 3 personas · código 4821</span>
+              </div>
+              <div class="aviso" style="background: var(--atencion-s); color: var(--atencion)">
+                <svg width="16" height="16"><use href="#i-reloj" /></svg>
+                <div>
+                  <b>El restaurante te pide que la confirmes</b>Si no la confirmas a tiempo, se
+                  cancela y la mesa queda libre.
+                </div>
+              </div>
+              <span
+                class="boton-g"
+                style="
+                  background: var(--g-turno);
+                  box-shadow: 0 12px 22px -12px rgba(31, 181, 122, 0.9);
+                "
+                ><svg width="16" height="16"><use href="#i-ok" /></svg>Confirmo que vamos</span
+              >
+              <span class="boton sec ancho" style="padding: 12px">Cancelar la reserva</span>
+              <p style="font-size: 0.72rem; color: var(--tenue); text-align: center">
+                Para volver aquí: estook.com/reservar/ikatz › «Ya tengo reserva», con tu teléfono y
+                el código.
+              </p>
+            </div>
+          </div>
+          <p class="pie-dibujo">Confirmar o cancelar, en la misma web</p>
         </div>
       </div>
     </div>
@@ -5910,7 +6956,12 @@
               <div class="caja">
                 <h5>Si no vienen</h5>
                 <div class="par"><span>Esperar antes de liberar</span><span>15 min</span></div>
-                <div class="par"><span>Recordatorio por correo</span><span>24 h antes</span></div>
+                <div class="par">
+                  <span>Pedir que confirmen</span><span class="pildora p-gris">Apagado</span>
+                </div>
+                <div class="par">
+                  <span>Correos al cliente</span><span class="pildora p-gris">Apagados</span>
+                </div>
                 <div class="par">
                   <span>Garantía con tarjeta</span
                   ><span class="pildora p-gris">Con el cobro (T8)</span>

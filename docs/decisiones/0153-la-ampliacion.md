@@ -6,8 +6,8 @@ trabajador con sus nóminas, y las reservas). Pide que esté bien documentado, c
 en las partes que hagan falta («Ampliación 1, 2…»), investigando la mejor forma de hacerlo y
 proponiendo mejoras.
 
-**Estado: propuesta.** La [maqueta](../maquetas/la-ampliacion.html) y las preguntas de la sección 8
-están en manos de Richi. **No se construye nada hasta que la apruebe.** Lo que conteste se escribe
+**Estado: propuesta, con las respuestas de Richi del 24-nov** (sección 9). Falta que apruebe la
+[maqueta](../maquetas/la-ampliacion.html) con Turnos rehecho y que conteste la pregunta 9. **No se construye nada hasta que la apruebe.** Lo que conteste se escribe
 aquí, en la sección 9, y lo que cambie de la maqueta se cambia en la maqueta, antes del código.
 
 ## 1 · Las cinco partes, y por qué en este orden
@@ -17,7 +17,7 @@ aquí, en la sección 9, y lo que cambie de la maqueta se cambia en la maqueta, 
 | **Ampliación 1 · Los fallos del servicio**       | Fallos 1, 2, 4, 5 y 6; arreglos 3 y 3.1 (Ajustes); la auditoría que se debe (sección 7)                                         | 1   |
 | **Ampliación 2 · El comandero y la carta**       | Fallo 3 y 3.1 (venta rápida en el comandero y abrir mesa); arreglos 1, 2 y 2.1 (la foto del almacén, escandallos, más vendidos) | 1   |
 | **Ampliación 3 · La ficha del trabajador** (M13) | La ficha nueva, el alta en tres formas con Fogón, las nóminas y el historial de jornadas exportable                             | 2   |
-| **Ampliación 4 · Calendario y vacaciones** (M14) | Calendario › Equipo, Personal y Propuestas; pedir, negociar y aprobar vacaciones, con el saldo calculado                        | 1   |
+| **Ampliación 4 · Calendario y vacaciones** (M14) | Calendario › Equipo, Personal y Propuestas; pedir, negociar y aprobar vacaciones, con el saldo calculado; **Turnos, rehecho**   | 1   |
 | **Ampliación 5 · Las reservas** (M32, nuevo)     | 5 · 1 el motor y la sala en el TPV · 5 · 2 la web y los correos · 5 · 3 clientes, lista de espera y los que no vienen           | 3   |
 
 **Primero lo que falla en el servicio**, que no lleva pantallas nuevas y se prueba en un día.
@@ -140,6 +140,16 @@ Lo que pidió Richi, con lo investigado. El detalle vive en la ficha de **M13** 
   lateral con el mes pequeño y las capas. **Se abre en Personal** para el equipo y **en Equipo**
   para el gerente y los jefes. **En Propuestas, la línea del equipo**: quién está de vacaciones
   esos días, lo que se pide a rayas y cuántos quedan cada día si se aprueba (verde o naranja).
+- **Turnos, rehecho** (Richi, 24-nov: «el horario se ve raro»). Hoy es una tabla con todos los
+  turnos en el mismo naranja claro y cabeceras grises en mayúsculas. **Pasa a:** cada turno en un
+  bloque con el degradado de su zona (sala en verde, cocina en ámbar, barra en violeta), con sus
+  horas; los partidos, en dos bloques; **las vacaciones en azul playa con su palmera**, de punta a
+  punta de los días; el libre, suave; **el día que el local cierra, sombreado** para todos. A la
+  derecha, las horas de cada uno frente a su contrato, en verde o en naranja. Abajo, **cuántos hay
+  cada día por zona** y el coste en vivo (con su permiso). Arriba, las alertas que importan («cocina
+  con 1 el miércoles»), «Hacer el cuadrante con Fogón» y «Publicar». **En el móvil**, el equipo ve
+  «Solo el mío» como tarjetas por día; quien lleva el horario ve **el día por horas**, una barra de
+  color por persona, como la vista de día de los buenos calendarios.
 - **Propuesto: la contrapropuesta como tarjeta azul arriba de Personal** (con Aceptar, Otras
   fechas y Rechazar, y su aviso al móvil) en vez de una pestaña que aparece y desaparece
   (pregunta 8).
@@ -184,9 +194,16 @@ cuenta y al ticket.
   avisa y propone otra libre, **sin bloquear**. Avisos: reserva nueva, llegan en 10 minutos, 15 de
   retraso (y liberar la mesa pasados los minutos del local). Todo al segundo, como la sala.
 - **La web:** `estook.com/reservar/<local>`, para su web, Instagram, Google y WhatsApp. Solo ofrece
-  horas con mesa de verdad. Nombre, teléfono y correo. **Correo de confirmación y recordatorio 24 h
-  antes** con «Confirmo» y «Cancelar» (con Resend, que ya usamos). Sin hora: «Avísame si se libera»,
-  y al cancelar alguien le llega al primero.
+  horas con mesa de verdad. Nombre y teléfono (el correo, opcional). **Al reservar se le enseña su
+  reserva con un código de 4 cifras.** **Desde la misma web, «Ya tengo reserva»**: con su teléfono y
+  su código ve su hora y la **confirma o la cancela** (Richi, 24-nov). El código evita que
+  cualquiera que sepa un teléfono vea o cancele la reserva de otro.
+- **«Pedir que confirmen»**, en Ajustes › Reservas, **apagado de fábrica**: al reservar se le dice
+  que tiene que confirmarla, y **si no la confirma a tiempo se da por cancelada** y la mesa queda
+  libre, con aviso en el TPV. El local elige el plazo (pregunta 9).
+- **Los correos al cliente, escritos y apagados** (Richi, 24-nov: «desactivados por ahora»). Sin
+  correo no se le puede avisar de nada fuera de la web: **«Avísame si se libera» espera** a que se
+  enciendan. **Al equipo, todo por la app y sus avisos al móvil**, como el calendario.
 - **Clientes:** por teléfono, del local (otro local no los ve nunca); visitas, gasto medio, lo que
   suele pedir, etiquetas y **alergias, que pasan solas a la mesa al sentarlo**. Los que no vienen
   se apuntan y se marcan al reservar.
@@ -211,6 +228,10 @@ cuenta y al ticket.
 7. Las alergias del cliente que pasan solas a la mesa.
 8. La duración de cada mesa, aprendida de las cuentas cobradas.
 9. Las vacaciones aprobadas en Turnos y en el cuadrante de Fogón.
+10. **El color en toda la app** (Richi, 24-nov: «odio que todo sea hiperplano»): cada tipo de cosa
+    con su color, sus degradados suaves y un icono que se entiende, y nada de cabeceras grises en
+    mayúsculas. Cada parte de la Ampliación lo aplica a las pantallas que toca; la ficha, el Panel
+    y Turnos ya lo llevan en la maqueta.
 
 ## 8 · Lo que tiene que decidir Richi
 
@@ -231,10 +252,36 @@ cuenta y al ticket.
    devengado hasta hoy.
 8. **La contrapropuesta de vacaciones:** una tarjeta azul arriba de Personal, con sus tres
    botones y el aviso al móvil (recomendado), o la pestaña «Vacaciones» que pediste.
+9. **El plazo de «Pedir que confirmen»** (Richi: «deja que elijan minutos o una hora max»). Lo he
+   entendido así: el local elige de 15 minutos a 1 hora, **contados desde que se hace la reserva**;
+   si en ese tiempo no la confirma, se cancela. ¿O el plazo es **antes de la hora de la reserva**
+   (por ejemplo, «si a una hora de llegar no ha confirmado, se cancela»)?
 
 ## 9 · Lo que contesta Richi
 
-(Pendiente.)
+**24-nov:**
+
+1. **El orden: sí**, la Ampliación entera antes de los descuentos y las reservas como quinta parte.
+2. **Las reservas son de Pro**: «si los de Esencial no tienen acceso al TPV, ¿qué sentido tiene?».
+3. **Los que no vienen confirman o cancelan desde la misma web**, viendo su reserva; y **en Ajustes,
+   la opción de que si no confirman a tiempo se cancele**, con el plazo que elija el local. Escrito
+   en la sección 6; el plazo, en la pregunta 9.
+4. **Avisos: por la app y al móvil.** El correo, preparado y **apagado por ahora**. Nada de SMS ni
+   WhatsApp.
+5. **El trabajador ve y descarga sus nóminas: sí.**
+6. **Tarjetas del Panel: 5 filas y «Ver los 6»: sí.**
+7. **El saldo de vacaciones: «lo que sea legal según su contrato y como se suele hacer».** Se hace
+   lo habitual: los disponibles son **los días del año que dice su contrato o su convenio**,
+   proporcionales si entró a mitad de año, menos los disfrutados y los aprobados; **lo devengado a
+   hoy se enseña aparte**, que es lo que cuenta si se va antes de acabar el año. Los pendientes de
+   años anteriores los pone el gerente.
+8. **La contrapropuesta como tarjeta arriba de Personal: sí.**
+
+**Y pide más:** el color en todo, no solo en el calendario, y **rehacer el horario (Turnos)**, que
+«se ve raro», con un diseño más profesional y de app actual. Entra en la Ampliación 4 (sección 5) y
+el color, en cada parte, en las pantallas que toque (sección 7).
+
+**Pregunta 9, abierta:** el plazo de «Pedir que confirmen».
 
 ## 10 · Lo que se toca en los documentos
 

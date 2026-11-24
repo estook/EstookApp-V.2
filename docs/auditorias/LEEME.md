@@ -36,17 +36,18 @@ internet · regresiones (`pnpm verifica`, `prueba:e2e:completa` y `prueba:semana
 
 ## Las que ya se hicieron
 
-| Cuándo | Cuál                                                                            | Qué miró                                                                                               |
-| ------ | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| 18-nov | [S1 · Cada plan, lo suyo](auditoria-2026-11-18-cada-plan-lo-suyo.md)            | Los límites de cada plan en las 504 operaciones, y las pantallas de Esencial                           |
-| 28-oct | [La auditoría del 28 de octubre](auditoria-del-28-oct.md)                       | Que todo sea coherente: documentos, Estook TPV, tickets, caja, aparatos y roles                        |
-| 27-oct | [La auditoría de GitHub](la-auditoria-de-github-del-27-oct.md)                  | Las 60 últimas vueltas de la integración, cada rojo por dentro, y producción                           |
-| 20-oct | [La auditoría del 20-oct](auditoria-del-20-oct.md)                              | Estook entero, sin el TPV: seguridad, permisos, datos, cálculos, IA, pantallas y pruebas               |
-| 14-oct | [Las bases firmes](auditoria-2026-10-14-las-bases-firmes.md)                    | Por roles: fallos, seguridad (qué ve quién, datos cruzados), base de datos y lo visual                 |
-| 14-oct | [La experiencia](auditoria-2026-10-14-la-experiencia.md)                        | Fallos, fallos de lógica y experiencia de uso, con datos de un mes                                     |
-| 9-oct  | [La auditoría del 9-oct](auditoria-2026-10-09.md)                               | Productos, cuentas, permisos por rol, gráficas, seguridad y sincronización; producción en solo lectura |
-| 29-sep | [La auditoría profunda](auditoria-profunda-2026-09-29.md)                       | Todo el producto y sus documentos, con cada hallazgo y su gravedad                                     |
-| —      | La lista de la Auditoría de flujos sobre [M3](m3.md), [M5](m5.md) y [M6](m6.md) | Cada módulo, al cerrarlo                                                                               |
+| Cuándo | Cuál                                                                            | Qué miró                                                                                                                 |
+| ------ | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 25-nov | [Las siete entregas desde S1](auditoria-2026-11-25-las-siete-entregas.md)       | Las migraciones 0119 a 0124, las nueve operaciones nuevas y los fallos de Richi; la cola de lo vendido, solo del sistema |
+| 18-nov | [S1 · Cada plan, lo suyo](auditoria-2026-11-18-cada-plan-lo-suyo.md)            | Los límites de cada plan en las 504 operaciones, y las pantallas de Esencial                                             |
+| 28-oct | [La auditoría del 28 de octubre](auditoria-del-28-oct.md)                       | Que todo sea coherente: documentos, Estook TPV, tickets, caja, aparatos y roles                                          |
+| 27-oct | [La auditoría de GitHub](la-auditoria-de-github-del-27-oct.md)                  | Las 60 últimas vueltas de la integración, cada rojo por dentro, y producción                                             |
+| 20-oct | [La auditoría del 20-oct](auditoria-del-20-oct.md)                              | Estook entero, sin el TPV: seguridad, permisos, datos, cálculos, IA, pantallas y pruebas                                 |
+| 14-oct | [Las bases firmes](auditoria-2026-10-14-las-bases-firmes.md)                    | Por roles: fallos, seguridad (qué ve quién, datos cruzados), base de datos y lo visual                                   |
+| 14-oct | [La experiencia](auditoria-2026-10-14-la-experiencia.md)                        | Fallos, fallos de lógica y experiencia de uso, con datos de un mes                                                       |
+| 9-oct  | [La auditoría del 9-oct](auditoria-2026-10-09.md)                               | Productos, cuentas, permisos por rol, gráficas, seguridad y sincronización; producción en solo lectura                   |
+| 29-sep | [La auditoría profunda](auditoria-profunda-2026-09-29.md)                       | Todo el producto y sus documentos, con cada hallazgo y su gravedad                                                       |
+| —      | La lista de la Auditoría de flujos sobre [M3](m3.md), [M5](m5.md) y [M6](m6.md) | Cada módulo, al cerrarlo                                                                                                 |
 
 Las del 8-nov (la pausa, sección 8 de la [0142](../decisiones/0142-la-pausa-del-8-nov.md)), la de las
 facturas ([0138](../decisiones/0138-el-reloj-de-los-documentos-y-la-auditoria-de-las-facturas.md)) y la de

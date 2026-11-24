@@ -438,6 +438,30 @@ export function Lista({ children }: { readonly children: ReactNode }) {
   return <ul className="flex flex-col gap-[7px]">{children}</ul>;
 }
 
+/** **Como mucho cinco filas** (la Ampliación, 0153, fallo 5): las demás, con «Ver los 6». */
+export const FILAS_DE_UNA_LISTA = 5;
+
+/**
+ * «Ver los 6», debajo de una lista que no cabe entera: lleva a la lista completa. En el móvil un
+ * recuadro que se desliza dentro de una página que también se desliza se engancha con el dedo; por
+ * eso la tarjeta mide lo que lleva y lo demás está a un toque (Richi, 24-nov).
+ */
+export function VerTodos({ cuantos, ir }: { readonly cuantos: number; readonly ir: string }) {
+  const navegar = useNavigate();
+  if (cuantos <= FILAS_DE_UNA_LISTA) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navegar(ir);
+      }}
+      className="mt-e1 self-start rounded-chico text-etiqueta font-bold text-texto underline decoration-2 underline-offset-4 hover:text-naranja"
+    >
+      Ver los {String(cuantos)}
+    </button>
+  );
+}
+
 /** Lo que queda cuando no hay nada: una frase tranquila, nunca un hueco. */
 export function NadaQueVer({ children }: { readonly children: ReactNode }) {
   return <p className="flex flex-1 items-center text-secundario text-texto-suave">{children}</p>;

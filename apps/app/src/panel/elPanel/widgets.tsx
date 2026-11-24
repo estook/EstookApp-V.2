@@ -58,7 +58,7 @@ import type { QueHaCambiado } from '../../escandallos/contrato.ts';
 import type { LoQueSeVende } from '../../servicio/contratoDeLoQueSeVende.ts';
 import { LoQueVieneDelCalendario, TusAtajos } from './losDeAntes.tsx';
 import { usarComoVaHoy, usarLoDelPanel } from '../../ganchos/usarLoDelPanel.ts';
-import type { ComoVaHoy, ElMenuDeHoy, LosRecomendados } from './datos.ts';
+import type { ComoVaHoy, LosRecomendados } from './datos.ts';
 import {
   BarraDeObjetivo,
   Cifra,
@@ -67,6 +67,8 @@ import {
   Leyenda,
   LeyendaDeLaGrafica,
   Lista,
+  FILAS_DE_UNA_LISTA,
+  VerTodos,
   MedioAnillo,
   NadaQueVer,
   Silueta,
@@ -152,8 +154,6 @@ export function WidgetDelPanel({
       return <LaCocinaEnElServicio />;
     case 'agotados':
       return <Agotados />;
-    case 'menu-del-dia':
-      return <MenuDelDia />;
     case 'para-recomendar':
       return <ParaRecomendar />;
     case 'equipo-ahora':
@@ -1585,7 +1585,7 @@ function CaducaPronto() {
         <NadaQueVer>Nada caduca en los próximos siete días.</NadaQueVer>
       ) : (
         <Lista>
-          {caducan.slice(0, 4).map((c) => (
+          {caducan.slice(0, FILAS_DE_UNA_LISTA).map((c) => (
             <Fila
               key={c.loteId}
               icono={c.dias <= 1 ? <IconoAtencion /> : <IconoReloj />}
@@ -1594,6 +1594,7 @@ function CaducaPronto() {
               detalle={`${cuandoCaduca(c.dias, c.caducaEl)}${c.lote === null ? '' : ` · lote ${c.lote}`}`}
             />
           ))}
+          <VerTodos cuantos={caducan.length} ir="/almacen/resumen" />
         </Lista>
       )}
     </Tarjeta>
@@ -1624,7 +1625,7 @@ function BajoMinimo() {
         <NadaQueVer>Todo por encima de su mínimo.</NadaQueVer>
       ) : (
         <Lista>
-          {bajo.slice(0, 4).map((p) => (
+          {bajo.slice(0, FILAS_DE_UNA_LISTA).map((p) => (
             <Fila
               key={p.id}
               icono={<IconoAtencion />}
@@ -1637,6 +1638,7 @@ function BajoMinimo() {
               }
             />
           ))}
+          <VerTodos cuantos={bajo.length} ir="/almacen/productos/bajo-minimo" />
         </Lista>
       )}
     </Tarjeta>
@@ -1680,7 +1682,7 @@ function Repartos() {
         <NadaQueVer>Hoy no llega nada ni toca pedir.</NadaQueVer>
       ) : (
         <Lista>
-          {filas.slice(0, 4).map((f) => (
+          {filas.slice(0, FILAS_DE_UNA_LISTA).map((f) => (
             <Fila
               key={f.clave}
               icono={f.icono}
@@ -1689,6 +1691,7 @@ function Repartos() {
               detalle={f.detalle}
             />
           ))}
+          <VerTodos cuantos={filas.length} ir="/almacen/compras/pedidos" />
         </Lista>
       )}
     </Tarjeta>
@@ -2227,95 +2230,7 @@ function MisHoras() {
   );
 }
 
-// ── La carta: menú, agotados y recomendados ────────────────────────────────────
-
-function MenuDelDia() {
-  const consulta = usarLoDelPanel<ElMenuDeHoy>('el_menu_de_hoy');
-  const puede = usarPuede();
-  const menu = consulta.data?.menu ?? null;
-  // Un plato por sección, como la maqueta (primero, segundo, postre); el resto, en la etiqueta.
-  const platos =
-    menu === null
-      ? []
-      : menu.secciones.flatMap((s) => {
-          const primero = s.platos.find((p) => !p.agotado) ?? s.platos[0];
-          return primero === undefined
-            ? []
-            : [{ ...primero, seccion: s.nombre, otros: s.platos.filter((p) => p !== primero) }];
-        });
-  return (
-    <Tarjeta
-      titulo="Menú del día"
-      icono={<IconoCarta />}
-      ir={puede.ver('app.carta') ? '/carta/menus' : undefined}
-      leyendo={consulta}
-      derecha={menu?.precioCentimos == null ? undefined : eurosConCentimos(menu.precioCentimos)}
-    >
-      {consulta.data === undefined ? (
-        <Cargando que="el menú de hoy" lineas={3} forma="lista-foto" />
-      ) : menu === null ? (
-        <Silueta
-          icono={<IconoCarta />}
-          paso={
-            puede.editar('app.carta') ? { texto: 'Hacer el menú', ir: '/carta/menus' } : undefined
-          }
-        >
-          {consulta.data.sirveMenus
-            ? 'El menú de hoy, con la foto de cada plato.'
-            : 'Tu local no sirve menús del día.'}
-        </Silueta>
-      ) : (
-        <ol className="grid flex-1 grid-cols-2 gap-e3 @min-[30rem]:grid-cols-3 @min-[46rem]:grid-cols-4">
-          {platos.slice(0, 4).map((p) => (
-            <li
-              key={`${p.seccion}${p.platoId}`}
-              className="flex min-w-0 flex-col gap-[6px] rounded-grande outline-none focus-visible:ring-2 focus-visible:ring-naranja"
-              tabIndex={0}
-              {...conTip(p.seccion, [p.nombre, ...p.otros.map((o) => o.nombre)].join(' · '))}
-            >
-              <span
-                className={clases(
-                  'relative block aspect-[4/3] w-full overflow-hidden rounded-grande bg-fondo',
-                  p.agotado && 'grayscale',
-                )}
-              >
-                {p.foto !== null ? (
-                  <img
-                    src={p.foto}
-                    alt=""
-                    loading="lazy"
-                    className="absolute inset-0 size-full object-cover"
-                  />
-                ) : (
-                  <span className="absolute inset-0 grid place-items-center text-texto-tenue">
-                    <IconoCarta size={26} />
-                  </span>
-                )}
-                {p.agotado && (
-                  <span className="absolute bottom-e2 left-e2 rounded-redondo bg-mal px-e2 py-[2px] text-etiqueta font-bold text-white">
-                    Agotado
-                  </span>
-                )}
-              </span>
-              <b
-                className={clases(
-                  'truncate text-secundario font-bold leading-tight',
-                  p.agotado && 'text-texto-suave line-through',
-                )}
-              >
-                {p.nombre}
-              </b>
-              <small className="-mt-[4px] truncate text-etiqueta font-semibold text-texto-tenue">
-                {p.seccion}
-                {p.otros.length > 0 ? ` · y ${String(p.otros.length)} más` : ''}
-              </small>
-            </li>
-          ))}
-        </ol>
-      )}
-    </Tarjeta>
-  );
-}
+// ── La carta: agotados y recomendados ────────────────────────────────────
 
 function Agotados() {
   const consulta = usarLoDelPanel<LosAgotados>('los_agotados');

@@ -182,7 +182,7 @@ describe('lo guardado de antes no se pierde', () => {
         ],
         GERENTE,
       ).map((w) => w.id),
-    ).toEqual(['tu-dia', 'menu-del-dia']);
+    ).toEqual(['tu-dia']);
   });
 
   it('quien tenía el Panel de fábrica de antes estrena el de su puesto', () => {

@@ -405,6 +405,44 @@ describe('lo que vuelve', () => {
   });
 });
 
+describe('la cola de lo vendido, solo del sistema (0125, de la auditoría de la Ampliación)', () => {
+  it('quien cobra no la escribe ni la vacía saltándose la API; el cobro, sí', async () => {
+    const sara = await base.personaPorCorreo(SARA);
+    // Un cobro de verdad de este local (los de arriba): la fila de la cola apunta a él.
+    const [deVerdad] = await comoDuena<{ id: string }>(
+      `select id::text as id from estook.cobro where local_id = $1 limit 1`,
+      [barCentro],
+    );
+    const cobro = deVerdad?.id ?? '';
+    expect(cobro).not.toBe('');
+    await expect(
+      base.comoPersona(sara, () =>
+        base.bd.query(
+          `insert into estook.lo_vendido_por_bajar (local_id, que, cobro_id)
+           values ($1, 'cobro', $2)`,
+          [barCentro, cobro],
+        ),
+      ),
+    ).rejects.toThrow(/row-level security/);
+    // Una fila de verdad, puesta como el sistema: Sara la ve pero no la puede borrar.
+    await base.bd.query(
+      `insert into estook.lo_vendido_por_bajar (local_id, que, cobro_id) values ($1, 'cobro', $2)`,
+      [barCentro, cobro],
+    );
+    const borradas = await base.comoPersona(sara, () =>
+      base.bd.query(`delete from estook.lo_vendido_por_bajar where cobro_id = $1 returning 1`, [
+        cobro,
+      ]),
+    );
+    expect(borradas.rows).toHaveLength(0);
+    const vistas = await base.comoPersona(sara, () =>
+      base.bd.query(`select 1 from estook.lo_vendido_por_bajar where cobro_id = $1`, [cobro]),
+    );
+    expect(vistas.rows).toHaveLength(1);
+    await base.bd.query(`delete from estook.lo_vendido_por_bajar where cobro_id = $1`, [cobro]);
+  });
+});
+
 describe('sacar género, sin contar dos veces', () => {
   it('ya no deja apuntar lo vendido ni lo cocinado; una merma, sí', async () => {
     const yo = losDatos<{ local: { loVendidoBaja?: boolean } }>(

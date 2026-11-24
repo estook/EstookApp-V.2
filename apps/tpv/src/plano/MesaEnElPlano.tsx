@@ -4,9 +4,11 @@ import {
   IconoAtencion,
   IconoComiendo,
   IconoCuaderno,
+  IconoBien,
   IconoCuenta,
   IconoEnviar,
   IconoLibre,
+  IconoRefresco,
   IconoPersona,
   IconoReloj,
   type Icono,
@@ -78,6 +80,20 @@ const DE_SIEMPRE: Readonly<Record<Exclude<EstadoDeLaMesa, 'esperando'>, ComoSeVe
     sillas: 'bg-mesa-marchar/60',
     minutos: CHAPA,
     icono: IconoAdelante,
+  },
+  // **La bebida, hasta que se sirve** (0153): en violeta mientras nadie la ha llevado; en turquesa
+  // si la barra ya la ha hecho y está para ir a por ella.
+  bebida_en_camino: {
+    caja: 'bg-mesa-bebida text-sobre-mesa-bebida',
+    sillas: 'bg-mesa-bebida/60',
+    minutos: CHAPA,
+    icono: IconoRefresco,
+  },
+  bebida_lista: {
+    caja: 'bg-mesa-bebida-lista text-sobre-mesa-bebida-lista',
+    sillas: 'bg-mesa-bebida-lista/60',
+    minutos: CHAPA,
+    icono: IconoBien,
   },
   comiendo: {
     caja: 'bg-mesa-comiendo text-sobre-mesa-comiendo',

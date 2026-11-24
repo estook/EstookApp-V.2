@@ -227,7 +227,9 @@ export const MINUTOS_PARA_DESHACER_SERVIDO = 5;
  *   · `sin_pedir`, `por_mandar` y `toca_marchar`, lo de siempre (lo que dice el botón grande)
  *   · `esperando`: algo suyo está en la cocina y aún no ha salido; el tiempo, desde que le
  *     llegó (`desdeCuandoEnCocina`)
- *   · `comiendo`: lo de cocina ha salido entero (o solo pidieron bebida)
+ *   · `bebida_en_camino` y `bebida_lista`: lo de la barra está pedido y la sala aún no lo ha
+ *     servido; «lista» si la barra ya lo tachó (0153)
+ *   · `comiendo`: lo de cocina ha salido entero y lo de la barra está servido
  *   · `para_cobrar`: comieron, ha salido todo y hace los minutos del local de lo último (15 de
  *     fábrica; lo último servido o lo último pedido: si piden cafés, vuelve a contar)
  *
@@ -235,11 +237,45 @@ export const MINUTOS_PARA_DESHACER_SERVIDO = 5;
  * lo marca servido (0132), que es la única forma de que la sala sepa qué ha salido.
  */
 export type ComoVaLaMesa =
-  'sin_pedir' | 'por_mandar' | 'toca_marchar' | 'esperando' | 'comiendo' | 'para_cobrar';
+  | 'sin_pedir'
+  | 'por_mandar'
+  | 'toca_marchar'
+  | 'esperando'
+  | 'bebida_en_camino'
+  | 'bebida_lista'
+  | 'comiendo'
+  | 'para_cobrar';
+
+/** Lo de la barra que la mesa todavía no tiene: nada, pedido sin servir, o hecho y por llevar. */
+export type LaBebidaDeLaMesa = 'nada' | 'en_camino' | 'lista';
+
+/**
+ * **La bebida, hasta que el camarero la sirve** (la Ampliación, 0153, fallo 2). Antes solo contaba
+ * lo de la cocina, y un Fuze Tea recién mandado ponía la mesa en verde «Bebiendo» sin que nadie lo
+ * hubiera llevado. Ahora lo de la barra mandado y sin quitar espera hasta que **la sala lo marca
+ * servido**; si la barra (con pantalla) ya lo tachó, está «lista» para ir a por ella.
+ */
+export function laBebidaDeLaMesa(
+  lineas: readonly {
+    readonly destino: DestinoDeLaLinea;
+    readonly mandado: boolean;
+    readonly quitado: boolean;
+    readonly salio: boolean;
+    readonly servidaEnSala: boolean;
+  }[],
+): LaBebidaDeLaMesa {
+  const porServir = lineas.filter(
+    (l) => l.destino === 'barra' && l.mandado && !l.quitado && !(l.salio && l.servidaEnSala),
+  );
+  if (porServir.length === 0) return 'nada';
+  return porServir.every((l) => l.salio) ? 'lista' : 'en_camino';
+}
 
 export function comoVaLaMesa(datos: {
   readonly loSiguiente: LoSiguiente;
   readonly enCocina: LaMesaEnCocina;
+  /** Lo de la barra por servir (0153). Sin decirlo, como antes: solo cuenta la cocina. */
+  readonly bebida?: LaBebidaDeLaMesa;
   /** Si tiene algo de cocina mandado y sin quitar: una mesa solo de bebida no pide la cuenta. */
   readonly conComida: boolean;
   /** Minutos desde lo último servido o pedido; nulo si no hay nada. */
@@ -252,6 +288,8 @@ export function comoVaLaMesa(datos: {
   if (loSiguiente.que === 'mandar') return 'por_mandar';
   if (loSiguiente.que === 'marchar') return 'toca_marchar';
   if (datos.enCocina === 'en_marcha') return 'esperando';
+  if (datos.bebida === 'en_camino') return 'bebida_en_camino';
+  if (datos.bebida === 'lista') return 'bebida_lista';
   if (
     datos.conComida &&
     datos.minutosDesdeLoUltimo !== null &&

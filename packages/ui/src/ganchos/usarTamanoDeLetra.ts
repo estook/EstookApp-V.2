@@ -51,9 +51,9 @@ export function esTamanoDeLetra(valor: unknown): valor is TamanoDeLetra {
 }
 
 /**
- * La de fábrica, si este aparato no ha elegido ninguna. En Estook es «Automática» desde la
- * pausa del 8-nov (0142); Estook TPV se queda en «Normal», que es con la que se probó el
- * servicio en el móvil (R2). Quien ya eligió un tamaño lo conserva.
+ * La de fábrica, si este aparato no ha elegido ninguna: «Automática», en Estook desde la pausa del
+ * 8-nov (0142) y en Estook TPV desde la Ampliación (0153; antes «Normal», y el comandero del móvil
+ * se veía grande). Quien ya eligió un tamaño lo conserva.
  */
 function leerGuardado(deFabrica: TamanoDeLetra): TamanoDeLetra {
   if (typeof window === 'undefined') return deFabrica;

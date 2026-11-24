@@ -289,14 +289,6 @@ export const WIDGETS: readonly Widget[] = [
     anadible: true,
   },
   {
-    id: 'menu-del-dia',
-    nombre: 'Menú del día',
-    queEnsena: 'El menú de hoy, con la foto de cada plato',
-    permiso: null,
-    grupo: 'almacen',
-    anadible: true,
-  },
-  {
     id: 'para-recomendar',
     nombre: 'Para recomendar',
     queEnsena: 'Lo que recomienda la casa, para ofrecerlo en la mesa',
@@ -477,7 +469,6 @@ export const FIJOS_DEL_PUESTO: Readonly<Record<Puesto, readonly Fijo[]>> = {
   ],
   cocina: [
     { id: 'tu-dia', forma: 'tercio', destacado: true },
-    { id: 'menu-del-dia', forma: 'dos-tercios' },
     { id: 'caducidades', forma: 'tercio' },
     { id: 'agotados', forma: 'tercio' },
     { id: 'tablon', forma: 'tercio' },
@@ -485,7 +476,6 @@ export const FIJOS_DEL_PUESTO: Readonly<Record<Puesto, readonly Fijo[]>> = {
   ],
   sala: [
     { id: 'tu-dia', forma: 'tercio', destacado: true },
-    { id: 'menu-del-dia', forma: 'dos-tercios' },
     { id: 'agotados', forma: 'tercio' },
     { id: 'para-recomendar', forma: 'tercio' },
     { id: 'tablon', forma: 'tercio' },
@@ -540,7 +530,6 @@ export const MUDANZAS: Readonly<Record<string, string>> = {
   'gasto-en-compras': 'cifras-del-dia',
   'valor-de-la-camara': 'almacen-pide',
   pedidos: 'repartos',
-  'menu-de-hoy': 'menu-del-dia',
   fichajes: 'equipo-ahora',
   // La experiencia (0083)
   'ventas-de-hoy': 'cifras-del-dia',
@@ -733,7 +722,6 @@ const DE_QUE_APP: Readonly<Record<string, PermisoDeApp>> = {
 const APP_SIN_PERMISO: Readonly<Record<string, PermisoDeApp>> = {
   'tu-dia': 'app.equipo',
   'mis-horas': 'app.equipo',
-  'menu-del-dia': 'app.carta',
   'acciones-rapidas': 'app.panel',
   'para-recomendar': 'app.carta',
   tablon: 'app.equipo',

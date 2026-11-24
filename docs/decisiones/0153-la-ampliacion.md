@@ -291,7 +291,40 @@ el color, en cada parte, en las pantallas que toque (sección 7).
    la reserva, se cancela automáticamente; pueden reservar un día o dos antes y no tendría sentido
    así». El local elige de 15 minutos a 1 hora.
 
-## 10 · Lo que se toca en los documentos
+## 10 · Lo que se construyó en la Ampliación 1 (25-nov)
+
+Con la maqueta aprobada («Aprobada, empieza», 24-nov), en `ampliacion-1-los-fallos`, **con la migración
+0125** y la API con una consulta menos (`el_menu_de_hoy` sale con su widget). Las pruebas para Richi, en
+[sus pasos](../pasos/pasos-de-la-ampliacion-1.md) (la 33).
+
+**Lo que decidió la IA al construirla**, para que Richi lo sepa:
+
+1. **Hizo falta una migración**, aunque la maqueta decía «sin migración nueva»: **la base también vigila quién
+   marca servido** (un disparador de la 0103) y no dejaba a la sala marcar lo de la barra sin la opción
+   encendida. La 0125 copia esa función entera y cambia solo eso (lección 280). Y lleva el arreglo de la
+   auditoría (sección 7, punto 1): la cola de lo vendido, solo del sistema.
+2. **Lo de la barra lo marca siempre la sala**, en todos los locales: si no, en un local con la opción apagada
+   la mesa se quedaría esperando la bebida para siempre. Lo de la cocina sigue igual.
+3. **Marcar servido lo que la barra ya tachó** no lo destacha: se apunta que lo llevó la sala, con su hora de
+   antes. «Deshacer» sobre eso lo vuelve a «en marcha» en la barra (pasa poco, y se ve).
+4. **«Bebida en camino» en violeta y «Bebida lista» en turquesa**, dos colores nuevos de la sala con su
+   contraste medido, y una línea más en la leyenda.
+5. **La venta a medias se guarda en el aparato** con su cuenta; si se cobró o se cerró desde otro sitio, se
+   olvida sola. Mientras hay una a medias, tocar un producto avisa «Primero cobra la venta a medias, o déjala
+   en «Para llevar»», y hay un botón para dejarla allí.
+6. **El servidor dice qué cuenta tiene ya esos platos** (`ya_hecho`, con la cuenta), en vez de crear otra vacía.
+7. **Recargar sin el PIN**: se guarda en la pestaña (se va al cerrarla) quién está dentro y su último toque, y
+   al recargar se entra solo si el bloqueo no habría saltado (2 minutos en la caja y el comandero, 10 en el móvil
+   de cada uno). **Al volver a la app** tras más de medio minuto fuera, o al volver la red, se vuelve a conectar
+   y se piden las mesas al momento. Sin botón de actualizar ni franja nueva: si no hay internet, la franja de
+   siempre lo dice.
+8. **Las tarjetas del Panel**: «Añadidos por ti» deja de tener alto fijo; el rótulo pasa a «En el orden que
+   elijas» (ya no son del mismo tamaño). «Caduca pronto», «Bajo mínimo» y «Repartos de hoy» enseñan cinco y
+   «Ver los N». Las demás ya enseñaban menos de cinco.
+9. **«Notificaciones»** va en un plegable con el resumen «Campana, móvil y correo»; Ajustes › Avisos dice
+   «Notificaciones, este móvil y cuándo suena».
+
+## 11 · Lo que se toca en los documentos
 
 - **Plan:** la cabecera de D con la Ampliación; las fichas de M13 y M14 con lo de Richi; la ficha
   nueva de M32; el número de módulos.

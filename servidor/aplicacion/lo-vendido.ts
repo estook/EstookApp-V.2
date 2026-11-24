@@ -83,12 +83,16 @@ export async function ponerEnLaCola(
   cobroId: string,
   devolucion?: PartesDevueltas,
 ): Promise<void> {
-  await contexto.sql`
-    insert into estook.lo_vendido_por_bajar (local_id, que, cobro_id, documento_id, partes)
-    values (${localId}::uuid, ${que}, ${cobroId}::uuid, ${devolucion?.documentoId ?? null}::uuid,
-            ${devolucion === undefined ? null : JSON.stringify(devolucion.partes)}::text::jsonb)
-    on conflict do nothing
-  `;
+  // La cola es del sistema (0125): quien cobra no la toca, la apunta el cobro por él.
+  await enNombreDelSistema(
+    contexto,
+    () => contexto.sql`
+      insert into estook.lo_vendido_por_bajar (local_id, que, cobro_id, documento_id, partes)
+      values (${localId}::uuid, ${que}, ${cobroId}::uuid, ${devolucion?.documentoId ?? null}::uuid,
+              ${devolucion === undefined ? null : JSON.stringify(devolucion.partes)}::text::jsonb)
+      on conflict do nothing
+    `,
+  );
 }
 
 interface FilaDeLaCola {
@@ -109,6 +113,14 @@ export interface LoQueSeBajo {
  * falla se queda en la cola, se apunta en Sentry y lo intenta el siguiente.
  */
 export async function bajarLoPendiente(contexto: Contexto, localId: string): Promise<LoQueSeBajo> {
+  // La cola es del sistema (0125): tomarla, mirarla y apuntar un fallo, también.
+  return enNombreDelSistema(contexto, () => bajarLoPendienteComoSistema(contexto, localId));
+}
+
+async function bajarLoPendienteComoSistema(
+  contexto: Contexto,
+  localId: string,
+): Promise<LoQueSeBajo> {
   // **Lo que no ha fallado, primero**: si algo falla siempre, no ocupa el sitio de lo nuevo y se
   // reintenta detrás. Dentro de cada grupo, lo más viejo primero.
   const cola = await contexto.sql<FilaDeLaCola[]>`

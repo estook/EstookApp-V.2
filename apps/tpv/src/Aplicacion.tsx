@@ -113,7 +113,10 @@ function Dentro() {
 export function Aplicacion() {
   // Oscuro de fábrica (0107, Anexo 11.12); claro o automático, si se elige en Ajustes (0143).
   usarElTemaDelTpv();
-  usarTamanoDeLetra('normal');
+  // La letra «Automática», como en Estook (la Ampliación, 0153, arreglo 3.1): la pequeña en el
+  // móvil, la normal en la caja y la tablet. Antes la de fábrica era «Normal» y el comandero del
+  // móvil se veía grande. Quien eligió un tamaño en Estook lo conserva (se guarda en el aparato).
+  usarTamanoDeLetra();
   const cache = useMemo(
     () =>
       new QueryClient({

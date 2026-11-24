@@ -5,7 +5,8 @@ import { elDetalle, elPase } from './laCuenta.ts';
  * **Lo que el camarero marca servido** (R2 · 2, decisión 0132; la pausa del 5-nov, punto 1.2),
  * sin pintar nada: qué platos de la mesa salen en la hoja «Servido» y cómo.
  *
- *   · `por_servir`: en marcha en cocina, o en la barra: se marca con un toque
+ *   · `por_servir`: en marcha en cocina, o en la barra: se marca con un toque. Lo de la barra que
+ *     ya tachó la barra también, hasta que la sala lo lleva (0153)
  *   · `servido`: ya salió. Si lo marcó la sala, se puede desmarcar; si lo tachó la cocina, no
  *   · `espera`: su pase aún no está marchado: no se sirve lo que nadie está haciendo
  *
@@ -31,6 +32,8 @@ export interface GrupoParaServir {
 }
 
 function comoEsta(p: PlatoDeLaCuenta): ComoEstaParaServir | null {
+  if (p.estado === 'salio' && p.destino === 'barra' && p.servidoEnSala === false)
+    return 'por_servir';
   if (p.estado === 'salio') return 'servido';
   if (p.estado === 'en_marcha' || p.estado === 'en_la_barra') return 'por_servir';
   if (p.estado === 'en_espera') return 'espera';

@@ -27,6 +27,11 @@ import { usarSubirLoGuardado } from '../ganchos/usarSubirLoGuardado.ts';
 import { usarLaCajaDeCentro } from '../ganchos/usarLaCajaDeCentro.ts';
 import { olvidarLosTachados } from '../cocina/losTachados.ts';
 import { elCaminoAlCentro, esteSistema, llegamosALaCaja } from '../sinInternet/laCaja.ts';
+import {
+  guardarQuienEstaDentro,
+  leerQuienEstaDentro,
+  olvidarQuienEstaDentro,
+} from './quienEstaDentro.ts';
 
 /**
  * La puerta de Estook TPV (T1 · La puerta, decisión 0107; Anexo 11.3 y 11.4).
@@ -39,7 +44,8 @@ import { elCaminoAlCentro, esteSistema, llegamosALaCaja } from '../sinInternet/l
  *     · con alguien dentro → lo de dentro, con su turno, hasta que se bloquea
  *
  * **No entra con la sesión de Estook**, y no lleva a Estook: un aparato vinculado no es
- * una puerta a la gestión. El turno vive solo en la memoria: al recargar, se bloquea.
+ * una puerta a la gestión. **El turno se guarda en la pestaña** (la Ampliación, 0153, fallo 4): al
+ * recargar se sigue dentro si el bloqueo no habría saltado ya; si no, el PIN (`quienEstaDentro.ts`).
  */
 /** Adónde se entra directo desde un botón de la puerta (0144, 0145 y 0148); lo demás, a la sala. */
 const LO_QUE_SE_TOCA_EN_LA_PUERTA = /^(caja\/(abrir|cerrar)|cobro\/[0-9a-f-]{36}|rapida|facturas)$/;
@@ -123,7 +129,7 @@ function ConLlave({
   readonly children: ReactNode;
 }) {
   const cliente = useMemo(() => crearClienteDelTpv({ token: () => null }), []);
-  const [dentro, setDentro] = useState<Dentro | null>(null);
+  const [dentro, setDentro] = useState<Dentro | null>(() => leerQuienEstaDentro(llave));
   // **Lo guardado sin internet sube solo** al volver (T5 · 2 · 1). Si sube la entrada de quien
   // está dentro sin turno, pasa a su turno de verdad sin volver a teclear.
   const subirAhora = usarSubirLoGuardado(llave, (entradaId, real) => {
@@ -190,9 +196,10 @@ function ConLlave({
   }, [retirado, alDesvincular]);
 
   const alSalir = useCallback(() => {
+    olvidarQuienEstaDentro(llave);
     setDentro(null);
     void latido.refetch();
-  }, [latido]);
+  }, [latido, llave]);
 
   // **Estook TPV es de Pro** (0120): si el local no lo tiene, el aparato espera vinculado y sin
   // borrar nada, aunque guarde lo de antes; vuelve solo en cuanto el local pase a Pro.
@@ -366,7 +373,26 @@ function ConTurno({
     salir.current();
   }, [cliente, cache, sinTurno, seSubeCon, dentro.persona]);
 
-  usarElBloqueo(minutosDelBloqueo(aparato.funcion, aparato.esPersonal, aparato.bloqueo), bloquear);
+  const minutos = minutosDelBloqueo(aparato.funcion, aparato.esPersonal, aparato.bloqueo);
+  usarElBloqueo(minutos, bloquear);
+
+  // **Para recargar sin el PIN** (0153, fallo 4): quién está dentro y su último toque, en la pestaña.
+  // Se apunta como mucho cada cinco segundos; al bloquearse o salir, se olvida (`alSalir`).
+  useEffect(() => {
+    guardarQuienEstaDentro(llave, dentro, minutos);
+    let ultimo = Date.now();
+    const tocado = () => {
+      const ahora = Date.now();
+      if (ahora - ultimo < 5_000) return;
+      ultimo = ahora;
+      guardarQuienEstaDentro(llave, dentro, minutos, ahora);
+    };
+    const eventos = ['pointerdown', 'keydown', 'touchstart', 'wheel'] as const;
+    for (const evento of eventos) window.addEventListener(evento, tocado, { passive: true });
+    return () => {
+      for (const evento of eventos) window.removeEventListener(evento, tocado);
+    };
+  }, [llave, dentro, minutos]);
 
   const datos = yo.data;
   const valor = useMemo<SesionDeLaSala | null>(

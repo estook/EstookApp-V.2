@@ -223,7 +223,6 @@ import { laPuestaEnMarcha } from './consultas/la-puesta-en-marcha.ts';
 import { miCarta, unPlato } from './consultas/mi-carta.ts';
 import { losAgotados } from './consultas/agotados.ts';
 import { losRecomendados } from './consultas/recomendados.ts';
-import { elMenuDeHoy } from './consultas/el-menu-de-hoy.ts';
 import { recomendarPlato } from './comandos/recomendados.ts';
 import { elEquilibrioDeLaCarta } from './consultas/equilibrio.ts';
 import { marcarAgotado, quitarAgotado } from './comandos/agotados.ts';
@@ -632,7 +631,6 @@ export const catalogo = {
     // la cocina, sin precios) y el equilibrio de la carta, con Omnes.
     [losAgotados.nombre]: losAgotados,
     [losRecomendados.nombre]: losRecomendados,
-    [elMenuDeHoy.nombre]: elMenuDeHoy,
     [elEquilibrioDeLaCarta.nombre]: elEquilibrioDeLaCarta,
     // M10 · 2 · Los menús (0104): la semana de cada menú, y lo que deja a quien ve costes.
     [misMenus.nombre]: misMenus,

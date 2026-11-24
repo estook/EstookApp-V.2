@@ -130,6 +130,19 @@ Lo que pidió Richi, con lo investigado. El detalle vive en la ficha de **M13** 
   marcado del calendario, **sin impedir aprobar**: decide el responsable.
 - **Al aprobarse**, salen en Turnos y «Hacer el cuadrante con Fogón» no pone a nadie de
   vacaciones.
+- **El diseño, rehecho el 24-nov** (Richi: «muy fea, sin color… odio que todo sea hiperplano»).
+  **Cada tipo con su degradado y su icono**, igual en el móvil y en el PC: vacaciones en azul
+  playa con su palmera, horas en naranja con su reloj, turnos en verde, limpiezas en turquesa,
+  inspecciones en coral, reservas de grupo en violeta, notas en amarillo y formación en rosa.
+  **El espacio del móvil, como lo resuelven Google Calendar, Fantastical y el del iPhone:** la
+  semana arriba con puntos de color (se tira y sale el mes), lo de varios días como una banda, y
+  el día tocado debajo en tarjetas de color. **En el PC**, el mes con el texto dentro, la barra
+  lateral con el mes pequeño y las capas. **Se abre en Personal** para el equipo y **en Equipo**
+  para el gerente y los jefes. **En Propuestas, la línea del equipo**: quién está de vacaciones
+  esos días, lo que se pide a rayas y cuántos quedan cada día si se aprueba (verde o naranja).
+- **Propuesto: la contrapropuesta como tarjeta azul arriba de Personal** (con Aceptar, Otras
+  fechas y Rechazar, y su aviso al móvil) en vez de una pestaña que aparece y desaparece
+  (pregunta 8).
 - **La ley, mirada en la fuente** (Estatuto de los Trabajadores, art. 38): al menos **30 días
   naturales** al año, sin cambiarlos por dinero; el trabajador sabe sus fechas **al menos dos meses
   antes**; si una baja coincide con las vacaciones, se disfrutan después (con un tope de 18 meses
@@ -216,6 +229,8 @@ cuenta y al ticket.
 7. **El saldo de vacaciones:** «disponibles» cuenta **todo el año** (proporcional si entró a
    mitad de año), y las devengadas a hoy se enseñan aparte (recomendado, es lo habitual); o solo lo
    devengado hasta hoy.
+8. **La contrapropuesta de vacaciones:** una tarjeta azul arriba de Personal, con sus tres
+   botones y el aviso al móvil (recomendado), o la pestaña «Vacaciones» que pediste.
 
 ## 9 · Lo que contesta Richi
 

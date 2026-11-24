@@ -1754,7 +1754,757 @@
     color: var(--texto);
   }
 
+  /* ══ El calendario, con color (24-nov: «odio que todo sea hiperplano») ══
+     Cada tipo de cosa con su degradado y su icono, igual en el móvil y en el PC:
+     vacaciones (playa), horas (naranja), turno (verde), limpieza (turquesa),
+     inspección (coral), reserva de grupo (violeta), nota (amarillo), cata o formación (rosa). */
+  :root {
+    --g-vac: linear-gradient(135deg, #38d0ff 0%, #2a8bff 55%, #2f5bff 100%);
+    --g-horas: linear-gradient(135deg, #ffc061 0%, #ff8a1f 55%, #ff6a00 100%);
+    --g-turno: linear-gradient(135deg, #4fe0a8 0%, #1fb57a 55%, #0f8f5c 100%);
+    --g-limpieza: linear-gradient(135deg, #4fe3d2 0%, #17b3a3 60%, #0d8c80 100%);
+    --g-sanidad: linear-gradient(135deg, #ff8a80 0%, #ff5a6e 55%, #d93a62 100%);
+    --g-reserva: linear-gradient(135deg, #b9a2ff 0%, #8b6cff 55%, #6a48e6 100%);
+    --g-nota: linear-gradient(135deg, #ffe680 0%, #ffcf3d 60%, #f2b200 100%);
+    --g-cata: linear-gradient(135deg, #ff9ed2 0%, #f264a8 55%, #d63f8c 100%);
+    --g-hero:
+      radial-gradient(120% 140% at 100% 0%, #ff8a1f 0%, rgba(255, 122, 0, 0) 55%),
+      radial-gradient(90% 120% at 0% 100%, #2f5bff 0%, rgba(47, 91, 255, 0) 60%),
+      linear-gradient(160deg, #1b2a31 0%, #111c1f 100%);
+    --c-vac: #2a8bff;
+    --c-horas: #ff8a1f;
+    --c-turno: #1fb57a;
+    --c-limpieza: #17b3a3;
+    --c-sanidad: #ff5a6e;
+    --c-reserva: #8b6cff;
+    --c-nota: #f2b200;
+    --c-cata: #f264a8;
+    --vidrio: rgba(255, 255, 255, 0.16);
+  }
+  .cal-hero {
+    background: var(--g-hero);
+    color: #fff;
+    border-radius: 22px;
+    padding: 14px 14px 12px;
+    display: grid;
+    gap: 10px;
+    box-shadow: 0 14px 30px -18px rgba(17, 28, 31, 0.7);
+  }
+  .cal-hero .saludo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .cal-hero .saludo b {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .cal-hero .saludo small {
+    display: block;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 600;
+  }
+  .cal-hero .proximo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--vidrio);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    backdrop-filter: blur(6px);
+  }
+  .cal-hero .proximo b {
+    display: block;
+    font-size: 0.86rem;
+  }
+  .icono-g {
+    display: grid;
+    place-items: center;
+    color: #fff;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      0 6px 14px -8px rgba(0, 0, 0, 0.5);
+  }
+  .icono-g.ch {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+  }
+  .icono-g.gr {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+  .gv {
+    background: var(--g-vac);
+  }
+  .gh {
+    background: var(--g-horas);
+  }
+  .gt {
+    background: var(--g-turno);
+  }
+  .gl {
+    background: var(--g-limpieza);
+  }
+  .gs {
+    background: var(--g-sanidad);
+  }
+  .gr2 {
+    background: var(--g-reserva);
+  }
+  .gn {
+    background: var(--g-nota);
+    color: #3d2c00;
+  }
+  .gc {
+    background: var(--g-cata);
+  }
+
+  /* La semana arriba, como hacen las mejores apps en el móvil; el mes se despliega. */
+  .semana {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .sd {
+    display: grid;
+    justify-items: center;
+    gap: 3px;
+    padding: 6px 0 7px;
+    border-radius: 14px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .sd b {
+    font-size: 0.95rem;
+    color: #fff;
+  }
+  .sd.hoy {
+    background: #fff;
+    color: #ff6a00;
+    box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.6);
+  }
+  .sd.hoy b {
+    color: #111c1f;
+  }
+  .puntos {
+    display: flex;
+    gap: 2px;
+    height: 6px;
+  }
+  .puntos i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .tirador {
+    justify-self: center;
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  /* Lo de un día: tarjetas con su color, nunca grises. */
+  .agenda {
+    display: grid;
+    gap: 8px;
+  }
+  .agenda-dia {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--tenue);
+    display: flex;
+    justify-content: space-between;
+  }
+  .ev-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    background: var(--superficie);
+    border-radius: 16px;
+    padding: 9px 10px;
+    box-shadow: var(--sombra-suave);
+    position: relative;
+    overflow: hidden;
+    font-size: 0.78rem;
+  }
+  .ev-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.09;
+    background: var(--tinte, transparent);
+    pointer-events: none;
+  }
+  .ev-card b {
+    display: block;
+    font-size: 0.84rem;
+  }
+  .ev-card small {
+    color: var(--suave);
+    font-size: 0.72rem;
+  }
+  .ev-card .hora {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .ev-card .hora small {
+    display: block;
+    font-weight: 600;
+    color: var(--tenue);
+  }
+
+  /* Las baldosas con degradado: vacaciones y horas. */
+  .baldosas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .baldosa {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    padding: 11px 12px 12px;
+    color: #fff;
+    display: grid;
+    gap: 3px;
+    min-height: 118px;
+    align-content: start;
+    box-shadow: 0 12px 24px -16px rgba(17, 28, 31, 0.65);
+  }
+  .baldosa .marca-agua {
+    position: absolute;
+    right: -10px;
+    bottom: -12px;
+    opacity: 0.22;
+  }
+  .baldosa .ic {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.24);
+    display: grid;
+    place-items: center;
+    margin-bottom: 4px;
+  }
+  .baldosa small {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+  .baldosa b {
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .baldosa b span {
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .baldosa .sub {
+    font-size: 0.7rem;
+    opacity: 0.92;
+  }
+  .barrita {
+    display: flex;
+    gap: 2px;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 5px;
+    background: rgba(255, 255, 255, 0.25);
+  }
+  .barrita i {
+    display: block;
+  }
+  .boton-g {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 0.86rem;
+    color: #fff;
+    border-radius: 16px;
+    padding: 13px;
+    background: var(--g-vac);
+    box-shadow: 0 12px 22px -12px rgba(42, 139, 255, 0.9);
+  }
+  .boton-g.naranja {
+    background: var(--g-horas);
+    box-shadow: 0 12px 22px -12px rgba(255, 122, 0, 0.9);
+    color: #111c1f;
+  }
+  .fab {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    width: 50px;
+    height: 50px;
+    border-radius: 18px;
+    background: var(--g-horas);
+    color: #111c1f;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 14px 26px -12px rgba(255, 122, 0, 0.95);
+  }
+
+  /* El mes en el móvil: barras de color para lo que dura varios días y puntos para lo demás;
+     el día tocado se abre debajo (el problema del espacio, resuelto como lo resuelven las buenas). */
+  .mes-m {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    row-gap: 4px;
+    font-size: 0.72rem;
+    text-align: center;
+  }
+  .mes-m .ds {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: var(--tenue);
+    padding-bottom: 2px;
+  }
+  .mes-m .c {
+    display: grid;
+    justify-items: center;
+    gap: 3px;
+    padding: 4px 0 3px;
+    border-radius: 12px;
+    font-weight: 700;
+    position: relative;
+  }
+  .mes-m .c.fuera {
+    color: var(--tenue);
+    opacity: 0.5;
+  }
+  .mes-m .c.sel {
+    background: var(--texto);
+    color: var(--superficie);
+  }
+  .mes-m .c.hoy span {
+    color: #ff6a00;
+  }
+  .mes-m .banda {
+    height: 5px;
+    width: 100%;
+    border-radius: 3px;
+  }
+  .mes-m .banda.ini {
+    border-radius: 3px 0 0 3px;
+    margin-left: 6px;
+    width: calc(100% - 6px);
+  }
+  .mes-m .banda.fin {
+    border-radius: 0 3px 3px 0;
+    width: calc(100% - 6px);
+  }
+  .capas {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .capa {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 10px 5px 5px;
+    border-radius: 999px;
+    background: var(--superficie);
+    box-shadow: var(--sombra-suave);
+  }
+  .capa i {
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+  }
+  .capa.off {
+    opacity: 0.45;
+  }
+
+  /* El PC: como un calendario de primera, con barra lateral de capas y el mes con color. */
+  .cal-pc {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr);
+    min-height: 520px;
+  }
+  .cal-lado {
+    background: var(--superficie);
+    border-right: 1px solid var(--borde-suave);
+    padding: 14px 12px;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+  .mini {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+    font-size: 0.64rem;
+    text-align: center;
+    font-weight: 600;
+  }
+  .mini span {
+    padding: 4px 0;
+    border-radius: 7px;
+  }
+  .mini .ds {
+    color: var(--tenue);
+    font-weight: 800;
+  }
+  .mini .hoy {
+    background: var(--g-horas);
+    color: #111c1f;
+    font-weight: 800;
+  }
+  .mini .rng {
+    background: rgba(42, 139, 255, 0.16);
+    color: var(--c-vac);
+  }
+  .capa-lista {
+    display: grid;
+    gap: 6px;
+  }
+  .capa-lista label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .capa-lista .ck {
+    width: 16px;
+    height: 16px;
+    border-radius: 5px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+  }
+  .capa-lista label small {
+    margin-left: auto;
+    color: var(--tenue);
+    font-weight: 700;
+    font-size: 0.68rem;
+  }
+  .cal-main {
+    padding: 14px 16px 16px;
+    background: var(--fondo);
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    min-width: 0;
+  }
+  .cal-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .cal-top h4 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-right: auto;
+  }
+  .flechas {
+    display: flex;
+    gap: 4px;
+  }
+  .flechas span {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: var(--superficie);
+    display: grid;
+    place-items: center;
+    box-shadow: var(--sombra-suave);
+  }
+  .rejilla-mes {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    background: var(--borde-suave);
+    gap: 1px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--sombra-suave);
+  }
+  .rejilla-mes .ds {
+    background: var(--superficie-2);
+    font-size: 0.66rem;
+    font-weight: 800;
+    color: var(--tenue);
+    padding: 6px 8px;
+  }
+  .rejilla-mes .dia {
+    background: var(--superficie);
+    min-height: 82px;
+    padding: 5px 0 6px;
+    display: grid;
+    align-content: start;
+    gap: 3px;
+    min-width: 0;
+  }
+  .rejilla-mes .dia > span {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0 7px;
+  }
+  .rejilla-mes .dia.fuera {
+    background: var(--superficie-2);
+  }
+  .rejilla-mes .dia.fuera > span {
+    color: var(--tenue);
+  }
+  .rejilla-mes .dia.hoy > span {
+    justify-self: start;
+    margin-left: 4px;
+    background: var(--g-horas);
+    color: #111c1f;
+    border-radius: 8px;
+    padding: 1px 6px;
+  }
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 4px;
+    padding: 3px 6px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.64rem;
+    font-weight: 700;
+    line-height: 1.2;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  .pill.cont-d {
+    margin-right: -1px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .pill.cont-i {
+    margin-left: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .pill.gn {
+    color: #3d2c00;
+  }
+  .pill svg {
+    flex: none;
+  }
+
+  /* Propuestas: quién falta cada día, de un vistazo (la línea de tiempo del equipo). */
+  .linea-t {
+    display: grid;
+    grid-template-columns: 110px repeat(12, minmax(0, 1fr));
+    gap: 3px;
+    align-items: center;
+    font-size: 0.66rem;
+  }
+  .linea-t .cab-d {
+    text-align: center;
+    font-weight: 800;
+    color: var(--tenue);
+    line-height: 1.1;
+  }
+  .linea-t .cab-d small {
+    display: block;
+    font-weight: 600;
+  }
+  .linea-t .quien {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 0.74rem;
+  }
+  .linea-t .hueco-t {
+    height: 22px;
+    border-radius: 6px;
+    background: var(--superficie-2);
+  }
+  .linea-t .vac {
+    height: 22px;
+    background: var(--g-vac);
+    border-radius: 0;
+  }
+  .linea-t .vac.i {
+    border-radius: 7px 0 0 7px;
+  }
+  .linea-t .vac.f {
+    border-radius: 0 7px 7px 0;
+  }
+  .linea-t .pide {
+    height: 22px;
+    background:
+      repeating-linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.35) 0 6px,
+        rgba(255, 255, 255, 0) 6px 12px
+      ),
+      var(--g-vac);
+    opacity: 0.85;
+    outline: 2px dashed var(--c-vac);
+    outline-offset: -2px;
+  }
+  .linea-t .pide.i {
+    border-radius: 7px 0 0 7px;
+  }
+  .linea-t .pide.f {
+    border-radius: 0 7px 7px 0;
+  }
+  .linea-t .cob {
+    height: 24px;
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 0.72rem;
+    color: #fff;
+  }
+  .cob.ok {
+    background: var(--g-turno);
+  }
+  .cob.justo {
+    background: var(--g-horas);
+    color: #111c1f;
+  }
+  .rango-m {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    row-gap: 6px;
+    text-align: center;
+    font-size: 0.76rem;
+    font-weight: 700;
+  }
+  .rango-m .ds {
+    font-size: 0.6rem;
+    color: var(--tenue);
+    font-weight: 800;
+  }
+  .rango-m span {
+    padding: 7px 0;
+  }
+  .rango-m .en {
+    background: rgba(42, 139, 255, 0.16);
+    color: var(--c-vac);
+  }
+  .rango-m .ini,
+  .rango-m .fin {
+    background: var(--g-vac);
+    color: #fff;
+  }
+  .rango-m .ini {
+    border-radius: 12px 0 0 12px;
+  }
+  .rango-m .fin {
+    border-radius: 0 12px 12px 0;
+  }
+  .rango-m .otro {
+    position: relative;
+  }
+  .rango-m .otro::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    width: 5px;
+    height: 5px;
+    margin-left: -2.5px;
+    border-radius: 50%;
+    background: var(--c-horas);
+  }
+  .contra {
+    border-radius: 18px;
+    padding: 12px;
+    color: #fff;
+    background: var(--g-vac);
+    display: grid;
+    gap: 8px;
+    box-shadow: 0 14px 26px -16px rgba(42, 139, 255, 0.95);
+  }
+  .contra b {
+    font-size: 0.9rem;
+  }
+  .contra .acciones {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 6px;
+  }
+  .contra .acciones span {
+    text-align: center;
+    border-radius: 11px;
+    padding: 8px 4px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .contra .acciones span:first-child {
+    background: #fff;
+    color: #1f5fe0;
+  }
+  .pantalla.ancha {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pantalla.ancha .explica {
+    display: block;
+    columns: 2;
+    column-gap: 32px;
+  }
+  .pantalla.ancha .explica > * {
+    break-inside: avoid;
+    margin-bottom: 10px;
+  }
+  .pantalla.ancha .explica > .n,
+  .pantalla.ancha .explica > .etiqueta {
+    display: inline-grid;
+    margin-right: 6px;
+  }
   @media (max-width: 900px) {
+    .cal-pc {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .cal-lado {
+      display: none;
+    }
+    .rejilla-mes .dia {
+      min-height: 60px;
+    }
+    .linea-t {
+      grid-template-columns: 80px repeat(12, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 900px) {
+    .pantalla.ancha .explica {
+      columns: 1;
+    }
     .pantalla,
     .parte-cabeza {
       grid-template-columns: minmax(0, 1fr);
@@ -2116,6 +2866,91 @@
     >
       <path d="M20 11a8 8 0 1 0-2.3 5.7" />
       <path d="M20 4v7h-7" />
+    </symbol>
+    <symbol
+      id="i-palmera"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4" />
+      <path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3" />
+      <path
+        d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35"
+      />
+      <path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-12-1-14" />
+    </symbol>
+    <symbol
+      id="i-brillo"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linejoin="round"
+    >
+      <path
+        d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0Z"
+      />
+    </symbol>
+    <symbol
+      id="i-escudo-ok"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z" />
+      <path d="m9 12 2 2 4-4" />
+    </symbol>
+    <symbol
+      id="i-nota"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linejoin="round"
+    >
+      <path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5Z" />
+      <path d="M15 3v6h6" />
+    </symbol>
+    <symbol
+      id="i-turno"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linejoin="round"
+    >
+      <rect x="2.5" y="7" width="19" height="13.5" rx="2.5" />
+      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+      <path d="M2.5 13h19" />
+    </symbol>
+    <symbol
+      id="i-izq"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="m15 18-6-6 6-6" />
+    </symbol>
+    <symbol
+      id="i-ola"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+    >
+      <path d="M2 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2" />
+      <path d="M2 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2" />
     </symbol>
   </defs>
 </svg>
@@ -3634,56 +4469,674 @@
   <section class="parte" id="v-a4" data-vista="a4" hidden>
     <div class="parte-cabeza">
       <div>
-        <span class="sello">Ampliación 4 · era M14</span>
+        <span class="sello">Ampliación 4 · era M14 · rehecha el 24-nov</span>
         <h2>Calendario y vacaciones</h2>
         <p>
-          «Calendario» pasa a ser lo primero, encima de Turnos. Dentro: Equipo, Personal y, para
-          quien gestiona vacaciones, Propuestas.
+          Cada cosa con su color y su icono, para entenderlo sin leer: vacaciones en azul playa con
+          su palmera, horas en naranja, turnos en verde, limpiezas en turquesa, inspecciones en
+          coral, grupos en violeta y notas en amarillo. En el móvil, la semana arriba y el día
+          debajo; en el PC, el mes entero con sus capas.
         </p>
       </div>
       <div class="ficha-parte">
-        <div><small>Dónde</small><b>Calendario</b></div>
-        <div><small>PR</small><b>1</b></div>
+        <div><small>Dónde</small><b>Calendario, lo primero</b></div>
+        <div><small>Se abre en</small><b>Personal · Equipo (jefes)</b></div>
         <div><small>Depende de</small><b>La ficha (A3)</b></div>
       </div>
     </div>
 
-    <!-- Equipo -->
     <div class="pantalla">
       <div class="explica">
-        <span class="n">1</span>
-        <span class="etiqueta e-nuevo">Nuevo</span>
-        <h3>Equipo: lo del local, para todos</h3>
+        <span class="n">·</span>
+        <span class="etiqueta e-mio">Cómo lo resuelven los mejores</span>
+        <h3>El problema del espacio en el móvil</h3>
         <p>
-          El gerente y los jefes ponen días o tramos con aviso: limpieza a fondo, inspección,
-          formación. Eligen a quién avisa: todos, solo sala o solo cocina.
+          He mirado Google Calendar, Fantastical y el calendario del iPhone. En un móvil, un mes con
+          texto dentro de cada día no cabe, y un mes solo con puntos grises no dice nada. Las buenas
+          lo resuelven así, y lo hacemos igual, con nuestro color:
         </p>
         <ul class="claves">
           <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Abajo, los próximos; y el día que
-            llega, aviso al móvil de quien toca
+            <svg width="15" height="15"><use href="#i-ok" /></svg
+            ><span
+              ><b>La semana arriba</b>, siempre a la vista, con puntos de color por cada cosa
+              (Fantastical lo llama DayTicker). Se tira hacia abajo y sale el mes</span
+            >
           </li>
           <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Las vacaciones no salen aquí: cada
-            uno ve las suyas en Personal
+            <svg width="15" height="15"><use href="#i-ok" /></svg
+            ><span
+              ><b>Lo de varios días, como una banda</b> que cruza los días (las vacaciones, una
+              limpieza de dos días); lo de un día, un punto de su color</span
+            >
           </li>
           <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Los jefes ponen vacaciones a su
-            gente desde «+ Añadir» › Vacaciones
+            <svg width="15" height="15"><use href="#i-ok" /></svg
+            ><span
+              ><b>El día tocado se abre debajo</b>, con tarjetas de color y su hora: el detalle va
+              donde hay sitio</span
+            >
           </li>
           <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Vistas de mes, semana y día; en el
-            móvil, la lista
+            <svg width="15" height="15"><use href="#i-ok" /></svg
+            ><span
+              ><b>En el PC</b>, el mes con el texto dentro, la barra lateral con el mes pequeño y
+              las capas que se encienden y se apagan (como Google Calendar)</span
+            >
           </li>
         </ul>
-        <span class="etiqueta e-mio">Mejora mía</span>
-        <p>
-          Una reserva de grupo grande (de 12 o más) sale sola en el calendario del equipo, para que
-          cocina lo sepa.
-        </p>
       </div>
       <div class="dibujos">
-        <div class="ventana">
+        <div class="caja" style="flex: 1 1 420px">
+          <h5>Los colores, iguales en todas partes</h5>
+          <div class="rejilla-2" style="gap: 8px">
+            <span class="fila"
+              ><span class="icono-g ch gv"
+                ><svg width="14" height="14"><use href="#i-palmera" /></svg
+              ></span>
+              <div>Vacaciones<small>Personal · Propuestas</small></div></span
+            >
+            <span class="fila"
+              ><span class="icono-g ch gh"
+                ><svg width="14" height="14"><use href="#i-reloj" /></svg
+              ></span>
+              <div>Horas trabajadas<small>Personal</small></div></span
+            >
+            <span class="fila"
+              ><span class="icono-g ch gt"
+                ><svg width="14" height="14"><use href="#i-turno" /></svg
+              ></span>
+              <div>Tus turnos<small>Personal</small></div></span
+            >
+            <span class="fila"
+              ><span class="icono-g ch gn"
+                ><svg width="14" height="14"><use href="#i-nota" /></svg
+              ></span>
+              <div>Tus notas<small>Personal · solo tú</small></div></span
+            >
+            <span class="fila"
+              ><span class="icono-g ch gl"
+                ><svg width="14" height="14"><use href="#i-brillo" /></svg
+              ></span>
+              <div>Limpiezas<small>Equipo</small></div></span
+            >
+            <span class="fila"
+              ><span class="icono-g ch gs"
+                ><svg width="14" height="14"><use href="#i-escudo-ok" /></svg
+              ></span>
+              <div>Inspecciones y Sanidad<small>Equipo</small></div></span
+            >
+            <span class="fila"
+              ><span class="icono-g ch gr2"
+                ><svg width="14" height="14"><use href="#i-equipo" /></svg
+              ></span>
+              <div>Reservas de grupo<small>Equipo · de Reservas</small></div></span
+            >
+            <span class="fila"
+              ><span class="icono-g ch gc"
+                ><svg width="14" height="14"><use href="#i-copa" /></svg
+              ></span>
+              <div>Formación y catas<small>Equipo</small></div></span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal en el móvil -->
+    <div class="pantalla">
+      <div class="explica">
+        <span class="n">1</span>
+        <span class="etiqueta e-nuevo">Personal</span>
+        <h3>Lo tuyo, en una pantalla que da gusto abrir</h3>
+        <p>
+          Es donde se abre para el equipo. Arriba, tu semana y cuándo entras hoy; debajo, lo de hoy
+          y lo próximo; abajo, tus vacaciones y tus horas, y el botón para pedir días.
+        </p>
+        <ul class="claves">
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Vacaciones: baldosa azul playa con
+            su palmera, los días que te quedan y la barra del año
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Horas: baldosa naranja con su
+            reloj, lo de este mes y lo de la semana pasada
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>El «+» abajo a la derecha: una
+            nota tuya, con aviso si quieres
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Lo del equipo que te toca (la cata
+            de hoy) también sale aquí, con su color
+          </li>
+        </ul>
+        <span class="etiqueta e-mio">Te propongo un cambio</span>
+        <p>
+          Pediste una pestaña «Vacaciones» que aparece cuando te proponen otras fechas. Una pestaña
+          que aparece y desaparece se pasa por alto. Propongo una tarjeta azul arriba del todo, con
+          los tres botones, y su aviso al móvil (a la derecha). Si prefieres la pestaña, se hace.
+        </p>
+        <div class="causa">
+          <b>Las cifras de Ane</b>
+          La semana pasada: 8 + 8 + 9 + 10 + 7 = 42 h. Vacaciones: 30 − 16 disfrutados − 2 aprobados
+          = 12 disponibles.
+        </div>
+      </div>
+      <div class="dibujos">
+        <div>
+          <div class="movil" style="min-height: 680px">
+            <div class="estado"><span>11:05</span><span>82 %</span></div>
+            <div class="cuerpo" style="padding-bottom: 76px">
+              <div class="cal-hero">
+                <div class="saludo">
+                  <div><b>Hola, Ane</b><small>Martes, 24 de noviembre</small></div>
+                  <span class="avatar ch" style="width: 34px; height: 34px">AE</span>
+                </div>
+                <div class="semana">
+                  <div class="sd">L<b>23</b><span class="puntos"></span></div>
+                  <div class="sd hoy">
+                    M<b>24</b
+                    ><span class="puntos"
+                      ><i style="background: var(--c-turno)"></i
+                      ><i style="background: var(--c-cata)"></i
+                    ></span>
+                  </div>
+                  <div class="sd">
+                    X<b>25</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
+                  </div>
+                  <div class="sd">J<b>26</b><span class="puntos"></span></div>
+                  <div class="sd">
+                    V<b>27</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
+                  </div>
+                  <div class="sd">
+                    S<b>28</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
+                  </div>
+                  <div class="sd">
+                    D<b>29</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
+                  </div>
+                </div>
+                <span class="tirador" title="Tira para ver el mes"></span>
+                <div class="proximo">
+                  <span class="icono-g ch gt"
+                    ><svg width="14" height="14"><use href="#i-turno" /></svg
+                  ></span>
+                  <div><b>Hoy entras a las 13:00</b>Sala · con Mikel e Iker</div>
+                </div>
+              </div>
+              <div class="agenda">
+                <div class="agenda-dia"><span>Hoy</span><span>2</span></div>
+                <div class="ev-card" style="--tinte: var(--g-cata)">
+                  <span class="icono-g gc"
+                    ><svg width="16" height="16"><use href="#i-copa" /></svg
+                  ></span>
+                  <div><b>Cata de los vinos nuevos</b><small>Equipo · sala</small></div>
+                  <span class="hora">12:30<small>30 min</small></span>
+                </div>
+                <div class="ev-card" style="--tinte: var(--g-turno)">
+                  <span class="icono-g gt"
+                    ><svg width="16" height="16"><use href="#i-turno" /></svg
+                  ></span>
+                  <div><b>Tu turno</b><small>Sala · 10 h</small></div>
+                  <span class="hora">13:00<small>a 23:00</small></span>
+                </div>
+                <div class="agenda-dia"><span>Próximo</span></div>
+                <div class="ev-card" style="--tinte: var(--g-nota)">
+                  <span class="icono-g gn"
+                    ><svg width="16" height="16"><use href="#i-nota" /></svg
+                  ></span>
+                  <div><b>Recoger el uniforme nuevo</b><small>Tu nota · solo tú</small></div>
+                  <span class="hora">2 dic<small>12:00</small></span>
+                </div>
+                <div class="ev-card" style="--tinte: var(--g-vac)">
+                  <span class="icono-g gv"
+                    ><svg width="16" height="16"><use href="#i-palmera" /></svg
+                  ></span>
+                  <div><b>Vacaciones pedidas</b><small>22 – 28 dic · esperando a Mikel</small></div>
+                  <span class="pildora p-aten">Pendiente</span>
+                </div>
+              </div>
+              <div class="baldosas">
+                <div class="baldosa gv">
+                  <svg class="marca-agua" width="86" height="86"><use href="#i-palmera" /></svg>
+                  <span class="ic"
+                    ><svg width="17" height="17"><use href="#i-palmera" /></svg
+                  ></span>
+                  <small>Vacaciones</small>
+                  <b>12 <span>días</span></b>
+                  <span class="sub">te quedan de 30</span>
+                  <span class="barrita"
+                    ><i style="flex: 16; background: rgba(255, 255, 255, 0.45)"></i
+                    ><i style="flex: 2; background: #fff"></i><i style="flex: 12"></i
+                  ></span>
+                </div>
+                <div class="baldosa gh">
+                  <svg class="marca-agua" width="86" height="86"><use href="#i-reloj" /></svg>
+                  <span class="ic"
+                    ><svg width="17" height="17"><use href="#i-reloj" /></svg
+                  ></span>
+                  <small>Noviembre</small>
+                  <b>128 <span>h 30</span></b>
+                  <span class="sub">trabajadas · 42 h la semana pasada</span>
+                </div>
+              </div>
+              <span class="boton-g"
+                ><svg width="17" height="17"><use href="#i-palmera" /></svg>Pedir vacaciones</span
+              >
+            </div>
+            <span class="fab"
+              ><svg width="22" height="22"><use href="#i-mas" /></svg
+            ></span>
+          </div>
+          <p class="pie-dibujo">Personal · lo que ve Ane al abrir Calendario</p>
+        </div>
+        <div>
+          <div class="movil" style="min-height: 680px">
+            <div class="estado"><span>18:40</span><span>82 %</span></div>
+            <div class="cuerpo">
+              <div class="contra">
+                <div class="fila" style="font-size: 0.8rem; color: #fff">
+                  <span class="icono-g" style="background: rgba(255, 255, 255, 0.24)"
+                    ><svg width="17" height="17"><use href="#i-palmera" /></svg
+                  ></span>
+                  <div>
+                    <b>Mikel te propone otras fechas</b
+                    ><small style="color: rgba(255, 255, 255, 0.85)">Pediste 22 – 28 dic</small>
+                  </div>
+                </div>
+                <div
+                  style="
+                    background: rgba(255, 255, 255, 0.16);
+                    border-radius: 14px;
+                    padding: 10px;
+                    display: grid;
+                    gap: 2px;
+                  "
+                >
+                  <span
+                    style="
+                      font-size: 0.66rem;
+                      font-weight: 800;
+                      letter-spacing: 0.05em;
+                      text-transform: uppercase;
+                      opacity: 0.85;
+                    "
+                    >Te propone</span
+                  >
+                  <b style="font-size: 1.15rem">29 dic – 4 ene</b>
+                  <span style="font-size: 0.74rem; opacity: 0.92"
+                    >7 días · te quedarían 5 · «del 24 al 26 se nos queda la sala corta»</span
+                  >
+                </div>
+                <div class="acciones">
+                  <span>Aceptar</span><span>Otras fechas</span><span>Rechazar</span>
+                </div>
+              </div>
+              <div class="cal-hero" style="padding: 10px 12px">
+                <div class="semana">
+                  <div class="sd">L<b>23</b><span class="puntos"></span></div>
+                  <div class="sd hoy">
+                    M<b>24</b
+                    ><span class="puntos"
+                      ><i style="background: var(--c-turno)"></i
+                      ><i style="background: var(--c-cata)"></i
+                    ></span>
+                  </div>
+                  <div class="sd">
+                    X<b>25</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
+                  </div>
+                  <div class="sd">J<b>26</b><span class="puntos"></span></div>
+                  <div class="sd">
+                    V<b>27</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
+                  </div>
+                  <div class="sd">
+                    S<b>28</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
+                  </div>
+                  <div class="sd">
+                    D<b>29</b><span class="puntos"><i style="background: var(--c-turno)"></i></span>
+                  </div>
+                </div>
+              </div>
+              <div class="agenda">
+                <div class="agenda-dia"><span>Hoy</span><span>1</span></div>
+                <div class="ev-card" style="--tinte: var(--g-turno)">
+                  <span class="icono-g gt"
+                    ><svg width="16" height="16"><use href="#i-turno" /></svg
+                  ></span>
+                  <div><b>Tu turno</b><small>Sala · llevas 5 h 40</small></div>
+                  <span class="hora">13:00<small>a 23:00</small></span>
+                </div>
+              </div>
+              <div class="aviso" style="background: var(--info-s); color: var(--info)">
+                <svg width="16" height="16"><use href="#i-campana" /></svg>
+                <div>
+                  <b>Y te llega al móvil</b>«Mikel te propone del 29 dic al 4 ene. Toca para
+                  contestar.»
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="pie-dibujo">Cuando te proponen otras fechas: arriba, sin buscarlo</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pedir vacaciones -->
+    <div class="pantalla">
+      <div class="explica">
+        <span class="n">2</span>
+        <span class="etiqueta e-nuevo">Personal</span>
+        <h3>Pedir vacaciones: marcas los días y ya</h3>
+        <p>
+          Tocas el primer día y el último; los días se pintan de azul playa y arriba ves cuántos son
+          y cuántos te quedarían. Si te pasas, el botón no deja enviarlo y te dice por qué.
+        </p>
+        <ul class="claves">
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Los días naturales o laborables,
+            según tu ficha: lo cuenta Estook
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>El punto naranja: alguien de tu
+            puesto ya tiene vacaciones ese día. Te avisa, no te impide pedir
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Dice a quién le llega: tu jefe y
+            el gerente
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Un mensaje opcional, por si
+            quieres explicar algo
+          </li>
+        </ul>
+      </div>
+      <div class="dibujos">
+        <div>
+          <div class="movil" style="min-height: 620px">
+            <div class="estado"><span>11:07</span><span>82 %</span></div>
+            <div class="cab">
+              <svg width="18" height="18" style="color: var(--suave)"><use href="#i-izq" /></svg
+              ><b>Pedir vacaciones</b
+              ><span class="icono-g ch gv"
+                ><svg width="14" height="14"><use href="#i-palmera" /></svg
+              ></span>
+            </div>
+            <div class="cuerpo">
+              <div class="baldosa gv" style="min-height: 0; padding: 12px 14px">
+                <svg class="marca-agua" width="90" height="90"><use href="#i-ola" /></svg>
+                <small>Del martes 22 al lunes 28 de diciembre</small>
+                <b>7 <span>días naturales</span></b>
+                <span class="sub">Tienes 12 · te quedarían 5</span>
+              </div>
+              <div class="caja" style="padding: 10px">
+                <div class="barra">
+                  <h5>Diciembre 2026</h5>
+                  <span class="flechas"
+                    ><span
+                      ><svg width="13" height="13"><use href="#i-izq" /></svg></span
+                    ><span
+                      ><svg width="13" height="13"><use href="#i-flecha" /></svg></span
+                  ></span>
+                </div>
+                <div class="rango-m">
+                  <span class="ds">L</span><span class="ds">M</span><span class="ds">X</span
+                  ><span class="ds">J</span><span class="ds">V</span><span class="ds">S</span
+                  ><span class="ds">D</span> <span style="opacity: 0.4">30</span><span>1</span
+                  ><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+                  <span>7</span><span>8</span><span>9</span><span>10</span><span>11</span
+                  ><span>12</span><span>13</span> <span>14</span><span>15</span><span>16</span
+                  ><span>17</span><span>18</span><span>19</span><span>20</span> <span>21</span
+                  ><span class="ini">22</span><span class="en">23</span
+                  ><span class="en otro">24</span><span class="en otro">25</span
+                  ><span class="en otro">26</span><span class="en">27</span>
+                  <span class="fin">28</span><span>29</span><span>30</span><span>31</span
+                  ><span style="opacity: 0.4">1</span><span style="opacity: 0.4">2</span
+                  ><span style="opacity: 0.4">3</span>
+                </div>
+              </div>
+              <div class="aviso" style="background: var(--atencion-s); color: var(--atencion)">
+                <span class="icono-g ch gh"
+                  ><svg width="13" height="13"><use href="#i-equipo" /></svg
+                ></span>
+                <div>
+                  <b>Iker (sala) tiene vacaciones del 24 al 26</b>Puedes pedirlas igual; tu jefe lo
+                  verá.
+                </div>
+              </div>
+              <div class="par">
+                <span>Le llega a</span><span>Mikel (jefe de sala) y Richi</span>
+              </div>
+              <div class="par">
+                <span>Mensaje</span
+                ><span style="color: var(--tenue); font-weight: 500">Opcional</span>
+              </div>
+              <span class="boton-g"
+                ><svg width="16" height="16"><use href="#i-palmera" /></svg>Enviar la petición · 7
+                días</span
+              >
+            </div>
+          </div>
+          <p class="pie-dibujo">El rango en azul · el punto naranja, otro de sala de vacaciones</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Equipo en el móvil -->
+    <div class="pantalla">
+      <div class="explica">
+        <span class="n">3</span>
+        <span class="etiqueta e-nuevo">Equipo</span>
+        <h3>Equipo en el móvil: el mes con color, el día debajo</h3>
+        <p>
+          Es donde se abre para el gerente y los jefes. Las bandas de color cruzan los días de lo
+          que dura varios; los puntos marcan lo de un día. Tocas un día y se abre debajo.
+        </p>
+        <ul class="claves">
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Arriba, las capas de colores: se
+            tocan para ver solo limpiezas, solo inspecciones…
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Debajo del día, «Próximos»: lo que
+            viene, aunque no toques nada
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>«+» para añadir un aviso (a todos,
+            sala o cocina) o vacaciones a alguien de tu equipo
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Las vacaciones de la gente no
+            salen aquí: cada uno ve las suyas, y tú las ves en Propuestas
+          </li>
+        </ul>
+      </div>
+      <div class="dibujos">
+        <div>
+          <div class="movil" style="min-height: 680px">
+            <div class="estado"><span>9:40</span><span>82 %</span></div>
+            <div class="cab">
+              <span class="logo">IKATZ</span><b>Calendario</b
+              ><span class="burbuja" title="Propuestas">1</span>
+            </div>
+            <div class="cuerpo" style="padding-bottom: 76px">
+              <div class="segmentos">
+                <span class="si">Equipo</span><span>Personal</span><span>Propuestas · 1</span>
+              </div>
+              <div class="capas">
+                <span class="capa"
+                  ><i class="gl"
+                    ><svg width="11" height="11"><use href="#i-brillo" /></svg></i
+                  >Limpiezas</span
+                >
+                <span class="capa"
+                  ><i class="gs"
+                    ><svg width="11" height="11"><use href="#i-escudo-ok" /></svg></i
+                  >Inspecciones</span
+                >
+                <span class="capa"
+                  ><i class="gr2"
+                    ><svg width="11" height="11"><use href="#i-equipo" /></svg></i
+                  >Grupos</span
+                >
+                <span class="capa"
+                  ><i class="gc"
+                    ><svg width="11" height="11"><use href="#i-copa" /></svg></i
+                  >Formación</span
+                >
+              </div>
+              <div class="caja" style="padding: 10px">
+                <div class="barra">
+                  <h5>Diciembre 2026</h5>
+                  <span class="flechas"
+                    ><span
+                      ><svg width="13" height="13"><use href="#i-izq" /></svg></span
+                    ><span
+                      ><svg width="13" height="13"><use href="#i-flecha" /></svg></span
+                  ></span>
+                </div>
+                <div class="mes-m">
+                  <span class="ds">L</span><span class="ds">M</span><span class="ds">X</span
+                  ><span class="ds">J</span><span class="ds">V</span><span class="ds">S</span
+                  ><span class="ds">D</span>
+                  <div class="c fuera"><span>30</span><span class="puntos"></span></div>
+                  <div class="c">
+                    <span>1</span
+                    ><span class="puntos"><i style="background: var(--c-limpieza)"></i></span>
+                  </div>
+                  <div class="c"><span>2</span><span class="puntos"></span></div>
+                  <div class="c sel">
+                    <span>3</span
+                    ><span class="puntos"><i style="background: var(--c-sanidad)"></i></span>
+                  </div>
+                  <div class="c"><span>4</span><span class="puntos"></span></div>
+                  <div class="c"><span>5</span><span class="puntos"></span></div>
+                  <div class="c"><span>6</span><span class="puntos"></span></div>
+                  <div class="c"><span>7</span><span class="puntos"></span></div>
+                  <div class="c"><span>8</span><span class="puntos"></span></div>
+                  <div class="c"><span>9</span><span class="puntos"></span></div>
+                  <div class="c">
+                    <span>10</span
+                    ><span class="puntos"><i style="background: var(--c-cata)"></i></span>
+                  </div>
+                  <div class="c"><span>11</span><span class="puntos"></span></div>
+                  <div class="c">
+                    <span>12</span
+                    ><span class="puntos"><i style="background: var(--c-reserva)"></i></span>
+                  </div>
+                  <div class="c"><span>13</span><span class="puntos"></span></div>
+                  <div class="c">
+                    <span>14</span
+                    ><span class="banda ini" style="background: var(--g-limpieza)"></span>
+                  </div>
+                  <div class="c">
+                    <span>15</span
+                    ><span class="banda fin" style="background: var(--g-limpieza)"></span>
+                  </div>
+                  <div class="c"><span>16</span><span class="puntos"></span></div>
+                  <div class="c"><span>17</span><span class="puntos"></span></div>
+                  <div class="c"><span>18</span><span class="puntos"></span></div>
+                  <div class="c">
+                    <span>19</span
+                    ><span class="puntos"><i style="background: var(--c-reserva)"></i></span>
+                  </div>
+                  <div class="c"><span>20</span><span class="puntos"></span></div>
+                  <div class="c"><span>21</span><span class="puntos"></span></div>
+                  <div class="c"><span>22</span><span class="puntos"></span></div>
+                  <div class="c"><span>23</span><span class="puntos"></span></div>
+                  <div class="c">
+                    <span>24</span
+                    ><span class="puntos"><i style="background: var(--c-limpieza)"></i></span>
+                  </div>
+                  <div class="c"><span>25</span><span class="puntos"></span></div>
+                  <div class="c"><span>26</span><span class="puntos"></span></div>
+                  <div class="c"><span>27</span><span class="puntos"></span></div>
+                  <div class="c"><span>28</span><span class="puntos"></span></div>
+                  <div class="c"><span>29</span><span class="puntos"></span></div>
+                  <div class="c"><span>30</span><span class="puntos"></span></div>
+                  <div class="c">
+                    <span>31</span
+                    ><span class="puntos"><i style="background: var(--c-cata)"></i></span>
+                  </div>
+                  <div class="c fuera"><span>1</span><span class="puntos"></span></div>
+                  <div class="c fuera"><span>2</span><span class="puntos"></span></div>
+                  <div class="c fuera"><span>3</span><span class="puntos"></span></div>
+                </div>
+              </div>
+              <div class="agenda">
+                <div class="agenda-dia"><span>Jueves 3 de diciembre</span><span>1</span></div>
+                <div class="ev-card" style="--tinte: var(--g-sanidad)">
+                  <span class="icono-g gs"
+                    ><svg width="16" height="16"><use href="#i-escudo-ok" /></svg
+                  ></span>
+                  <div>
+                    <b>Inspección de Sanidad</b><small>Todos · avisa el día antes y ese día</small>
+                  </div>
+                  <span class="hora">10:00<small>todo el día</small></span>
+                </div>
+                <div class="agenda-dia"><span>Próximos</span></div>
+                <div class="ev-card" style="--tinte: var(--g-limpieza)">
+                  <span class="icono-g gl"
+                    ><svg width="16" height="16"><use href="#i-brillo" /></svg
+                  ></span>
+                  <div><b>Limpieza a fondo</b><small>Solo cocina · aviso a las 9:00</small></div>
+                  <span class="hora">1 dic<small>9:00</small></span>
+                </div>
+                <div class="ev-card" style="--tinte: var(--g-cata)">
+                  <span class="icono-g gc"
+                    ><svg width="16" height="16"><use href="#i-copa" /></svg
+                  ></span>
+                  <div><b>Formación de alérgenos</b><small>Todos · 1 h</small></div>
+                  <span class="hora">10 dic<small>16:00</small></span>
+                </div>
+                <div class="ev-card" style="--tinte: var(--g-reserva)">
+                  <span class="icono-g gr2"
+                    ><svg width="16" height="16"><use href="#i-equipo" /></svg
+                  ></span>
+                  <div><b>Comida de empresa · 24</b><small>De Reservas · menú cerrado</small></div>
+                  <span class="hora">12 dic<small>14:00</small></span>
+                </div>
+              </div>
+            </div>
+            <span class="fab"
+              ><svg width="22" height="22"><use href="#i-mas" /></svg
+            ></span>
+          </div>
+          <p class="pie-dibujo">Equipo · lo que ve Richi · el 3 tocado</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Equipo en el PC -->
+    <div class="pantalla ancha">
+      <div class="explica">
+        <span class="n">4</span>
+        <span class="etiqueta e-nuevo">Equipo · PC y tablet</span>
+        <h3>En el PC, el mes entero y con sus capas</h3>
+        <p>
+          Con sitio de sobra, cada día lleva su texto en una píldora de color con su icono. Lo que
+          dura varios días se une en una sola banda.
+        </p>
+        <ul class="claves">
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>A la izquierda, el mes pequeño,
+            las capas con cuántas hay y lo próximo
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Mes, semana y día; «Hoy» te
+            devuelve a hoy
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Arrastrar una píldora a otro día
+            la mueve, y avisa de nuevo solo a quien toca
+          </li>
+          <li>
+            <svg width="15" height="15"><use href="#i-ok" /></svg>En la tablet en vertical, la barra
+            lateral se pliega y queda el mes
+          </li>
+        </ul>
+      </div>
+      <div class="dibujos">
+        <div class="ventana" style="grid-template-columns: 150px minmax(0, 1fr)">
           <div class="lateral">
             <div class="marca"><i>E</i>Estook</div>
             <span
@@ -3695,224 +5148,201 @@
             <span class="sub" style="color: #fff; font-weight: 700">Calendario</span>
             <span class="sub">Turnos</span>
           </div>
-          <div class="contenido">
-            <div class="barra">
-              <h4>Diciembre 2026</h4>
-              <span class="boton"
-                ><svg width="14" height="14"><use href="#i-mas" /></svg>Añadir</span
+          <div class="cal-pc">
+            <div class="cal-lado">
+              <span class="boton-g naranja" style="padding: 10px"
+                ><svg width="15" height="15"><use href="#i-mas" /></svg>Añadir</span
               >
-            </div>
-            <div class="pestanas">
-              <span class="pestana activa">Equipo</span><span class="pestana">Personal</span
-              ><span class="pestana">Propuestas <span class="burbuja">1</span></span>
-            </div>
-            <div class="caja">
-              <div class="mes">
-                <span class="dia-s">L</span><span class="dia-s">M</span><span class="dia-s">X</span
-                ><span class="dia-s">J</span><span class="dia-s">V</span><span class="dia-s">S</span
-                ><span class="dia-s">D</span>
-                <div class="d fuera"><span>30</span></div>
-                <div class="d">
-                  <span>1</span><span class="ev ev-limpieza">Limpieza a fondo</span>
-                </div>
-                <div class="d"><span>2</span></div>
-                <div class="d"><span>3</span><span class="ev ev-sanidad">Inspección</span></div>
-                <div class="d"><span>4</span></div>
-                <div class="d"><span>5</span></div>
-                <div class="d"><span>6</span></div>
-                <div class="d"><span>7</span></div>
-                <div class="d"><span>8</span></div>
-                <div class="d"><span>9</span></div>
-                <div class="d"><span>10</span></div>
-                <div class="d"><span>11</span></div>
-                <div class="d"><span>12</span><span class="ev ev-reserva">Grupo · 24</span></div>
-                <div class="d"><span>13</span></div>
-                <div class="d"><span>14</span><span class="ev ev-limpieza">Campana</span></div>
-                <div class="d"><span>15</span><span class="ev ev-limpieza">Campana</span></div>
-                <div class="d"><span>16</span></div>
-                <div class="d"><span>17</span></div>
-                <div class="d"><span>18</span></div>
-                <div class="d"><span>19</span></div>
-                <div class="d"><span>20</span></div>
+              <div class="mini">
+                <span class="ds">L</span><span class="ds">M</span><span class="ds">X</span
+                ><span class="ds">J</span><span class="ds">V</span><span class="ds">S</span
+                ><span class="ds">D</span> <span>30</span><span>1</span><span>2</span><span>3</span
+                ><span>4</span><span>5</span><span>6</span> <span>7</span><span>8</span
+                ><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span>
+                <span>14</span><span>15</span><span>16</span><span>17</span><span>18</span
+                ><span>19</span><span>20</span> <span>21</span><span>22</span><span>23</span
+                ><span>24</span><span>25</span><span>26</span><span>27</span> <span>28</span
+                ><span>29</span><span>30</span><span>31</span><span style="opacity: 0.4">1</span
+                ><span style="opacity: 0.4">2</span><span style="opacity: 0.4">3</span>
+              </div>
+              <div class="capa-lista">
+                <span class="lbl">Capas</span>
+                <label
+                  ><span class="ck gl"
+                    ><svg width="10" height="10"><use href="#i-ok" /></svg></span
+                  >Limpiezas<small>3</small></label
+                >
+                <label
+                  ><span class="ck gs"
+                    ><svg width="10" height="10"><use href="#i-ok" /></svg></span
+                  >Inspecciones<small>1</small></label
+                >
+                <label
+                  ><span class="ck gr2"
+                    ><svg width="10" height="10"><use href="#i-ok" /></svg></span
+                  >Reservas de grupo<small>2</small></label
+                >
+                <label
+                  ><span class="ck gc"
+                    ><svg width="10" height="10"><use href="#i-ok" /></svg></span
+                  >Formación y avisos<small>2</small></label
+                >
+              </div>
+              <div class="capa-lista">
+                <span class="lbl">Propuestas</span>
+                <label
+                  ><span class="ck gv"
+                    ><svg width="10" height="10"><use href="#i-palmera" /></svg></span
+                  >Ane · 22 – 28 dic<small>1</small></label
+                >
               </div>
             </div>
-            <div class="caja">
-              <h5>Próximos</h5>
-              <div class="proximos">
-                <div class="prox">
-                  <span class="fecha"><b>1</b><small>dic</small></span>
-                  <div>Limpieza a fondo<small>Solo cocina · aviso a las 9:00</small></div>
-                  <span class="pildora p-info">Cocina</span>
+            <div class="cal-main">
+              <div class="cal-top">
+                <h4>Diciembre 2026</h4>
+                <span class="boton sec">Hoy</span>
+                <span class="flechas"
+                  ><span
+                    ><svg width="13" height="13"><use href="#i-izq" /></svg></span
+                  ><span
+                    ><svg width="13" height="13"><use href="#i-flecha" /></svg></span
+                ></span>
+                <span class="segmentos" style="width: 190px"
+                  ><span class="si">Mes</span><span>Semana</span><span>Día</span></span
+                >
+              </div>
+              <div class="pestanas">
+                <span class="pestana activa">Equipo</span><span class="pestana">Personal</span
+                ><span class="pestana">Propuestas <span class="burbuja">1</span></span>
+              </div>
+              <div class="rejilla-mes">
+                <span class="ds">LUN</span><span class="ds">MAR</span><span class="ds">MIÉ</span
+                ><span class="ds">JUE</span><span class="ds">VIE</span><span class="ds">SÁB</span
+                ><span class="ds">DOM</span>
+                <div class="dia fuera"><span>30</span></div>
+                <div class="dia">
+                  <span>1</span
+                  ><span class="pill gl"
+                    ><svg width="10" height="10"><use href="#i-brillo" /></svg>Limpieza a
+                    fondo</span
+                  >
                 </div>
-                <div class="prox">
-                  <span class="fecha"><b>3</b><small>dic</small></span>
-                  <div>
-                    Inspección de Sanidad<small>Todos · aviso el día antes y ese día</small>
-                  </div>
-                  <span class="pildora p-mal">Todos</span>
+                <div class="dia"><span>2</span></div>
+                <div class="dia">
+                  <span>3</span
+                  ><span class="pill gs"
+                    ><svg width="10" height="10"><use href="#i-escudo-ok" /></svg>Inspección</span
+                  >
                 </div>
-                <div class="prox">
-                  <span class="fecha"><b>12</b><small>dic</small></span>
-                  <div>Comida de empresa · 24 personas<small>De Reservas · 14:00</small></div>
-                  <span class="pildora p-vio">Reserva</span>
+                <div class="dia"><span>4</span></div>
+                <div class="dia"><span>5</span></div>
+                <div class="dia"><span>6</span></div>
+                <div class="dia"><span>7</span></div>
+                <div class="dia"><span>8</span></div>
+                <div class="dia"><span>9</span></div>
+                <div class="dia">
+                  <span>10</span
+                  ><span class="pill gc"
+                    ><svg width="10" height="10"><use href="#i-copa" /></svg>16:00 Alérgenos</span
+                  >
                 </div>
-                <div class="prox">
-                  <span class="fecha"><b>14</b><small>dic</small></span>
-                  <div>
-                    Limpieza de la campana · 2 días<small>Solo cocina · aviso los dos días</small>
-                  </div>
-                  <span class="pildora p-info">Cocina</span>
+                <div class="dia"><span>11</span></div>
+                <div class="dia">
+                  <span>12</span
+                  ><span class="pill gr2"
+                    ><svg width="10" height="10"><use href="#i-equipo" /></svg>14:00 Empresa ·
+                    24</span
+                  >
                 </div>
+                <div class="dia"><span>13</span></div>
+                <div class="dia">
+                  <span>14</span
+                  ><span class="pill gl cont-d"
+                    ><svg width="10" height="10"><use href="#i-brillo" /></svg>Campana · 2
+                    días</span
+                  >
+                </div>
+                <div class="dia"><span>15</span><span class="pill gl cont-i">&nbsp;</span></div>
+                <div class="dia"><span>16</span></div>
+                <div class="dia"><span>17</span></div>
+                <div class="dia"><span>18</span></div>
+                <div class="dia">
+                  <span>19</span
+                  ><span class="pill gr2"
+                    ><svg width="10" height="10"><use href="#i-equipo" /></svg>21:00 Cumpleaños ·
+                    14</span
+                  >
+                </div>
+                <div class="dia"><span>20</span></div>
+                <div class="dia"><span>21</span></div>
+                <div class="dia"><span>22</span></div>
+                <div class="dia"><span>23</span></div>
+                <div class="dia">
+                  <span>24</span
+                  ><span class="pill gl"
+                    ><svg width="10" height="10"><use href="#i-brillo" /></svg>Cámaras</span
+                  >
+                </div>
+                <div class="dia"><span>25</span></div>
+                <div class="dia"><span>26</span></div>
+                <div class="dia"><span>27</span></div>
+                <div class="dia"><span>28</span></div>
+                <div class="dia"><span>29</span></div>
+                <div class="dia"><span>30</span></div>
+                <div class="dia">
+                  <span>31</span
+                  ><span class="pill gc"
+                    ><svg width="10" height="10"><use href="#i-copa" /></svg>Cierre a las
+                    18:00</span
+                  >
+                </div>
+                <div class="dia fuera"><span>1</span></div>
+                <div class="dia fuera"><span>2</span></div>
+                <div class="dia fuera"><span>3</span></div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Personal -->
-    <div class="pantalla">
-      <div class="explica">
-        <span class="n">2</span>
-        <span class="etiqueta e-nuevo">Nuevo</span>
-        <h3>Personal: lo tuyo, y pedir vacaciones</h3>
-        <p>
-          Todos lo tienen, pero es sobre todo para el equipo: tus notas (que no ve nadie, ni el
-          gerente), tus días de trabajo y tus vacaciones.
-        </p>
-        <ul class="claves">
-          <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Los días trabajados con sus horas
-            fichadas, y los que te quedan por trabajar
-          </li>
-          <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Abajo: vacaciones disponibles,
-            horas trabajadas y «Pedir vacaciones»
-          </li>
-          <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Si pides más días de los que
-            tienes, no te deja enviarlo y te dice cuántos te quedan
-          </li>
-          <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>El camarero pide a sus jefes y al
-            gerente; un jefe pide al gerente
-          </li>
-        </ul>
-      </div>
-      <div class="dibujos">
-        <div>
-          <div class="movil" style="min-height: 600px">
-            <div class="estado"><span>11:05</span><span>82 %</span></div>
-            <div class="cab"><span class="logo">IKATZ</span><b>Calendario</b></div>
-            <div class="cuerpo">
-              <div class="segmentos"><span>Equipo</span><span class="si">Personal</span></div>
-              <div class="caja" style="padding: 10px">
-                <div class="mes" style="gap: 2px">
-                  <span class="dia-s">L</span><span class="dia-s">M</span
-                  ><span class="dia-s">X</span><span class="dia-s">J</span
-                  ><span class="dia-s">V</span><span class="dia-s">S</span
-                  ><span class="dia-s">D</span>
-                  <div class="d" style="min-height: 38px">
-                    <span>16</span><span class="ev ev-vac">8 h</span>
-                  </div>
-                  <div class="d" style="min-height: 38px"><span>17</span></div>
-                  <div class="d" style="min-height: 38px"><span>18</span></div>
-                  <div class="d" style="min-height: 38px">
-                    <span>19</span><span class="ev ev-vac">8 h</span>
-                  </div>
-                  <div class="d" style="min-height: 38px">
-                    <span>20</span><span class="ev ev-vac">9 h</span>
-                  </div>
-                  <div class="d" style="min-height: 38px">
-                    <span>21</span><span class="ev ev-vac">10 h</span>
-                  </div>
-                  <div class="d" style="min-height: 38px">
-                    <span>22</span><span class="ev ev-vac">7 h</span>
-                  </div>
-                  <div class="d" style="min-height: 38px"><span>23</span></div>
-                  <div class="d hoy" style="min-height: 38px">
-                    <span>24</span><span class="ev ev-turno">Hoy 13–23</span>
-                  </div>
-                  <div class="d" style="min-height: 38px">
-                    <span>25</span><span class="ev ev-turno">13–17</span>
-                  </div>
-                  <div class="d" style="min-height: 38px"><span>26</span></div>
-                  <div class="d" style="min-height: 38px">
-                    <span>27</span><span class="ev ev-turno">19–24</span>
-                  </div>
-                  <div class="d" style="min-height: 38px">
-                    <span>28</span><span class="ev ev-turno">13–24</span>
-                  </div>
-                  <div class="d" style="min-height: 38px">
-                    <span>29</span><span class="ev ev-turno">13–17</span>
-                  </div>
-                </div>
-              </div>
-              <div class="caja" style="padding: 10px">
-                <h5>Mis notas</h5>
-                <div class="prox">
-                  <span class="fecha"><b>2</b><small>dic</small></span>
-                  <div>Recoger el uniforme nuevo<small>Solo tú · aviso a las 12:00</small></div>
-                  <svg width="14" height="14" style="color: var(--tenue)">
-                    <use href="#i-candado" />
-                  </svg>
-                </div>
-              </div>
-              <div class="rejilla-2" style="gap: 8px">
-                <div class="dato">
-                  <small>Vacaciones</small><b>12 días</b><span>disponibles</span>
-                </div>
-                <div class="dato">
-                  <small>Noviembre</small><b>128 h 30</b><span>trabajadas</span>
-                </div>
-              </div>
-              <span class="boton ancho" style="padding: 12px"
-                ><svg width="15" height="15"><use href="#i-calendario" /></svg>Pedir
-                vacaciones</span
-              >
-            </div>
-          </div>
-          <p class="pie-dibujo">Ane · lo verde es lo fichado, lo gris lo que le queda</p>
         </div>
       </div>
     </div>
 
     <!-- Propuestas -->
-    <div class="pantalla">
+    <div class="pantalla ancha">
       <div class="explica">
-        <span class="n">3</span>
-        <span class="etiqueta e-nuevo">Nuevo</span>
-        <h3>Propuestas: negociar sin WhatsApp</h3>
+        <span class="n">5</span>
+        <span class="etiqueta e-nuevo">Propuestas</span>
+        <span class="etiqueta e-mio">Mejora mía</span>
+        <h3>Propuestas: ver quién falta antes de decir que sí</h3>
         <p>
-          La ven el gerente y los jefes con permiso para gestionar vacaciones. Cada petición, con
-          quién coincide y tres respuestas: aceptar, proponer otras fechas o rechazar con motivo.
+          La petición con sus cuentas y, debajo, la línea del equipo de sala de esos días: quién
+          está de vacaciones, lo que pide Ane a rayas, y cuántos quedáis cada día si la apruebas.
         </p>
         <ul class="claves">
           <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Avisa si coincide con alguien del
-            mismo puesto, pero deja aprobar: decides tú
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Verde: el equipo va bien; naranja:
+            os quedáis justos. Avisa, no impide
           </li>
           <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>También avisa si cae en un día
-            marcado del calendario (la inspección del 3-dic)
+            <svg width="15" height="15"><use href="#i-ok" /></svg>Aprobar, proponer otras fechas
+            (eliges en el mismo calendario) o rechazar con motivo
           </li>
           <li>
-            <svg width="15" height="15"><use href="#i-ok" /></svg>Si propones otras fechas, al
-            empleado le aparece su pestaña «Vacaciones» con aviso: acepta, rechaza o propone otras
+            <svg width="15" height="15"><use href="#i-ok" /></svg>La ven el gerente y los jefes con
+            permiso de vacaciones, cada uno con su equipo
           </li>
           <li>
             <svg width="15" height="15"><use href="#i-ok" /></svg>Aprobadas, salen en Turnos y Fogón
-            no pone a nadie de vacaciones en el cuadrante
+            no pone a nadie de vacaciones
           </li>
         </ul>
         <div class="causa">
-          <b>Las cuentas</b>
-          Ane pide del 22 al 28 de diciembre: 7 días naturales. Tiene 12; le quedarían 5. Iker
-          (sala) tiene aprobados del 24 al 26.
+          <b>Las cuentas de la línea</b>
+          En sala sois 4 (Ane, Iker, Leire y Mikel). Si la apruebas: del 22 al 23, 3; del 24 al 26
+          falta también Iker, 2; del 27 al 28, 3; el resto, 4.
         </div>
       </div>
       <div class="dibujos">
-        <div class="ventana">
+        <div class="ventana" style="grid-template-columns: 150px minmax(0, 1fr)">
           <div class="lateral">
             <div class="marca"><i>E</i>Estook</div>
             <span class="activa"
@@ -3928,41 +5358,135 @@
             </div>
             <div class="caja">
               <div class="perfil-cab">
-                <span class="avatar ch">AE</span>
+                <span class="icono-g gr gv"
+                  ><svg width="22" height="22"><use href="#i-palmera" /></svg
+                ></span>
                 <div>
-                  <b style="font-size: 0.9rem">Ane Etxeberria · Camarera</b
-                  ><small>Pide 22 – 28 dic · 7 días naturales</small>
+                  <b style="font-size: 0.95rem">Ane Etxeberria pide del 22 al 28 de diciembre</b
+                  ><small>Camarera · sala · lo pidió hoy a las 11:07</small>
                 </div>
                 <span class="pildora p-aten" style="margin-left: auto">Pendiente</span>
               </div>
-              <div class="rejilla-3">
-                <div class="dato"><small>Tiene</small><b>12 días</b></div>
-                <div class="dato"><small>Pide</small><b>7 días</b></div>
-                <div class="dato"><small>Le quedarían</small><b>5 días</b></div>
+              <div class="baldosas" style="grid-template-columns: repeat(3, minmax(0, 1fr))">
+                <div class="baldosa gv" style="min-height: 0">
+                  <small>Tiene</small><b>12 <span>días</span></b>
+                </div>
+                <div
+                  class="baldosa"
+                  style="min-height: 0; background: linear-gradient(135deg, #5d7bff, #3a4fd9)"
+                >
+                  <small>Pide</small><b>7 <span>días</span></b>
+                </div>
+                <div class="baldosa gt" style="min-height: 0">
+                  <small>Le quedarían</small><b>5 <span>días</span></b>
+                </div>
               </div>
-              <div class="aviso" style="background: var(--atencion-s); color: var(--atencion)">
-                <svg width="16" height="16"><use href="#i-equipo" /></svg>
-                <div>
-                  <b>Coincide con Iker Lasa (sala), del 24 al 26</b>Esos tres días quedaríais 2 de 4
-                  en sala. Puedes aprobarla igual.
+              <div
+                class="caja"
+                style="box-shadow: none; background: var(--superficie-2); padding: 12px"
+              >
+                <h5>Sala, del 20 al 31 de diciembre</h5>
+                <div class="desliza">
+                  <div class="linea-t" style="min-width: 520px">
+                    <span></span>
+                    <span class="cab-d">D<small>20</small></span
+                    ><span class="cab-d">L<small>21</small></span
+                    ><span class="cab-d">M<small>22</small></span
+                    ><span class="cab-d">X<small>23</small></span
+                    ><span class="cab-d">J<small>24</small></span
+                    ><span class="cab-d">V<small>25</small></span
+                    ><span class="cab-d">S<small>26</small></span
+                    ><span class="cab-d">D<small>27</small></span
+                    ><span class="cab-d">L<small>28</small></span
+                    ><span class="cab-d">M<small>29</small></span
+                    ><span class="cab-d">X<small>30</small></span
+                    ><span class="cab-d">J<small>31</small></span>
+                    <span class="quien"><span class="avatar ch">AE</span>Ane</span>
+                    <span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="pide i"></span><span class="pide"></span><span class="pide"></span
+                    ><span class="pide"></span><span class="pide"></span><span class="pide"></span
+                    ><span class="pide f"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span>
+                    <span class="quien"
+                      ><span
+                        class="avatar ch"
+                        style="background: linear-gradient(135deg, #7ad7ff, #2a8bff)"
+                        >IL</span
+                      >Iker</span
+                    >
+                    <span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="vac i"></span><span class="vac"></span><span class="vac f"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span>
+                    <span class="quien"
+                      ><span
+                        class="avatar ch"
+                        style="background: linear-gradient(135deg, #ffa3cf, #f264a8)"
+                        >LS</span
+                      >Leire</span
+                    >
+                    <span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span>
+                    <span class="quien"
+                      ><span
+                        class="avatar ch"
+                        style="background: linear-gradient(135deg, #7ff0c0, #1fb57a)"
+                        >MI</span
+                      >Mikel</span
+                    >
+                    <span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span
+                    ><span class="hueco-t"></span><span class="hueco-t"></span>
+                    <span class="quien" style="font-size: 0.68rem; color: var(--suave)"
+                      >Quedáis</span
+                    >
+                    <span class="cob ok">4</span><span class="cob ok">4</span
+                    ><span class="cob ok">3</span><span class="cob ok">3</span
+                    ><span class="cob justo">2</span><span class="cob justo">2</span
+                    ><span class="cob justo">2</span><span class="cob ok">3</span
+                    ><span class="cob ok">3</span><span class="cob ok">4</span
+                    ><span class="cob ok">4</span><span class="cob ok">4</span>
+                  </div>
+                </div>
+                <div class="leyenda">
+                  <span><i style="background: var(--c-vac)"></i>Aprobadas</span
+                  ><span
+                    ><i
+                      style="
+                        background: repeating-linear-gradient(
+                          135deg,
+                          #9ec9ff 0 3px,
+                          #2a8bff 3px 6px
+                        );
+                      "
+                    ></i
+                    >Lo que pide Ane</span
+                  ><span><i style="background: var(--c-turno)"></i>Vais bien</span
+                  ><span><i style="background: var(--c-horas)"></i>Justos</span>
                 </div>
               </div>
               <div class="barra" style="justify-content: flex-end">
                 <span class="boton sec">Rechazar</span>
                 <span class="boton sec">Proponer otras fechas</span>
-                <span class="boton">Aprobar</span>
-              </div>
-            </div>
-            <div class="caja">
-              <h5>Cómo va otra · Mikel Iturbe (jefe de sala) → Richi</h5>
-              <div class="hilo">
-                <div class="paso-h ok">Mikel pide 2 – 6 ene<small>18-nov · 5 días</small></div>
-                <div class="paso-h ok">
-                  Richi propone 9 – 13 ene<small>19-nov · «la semana de Reyes vamos justos»</small>
-                </div>
-                <div class="paso-h va">
-                  Mikel acepta 9 – 13 ene<small>20-nov · aprobadas, salen en Turnos</small>
-                </div>
+                <span
+                  class="boton-g"
+                  style="
+                    padding: 9px 16px;
+                    font-size: 0.8rem;
+                    background: var(--g-turno);
+                    box-shadow: 0 10px 18px -10px rgba(31, 181, 122, 0.9);
+                  "
+                  >Aprobar</span
+                >
               </div>
             </div>
           </div>

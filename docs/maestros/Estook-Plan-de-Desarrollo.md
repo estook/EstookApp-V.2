@@ -492,7 +492,7 @@ Una página por app, por tipo de local y por caso de uso, cada una con su títul
 
 # D · Los módulos
 
-**32 módulos numerados, de M0 a M31, más M6½ y los cuatro del TPV (M20A, M20B, M20C y M20D)**; M20D y M31, añadidos el 6-nov-2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)); **M17 y M30, quitados el 11-nov-2026, y M19b dentro de M18** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)). Cada uno se entrega funcionando, probado en móvil real y con datos de verdad. **Ninguno se da por bueno «al 90 %».**
+**33 módulos numerados, de M0 a M32, más M6½ y los cuatro del TPV (M20A, M20B, M20C y M20D)**; M20D y M31, añadidos el 6-nov-2026 ([0134](../decisiones/0134-estook-tpv-para-android-y-cobrar-en-el-aparato.md)); **M17 y M30, quitados el 11-nov-2026, y M19b dentro de M18** ([0146](../decisiones/0146-la-reorganizacion-del-11-nov.md)); **M32 · Reservas, propuesto el 24-nov-2026** ([0153](../decisiones/0153-la-ampliacion.md)). Cada uno se entrega funcionando, probado en móvil real y con datos de verdad. **Ninguno se da por bueno «al 90 %».**
 
 **Las fichas van por fases, y el orden en el que se construyen es este** ([0061](../decisiones/0061-el-orden-y-la-infraestructura.md)). Los números no cambian, para no romper las referencias de las decisiones ya escritas.
 
@@ -513,14 +513,17 @@ ESTOOK TPV    M16a · La jornada → M20A · 1 (base y API) → T1 · La puerta 
 HECHO       L · La limpieza: fuera Cuaderno, Pulse, Costes, Tareas y las pestañas que esperaban;
             la Carta sin pestañas (migración 0118) · S1 · Cada plan, lo suyo · el rediseño (0148)
             · M20 · 1 · Lo vendido baja del almacén (0149), sin aprovechamiento (0150)
-            · M20 · 2 · Lo que se escapa (0151)
-AHORA       R3 · 2 · 1 · La caja, segunda parte (0152)
+            · M20 · 2 · Lo que se escapa (0151) · R3 · 2 · 1 · La caja, segunda parte (0152)
+AHORA       LA AMPLIACIÓN (0153, propuesta, con su maqueta para aprobar):
+            → 1 · Los fallos del servicio → 2 · El comandero y la carta
+            → 3 · La ficha del trabajador (M13, adelantado) → 4 · Calendario y vacaciones (M14)
+            → 5 · Las reservas (M32, en tres entregas)
 ESTOOK TPV  → R3 · 2 · 2 · Los descuentos → lo que queda de T7 (sin internet en las nativas,
               las ventas de hoy, la venta rápida, Informes y Empleados con lo cobrado)
             → T6 · 3 · NO VERI*FACTU → T8 · Android (con el proveedor de cobro decidido)
             → AUDITORÍA 2 → M29 · Uber Eats (cuando den el acceso)
-PERSONAS    → M13 · La ficha del trabajador → M14 · Calendario y Vacaciones
-            → M15 · Fichajes → M16b · APPCC → AUDITORÍA 3
+PERSONAS    → (M13 y M14, en la Ampliación) → M15 · Fichajes → M16b · APPCC
+            → AUDITORÍA 3 (lo de M13 y M14 se audita al acabar la Ampliación 4)
 LA CARTA    → M12 y M11 · La carta online y la carta para imprimir
 ESENCIAL    → M18 · Traer los datos de otro TPV
 EL NEGOCIO  → M21 · La exportación → M22 · Fogón 2 → M23 · Reseñas → M25 · Avisos
@@ -735,6 +738,15 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Los que ya están**, y los hechos a mano, tienen **«Subir contrato»**, que pone sus datos al día de una vez.
 - **El historial de fichajes de la persona, bonito y exportable por fechas** (M15).
 
+**Lo que pulió Richi el 24-nov** ([0153](../decisiones/0153-la-ampliacion.md), sección 4; **se construye en la Ampliación 3**, en dos entregas, con [su maqueta](../maquetas/la-ampliacion.html)):
+
+- **La ficha, por este orden:** foto, nombre y puesto; **cuatro cuadrados** (jornada, tipo de contrato, incorporación y vacaciones disponibles); y **una lista que se despliega**: **Incidencias** (las suyas, con su número), **Información personal** (nombre y apellidos, DNI/NIE, teléfono, correo y domicilio), **Información laboral** (categoría, convenio, contrato, jornada y salario), **Nóminas** (por meses, en PDF), **Vacaciones y solicitudes** (al año, disfrutadas, aprobadas por disfrutar y disponibles) e **Historial de jornadas**.
+- **El alta, en tres formas, y recomienda la mejor:** foto del contrato, archivo del contrato (la recomendada: el PDF se lee sin errores) o a mano. Lo que no sale del documento se escribe a mano, y se puede escribir todo.
+- **Lo que lee Fogón:** fecha de incorporación, horas a la semana, sueldo (neto o bruto, y pagas), convenio, vacaciones al año, días naturales o laborables, y la categoría. Cada campo, con la página de donde sale. **El contrato da las condiciones y la nómina el sueldo.**
+- **Lo que se calcula y nunca lee la IA:** las vacaciones devengadas, disfrutadas, aprobadas y disponibles. Los días pendientes de años anteriores los pone el gerente.
+- **Las nóminas, en el perfil**, una a una o **«Subir las nóminas del mes»** con el PDF de la gestoría: Fogón reparte cada página por DNI y nombre, y pregunta lo que no sabe.
+- **La privacidad:** los jefes gestionan vacaciones e incidencias **sin ver nóminas, sueldos ni documentos**.
+
 **Reglas críticas.** El coste por hora **solo lo ve quien tiene ese permiso**. No aparece en documentos ni en Fogón. **El contrato es un dato personal**: lo ven quien lleva el local y la propia persona, y nadie más; lo decide la base, no la pantalla. Fogón lo lee **en el servidor**, propone y **no guarda nada sin que el gerente confirme**; lo que pone el contrato es un dato, jamás una instrucción (M22). **Estook no se inventa lo que dice un convenio**: los días de vacaciones salen del convenio aplicado, del contrato o de lo que ponga el gerente a mano, y siempre los confirma él; cómo sabe Estook lo que dice cada convenio se pregunta en el plan del módulo.
 
 **Y la persona sin correo** ([0057](../decisiones/0057-quien-es-quien-en-el-tpv.md)), que se adelanta a la entrega H: a quien no tiene o no quiere dar su correo se le da de alta con nombre y PIN. Ficha, sale en el cuadrante y entra en los terminales del local; no entra desde un aparato propio.
@@ -766,6 +778,14 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Los empleados las piden**, y los jefes **las validan o proponen otros días**.
 - **A cada empleado le sale cuántos días le quedan**, y los gasta en el calendario.
 - **El saldo sale** del convenio aplicado, del contrato o de lo que ponga el gerente a mano: lo guarda la ficha del trabajador (M13).
+
+**Lo que pulió Richi el 24-nov** ([0153](../decisiones/0153-la-ampliacion.md), sección 5; **se construye en la Ampliación 4**, con [su maqueta](../maquetas/la-ampliacion.html)). Calendario se abre con **tres pestañas**:
+
+- **Equipo:** lo que ponen el gerente y los jefes, un día o un tramo, con aviso (limpieza, inspección…) para todos, sala o cocina; **abajo, los próximos**, y avisa cuando llegan. Los jefes ponen vacaciones a su gente, **que no salen aquí sino en el Personal de cada uno**.
+- **Personal** (todos la tienen; es sobre todo del equipo): **las notas** que no ve nadie más; **los días trabajados** con sus horas y los que quedan; y abajo **vacaciones disponibles, horas trabajadas y «Pedir vacaciones»**. El empleado pide a sus jefes y al gerente; un jefe, al gerente. **No deja pedir más días de los que hay.**
+- **Propuestas**, para el gerente **y los jefes con permiso de gestionar vacaciones**: aceptar, proponer otras fechas o rechazar. **Contrapropuesta:** al empleado le aparece su pestaña «Vacaciones» con aviso, y acepta, rechaza o propone otras. **Si coinciden dos del mismo puesto, avisa y no impide aprobar**: decide el responsable.
+- **Aprobadas**, salen en Turnos y el cuadrante de Fogón no pone a nadie de vacaciones.
+- **La ley** (Estatuto, art. 38): 30 días naturales como mínimo, las fechas sabidas dos meses antes (se avisa, no bloquea) y lo que pasa con una baja durante las vacaciones. Lo de cada convenio no se inventa.
 
 **Turnos, lo que queda.** Arrastrar para crear y mover · turnos partidos · plantillas y copiar semana · **coste en vivo mientras montas** · avisos automáticos · borrador y publicado · al publicar, cada uno recibe lo suyo; al cambiar, solo se avisa al afectado · cambiar un turno con un compañero.
 
@@ -1006,6 +1026,26 @@ _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-a
 **Antes de escribir una línea.** Comprobar en la documentación oficial de ese día que el Tap to Pay de Stripe está abierto en España para Android (en noviembre de 2026, disponible en su lista de lectores y en vista previa pública en su guía), y leer su guía de seguridad para cobrar en móviles (MPoC). **Se programa con el lector simulado de Stripe en un móvil Android compatible**; con todo terminado, **se alquila un Sunmi** para la prueba final (Richi, 6-nov).
 
 **Terminado cuando.** Con un TPV portátil se toma nota de una mesa, sale en cocina, se imprime la cuenta en el propio aparato, **se cobra con una tarjeta sin contacto y con un móvil**, sale el ticket con su QR, y al cerrar la caja **la tarjeta cuadra sola**. Una tarjeta que pide el chip se cobra con el lector o con el datáfono del banco. Con internet cortado, se cobra con el datáfono del banco y nada se para. Un aparato que no puede cobrar con tarjeta lo dice al vincularlo.
+
+### M32 · Reservas
+
+**Propuesto el 24-nov-2026** ([0153](../decisiones/0153-la-ampliacion.md), sección 6; [la maqueta](../maquetas/la-ampliacion.html), «Las reservas»). **Cambia lo que decía el Manifiesto** («no gestiona reservas»). **Apagado de fábrica**; se enciende o se apaga entero en Ajustes › Reservas. Se construye en la **Ampliación 5**, en tres entregas.
+
+**Objetivo.** Un sistema de reservas a la altura de CoverManager, SevenRooms, TheFork Manager u OpenTable, **sobre el mismo plano de mesas de Estook TPV**, sin duplicar nada, muy sencillo para el camarero.
+
+**Entra.**
+
+- **5 · 1 · El motor y la sala:** servicios con franjas de 15 minutos; duración por tamaño de grupo, de fábrica y luego **la real, de las cuentas cobradas**; tope de comensales por cuarto de hora; la mesa la elige Estook (la que deja menos sillas vacías, o dos que se juntan, solo si se marcaron en el editor de la sala); qué mesas salen por internet. **«Reservas» en el TPV**, con el calendario, a la derecha de Tickets (caja, comandero y móvil); el plano marca lo reservado; **«Sentar»** abre la mesa con sus comensales y une reserva, cuenta y ticket; abrir una mesa reservada avisa sin bloquear; avisos de reserva nueva, llegada y retraso; reservas a mano en cuatro toques.
+- **5 · 2 · La web y los correos:** `estook.com/reservar/<local>`, que solo ofrece horas con mesa de verdad; correo de confirmación y recordatorio 24 h antes con «Confirmo» y «Cancelar»; «Avísame si se libera».
+- **5 · 3 · Clientes, lista de espera y los que no vienen:** el cliente por su teléfono, con visitas, gasto medio, etiquetas y **alergias que pasan solas a la mesa**; la lista de espera de quien llega sin reservar, con el tiempo estimado; los que no vienen, apuntados.
+
+**Qué NO entra (todavía).** La garantía con tarjeta (cuando haya proveedor de cobro, T8) · SMS y WhatsApp (M25) · el botón «Reservar» dentro de Google, que exige ser socio de Google (de 12 a 16 semanas de alta).
+
+**Depende de.** M20A y T2 (el plano y las mesas), y el cobro de T7 para la duración real.
+
+**Reglas críticas.** **Nunca dos reservas en la misma mesa y tramo**: lo impide la base de datos, no la pantalla; el id nace en el aparato y repetir no duplica; la web vuelve a comprobar al confirmar. **Al segundo en todos los aparatos**, como la sala. **Los clientes son de su local** y ningún otro los ve. **Las ofertas, con casilla aparte y sin marcar.** En servicio, **nada bloquea al camarero**: avisa y deja seguir.
+
+**Terminado cuando.** Dos aparatos reservan la misma mesa a la misma hora a la vez y solo entra una; una reserva desde la web sale al segundo en la caja y en el comandero; sentarla abre la mesa con sus comensales sin preguntar y su ticket queda unido a la reserva; el cliente cancela desde el correo y la mesa se libera y avisa al primero de la lista; y otro local, llamando a la API a pelo, no ve ni un cliente.
 
 ## Fase 5 · Inteligencia
 

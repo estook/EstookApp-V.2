@@ -7,7 +7,7 @@ en las partes que hagan falta («Ampliación 1, 2…»), investigando la mejor f
 proponiendo mejoras.
 
 **Estado: propuesta, con las respuestas de Richi del 24-nov** (sección 9). Falta que apruebe la
-[maqueta](../maquetas/la-ampliacion.html) con Turnos rehecho y que conteste la pregunta 9. **No se construye nada hasta que la apruebe.** Lo que conteste se escribe
+[maqueta](../maquetas/la-ampliacion.html) con Turnos rehecho. **No se construye nada hasta que la apruebe.** Lo que conteste se escribe
 aquí, en la sección 9, y lo que cambie de la maqueta se cambia en la maqueta, antes del código.
 
 ## 1 · Las cinco partes, y por qué en este orden
@@ -194,16 +194,22 @@ cuenta y al ticket.
   avisa y propone otra libre, **sin bloquear**. Avisos: reserva nueva, llegan en 10 minutos, 15 de
   retraso (y liberar la mesa pasados los minutos del local). Todo al segundo, como la sala.
 - **La web:** `estook.com/reservar/<local>`, para su web, Instagram, Google y WhatsApp. Solo ofrece
-  horas con mesa de verdad. Nombre y teléfono (el correo, opcional). **Al reservar se le enseña su
+  horas con mesa de verdad. **Nombre y teléfono, siempre obligatorios** (por si hay que llamarle);
+  el correo, obligatorio si el local avisa por correo. **Al reservar se le enseña su
   reserva con un código de 4 cifras.** **Desde la misma web, «Ya tengo reserva»**: con su teléfono y
   su código ve su hora y la **confirma o la cancela** (Richi, 24-nov). El código evita que
   cualquiera que sepa un teléfono vea o cancele la reserva de otro.
+- **«Avisar al cliente por correo»**, en Ajustes › Reservas, **apagado de fábrica** (Richi, 24-nov:
+  «a los clientes sí se les avisa por correo si activan la opción»). Encendido: al reservar le llega
+  el correo con su reserva y su código; **un recordatorio el día antes** (o al momento, si reserva
+  para el mismo día) con «Confirmo» y «Cancelar»; y funciona **«Avísame si se libera»**. Con Resend,
+  que ya usamos. **Al equipo, todo por la app y sus avisos al móvil**, como el calendario.
 - **«Pedir que confirmen»**, en Ajustes › Reservas, **apagado de fábrica**: al reservar se le dice
-  que tiene que confirmarla, y **si no la confirma a tiempo se da por cancelada** y la mesa queda
-  libre, con aviso en el TPV. El local elige el plazo (pregunta 9).
-- **Los correos al cliente, escritos y apagados** (Richi, 24-nov: «desactivados por ahora»). Sin
-  correo no se le puede avisar de nada fuera de la web: **«Avísame si se libera» espera** a que se
-  enciendan. **Al equipo, todo por la app y sus avisos al móvil**, como el calendario.
+  que tiene que confirmarla, y **si no la ha confirmado X minutos antes de la hora de la reserva, se
+  cancela sola** y la mesa queda libre, con aviso en el TPV. **El local elige X, de 15 minutos a 1
+  hora** (30 de fábrica). Ejemplo: reserva a las 21:15 con 30 minutos: si a las 20:45 no ha
+  confirmado, se cancela. Se cuenta antes de la reserva porque se reserva con días de antelación
+  (Richi, 24-nov). Si el local avisa por correo, el recordatorio lleva el botón para confirmar.
 - **Clientes:** por teléfono, del local (otro local no los ve nunca); visitas, gasto medio, lo que
   suele pedir, etiquetas y **alergias, que pasan solas a la mesa al sentarlo**. Los que no vienen
   se apuntan y se marcan al reservar.
@@ -252,10 +258,8 @@ cuenta y al ticket.
    devengado hasta hoy.
 8. **La contrapropuesta de vacaciones:** una tarjeta azul arriba de Personal, con sus tres
    botones y el aviso al móvil (recomendado), o la pestaña «Vacaciones» que pediste.
-9. **El plazo de «Pedir que confirmen»** (Richi: «deja que elijan minutos o una hora max»). Lo he
-   entendido así: el local elige de 15 minutos a 1 hora, **contados desde que se hace la reserva**;
-   si en ese tiempo no la confirma, se cancela. ¿O el plazo es **antes de la hora de la reserva**
-   (por ejemplo, «si a una hora de llegar no ha confirmado, se cancela»)?
+9. **El plazo de «Pedir que confirmen»:** ¿desde que se hace la reserva o antes de la hora? (Contestada
+   en la sección 9.)
 
 ## 9 · Lo que contesta Richi
 
@@ -266,8 +270,10 @@ cuenta y al ticket.
 3. **Los que no vienen confirman o cancelan desde la misma web**, viendo su reserva; y **en Ajustes,
    la opción de que si no confirman a tiempo se cancele**, con el plazo que elija el local. Escrito
    en la sección 6; el plazo, en la pregunta 9.
-4. **Avisos: por la app y al móvil.** El correo, preparado y **apagado por ahora**. Nada de SMS ni
-   WhatsApp.
+4. **Avisos.** Richi entendió la pregunta como los avisos del calendario a los empleados, porque no
+   decía a quién (lección 279): **a los empleados, por la app y al móvil**; **a los clientes que
+   reservan, por correo, si el local enciende la opción**; y **el teléfono, obligatorio** por si hay que
+   llamarles. Nada de SMS ni WhatsApp.
 5. **El trabajador ve y descarga sus nóminas: sí.**
 6. **Tarjetas del Panel: 5 filas y «Ver los 6»: sí.**
 7. **El saldo de vacaciones: «lo que sea legal según su contrato y como se suele hacer».** Se hace
@@ -281,7 +287,9 @@ cuenta y al ticket.
 «se ve raro», con un diseño más profesional y de app actual. Entra en la Ampliación 4 (sección 5) y
 el color, en cada parte, en las pantallas que toque (sección 7).
 
-**Pregunta 9, abierta:** el plazo de «Pedir que confirmen».
+9. **El plazo, antes de la hora de la reserva**: «si no confirman, por ejemplo, 30 minutos antes de
+   la reserva, se cancela automáticamente; pueden reservar un día o dos antes y no tendría sentido
+   así». El local elige de 15 minutos a 1 hora.
 
 ## 10 · Lo que se toca en los documentos
 

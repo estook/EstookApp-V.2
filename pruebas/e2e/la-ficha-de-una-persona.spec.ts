@@ -101,7 +101,7 @@ async function unaCamareraConCuatroTurnos(peticion: APIRequestContext) {
       200,
     );
   }
-  return { personaId };
+  return { personaId, correo };
 }
 
 async function entrar(page: Page, correo: string) {
@@ -203,4 +203,34 @@ test('la ficha se rellena a mano y salen sus cuatro cuadrados y sus vacaciones',
   await expect(
     ficha.getByText(/30 del año − 0 disfrutados − 0 aprobados = 30 disponibles/),
   ).toBeVisible();
+});
+
+/**
+ * **Las nóminas** (la Ampliación 3 · 2, 0153): Equipo › Nóminas para quien lleva el local, con
+ * «Subir las nóminas del mes» y a quién le falta; y **Mi ficha** para el trabajador, desde Tu
+ * cuenta, con sus nóminas y sus vacaciones.
+ */
+test('Equipo › Nóminas para la gerente, y Mi ficha para la camarera', async ({ page, request }) => {
+  const { correo } = await unaCamareraConCuatroTurnos(request);
+
+  await entrar(page, ROSA);
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/nominas`);
+  await expect(page.getByRole('heading', { level: 1, name: 'Nóminas' })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(
+    page.getByRole('button', { name: 'Subir las nóminas del mes' }).first(),
+  ).toBeVisible();
+
+  await entrar(page, correo);
+  // El avatar sale en la barra de arriba o en el menú, según el ancho: el que se ve.
+  await page.locator('button[aria-label^="Tu cuenta"]:visible').first().click();
+  await page.getByRole('button', { name: /^Mi ficha/ }).click();
+  await expect(page).toHaveURL(/#\/mi-ficha/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Mi ficha' })).toBeVisible();
+  await expect(page.getByText('Tu ficha todavía está sin rellenar')).toBeVisible();
+  await expect(page.getByText('Mis nóminas', { exact: true })).toBeVisible();
+  // Una camarera no tiene Nóminas del equipo.
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/nominas`);
+  await expect(page.getByRole('button', { name: 'Subir las nóminas del mes' })).toHaveCount(0);
 });

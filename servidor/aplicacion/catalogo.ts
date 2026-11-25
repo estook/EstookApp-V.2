@@ -148,6 +148,8 @@ import {
 import { registroDeJornada } from './consultas/registro-de-jornada.ts';
 import { abrirUnDocumentoDePersona } from './consultas/la-ficha.ts';
 import { guardarLaFichaDelTrabajador, leerElContratoConFogon } from './comandos/la-ficha.ts';
+import { guardarUnaNomina, leerLasNominasConFogon } from './comandos/las-nominas.ts';
+import { lasNominasDelEquipo } from './consultas/las-nominas.ts';
 import { elHorario, elHorarioEnBorrador, elHorarioEnPdf } from './consultas/horario.ts';
 import {
   copiarLaSemanaAnterior,
@@ -745,6 +747,8 @@ export const catalogo = {
     [registroDeJornada.nombre]: registroDeJornada,
     // La Ampliación 3 · La ficha del trabajador (0153): el contrato, con enlace que caduca.
     [abrirUnDocumentoDePersona.nombre]: abrirUnDocumentoDePersona,
+    // La Ampliación 3 · 2 · Las nóminas (0153): mes a mes, quién la tiene y a quién le falta.
+    [lasNominasDelEquipo.nombre]: lasNominasDelEquipo,
     [elAparatoParaFichar.nombre]: elAparatoParaFichar,
 
     // ── T1 · La puerta de Estook TPV (0107) ────────────────────────────────
@@ -919,6 +923,10 @@ export const catalogo = {
     // se guarda solo lo que confirma quien lleva el equipo.
     [leerElContratoConFogon.nombre]: leerElContratoConFogon,
     [guardarLaFichaDelTrabajador.nombre]: guardarLaFichaDelTrabajador,
+    // La Ampliación 3 · 2 (0153): Fogón lee las nóminas del mes y Estook las casa por el DNI;
+    // cada una se guarda sola en la ficha de su persona, con su aviso.
+    [leerLasNominasConFogon.nombre]: leerLasNominasConFogon,
+    [guardarUnaNomina.nombre]: guardarUnaNomina,
     // El repaso del 9-oct (0081): el horario de siempre se fue; se justifica la falta.
     [justificarIncidencia.nombre]: justificarIncidencia,
     [quitarJustificacion.nombre]: quitarJustificacion,

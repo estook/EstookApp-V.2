@@ -251,12 +251,16 @@ export interface FichaPrivada {
 
 export interface DocumentoDeLaFicha {
   readonly documentoId: string;
-  readonly tipo: 'contrato';
+  readonly tipo: 'contrato' | 'nomina';
   readonly nombre: string;
   readonly mime: string;
   readonly bytes: number;
   readonly subidoEn: string;
   readonly subidoPor: string | null;
+  /** Solo en las nóminas (0128): «AAAA-MM», y su bruto y su neto si se saben. */
+  readonly mes?: string;
+  readonly brutoCentimos?: number | null;
+  readonly netoCentimos?: number | null;
 }
 
 /**
@@ -267,6 +271,8 @@ export interface LaFichaDelTrabajador {
   readonly laboral: FichaLaboral | null;
   readonly privada?: FichaPrivada | null;
   readonly documentos?: readonly DocumentoDeLaFicha[];
+  /** Sus nóminas, de la más nueva a la más vieja (la 3 · 2). Como el contrato: llegan o no. */
+  readonly nominas?: readonly DocumentoDeLaFicha[];
   readonly vacaciones: SaldoDeVacaciones | null;
   readonly veLoPrivado: boolean;
   readonly puedeRellenarla: boolean;
@@ -298,6 +304,57 @@ export interface ElContratoLeido {
     readonly pagas: CampoLeido<number>;
   };
   readonly queda: { readonly hoy: number; readonly mes: number; readonly delMes: number };
+}
+
+// ── Las nóminas (la Ampliación 3 · 2, 0153) ──────────────────────────────────
+
+export interface PersonaParaLaNomina {
+  readonly personaId: string;
+  readonly nombre: string;
+  readonly apellidos: string | null;
+  readonly categoria: string | null;
+  readonly convenio: string | null;
+}
+
+export interface NominaLeida {
+  readonly pagina: number;
+  readonly trabajador: string | null;
+  readonly dni: string | null;
+  readonly mes: string | null;
+  readonly brutoCentimos: number | null;
+  readonly netoCentimos: number | null;
+  readonly categoria: string | null;
+  readonly convenio: string | null;
+  readonly personaId: string | null;
+  readonly coincide: 'dni' | 'nombre' | null;
+}
+
+export interface LasNominasLeidas {
+  readonly nominas: readonly NominaLeida[];
+  readonly personas: readonly PersonaParaLaNomina[];
+  readonly queda: { readonly hoy: number; readonly mes: number; readonly delMes: number };
+}
+
+export interface LasNominasDelEquipo {
+  readonly mesPropuesto: string;
+  readonly meses: readonly {
+    readonly mes: string;
+    readonly nominas: readonly {
+      readonly documentoId: string;
+      readonly personaId: string;
+      readonly nombre: string;
+      readonly apellidos: string | null;
+      readonly brutoCentimos: number | null;
+      readonly netoCentimos: number | null;
+      readonly subidaEn: string;
+      readonly mime: string;
+    }[];
+    readonly faltan: readonly {
+      readonly personaId: string;
+      readonly nombre: string;
+      readonly apellidos: string | null;
+    }[];
+  }[];
 }
 
 // ── Cómo se enseña cada cosa ─────────────────────────────────────────────────

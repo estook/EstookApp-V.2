@@ -73,6 +73,8 @@ const ICONO_DEL_AVISO: Readonly<Record<TipoDeAviso, Icono>> = {
   // T6 · 2 · 2 · 1 (0137)
   'documento.rechazado': IconoAtencion,
   'caja.descuadre': IconoDinero,
+  // La Ampliación 3 · 2 (0153)
+  'nomina.subida': IconoDocumento,
 };
 
 const TRAMOS: readonly TramoDeAvisos[] = ['Hoy', 'Ayer', 'Esta semana', 'Antes'];

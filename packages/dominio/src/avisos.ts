@@ -71,6 +71,8 @@ export const TIPOS_DE_AVISO = [
   'documento.rechazado',
   // ── R3 · 2 · 1 (decisión 0152) ──────────────────────────────────────────
   'caja.descuadre',
+  // ── La Ampliación 3 · 2 (decisión 0153) ─────────────────────────────────
+  'nomina.subida',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -434,6 +436,18 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     nombre: 'Una caja cierra con descuadre',
     explica: 'Si falta o sobra más de la cifra de Ajustes del TPV › La caja, uno por cierre.',
     grupo: 'Negocio',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: true,
+  },
+  // La nómina del mes (la Ampliación 3 · 2, 0153): a la persona, en la campana y al móvil (Richi,
+  // 24-nov: a los empleados, «por la app y al móvil»). Sin correo de fábrica: la nómina no viaja
+  // en un correo, se abre en Estook.
+  'nomina.subida': {
+    nombre: 'Tu nómina ya está',
+    explica:
+      'Cuando quien lleva el local sube tu nómina del mes. La ves y la descargas en Mi ficha.',
+    grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: false,
     movilDeFabrica: true,
@@ -938,6 +952,17 @@ export function avisoDeFichajeSinApuntar(
  * tablet sin conexión con otro PIN. Lo ves en tus fichajes.» (0070). Es un cambio en
  * lo suyo, como una corrección, y le llega igual (0062).
  */
+/**
+ * «Tu nómina de noviembre ya está» (la Ampliación 3 · 2, 0153). Sin importes: el aviso sale
+ * en la pantalla del móvil, que ve cualquiera que esté al lado.
+ */
+export function avisoDeNominaSubida(mesEnLetra: string): LoQueDiceUnAviso {
+  return {
+    titulo: `Tu nómina de ${mesEnLetra} ya está en Estook`,
+    detalle: 'La ves y la descargas en Mi ficha, cuando quieras.',
+  };
+}
+
 export function avisoDeFichajeApuntado(
   quien: string,
   dia: FechaOperativa | string,

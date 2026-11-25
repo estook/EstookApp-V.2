@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Boton, ErrorEnCristiano } from '@estook/ui';
-import { IconoCandado, IconoDocumento, IconoNoVer, IconoVer } from '@estook/iconos';
+import { IconoCandado, IconoDocumento, IconoNoVer, IconoSubir, IconoVer } from '@estook/iconos';
 import {
   TIPOS_DE_CONTRATO,
   diasEnLetra,
@@ -15,7 +15,7 @@ import {
   type FichaLaboral,
   type FichaPrivada,
 } from '../contrato.ts';
-import { fechaCorta } from './comoSeLee.ts';
+import { fechaCorta, mesConMayuscula } from './comoSeLee.ts';
 
 /**
  * Lo que va dentro de cada plegable de la ficha (la Ampliación 3, 0153): Información
@@ -170,21 +170,33 @@ export function InformacionLaboral({
   );
 }
 
-function SusDocumentos({ documentos }: { readonly documentos: readonly DocumentoDeLaFicha[] }) {
+/**
+ * Una fila de documento con su «Abrir» (el contrato, una nómina): la ventana se abre al tocar y
+ * se le pone el enlace firmado cuando llega, que caduca a los cinco minutos (0127).
+ */
+export function FilaDeDocumento({
+  documento,
+  titulo,
+  detalle,
+}: {
+  readonly documento: DocumentoDeLaFicha;
+  readonly titulo: string;
+  readonly detalle: string;
+}) {
   const { cliente } = usarSesion();
-  const [abriendo, setAbriendo] = useState<string | null>(null);
+  const [abriendo, setAbriendo] = useState(false);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
 
-  async function abrir(documento: DocumentoDeLaFicha) {
-    setAbriendo(documento.documentoId);
+  async function abrir() {
+    setAbriendo(true);
     setError(null);
-    // La ventana se abre al tocar, y se le pone la dirección cuando llega: si se abriera
-    // después de esperar, el navegador del móvil la bloquearía como una ventana que salta.
+    // Si se abriera después de esperar, el navegador del móvil la bloquearía como una ventana
+    // que salta sola.
     const ventana = window.open('', '_blank');
     const respuesta = await cliente.consultar<{ enlace: string }>('abrir_un_documento_de_persona', {
       documento_id: documento.documentoId,
     });
-    setAbriendo(null);
+    setAbriendo(false);
     if (!respuesta.ok) {
       ventana?.close();
       setError(respuesta.error);
@@ -194,43 +206,95 @@ function SusDocumentos({ documentos }: { readonly documentos: readonly Documento
     else ventana.location.href = respuesta.datos.enlace;
   }
 
+  return (
+    <div className="flex flex-col gap-e1 border-t border-borde/70 py-e2 first:border-t-0">
+      <div className="flex items-center gap-e2 text-secundario">
+        <span
+          aria-hidden
+          className="grid h-[30px] w-[26px] shrink-0 place-items-center rounded-[6px] bg-mal-suave text-[0.56rem] font-extrabold text-mal"
+        >
+          {documento.mime === 'application/pdf' ? 'PDF' : 'FOTO'}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-semibold">{titulo}</span>
+          <span className="text-etiqueta text-texto-tenue">{detalle}</span>
+        </span>
+        <Boton
+          tono="texto"
+          icono={<IconoDocumento size={16} />}
+          cargando={abriendo}
+          textoCargando="Abriendo"
+          aria-label={`Abrir ${titulo}`}
+          onClick={() => {
+            void abrir();
+          }}
+        >
+          Abrir
+        </Boton>
+      </div>
+      {error !== null && <ErrorEnCristiano error={error} />}
+    </div>
+  );
+}
+
+function SusDocumentos({ documentos }: { readonly documentos: readonly DocumentoDeLaFicha[] }) {
   if (documentos.length === 0) {
     return <p className="text-secundario text-texto-suave">Sin contrato subido.</p>;
   }
   return (
-    <div className="flex flex-col gap-e1">
-      {error !== null && <ErrorEnCristiano error={error} />}
+    <div className="flex flex-col">
       {documentos.map((d) => (
-        <div
+        <FilaDeDocumento
           key={d.documentoId}
-          className="flex items-center gap-e2 border-t border-borde/70 py-e2 text-secundario first:border-t-0"
-        >
-          <span
-            aria-hidden
-            className="grid h-[30px] w-[26px] shrink-0 place-items-center rounded-[6px] bg-mal-suave text-[0.56rem] font-extrabold text-mal"
-          >
-            {d.mime === 'application/pdf' ? 'PDF' : 'FOTO'}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate font-semibold">{d.nombre}</span>
-            <span className="text-etiqueta text-texto-tenue">
-              Subido el {fechaCorta(d.subidoEn.slice(0, 10))}
-              {d.subidoPor === null ? '' : ` por ${d.subidoPor}`}
-            </span>
-          </span>
-          <Boton
-            tono="texto"
-            icono={<IconoDocumento size={16} />}
-            cargando={abriendo === d.documentoId}
-            textoCargando="Abriendo"
-            onClick={() => {
-              void abrir(d);
-            }}
-          >
-            Abrir
+          documento={d}
+          titulo={d.nombre}
+          detalle={`Subido el ${fechaCorta(d.subidoEn.slice(0, 10))}${
+            d.subidoPor === null ? '' : ` por ${d.subidoPor}`
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Las nóminas (la 3 · 2) ───────────────────────────────────────────────────
+
+export function SusNominas({
+  nominas,
+  alSubir,
+}: {
+  readonly nominas: readonly DocumentoDeLaFicha[];
+  /** Solo quien puede subirlas: «Subir una nómina». */
+  readonly alSubir?: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-e3">
+      {nominas.length === 0 ? (
+        <p className="text-secundario text-texto-suave">Todavía no hay ninguna nómina.</p>
+      ) : (
+        <div className="flex flex-col">
+          {nominas.map((n) => (
+            <FilaDeDocumento
+              key={n.documentoId}
+              documento={n}
+              titulo={n.mes === undefined ? n.nombre : mesConMayuscula(n.mes)}
+              detalle={
+                n.netoCentimos != null
+                  ? `${comoDinero(n.netoCentimos)} netos`
+                  : `Subida el ${fechaCorta(n.subidoEn.slice(0, 10))}`
+              }
+            />
+          ))}
+        </div>
+      )}
+      {alSubir !== undefined && (
+        <div>
+          <Boton icono={<IconoSubir size={16} />} onClick={alSubir}>
+            Subir una nómina
           </Boton>
         </div>
-      ))}
+      )}
+      <LoPrivado />
     </div>
   );
 }

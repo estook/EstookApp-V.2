@@ -401,6 +401,41 @@ pruebas para Richi, en [sus pasos](../pasos/pasos-de-la-ampliacion-3.md) (la 35)
    hoy es el del contrato.
 9. **Tres iconos nuevos** de Lucide: la palmera de las vacaciones, la ficha y el maletín de lo laboral.
 
+## 14 · Lo que se construyó en la Ampliación 3 · 2 · Las nóminas (25-nov)
+
+En `ampliacion-3-2-las-nominas`, **con la migración 0128** y la API con **una consulta y dos comandos más**
+(`las_nominas_del_equipo`; `leer_las_nominas_con_fogon` y `guardar_una_nomina`). Las pruebas para Richi, en
+[sus pasos](../pasos/pasos-de-la-ampliacion-3-2.md) (la 36). Con esto, **la Ampliación 3 está entera**.
+
+- **Equipo › Nóminas**, un destino nuevo, como en la maqueta: mes a mes, la nómina de cada uno con su neto y
+  su bruto, y **a quién le falta** (en ámbar, con «Subir la suya»). Solo lo ve quien lleva los datos del equipo.
+- **«Subir las nóminas del mes»**: el PDF de la gestoría entero. Fogón lee cada página; **Estook** la casa con
+  su persona por el DNI de su ficha o por el nombre («DNI coincide», «Nombre coincide»), y la que no sabe de
+  quién es sale en ámbar con «¿Quién es?»: eliges a quién va o la dejas fuera. Si la nómina dice otra
+  categoría u otro convenio que su ficha, **se propone ponerla al día y lo marcas tú**. «Guardar N nóminas».
+- **En la ficha de cada uno, «Nóminas»**, por meses, con «Abrir» y «Subir una nómina» (el PDF, o fotos si es en
+  papel).
+- **Mi ficha**, para cada trabajador (Tu cuenta › Mi ficha): **sus nóminas para ver y descargar**, sus
+  vacaciones, su contrato y sus datos, y el enlace a Mis fichajes. Lo ve todo y no cambia nada.
+- **El aviso**: a cada uno, «Tu nómina de octubre de 2026 ya está en Estook», en la campana y al móvil, que
+  lleva a Mi ficha.
+
+**Lo que decidió la IA al construirla**, para que Richi lo sepa:
+
+1. **El PDF de la gestoría entero no se guarda nunca**: lleva las nóminas de todos. El móvil pinta cada página
+   y hace **un PDF con las páginas de cada persona**, que es lo único que se guarda, en su ficha. Sin librerías
+   nuevas: la nómina queda como imagen dentro del PDF, que se ve y se imprime igual.
+2. **A Fogón no le llega la lista del equipo**: solo lo que ponen las nóminas. Quién es quién lo decide
+   Estook, y solo si el DNI o el nombre casan con una persona y nada más que una; si duda, pregunta.
+3. **Un escaneado se lee de cinco en cinco páginas** (3 créditos cada tanda); un PDF con texto, hasta cuarenta
+   de una vez (3 créditos).
+4. **Las dos páginas de una misma nómina** se juntan solas en un PDF si las das a la misma persona.
+5. **Si una nómina dice otro mes** que el elegido, se avisa antes de guardar.
+6. **El aviso no lleva importes**: sale en la pantalla del móvil, que ve cualquiera que esté al lado. Al
+   móvil sí, al correo no (Richi: a los empleados, por la app y al móvil).
+7. **«Le falta» es a quien tiene ficha** y había empezado antes de acabar ese mes; los demás, no cuentan.
+8. **Mi ficha se carga solo al abrirla**, para no hacer más pesada la entrada a la app.
+
 ## 12 · Lo que se toca en los documentos
 
 - **Plan:** la cabecera de D con la Ampliación; las fichas de M13 y M14 con lo de Richi; la ficha

@@ -45,12 +45,16 @@ export interface FichaPrivada {
 
 export interface DocumentoDeLaFicha {
   readonly documentoId: string;
-  readonly tipo: 'contrato';
+  readonly tipo: 'contrato' | 'nomina';
   readonly nombre: string;
   readonly mime: string;
   readonly bytes: number;
   readonly subidoEn: string;
   readonly subidoPor: string | null;
+  /** Solo en las nóminas (0128): de qué mes es, «AAAA-MM», y su bruto y su neto si se saben. */
+  readonly mes?: string;
+  readonly brutoCentimos?: number | null;
+  readonly netoCentimos?: number | null;
 }
 
 export interface LaFicha {
@@ -60,6 +64,8 @@ export interface LaFicha {
   readonly privada?: FichaPrivada | null;
   /** Solo para quien ve lo privado: el contrato, del último al primero. */
   readonly documentos?: readonly DocumentoDeLaFicha[];
+  /** Solo para quien ve lo privado: sus nóminas, de la más nueva a la más vieja (0128). */
+  readonly nominas?: readonly DocumentoDeLaFicha[];
   /** Lo calcula Estook con la ficha (nunca la IA). Nulo si falta cuántos días hay al año. */
   readonly vacaciones: SaldoDeVacaciones | null;
   /** Si quien mira ve lo privado (el DNI, el sueldo, el contrato). */
@@ -171,6 +177,7 @@ export async function laFichaDe(
 
   let privada: FichaPrivada | null = null;
   let documentos: DocumentoDeLaFicha[] = [];
+  let nominas: DocumentoDeLaFicha[] = [];
   if (veLoPrivado) {
     const privadas = await contexto.sql<
       {
@@ -211,26 +218,39 @@ export async function laFichaDe(
         bytes: number;
         subido_en: string;
         subido_por: string | null;
+        mes: string | null;
+        bruto_centimos: string | null;
+        neto_centimos: string | null;
       }[]
     >`
       select d.id::text as id, d.tipo, d.nombre, d.mime, d.bytes,
              to_char(d.subido_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as subido_en,
-             p.nombre as subido_por
+             p.nombre as subido_por, to_char(d.mes, 'YYYY-MM') as mes,
+             d.bruto_centimos::text as bruto_centimos, d.neto_centimos::text as neto_centimos
         from estook.documento_de_persona d
         left join estook.persona p on p.id = d.subido_por
        where d.persona_id = ${personaId} and d.organizacion_id = ${organizacionId}
-       order by d.subido_en desc, d.nombre
-       limit 40
+       order by d.mes desc nulls last, d.subido_en desc, d.nombre
+       limit 80
     `;
-    documentos = filas.map((d) => ({
+    const comoDocumento = (d: (typeof filas)[number]): DocumentoDeLaFicha => ({
       documentoId: d.id,
-      tipo: d.tipo as 'contrato',
+      tipo: d.tipo as 'contrato' | 'nomina',
       nombre: d.nombre,
       mime: d.mime,
       bytes: d.bytes,
       subidoEn: d.subido_en,
       subidoPor: d.subido_por,
-    }));
+      ...(d.mes === null
+        ? {}
+        : {
+            mes: d.mes,
+            brutoCentimos: numero(d.bruto_centimos),
+            netoCentimos: numero(d.neto_centimos),
+          }),
+    });
+    documentos = filas.filter((d) => d.tipo === 'contrato').map(comoDocumento);
+    nominas = filas.filter((d) => d.tipo === 'nomina').map(comoDocumento);
   }
 
   // Las disfrutadas y las aprobadas llegan con el Calendario (la Ampliación 4): hasta
@@ -249,7 +269,7 @@ export async function laFichaDe(
 
   return {
     laboral,
-    ...(veLoPrivado ? { privada, documentos } : {}),
+    ...(veLoPrivado ? { privada, documentos, nominas } : {}),
     vacaciones,
     veLoPrivado,
     puedeRellenarla: await puedeRellenarLaFicha(contexto, personaId, organizacionId),

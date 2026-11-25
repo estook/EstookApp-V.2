@@ -47,6 +47,8 @@ export const CREDITOS_DE_FOGON = {
   analizar_zona: 8,
   // ── La Ampliación 3 · La ficha del trabajador (0153): el contrato, de una vez ──
   leer_contrato: 3,
+  // ── La Ampliación 3 · 2 · Las nóminas (0153): el PDF del mes, o cinco fotos ──
+  leer_nominas: 3,
 } as const;
 
 export type QueSeLePide = keyof typeof CREDITOS_DE_FOGON;

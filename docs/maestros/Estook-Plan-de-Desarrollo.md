@@ -297,15 +297,15 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 
 > **Y por qué vista se entra a un destino: por la primera que esté construida.** No por la primera de la tabla. Las vistas se escriben aquí **en el orden en el que se entienden** —«Información · Cierre» es el orden de un día—, y ese orden casi nunca coincide con el orden en el que se construyen. Entrar por la primera de la lista dejaría la pantalla que de verdad funciona escondida detrás de un cartel de «todavía no», que es la pestaña muerta de arriba un piso más abajo. Una vista pendiente **sí se enseña** en el control segmentado, con su módulo: ahí no le quita el sitio a nada y contesta «¿y la caja, dónde está?» antes de que nadie la busque. Si ninguna está construida, se entra por la primera, porque la dirección tiene que seguir siendo copiable.
 
-| App         | Sus destinos                                         |
-| ----------- | ---------------------------------------------------- |
-| Almacén     | Resumen · Productos · Compras · Mermas · Movimientos |
-| Escandallos | Resumen · Escandallos · Fichas · Análisis            |
-| Carta       | Carta · Canales · Menús · Análisis                   |
-| Calendario  | Calendario · Turnos                                  |
-| Equipo      | Resumen · Personas · Fichajes · Incidencias          |
-| Servicio    | Jornadas · Empleados · Delivery · APPCC              |
-| Negocio     | Ventas · Informes · Reseñas                          |
+| App         | Sus destinos                                          |
+| ----------- | ----------------------------------------------------- |
+| Almacén     | Resumen · Productos · Compras · Mermas · Movimientos  |
+| Escandallos | Resumen · Escandallos · Fichas · Análisis             |
+| Carta       | Carta · Canales · Menús · Análisis                    |
+| Calendario  | Calendario · Turnos                                   |
+| Equipo      | Resumen · Personas · Nóminas · Fichajes · Incidencias |
+| Servicio    | Jornadas · Empleados · Delivery · APPCC               |
+| Negocio     | Ventas · Informes · Reseñas                           |
 
 Y sus vistas, donde las hay:
 
@@ -746,7 +746,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Lo que se calcula y nunca lee la IA:** las vacaciones devengadas, disfrutadas, aprobadas y disponibles. Los días pendientes de años anteriores los pone el gerente.
 - **Las nóminas, en el perfil**, una a una o **«Subir las nóminas del mes»** con el PDF de la gestoría: Fogón reparte cada página por DNI y nombre, y pregunta lo que no sabe.
 - **La privacidad:** los jefes gestionan vacaciones e incidencias **sin ver nóminas, sueldos ni documentos**.
-- **La 3 · 1, construida el 25-nov** ([0153](../decisiones/0153-la-ampliacion.md), sección 13; migración 0127): la ficha, el alta en tres formas con Fogón, el saldo de vacaciones, lo privado decidido por la base y el historial de jornadas exportable. **Queda la 3 · 2**: las nóminas y «Subir las nóminas del mes».
+- **La 3 · 1, construida el 25-nov** ([0153](../decisiones/0153-la-ampliacion.md), sección 13; migración 0127): la ficha, el alta en tres formas con Fogón, el saldo de vacaciones, lo privado decidido por la base y el historial de jornadas exportable. **La 3 · 2, construida el 25-nov** (sección 14; migración 0128): Equipo › Nóminas, «Subir las nóminas del mes» con Fogón repartiéndolas por DNI y nombre, la nómina en la ficha y **Mi ficha** para cada trabajador. **La Ampliación 3, entera.**
 
 **Reglas críticas.** El coste por hora **solo lo ve quien tiene ese permiso**. No aparece en documentos ni en Fogón. **El contrato es un dato personal**: lo ven quien lleva el local y la propia persona, y nadie más; lo decide la base, no la pantalla. Fogón lo lee **en el servidor**, propone y **no guarda nada sin que el gerente confirme**; lo que pone el contrato es un dato, jamás una instrucción (M22). **Estook no se inventa lo que dice un convenio**: los días de vacaciones salen del convenio aplicado, del contrato o de lo que ponga el gerente a mano, y siempre los confirma él; cómo sabe Estook lo que dice cada convenio se pregunta en el plan del módulo.
 
@@ -847,6 +847,8 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Automático.** Los controles se generan solos con las frecuencias y los horarios que pone el gerente. Estook detecta lo que no se ha hecho, **pide la acción correctora** y avisa al responsable. **Una incidencia no se cierra sin decir qué se hizo y quién lo hizo.**
 - **Historial y papeles.** Cada registro, con fecha, hora, usuario, resultado y el rastro de sus cambios. Se filtra por fechas, responsables y categorías; **los informes salen en PDF, para imprimir para Sanidad o para quien los pida**; y toda la documentación del sistema está a mano.
 - **Cómo se ve.** Moderno, visual, rápido y mínimo, con el diseño de Estook: tarjetas, indicadores de estado, calendarios y tareas pendientes. **Ni tablas interminables ni formularios largos.** Un jefe de cocina lo lleva **en segundos**, y el gerente ve cómo cumple el local.
+- **La carta de alérgenos** (Richi, 25-nov): **una sección propia, como una hoja de cálculo**: cada plato y bebida de la carta en una fila y los 14 alérgenos en columnas, con lo que lleva y lo que puede llevar por trazas. **Es el mismo dato que la Carta** (los alérgenos de cada plato, M9): lo que se marca aquí sale en la Carta, y lo de la Carta sale aquí; nunca son dos listas. Se ve entera de un vistazo, **se enseña en pantalla a quien inspecciona y se descarga en PDF y en hoja de cálculo**, con la fecha y quién la revisó. Es lo que piden el Reglamento (UE) 1169/2011 y el Real Decreto 126/2015 para la comida que se sirve sin envasar. Dónde se abre (APPCC › Alérgenos, y desde la Carta) lo enseña la maqueta de M16b.
+- **Todo, listo para Sanidad** (Richi, 25-nov): el plan de higiene, el registro de temperaturas, la limpieza, la trazabilidad, los alérgenos y el resto de controles **se pueden enseñar en pantalla y descargar** (PDF, y hoja de cálculo donde tenga sentido), por fechas.
 - **Lo que ya traía este módulo, y se queda:** el plan de APPCC versionado con plantillas · el registro en dos toques, a nombre de quien lo hace con su PIN · `NO REGISTRADO` en rojo · el informe de trazabilidad de lote · y el cuarto paso del cierre del día (M16a).
 
 **No duplica** (regla 14 y la prueba de la plantilla). Antes de construir se revisa lo que existe y **se reutiliza**: las personas y sus permisos (M1 y M4), los proveedores y la recepción (M7), los productos, los lotes y las caducidades (M6 y M8) y los alérgenos de cada plato (M9). **Mantenimiento** es lo que iba a ser Cuaderno › Equipos, y **limpieza**, lo que iba a ser Calendario › Tareas: viven aquí y en ningún otro sitio. No se toca otro módulo sin necesidad.

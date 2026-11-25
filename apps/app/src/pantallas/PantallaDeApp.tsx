@@ -32,6 +32,7 @@ import {
   EquipoHoy,
   Incidencias,
   Informes,
+  LasNominas,
   QuienTieneAcceso,
   Resenas,
   ResumenDelEquipo,
@@ -308,6 +309,8 @@ function Contenido({
   }
   if (app.id === 'equipo' && destino.id === 'resumen') return <EquipoHoy />;
   if (app.id === 'equipo' && destino.id === 'fichajes') return <ResumenDelEquipo />;
+  // La Ampliación 3 · 2 (0153): las nóminas del equipo, mes a mes.
+  if (app.id === 'equipo' && destino.id === 'nominas') return <LasNominas />;
   // El repaso del 9-oct (0081): las faltas, los retrasos y los fichajes raros.
   if (app.id === 'equipo' && destino.id === 'incidencias') {
     return <Incidencias vista={vista?.id ?? 'todas'} />;

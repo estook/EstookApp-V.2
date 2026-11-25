@@ -23,6 +23,7 @@ import {
 import {
   IconoAtencion,
   IconoDescargar,
+  IconoDocumento,
   IconoEditar,
   IconoFicha,
   IconoHistorial,
@@ -47,8 +48,14 @@ import { IncidenciasDeUnaPersona } from './ListaDeIncidencias.tsx';
 import { CuatroBaldosas } from './ficha/Baldosas.tsx';
 import { ExportarLaJornada } from './ficha/ExportarLaJornada.tsx';
 import { RellenarLaFicha } from './ficha/RellenarLaFicha.tsx';
-import { InformacionLaboral, InformacionPersonal, SusVacaciones } from './ficha/Secciones.tsx';
-import { resumenDeLasVacaciones } from './ficha/comoSeLee.ts';
+import {
+  InformacionLaboral,
+  InformacionPersonal,
+  SusNominas,
+  SusVacaciones,
+} from './ficha/Secciones.tsx';
+import { mesConMayuscula, resumenDeLasVacaciones } from './ficha/comoSeLee.ts';
+import { SubirUnaNomina } from './ficha/SubirUnaNomina.tsx';
 
 /** «9 de octubre de 2026»: una fecha que se lee, no «2026-10-09» (auditoría del 9-oct). */
 function fechaEnLetra(fecha: string): string {
@@ -103,6 +110,7 @@ export function FichaDePersona({
   // Rellenar la ficha (0153): «Subir contrato» empieza eligiendo cómo; «Cambiar», a mano.
   const [rellenando, setRellenando] = useState<'elegir' | 'a_mano' | null>(null);
   const [exportando, setExportando] = useState(false);
+  const [subiendoNomina, setSubiendoNomina] = useState(false);
 
   const consulta = useQuery({
     queryKey: ['una_persona', personaId],
@@ -126,6 +134,7 @@ export function FichaDePersona({
     await cache.invalidateQueries({ queryKey: ['resumen_del_equipo'] });
     await cache.invalidateQueries({ queryKey: ['fichajes_de_hoy'] });
     await cache.invalidateQueries({ queryKey: ['un_indicador'] });
+    await cache.invalidateQueries({ queryKey: ['las_nominas_del_equipo'] });
   }
 
   const datos = consulta.data;
@@ -386,6 +395,31 @@ export function FichaDePersona({
               />
             </Plegable>
 
+            {/* Sus nóminas (la 3 · 2): como lo privado, llegan o no llegan. */}
+            {ficha?.veLoPrivado === true && (
+              <Plegable
+                titulo="Nóminas"
+                degradado="horas"
+                icono={<IconoDocumento size={18} />}
+                resumen={
+                  (ficha.nominas ?? []).length === 0
+                    ? 'Ninguna todavía'
+                    : `La última, ${mesConMayuscula(ficha.nominas?.[0]?.mes ?? '').toLowerCase()}`
+                }
+              >
+                <SusNominas
+                  nominas={ficha.nominas ?? []}
+                  {...(ficha.puedeRellenarla
+                    ? {
+                        alSubir: () => {
+                          setSubiendoNomina(true);
+                        },
+                      }
+                    : {})}
+                />
+              </Plegable>
+            )}
+
             {ficha !== undefined && (
               <Plegable
                 titulo="Vacaciones y solicitudes"
@@ -503,6 +537,20 @@ export function FichaDePersona({
           }}
           alHecho={(frase) => {
             setRellenando(null);
+            void refrescar(frase);
+          }}
+        />
+      )}
+
+      {datos !== undefined && subiendoNomina && (
+        <SubirUnaNomina
+          personaId={datos.personaId}
+          nombre={datos.nombre}
+          alCerrar={() => {
+            setSubiendoNomina(false);
+          }}
+          alHecho={(frase) => {
+            setSubiendoNomina(false);
             void refrescar(frase);
           }}
         />

@@ -48,6 +48,11 @@ export const EquipoHoy = perezosa(async () => (await import('../equipo/EquipoHoy
 export const ResumenDelEquipo = perezosa(
   async () => (await import('../equipo/ResumenDelEquipo.tsx')).ResumenDelEquipo,
 );
+// La Ampliación 3 · 2 (0153): Mi ficha, de cada trabajador, y Equipo › Nóminas.
+export const MiFicha = perezosa(async () => (await import('../equipo/MiFicha.tsx')).MiFicha);
+export const LasNominas = perezosa(
+  async () => (await import('../equipo/LasNominas.tsx')).LasNominas,
+);
 export const Incidencias = perezosa(
   async () => (await import('../equipo/Incidencias.tsx')).Incidencias,
 );

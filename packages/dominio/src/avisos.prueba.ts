@@ -284,6 +284,8 @@ describe('los avisos al móvil (I · 0070)', () => {
       'inventario.recontar',
       // R3 · 2 · 1 (0152): la caja cierra con descuadre; sin el móvil, solo se ve si se entra a mirar.
       'caja.descuadre',
+      // La Ampliación 3 · 2 (0153): tu nómina ya está. Richi: a los empleados, por la app y al móvil.
+      'nomina.subida',
     ]);
   });
 

@@ -59,7 +59,7 @@ const PANTALLAS = [
   },
   { nombre: 'ajustes-del-aparato', direccion: 'ajustes/aparato', espera: 'Tema' },
   // R · la campana (0052): lo que cada uno elige que le llegue.
-  { nombre: 'ajustes-avisos', direccion: 'ajustes/avisos', espera: 'Qué te llega' },
+  { nombre: 'ajustes-avisos', direccion: 'ajustes/avisos', espera: 'Notificaciones' },
 ] as const;
 
 const FAMILIAS = [

@@ -224,6 +224,25 @@ describe('la pantalla de barra, sin PIN', () => {
     );
   });
 
+  it('lo que ya hizo la barra lo marca servido el camarero, sin destacharlo (0153)', async () => {
+    const tachadas = (await laMesa()).platos.find((p) => p.id === linea.canas);
+    expect(tachadas).toMatchObject({ estado: 'salio', servidoEnSala: false });
+    expect(
+      losDatos(
+        await api.ejecutar(sara, 'marcar_servido', { cuenta_id: cuenta, servidos: [linea.canas] }),
+      ),
+    ).toEqual({ servidos: 1, noServidos: 0 });
+    const servidas = (await laMesa()).platos.find((p) => p.id === linea.canas);
+    expect(servidas).toMatchObject({ estado: 'salio', servidoEnSala: true });
+    expect(servidas?.salioEn).toBe(tachadas?.salioEn);
+    // Otra vez no hace nada.
+    expect(
+      losDatos(
+        await api.ejecutar(sara, 'marcar_servido', { cuenta_id: cuenta, servidos: [linea.canas] }),
+      ),
+    ).toEqual({ servidos: 0, noServidos: 0 });
+  });
+
   it('lo que llega con todo servido empieza otra ronda: la tarjeta no crece', async () => {
     losDatos(
       await api.ejecutar(sara, 'pedir', {

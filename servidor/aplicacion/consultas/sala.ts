@@ -9,6 +9,7 @@ import {
   jornadaDe,
   fechaOperativa,
   laJornadaEntera,
+  laBebidaDeLaMesa,
   laMesaEnCocina,
   lasAlergiasQueLleva,
   laRondaDeLaBarra,
@@ -294,6 +295,15 @@ function enElPlano(
   const comoVa = comoVaLaMesa({
     loSiguiente,
     enCocina: laMesaEnCocina(platos.map(comoPlatoDeLaMesa), pases.map(comoPaseDeLaMesa)),
+    bebida: laBebidaDeLaMesa(
+      platos.map((l) => ({
+        destino: l.destino,
+        mandado: l.mandada_en !== null,
+        quitado: l.quitada_en !== null,
+        salio: l.salio_en !== null,
+        servidaEnSala: l.servida_en_sala,
+      })),
+    ),
     conComida: deCocina.length > 0,
     minutosDesdeLoUltimo: minutosDesde(contexto, loUltimo),
     minutosParaLaCuenta: cocina.minutosParaLaCuenta,

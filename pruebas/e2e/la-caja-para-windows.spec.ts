@@ -41,12 +41,20 @@ async function entrarEnLaCaja(page: Page, llave: string, pin: string) {
   await abrirSinQueSeCaiga(page, TPV);
   await page.evaluate((laLlave) => {
     window.localStorage.setItem('estook.tpv.llave', laLlave);
+    // Como una pestaña nueva: en la misma, recargar ya no pide el PIN (la Ampliación, 0153, fallo 4).
+    window.sessionStorage.clear();
   }, llave);
   await abrirSinQueSeCaiga(page, TPV);
-  await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });
-  await page.keyboard.type(pin);
-  await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
-  await expect(page.getByRole('button', { name: /^Mesa 1/ })).toBeVisible({ timeout: 15_000 });
+  // Al recargar en la misma pestaña se sigue dentro mientras no salte el bloqueo (0153, fallo 4): si
+  // sale el PIN se teclea, y si ya está dentro, se sigue.
+  const puerta = page.getByText(LA_PUERTA).first();
+  const laSala = page.getByRole('button', { name: /^Mesa 1/ });
+  await expect(puerta.or(laSala).first()).toBeVisible({ timeout: 15_000 });
+  if (await puerta.isVisible()) {
+    await page.keyboard.type(pin);
+    await page.getByRole('button', { name: 'Entrar sin fichar' }).click();
+  }
+  await expect(laSala).toBeVisible({ timeout: 15_000 });
 }
 
 async function darDeAlta(page: Page, nombre: string, imprime: 'Cocina' | 'Caja') {

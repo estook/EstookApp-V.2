@@ -242,9 +242,7 @@ export function Panel() {
             rotulo={
               <span className="flex flex-wrap items-baseline gap-x-e3">
                 <span className="text-cuerpo font-bold text-texto">Añadidos por ti</span>
-                <span className="text-etiqueta text-texto-tenue">
-                  Del mismo tamaño, en el orden que elijas
-                </span>
+                <span className="text-etiqueta text-texto-tenue">En el orden que elijas</span>
               </span>
             }
             puestos={mio.puestos}
@@ -266,7 +264,10 @@ export function Panel() {
               setAnadiendo(true);
             }}
             pintar={(p) => (
-              <div className="h-[17rem]">
+              // **Del tamaño de lo que llevan** (la Ampliación, 0153, fallo 5): antes, 17rem fijos en
+              // todas las pantallas; sobraba hueco o se cortaba. En el móvil cada una mide lo suyo; en
+              // tablet y ordenador, las de una fila igualan a la más alta (la rejilla las estira).
+              <div className="h-full">
                 <WidgetDelPanel id={p.id} />
               </div>
             )}
@@ -533,7 +534,6 @@ const ICONO_DEL_WIDGET: Readonly<Record<string, ReactNode>> = {
   repartos: <IconoReparto size={20} />,
   'lo-que-se-escapa': <IconoFlechaArriba size={20} />,
   agotados: <IconoAtencion size={20} />,
-  'menu-del-dia': <IconoCarta size={20} />,
   'para-recomendar': <IconoEstrella size={20} />,
   'equipo-ahora': <IconoEquipo size={20} />,
   'tu-dia': <IconoReloj size={20} />,

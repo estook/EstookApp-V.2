@@ -109,6 +109,8 @@ test('Ajustes → Avisos: los informes, con el correo de Tu mes de fábrica y el
 }) => {
   await entrarEnLaApp(page, ROSA);
   await irA(page, 'ajustes/avisos');
+  // «Notificaciones» va plegado (la Ampliación, 0153, arreglo 3): se abre para ver lo que llega.
+  await page.locator('summary', { hasText: 'Notificaciones' }).click();
   const negocio = page.getByRole('region', { name: 'Negocio' });
   await expect(negocio.getByText('Tu día', { exact: true })).toBeVisible();
   await expect(negocio.getByText('Tu semana', { exact: true })).toBeVisible();

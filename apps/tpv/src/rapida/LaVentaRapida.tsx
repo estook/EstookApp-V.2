@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import type { FormaDePago } from '@estook/dominio';
 import { Aviso, ErrorEnCristiano, Hoja } from '@estook/ui';
@@ -9,10 +9,12 @@ import {
   IconoMovil,
   IconoPrisa,
   IconoRejilla,
+  IconoReintentar,
   type Icono,
 } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import {
+  FalloDeLaSala,
   usarAcciones,
   usarAlSegundo,
   usarElPlano,
@@ -36,7 +38,13 @@ import type { PestanaDelPase } from '../logica/losPases.ts';
 import { eurosConSimbolo } from '../logica/texto.ts';
 import { estamosSinInternet } from '../sinInternet/laConexion.ts';
 import { irAlPlano } from '../navegar.ts';
-import { laVentaSinMesa, LOS_METODOS_DE_LA_RAPIDA } from './sinMesa.ts';
+import {
+  guardarLaVentaAMedias,
+  laVentaSinMesa,
+  leerLaVentaAMedias,
+  LOS_METODOS_DE_LA_RAPIDA,
+  olvidarLaVentaAMedias,
+} from './sinMesa.ts';
 import type { MesaDelPlano } from '../datos/tipos.ts';
 
 /**
@@ -51,6 +59,10 @@ import type { MesaDelPlano } from '../datos/tipos.ts';
  *
  * Lo ticado se queda en el aparato hasta cobrar o pasarlo: si se bloquea a medias, sigue ahí. **Sin
  * internet todavía no se cobra** (T7): se dice, y lo ticado no se pierde.
+ *
+ * **Y lo ya mandado, también** (la Ampliación, 0153, fallo 1): en cuanto la venta se abre y se manda,
+ * el aparato guarda esa cuenta y olvida el ticket suelto. Si se sale antes de cobrar, al volver sale
+ * «Tienes un cobro a medias» con esa misma cuenta: nunca se abre otra con los mismos platos.
  */
 export function LaVentaRapida() {
   const { aparato } = usarSesion();
@@ -73,6 +85,14 @@ export function LaVentaRapida() {
     readonly cuentaId: string;
     readonly forma: FormaDePago;
   } | null>(null);
+  const [aMedias, setAMedias] = useState<string | null>(() =>
+    leerLaVentaAMedias(aparato.terminalId),
+  );
+
+  const olvidarAMedias = useCallback(() => {
+    olvidarLaVentaAMedias(aparato.terminalId);
+    setAMedias(null);
+  }, [aparato.terminalId]);
 
   useEffect(() => {
     guardarBorrador(clave, borrador);
@@ -92,13 +112,14 @@ export function LaVentaRapida() {
         forma={cobrando.forma}
         alAcabar={() => {
           setCobrando(null);
+          olvidarAMedias();
           deNuevo();
           setAviso('Cobrado. Otra venta.');
         }}
         alVolver={() => {
+          // Sigue a medias: al volver aquí se ve para cobrarla, y también está en «Para llevar».
           setCobrando(null);
-          deNuevo();
-          setAviso('Sin cobrar: la venta queda abierta en «Para llevar».');
+          setFallo(null);
         }}
       />
     );
@@ -147,12 +168,17 @@ export function LaVentaRapida() {
       setFallo(mandada.error);
       return null;
     }
+    // Lo ticado ya es de esa cuenta: fuera del aparato, para no mandarlo dos veces.
+    setBorrador([]);
     return cuentaId;
   }
 
   async function cobrar(forma: FormaDePago) {
     const cuentaId = await abrirYMandar();
-    if (cuentaId !== null) setCobrando({ cuentaId, forma });
+    if (cuentaId === null) return;
+    guardarLaVentaAMedias(aparato.terminalId, cuentaId);
+    setAMedias(cuentaId);
+    setCobrando({ cuentaId, forma });
   }
 
   async function pasarA(m: MesaDelPlano) {
@@ -246,6 +272,10 @@ export function LaVentaRapida() {
             mesa={mesa}
             borrador={borrador}
             alCambiarElBorrador={(b) => {
+              if (aMedias !== null) {
+                setAviso('Primero cobra la venta a medias, o déjala en «Para llevar».');
+                return;
+              }
               setBorrador(b);
               setAviso(null);
             }}
@@ -299,7 +329,17 @@ export function LaVentaRapida() {
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-e4 py-e2">
-            {vacia ? (
+            {aMedias !== null ? (
+              <LaVentaAMedias
+                cuentaId={aMedias}
+                conectado={conectado}
+                formas={formas}
+                alCobrar={(forma) => {
+                  setCobrando({ cuentaId: aMedias, forma });
+                }}
+                alDejarla={olvidarAMedias}
+              />
+            ) : vacia ? (
               <p className="py-e6 text-center text-texto-suave">Toca un producto para empezar.</p>
             ) : (
               <LaCuenta
@@ -314,11 +354,11 @@ export function LaVentaRapida() {
             )}
           </div>
 
-          {elPie('hidden md:flex')}
+          {aMedias === null && elPie('hidden md:flex')}
         </aside>
       </div>
       {/* En el móvil, el total y el cobro siempre a la vista, al pie: sin bajar para cobrar. */}
-      {elPie('sticky bottom-0 z-10 md:hidden')}
+      {aMedias === null && elPie('sticky bottom-0 z-10 md:hidden')}
 
       <Hoja
         abierta={poniendoNombre}
@@ -397,6 +437,93 @@ export function LaVentaRapida() {
           </div>
         )}
       </Hoja>
+    </div>
+  );
+}
+
+/**
+ * **«Tienes un cobro a medias»** (0153, fallo 1): la venta que se mandó y no se cobró, con sus platos
+ * y lo que falta por cobrar, y un toque por método para seguir donde se dejó. Si ya se cobró o se
+ * cerró desde otro sitio, se olvida sola.
+ */
+function LaVentaAMedias({
+  cuentaId,
+  conectado,
+  formas,
+  alCobrar,
+  alDejarla,
+}: {
+  readonly cuentaId: string;
+  readonly conectado: boolean;
+  readonly formas: readonly FormaDePago[];
+  readonly alCobrar: (forma: FormaDePago) => void;
+  readonly alDejarla: () => void;
+}) {
+  const mesa = usarLaMesa(cuentaId, conectado);
+  const yaNoEsta =
+    mesa.data?.abierta === false ||
+    (mesa.error instanceof FalloDeLaSala &&
+      (mesa.error.error.codigo === 'no_existe' || mesa.error.error.codigo === 'ya_hecho'));
+  useEffect(() => {
+    if (yaNoEsta) alDejarla();
+  }, [yaNoEsta, alDejarla]);
+
+  if (mesa.data === undefined) {
+    return <p className="py-e6 text-center text-texto-suave">Buscando la venta a medias…</p>;
+  }
+  const platos = mesa.data.platos.filter((p) => p.estado !== 'quitado' && p.parteDe === null);
+  const falta = mesa.data.totalCentimos - (mesa.data.cobrado?.importe ?? 0);
+  return (
+    <div className="flex flex-col gap-e3 py-e2">
+      <div
+        role="status"
+        className="flex items-start gap-e3 rounded-grande bg-info-suave p-e3 text-info"
+      >
+        <IconoReintentar size={20} aria-hidden className="mt-[2px] shrink-0" />
+        <div>
+          <p className="font-bold">Tienes un cobro a medias</p>
+          <p className="text-secundario">
+            Venta rápida · {String(platos.length)} {platos.length === 1 ? 'plato' : 'platos'} ·{' '}
+            {eurosConSimbolo(falta)}. Sigue donde lo dejaste.
+          </p>
+        </div>
+      </div>
+      <ul className="flex flex-col gap-e1 rounded-grande bg-fondo p-e3 text-secundario">
+        {platos.map((p) => (
+          <li key={p.id} className="flex justify-between gap-e2">
+            <span>
+              {String(p.cantidad)} · {p.nombre}
+            </span>
+            <span className="tabular-nums">{eurosConSimbolo(p.precioCentimos * p.cantidad)}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="flex items-baseline justify-between">
+        <span className="font-bold text-texto-suave">Por cobrar</span>
+        <span className="text-cifra tabular-nums">{eurosConSimbolo(falta)}</span>
+      </div>
+      <div
+        className="grid gap-e2"
+        style={{ gridTemplateColumns: `repeat(${String(formas.length)}, minmax(0, 1fr))` }}
+      >
+        {formas.map((f) => (
+          <BotonDelMetodo
+            key={f}
+            forma={f}
+            apagado={falta <= 0}
+            onClick={() => {
+              alCobrar(f);
+            }}
+          />
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={alDejarla}
+        className="min-h-toque rounded-grande text-secundario font-bold text-texto-suave underline underline-offset-4"
+      >
+        Dejarla en «Para llevar» y empezar otra
+      </button>
     </div>
   );
 }

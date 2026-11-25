@@ -36,10 +36,12 @@ export interface Seccion {
 }
 
 export const SECCIONES: readonly Seccion[] = [
-  { id: 'aparato', nombre: 'Este aparato', queHay: 'Letra, tema y modo cocina' },
+  // «Pantalla» (la Ampliación, 0153, arreglo 3.1): antes «Este aparato»; es como lo llaman el
+  // iPhone y Android, y dentro va el tema y la letra.
+  { id: 'aparato', nombre: 'Pantalla', queHay: 'Tema, letra y modo cocina' },
   { id: 'cuenta', nombre: 'Mi cuenta', queHay: 'Contraseña, PIN, doble factor e idioma' },
   // Los avisos son de cada uno, como la cuenta: qué te llega y si también al correo (0052).
-  { id: 'avisos', nombre: 'Avisos', queHay: 'Qué te llega a la campana y al correo' },
+  { id: 'avisos', nombre: 'Avisos', queHay: 'Notificaciones, este móvil y cuándo suena' },
   {
     id: 'local',
     nombre: 'Tu local',

@@ -8,6 +8,10 @@ import { loDelLocalParaImprimir } from './impresion.ts';
  * De fábrica tacha la cocina, como siempre. Con «Los camareros también marcan lo servido»
  * (Ajustes del TPV › Cocina y barra), la sala también. Y **donde solo hay papel la sala lo
  * marca siempre**: nadie tacha, y es la única forma de que el plano sepa qué ha salido.
+ *
+ * **Lo de la barra, siempre la sala** (la Ampliación, 0153, fallo 2): la bebida la lleva el
+ * camarero, y la mesa espera hasta que él la marca servida. Si la barra tiene pantalla y la tacha,
+ * queda «lista», para ir a por ella.
  */
 export interface LoServidoDelLocal {
   /** La opción del local: los camareros también marcan lo servido. */
@@ -41,10 +45,11 @@ export async function loServidoDelLocal(
 
 /** Si la sala puede marcar servido lo de la cocina o lo de la barra. */
 export function laSalaMarca(lo: LoServidoDelLocal, destino: 'cocina' | 'barra'): boolean {
-  return lo.camarerosMarcan || (destino === 'cocina' ? lo.cocinaSoloEnPapel : lo.barraSoloEnPapel);
+  return destino === 'barra' || lo.camarerosMarcan || lo.cocinaSoloEnPapel;
 }
 
 /** Si la sala puede marcar algo servido en este local (el botón «Servido» de la mesa). */
-export function laSalaMarcaAlgo(lo: LoServidoDelLocal): boolean {
-  return lo.camarerosMarcan || lo.cocinaSoloEnPapel || lo.barraSoloEnPapel;
+export function laSalaMarcaAlgo(_lo: LoServidoDelLocal): boolean {
+  // Lo de la barra lo marca siempre la sala (0153): el botón «Servido» sale en todos los locales.
+  return true;
 }

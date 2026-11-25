@@ -30,6 +30,10 @@ export function laPalabra(estado: EstadoDeLaMesa, cuenta: CuentaEnElPlano): stri
       return 'Sin pedir';
     case 'esperando':
       return 'Esperando';
+    case 'bebida_en_camino':
+      return 'Bebida en camino';
+    case 'bebida_lista':
+      return 'Bebida lista';
     case 'para_cobrar':
       return '¿Cuenta?';
     case 'comiendo':

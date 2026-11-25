@@ -1220,3 +1220,9 @@
      el plazo de confirmar una reserva desde que se hace, que no sirve si se reserva dos días antes. **Cada
      pregunta dice quién recibe o quién hace la cosa (cliente, empleado, gerente) y en qué pantalla, y la
      opción recomendada se prueba antes con un caso real del local** (0153, sección 9).
+
+280. **Lo que dejan la pantalla y el servidor lo puede negar la base.** En la maqueta de la Ampliación 1
+     escribí «sin migración nueva» para la bebida que espera al camarero; al construirla, la sala ya podía
+     marcarla en el servidor, pero un disparador de la 0103 la seguía rechazando (`sin_permiso`). **Antes de
+     prometer que algo no toca la base, se buscan en las migraciones los disparadores y las políticas de las
+     tablas que cambia**, y lo que se promete en la maqueta se dice con eso mirado (0153, sección 10).

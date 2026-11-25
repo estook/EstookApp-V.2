@@ -137,6 +137,11 @@
   --color-sobre-mesa-comiendo: #ffffff;
   --color-mesa-cuenta: #d0346c;
   --color-sobre-mesa-cuenta: #ffffff;
+  /* La bebida sin servir y la que ya ha hecho la barra (la Ampliación, 0153). */
+  --color-mesa-bebida: #6a4bc4;
+  --color-sobre-mesa-bebida: #ffffff;
+  --color-mesa-bebida-lista: #0f7a94;
+  --color-sobre-mesa-bebida-lista: #ffffff;
 
   /* ── Espaciado · escala de 4 ────────────────────────────────────────────── */
   --spacing-e1: 4px;

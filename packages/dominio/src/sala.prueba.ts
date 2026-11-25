@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   comoVaLaMesa,
+  laBebidaDeLaMesa,
   desdeCuandoEnCocina,
   elColorDelTiempo,
   MINUTOS_PARA_LA_CUENTA,
@@ -188,6 +189,43 @@ describe('dónde está la mesa en la pantalla de cocina', () => {
   it('un plato nuevo en un pase ya fuera la devuelve a «En marcha»', () => {
     const platos = [plato(1, { salio: true }), plato(1)];
     expect(laMesaEnCocina(platos, [pase(1, { marchado: true })])).toBe('en_marcha');
+  });
+});
+
+describe('la bebida, hasta que la sirve el camarero (la Ampliación, 0153)', () => {
+  const linea = (cambios: Partial<Parameters<typeof laBebidaDeLaMesa>[0][number]> = {}) => ({
+    destino: 'barra' as const,
+    mandado: true,
+    quitado: false,
+    salio: false,
+    servidaEnSala: false,
+    ...cambios,
+  });
+
+  it('lo de la barra mandado y sin servir va de camino; si la barra lo tachó, está listo', () => {
+    expect(laBebidaDeLaMesa([linea()])).toBe('en_camino');
+    expect(laBebidaDeLaMesa([linea({ salio: true })])).toBe('lista');
+    expect(laBebidaDeLaMesa([linea({ salio: true }), linea()])).toBe('en_camino');
+  });
+
+  it('servido por la sala, quitado, sin mandar o de cocina no cuenta', () => {
+    expect(laBebidaDeLaMesa([linea({ salio: true, servidaEnSala: true })])).toBe('nada');
+    expect(laBebidaDeLaMesa([linea({ quitado: true })])).toBe('nada');
+    expect(laBebidaDeLaMesa([linea({ mandado: false })])).toBe('nada');
+    expect(laBebidaDeLaMesa([linea({ destino: 'cocina' })])).toBe('nada');
+  });
+
+  it('la mesa espera la bebida antes de comer o de pedir la cuenta; la cocina va primero', () => {
+    const base = {
+      loSiguiente: { que: 'cobrar' } as const,
+      enCocina: 'fuera' as const,
+      conComida: true,
+      minutosDesdeLoUltimo: 90,
+    };
+    expect(comoVaLaMesa({ ...base, bebida: 'en_camino' })).toBe('bebida_en_camino');
+    expect(comoVaLaMesa({ ...base, bebida: 'lista' })).toBe('bebida_lista');
+    expect(comoVaLaMesa({ ...base, bebida: 'nada' })).toBe('para_cobrar');
+    expect(comoVaLaMesa({ ...base, enCocina: 'en_marcha', bebida: 'en_camino' })).toBe('esperando');
   });
 });
 

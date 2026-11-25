@@ -162,6 +162,8 @@ test('Ajustes → Avisos: cada uno elige lo suyo, y solo ve lo que le puede lleg
   };
   await entrarEnLaApp(page, correo);
   await irA(page, 'ajustes/avisos');
+  // «Notificaciones» va plegado (la Ampliación, 0153, arreglo 3): se abre para ver lo que llega.
+  await page.locator('summary', { hasText: 'Notificaciones' }).click();
   await expect(page.getByText(aviso, { exact: true })).toBeVisible({ timeout: 10_000 });
   // A quien no manda pedidos no se le enseña la subida de un precio.
   await expect(page.getByText('Un proveedor sube un precio', { exact: true })).toHaveCount(0);
@@ -182,6 +184,8 @@ test('Ajustes → Avisos: cada uno elige lo suyo, y solo ve lo que le puede lleg
 
   // Se ha guardado: sigue así al volver.
   await recargarSinQueSeCaiga(page);
+  // Al recargar, «Notificaciones» vuelve plegado (0153).
+  await page.locator('summary', { hasText: 'Notificaciones' }).click();
   await expect(campana).not.toBeChecked({ timeout: 10_000 });
   // Y se deja como estaba, para las demás pruebas.
   const devuelto = page.waitForResponse((r) => r.url().includes('/guardar_mis_avisos'));

@@ -633,6 +633,14 @@ describe('la mesa 6, de principio a fin', () => {
       pedidos: 0,
       yaEstaban: 9,
     });
+    // **Los mismos platos en otra cuenta, no** (la Ampliación, 0153, fallo 1): la venta rápida
+    // que se volvía a abrir con lo ya mandado nacía a 0 €. Ahora lo dice, con la cuenta buena.
+    const otra = crypto.randomUUID();
+    losDatos(await api.ejecutar(saraTpv, 'abrir_mesa', { cuenta_id: otra, tipo: 'para_llevar' }));
+    const enOtra = await api.ejecutar(saraTpv, 'pedir', { ...comanda, cuenta_id: otra });
+    expect(elFallo(enOtra)).toBe('ya_hecho');
+    expect(enOtra).toMatchObject({ detalle: { cuentaId: seis } });
+    expect((await laMesa(otra)).platos).toEqual([]);
 
     const lamesa = await laMesa(seis);
     const precio = (id: string) => lamesa.platos.find((p) => p.id === id)?.precioCentimos;
@@ -1422,14 +1430,47 @@ describe('pedir y mandar de una vez: la cocina lo tiene con una sola orden', () 
     pasan(1);
     expect(await enLaBarra()).toMatchObject({ comoVa: 'para_cobrar', minutosEnElEstado: 15 });
 
-    // Piden un café: vuelve a contar desde lo último (0131).
+    // Piden una caña: vuelve a contar desde lo último (0131), y **hasta que el camarero la lleva,
+    // la mesa la espera** (la Ampliación, 0153, fallo 2): ni «comiendo» ni «¿Cuenta?».
+    const cana = crypto.randomUUID();
     losDatos(
       await api.ejecutar(saraTpv, 'mandar_a_cocina', {
         cuenta_id: barra,
-        platos: [{ id: crypto.randomUUID(), plato_id: plato['Caña'], destino: 'barra' }],
+        platos: [{ id: cana, plato_id: plato['Caña'], destino: 'barra' }],
       }),
     );
+    expect((await enLaBarra())?.comoVa).toBe('bebida_en_camino');
+    pasan(30);
+    expect((await enLaBarra())?.comoVa).toBe('bebida_en_camino');
+    expect(
+      losDatos(
+        await api.ejecutar(saraTpv, 'marcar_servido', { cuenta_id: barra, servidos: [cana] }),
+      ),
+    ).toEqual({ servidos: 1, noServidos: 0 });
     expect((await enLaBarra())?.comoVa).toBe('comiendo');
+  });
+
+  it('una mesa que solo pide bebida no sale «bebiendo» hasta que se la llevan (0153)', async () => {
+    const barra = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(saraTpv, 'abrir_mesa', {
+        cuenta_id: barra,
+        tipo: 'barra',
+        nombre: 'Fuze',
+      }),
+    );
+    const fuze = crypto.randomUUID();
+    losDatos(
+      await api.ejecutar(saraTpv, 'mandar_a_cocina', {
+        cuenta_id: barra,
+        platos: [{ id: fuze, plato_id: plato['Caña'], destino: 'barra' }],
+      }),
+    );
+    const enLaBarra = async () =>
+      (await elPlano(saraTpv)).sinMesa.find((c) => c.cuentaId === barra);
+    expect((await enLaBarra())?.comoVa).toBe('bebida_en_camino');
+    losDatos(await api.ejecutar(saraTpv, 'marcar_servido', { cuenta_id: barra, servidos: [fuze] }));
+    expect(await enLaBarra()).toMatchObject({ comoVa: 'comiendo', conComida: false });
   });
 
   it('si un plato no vale, no entra nada: ni lo pedido ni lo mandado', async () => {
@@ -1509,11 +1550,12 @@ describe('servido y cambiar un plato (R2 · 2, 0132)', () => {
     const barra = await unaBarra('Servido', [
       { id: ensalada, plato_id: plato['Ensalada'], pase: 1 },
     ]);
+    // Lo de la barra lo marca siempre la sala (0153); lo de la cocina, solo si se enciende.
     expect((await laMesa(barra)) as unknown as { marcanServido: unknown }).toMatchObject({
-      marcanServido: { cocina: false, barra: false },
+      marcanServido: { cocina: false, barra: true },
     });
     expect(((await elPlano(saraTpv)) as unknown as { marcanServido: boolean }).marcanServido).toBe(
-      false,
+      true,
     );
     expect(
       elFallo(

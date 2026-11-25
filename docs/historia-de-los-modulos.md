@@ -3503,6 +3503,23 @@ corregida ese día tras el rediseño (migración 0124, dos comandos nuevos):
 Las pruebas: `la-caja-segunda-parte.prueba.ts` (nueve, contra la base), `caja.prueba.ts` del dominio y
 `la-caja-segunda-parte.spec.ts`, de pantalla. Los descuentos (E8) van en R3 · 2 · 2.
 
+### La Ampliación 1 · Los fallos del servicio
+
+_25 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), con la maqueta aprobada el 24-nov
+(migración 0125, una consulta menos):
+
+- **La venta rápida no se queda a 0 €**: lo mandado se sigue cobrando al volver, y el servidor ya no deja abrir
+  otra cuenta con los mismos platos.
+- **La bebida, hasta que la sirve el camarero**: «Bebida en camino» y «Bebida lista»; lo de la barra lo marca
+  siempre la sala.
+- **Recargar no pide el PIN** mientras no salte el bloqueo, y la sala se pone al día al volver a la app.
+- **El Panel**, con las tarjetas a su tamaño y «Ver los N»; **fuera el menú del día**.
+- **Ajustes**: «Pantalla», «Notificaciones» plegado y la letra «Automática» también en Estook TPV.
+- **La auditoría de las siete entregas desde S1**: la cola de lo vendido, solo del sistema.
+
+Las pruebas: `la-sala-y-la-cocina.prueba.ts`, `la-barra-y-la-alergia.prueba.ts` y `lo-vendido-baja.prueba.ts`
+contra la base; `sala.prueba.ts` del dominio y `quienEstaDentro.prueba.ts` del TPV.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

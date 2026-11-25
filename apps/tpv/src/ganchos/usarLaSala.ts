@@ -66,6 +66,32 @@ export function usarEscucharAlSegundo(): boolean {
   const [conectado, setConectado] = useState(false);
   // El tema es **del aparato** (0107): cambiar de camarero no vuelve a conectar.
   const tema = aparato.temaAlSegundo;
+  // **Al volver a la app** (la Ampliación, 0153, fallo 4): el iPhone corta la conexión con la
+  // pantalla apagada y tarda en volver. Al volver (o al recuperar la red) se pide lo nuevo al
+  // momento y, si estuvo fuera más de medio minuto, se vuelve a conectar desde cero.
+  const [vuelta, setVuelta] = useState(0);
+  useEffect(() => {
+    let fuera: number | null = null;
+    const alCambiar = () => {
+      if (document.visibilityState === 'hidden') {
+        fuera = Date.now();
+        return;
+      }
+      void cache.invalidateQueries({ queryKey: ['sala'] });
+      if (fuera !== null && Date.now() - fuera > 30_000) setVuelta((v) => v + 1);
+      fuera = null;
+    };
+    const alVolverLaRed = () => {
+      void cache.invalidateQueries({ queryKey: ['sala'] });
+      setVuelta((v) => v + 1);
+    };
+    document.addEventListener('visibilitychange', alCambiar);
+    window.addEventListener('online', alVolverLaRed);
+    return () => {
+      document.removeEventListener('visibilitychange', alCambiar);
+      window.removeEventListener('online', alVolverLaRed);
+    };
+  }, [cache]);
 
   useEffect(() => {
     if (!haySegundo(DONDE) || tema === null) return undefined;
@@ -81,7 +107,7 @@ export function usarEscucharAlSegundo(): boolean {
     return () => {
       escucha.parar();
     };
-  }, [tema, cache]);
+  }, [tema, cache, vuelta]);
 
   return conectado;
 }

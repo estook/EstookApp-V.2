@@ -79,24 +79,3 @@ export interface LosRecomendados {
   readonly agotados: number;
   readonly puedeElegir: boolean;
 }
-
-/** `el_menu_de_hoy`: el menú del día de hoy, con la foto de cada plato. */
-export interface ElMenuDeHoy {
-  readonly sirveMenus: boolean;
-  readonly menu: {
-    readonly id: string;
-    readonly nombre: string;
-    readonly precioCentimos: number | null;
-    readonly secciones: readonly {
-      readonly id: string;
-      readonly nombre: string;
-      readonly platos: readonly {
-        readonly platoId: string;
-        readonly nombre: string;
-        readonly suplementoCentimos: number;
-        readonly agotado: boolean;
-        readonly foto: string | null;
-      }[];
-    }[];
-  } | null;
-}

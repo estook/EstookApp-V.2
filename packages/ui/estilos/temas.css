@@ -206,6 +206,10 @@
     --color-sobre-mesa-comiendo: #ffffff;
     --color-mesa-cuenta: #d0346c;
     --color-sobre-mesa-cuenta: #ffffff;
+    --color-mesa-bebida: #6a4bc4;
+    --color-sobre-mesa-bebida: #ffffff;
+    --color-mesa-bebida-lista: #0f7a94;
+    --color-sobre-mesa-bebida-lista: #ffffff;
 
     --sombra-tarjeta: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.35);
     --relleno-tarjeta: none;
@@ -276,6 +280,10 @@
     --color-sobre-mesa-comiendo: #ffffff;
     --color-mesa-cuenta: #d0346c;
     --color-sobre-mesa-cuenta: #ffffff;
+    --color-mesa-bebida: #6a4bc4;
+    --color-sobre-mesa-bebida: #ffffff;
+    --color-mesa-bebida-lista: #0f7a94;
+    --color-sobre-mesa-bebida-lista: #ffffff;
 
     --sombra-tarjeta: 0 1px 2px rgba(17, 28, 31, 0.06), 0 6px 18px -10px rgba(17, 28, 31, 0.18);
     --relleno-tarjeta: none;

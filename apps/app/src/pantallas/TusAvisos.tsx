@@ -2,7 +2,17 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { GRUPOS_DE_AVISOS, type TipoDeAviso } from '@estook/dominio';
-import { Cargando, ConMasInfo, ErrorEnCristiano, Interruptor, Tarjeta, clases } from '@estook/ui';
+import {
+  Cargando,
+  ConMasInfo,
+  ErrorEnCristiano,
+  GrupoDePlegables,
+  Interruptor,
+  Plegable,
+  Tarjeta,
+  clases,
+} from '@estook/ui';
+import { IconoAvisos } from '@estook/iconos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { CuandoSuenaElMovil, EsteMovil } from './EsteMovil.tsx';
 import { usarMiMovil } from '../ganchos/usarMiMovil.ts';
@@ -128,65 +138,88 @@ export function TusAvisos() {
       <EsteMovil datos={miMovil.data} />
       {conMovil && <CuandoSuenaElMovil datos={miMovil.data} />}
 
-      <Tarjeta
-        titulo="Qué te llega"
-        {...(dondeVaElCorreo === null ? {} : { origen: dondeVaElCorreo })}
-      >
-        {datos === undefined ? (
-          <Cargando que="tus avisos" forma="lista" lineas={3} />
-        ) : (
-          <div className="flex flex-col gap-e4">
-            {error !== null && <ErrorEnCristiano error={error} />}
+      {/* **«Notificaciones», plegado** (la Ampliación, 0153, arreglo 3): antes «Qué te llega», abierto
+          y largo; se abre al tocarlo, como la lista de Ajustes del iPhone. */}
+      <GrupoDePlegables titulo="Notificaciones">
+        <Plegable
+          titulo="Notificaciones"
+          icono={<IconoAvisos size={18} />}
+          resumen="Campana, móvil y correo"
+        >
+          {datos === undefined ? (
+            <Cargando que="tus avisos" forma="lista" lineas={3} />
+          ) : (
+            <div className="flex flex-col gap-e4">
+              {error !== null && <ErrorEnCristiano error={error} />}
 
-            {/* Las dos columnas, rotuladas una vez. */}
-            <div
-              aria-hidden
-              className={clases(
-                'grid items-end gap-e2 text-etiqueta font-semibold text-texto-suave',
-                columnas,
-              )}
-            >
-              <span />
-              <span className="text-center">Campana</span>
-              {conMovil && <span className="text-center">Móvil</span>}
-              <span className="text-center">Correo</span>
-            </div>
+              {/* Las dos columnas, rotuladas una vez. */}
+              <div
+                aria-hidden
+                className={clases(
+                  'grid items-end gap-e2 text-etiqueta font-semibold text-texto-suave',
+                  columnas,
+                )}
+              >
+                <span />
+                <span className="text-center">Campana</span>
+                {conMovil && <span className="text-center">Móvil</span>}
+                <span className="text-center">Correo</span>
+              </div>
 
-            {GRUPOS_DE_AVISOS.map((grupo) => {
-              const delGrupo = datos.avisos.filter((a) => a.grupo === grupo);
-              if (delGrupo.length === 0) return null;
-              return (
-                <section key={grupo} aria-label={grupo} className="flex flex-col">
-                  <h4 className="pb-e1 text-secundario font-semibold text-texto-suave">{grupo}</h4>
-                  <ul className="flex flex-col divide-y divide-borde">
-                    {delGrupo.map((aviso) => (
-                      <li
-                        key={aviso.tipo}
-                        className={clases('grid items-center gap-e2 py-e3', columnas)}
-                      >
-                        {/*
+              {GRUPOS_DE_AVISOS.map((grupo) => {
+                const delGrupo = datos.avisos.filter((a) => a.grupo === grupo);
+                if (delGrupo.length === 0) return null;
+                return (
+                  <section key={grupo} aria-label={grupo} className="flex flex-col">
+                    <h4 className="pb-e1 text-secundario font-semibold text-texto-suave">
+                      {grupo}
+                    </h4>
+                    <ul className="flex flex-col divide-y divide-borde">
+                      {delGrupo.map((aviso) => (
+                        <li
+                          key={aviso.tipo}
+                          className={clases('grid items-center gap-e2 py-e3', columnas)}
+                        >
+                          {/*
                           El porqué, plegado en la «i» (auditoría del 9-oct): con
                           treinta avisos y su línea debajo, en el móvil eran doce
                           pantallas de scroll para elegir tres interruptores.
                         */}
-                        <ConMasInfo
-                          className="min-w-0"
-                          info={aviso.explica}
-                          queExplica={`Qué es «${aviso.nombre}»`}
-                        >
-                          <span className="block text-cuerpo">{aviso.nombre}</span>
-                        </ConMasInfo>
-                        <span className="flex justify-center">
-                          <Interruptor
-                            etiquetaOculta
-                            etiqueta={`${aviso.nombre}: en la campana`}
-                            puesto={aviso.enLaApp}
-                            alCambiar={(puesto) => {
-                              void guardar(aviso.tipo, puesto, aviso.porCorreo);
-                            }}
-                          />
-                        </span>
-                        {conMovil && (
+                          <ConMasInfo
+                            className="min-w-0"
+                            info={aviso.explica}
+                            queExplica={`Qué es «${aviso.nombre}»`}
+                          >
+                            <span className="block text-cuerpo">{aviso.nombre}</span>
+                          </ConMasInfo>
+                          <span className="flex justify-center">
+                            <Interruptor
+                              etiquetaOculta
+                              etiqueta={`${aviso.nombre}: en la campana`}
+                              puesto={aviso.enLaApp}
+                              alCambiar={(puesto) => {
+                                void guardar(aviso.tipo, puesto, aviso.porCorreo);
+                              }}
+                            />
+                          </span>
+                          {conMovil && (
+                            <span
+                              className={clases(
+                                'flex justify-center',
+                                !aviso.enLaApp && 'opacity-40',
+                              )}
+                            >
+                              <Interruptor
+                                etiquetaOculta
+                                etiqueta={`${aviso.nombre}: en el móvil`}
+                                puesto={aviso.alMovil}
+                                disabled={!aviso.enLaApp}
+                                alCambiar={(puesto) => {
+                                  void guardar(aviso.tipo, aviso.enLaApp, aviso.porCorreo, puesto);
+                                }}
+                              />
+                            </span>
+                          )}
                           <span
                             className={clases(
                               'flex justify-center',
@@ -195,37 +228,27 @@ export function TusAvisos() {
                           >
                             <Interruptor
                               etiquetaOculta
-                              etiqueta={`${aviso.nombre}: en el móvil`}
-                              puesto={aviso.alMovil}
-                              disabled={!aviso.enLaApp}
+                              etiqueta={`${aviso.nombre}: también por correo`}
+                              puesto={aviso.porCorreo}
+                              disabled={!aviso.enLaApp || !datos.hayCorreo}
                               alCambiar={(puesto) => {
-                                void guardar(aviso.tipo, aviso.enLaApp, aviso.porCorreo, puesto);
+                                void guardar(aviso.tipo, aviso.enLaApp, puesto);
                               }}
                             />
                           </span>
-                        )}
-                        <span
-                          className={clases('flex justify-center', !aviso.enLaApp && 'opacity-40')}
-                        >
-                          <Interruptor
-                            etiquetaOculta
-                            etiqueta={`${aviso.nombre}: también por correo`}
-                            puesto={aviso.porCorreo}
-                            disabled={!aviso.enLaApp || !datos.hayCorreo}
-                            alCambiar={(puesto) => {
-                              void guardar(aviso.tipo, aviso.enLaApp, puesto);
-                            }}
-                          />
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              );
-            })}
-          </div>
-        )}
-      </Tarjeta>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                );
+              })}
+            </div>
+          )}
+          {dondeVaElCorreo !== null && (
+            <p className="text-etiqueta text-texto-tenue">{dondeVaElCorreo}</p>
+          )}
+        </Plegable>
+      </GrupoDePlegables>
 
       {datos?.subidaQueAvisa !== null && datos?.subidaQueAvisa !== undefined && (
         <div

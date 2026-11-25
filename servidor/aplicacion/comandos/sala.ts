@@ -275,14 +275,21 @@ export const pedir = comando<EntradaPedir, { pedidos: number; yaEstaban: number 
     const localId = elLocalDelServicio(contexto);
     const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
 
-    const yaEstan = new Set(
-      (
-        await contexto.sql<{ id: string }[]>`
-          select id::text as id from estook.linea_de_cuenta
-           where id = any (${comoLista(entrada.platos.map((p) => p.id))}::text::uuid[])
-        `
-      ).map((f) => f.id),
-    );
+    const existentes = await contexto.sql<{ id: string; cuenta_id: string }[]>`
+      select id::text as id, cuenta_id::text as cuenta_id from estook.linea_de_cuenta
+       where id = any (${comoLista(entrada.platos.map((p) => p.id))}::text::uuid[])
+    `;
+    // **Un plato que ya es de otra cuenta no se salta en silencio** (la Ampliación, 0153, fallo
+    // 1): la venta rápida que se abría dos veces con los mismos platos nacía vacía, a 0 €. Repetir
+    // en la misma cuenta sigue sin duplicar; una cuenta juntada o movida ya no está abierta.
+    const deOtra = existentes.find((f) => f.cuenta_id !== cuenta.id);
+    if (deOtra !== undefined) {
+      throw new FalloDeAplicacion('ya_hecho', {
+        porque: 'Esos platos ya se mandaron en otra cuenta: búscala en «Para llevar» o en Tickets.',
+        cuentaId: deOtra.cuenta_id,
+      });
+    }
+    const yaEstan = new Set(existentes.map((f) => f.id));
     const nuevos = entrada.platos.filter((p) => !yaEstan.has(p.id));
     const hoy = await laJornadaDeHoy(contexto, localId);
     const menusDeHoy = new Map<
@@ -767,6 +774,8 @@ export const marcarServido = comando<
     const marchado = new Map(pases.map((p) => [p.numero, p.marchado_en !== null]));
 
     const servidos: FilaDeLinea[] = [];
+    // Lo que la barra ya tachó y la sala aún no ha llevado (0153): se marca servido sin destachar.
+    const listas: FilaDeLinea[] = [];
     for (const lineaId of new Set(entrada.servidos ?? [])) {
       const linea = porId.get(lineaId);
       if (linea === undefined || linea.destino === 'ninguno' || linea.mandada_en === null) {
@@ -774,7 +783,11 @@ export const marcarServido = comando<
           porque: 'Eso no está mandado en esta mesa.',
         });
       }
-      if (linea.quitada_en !== null || linea.salio_en !== null) continue;
+      if (linea.quitada_en !== null) continue;
+      if (linea.salio_en !== null) {
+        if (linea.destino === 'barra' && !linea.servida_en_sala) listas.push(linea);
+        continue;
+      }
       if (!laSalaMarca(lo, linea.destino)) {
         throw new FalloDeAplicacion('sin_permiso', {
           porque:
@@ -803,6 +816,14 @@ export const marcarServido = comando<
            and salio_en is null and quitada_en is null
       `;
     }
+    if (listas.length > 0) {
+      await contexto.sql`
+        update estook.linea_de_cuenta
+           set salio_por = ${contexto.personaId}::uuid, servida_en_sala = true
+         where id = any (${comoLista(listas.map((l) => l.id))}::text::uuid[])
+           and salio_en is not null and quitada_en is null and not servida_en_sala
+      `;
+    }
     if (noServidos.length > 0) {
       await contexto.sql`
         update estook.linea_de_cuenta
@@ -818,12 +839,12 @@ export const marcarServido = comando<
     );
     for (const pase of losPasesTocados) await rehacerElFueraDelPase(contexto, cuenta.id, pase);
     await avisar(contexto, localId, 'marcar_servido', cuenta.id, {
-      servidos: servidos.map((l) => `${String(l.cantidad)} ${l.nombre}`),
+      servidos: [...servidos, ...listas].map((l) => `${String(l.cantidad)} ${l.nombre}`),
       ...(noServidos.length === 0
         ? {}
         : { no_servidos: noServidos.map((l) => `${String(l.cantidad)} ${l.nombre}`) }),
     });
-    return { servidos: servidos.length, noServidos: noServidos.length };
+    return { servidos: servidos.length + listas.length, noServidos: noServidos.length };
   },
 });
 

@@ -41,6 +41,8 @@ async function entrarEnLaCaja(page: Page, llave: string, pin: string) {
   await abrirSinQueSeCaiga(page, TPV);
   await page.evaluate((laLlave) => {
     window.localStorage.setItem('estook.tpv.llave', laLlave);
+    // Como una pestaña nueva: en la misma, recargar ya no pide el PIN (la Ampliación, 0153, fallo 4).
+    window.sessionStorage.clear();
   }, llave);
   await abrirSinQueSeCaiga(page, TPV);
   await expect(page.getByText(LA_PUERTA).first()).toBeVisible({ timeout: 15_000 });

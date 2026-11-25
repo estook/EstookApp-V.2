@@ -24,6 +24,8 @@ export function Invitar({
 }: {
   alCerrar: () => void;
   alHecho: (quien: {
+    /** Para abrir su ficha y rellenarla (0153). Opcional: la API vieja no lo devolvía. */
+    personaId?: string;
     nombre: string;
     pin: string | null;
     yaExistia: boolean;
@@ -53,17 +55,18 @@ export function Invitar({
 
     const alcance = ALCANCE_DEL_ROL[rol as Rol];
 
-    const respuesta = await cliente.ejecutar<{ pin: string | null; yaExistia: boolean }>(
-      'invitar_persona',
-      {
-        ...(sinCorreo ? {} : { correo }),
-        nombre,
-        ...(apellidos === '' ? {} : { apellidos }),
-        rol,
-        organizacion_id: yo?.organizacion?.id ?? '',
-        ...(alcance === 'local' ? { local_id: yo?.local?.id ?? '' } : {}),
-      },
-    );
+    const respuesta = await cliente.ejecutar<{
+      personaId?: string;
+      pin: string | null;
+      yaExistia: boolean;
+    }>('invitar_persona', {
+      ...(sinCorreo ? {} : { correo }),
+      nombre,
+      ...(apellidos === '' ? {} : { apellidos }),
+      rol,
+      organizacion_id: yo?.organizacion?.id ?? '',
+      ...(alcance === 'local' ? { local_id: yo?.local?.id ?? '' } : {}),
+    });
 
     if (!respuesta.ok) {
       setError(respuesta.error);
@@ -72,6 +75,7 @@ export function Invitar({
     }
 
     alHecho({
+      ...(respuesta.datos.personaId === undefined ? {} : { personaId: respuesta.datos.personaId }),
       nombre,
       pin: respuesta.datos.pin,
       yaExistia: respuesta.datos.yaExistia,

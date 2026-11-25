@@ -131,6 +131,8 @@ test('la ficha enseña tres fichajes, y «Ver todos» abre el historial y vuelve
   await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen?persona=${personaId}`);
 
   const ficha = page.getByRole('dialog', { name: 'Lucía De la Ficha' });
+  // Los fichajes viven en «Historial de jornadas», plegado (la Ampliación 3, 0153).
+  await ficha.getByText('Historial de jornadas', { exact: true }).click({ timeout: 15_000 });
   // Quince segundos, como la ficha de producto (almacen.spec): con las tres pasadas a la
   // vez, la API de pruebas —una sola conexión— tarda a veces más de cinco en darla. Sola
   // tarda menos de tres (14-oct).
@@ -151,5 +153,54 @@ test('la ficha enseña tres fichajes, y «Ver todos» abre el historial y vuelve
   await expect(historial.getByRole('button', { name: 'Corregir' })).toHaveCount(4);
 
   await historial.getByRole('button', { name: '‹ Volver a la ficha' }).click();
+  await ficha.getByText('Historial de jornadas', { exact: true }).click();
   await expect(ficha.getByRole('heading', { name: 'Sus fichajes' })).toBeVisible();
+});
+
+/**
+ * **La ficha del trabajador** (la Ampliación 3, 0153): sin rellenar, Rosa la rellena a mano
+ * y salen los cuatro cuadrados y el saldo de vacaciones, calculado por Estook.
+ */
+test('la ficha se rellena a mano y salen sus cuatro cuadrados y sus vacaciones', async ({
+  page,
+  request,
+}) => {
+  const { personaId } = await unaCamareraConCuatroTurnos(request);
+
+  await entrar(page, ROSA);
+  await abrirSinQueSeCaiga(page, `${APP}#/equipo/resumen?persona=${personaId}`);
+  const ficha = page.getByRole('dialog', { name: 'Lucía De la Ficha' });
+  await expect(ficha.getByText('Su ficha está sin rellenar')).toBeVisible({ timeout: 15_000 });
+  await expect(ficha.locator('[data-baldosa="Jornada"]')).toContainText('Sin poner');
+
+  await ficha.getByRole('button', { name: 'Rellenar su ficha' }).click();
+  const elegir = page.getByRole('dialog', { name: 'La ficha de Lucía' });
+  // Las tres formas, y la recomendada es el archivo.
+  await expect(
+    elegir.getByRole('button', { name: /^Archivo del contrato \(recomendado\)/ }),
+  ).toBeVisible();
+  await expect(elegir.getByRole('button', { name: /^Foto del contrato/ })).toBeVisible();
+  await elegir.getByRole('button', { name: /^A mano/ }).click();
+
+  const formulario = page.getByRole('dialog', { name: 'La ficha de Lucía' });
+  await formulario.getByLabel('Incorporación').fill('2024-03-12');
+  await formulario.getByLabel('Contrato', { exact: true }).selectOption('indefinido');
+  await formulario.getByLabel('Jornada', { exact: true }).selectOption('completa');
+  await formulario.getByLabel('Horas a la semana').fill('40');
+  await formulario.getByLabel('Categoría').fill('Camarera');
+  await formulario.getByLabel('Vacaciones al año').fill('30');
+  await formulario.getByLabel('DNI/NIE').fill('12345678Z');
+  await formulario.getByRole('button', { name: 'Guardar la ficha' }).click();
+
+  await expect(ficha.getByText('Ficha guardada')).toBeVisible();
+  await expect(ficha.locator('[data-baldosa="Jornada"]')).toContainText('40 h');
+  await expect(ficha.locator('[data-baldosa="Contrato"]')).toContainText('Indefinido');
+  await expect(ficha.locator('[data-baldosa="Incorporación"]')).toContainText('12 mar 2024');
+  await expect(ficha.locator('[data-baldosa="Vacaciones"]')).toContainText('30 días');
+  // Lo privado, escondido de entrada.
+  await expect(ficha.getByText('12345678Z')).toHaveCount(0);
+  await expect(ficha.getByText('•••• 678 Z')).toBeVisible();
+  await expect(
+    ficha.getByText(/30 del año − 0 disfrutados − 0 aprobados = 30 disponibles/),
+  ).toBeVisible();
 });

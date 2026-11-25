@@ -43,6 +43,11 @@ export interface PeticionAFogon {
    */
   readonly foto?: FotoParaFogon;
   /**
+   * Varias páginas de una vez (la Ampliación 3, 0153): el contrato del trabajador, que
+   * suele tener tres o cuatro. Van todas en el último mensaje, en orden, antes del texto.
+   */
+  readonly fotos?: readonly FotoParaFogon[];
+  /**
    * Que busque en internet («Analiza mi zona», M10 · 2, 0104): cuántas búsquedas como
    * mucho y dónde está el local, para que busque cerca. Con esto no se pide salida
    * estructurada: el JSON va en el texto, y se lee con cuidado.
@@ -142,15 +147,20 @@ export function limpiarLaClave(clave: string): string {
  */
 export function conLaFoto(
   mensajes: readonly MensajeAFogon[],
-  foto: FotoParaFogon | undefined,
+  foto: FotoParaFogon | readonly FotoParaFogon[] | undefined,
 ): Anthropic.MessageParam[] {
   const ultimo = mensajes.length - 1;
+  const fotos: readonly FotoParaFogon[] =
+    foto === undefined ? [] : Array.isArray(foto) ? foto : [foto as FotoParaFogon];
   return mensajes.map((m, i) =>
-    foto !== undefined && i === ultimo && m.rol === 'user'
+    fotos.length > 0 && i === ultimo && m.rol === 'user'
       ? {
           role: 'user',
           content: [
-            { type: 'image', source: { type: 'base64', media_type: foto.tipo, data: foto.base64 } },
+            ...fotos.map((f) => ({
+              type: 'image' as const,
+              source: { type: 'base64' as const, media_type: f.tipo, data: f.base64 },
+            })),
             { type: 'text', text: m.texto },
           ],
         }
@@ -226,7 +236,9 @@ export function modeloDeAnthropic(
     const espera =
       busca !== undefined
         ? ESPERA_DE_LA_BUSQUEDA_MS
-        : peticion.foto !== undefined || peticion.hastaTokens > TOKENS_DE_LO_LARGO
+        : peticion.foto !== undefined ||
+            peticion.fotos !== undefined ||
+            peticion.hastaTokens > TOKENS_DE_LO_LARGO
           ? ESPERA_DE_LO_LARGO_MS
           : ESPERA_MAXIMA_MS;
     const herramientas: Anthropic.ToolUnion[] =
@@ -246,7 +258,7 @@ export function modeloDeAnthropic(
               },
             },
           ];
-    const mensajes = conLaFoto(peticion.mensajes, peticion.foto);
+    const mensajes = conLaFoto(peticion.mensajes, peticion.fotos ?? peticion.foto);
     const contenido: Anthropic.ContentBlock[] = [];
     const tokens = { entrada: 0, cacheLeidos: 0, cacheEscritos: 0, salida: 0, busquedas: 0 };
     let respuesta: Anthropic.Message | null = null;
@@ -396,6 +408,26 @@ export function contestaDePrueba(peticion: PeticionAFogon): string {
   if (peticion.buscarEnInternet !== undefined) return laZonaDePrueba(peticion.resumen);
   const campos = Object.keys((peticion.forma?.['properties'] as object | undefined) ?? {});
   const primero = primerProductoDelResumen(peticion.resumen);
+  // ── La Ampliación 3 (0153): un contrato de trabajo, con la página de cada cosa ──
+  if (campos.includes('incorporacion')) {
+    return JSON.stringify({
+      trabajador: { valor: 'Ane Etxeberria Goñi', pagina: 1 },
+      dni: { valor: '12345678Z', pagina: 1 },
+      domicilio: { valor: 'Calle Mayor 3, Donostia', pagina: 1 },
+      incorporacion: { valor: '2024-03-12', pagina: 1 },
+      contrato: { valor: 'indefinido', pagina: 1 },
+      jornada: { valor: 'completa', pagina: 2 },
+      horas_semanales: { valor: 40, pagina: 2 },
+      sueldo: { valor: 1780, pagina: 2 },
+      sueldo_es: { valor: 'bruto', pagina: 2 },
+      sueldo_cada: { valor: 'mes', pagina: 2 },
+      pagas: { valor: 14, pagina: 2 },
+      convenio: { valor: 'Hostelería de Gipuzkoa', pagina: 1 },
+      vacaciones_al_ano: { valor: 30, pagina: 3 },
+      vacaciones_en: { valor: 'naturales', pagina: 3 },
+      categoria: { valor: '', pagina: 0 },
+    });
+  }
   // ── Fogón 1 · 2 y 1 · 3 (0098): lo que lee y lo que prepara ─────────────────
   if (campos.includes('total')) {
     return JSON.stringify({

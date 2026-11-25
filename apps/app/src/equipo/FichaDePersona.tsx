@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { SuCara } from './SuCara.tsx';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { type Centimos } from '@estook/dominio';
@@ -13,10 +14,22 @@ import {
   Cifra,
   ErrorEnCristiano,
   Etiqueta,
+  GrupoDePlegables,
   Hoja,
   PanelLateral,
+  Plegable,
   Selector,
 } from '@estook/ui';
+import {
+  IconoAtencion,
+  IconoDescargar,
+  IconoEditar,
+  IconoFicha,
+  IconoHistorial,
+  IconoMaletin,
+  IconoPalmera,
+  IconoSubir,
+} from '@estook/iconos';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import {
@@ -25,10 +38,17 @@ import {
   comoSeLeenMinutos,
   ultimaVez,
   type FichajeDeLaFicha,
+  type LasIncidencias,
   type UnaPersona,
 } from './contrato.ts';
+import { usarLectura } from '../ganchos/usarLectura.ts';
 import { HistorialDeFichajes, ListaDeFichajes } from './ListaDeFichajes.tsx';
 import { IncidenciasDeUnaPersona } from './ListaDeIncidencias.tsx';
+import { CuatroBaldosas } from './ficha/Baldosas.tsx';
+import { ExportarLaJornada } from './ficha/ExportarLaJornada.tsx';
+import { RellenarLaFicha } from './ficha/RellenarLaFicha.tsx';
+import { InformacionLaboral, InformacionPersonal, SusVacaciones } from './ficha/Secciones.tsx';
+import { resumenDeLasVacaciones } from './ficha/comoSeLee.ts';
 
 /** «9 de octubre de 2026»: una fecha que se lee, no «2026-10-09» (auditoría del 9-oct). */
 function fechaEnLetra(fecha: string): string {
@@ -80,6 +100,9 @@ export function FichaDePersona({
   const viendoElHistorial = historialDe !== null && historialDe === personaId;
   const [noticia, setNoticia] = useState<string | null>(null);
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
+  // Rellenar la ficha (0153): «Subir contrato» empieza eligiendo cómo; «Cambiar», a mano.
+  const [rellenando, setRellenando] = useState<'elegir' | 'a_mano' | null>(null);
+  const [exportando, setExportando] = useState(false);
 
   const consulta = useQuery({
     queryKey: ['una_persona', personaId],
@@ -106,6 +129,29 @@ export function FichaDePersona({
   }
 
   const datos = consulta.data;
+  const ficha = datos?.ficha;
+
+  // Recién invitada (0153): `?ficha=rellenar` abre «¿Cómo rellenamos su ficha?» en cuanto
+  // llega la ficha, y se quita de la dirección para que atrás no la vuelva a abrir.
+  const [parametros, ponerParametros] = useSearchParams();
+  const pideRellenar = parametros.get('ficha') === 'rellenar';
+  useEffect(() => {
+    if (!pideRellenar || ficha === undefined) return;
+    if (ficha.puedeRellenarla) setRellenando(ficha.laboral === null ? 'elegir' : 'a_mano');
+    const nuevos = new URLSearchParams(parametros);
+    nuevos.delete('ficha');
+    ponerParametros(nuevos, { replace: true });
+  }, [pideRellenar, ficha, parametros, ponerParametros]);
+  // Cuántas sin justificar, para el resumen del plegable: la misma lectura que la lista
+  // de dentro, así que llega una vez. Sin Equipo no llega, y no se dice nada.
+  const lasIncidencias = usarLectura<LasIncidencias>(
+    'las_incidencias',
+    { periodo: '30', persona_id: personaId ?? '' },
+    personaId !== null,
+  );
+  const incidencias = lasIncidencias.data?.incidencias.filter(
+    (i) => i.justificacion === null,
+  ).length;
   const nombreEntero =
     datos === undefined ? 'Persona' : `${datos.nombre} ${datos.apellidos ?? ''}`.trim();
 
@@ -170,7 +216,7 @@ export function FichaDePersona({
             <div className="min-w-0">
               <p className="truncate text-cuerpo font-semibold">{nombreEntero}</p>
               <p className="text-secundario text-texto-suave">
-                {datos.retribucion?.puesto ?? datos.rolNombre}
+                {datos.ficha?.laboral?.categoria ?? datos.retribucion?.puesto ?? datos.rolNombre}
                 {datos.correo === undefined || datos.correo === null ? '' : ` · ${datos.correo}`}
               </p>
               <p className="mt-e1 flex flex-wrap items-center gap-e2 text-secundario">
@@ -185,6 +231,11 @@ export function FichaDePersona({
                   </span>
                 )}
                 {datos.estado === 'fuera' && <Etiqueta>acceso retirado</Etiqueta>}
+                {datos.trabajandoDesde !== null && (
+                  <Etiqueta tono="bien">
+                    Trabajando desde las {comoSeLeeLaHora(datos.trabajandoDesde)}
+                  </Etiqueta>
+                )}
               </p>
             </div>
           </section>
@@ -218,120 +269,209 @@ export function FichaDePersona({
             </Aviso>
           )}
 
-          {/* ── Sus horas ───────────────────────────────────────────────── */}
-          <section className="grid grid-cols-2 gap-e3 rounded-medio border border-borde p-e3">
-            <Cifra
-              etiqueta="Esta semana"
-              valor={datos.minutosDeLaSemana}
-              formato={(v) => comoSeLeenMinutos(v)}
-              origen="De lunes a hoy"
+          {/*
+            ── La ficha del trabajador (la Ampliación 3, 0153) ──────────────────
+            Cuatro cuadrados con lo que se mira de un vistazo, y debajo la lista que se
+            despliega. Lo privado no se esconde: no llega (las políticas de la 0127).
+          */}
+          {ficha !== undefined && (
+            <CuatroBaldosas
+              ficha={ficha}
+              horasDeLaRetribucion={datos.retribucion?.horasSemanales ?? null}
+              hoy={hoyEnFecha()}
             />
-            <Cifra
-              etiqueta="Últimos 30 días"
-              valor={datos.minutosDelMes}
-              formato={(v) => comoSeLeenMinutos(v)}
-              origen={
-                datos.costeDelMesCentimos !== null && datos.costeDelMesCentimos !== undefined
-                  ? `Cuestan ${comoDinero(datos.costeDelMesCentimos)}`
-                  : 'Por sus fichajes'
-              }
-            />
-            {datos.trabajandoDesde !== null && (
-              <p className="col-span-2 text-cuerpo">
-                <strong>Trabajando</strong> desde las {comoSeLeeLaHora(datos.trabajandoDesde)} ·{' '}
-                {comoSeLeenMinutos(datos.minutosDelTurno ?? 0)}
-              </p>
-            )}
-          </section>
+          )}
 
-          {/* ── Lo que cobra · privado ──────────────────────────────────── */}
-          {datos.puedeVerCostes && (
-            <section className="flex flex-col gap-e2">
-              <div className="flex flex-wrap items-center justify-between gap-e2">
-                <h3 className="text-seccion font-semibold">Lo que cobra</h3>
-                {datos.puedePonerRetribucion && (
+          {ficha?.puedeRellenarla === true &&
+            (ficha.laboral === null ? (
+              <Aviso
+                tono="info"
+                titulo="Su ficha está sin rellenar"
+                accion={
+                  <Boton
+                    tono="principal"
+                    onClick={() => {
+                      setRellenando('elegir');
+                    }}
+                  >
+                    Rellenar su ficha
+                  </Boton>
+                }
+              >
+                Sube su contrato y Fogón la rellena en un momento, o escríbela a mano. De ella salen
+                sus vacaciones.
+              </Aviso>
+            ) : (
+              <div className="flex flex-wrap gap-e2">
+                <Boton
+                  icono={<IconoSubir size={18} />}
+                  onClick={() => {
+                    setRellenando('elegir');
+                  }}
+                >
+                  Subir contrato
+                </Boton>
+                <Boton
+                  tono="texto"
+                  icono={<IconoEditar size={18} />}
+                  onClick={() => {
+                    setRellenando('a_mano');
+                  }}
+                >
+                  Cambiar la ficha
+                </Boton>
+              </div>
+            ))}
+
+          <GrupoDePlegables titulo={`La ficha de ${nombreEntero}`}>
+            {/* Incidencias, donde estaba «Su horario» (repaso del 9-oct, 0081). */}
+            <Plegable
+              titulo="Incidencias"
+              degradado="incidencias"
+              icono={<IconoAtencion size={18} />}
+              resumen={
+                incidencias === undefined
+                  ? undefined
+                  : incidencias === 0
+                    ? 'Ninguna sin justificar en 30 días'
+                    : `${String(incidencias)} sin justificar en 30 días`
+              }
+              tono={incidencias !== undefined && incidencias > 0 ? 'atencion' : 'neutro'}
+            >
+              <IncidenciasDeUnaPersona personaId={datos.personaId} enLaFicha />
+            </Plegable>
+
+            {ficha?.veLoPrivado === true && (
+              <Plegable
+                titulo="Información personal"
+                degradado="fechas"
+                icono={<IconoFicha size={18} />}
+                resumen="DNI, teléfono y domicilio"
+                abierto
+              >
+                <InformacionPersonal
+                  nombreEntero={nombreEntero}
+                  correo={datos.correo}
+                  privada={ficha.privada ?? null}
+                />
+              </Plegable>
+            )}
+
+            <Plegable
+              titulo="Información laboral"
+              degradado="contrato"
+              icono={<IconoMaletin size={18} />}
+              resumen={
+                [ficha?.laboral?.categoria, ficha?.laboral?.convenio].filter(Boolean).join(' · ') ||
+                'Categoría, convenio, contrato y jornada'
+              }
+            >
+              <InformacionLaboral
+                laboral={ficha?.laboral ?? null}
+                {...(ficha?.veLoPrivado === true
+                  ? { privada: ficha.privada ?? null, documentos: ficha.documentos ?? [] }
+                  : {})}
+                {...(datos.puedeVerCostes
+                  ? {
+                      loQueCuesta: (
+                        <LoQueCuesta
+                          persona={datos}
+                          alCambiar={() => {
+                            setCambiando('retribucion');
+                          }}
+                        />
+                      ),
+                    }
+                  : {})}
+              />
+            </Plegable>
+
+            {ficha !== undefined && (
+              <Plegable
+                titulo="Vacaciones y solicitudes"
+                degradado="vacaciones"
+                icono={<IconoPalmera size={18} />}
+                resumen={resumenDeLasVacaciones(ficha.vacaciones)}
+                abierto
+              >
+                <SusVacaciones saldo={ficha.vacaciones} />
+              </Plegable>
+            )}
+
+            <Plegable
+              titulo="Historial de jornadas"
+              degradado="historial"
+              icono={<IconoHistorial size={18} />}
+              resumen={`${comoSeLeenMinutos(datos.minutosDelMes)} en los últimos 30 días`}
+            >
+              <section className="grid grid-cols-2 gap-e3 rounded-medio border border-borde p-e3">
+                <Cifra
+                  etiqueta="Esta semana"
+                  valor={datos.minutosDeLaSemana}
+                  formato={(v) => comoSeLeenMinutos(v)}
+                  origen="De lunes a hoy"
+                />
+                <Cifra
+                  etiqueta="Últimos 30 días"
+                  valor={datos.minutosDelMes}
+                  formato={(v) => comoSeLeenMinutos(v)}
+                  origen={
+                    datos.costeDelMesCentimos !== null && datos.costeDelMesCentimos !== undefined
+                      ? `Cuestan ${comoDinero(datos.costeDelMesCentimos)}`
+                      : 'Por sus fichajes'
+                  }
+                />
+              </section>
+
+              {/* Sus fichajes · los tres últimos, y el resto en «Ver todos». */}
+              <div className="flex flex-col gap-e2">
+                <div className="flex flex-wrap items-center justify-between gap-e2">
+                  <h3 className="text-seccion font-semibold">Sus fichajes</h3>
+                  {datos.cuantosFichajes > datos.ultimosFichajes.length && (
+                    <Boton
+                      tono="texto"
+                      onClick={() => {
+                        setHistorialDe(personaId);
+                      }}
+                    >
+                      Ver todos ({datos.cuantosFichajes.toLocaleString('es-ES')})
+                    </Boton>
+                  )}
+                </div>
+                {datos.ultimosFichajes.length === 0 ? (
+                  <p className="text-secundario text-texto-suave">Todavía no ha fichado nunca.</p>
+                ) : (
+                  <ListaDeFichajes
+                    fichajes={datos.ultimosFichajes}
+                    puedeCorregir={datos.puedeEditar}
+                    alCorregir={setCorrigiendo}
+                  />
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-e2">
+                <Boton
+                  icono={<IconoDescargar size={18} />}
+                  onClick={() => {
+                    setExportando(true);
+                  }}
+                >
+                  Exportar
+                </Boton>
+                {/* El fichaje que falta (0070): se olvidó de fichar, o el aparato no pudo. */}
+                {datos.puedeEditar && (
                   <Boton
                     tono="texto"
                     onClick={() => {
-                      setCambiando('retribucion');
+                      setCambiando('fichaje_que_falta');
                     }}
                   >
-                    {datos.retribucion === null || datos.retribucion === undefined
-                      ? 'Ponerlo'
-                      : 'Cambiarlo'}
+                    Apuntar un fichaje que falta
                   </Boton>
                 )}
               </div>
-              {datos.retribucion === null || datos.retribucion === undefined ? (
-                <p className="text-secundario text-texto-suave">
-                  Sin poner. Sin esto, sus horas no se pueden convertir en coste.
-                </p>
-              ) : (
-                <p className="text-cuerpo">
-                  <strong>
-                    {comoDinero(datos.retribucion.importeCentimos)}{' '}
-                    {datos.retribucion.forma === 'por_hora' ? 'la hora' : 'al mes'}
-                  </strong>
-                  <span className="text-texto-suave">
-                    {datos.retribucion.horasSemanales === null
-                      ? ''
-                      : ` · ${datos.retribucion.horasSemanales.toLocaleString('es-ES')} h a la semana`}
-                    {` · desde el ${fechaEnLetra(datos.retribucion.desde)}`}
-                  </span>
-                </p>
-              )}
-              <p className="text-etiqueta text-texto-tenue">
-                Privado. Solo lo ven quien lleva los costes de personal y la propia persona.
-              </p>
-            </section>
-          )}
-
-          {/*
-            ── Sus incidencias ──────────────────────────────────────────────
-            Donde estaba «Su horario» (repaso del 9-oct, 0081): el horario es el de
-            Horarios, y aquí va lo que hay que mirar de esta persona.
-          */}
-          <IncidenciasDeUnaPersona personaId={datos.personaId} />
-
-          {/* ── Sus fichajes · los tres últimos, y el resto en «Ver todos» ─── */}
-          <section className="flex flex-col gap-e2">
-            <div className="flex flex-wrap items-center justify-between gap-e2">
-              <h3 className="text-seccion font-semibold">Sus fichajes</h3>
-              {datos.cuantosFichajes > datos.ultimosFichajes.length && (
-                <Boton
-                  tono="texto"
-                  onClick={() => {
-                    setHistorialDe(personaId);
-                  }}
-                >
-                  Ver todos ({datos.cuantosFichajes.toLocaleString('es-ES')})
-                </Boton>
-              )}
-            </div>
-            {datos.ultimosFichajes.length === 0 ? (
-              <p className="text-secundario text-texto-suave">Todavía no ha fichado nunca.</p>
-            ) : (
-              <ListaDeFichajes
-                fichajes={datos.ultimosFichajes}
-                puedeCorregir={datos.puedeEditar}
-                alCorregir={setCorrigiendo}
-              />
-            )}
-          </section>
-
-          {/* El fichaje que falta (0070): se olvidó de fichar, o el aparato no pudo apuntarlo. */}
-          {datos.puedeEditar && (
-            <div>
-              <Boton
-                tono="texto"
-                onClick={() => {
-                  setCambiando('fichaje_que_falta');
-                }}
-              >
-                Apuntar un fichaje que falta
-              </Boton>
-            </div>
-          )}
+            </Plegable>
+          </GrupoDePlegables>
 
           <p className="text-secundario text-texto-suave">
             En Estook desde el {fechaEnLetra(datos.desde)}. {datos.rolNombre}.
@@ -349,6 +489,32 @@ export function FichaDePersona({
             void refrescar('Retribución guardada');
           }}
           alFallar={setError}
+        />
+      )}
+
+      {datos !== undefined && rellenando !== null && (
+        <RellenarLaFicha
+          personaId={datos.personaId}
+          nombre={datos.nombre}
+          ficha={datos.ficha}
+          empezarPor={rellenando}
+          alCerrar={() => {
+            setRellenando(null);
+          }}
+          alHecho={(frase) => {
+            setRellenando(null);
+            void refrescar(frase);
+          }}
+        />
+      )}
+
+      {datos !== undefined && exportando && (
+        <ExportarLaJornada
+          personaId={datos.personaId}
+          nombre={datos.nombre}
+          alCerrar={() => {
+            setExportando(false);
+          }}
         />
       )}
 
@@ -392,6 +558,56 @@ export function FichaDePersona({
         />
       )}
     </PanelLateral>
+  );
+}
+
+// ── Lo que cuesta al local · privado (0027) ──────────────────────────────────
+
+/**
+ * Lo que le cuesta al local (la retribución de la 0027), dentro de Información laboral.
+ * No es el sueldo del contrato: es el coste con la Seguridad Social de la empresa y las
+ * pagas repartidas, que es lo que convierte sus horas en coste de personal.
+ */
+function LoQueCuesta({
+  persona,
+  alCambiar,
+}: {
+  readonly persona: UnaPersona;
+  readonly alCambiar: () => void;
+}) {
+  const r = persona.retribucion ?? null;
+  return (
+    <section className="flex flex-col gap-e2 rounded-medio bg-fondo p-e3">
+      <div className="flex flex-wrap items-center justify-between gap-e2">
+        <h3 className="text-cuerpo font-semibold">Lo que cuesta al local</h3>
+        {persona.puedePonerRetribucion && (
+          <Boton tono="texto" onClick={alCambiar}>
+            {r === null ? 'Ponerlo' : 'Cambiarlo'}
+          </Boton>
+        )}
+      </div>
+      {r === null ? (
+        <p className="text-secundario text-texto-suave">
+          Sin poner. Sin esto, sus horas no se pueden convertir en coste.
+        </p>
+      ) : (
+        <p className="text-cuerpo">
+          <strong>
+            {comoDinero(r.importeCentimos)} {r.forma === 'por_hora' ? 'la hora' : 'al mes'}
+          </strong>
+          <span className="text-texto-suave">
+            {r.horasSemanales === null
+              ? ''
+              : ` · ${r.horasSemanales.toLocaleString('es-ES')} h a la semana`}
+            {` · desde el ${fechaEnLetra(r.desde)}`}
+          </span>
+        </p>
+      )}
+      <p className="text-etiqueta text-texto-tenue">
+        Con la Seguridad Social de la empresa. Solo lo ven quien lleva los costes de personal y la
+        propia persona.
+      </p>
+    </section>
   );
 }
 

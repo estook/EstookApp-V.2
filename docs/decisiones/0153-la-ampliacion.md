@@ -355,6 +355,52 @@ En `ampliacion-2-el-comandero-y-la-carta`, **con la migración 0126**. Las prueb
    fotos.
 5. **«Bebidas más vendidas»** no se hace aparte: Servicio › Información ya tiene «Bebida».
 
+## 13 · Lo que se construyó en la Ampliación 3 · 1 · La ficha (25-nov)
+
+En `ampliacion-3-la-ficha`, **con la migración 0127** y la API con **una consulta y dos comandos más**
+(`abrir_un_documento_de_persona`; `leer_el_contrato_con_fogon` y `guardar_la_ficha_del_trabajador`). Las
+pruebas para Richi, en [sus pasos](../pasos/pasos-de-la-ampliacion-3.md) (la 35). **Las nóminas van en la 3 · 2.**
+
+- **La ficha, como en la maqueta**: la cara, el nombre y el puesto; **cuatro cuadrados de color** (jornada,
+  contrato, incorporación y vacaciones disponibles); y la lista que se despliega: **Incidencias** (con las que
+  quedan sin justificar), **Información personal**, **Información laboral** (con el contrato y lo que cuesta
+  al local), **Vacaciones y solicitudes** e **Historial de jornadas** (sus fichajes y «Exportar»).
+- **El alta, en tres formas**: foto del contrato, archivo del contrato (la recomendada) o a mano. Fogón lee
+  en el servidor y propone cada campo con su página; lo que no sale, en ámbar; **nada se guarda hasta
+  «Confirmar la ficha»**. Al invitar a alguien, la hoja del PIN pregunta «¿Rellenamos su ficha?». Los que ya
+  están tienen **«Subir contrato»** y **«Cambiar la ficha»**.
+- **El saldo de vacaciones lo calcula Estook**: los días del año (proporcionales si entró este año) + los de
+  años anteriores − disfrutados − aprobados, y lo devengado a hoy aparte, con «Cómo cuadra» escrito.
+- **Lo privado lo decide la base**: el DNI, el teléfono, el domicilio, el sueldo y el contrato los ven quien
+  tiene «Datos del equipo» (gerencia, dirección y RRHH) y la propia persona. El jefe de sala y el de cocina
+  ven las condiciones y las vacaciones de su gente, **y no reciben lo privado** (lo prueba
+  `la-ficha-del-trabajador.prueba.ts`, también un camarero llamando a la API a pelo).
+- **El historial de jornadas, exportable**: la última semana, el último mes o los días que elijas, en PDF o en
+  hoja de cálculo, con el registro de jornada de siempre y solo sus fichajes.
+
+**Lo que decidió la IA al construirla**, para que Richi lo sepa:
+
+1. **La ficha es de la empresa, no del local**: quien trabaja en dos locales tiene una ficha, como un contrato.
+   La lleva quien la tiene en su equipo en algún local con el permiso que toque.
+2. **Nadie se rellena su propia ficha, ni la de quien manda más** (la regla del sueldo desde la 0027). La
+   persona ve la suya entera y no la cambia.
+3. **El sueldo del contrato no es «lo que cuesta al local»**: el primero es el bruto o el neto que pone el
+   contrato; el segundo, el coste con la Seguridad Social que convierte las horas en coste de personal. Los
+   dos se ven en Información laboral, cada uno con su nombre, y no se pisan.
+4. **El PDF se lee en el móvil y viaja su texto**, página a página (gratis y sin errores); un escaneado o las
+   fotos se mandan como imágenes, **hasta cinco páginas de una vez**. Leer cuesta **3 créditos**, como leer una
+   carta. Si el nombre del contrato no se parece al de la persona, **se avisa antes de confirmar**.
+5. **El contrato no se borra**: uno nuevo se suma y el de antes queda debajo. Se guarda en un cubo privado
+   nuevo (`equipo`) y se abre con un enlace que caduca a los cinco minutos.
+6. **El DNI y el teléfono salen escondidos** («•••• 678 Z») y se ven enteros con un toque: la ficha se abre
+   en mitad del local. El DNI se comprueba con su letra.
+7. **Los degradados de la maqueta, un punto más hondos**: los tonos claros del principio dejaban el texto blanco
+   en 1,6:1 y no se leía al sol. Ahora todos pasan de 3:1 (lo mide `degradados.prueba.ts`). Los mismos colores
+   valen ya para toda la app (`--degradado-*`), y el plegable lleva su icono en su color.
+8. **Las disfrutadas y las aprobadas son cero** hasta la Ampliación 4, que trae las solicitudes: el saldo de
+   hoy es el del contrato.
+9. **Tres iconos nuevos** de Lucide: la palmera de las vacaciones, la ficha y el maletín de lo laboral.
+
 ## 12 · Lo que se toca en los documentos
 
 - **Plan:** la cabecera de D con la Ampliación; las fichas de M13 y M14 con lo de Richi; la ficha

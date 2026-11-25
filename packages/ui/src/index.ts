@@ -138,6 +138,7 @@ export { ComoFactura } from './componentes/ComoFactura.tsx';
 export type { DatosDeLaDeclaracion } from './componentes/Declaracion.tsx';
 export { ConMasInfo } from './componentes/ConMasInfo.tsx';
 export { GrupoDePlegables, Plegable } from './componentes/Plegable.tsx';
+export type { DegradadoDeTipo } from './componentes/Plegable.tsx';
 export type { AvisoProps, TonoDeAviso, ErrorDeLaApi } from './componentes/Aviso.tsx';
 
 export { EstadoVacio, NadaConEso, TodaviaNo } from './componentes/EstadoVacio.tsx';

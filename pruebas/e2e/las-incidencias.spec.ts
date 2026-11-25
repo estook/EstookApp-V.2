@@ -107,7 +107,9 @@ test('la falta sale en Incidencias, se justifica y se quita; y está en su ficha
   // ── Su ficha: sus incidencias donde estaba «Su horario» ────────────────────
   await abrirSinQueSeCaiga(page, `${APP}#/equipo/personas/con-acceso?persona=${marcosId}`);
   const ficha = page.getByRole('dialog', { name: /Marcos/ });
-  await expect(ficha.getByRole('heading', { name: 'Incidencias' })).toBeVisible();
+  // En su plegable, con el número a la vista (la Ampliación 3, 0153).
+  await ficha.locator('summary', { hasText: 'Incidencias' }).click();
+  await expect(ficha.getByRole('heading', { name: 'Incidencias' })).toBeAttached();
   await expect(ficha.getByRole('heading', { name: 'Su horario' })).toHaveCount(0);
   await ficha.getByRole('button', { name: /^Ver (más|en Incidencias)/ }).click();
   await expect(page).toHaveURL(new RegExp(`/equipo/incidencias/todas\\?de=${marcosId}`));

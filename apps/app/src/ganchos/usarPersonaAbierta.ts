@@ -19,10 +19,25 @@ import { useSearchParams } from 'react-router-dom';
 export function usarPersonaAbierta(): {
   readonly abierta: string | null;
   readonly abrir: (personaId: string) => void;
+  /**
+   * Abrir su ficha **y empezar a rellenarla** (la Ampliación 3, 0153): lo que sale al
+   * invitar a alguien, «¿Cómo rellenamos su ficha?».
+   */
+  readonly abrirParaRellenar: (personaId: string) => void;
   readonly cerrar: () => void;
 } {
   const [parametros, ponerParametros] = useSearchParams();
   const abierta = parametros.get('persona');
+
+  const abrirParaRellenar = useCallback(
+    (personaId: string) => {
+      const nuevos = new URLSearchParams(parametros);
+      nuevos.set('persona', personaId);
+      nuevos.set('ficha', 'rellenar');
+      ponerParametros(nuevos);
+    },
+    [parametros, ponerParametros],
+  );
 
   const abrir = useCallback(
     (personaId: string) => {
@@ -36,8 +51,9 @@ export function usarPersonaAbierta(): {
   const cerrar = useCallback(() => {
     const nuevos = new URLSearchParams(parametros);
     nuevos.delete('persona');
+    nuevos.delete('ficha');
     ponerParametros(nuevos, { replace: true });
   }, [parametros, ponerParametros]);
 
-  return { abierta, abrir, cerrar };
+  return { abierta, abrir, abrirParaRellenar, cerrar };
 }

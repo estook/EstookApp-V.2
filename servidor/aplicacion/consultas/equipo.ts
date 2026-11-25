@@ -14,6 +14,7 @@ import {
 } from '@estook/dominio';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { comoLista } from '../listas.ts';
+import { laFichaDe, type LaFicha } from '../la-ficha.ts';
 
 /**
  * Lo que Equipo enseña de verdad (M6½, anticipando M13 y M15).
@@ -1414,6 +1415,11 @@ export interface SalidaUnaPersona {
   readonly puedePonerRetribucion: boolean;
   readonly puedeEditar: boolean;
   readonly radioMetros: number;
+  /**
+   * La ficha del trabajador (la Ampliación 3, 0153): sus condiciones, su saldo de
+   * vacaciones y, solo para quien lleva los datos del equipo y para ella, lo privado.
+   */
+  readonly ficha: LaFicha;
 }
 
 export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
@@ -1558,6 +1564,14 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
           };
 
     const delMes = horas[0]?.del_mes ?? 0;
+    const organizacionId = contexto.sesion?.organizacionId;
+    if (organizacionId == null) throw new FalloDeAplicacion('sin_sesion');
+    const ficha = await laFichaDe(
+      contexto,
+      quien.id,
+      organizacionId,
+      fechaOperativa(reloj.jornada),
+    );
 
     return {
       personaId: quien.id,
@@ -1599,6 +1613,7 @@ export const unaPersona = consulta<{ persona_id: string }, SalidaUnaPersona>({
       puedePonerRetribucion,
       puedeEditar,
       radioMetros: reloj.radio,
+      ficha,
     };
   },
 });

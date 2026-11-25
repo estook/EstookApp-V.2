@@ -256,6 +256,11 @@ const ICONOS = {
   'utensils-crossed': 'Cubiertos',
   // El rediseño (0148): «Para llevar» en la barra de arriba de Estook TPV.
   'shopping-bag': 'ParaLlevar',
+  // La Ampliación 3 (0153): la ficha del trabajador. La palmera de las vacaciones (Richi,
+  // 24-nov: «vacaciones, una palmera»), la tarjeta de la ficha y el maletín de lo laboral.
+  'tree-palm': 'Palmera',
+  'id-card': 'Ficha',
+  briefcase: 'Maletin',
 };
 
 async function traer(nombre) {

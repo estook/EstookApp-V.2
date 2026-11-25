@@ -45,6 +45,8 @@ export const CREDITOS_DE_FOGON = {
   // de Esencial (10) y es lo que cuesta de verdad (unos 8 céntimos, casi todo búsquedas).
   // Y una vez cada diez días (`tu-zona.ts`).
   analizar_zona: 8,
+  // ── La Ampliación 3 · La ficha del trabajador (0153): el contrato, de una vez ──
+  leer_contrato: 3,
 } as const;
 
 export type QueSeLePide = keyof typeof CREDITOS_DE_FOGON;

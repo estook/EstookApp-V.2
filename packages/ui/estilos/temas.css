@@ -50,6 +50,23 @@
      * se lea como cristal ahumado y no como recuadros planos pegados al fondo.
      */
     --relleno-tarjeta: none;
+
+    /*
+     * **Los degradados de cada tipo de cosa** (la Ampliación, 0153; Richi, 24-nov: «odio
+     * que todo sea hiperplano»). Cada cosa con su color y siempre el mismo: las
+     * vacaciones, azul de playa; las horas, naranja; el contrato y los turnos, verde; el
+     * historial y la limpieza, turquesa; las incidencias y Sanidad, coral; las fechas y
+     * las reservas, violeta. Son los de la maqueta, un punto más hondos para que el
+     * texto blanco se lea encima (3:1 en el tono más claro; lo mide `degradados.prueba.ts`).
+     * Valen igual en claro y en oscuro: llevan su propio blanco.
+     */
+    --degradado-vacaciones: linear-gradient(135deg, #1e88e5 0%, #2563eb 55%, #3141d8 100%);
+    --degradado-horas: linear-gradient(135deg, #e0670a 0%, #d0540c 55%, #b8420e 100%);
+    --degradado-contrato: linear-gradient(135deg, #16935f 0%, #0f7d51 55%, #0b6644 100%);
+    --degradado-historial: linear-gradient(135deg, #0e8f86 0%, #0c7a72 60%, #0a645e 100%);
+    --degradado-incidencias: linear-gradient(135deg, #e0414f 0%, #cc2f52 55%, #ad2149 100%);
+    --degradado-fechas: linear-gradient(135deg, #7a5af0 0%, #6744e0 55%, #5433c4 100%);
+    --sombra-baldosa: 0 12px 24px -16px rgba(17, 28, 31, 0.65);
   }
 
   /*

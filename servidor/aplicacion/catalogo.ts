@@ -146,6 +146,8 @@ import {
   yoEnElTpv,
 } from './comandos/aparatos.ts';
 import { registroDeJornada } from './consultas/registro-de-jornada.ts';
+import { abrirUnDocumentoDePersona } from './consultas/la-ficha.ts';
+import { guardarLaFichaDelTrabajador, leerElContratoConFogon } from './comandos/la-ficha.ts';
 import { elHorario, elHorarioEnBorrador, elHorarioEnPdf } from './consultas/horario.ts';
 import {
   copiarLaSemanaAnterior,
@@ -741,6 +743,8 @@ export const catalogo = {
     // no es nadie, con su llave.
     [miInformeEnPdf.nombre]: miInformeEnPdf,
     [registroDeJornada.nombre]: registroDeJornada,
+    // La Ampliación 3 · La ficha del trabajador (0153): el contrato, con enlace que caduca.
+    [abrirUnDocumentoDePersona.nombre]: abrirUnDocumentoDePersona,
     [elAparatoParaFichar.nombre]: elAparatoParaFichar,
 
     // ── T1 · La puerta de Estook TPV (0107) ────────────────────────────────
@@ -911,6 +915,10 @@ export const catalogo = {
     // La retribucion exige `dato.coste_de_personal`, no `app.equipo`: un jefe de
     // cocina lleva a su equipo y no ve lo que cobra.
     [ponerRetribucion.nombre]: ponerRetribucion,
+    // La Ampliación 3 · La ficha del trabajador (0153): Fogón lee el contrato y propone;
+    // se guarda solo lo que confirma quien lleva el equipo.
+    [leerElContratoConFogon.nombre]: leerElContratoConFogon,
+    [guardarLaFichaDelTrabajador.nombre]: guardarLaFichaDelTrabajador,
     // El repaso del 9-oct (0081): el horario de siempre se fue; se justifica la falta.
     [justificarIncidencia.nombre]: justificarIncidencia,
     [quitarJustificacion.nombre]: quitarJustificacion,

@@ -3535,6 +3535,23 @@ Las pruebas: `la-sala-y-la-cocina.prueba.ts`, `las-fotos-de-producto.prueba.ts` 
 `fichas-y-escandallos.prueba.ts` contra la base; `botonera.prueba.ts` del dominio y `apps.prueba.ts`; y las
 ocho de pantalla que abren mesa, al recorrido nuevo.
 
+### La Ampliación 3 · 1 · La ficha del trabajador
+
+_25 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), secciones 4 y 13 (migración
+0127; adelanta lo de M13):
+
+- **La ficha nueva**: cuatro cuadrados de color (jornada, contrato, incorporación y vacaciones) y la lista que se
+  despliega (incidencias, información personal y laboral, vacaciones e historial de jornadas).
+- **El alta en tres formas** (foto, archivo o a mano): Fogón lee el contrato, propone cada campo con su página y
+  nada se guarda sin confirmar. Al invitar a alguien, «¿Rellenamos su ficha?».
+- **El saldo de vacaciones**, calculado por Estook con lo devengado aparte; **lo privado, decidido por la base**;
+  el contrato en un cubo privado con enlace que caduca; **el historial de jornadas, exportable**.
+- **Los degradados de cada tipo de cosa** para toda la app, con su contraste medido.
+
+Las pruebas: `la-ficha-del-trabajador.prueba.ts` contra la base (también un camarero y un jefe de sala llamando
+a pelo), `ficha.prueba.ts` del dominio, `degradados.prueba.ts` de la interfaz y la de pantalla de la ficha, que
+la rellena a mano.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

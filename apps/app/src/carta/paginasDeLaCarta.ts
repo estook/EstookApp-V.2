@@ -293,13 +293,17 @@ function paraFogon(lienzo: HTMLCanvasElement): PaginaParaLeer {
   return { tipo: 'image/jpeg', base64: direccion.slice(direccion.indexOf(',') + 1) };
 }
 
-/** Las fotos o el PDF escaneado, en páginas para Fogón: como mucho `PAGINAS_PARA_FOGON`. */
+/**
+ * Las fotos o el PDF escaneado, en páginas para Fogón: como mucho `tope` (las de la carta,
+ * de fábrica; el contrato del trabajador pide alguna más, 0153).
+ */
 export async function paginasParaFogon(
   ficheros: readonly File[],
+  tope: number = PAGINAS_PARA_FOGON,
 ): Promise<readonly PaginaParaLeer[]> {
   const paginas: PaginaParaLeer[] = [];
   for (const fichero of ficheros) {
-    if (paginas.length >= PAGINAS_PARA_FOGON) break;
+    if (paginas.length >= tope) break;
     if (esPdf(fichero)) {
       const [pdfjs, trabajador] = await Promise.all([
         import('pdfjs-dist'),
@@ -309,7 +313,7 @@ export async function paginasParaFogon(
       const documento = await pdfjs.getDocument({
         data: new Uint8Array(await fichero.arrayBuffer()),
       }).promise;
-      const cuantas = Math.min(documento.numPages, PAGINAS_PARA_FOGON - paginas.length);
+      const cuantas = Math.min(documento.numPages, tope - paginas.length);
       for (let numero = 1; numero <= cuantas; numero++) {
         const pagina = await documento.getPage(numero);
         const tal = pagina.getViewport({ scale: 1 });
@@ -331,6 +335,43 @@ export async function paginasParaFogon(
   }
   if (paginas.length === 0) throw new NoSeHaPodidoLeer('No hay ninguna página que leer.');
   return paginas;
+}
+
+/**
+ * El texto de un PDF **página a página** (la Ampliación 3, 0153): para el contrato, que
+ * Fogón tiene que leer diciendo de qué página sale cada cosa. Nulo si es un escaneado.
+ */
+export async function textoDeCadaPagina(fichero: File, tope: number): Promise<string[] | null> {
+  const [pdfjs, trabajador] = await Promise.all([
+    import('pdfjs-dist'),
+    import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
+  ]);
+  pdfjs.GlobalWorkerOptions.workerSrc = trabajador.default;
+  let documento;
+  try {
+    documento = await pdfjs.getDocument({ data: new Uint8Array(await fichero.arrayBuffer()) })
+      .promise;
+  } catch {
+    throw new NoSeHaPodidoLeer(`«${fichero.name}» no se ha podido abrir. ¿Tiene contraseña?`);
+  }
+  const paginas: string[] = [];
+  const cuantas = Math.min(documento.numPages, tope);
+  for (let numero = 1; numero <= cuantas; numero++) {
+    const pagina = await documento.getPage(numero);
+    const ancho = pagina.getViewport({ scale: 1 }).width;
+    const contenido = await pagina.getTextContent();
+    const trozos: Trozo[] = [];
+    for (const item of contenido.items) {
+      if (!('str' in item)) continue;
+      const [, , , , x, y] = item.transform as [number, number, number, number, number, number];
+      trozos.push({ x, y, alto: item.height, fin: x + item.width, texto: item.str });
+    }
+    paginas.push(lineasDeLaPagina(trozos, ancho).join('\n').slice(0, 19_000));
+    pagina.cleanup();
+  }
+  await documento.destroy();
+  const letras = paginas.join('').replace(/[^\p{L}]/gu, '').length;
+  return letras < LETRAS_DE_UN_PDF_CON_TEXTO ? null : paginas;
 }
 
 export { esPdf };

@@ -119,6 +119,7 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
     null,
   );
   const [recienInvitada, setRecienInvitada] = useState<{
+    personaId?: string;
     nombre: string;
     pin: string | null;
     yaExistia: boolean;
@@ -130,6 +131,8 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
   // que la ponen las políticas de M1. Es para no enseñar un botón que va a decir
   // que no.
   const puedeInvitar = puedeEditar(permisos, 'accion.invitar_personas');
+  // Rellenar la ficha del trabajador (0153): quien lleva los datos del equipo.
+  const puedeRellenarFichas = puedeEditar(permisos, 'dato.datos_del_equipo');
 
   usarQueHacer('invitar', () => {
     if (puedeInvitar) setInvitando(true);
@@ -408,6 +411,30 @@ export function QuienTieneAcceso({ vista }: { readonly vista: string }) {
                 </p>
               )}
             </>
+          )}
+
+          {/*
+            La Ampliación 3 (0153): al dar de alta a alguien, Estook pregunta al momento
+            por su ficha del trabajador. Se rellena con su contrato (Fogón lo lee) o a mano.
+          */}
+          {recienInvitada.personaId !== undefined && puedeRellenarFichas && (
+            <div className="mb-e3 flex flex-col gap-e2 rounded-medio bg-fondo p-e3">
+              <p className="text-cuerpo">
+                <strong>¿Rellenamos su ficha?</strong> Sube su contrato y Fogón la rellena en un
+                momento, o escríbela a mano. De ella salen sus vacaciones.
+              </p>
+              <Boton
+                tono="secundario"
+                ancho
+                onClick={() => {
+                  const quien = recienInvitada.personaId;
+                  setRecienInvitada(null);
+                  if (quien !== undefined) persona.abrirParaRellenar(quien);
+                }}
+              >
+                Rellenar su ficha
+              </Boton>
+            </div>
           )}
 
           <Boton

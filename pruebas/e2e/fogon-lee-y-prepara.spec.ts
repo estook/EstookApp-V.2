@@ -206,7 +206,7 @@ test('Fogón revisa y prepara: la revisión, el horario, la reseña y el pedido'
   });
   const lunes = unLunesLibre();
   await abrirSinQueSeCaiga(page, `${APP}#/horario?semana=${lunes}`);
-  await page.getByRole('button', { name: 'Hacerlo con Fogón' }).click();
+  await page.getByRole('button', { name: 'Hacer el cuadrante con Fogón' }).click();
   const cuadrante = page.getByRole('dialog', { name: 'El horario, con Fogón' });
   // Pregunta los días fuertes y a quién quieres; las horas ya las sabe.
   await expect(cuadrante.getByText('¿Qué días se vende más?')).toBeVisible({ timeout: 15_000 });

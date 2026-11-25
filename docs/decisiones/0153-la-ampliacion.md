@@ -436,6 +436,42 @@ En `ampliacion-3-2-las-nominas`, **con la migración 0128** y la API con **una c
 7. **«Le falta» es a quien tiene ficha** y había empezado antes de acabar ese mes; los demás, no cuentan.
 8. **Mi ficha se carga solo al abrirla**, para no hacer más pesada la entrada a la app.
 
+## 15 · Lo que se construyó en la Ampliación 4 · 1 · El horario, rehecho (25-nov)
+
+**La Ampliación 4 va en dos entregas** (lo decidió la IA, punto 1): **4 · 1 · El horario** (Calendario ›
+Turnos, rehecho como en la maqueta) y **4 · 2 · Calendario y vacaciones**. En `ampliacion-4-1-el-horario`,
+**sin migración y sin cambios en la API**. Las pruebas para Richi, en
+[sus pasos](../pasos/pasos-de-la-ampliacion-4-1.md) (la 37).
+
+- **«Publicado»** en vez de «Lo que ve el equipo» (Richi, 25-nov: «sencillo y que se entienda»): las dos
+  pestañas son **Montarlo** y **Publicado**.
+- **La semana, en grande** («23 – 29 de noviembre»), con «Esta semana» y cómo está (borrador, publicada…).
+- **Publicar en verde y «Hacer el cuadrante con Fogón» en sus colores**, como en la maqueta; «Copiar la
+  semana anterior» al lado.
+- **Cuatro baldosas de color**: horas de la semana (con las de cada zona), lo que cuesta (solo con permiso),
+  quién está de vacaciones y lo que hay que mirar. **Arriba, las tres primeras cosas que mirar**, con su color.
+- **La rejilla, que se lee de un vistazo**: cada zona con su color (sala verde, cocina ámbar, el resto violeta),
+  una cara de color por persona, **el turno partido en dos bloques**, «Libre» en gris, **las vacaciones como
+  una banda azul con su palmera** de punta a punta, **las horas frente al contrato con su barrita** (verde si
+  cuadra, naranja si falta o sobra) y **«Quiénes hay»** cada día por zona, en rojo si no hay nadie.
+- **En el móvil**: quien lleva el horario ve **el día por horas** (una barra de color por persona y la línea
+  roja de la hora de ahora) y los que no trabajan abajo, con su color; y **«Solo el mío»** es una tarjeta por
+  día con sus turnos y su total.
+
+**Lo que decidió la IA al construirla**, para que Richi lo sepa:
+
+1. **La 4 en dos**: el horario primero, que es lo que pediste mirar y no toca la base; el calendario y las
+   vacaciones después, que llevan migración, avisos y el saldo de la ficha.
+2. **Los colores de la maqueta, un punto más hondos** donde el blanco no se leía (la sala); **la cocina en
+   ámbar con texto oscuro**. Medido en `degradados.prueba.ts`.
+3. **«Cerrado» no sale todavía**: Estook no sabe qué días cierra el local (los horarios de apertura llegan con
+   las reservas, la 5). Hasta entonces, el día sin nadie se ve en «Quiénes hay», en rojo.
+4. **«Cuadra» es no irse más de media hora** del contrato: un turno que acaba a y media no es «falta».
+5. **Hoy, en ámbar** en la cabecera de la rejilla y del móvil, igual en las dos.
+6. **El texto pequeño también se lee** (lo cazó la prueba de contraste en GitHub): los tonos claros de todos
+   los degradados bajan un punto más, hasta 4,5:1 con el blanco, y cada degradado lleva debajo su color base
+   (`fondoDegradado`), que es el fondo de verdad del texto. Vale también para la ficha y Mi ficha.
+
 ## 12 · Lo que se toca en los documentos
 
 - **Plan:** la cabecera de D con la Ampliación; las fichas de M13 y M14 con lo de Richi; la ficha

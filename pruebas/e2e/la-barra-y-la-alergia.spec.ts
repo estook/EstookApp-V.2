@@ -130,8 +130,8 @@ test('la barra y la alergia: avisar al pedir, la franja en rojo, y el ✓ con su
     window.location.hash = '/';
   });
   await page.getByRole('button', { name: /^Mesa 1: Libre/ }).click({ timeout: 15_000 });
-  await page.getByRole('button', { name: '2', exact: true }).click();
-  await page.getByRole('button', { name: 'Abrir', exact: true }).click();
+  await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
+  await page.getByRole('button', { name: /^Por pases/ }).click();
 
   // Dentro de la mesa, «···» (0131): lo que se usa menos, las alergias entre ello.
   await page

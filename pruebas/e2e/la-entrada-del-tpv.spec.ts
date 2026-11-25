@@ -127,8 +127,8 @@ test('la entrada: la sala primero, el engranaje y mantener pulsado', async ({
 
   // ── Mantener pulsado: se ha agotado, y ya hay otra vez ──
   await page.getByRole('button', { name: /^Mesa 1: Libre/ }).click();
-  await page.getByRole('button', { name: '2', exact: true }).click();
-  await page.getByRole('button', { name: 'Abrir', exact: true }).click();
+  await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
+  await page.getByRole('button', { name: /^Por pases/ }).click();
   await page.getByRole('button', { name: 'Entrantes', exact: true }).click({ timeout: 15_000 });
   const croquetas = page.getByRole('button', { name: /^Croquetas, 9,00 €/ });
   await croquetas.hover();

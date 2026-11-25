@@ -647,19 +647,20 @@ export function ElPin({
                 elegir('entrar');
               }}
             />
-            {/* **La venta rápida** (0148), solo en la caja: ticar y cobrar, sin mesa. */}
-            {enLaCaja && (
-              <BotonGrande
-                icono={IconoPrisa}
-                titulo="Venta rápida"
-                detalle="Ticar y cobrar, sin mesa"
-                color="bg-mesa-te-toca text-sobre-mesa-te-toca"
-                alto="min-h-[6.5rem]"
-                onClick={() => {
-                  elegir('rapida');
-                }}
-              />
-            )}
+            {/* **La venta rápida** (0148): ticar y cobrar, sin mesa. En la caja y en el comandero
+                (la Ampliación, 0153, fallo 3); en el comandero, el efectivo va a la caja. */}
+            <BotonGrande
+              icono={IconoPrisa}
+              titulo="Venta rápida"
+              detalle={
+                enLaCaja ? 'Ticar y cobrar, sin mesa' : 'Ticar y cobrar; el efectivo, a la caja'
+              }
+              color="bg-mesa-te-toca text-sobre-mesa-te-toca"
+              alto="min-h-[6.5rem]"
+              onClick={() => {
+                elegir('rapida');
+              }}
+            />
             {hecho !== null && (
               <span
                 role="status"

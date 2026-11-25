@@ -86,8 +86,8 @@ export function LaBarraDeArriba({
             oculto={abajo}
           />
         )}
-        {/* **La venta rápida** (0148): en la caja, con su rayo en amarillo. */}
-        {tomaNota && enLaCaja && (
+        {/* **La venta rápida** (0148), con su rayo en amarillo: en la caja y en el comandero (0153). */}
+        {tomaNota && (
           <DondeIr
             icono={IconoPrisa}
             texto="Rápida"

@@ -386,6 +386,11 @@ export interface ElAparatoPorDentro {
   readonly cajon: string | null;
   readonly local: { readonly id: string; readonly nombre: string };
   readonly bloqueo: AjustesDelBloqueo;
+  /**
+   * **Cómo sale la cocina al abrir una mesa** (la Ampliación, 0153): preguntar, o siempre por pases, o
+   * siempre todo junto (Ajustes del TPV › Cocina y barra). Una API de antes no lo dice: preguntar.
+   */
+  readonly comoSaleLaCocina?: 'preguntar' | 'pases' | 'junto';
   readonly fichados: readonly {
     readonly nombre: string;
     readonly iniciales: string;

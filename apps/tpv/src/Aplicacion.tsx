@@ -93,8 +93,9 @@ function Dentro() {
         </main>
       </div>
     );
-  } else if (enLaCaja && direccion === 'rapida') {
-    // **La venta rápida** (0148): en la caja, que es donde está el cajón (0115).
+  } else if (direccion === 'rapida') {
+    // **La venta rápida** (0148), en la caja y en el comandero (la Ampliación, 0153, fallo 3): en el
+    // comandero, el efectivo se deja para la caja, como al cobrar en la mesa (0145).
     pantalla = <LaVentaRapida />;
   } else if (mesa !== undefined) pantalla = <LaMesa key={mesa} cuentaId={mesa} />;
   // Lo demás, también `#/inicio` de antes, es la sala.

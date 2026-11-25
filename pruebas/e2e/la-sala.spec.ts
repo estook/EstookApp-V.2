@@ -133,8 +133,8 @@ test('la sala: dibujarla en el TPV, abrir la mesa, pedir con los pases en pesta�
     await donde.click();
   };
   await tocar(page.getByRole('button', { name: /^Mesa 1: Libre/ }));
-  await tocar(page.getByRole('button', { name: '2', exact: true }));
-  await tocar(page.getByRole('button', { name: 'Abrir', exact: true }));
+  await tocar(page.getByRole('button', { name: 'Siguiente', exact: true }));
+  await tocar(page.getByRole('button', { name: /^Por pases/ }));
   // Una mesa recién abierta empieza en Bebidas: la pestaña y su página.
   await expect(page.getByRole('radio', { name: 'Bebidas', checked: true })).toBeVisible({
     timeout: 15_000,

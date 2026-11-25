@@ -109,8 +109,8 @@ test('monta tus bebidas: la caña, la Coca-Cola y una copa, y pedirlas', async (
     window.location.hash = '/';
   });
   await page.getByRole('button', { name: /^Mesa 1: Libre/ }).click({ timeout: 15_000 });
-  await page.getByRole('button', { name: '2', exact: true }).click();
-  await page.getByRole('button', { name: 'Abrir', exact: true }).click();
+  await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
+  await page.getByRole('button', { name: /^Por pases/ }).click();
   await page.getByRole('button', { name: 'Cervezas', exact: true }).click({ timeout: 15_000 });
   await page.getByRole('button', { name: /^Caña, 1,80 €/ }).click();
   await page.getByRole('button', { name: 'Copas', exact: true }).click();

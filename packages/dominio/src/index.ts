@@ -1569,3 +1569,21 @@ export type {
   HoraDeLaCurva,
   CanalDeVentaDelPanel,
 } from './el-panel.ts';
+export {
+  TIPOS_DE_CONTRATO,
+  esTipoDeContrato,
+  diasDelAno,
+  diaDelAno,
+  elSaldoDeVacaciones,
+  diasEnLetra,
+  cuantoLleva,
+  dniEscondido,
+  esUnDniValido,
+} from './ficha.ts';
+export type {
+  TipoDeContrato,
+  Jornada,
+  VacacionesEn,
+  PaginaDeDonde,
+  SaldoDeVacaciones,
+} from './ficha.ts';

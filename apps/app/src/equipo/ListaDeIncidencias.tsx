@@ -370,7 +370,14 @@ export function Justificar({
  * «Su horario» (Richi, 9-oct: «donde ponía horario, que aparezcan esas incidencias,
  * tres o cuatro, y luego un botón de ver más para no llenar esa pestaña»).
  */
-export function IncidenciasDeUnaPersona({ personaId }: { readonly personaId: string }) {
+export function IncidenciasDeUnaPersona({
+  personaId,
+  enLaFicha = false,
+}: {
+  readonly personaId: string;
+  /** Dentro del plegable «Incidencias» de la ficha (0153): sin su título, que ya lo lleva. */
+  readonly enLaFicha?: boolean;
+}) {
   const navegar = useNavigate();
   const [justificando, setJustificando] = useState<UnaIncidencia | null>(null);
   const [noticia, setNoticia] = useState<string | null>(null);
@@ -388,7 +395,10 @@ export function IncidenciasDeUnaPersona({ personaId }: { readonly personaId: str
   return (
     <section className="flex flex-col gap-e2" aria-labelledby="incidencias-de-la-persona">
       <div className="flex flex-wrap items-center justify-between gap-e2">
-        <h3 id="incidencias-de-la-persona" className="text-seccion font-semibold">
+        <h3
+          id="incidencias-de-la-persona"
+          className={enLaFicha ? 'sr-only' : 'text-seccion font-semibold'}
+        >
           Incidencias
         </h3>
         {lo !== undefined && lo.incidencias.length > 0 && (

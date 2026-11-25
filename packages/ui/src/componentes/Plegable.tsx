@@ -32,10 +32,18 @@ export function GrupoDePlegables({
   );
 }
 
+/**
+ * Los degradados de cada tipo de cosa (`temas.css`, 0153): el icono del plegable en su
+ * color, con el blanco encima. Sin él, el icono va en gris, como siempre.
+ */
+export type DegradadoDeTipo =
+  'vacaciones' | 'horas' | 'contrato' | 'historial' | 'incidencias' | 'fechas';
+
 export function Plegable({
   titulo,
   resumen,
   icono,
+  degradado,
   tono = 'neutro',
   abierto = false,
   children,
@@ -44,6 +52,8 @@ export function Plegable({
   /** Lo esencial, a la vista sin abrir: «Caduca el 20 dic». */
   readonly resumen?: ReactNode;
   readonly icono?: ReactNode;
+  /** El color de su tipo (0153): el icono, en su degradado. */
+  readonly degradado?: DegradadoDeTipo;
   /** El resumen en color cuando pide atención: un lote caducado. */
   readonly tono?: 'neutro' | 'atencion' | 'mal';
   /** Abierto de entrada (lo que no puede esperar: un lote caducado). */
@@ -56,7 +66,15 @@ export function Plegable({
         {icono !== undefined && (
           <span
             aria-hidden
-            className="grid size-9 shrink-0 place-items-center rounded-grande bg-fondo text-texto-suave"
+            className={clases(
+              'grid size-9 shrink-0 place-items-center rounded-grande',
+              degradado === undefined
+                ? 'bg-fondo text-texto-suave'
+                : 'text-white [box-shadow:var(--sombra-baldosa)]',
+            )}
+            style={
+              degradado === undefined ? undefined : { background: `var(--degradado-${degradado})` }
+            }
           >
             {icono}
           </span>

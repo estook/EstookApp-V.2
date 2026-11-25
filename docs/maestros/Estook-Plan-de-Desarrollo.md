@@ -746,6 +746,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Lo que se calcula y nunca lee la IA:** las vacaciones devengadas, disfrutadas, aprobadas y disponibles. Los días pendientes de años anteriores los pone el gerente.
 - **Las nóminas, en el perfil**, una a una o **«Subir las nóminas del mes»** con el PDF de la gestoría: Fogón reparte cada página por DNI y nombre, y pregunta lo que no sabe.
 - **La privacidad:** los jefes gestionan vacaciones e incidencias **sin ver nóminas, sueldos ni documentos**.
+- **La 3 · 1, construida el 25-nov** ([0153](../decisiones/0153-la-ampliacion.md), sección 13; migración 0127): la ficha, el alta en tres formas con Fogón, el saldo de vacaciones, lo privado decidido por la base y el historial de jornadas exportable. **Queda la 3 · 2**: las nóminas y «Subir las nóminas del mes».
 
 **Reglas críticas.** El coste por hora **solo lo ve quien tiene ese permiso**. No aparece en documentos ni en Fogón. **El contrato es un dato personal**: lo ven quien lleva el local y la propia persona, y nadie más; lo decide la base, no la pantalla. Fogón lo lee **en el servidor**, propone y **no guarda nada sin que el gerente confirme**; lo que pone el contrato es un dato, jamás una instrucción (M22). **Estook no se inventa lo que dice un convenio**: los días de vacaciones salen del convenio aplicado, del contrato o de lo que ponga el gerente a mano, y siempre los confirma él; cómo sabe Estook lo que dice cada convenio se pregunta en el plan del módulo.
 

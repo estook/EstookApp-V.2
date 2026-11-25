@@ -71,6 +71,12 @@ export const IconoCarta = crearIcono(
   '<path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />',
 );
 
+/** Lucide `briefcase` */
+export const IconoMaletin = crearIcono(
+  'briefcase',
+  '<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /><rect width="20" height="14" x="2" y="6" rx="2" />',
+);
+
 /** Lucide `building-2` */
 export const IconoOrganizacion = crearIcono(
   'building-2',
@@ -315,6 +321,12 @@ export const IconoInicio = crearIcono(
 export const IconoHelado = crearIcono(
   'ice-cream-cone',
   '<path d="m7 11 4.08 10.35a1 1 0 0 0 1.84 0L17 11" /><path d="M17 7A5 5 0 0 0 7 7" /><path d="M17 7a2 2 0 0 1 0 4H7a2 2 0 0 1 0-4" />',
+);
+
+/** Lucide `id-card` */
+export const IconoFicha = crearIcono(
+  'id-card',
+  '<path d="M16 10h2" /><path d="M16 14h2" /><path d="M6.17 15a3 3 0 0 1 5.66 0" /><circle cx="9" cy="11" r="2" /><rect x="2" y="5" width="20" height="14" rx="2" />',
 );
 
 /** Lucide `inbox` */
@@ -675,6 +687,12 @@ export const IconoEtiqueta = crearIcono(
 export const IconoBorrar = crearIcono(
   'trash-2',
   '<path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" />',
+);
+
+/** Lucide `tree-palm` */
+export const IconoPalmera = crearIcono(
+  'tree-palm',
+  '<path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4" /><path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3" /><path d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35" /><path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-12-1-14" />',
 );
 
 /** Lucide `trending-up` */

@@ -1,4 +1,13 @@
-import { comoSeLeenLasHoras, conSimbolo, centimos, type TipoDeIncidencia } from '@estook/dominio';
+import {
+  comoSeLeenLasHoras,
+  conSimbolo,
+  centimos,
+  type Jornada,
+  type SaldoDeVacaciones,
+  type TipoDeContrato,
+  type TipoDeIncidencia,
+  type VacacionesEn,
+} from '@estook/dominio';
 
 /**
  * Lo que Equipo recibe del servidor (M6½).
@@ -206,6 +215,89 @@ export interface UnaPersona {
   readonly puedePonerRetribucion: boolean;
   readonly puedeEditar: boolean;
   readonly radioMetros: number;
+  /**
+   * La ficha del trabajador (la Ampliación 3, 0153). Opcional: la web se publica al
+   * fusionar y la API se despliega después, y en ese rato la respuesta no la trae.
+   */
+  readonly ficha?: LaFichaDelTrabajador;
+}
+
+// ── La ficha del trabajador (la Ampliación 3, 0153) ──────────────────────────
+
+export interface FichaLaboral {
+  readonly incorporacion: string | null;
+  readonly contrato: TipoDeContrato | null;
+  readonly jornada: Jornada | null;
+  readonly horasSemanales: number | null;
+  readonly categoria: string | null;
+  readonly convenio: string | null;
+  readonly vacacionesAlAno: number | null;
+  readonly vacacionesEn: VacacionesEn;
+  readonly pendientesAnteriores: number;
+  readonly origen: 'a_mano' | 'contrato';
+  readonly cambiadaEn: string;
+  readonly cambiadaPor: string | null;
+}
+
+export interface FichaPrivada {
+  readonly dni: string | null;
+  readonly telefono: string | null;
+  readonly domicilio: string | null;
+  readonly sueldoCentimos: number | null;
+  readonly sueldoEs: 'bruto' | 'neto' | null;
+  readonly sueldoCada: 'mes' | 'ano' | null;
+  readonly pagas: number | null;
+}
+
+export interface DocumentoDeLaFicha {
+  readonly documentoId: string;
+  readonly tipo: 'contrato';
+  readonly nombre: string;
+  readonly mime: string;
+  readonly bytes: number;
+  readonly subidoEn: string;
+  readonly subidoPor: string | null;
+}
+
+/**
+ * Lo privado **llega o no llega**: sin `privada` ni `documentos`, quien mira no los ve
+ * (un jefe de sala), y no se pinta ni el hueco.
+ */
+export interface LaFichaDelTrabajador {
+  readonly laboral: FichaLaboral | null;
+  readonly privada?: FichaPrivada | null;
+  readonly documentos?: readonly DocumentoDeLaFicha[];
+  readonly vacaciones: SaldoDeVacaciones | null;
+  readonly veLoPrivado: boolean;
+  readonly puedeRellenarla: boolean;
+}
+
+/** Un campo que Fogón ha leído del contrato, con la página donde lo vio. */
+export interface CampoLeido<T> {
+  readonly valor: T | null;
+  readonly pagina: number | null;
+}
+
+export interface ElContratoLeido {
+  readonly trabajador: string | null;
+  readonly pareceDeOtro: boolean;
+  readonly campos: {
+    readonly incorporacion: CampoLeido<string>;
+    readonly contrato: CampoLeido<TipoDeContrato>;
+    readonly jornada: CampoLeido<Jornada>;
+    readonly horasSemanales: CampoLeido<number>;
+    readonly categoria: CampoLeido<string>;
+    readonly convenio: CampoLeido<string>;
+    readonly vacacionesAlAno: CampoLeido<number>;
+    readonly vacacionesEn: CampoLeido<VacacionesEn>;
+    readonly dni: CampoLeido<string>;
+    readonly domicilio: CampoLeido<string>;
+    readonly sueldoCentimos: CampoLeido<number>;
+    readonly sueldoEs: CampoLeido<'bruto' | 'neto'>;
+    readonly sueldoCada: CampoLeido<'mes' | 'ano'>;
+    readonly pagas: CampoLeido<number>;
+  };
+  readonly queda: { readonly hoy: number; readonly mes: number; readonly delMes: number };
 }
 
 // ── Cómo se enseña cada cosa ─────────────────────────────────────────────────

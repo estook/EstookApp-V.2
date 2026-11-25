@@ -31,6 +31,11 @@ export const entradaRegistroDeJornada = z
     desde: fecha,
     hasta: fecha,
     formato: z.enum(['hoja', 'pdf']),
+    /**
+     * Solo el de una persona: el historial de jornadas de su ficha, con «Exportar» (la
+     * Ampliación 3, 0153). Sin esto, el de todo el local, como siempre.
+     */
+    persona_id: z.string().uuid().optional(),
   })
   .strict()
   .refine((e) => e.desde <= e.hasta, { message: 'El periodo empieza antes de acabar.' });
@@ -89,6 +94,7 @@ async function leerElRegistro(
   localId: string,
   desde: string,
   hasta: string,
+  personaId: string | null,
 ): Promise<FilaLeida[]> {
   const ahora = contexto.ahora.toISOString();
   const filas = await contexto.sql<FilaDeLaBase[]>`
@@ -124,6 +130,7 @@ async function leerElRegistro(
       ) ultima on true
      where f.local_id = ${localId}
        and f.fecha_operativa between ${desde}::date and ${hasta}::date
+       and (${personaId}::uuid is null or f.persona_id = ${personaId}::uuid)
      order by persona, f.entro_en, f.id
   `;
   const instante = (texto: string | null) => (texto === null ? null : new Date(texto));
@@ -283,7 +290,13 @@ export const registroDeJornada = consulta<EntradaRegistroDeJornada, ElRegistro>(
     }
 
     const marca = await laMarcaDelLocal(contexto, localId);
-    const filas = await leerElRegistro(contexto, localId, entrada.desde, entrada.hasta);
+    const filas = await leerElRegistro(
+      contexto,
+      localId,
+      entrada.desde,
+      entrada.hasta,
+      entrada.persona_id ?? null,
+    );
     const hoja = laHoja(filas, marca.zonaHoraria);
     const huella = await laHuella(hoja);
     const nombre = `registro-de-jornada-${entrada.desde}-a-${entrada.hasta}`;

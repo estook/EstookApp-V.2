@@ -46,6 +46,8 @@ let luis: string;
 // uno: la caja (Rosa), la tablet de la sala (Sara) y la del pase (Marcos).
 let rosaTpv: string;
 let saraTpv: string;
+/** La llave de la caja de Bar Centro: para su latido (0153). */
+let llaveDeLaCaja: string;
 let marcosTpv: string;
 
 const plato: Record<string, string> = {};
@@ -202,6 +204,7 @@ beforeAll(async () => {
       cajon_nuevo: 'Cajón 1',
     }),
   ).llave;
+  llaveDeLaCaja = laCaja;
   const enUnAparato = async (llave: string, correo: string) =>
     tokenDelAparato(
       losDatos<{ turno: string }>(
@@ -1658,6 +1661,31 @@ describe('servido y cambiar un plato (R2 · 2, 0132)', () => {
     );
     expect((await enElPlano(barra))?.comoVa).toBe('comiendo');
     await losAjustes({ camareros_marcan: true, cocina_sale_en: 'pantalla' });
+  });
+
+  it('al abrir una mesa: preguntar de fábrica, o siempre igual si el local lo elige (0153)', async () => {
+    const latido = async () =>
+      losDatos<{ comoSaleLaCocina: string }>(
+        await api.ejecutar(null, 'latir_el_aparato', { llave: llaveDeLaCaja, version: 'prueba' }),
+      ).comoSaleLaCocina;
+    expect(await latido()).toBe('preguntar');
+    expect(await losAjustes({ como_sale_la_cocina: 'junto' })).toMatchObject({
+      comoSaleLaCocina: 'junto',
+    });
+    expect(await latido()).toBe('junto');
+    // Sin decirlo (un TPV de antes), se queda como estaba.
+    expect(await losAjustes({})).toMatchObject({ comoSaleLaCocina: 'junto' });
+    expect(
+      elFallo(
+        await api.ejecutar(rosaTpv, 'guardar_la_cocina_y_la_barra', {
+          aviso_min: 10,
+          tarde_min: 20,
+          suena: true,
+          como_sale_la_cocina: 'a veces',
+        }),
+      ),
+    ).toBe('faltan_datos');
+    await losAjustes({ como_sale_la_cocina: 'preguntar' });
   });
 
   it('los minutos de «¿Cuenta?» son del local: con 30, a los 20 todavía comen', async () => {

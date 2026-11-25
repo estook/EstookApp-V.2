@@ -316,7 +316,7 @@ Y sus vistas, donde las hay:
 | Almacén · Compras         | Pedidos · Facturas · Proveedores                                    |
 | Escandallos · Escandallos | Carta · Menús · Bajo objetivo                                       |
 | Escandallos · Fichas      | Todas · Sin ficha                                                   |
-| Carta · Carta             | Carta · Agotados                                                    |
+| Carta · Carta             | Carta · Bebidas · Agotados                                          |
 | Carta · Análisis          | Equilibrio · Tu zona                                                |
 | Calendario · Calendario   | Mes · Semana · Día                                                  |
 | Equipo · Personas         | Con acceso · Sin entrar todavía · Retirados                         |

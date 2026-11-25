@@ -34,6 +34,8 @@ export interface PlatoEnLaLista {
   /** M10 · 2 (0104): si sale en la carta, y en qué menús. Una API de antes no los manda. */
   readonly enLaCarta?: boolean;
   readonly enMenus?: readonly string[];
+  /** Se vende tal cual, o es una bebida de un ingrediente o un café (0153): fuera de Escandallos. */
+  readonly seMontaSolo?: boolean;
   readonly coste?: {
     readonly costeCentimos: number | null;
     readonly faltanPrecios: number;

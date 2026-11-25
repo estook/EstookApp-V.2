@@ -68,6 +68,7 @@ export function Cobrar({
   alAcabar,
   formaDeEntrada = 'efectivo',
   textoDeAcabar = 'Listo · la mesa queda libre',
+  alDejarloEnLaCaja,
 }: {
   readonly mesa: LaMesa | undefined;
   /** Lo pedido en esta tablet que no ha salido de ella: hay que mandarlo antes. */
@@ -83,6 +84,11 @@ export function Cobrar({
   readonly formaDeEntrada?: Forma;
   /** El botón del final cuando todo está cobrado: en la venta rápida no hay mesa que quede libre. */
   readonly textoDeAcabar?: string;
+  /**
+   * **El efectivo, dejado para la caja** desde el comandero (la Ampliación, 0153, fallo 3): en la
+   * venta rápida ya está hecha, no queda a medias. Sin esto, «Listo» vuelve como siempre.
+   */
+  readonly alDejarloEnLaCaja?: () => void;
 }) {
   const { cliente } = usarSesion();
   const caja = usarLaCaja();
@@ -284,7 +290,7 @@ export function Cobrar({
             type="button"
             onClick={() => {
               setDejado(null);
-              alVolver();
+              (alDejarloEnLaCaja ?? alVolver)();
             }}
             className="min-h-toque-cocina w-full rounded-grande bg-naranja text-seccion font-bold text-sobre-naranja"
           >

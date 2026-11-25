@@ -47,6 +47,7 @@ export function FotoQueSePone({
   quitar: quitarLaFoto,
   alHecho,
   alFallar,
+  prestada,
 }: {
   readonly nombre: string;
   /** Para el color de la inicial cuando no hay foto. */
@@ -59,6 +60,11 @@ export function FotoQueSePone({
   /** Lo que se ha hecho, en una frase, para el aviso de la ficha. */
   readonly alHecho: (frase: string) => Promise<void>;
   readonly alFallar: (error: ErrorDeLaApi) => void;
+  /**
+   * **La foto no es suya, es prestada** (la Ampliación, 0153): la del producto del almacén en un plato
+   * que se vende tal cual. No se quita (no hay nada que quitar del plato); se pone la suya.
+   */
+  readonly prestada?: string;
 }) {
   const elFichero = useRef<HTMLInputElement>(null);
   const [trabajando, setTrabajando] = useState<'subiendo' | 'quitando' | null>(null);
@@ -168,17 +174,19 @@ export function FotoQueSePone({
           ? {
               pie: (
                 <Botones>
-                  <Boton
-                    tono="secundario"
-                    cargando={trabajando === 'quitando'}
-                    textoCargando="Quitando"
-                    disabled={trabajando !== null}
-                    onClick={() => {
-                      void quitar();
-                    }}
-                  >
-                    Quitar la foto
-                  </Boton>
+                  {prestada === undefined && (
+                    <Boton
+                      tono="secundario"
+                      cargando={trabajando === 'quitando'}
+                      textoCargando="Quitando"
+                      disabled={trabajando !== null}
+                      onClick={() => {
+                        void quitar();
+                      }}
+                    >
+                      Quitar la foto
+                    </Boton>
+                  )}
                   <Boton
                     tono="principal"
                     icono={<IconoCamara size={18} />}
@@ -187,7 +195,7 @@ export function FotoQueSePone({
                     disabled={trabajando !== null}
                     onClick={elegir}
                   >
-                    Cambiar la foto
+                    {prestada === undefined ? 'Cambiar la foto' : 'Poner la suya'}
                   </Boton>
                 </Botones>
               ),
@@ -200,6 +208,9 @@ export function FotoQueSePone({
             alt={`Foto de ${nombre}`}
             className="mx-auto max-h-[60vh] w-full rounded-grande bg-fondo object-contain"
           />
+        )}
+        {prestada !== undefined && (
+          <p className="mt-e3 text-center text-secundario text-texto-suave">{prestada}</p>
         )}
       </Hoja>
     </>

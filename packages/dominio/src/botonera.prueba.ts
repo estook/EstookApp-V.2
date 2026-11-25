@@ -10,6 +10,8 @@ import {
   laPaginaDeSiempre,
   loQueProponeElNombre,
   loQueValeEnElBoton,
+  esUnCafe,
+  seMontaSolo,
 } from './botonera.ts';
 
 describe('la botonera (T3, Anexo 11.11)', () => {
@@ -180,5 +182,45 @@ describe('el icono y el color de cada sección, por su nombre (R3, 0133)', () =>
     expect(COLORES_DE_LA_BOTONERA).toContain('amarillo');
     expect(COLORES_DE_LA_BOTONERA).toContain('marron');
     expect(new Set(ICONOS_DE_LA_SECCION).size).toBe(30);
+  });
+});
+
+describe('lo que se monta solo, fuera de Escandallos (la Ampliación, 0153)', () => {
+  const plato = (cambios: Partial<Parameters<typeof seMontaSolo>[0]>) => ({
+    nombre: 'Coca-Cola',
+    seccion: 'Bebidas',
+    deBebidas: true,
+    talCual: false,
+    ingredientes: 1,
+    ...cambios,
+  });
+
+  it('lo tal cual, siempre; en bebidas, un solo ingrediente o un café', () => {
+    expect(seMontaSolo(plato({ talCual: true, deBebidas: false, seccion: 'Postres' }))).toBe(true);
+    expect(seMontaSolo(plato({}))).toBe(true);
+    expect(seMontaSolo(plato({ nombre: 'Café con leche', ingredientes: 3 }))).toBe(true);
+    expect(
+      seMontaSolo(
+        plato({ nombre: 'Leche manchada', seccion: 'Cafés e infusiones', ingredientes: 2 }),
+      ),
+    ).toBe(true);
+  });
+
+  it('un cóctel hecho a mano y lo que se cocina siguen en Escandallos', () => {
+    expect(seMontaSolo(plato({ nombre: 'Mojito', seccion: 'Cócteles', ingredientes: 4 }))).toBe(
+      false,
+    );
+    expect(
+      seMontaSolo(
+        plato({ nombre: 'Croquetas', seccion: 'Entrantes', deBebidas: false, ingredientes: 1 }),
+      ),
+    ).toBe(false);
+  });
+
+  it('un café se reconoce por su nombre o por su sección', () => {
+    expect(esUnCafe('Cortado', null)).toBe(true);
+    expect(esUnCafe('Zumo de naranja', 'Refrescos')).toBe(false);
+    expect(esUnCafe('Manzanilla', 'Infusiones')).toBe(true);
+    expect(esUnCafe('Tarta de queso', 'Postres')).toBe(false);
   });
 });

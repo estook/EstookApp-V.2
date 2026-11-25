@@ -3520,6 +3520,21 @@ _25 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), c
 Las pruebas: `la-sala-y-la-cocina.prueba.ts`, `la-barra-y-la-alergia.prueba.ts` y `lo-vendido-baja.prueba.ts`
 contra la base; `sala.prueba.ts` del dominio y `quienEstaDentro.prueba.ts` del TPV.
 
+### La Ampliación 2 · El comandero y la carta
+
+_25 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), sección 11 (migración 0126):
+
+- **La venta rápida, también en el comandero**, con el efectivo «A la caja».
+- **Abrir una mesa, en medio y en dos pasos**, con el deslizador de comensales; y el ajuste para no preguntar
+  cómo sale la cocina.
+- **La foto del producto del almacén** en el plato que se vende tal cual, en la carta y en el TPV.
+- **Escandallos sin lo que se monta solo** y **Carta › Bebidas** con su coste y lo que deja; **«Lo que más
+  sale», solo platos**.
+
+Las pruebas: `la-sala-y-la-cocina.prueba.ts`, `las-fotos-de-producto.prueba.ts` y
+`fichas-y-escandallos.prueba.ts` contra la base; `botonera.prueba.ts` del dominio y `apps.prueba.ts`; y las
+ocho de pantalla que abren mesa, al recorrido nuevo.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

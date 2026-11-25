@@ -1,8 +1,10 @@
-import { puedeEditar } from '@estook/permisos';
+import { puedeEditar, puedeVer } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLasVistasConAlgo } from '../ganchos/usarLasVistasConAlgo.ts';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { LosAgotados } from './contrato.ts';
+import type { MisFichas } from '../escandallos/contrato.ts';
+import { BebidasDeLaCarta } from './BebidasDeLaCarta.tsx';
 import { Agotados } from './Agotados.tsx';
 import { Canales } from './Canales.tsx';
 import { Equilibrio } from './Equilibrio.tsx';
@@ -23,18 +25,30 @@ export function Carta({ destino, vista }: { readonly destino: string; readonly v
   const { permisos } = usarSesion();
   const puedeAgotar = puedeEditar(permisos, 'accion.marcar_agotado');
   const agotados = usarLectura<LosAgotados>('los_agotados', {}, puedeAgotar && destino === 'carta');
-  usarLasVistasConAlgo(
-    destino !== 'carta' || !puedeAgotar
+  // «Bebidas» (0153): solo a quien ve costes, y si hay algo que se monte solo.
+  const veCostes = puedeVer(permisos, 'app.escandallos');
+  const fichas = usarLectura<MisFichas>('mis_fichas', {}, veCostes && destino === 'carta');
+  const conAgotados =
+    !puedeAgotar || agotados.data === undefined
       ? []
-      : agotados.data === undefined
+      : agotados.data.platos.some((p) => p.agotado !== null)
+        ? ['agotados']
+        : [];
+  const conBebidas =
+    fichas.data?.conImportes === true && fichas.data.platos.some((p) => p.seMontaSolo === true)
+      ? ['bebidas']
+      : [];
+  usarLasVistasConAlgo(
+    destino !== 'carta'
+      ? []
+      : (puedeAgotar && agotados.data === undefined) || (veCostes && fichas.data === undefined)
         ? null
-        : agotados.data.platos.some((p) => p.agotado !== null)
-          ? ['agotados']
-          : [],
+        : [...conBebidas, ...conAgotados],
   );
   if (destino === 'canales') return <Canales />;
   if (destino === 'menus') return <Menus />;
   if (destino === 'analisis') return vista === 'tu-zona' ? <TuZona /> : <Equilibrio />;
   if (vista === 'agotados') return <Agotados />;
+  if (vista === 'bebidas') return <BebidasDeLaCarta />;
   return <LaCarta />;
 }

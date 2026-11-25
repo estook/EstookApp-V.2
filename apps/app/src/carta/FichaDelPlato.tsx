@@ -466,6 +466,9 @@ function ParaEditar({
             cliente.ejecutar('poner_foto_de_plato', { plato_id: plato.id, ...reducida })
           }
           quitar={() => cliente.ejecutar('quitar_foto_de_plato', { plato_id: plato.id })}
+          {...(plato.fotoDelAlmacen === true
+            ? { prestada: 'Es la foto del producto del almacén. Si le pones una, sale la tuya.' }
+            : {})}
           alHecho={async (frase) => {
             setHecho(frase);
             await refrescar();

@@ -401,8 +401,11 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         // **Sin pestañas** (Richi, 11-nov; 0146, 1.5): se entra y se ve la carta. «Todos los platos»
         // salió; «Agotados» solo sale, en rojo, si hay algún plato agotado, y entonces la de siempre
         // se llama «Carta». Su dirección sigue siendo `por-secciones`, para no romper ningún enlace.
+        // **«Bebidas»** (la Ampliación, 0153): lo que se monta solo, con su coste y lo que deja; solo
+        // a quien ve costes y si hay alguna.
         vistas: [
           { id: 'por-secciones', nombre: 'Carta' },
+          { id: 'bebidas', nombre: 'Bebidas', soloSiTieneAlgo: true },
           { id: 'agotados', nombre: 'Agotados', soloSiTieneAlgo: true, enRojo: true },
         ],
       },

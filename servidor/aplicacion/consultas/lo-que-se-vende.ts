@@ -338,11 +338,17 @@ export const loQueSeVende = consulta<Entrada, LoQueSeVende>({
     }
     platos.sort((a, b) => b.uds - a.uds || b.ventas - a.ventas);
 
-    // La foto de los diez primeros (los que se enseñan con foto) y cómo se ve cada sección.
-    const conId = platos
-      .slice(0, 10)
-      .map((p) => p.id)
-      .filter((id) => /^[0-9a-f-]{36}$/.test(id));
+    // La foto de los diez primeros (los que se enseñan con foto) y cómo se ve cada sección. Y la de los
+    // diez primeros platos de comida, que es lo que enseña «Lo que más sale» del Panel (0153).
+    const conId = [
+      ...new Set([
+        ...platos.slice(0, 10).map((p) => p.id),
+        ...platos
+          .filter((p) => !p.bebida)
+          .slice(0, 10)
+          .map((p) => p.id),
+      ]),
+    ].filter((id) => /^[0-9a-f-]{36}$/.test(id));
     const [deLaCarta, deLasSecciones] = await Promise.all([
       conId.length === 0
         ? Promise.resolve([] as { id: string; clave: string | null }[])

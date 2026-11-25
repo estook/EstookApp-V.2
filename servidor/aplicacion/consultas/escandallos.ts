@@ -34,6 +34,8 @@ import {
   type Semaforo,
   type UnidadDeUso,
   type VendidoConSuReceta,
+  seMontaSolo,
+  esDeBebidas,
 } from '@estook/dominio';
 import { documentoDeLaFicha, documentoDeLasFichas, type DatosDeLaFicha } from '@estook/documentos';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
@@ -120,6 +122,11 @@ export interface PlatoEnLaLista {
   readonly pasos: number;
   readonly vinculadoA: string | null;
   readonly alergenos: readonly Alergeno[];
+  /**
+   * **Se monta solo** (0153, arreglo 2): se vende tal cual o es una bebida de un ingrediente o un
+   * café. Sale de Escandallos y de sus cifras; su margen, en Carta › Bebidas.
+   */
+  readonly seMontaSolo?: boolean;
   readonly picante: number;
   /** Falso si nació en un menú y no sale en la carta (M10 · 2, 0104). */
   readonly enLaCarta: boolean;
@@ -220,8 +227,18 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
       losMenusDe.set(f.plato_id, [...(losMenusDe.get(f.plato_id) ?? []), f.menu]);
 
     const activos = platos.filter((p) => p.activo);
+    const laSeccion = new Map(secciones.map((s) => [s.id, s]));
     const enLaLista = activos.map((p): PlatoEnLaLista => {
       const receta = libro.recetaDelPlato.get(p.id);
+      const seccion = p.seccionId === null ? undefined : laSeccion.get(p.seccionId);
+      const solo = seMontaSolo({
+        nombre: p.nombre,
+        seccion: seccion?.nombre ?? null,
+        // Por el nombre de su sección, como lo propone la botonera («Bebidas», «Vinos», «Cafés»…).
+        deBebidas: seccion !== undefined && esDeBebidas(seccion.nombre),
+        talCual: receta?.talCual === true || p.vinculadoA !== null,
+        ingredientes: receta?.lineas.length ?? 0,
+      });
       const base: PlatoEnLaLista = {
         id: p.id,
         nombre: p.nombre,
@@ -235,6 +252,7 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
         picante: p.picante,
         enLaCarta: p.enLaCarta,
         enMenus: losMenusDe.get(p.id) ?? [],
+        ...(solo ? { seMontaSolo: true } : {}),
       };
       if (cuenta === null) return base;
       const escandallo = elEscandalloDe(receta, p, libro.libro, cuenta);
@@ -284,7 +302,9 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
       };
     });
 
-    const conFoodCost = enLaLista.flatMap((p) =>
+    // Las cifras de Escandallos, sin lo que se monta solo (0153): de lo que se cocina o se monta a mano.
+    const deCocina = enLaLista.filter((p) => p.seMontaSolo !== true);
+    const conFoodCost = deCocina.flatMap((p) =>
       p.coste?.foodCost === null || p.coste === undefined ? [] : [p.coste.foodCost],
     );
     return {
@@ -295,16 +315,16 @@ export const misFichas = consulta<Record<string, never>, MisFichas>({
       platos: enLaLista,
       elaboraciones,
       cifras: {
-        platos: enLaLista.length,
-        sinFicha: enLaLista.filter((p) => !p.tieneFicha).length,
-        conFichaTecnica: enLaLista.filter((p) => p.tieneFichaTecnica).length,
+        platos: deCocina.length,
+        sinFicha: deCocina.filter((p) => !p.tieneFicha).length,
+        conFichaTecnica: deCocina.filter((p) => p.tieneFichaTecnica).length,
         ...(cuenta === null
           ? {}
           : {
-              bajoObjetivo: enLaLista.filter(
+              bajoObjetivo: deCocina.filter(
                 (p) => p.coste?.semaforo === 'rojo' || p.coste?.semaforo === 'ambar',
               ).length,
-              pierden: enLaLista.filter((p) => (p.coste?.pierdeEn.length ?? 0) > 0).length,
+              pierden: deCocina.filter((p) => (p.coste?.pierdeEn.length ?? 0) > 0).length,
               foodCostMedio: mediaEnPuntos(conFoodCost),
             }),
       },

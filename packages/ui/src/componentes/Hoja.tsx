@@ -38,6 +38,11 @@ interface DeLaHoja extends Comunes {
   readonly ajustada?: boolean;
   /** Lo que va junto al título, antes de la «X»: los iconos de la mesa del TPV (0131). */
   readonly acciones?: ReactNode;
+  /**
+   * **En medio también en el móvil** (la Ampliación, 0153): una ventana corta, como abrir una mesa,
+   * que no sube desde abajo. Richi: «quiero que salga en medio, no desde abajo».
+   */
+  readonly enMedio?: boolean;
 }
 
 function useDialogo(abierta: boolean, alCerrar: () => void) {
@@ -116,6 +121,7 @@ export function Hoja({
   amplia = false,
   ajustada = false,
   acciones,
+  enMedio = false,
 }: DeLaHoja) {
   const dialogo = useDialogo(abierta, alCerrar);
 
@@ -136,7 +142,12 @@ export function Hoja({
     >
       {/* La zona segura del teléfono arriba (23-sep): la franja de tocar para cerrar
           empieza debajo de la muesca, no detrás. */}
-      <div className="relative flex h-full w-full flex-col justify-end pt-[env(safe-area-inset-top)] md:items-center md:justify-center md:p-e6">
+      <div
+        className={clases(
+          'relative flex h-full w-full flex-col pt-[env(safe-area-inset-top)] md:items-center md:justify-center md:p-e6',
+          enMedio ? 'items-center justify-center px-e4' : 'justify-end',
+        )}
+      >
         {/* Tocar fuera cierra. Es un boton de verdad para que tambien se pueda
             con teclado, aunque `Esc` ya haga lo mismo. En el movil es la franja
             de arriba; en el ordenador, todo lo que rodea a la ventana. */}
@@ -145,16 +156,20 @@ export function Hoja({
           aria-label="Cerrar"
           className={clases(
             'w-full cursor-default md:absolute md:inset-0 md:h-full',
-            ajustada ? 'min-h-[8%] flex-1' : 'h-[8%]',
+            enMedio ? 'absolute inset-0 h-full' : ajustada ? 'min-h-[8%] flex-1' : 'h-[8%]',
           )}
           onClick={alCerrar}
         />
         <div
           className={clases(
-            'relative flex flex-col bg-superficie rounded-t-mayor shadow-s3',
-            ajustada ? 'max-h-[92%]' : 'h-[92%]',
+            'relative flex flex-col bg-superficie shadow-s3',
+            enMedio
+              ? 'max-h-[90%] w-full max-w-[28rem] rounded-mayor'
+              : ajustada
+                ? 'max-h-[92%] rounded-t-mayor'
+                : 'h-[92%] rounded-t-mayor',
             'md:h-auto md:max-h-[85vh] md:w-full md:rounded-mayor',
-            amplia ? 'md:max-w-[58rem]' : 'md:max-w-[40rem]',
+            enMedio ? 'md:max-w-[30rem]' : amplia ? 'md:max-w-[58rem]' : 'md:max-w-[40rem]',
             'anima-sube',
           )}
         >

@@ -87,8 +87,8 @@ test('sin internet se sigue: abrir la mesa, pedir, mandar, bloquear y entrar; al
   // ── Sin internet: abrir la mesa 1, pedir dos croquetas y mandar ──
   await page.context().setOffline(true);
   await page.getByRole('button', { name: /^Mesa 1: Libre/ }).click();
-  await page.getByRole('button', { name: '2', exact: true }).click();
-  await page.getByRole('button', { name: 'Abrir', exact: true }).click();
+  await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
+  await page.getByRole('button', { name: /^Por pases/ }).click();
   await page.getByRole('button', { name: 'Entrantes', exact: true }).click({ timeout: 15_000 });
   await page.getByRole('button', { name: /^Croquetas, 9,00 €/ }).click();
   await page.getByRole('button', { name: /^Croquetas, 9,00 €/ }).click();

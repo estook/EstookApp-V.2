@@ -51,6 +51,9 @@ import type { MesaDelPlano } from '../datos/tipos.ts';
  * **La venta rápida** (el rediseño, 0148; Anexo 3.1; Richi, 17-nov: «ticar y cobrar, sin comensales,
  * para los que lo piden directo en la barra; la pizzería de mi amigo suele ser así»).
  *
+ * **También en el comandero** (la Ampliación, 0153, fallo 3): tarjeta y Bizum se cobran ahí mismo, y el
+ * efectivo se deja para la caja, como al cobrar en la mesa (0145); su botón dice «A la caja».
+ *
  * A la izquierda, la botonera de siempre; a la derecha, el ticket, **«Aquí · Para llevar»** y,
  * abajo, **un toque por método**: efectivo, tarjeta o Bizum (si el local lo usa). Cobrar abre la
  * cuenta, la manda a cocina y a la barra y cobra con el cobro de siempre (0144), ya en ese método.
@@ -121,6 +124,13 @@ export function LaVentaRapida() {
           setCobrando(null);
           setFallo(null);
         }}
+        alDejarloEnLaCaja={() => {
+          // En el comandero, el efectivo va a la caja: la venta ya está hecha aquí.
+          setCobrando(null);
+          olvidarAMedias();
+          deNuevo();
+          setAviso('El efectivo, para la caja. Otra venta.');
+        }}
       />
     );
   }
@@ -132,6 +142,8 @@ export function LaVentaRapida() {
   const formas = (caja.data?.formas ?? ['efectivo', 'tarjeta']).filter((f) =>
     LOS_METODOS_DE_LA_RAPIDA.includes(f),
   );
+  /** **Sin cajón** (el comandero, 0153): el efectivo no se cobra aquí, se deja para la caja. */
+  const sinCajon = caja.data?.cajon === null;
 
   /** Abre la cuenta y la manda: lo de cobrar y lo de pasarla, igual. */
   async function abrirYMandar(): Promise<string | null> {
@@ -251,6 +263,7 @@ export function LaVentaRapida() {
           <BotonDelMetodo
             key={f}
             forma={f}
+            sinCajon={sinCajon}
             apagado={vacia || ocupado}
             onClick={() => {
               void cobrar(f);
@@ -334,6 +347,7 @@ export function LaVentaRapida() {
                 cuentaId={aMedias}
                 conectado={conectado}
                 formas={formas}
+                sinCajon={sinCajon}
                 alCobrar={(forma) => {
                   setCobrando({ cuentaId: aMedias, forma });
                 }}
@@ -450,12 +464,14 @@ function LaVentaAMedias({
   cuentaId,
   conectado,
   formas,
+  sinCajon,
   alCobrar,
   alDejarla,
 }: {
   readonly cuentaId: string;
   readonly conectado: boolean;
   readonly formas: readonly FormaDePago[];
+  readonly sinCajon: boolean;
   readonly alCobrar: (forma: FormaDePago) => void;
   readonly alDejarla: () => void;
 }) {
@@ -510,6 +526,7 @@ function LaVentaAMedias({
           <BotonDelMetodo
             key={f}
             forma={f}
+            sinCajon={sinCajon}
             apagado={falta <= 0}
             onClick={() => {
               alCobrar(f);
@@ -534,11 +551,13 @@ function ElCobro({
   forma,
   alAcabar,
   alVolver,
+  alDejarloEnLaCaja,
 }: {
   readonly cuentaId: string;
   readonly forma: FormaDePago;
   readonly alAcabar: () => void;
   readonly alVolver: () => void;
+  readonly alDejarloEnLaCaja: () => void;
 }) {
   const mesa = usarLaMesa(cuentaId, usarAlSegundo());
   return (
@@ -549,6 +568,7 @@ function ElCobro({
       textoDeAcabar="Listo · otra venta"
       alVolver={alVolver}
       alAcabar={alAcabar}
+      alDejarloEnLaCaja={alDejarloEnLaCaja}
     />
   );
 }
@@ -571,17 +591,21 @@ const COMO_SE_VE_EL_METODO: Readonly<
 
 function BotonDelMetodo({
   forma,
+  sinCajon = false,
   apagado,
   onClick,
 }: {
   readonly forma: FormaDePago;
+  /** En el comandero el efectivo no se cobra: «A la caja» (0153). */
+  readonly sinCajon?: boolean;
   readonly apagado: boolean;
   readonly onClick: () => void;
 }) {
-  const como =
+  const deSiempre =
     forma === 'efectivo' || forma === 'tarjeta' || forma === 'bizum'
       ? COMO_SE_VE_EL_METODO[forma]
       : COMO_SE_VE_EL_METODO.tarjeta;
+  const como = forma === 'efectivo' && sinCajon ? { ...deSiempre, texto: 'A la caja' } : deSiempre;
   const Dibujo = como.icono;
   return (
     <button

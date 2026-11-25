@@ -1,7 +1,7 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { comoSeLeenLasHoras, type AvisoDelHorario } from '@estook/dominio';
 import { IconoAnadir, IconoAtencion, IconoPalmera } from '@estook/iconos';
-import { clases, usarEsEscritorio } from '@estook/ui';
+import { clases, fondoDegradado, usarEsEscritorio } from '@estook/ui';
 import {
   COMO_SE_LLAMA_LA_ZONA,
   nombreCorto,
@@ -200,10 +200,7 @@ function Banda({
     'relative flex min-h-[46px] w-full items-center justify-center gap-e2 overflow-hidden rounded-[12px] px-e2 text-[0.76rem] font-extrabold text-white',
     alTocar !== undefined && editable && 'hover:brightness-105',
   );
-  const fondo: CSSProperties = {
-    background:
-      tipo === 'vacaciones' ? 'var(--degradado-vacaciones)' : 'var(--degradado-historial)',
-  };
+  const fondo: CSSProperties = fondoDegradado(tipo === 'vacaciones' ? 'vacaciones' : 'historial');
   const dentro = (
     <>
       {tipo === 'vacaciones' && <IconoPalmera size={16} aria-hidden />}
@@ -369,7 +366,7 @@ function ElCuadrante({
                       'grid justify-items-center rounded-[12px] py-[6px] text-[0.66rem] font-bold',
                       esHoy ? 'text-[#111c1f]' : 'text-texto-tenue',
                     )}
-                    style={esHoy ? { background: 'var(--degradado-cocina)' } : undefined}
+                    style={esHoy ? fondoDegradado('cocina') : undefined}
                   >
                     {nombre}
                     <b className={clases('text-[0.95rem]', esHoy ? '' : 'text-texto')}>{numero}</b>
@@ -604,11 +601,7 @@ function ElDiaPorHoras({
                     ? 'text-[#111c1f]'
                     : 'bg-fondo text-texto-suave',
               )}
-              style={
-                !elegidoAhora && d.fecha === hoy
-                  ? { background: 'var(--degradado-cocina)' }
-                  : undefined
-              }
+              style={!elegidoAhora && d.fecha === hoy ? fondoDegradado('cocina') : undefined}
             >
               <span>{nombre.charAt(0)}</span>
               <b className="text-[0.9rem] tabular-nums">{numero}</b>
@@ -817,7 +810,7 @@ export function MiSemana({
                 'grid w-12 shrink-0 justify-items-center rounded-[12px] py-[6px] text-[0.66rem] font-bold',
                 esHoy ? 'text-[#111c1f]' : 'bg-fondo text-texto-suave',
               )}
-              style={esHoy ? { background: 'var(--degradado-cocina)' } : undefined}
+              style={esHoy ? fondoDegradado('cocina') : undefined}
             >
               {nombre}
               <b className="text-[0.95rem] tabular-nums">{numero}</b>
@@ -827,7 +820,7 @@ export function MiSemana({
                 ausencia.tipo === 'vacaciones' ? (
                   <span
                     className="inline-flex items-center gap-e1 rounded-[9px] px-e2 py-[4px] text-[0.74rem] font-extrabold text-white"
-                    style={{ background: 'var(--degradado-vacaciones)' }}
+                    style={fondoDegradado('vacaciones')}
                   >
                     <IconoPalmera size={14} aria-hidden /> Vacaciones
                   </span>

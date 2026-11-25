@@ -33,6 +33,8 @@ import {
   Hoja,
   Tarjeta,
   clases,
+  fondoDegradado,
+  type NombreDeDegradado,
 } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -42,7 +44,7 @@ import { CuadranteConFogon } from './CuadranteConFogon.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { FogonYYo } from '../fogon/contrato.ts';
 import { LaSemana, MiSemana } from './LaSemana.tsx';
-import { estiloDeLaZona } from './zonas.ts';
+import { ZONA } from './zonas.ts';
 import { conQuienCoincide, fraseDeLoPublicado, loDelDia, type LoPublicado } from './cuentas.ts';
 import {
   nombreCorto,
@@ -338,7 +340,7 @@ function VerElHorario({
                       <i
                         aria-hidden
                         className="block size-[10px] rounded-[3px]"
-                        style={{ background: estiloDeLaZona(z).background }}
+                        style={{ background: ZONA[z].fondo }}
                       />
                     )}
                     {z === 'todas'
@@ -623,7 +625,7 @@ function MontarElHorario({
       {/* Lo que hacer: publicar, en el verde de lo que está listo; Fogón, en sus colores. */}
       <div className="flex flex-wrap items-center gap-e2">
         <BotonDeColor
-          fondo="var(--degradado-contrato)"
+          degradado="contrato"
           sombra="rgba(15, 125, 81, 0.55)"
           disabled={datos.estado === 'nueva' || datos.estado === 'publicada' || haciendo !== null}
           onClick={() => {
@@ -638,7 +640,7 @@ function MontarElHorario({
         </BotonDeColor>
         {!hayAlgo && fogon.data?.habla === true && (
           <BotonDeColor
-            fondo="var(--degradado-fogon)"
+            degradado="fogon"
             sombra="rgba(194, 37, 92, 0.5)"
             icono={<IconoFogon size={16} />}
             onClick={() => {
@@ -998,14 +1000,14 @@ function MontarElHorario({
 
 /** Un botón con su degradado (la maqueta): publicar en verde, Fogón en sus colores. */
 function BotonDeColor({
-  fondo,
+  degradado,
   sombra,
   icono,
   disabled = false,
   onClick,
   children,
 }: {
-  readonly fondo: string;
+  readonly degradado: NombreDeDegradado;
   readonly sombra: string;
   readonly icono?: ReactNode;
   readonly disabled?: boolean;
@@ -1018,7 +1020,7 @@ function BotonDeColor({
       disabled={disabled}
       onClick={onClick}
       className="inline-flex min-h-toque items-center gap-e2 rounded-[12px] px-e4 text-cuerpo font-extrabold text-white transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
-      style={{ background: fondo, boxShadow: `0 10px 20px -12px ${sombra}` }}
+      style={{ ...fondoDegradado(degradado), boxShadow: `0 10px 20px -12px ${sombra}` }}
     >
       {icono}
       {children}

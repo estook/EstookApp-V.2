@@ -468,6 +468,9 @@ Turnos, rehecho como en la maqueta) y **4 · 2 · Calendario y vacaciones**. En 
    las reservas, la 5). Hasta entonces, el día sin nadie se ve en «Quiénes hay», en rojo.
 4. **«Cuadra» es no irse más de media hora** del contrato: un turno que acaba a y media no es «falta».
 5. **Hoy, en ámbar** en la cabecera de la rejilla y del móvil, igual en las dos.
+6. **El texto pequeño también se lee** (lo cazó la prueba de contraste en GitHub): los tonos claros de todos
+   los degradados bajan un punto más, hasta 4,5:1 con el blanco, y cada degradado lleva debajo su color base
+   (`fondoDegradado`), que es el fondo de verdad del texto. Vale también para la ficha y Mi ficha.
 
 ## 12 · Lo que se toca en los documentos
 

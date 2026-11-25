@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { DegradadoDeTipo } from '@estook/ui';
+import { fondoDegradado, type DegradadoDeTipo } from '@estook/ui';
 import { IconoCalendario, IconoDocumento, IconoPalmera, IconoReloj } from '@estook/iconos';
 import { TIPOS_DE_CONTRATO, cuantoLleva, diasEnLetra } from '@estook/dominio';
 import type { LaFichaDelTrabajador } from '../contrato.ts';
@@ -32,12 +32,14 @@ export function Baldosa({
     <div
       data-baldosa={etiqueta}
       className="relative grid min-h-[104px] content-start gap-[3px] overflow-hidden rounded-[18px] p-e3 text-white [box-shadow:var(--sombra-baldosa)]"
-      style={{
-        background:
-          degradado === 'oscuro'
-            ? 'linear-gradient(135deg, #3b4a52, #111c1f)'
-            : `var(--degradado-${degradado})`,
-      }}
+      style={
+        degradado === 'oscuro'
+          ? {
+              backgroundColor: '#3b4a52',
+              backgroundImage: 'linear-gradient(135deg, #3b4a52, #111c1f)',
+            }
+          : fondoDegradado(degradado)
+      }
     >
       <span aria-hidden className="absolute -bottom-3 -right-2 opacity-20">
         {icono(72)}
@@ -48,13 +50,11 @@ export function Baldosa({
       >
         {icono(17)}
       </span>
-      <span className="text-[0.68rem] font-bold uppercase tracking-[0.04em] opacity-95">
-        {etiqueta}
-      </span>
+      <span className="text-[0.68rem] font-bold uppercase tracking-[0.04em]">{etiqueta}</span>
       <strong className="text-[1.15rem] font-extrabold leading-tight tracking-[-0.01em]">
         {valor}
       </strong>
-      <span className="text-[0.74rem] opacity-95">{detalle}</span>
+      <span className="text-[0.74rem]">{detalle}</span>
     </div>
   );
 }

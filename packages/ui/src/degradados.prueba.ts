@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
  * Los de la maqueta empezaban en tonos tan claros (un azul cielo, un naranja melocotón)
  * que el blanco se quedaba en 1,6:1: bonito en la pantalla del ordenador y sin leerse al
  * sol en el móvil. Aquí se mide **cada color de cada degradado**, también el más claro,
- * contra 3:1, que es lo que pide WCAG para el texto grande y en negrita de una baldosa.
+ * contra 4,5:1, que es lo que pide WCAG para el texto pequeño (las etiquetas de una baldosa).
  * Se lee `temas.css`, que es su único dueño (regla 6).
  */
 const TEMAS = readFileSync(fileURLToPath(new URL('../estilos/temas.css', import.meta.url)), 'utf8');
@@ -65,8 +65,16 @@ describe('los degradados de cada tipo de cosa', () => {
     ({ colores }) => {
       expect(colores.length).toBeGreaterThanOrEqual(2);
       for (const color of colores) {
-        expect(contrasteConElBlanco(color), color).toBeGreaterThanOrEqual(3);
+        expect(contrasteConElBlanco(color), color).toBeGreaterThanOrEqual(4.5);
       }
+    },
+  );
+
+  it.each(DEGRADADOS)(
+    'la base de «$nombre» es su tono más claro, donde va el texto',
+    ({ nombre, colores }) => {
+      const base = new RegExp(`--base-${nombre}:\\s*(#[0-9a-fA-F]{6})`).exec(TEMAS)?.[1];
+      expect(base?.toLowerCase()).toBe(colores[0]?.toLowerCase());
     },
   );
 

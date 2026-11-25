@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { fondoDegradado, type NombreDeDegradado } from '@estook/ui';
 import type { Zona } from './contrato.ts';
 
 /**
@@ -6,13 +7,27 @@ import type { Zona } from './contrato.ts';
  * en ámbar con su texto oscuro, el resto en violeta. Los degradados viven en `temas.css`.
  */
 export const ZONA: Readonly<
-  Record<Zona, { readonly fondo: string; readonly texto: string; readonly letra: string }>
+  Record<
+    Zona,
+    {
+      readonly degradado: NombreDeDegradado;
+      readonly fondo: string;
+      readonly texto: string;
+      readonly letra: string;
+    }
+  >
 > = {
-  sala: { fondo: 'var(--degradado-sala)', texto: '#ffffff', letra: 'S' },
-  cocina: { fondo: 'var(--degradado-cocina)', texto: 'var(--texto-sobre-cocina)', letra: 'C' },
-  otros: { fondo: 'var(--degradado-resto)', texto: '#ffffff', letra: 'R' },
+  sala: { degradado: 'sala', fondo: 'var(--degradado-sala)', texto: '#ffffff', letra: 'S' },
+  cocina: {
+    degradado: 'cocina',
+    fondo: 'var(--degradado-cocina)',
+    texto: 'var(--texto-sobre-cocina)',
+    letra: 'C',
+  },
+  otros: { degradado: 'resto', fondo: 'var(--degradado-resto)', texto: '#ffffff', letra: 'R' },
 };
 
+/** El fondo de la zona, con su base debajo, y su color de texto: para lo que lleva texto. */
 export function estiloDeLaZona(zona: Zona): CSSProperties {
-  return { background: ZONA[zona].fondo, color: ZONA[zona].texto };
+  return { ...fondoDegradado(ZONA[zona].degradado), color: ZONA[zona].texto };
 }

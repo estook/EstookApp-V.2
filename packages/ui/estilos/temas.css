@@ -57,25 +57,41 @@
      * vacaciones, azul de playa; las horas, naranja; el contrato y los turnos, verde; el
      * historial y la limpieza, turquesa; las incidencias y Sanidad, coral; las fechas y
      * las reservas, violeta. Son los de la maqueta, un punto más hondos para que el
-     * texto blanco se lea encima (3:1 en el tono más claro; lo mide `degradados.prueba.ts`).
+     * texto blanco se lea encima, también el pequeño (4,5:1 en el tono más claro; lo mide
+     * `degradados.prueba.ts`).
      * Valen igual en claro y en oscuro: llevan su propio blanco.
      */
-    --degradado-vacaciones: linear-gradient(135deg, #1e88e5 0%, #2563eb 55%, #3141d8 100%);
-    --degradado-horas: linear-gradient(135deg, #e0670a 0%, #d0540c 55%, #b8420e 100%);
-    --degradado-contrato: linear-gradient(135deg, #16935f 0%, #0f7d51 55%, #0b6644 100%);
-    --degradado-historial: linear-gradient(135deg, #0e8f86 0%, #0c7a72 60%, #0a645e 100%);
-    --degradado-incidencias: linear-gradient(135deg, #e0414f 0%, #cc2f52 55%, #ad2149 100%);
+    --degradado-vacaciones: linear-gradient(135deg, #1a6fd0 0%, #2563eb 55%, #3141d8 100%);
+    --degradado-horas: linear-gradient(135deg, #c25208 0%, #b8480c 55%, #a33c0e 100%);
+    --degradado-contrato: linear-gradient(135deg, #11804f 0%, #0f7d51 55%, #0b6644 100%);
+    --degradado-historial: linear-gradient(135deg, #0b7d74 0%, #0c7a72 60%, #0a645e 100%);
+    --degradado-incidencias: linear-gradient(135deg, #d22f45 0%, #cc2f52 55%, #ad2149 100%);
     --degradado-fechas: linear-gradient(135deg, #7a5af0 0%, #6744e0 55%, #5433c4 100%);
     /*
      * **Las zonas del horario** (la Ampliación 4, 0153; maqueta, «Turnos, rehecho»): la sala en
      * verde, la cocina en ámbar —con su texto oscuro, que en ámbar el blanco no se lee— y el
      * resto del equipo en violeta. Y el de Fogón, que es el suyo de siempre: naranja, rosa, violeta.
      */
-    --degradado-sala: linear-gradient(135deg, #16935f 0%, #0f7d51 55%, #0b6644 100%);
+    --degradado-sala: linear-gradient(135deg, #11804f 0%, #0f7d51 55%, #0b6644 100%);
     --degradado-cocina: linear-gradient(135deg, #ffd36e 0%, #ffab2e 55%, #f08a00 100%);
     --texto-sobre-cocina: #3a2400;
     --degradado-resto: linear-gradient(135deg, #7a5af0 0%, #6744e0 55%, #5433c4 100%);
-    --degradado-fogon: linear-gradient(120deg, #e0560f 0%, #c2255c 50%, #6741d9 100%);
+    --degradado-fogon: linear-gradient(120deg, #c4470b 0%, #c2255c 50%, #6741d9 100%);
+    /*
+     * **El color base de cada degradado**: su tono más claro, que es donde va el texto (arriba a
+     * la izquierda). Va debajo del degradado (`fondoDegradado`): es el fondo «de verdad» del texto
+     * para quien lo mide, y lo que se ve si un navegador no pinta el degradado.
+     */
+    --base-vacaciones: #1a6fd0;
+    --base-horas: #c25208;
+    --base-contrato: #11804f;
+    --base-historial: #0b7d74;
+    --base-incidencias: #d22f45;
+    --base-fechas: #7a5af0;
+    --base-sala: #11804f;
+    --base-cocina: #ffd36e;
+    --base-resto: #7a5af0;
+    --base-fogon: #c4470b;
     --sombra-baldosa: 0 12px 24px -16px rgba(17, 28, 31, 0.65);
   }
 

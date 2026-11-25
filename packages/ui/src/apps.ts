@@ -454,10 +454,14 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         nombre: 'Calendario',
         icono: IconoCalendario,
         queContesta: '¿Qué pasa hoy, esta semana y este mes?',
-        // **Mes, semana y dia son vistas, no destinos.** Es el mismo calendario
-        // con otro aumento, y gastaba tres de las cuatro posiciones de abajo.
-        vistas: vistas(['Mes', 'M14'], ['Semana', 'M14'], ['Día', 'M14']),
-        modulo: 'M14',
+        // **La Ampliación 4 (0153).** Equipo (los recordatorios del equipo, la 4 · 3),
+        // Personal (lo de cada uno, con sus vacaciones) y Propuestas (las vacaciones de su gente,
+        // solo para quien las gestiona). Se entra por la primera construida: Personal.
+        vistas: [
+          { id: 'equipo', nombre: 'Equipo', modulo: 'M14' },
+          { id: 'personal', nombre: 'Personal' },
+          { id: 'propuestas', nombre: 'Propuestas', permiso: 'accion.gestionar_vacaciones' },
+        ],
       },
       // **Tareas se quitó el 11-nov-2026** (0146): las limpiezas periódicas son controles del
       // APPCC (M16b), y las revisiones y las visitas, recordatorios del Calendario (M14).

@@ -4,6 +4,7 @@ import {
   IconoAjustes,
   IconoAlmacen,
   IconoAtencion,
+  IconoPalmera,
   IconoBorrar,
   IconoCalendario,
   IconoCarta,
@@ -75,6 +76,9 @@ const ICONO_DEL_AVISO: Readonly<Record<TipoDeAviso, Icono>> = {
   'caja.descuadre': IconoDinero,
   // La Ampliación 3 · 2 (0153)
   'nomina.subida': IconoDocumento,
+  // La Ampliación 4 · 2 (0153)
+  'vacaciones.pedidas': IconoPalmera,
+  'vacaciones.respondidas': IconoPalmera,
 };
 
 const TRAMOS: readonly TramoDeAvisos[] = ['Hoy', 'Ayer', 'Esta semana', 'Antes'];

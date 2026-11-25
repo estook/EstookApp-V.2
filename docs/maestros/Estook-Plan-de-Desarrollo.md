@@ -318,7 +318,7 @@ Y sus vistas, donde las hay:
 | Escandallos · Fichas      | Todas · Sin ficha                                                   |
 | Carta · Carta             | Carta · Bebidas · Agotados                                          |
 | Carta · Análisis          | Equilibrio · Tu zona                                                |
-| Calendario · Calendario   | Mes · Semana · Día                                                  |
+| Calendario · Calendario   | Equipo · Personal · Propuestas                                      |
 | Equipo · Personas         | Con acceso · Sin entrar todavía · Retirados                         |
 | Equipo · Incidencias      | Todas · Faltas · Retrasos · Fichajes                                |
 | Servicio · Jornadas       | Información · Cierre                                                |
@@ -746,7 +746,7 @@ Cada ficha lleva: _Objetivo · Qué entra · Qué NO entra · Depende de · Dato
 - **Lo que se calcula y nunca lee la IA:** las vacaciones devengadas, disfrutadas, aprobadas y disponibles. Los días pendientes de años anteriores los pone el gerente.
 - **Las nóminas, en el perfil**, una a una o **«Subir las nóminas del mes»** con el PDF de la gestoría: Fogón reparte cada página por DNI y nombre, y pregunta lo que no sabe.
 - **La privacidad:** los jefes gestionan vacaciones e incidencias **sin ver nóminas, sueldos ni documentos**.
-- **La 3 · 1, construida el 25-nov** ([0153](../decisiones/0153-la-ampliacion.md), sección 13; migración 0127): la ficha, el alta en tres formas con Fogón, el saldo de vacaciones, lo privado decidido por la base y el historial de jornadas exportable. **La 3 · 2, construida el 25-nov** (sección 14; migración 0128): Equipo › Nóminas, «Subir las nóminas del mes» con Fogón repartiéndolas por DNI y nombre, la nómina en la ficha y **Mi ficha** para cada trabajador. **La Ampliación 3, entera.** La 4 va en dos: **4 · 1 · El horario, rehecho** (25-nov, sección 15) y 4 · 2 · Calendario y vacaciones.
+- **La 3 · 1, construida el 25-nov** ([0153](../decisiones/0153-la-ampliacion.md), sección 13; migración 0127): la ficha, el alta en tres formas con Fogón, el saldo de vacaciones, lo privado decidido por la base y el historial de jornadas exportable. **La 3 · 2, construida el 25-nov** (sección 14; migración 0128): Equipo › Nóminas, «Subir las nóminas del mes» con Fogón repartiéndolas por DNI y nombre, la nómina en la ficha y **Mi ficha** para cada trabajador. **La Ampliación 3, entera.** La 4 va en tres: **4 · 1 · El horario, rehecho** (sección 15), **4 · 2 · Las vacaciones** (sección 16, migración 0129) y 4 · 3 · El calendario del equipo.
 
 **Reglas críticas.** El coste por hora **solo lo ve quien tiene ese permiso**. No aparece en documentos ni en Fogón. **El contrato es un dato personal**: lo ven quien lleva el local y la propia persona, y nadie más; lo decide la base, no la pantalla. Fogón lo lee **en el servidor**, propone y **no guarda nada sin que el gerente confirme**; lo que pone el contrato es un dato, jamás una instrucción (M22). **Estook no se inventa lo que dice un convenio**: los días de vacaciones salen del convenio aplicado, del contrato o de lo que ponga el gerente a mano, y siempre los confirma él; cómo sabe Estook lo que dice cada convenio se pregunta en el plan del módulo.
 

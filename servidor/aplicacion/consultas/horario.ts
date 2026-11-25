@@ -25,6 +25,7 @@ import {
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { hacerElPdf, hechoEl, laMarcaDelLocal, type UnPdf } from '../documentos.ts';
 import {
+  conLasVacaciones,
   elBorrador,
   elEquipoDelHorario,
   elLocalDelHorario,
@@ -115,7 +116,9 @@ export const elHorario = consulta<z.infer<typeof entradaDeLaSemana>, SalidaElHor
     const { hoy, lunes } = await laSemanaQueToca(contexto, localId, entrada.lunes);
     const semana = await laSemana(contexto, localId, lunes);
     const publicada = semana !== null && semana.publicadaEn !== null;
-    const turnos = publicada ? await loPublicado(contexto, semana.id) : [];
+    const turnos = publicada
+      ? await conLasVacaciones(contexto, localId, lunes, await loPublicado(contexto, semana.id))
+      : [];
 
     const equipo = await elEquipoDelHorario(contexto, localId);
     const salen = new Set([...turnos.map((t) => t.personaId), contexto.personaId]);
@@ -249,9 +252,16 @@ export const elHorarioEnBorrador = consulta<z.infer<typeof entradaDeLaSemana>, S
     const localId = elLocalDelHorario(contexto);
     const { hoy, lunes } = await laSemanaQueToca(contexto, localId, entrada.lunes);
     const semana = await laSemana(contexto, localId, lunes);
-    const borrador = semana === null ? [] : await elBorrador(contexto, semana.id);
+    const borrador = await conLasVacaciones(
+      contexto,
+      localId,
+      lunes,
+      semana === null ? [] : await elBorrador(contexto, semana.id),
+    );
     const publicado =
-      semana !== null && semana.publicadaEn !== null ? await loPublicado(contexto, semana.id) : [];
+      semana !== null && semana.publicadaEn !== null
+        ? await conLasVacaciones(contexto, localId, lunes, await loPublicado(contexto, semana.id))
+        : [];
 
     const equipo = await elEquipoDelHorario(contexto, localId);
     const horas = await contexto.sql<{ persona_id: string; horas: string }[]>`
@@ -401,7 +411,12 @@ export const elHorarioEnPdf = consulta<z.infer<typeof entradaDelPdf>, UnPdf>({
         porque: 'Esta semana todavía no está publicada: en papel sale lo que ve el equipo.',
       });
     }
-    const turnos = await loPublicado(contexto, semana.id);
+    const turnos = await conLasVacaciones(
+      contexto,
+      localId,
+      lunes,
+      await loPublicado(contexto, semana.id),
+    );
     const equipo = await elEquipoDelHorario(contexto, localId);
     const marca = await laMarcaDelLocal(contexto, localId);
     const dias = losDias(lunes);

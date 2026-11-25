@@ -215,3 +215,57 @@ export function esUnMes(texto: string): boolean {
 export function dniLimpio(dni: string): string {
   return dni.replace(/[\s.-]/g, '').toUpperCase();
 }
+
+// ── Las vacaciones (la Ampliación 4 · 2) ─────────────────────────────────────
+
+function masUnDia(fecha: string, dias: number): string {
+  return new Date(aMediodia(fecha) + dias * UN_DIA_MS).toISOString().slice(0, 10);
+}
+
+/**
+ * Los días de vacaciones que cuenta un tramo, **como diga su ficha**: naturales (todos) o
+ * laborables. Los laborables son todos menos el domingo: el sábado es laborable (Estatuto de los
+ * Trabajadores) y los festivos de cada sitio Estook todavía no los sabe; se dice en la pantalla.
+ */
+export function diasDeVacaciones(desde: string, hasta: string, en: VacacionesEn): number {
+  if (hasta < desde) return 0;
+  let dias = 0;
+  for (let dia = desde; dia <= hasta; dia = masUnDia(dia, 1)) {
+    if (en === 'naturales' || new Date(aMediodia(dia)).getUTCDay() !== 0) dias += 1;
+  }
+  return dias;
+}
+
+/**
+ * Lo de unas vacaciones que cae en un año, partido en **lo ya disfrutado** (antes de hoy) y **lo
+ * aprobado por disfrutar** (de hoy en adelante): lo que resta del saldo de la ficha.
+ */
+export function loDeUnAno(
+  desde: string,
+  hasta: string,
+  ano: number,
+  hoy: string,
+  en: VacacionesEn,
+): { readonly disfrutadas: number; readonly porDisfrutar: number } {
+  const inicio = `${String(ano)}-01-01`;
+  const fin = `${String(ano)}-12-31`;
+  const a = desde < inicio ? inicio : desde;
+  const b = hasta > fin ? fin : hasta;
+  if (b < a) return { disfrutadas: 0, porDisfrutar: 0 };
+  const ayer = masUnDia(hoy, -1);
+  return {
+    disfrutadas: a <= ayer ? diasDeVacaciones(a, b < ayer ? b : ayer, en) : 0,
+    porDisfrutar: b >= hoy ? diasDeVacaciones(a > hoy ? a : hoy, b, en) : 0,
+  };
+}
+
+/** «del 2 al 8 de diciembre», «del 30 de diciembre al 3 de enero»: unas fechas, como se dicen. */
+export function delAl(desde: string, hasta: string): string {
+  const [a1, m1, d1] = desde.split('-').map(Number) as [number, number, number];
+  const [a2, m2, d2] = hasta.split('-').map(Number) as [number, number, number];
+  const mes = (m: number) => MESES[m - 1] ?? '';
+  if (desde === hasta) return `el ${String(d1)} de ${mes(m1)}`;
+  if (a1 === a2 && m1 === m2) return `del ${String(d1)} al ${String(d2)} de ${mes(m1)}`;
+  if (a1 === a2) return `del ${String(d1)} de ${mes(m1)} al ${String(d2)} de ${mes(m2)}`;
+  return `del ${String(d1)} de ${mes(m1)} de ${String(a1)} al ${String(d2)} de ${mes(m2)} de ${String(a2)}`;
+}

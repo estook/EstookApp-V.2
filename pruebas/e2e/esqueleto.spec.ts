@@ -32,8 +32,8 @@ const LAS_SIETE = [
   { id: 'almacen', nombre: 'Almacén', entra: 'Resumen' },
   { id: 'escandallos', nombre: 'Escandallos', entra: 'Resumen' },
   { id: 'carta', nombre: 'Carta', entra: 'Carta' },
-  // H2 (0069): con el Calendario entero en M14, entra en Turnos, que es lo construido.
-  { id: 'calendario', nombre: 'Calendario', entra: 'Turnos' },
+  // La Ampliación 4 · 2 (0153): el Calendario ya tiene Personal; entra en él.
+  { id: 'calendario', nombre: 'Calendario', entra: 'Calendario' },
   { id: 'equipo', nombre: 'Equipo', entra: 'Resumen' },
   { id: 'servicio', nombre: 'Servicio', entra: 'Jornadas' },
   { id: 'negocio', nombre: 'Negocio', entra: 'Ventas' },

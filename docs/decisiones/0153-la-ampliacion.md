@@ -472,6 +472,43 @@ Turnos, rehecho como en la maqueta) y **4 · 2 · Calendario y vacaciones**. En 
    los degradados bajan un punto más, hasta 4,5:1 con el blanco, y cada degradado lleva debajo su color base
    (`fondoDegradado`), que es el fondo de verdad del texto. Vale también para la ficha y Mi ficha.
 
+## 16 · Lo que se construyó en la Ampliación 4 · 2 · Las vacaciones (25-nov)
+
+**El resto de la 4 va en dos**: **4 · 2 · Las vacaciones** (esta) y **4 · 3 · El calendario del equipo** (los
+recordatorios con su aviso y las notas personales). En `ampliacion-4-2-las-vacaciones`, **con la migración
+0129** y la API con **dos consultas y cuatro comandos más** (`mis_vacaciones`, `las_vacaciones_del_equipo`;
+`pedir_vacaciones`, `responder_vacaciones`, `contestar_la_propuesta` y `retirar_vacaciones`). Las pruebas para
+Richi, en [sus pasos](../pasos/pasos-de-la-ampliacion-4-2.md) (la 38).
+
+- **Calendario › Personal**, donde se entra: el saludo, **la tarjeta azul arriba** si te proponen otras fechas
+  (Aceptar, Otras fechas, Rechazar), las baldosas de tus vacaciones y tus horas, la barra del año, **«Pedir
+  vacaciones»** (los días que cuentan y los que te quedarían, al momento) y tus peticiones con cómo van.
+- **Calendario › Propuestas**, para quien gestiona las de su gente: cada petición con sus días, lo que le
+  quedaría, **con quién de su zona coincide**, **cuántos quedarían el peor día** (verde o naranja) y si empiezan
+  con menos de dos meses; y **Aprobar, Otras fechas o Rechazar** con motivo. Debajo, las aprobadas que vienen;
+  arriba, **«Poner vacaciones a alguien»**.
+- **No deja pedir más días de los que hay**: el saldo de la ficha menos lo pedido y sin contestar.
+- **Aprobadas, salen en Turnos** (la banda azul) y **restan del saldo de la ficha**; **Fogón no pone a nadie de
+  vacaciones**.
+- **Los avisos**: a quien gestiona, «Ane pide vacaciones del 2 al 8 de diciembre»; a la persona, aprobadas,
+  rechazadas, otras fechas o «te ha puesto vacaciones». A la campana y al móvil.
+- **Un permiso nuevo**, «Gestionar vacaciones»: jefes, gerencia, dirección y RRHH, para su gente, sin ver
+  sueldos ni documentos.
+
+**Lo que decidió la IA al construirla**, para que Richi lo sepa:
+
+1. **La 4 · 2 y la 4 · 3**: las vacaciones primero, que es lo que tira del saldo de la ficha; el calendario del
+   equipo después. Hasta entonces, la pestaña «Equipo» sale apagada.
+2. **Quién las gestiona**: el jefe de sala, la sala; el de cocina, la cocina; quien lleva el local, a todos los
+   que mandan menos que él. Nadie contesta las suyas.
+3. **Las vacaciones en Turnos no se guardan en el horario**: se leen de las aprobadas cada vez, así que aprobar
+   o no lo cambia solo. Desde el turno no se quitan («Aprobadas en el Calendario»).
+4. **Laborables son todos menos el domingo** (el sábado es laborable); los festivos de cada sitio, Estook todavía
+   no los sabe, y se dice en la pantalla.
+5. **«Otras fechas» de la persona** retira la propuesta y abre «Pedir vacaciones»: es una petición nueva.
+6. **Los dos meses de la ley avisan y no impiden**, como las coincidencias: decide el responsable.
+7. **Lo que ya tenía apartado una petición** no cuenta dos veces al aceptar otras fechas.
+
 ## 12 · Lo que se toca en los documentos
 
 - **Plan:** la cabecera de D con la Ampliación; las fichas de M13 y M14 con lo de Richi; la ficha

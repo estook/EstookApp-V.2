@@ -96,6 +96,8 @@ export const PERMISOS_DE_ACCION = [
   // R3 · 1 · La caja (0144): abrir, cerrar y «Cómo va»; y cobrar, toda la sala.
   'accion.llevar_la_caja',
   'accion.cobrar',
+  // La Ampliación 4 · 2 (0153): las vacaciones de su gente, sin ver sueldos ni documentos.
+  'accion.gestionar_vacaciones',
 ] as const;
 
 export const PERMISOS = [...PERMISOS_DE_APP, ...PERMISOS_DE_DATO, ...PERMISOS_DE_ACCION] as const;
@@ -348,6 +350,9 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   'caja.descuadre': ['accion.ajustes_del_tpv', 'dato.ventas'],
   // La nómina es de la propia persona (0153): le llega a ella, y a nadie más.
   'nomina.subida': [],
+  // Las vacaciones (0153): las pedidas, a quien las gestiona; la respuesta, a la persona.
+  'vacaciones.pedidas': ['accion.gestionar_vacaciones'],
+  'vacaciones.respondidas': [],
 };
 
 export function puedeRecibirElAviso(

@@ -286,6 +286,9 @@ describe('los avisos al móvil (I · 0070)', () => {
       'caja.descuadre',
       // La Ampliación 3 · 2 (0153): tu nómina ya está. Richi: a los empleados, por la app y al móvil.
       'nomina.subida',
+      // La Ampliación 4 · 2 (0153): las vacaciones, pedidas y respondidas.
+      'vacaciones.pedidas',
+      'vacaciones.respondidas',
     ]);
   });
 

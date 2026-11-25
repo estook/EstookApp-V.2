@@ -22,6 +22,7 @@ import {
 // Cada pantalla, aparte del paquete inicial y precargada en segundo plano (0084).
 import {
   Almacen,
+  Calendario,
   CierreDeCaja,
   Informacion,
   Empleados,
@@ -318,6 +319,10 @@ function Contenido({
   // H2 (0069): el horario, en un solo sitio desde el repaso del 10-oct (0082). Lo ve
   // todo el equipo, y quien lo publica tiene además «Montarlo».
   if (app.id === 'calendario' && destino.id === 'turnos') return <ElHorario conTitulo={false} />;
+  // La Ampliación 4 · 2 (0153): Personal y Propuestas; Equipo llega con la 4 · 3.
+  if (app.id === 'calendario' && destino.id === 'calendario' && vista?.modulo === undefined) {
+    return <Calendario vista={vista?.id ?? 'personal'} />;
+  }
 
   // El cierre es una **vista** de la jornada, e «Información» la otra: lo que se vende, que
   // sustituye a «En marcha» desde la pausa del 8-nov (0142). La caja vive en Estook TPV (T7).

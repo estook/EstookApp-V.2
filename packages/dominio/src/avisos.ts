@@ -73,6 +73,9 @@ export const TIPOS_DE_AVISO = [
   'caja.descuadre',
   // ── La Ampliación 3 · 2 (decisión 0153) ─────────────────────────────────
   'nomina.subida',
+  // ── La Ampliación 4 · 2 (decisión 0153) ─────────────────────────────────
+  'vacaciones.pedidas',
+  'vacaciones.respondidas',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -447,6 +450,24 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
     nombre: 'Tu nómina ya está',
     explica:
       'Cuando quien lleva el local sube tu nómina del mes. La ves y la descargas en Mi ficha.',
+    grupo: 'Equipo',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: true,
+  },
+  // Las vacaciones (la Ampliación 4 · 2, 0153): a quien las gestiona, cuando alguien de su gente
+  // las pide; y a la persona, cuando le contestan. A la campana y al móvil (Richi, 24-nov).
+  'vacaciones.pedidas': {
+    nombre: 'Te piden vacaciones',
+    explica: 'Cuando alguien de tu equipo pide vacaciones, o acepta las fechas que le propusiste.',
+    grupo: 'Equipo',
+    deTuEquipo: true,
+    correoDeFabrica: false,
+    movilDeFabrica: true,
+  },
+  'vacaciones.respondidas': {
+    nombre: 'Te responden a tus vacaciones',
+    explica: 'Cuando te aprueban, te rechazan o te proponen otras fechas para tus vacaciones.',
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: false,
@@ -956,6 +977,50 @@ export function avisoDeFichajeSinApuntar(
  * «Tu nómina de noviembre ya está» (la Ampliación 3 · 2, 0153). Sin importes: el aviso sale
  * en la pantalla del móvil, que ve cualquiera que esté al lado.
  */
+/** «Ane pide vacaciones del 2 al 8 de diciembre» (a quien las gestiona). */
+export function avisoDeVacacionesPedidas(
+  nombre: string,
+  fechas: string,
+  dias: number,
+  aceptaLaPropuesta: boolean,
+): LoQueDiceUnAviso {
+  return {
+    titulo: aceptaLaPropuesta
+      ? `${nombre} acepta las vacaciones ${fechas}`
+      : `${nombre} pide vacaciones ${fechas}`,
+    detalle: aceptaLaPropuesta
+      ? 'Las fechas que le propusiste: ya están aprobadas.'
+      : `${String(dias)} ${dias === 1 ? 'día' : 'días'}. Apruébalas, propón otras o recházalas en Calendario › Propuestas.`,
+  };
+}
+
+/** «Tus vacaciones del 2 al 8 de diciembre, aprobadas» (a la persona). */
+export function avisoDeVacacionesRespondidas(
+  que: 'aprobadas' | 'rechazadas' | 'propuesta' | 'puestas',
+  fechas: string,
+  quien: string,
+): LoQueDiceUnAviso {
+  if (que === 'propuesta') {
+    return {
+      titulo: `${quien} te propone otras fechas para tus vacaciones`,
+      detalle: `Te propone ${fechas}. Acéptalas, recházalas o pide otras en Calendario › Personal.`,
+    };
+  }
+  if (que === 'puestas') {
+    return {
+      titulo: `${quien} te ha puesto vacaciones ${fechas}`,
+      detalle: 'Las ves en Calendario › Personal y en tu ficha.',
+    };
+  }
+  return {
+    titulo: `Tus vacaciones ${fechas}, ${que}`,
+    detalle:
+      que === 'aprobadas'
+        ? `Las ha aprobado ${quien}. Ya salen en Turnos.`
+        : `Las ha rechazado ${quien}. Mira el motivo en Calendario › Personal.`,
+  };
+}
+
 export function avisoDeNominaSubida(mesEnLetra: string): LoQueDiceUnAviso {
   return {
     titulo: `Tu nómina de ${mesEnLetra} ya está en Estook`,

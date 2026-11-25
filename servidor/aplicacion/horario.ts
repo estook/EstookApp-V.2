@@ -263,6 +263,50 @@ export async function elBorrador(contexto: Contexto, semanaId: string): Promise<
 }
 
 /** Lo publicado de una semana: lo que ve el equipo. */
+/**
+ * **Las vacaciones aprobadas, en Turnos** (la Ampliación 4 · 2, 0153): cada día de vacaciones de
+ * alguien que no tiene otra cosa puesta ese día sale como «Vacaciones». No se guardan en el
+ * borrador: se leen de las solicitudes aprobadas cada vez, así que aprobarlas o no lo cambia solo.
+ * Su id empieza por `vacaciones:` y la pantalla no deja quitarlas desde el turno.
+ */
+export async function conLasVacaciones(
+  contexto: Contexto,
+  localId: string,
+  lunes: string,
+  turnos: readonly TurnoLeido[],
+): Promise<TurnoLeido[]> {
+  const domingo = new Date(Date.parse(`${lunes}T12:00:00Z`) + 6 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+  const filas = await contexto.sql<{ persona_id: string; desde: string; hasta: string }[]>`
+    select persona_id::text as persona_id, to_char(desde, 'YYYY-MM-DD') as desde,
+           to_char(hasta, 'YYYY-MM-DD') as hasta
+      from estook.vacaciones_aprobadas(${localId}::uuid, ${lunes}::date, ${domingo}::date)
+  `;
+  const extra: TurnoLeido[] = [];
+  for (let i = 0; i < 7; i++) {
+    const dia = new Date(Date.parse(`${lunes}T12:00:00Z`) + i * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    for (const f of filas) {
+      if (f.desde > dia || f.hasta < dia) continue;
+      if (turnos.some((t) => t.personaId === f.persona_id && t.dia === dia)) continue;
+      if (extra.some((t) => t.personaId === f.persona_id && t.dia === dia)) continue;
+      extra.push({
+        id: `vacaciones:${f.persona_id}:${dia}`,
+        personaId: f.persona_id,
+        dia,
+        tipo: 'vacaciones',
+        entra: null,
+        sale: null,
+        descansoMinutos: 0,
+        nota: 'Vacaciones aprobadas',
+      });
+    }
+  }
+  return [...turnos, ...extra];
+}
+
 export async function loPublicado(contexto: Contexto, semanaId: string): Promise<TurnoLeido[]> {
   const filas = await contexto.sql<FilaDeTurno[]>`
     select t.id::text as id, t.persona_id::text as persona_id,

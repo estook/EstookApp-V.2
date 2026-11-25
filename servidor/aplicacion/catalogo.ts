@@ -150,6 +150,13 @@ import { abrirUnDocumentoDePersona } from './consultas/la-ficha.ts';
 import { guardarLaFichaDelTrabajador, leerElContratoConFogon } from './comandos/la-ficha.ts';
 import { guardarUnaNomina, leerLasNominasConFogon } from './comandos/las-nominas.ts';
 import { lasNominasDelEquipo } from './consultas/las-nominas.ts';
+import {
+  contestarLaPropuesta,
+  pedirVacaciones,
+  responderVacaciones,
+  retirarVacaciones,
+} from './comandos/vacaciones.ts';
+import { lasVacacionesDelEquipo, misVacaciones } from './consultas/vacaciones.ts';
 import { elHorario, elHorarioEnBorrador, elHorarioEnPdf } from './consultas/horario.ts';
 import {
   copiarLaSemanaAnterior,
@@ -749,6 +756,9 @@ export const catalogo = {
     [abrirUnDocumentoDePersona.nombre]: abrirUnDocumentoDePersona,
     // La Ampliación 3 · 2 · Las nóminas (0153): mes a mes, quién la tiene y a quién le falta.
     [lasNominasDelEquipo.nombre]: lasNominasDelEquipo,
+    // La Ampliación 4 · 2 · Las vacaciones (0153): las mías, y las de mi gente con sus coincidencias.
+    [misVacaciones.nombre]: misVacaciones,
+    [lasVacacionesDelEquipo.nombre]: lasVacacionesDelEquipo,
     [elAparatoParaFichar.nombre]: elAparatoParaFichar,
 
     // ── T1 · La puerta de Estook TPV (0107) ────────────────────────────────
@@ -927,6 +937,11 @@ export const catalogo = {
     // cada una se guarda sola en la ficha de su persona, con su aviso.
     [leerLasNominasConFogon.nombre]: leerLasNominasConFogon,
     [guardarUnaNomina.nombre]: guardarUnaNomina,
+    // La Ampliación 4 · 2 (0153): pedir, contestar, aceptar otras fechas y retirar.
+    [pedirVacaciones.nombre]: pedirVacaciones,
+    [responderVacaciones.nombre]: responderVacaciones,
+    [contestarLaPropuesta.nombre]: contestarLaPropuesta,
+    [retirarVacaciones.nombre]: retirarVacaciones,
     // El repaso del 9-oct (0081): el horario de siempre se fue; se justifica la falta.
     [justificarIncidencia.nombre]: justificarIncidencia,
     [quitarJustificacion.nombre]: quitarJustificacion,

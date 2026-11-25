@@ -885,6 +885,8 @@ export {
   avisoDeEntrasEnUnRato,
   avisoDeFichajeApuntado,
   avisoDeNominaSubida,
+  avisoDeVacacionesPedidas,
+  avisoDeVacacionesRespondidas,
   avisoDeConfirmar,
   avisoDeFichajeCorregido,
   avisoDeFichajeSinApuntar,
@@ -1584,6 +1586,9 @@ export {
   elMesPasado,
   esUnMes,
   dniLimpio,
+  diasDeVacaciones,
+  loDeUnAno,
+  delAl,
 } from './ficha.ts';
 export type {
   TipoDeContrato,

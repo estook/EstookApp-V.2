@@ -3574,6 +3574,14 @@ partidos en dos bloques, las vacaciones como banda azul, las horas frente al con
 el móvil, el día por horas y «Solo el mío» en tarjetas. Las pruebas: `degradados.prueba.ts` y las de pantalla
 del horario y de Fogón, con el recorrido nuevo.
 
+### La Ampliación 4 · 2 · Las vacaciones
+
+_25 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), sección 16 (migración 0129):
+Calendario › Personal (pedir con el saldo de la ficha, la tarjeta azul de la contrapropuesta) y Propuestas
+(aprobar, otras fechas o rechazar, con las coincidencias y cuántos quedan); aprobadas, salen en Turnos y
+restan del saldo; Fogón no pone a nadie de vacaciones; el permiso «Gestionar vacaciones». Las pruebas:
+`las-vacaciones.prueba.ts` contra la base, `avisos.prueba.ts`, `apps.prueba.ts` y las de pantalla del esqueleto.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

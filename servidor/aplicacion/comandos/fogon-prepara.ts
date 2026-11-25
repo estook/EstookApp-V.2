@@ -230,6 +230,7 @@ Cómo se hace un buen horario en un restaurante (las reglas de la casa):
 - Que haya rotación: si te dicen qué libró cada uno la semana pasada, cambia algo los días libres para que no le toque siempre lo mismo a la misma persona.
 - Dos días libres por persona y semana, mejor seguidos.
 - Entre el final de una jornada y el principio de la siguiente, al menos 12 horas (ley española).
+- Quien está de vacaciones un día no trabaja ese día: no le pongas nada.
 - Usa los turnos habituales del local que te dan (las horas a las que se entra y se sale). Una persona puede hacer turno partido (dos tramos el mismo día) si es lo que se hace en el local.
 - Horas en HH:MM. Si un tramo acaba después de medianoche, "sale" es la hora del día siguiente (por ejemplo 00:30).
 - En "explicacion", dos o tres frases para la persona: qué has hecho y qué debería mirar.
@@ -314,7 +315,11 @@ export const entradaHacerElCuadrante = z
 export type EntradaHacerElCuadrante = z.infer<typeof entradaHacerElCuadrante>;
 
 /** «P3 · cocina · 40 h a la semana · la quieres en los días fuertes · libró lunes y martes». */
-function comoSeLeeLaPersona(p: PersonaParaElCuadrante, enLosFuertes: boolean): string {
+function comoSeLeeLaPersona(
+  p: PersonaParaElCuadrante,
+  enLosFuertes: boolean,
+  deVacaciones: readonly string[],
+): string {
   const horas =
     p.horasDeContrato === null
       ? 'sin horas de contrato apuntadas'
@@ -323,7 +328,40 @@ function comoSeLeeLaPersona(p: PersonaParaElCuadrante, enLosFuertes: boolean): s
     p.libroLaSemanaPasada.length === 0
       ? ''
       : ` · la semana pasada libró ${p.libroLaSemanaPasada.join(' y ')}`;
-  return `${p.codigo} · ${p.zona} · ${horas}${enLosFuertes ? ' · la quieres en los días de más venta' : ''}${libro}`;
+  const vacaciones =
+    deVacaciones.length === 0
+      ? ''
+      : ` · de vacaciones el ${deVacaciones.join(' y el ')}: esos días no trabaja`;
+  return `${p.codigo} · ${p.zona} · ${horas}${enLosFuertes ? ' · la quieres en los días de más venta' : ''}${libro}${vacaciones}`;
+}
+
+/** Los días de vacaciones aprobadas de cada uno en esa semana (0153), por persona. */
+async function losDiasDeVacaciones(
+  contexto: Contexto,
+  localId: string,
+  lunes: string,
+): Promise<ReadonlyMap<string, ReadonlySet<string>>> {
+  const domingo = new Date(Date.parse(`${lunes}T12:00:00Z`) + 6 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+  const filas = await contexto.sql<{ persona_id: string; desde: string; hasta: string }[]>`
+    select persona_id::text as persona_id, to_char(desde, 'YYYY-MM-DD') as desde,
+           to_char(hasta, 'YYYY-MM-DD') as hasta
+      from estook.vacaciones_aprobadas(${localId}::uuid, ${lunes}::date, ${domingo}::date)
+  `;
+  const dias = new Map<string, Set<string>>();
+  for (let i = 0; i < 7; i++) {
+    const dia = new Date(Date.parse(`${lunes}T12:00:00Z`) + i * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    for (const f of filas) {
+      if (f.desde > dia || f.hasta < dia) continue;
+      const suyos = dias.get(f.persona_id) ?? new Set<string>();
+      suyos.add(dia);
+      dias.set(f.persona_id, suyos);
+    }
+  }
+  return dias;
 }
 
 export const hacerElCuadranteConFogon = comando<EntradaHacerElCuadrante, CuadranteDeFogon>({
@@ -342,6 +380,8 @@ export const hacerElCuadranteConFogon = comando<EntradaHacerElCuadrante, Cuadran
       });
     }
     const fuertes = new Set(entrada.en_los_fuertes);
+    // Las vacaciones aprobadas de esa semana (la Ampliación 4 · 2): Fogón no pone a nadie de vacaciones.
+    const vacaciones = await losDiasDeVacaciones(contexto, localId, lunes);
     const diasFuertes = entrada.dias_fuertes
       .map((f) => diasEntre(lunes, fechaOperativa(f)))
       .filter((i) => i >= 0 && i <= 6)
@@ -355,7 +395,15 @@ export const hacerElCuadranteConFogon = comando<EntradaHacerElCuadrante, Cuadran
         : `Lo que te cuentan: ${entrada.notas}`,
       '',
       'El equipo:',
-      ...personas.map((p) => comoSeLeeLaPersona(p, fuertes.has(p.personaId))),
+      ...personas.map((p) =>
+        comoSeLeeLaPersona(
+          p,
+          fuertes.has(p.personaId),
+          [...(vacaciones.get(p.personaId) ?? [])].map(
+            (dia) => DIAS[diasEntre(lunes, fechaOperativa(dia))] ?? dia,
+          ),
+        ),
+      ),
     ]
       .filter((l) => l !== null)
       .join('\n');
@@ -475,11 +523,18 @@ export const ponerElCuadranteDeFogon = comando<
       });
     }
     const equipo = new Set((await elEquipoDelHorario(contexto, localId)).map((p) => p.personaId));
+    const vacaciones = await losDiasDeVacaciones(contexto, localId, lunes);
     let puestos = 0;
     let noCaben = 0;
     for (const t of entrada.tramos) {
       const desde = diasEntre(lunes, fechaOperativa(t.dia));
-      if (!equipo.has(t.persona_id) || desde < 0 || desde > 6 || t.entra === t.sale) {
+      if (
+        !equipo.has(t.persona_id) ||
+        desde < 0 ||
+        desde > 6 ||
+        t.entra === t.sale ||
+        (vacaciones.get(t.persona_id)?.has(t.dia) ?? false)
+      ) {
         noCaben += 1;
         continue;
       }

@@ -1,6 +1,7 @@
 import {
   elSaldoDeVacaciones,
   esTipoDeContrato,
+  loDeUnAno,
   type Jornada,
   type SaldoDeVacaciones,
   type TipoDeContrato,
@@ -72,6 +73,36 @@ export interface LaFicha {
   readonly veLoPrivado: boolean;
   /** Si quien mira puede rellenarla o subir el contrato: no la suya, y no hacia arriba. */
   readonly puedeRellenarla: boolean;
+}
+
+/**
+ * Lo gastado de vacaciones este año (la Ampliación 4 · 2): lo disfrutado antes de hoy y lo aprobado
+ * de hoy en adelante, de sus solicitudes aprobadas en la organización. Las lee quien puede verlas
+ * (la persona y quien gestiona sus vacaciones): a cualquier otro, cero filas.
+ */
+export async function loGastadoDeVacaciones(
+  contexto: Contexto,
+  personaId: string,
+  organizacionId: string,
+  hoy: string,
+  en: VacacionesEn,
+): Promise<{ disfrutadas: number; porDisfrutar: number }> {
+  const ano = Number(hoy.slice(0, 4));
+  const filas = await contexto.sql<{ desde: string; hasta: string }[]>`
+    select to_char(desde, 'YYYY-MM-DD') as desde, to_char(hasta, 'YYYY-MM-DD') as hasta
+      from estook.solicitud_de_vacaciones
+     where persona_id = ${personaId} and organizacion_id = ${organizacionId}
+       and estado = 'aprobada'
+       and desde <= ${`${String(ano)}-12-31`}::date and hasta >= ${`${String(ano)}-01-01`}::date
+  `;
+  let disfrutadas = 0;
+  let porDisfrutar = 0;
+  for (const f of filas) {
+    const lo = loDeUnAno(f.desde, f.hasta, ano, hoy, en);
+    disfrutadas += lo.disfrutadas;
+    porDisfrutar += lo.porDisfrutar;
+  }
+  return { disfrutadas, porDisfrutar };
 }
 
 /** La amplitud de rol más alta de una persona en la organización: para «no hacia arriba». */
@@ -253,8 +284,12 @@ export async function laFichaDe(
     nominas = filas.filter((d) => d.tipo === 'nomina').map(comoDocumento);
   }
 
-  // Las disfrutadas y las aprobadas llegan con el Calendario (la Ampliación 4): hasta
-  // entonces no hay ninguna pedida en Estook, y el saldo es el del contrato.
+  // Lo disfrutado y lo aprobado por disfrutar este año, de sus vacaciones aprobadas (la
+  // Ampliación 4 · 2): lo cuenta Estook con lo que dice la ficha, naturales o laborables.
+  const gastado =
+    laboral === null
+      ? { disfrutadas: 0, porDisfrutar: 0 }
+      : await loGastadoDeVacaciones(contexto, personaId, organizacionId, hoy, laboral.vacacionesEn);
   const vacaciones =
     laboral === null
       ? null
@@ -263,8 +298,8 @@ export async function laFichaDe(
           incorporacion: laboral.incorporacion,
           hoy,
           pendientes: laboral.pendientesAnteriores,
-          disfrutadas: 0,
-          aprobadas: 0,
+          disfrutadas: gastado.disfrutadas,
+          aprobadas: gastado.porDisfrutar,
         });
 
   return {

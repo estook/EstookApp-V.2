@@ -510,3 +510,14 @@ Bandeja de incidencias **con contexto** (local, rol, pantalla y última acción,
 - No permite descargar datos personales de empleados.
 - **No tiene un botón de «entrar como» sin autorización.**
 - Y no guarda nada que no esté en la auditoría del cliente.
+
+## La ficha, las nóminas y las vacaciones (la Ampliación, 0153)
+
+_Lo decide la base de datos, no la pantalla (migraciones 0127 a 0129)._
+
+| Qué                                                              | La propia persona   | Jefe de sala o de cocina                        | Gerente, dirección y RRHH                |
+| ---------------------------------------------------------------- | ------------------- | ----------------------------------------------- | ---------------------------------------- |
+| Las condiciones de la ficha (jornada, contrato, vacaciones)      | Las ve              | Las de su gente                                 | Las de su gente, y las rellena           |
+| Lo privado: DNI, teléfono, domicilio, sueldo, contrato y nóminas | Lo ve y lo descarga | No                                              | Lo de su gente (`dato.datos_del_equipo`) |
+| Pedir vacaciones                                                 | Sí                  | Sí (las contesta quien manda más)               | Sí (las contesta quien manda más)        |
+| Aprobar, proponer otras fechas o rechazar; ponérselas a alguien  | No las suyas        | Las de su gente (`accion.gestionar_vacaciones`) | Las de su gente                          |

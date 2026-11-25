@@ -157,16 +157,24 @@ export function HojaDelDia({
                       Cambiar
                     </Boton>
                   )}
-                  <Boton
-                    tono="texto"
-                    cargando={haciendo === `quitar-${t.id}`}
-                    textoCargando="Quitando"
-                    onClick={() => {
-                      void quitar(t);
-                    }}
-                  >
-                    Quitar
-                  </Boton>
+                  {/* Las vacaciones aprobadas (0153) no se quitan desde el turno: se cambian en
+                      Calendario › Propuestas, que es donde se aprobaron. */}
+                  {t.id.startsWith('vacaciones:') ? (
+                    <span className="text-etiqueta text-texto-tenue">
+                      Aprobadas en el Calendario
+                    </span>
+                  ) : (
+                    <Boton
+                      tono="texto"
+                      cargando={haciendo === `quitar-${t.id}`}
+                      textoCargando="Quitando"
+                      onClick={() => {
+                        void quitar(t);
+                      }}
+                    >
+                      Quitar
+                    </Boton>
+                  )}
                 </li>
               ))}
             </ul>

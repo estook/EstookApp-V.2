@@ -876,6 +876,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'un_cliente',
       'unir_identidad',
       'usar_la_empresa',
+      // La Ampliación 4 · 2 (0129): los días aprobados de un local, sin notas, para Turnos.
+      'vacaciones_aprobadas',
       'visto_por_ultima_vez',
       'zonas_que_ve',
     ]);

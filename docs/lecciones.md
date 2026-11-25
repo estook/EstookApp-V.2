@@ -1213,3 +1213,10 @@
      base lo vio con dos fichados y uno en la lista (23-nov). **Para leer de otros lo justo, una función con
      privilegio que devuelve solo eso** (`fichados_del_dia`: el nombre y el rol, a quien ve la caja), en la lista
      de funciones con privilegio que vigila `almacen.prueba.ts` (0152).
+
+279. **Una pregunta que no dice a quién le llega se contesta al revés.** En la Ampliación (24-nov) pregunté
+     «recordatorios: correo ahora y WhatsApp con M25» y Richi entendió los avisos del calendario a los
+     empleados: contestó «correo apagado» cuando era el correo a los clientes que reservan. Y propuse contar
+     el plazo de confirmar una reserva desde que se hace, que no sirve si se reserva dos días antes. **Cada
+     pregunta dice quién recibe o quién hace la cosa (cliente, empleado, gerente) y en qué pantalla, y la
+     opción recomendada se prueba antes con un caso real del local** (0153, sección 9).

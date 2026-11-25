@@ -17,7 +17,7 @@ import { Esqueleto } from './Esqueleto.tsx';
 import { Panel } from './panel/Panel.tsx';
 import { PantallaDeApp } from './pantallas/PantallaDeApp.tsx';
 // Las pantallas, aparte del paquete inicial (0084): se traen al entrar o en segundo plano.
-import { Ajustes, ElHorario, VistaDeCadena } from './pantallas/lasPantallas.ts';
+import { Ajustes, ElHorario, MiFicha, VistaDeCadena } from './pantallas/lasPantallas.ts';
 // Mis fichajes, en el paquete inicial: es de lo que se abre sin señal (0084).
 import { MisFichajes } from './equipo/MisFichajes.tsx';
 import { ElegirPlan } from './sesion/ElegirPlan.tsx';
@@ -271,6 +271,8 @@ function Puerta() {
             <Route path="ajustes/:seccion" element={<Ajustes />} />
             {/* Lo suyo, para cualquiera: tenga o no la app Equipo (0068). */}
             <Route path="mis-fichajes" element={<MisFichajes />} />
+            {/* Mi ficha (la Ampliación 3 · 2, 0153): sus nóminas, sus vacaciones y su contrato. */}
+            <Route path="mi-ficha" element={<MiFicha />} />
             {/* El horario de la semana (0069): a donde lleva el aviso y «Mi turno». */}
             <Route path="horario" element={<ElHorario />} />
             {/* El chat del equipo (C1 · 0073): la lista y cada conversación. */}

@@ -408,6 +408,44 @@ export function contestaDePrueba(peticion: PeticionAFogon): string {
   if (peticion.buscarEnInternet !== undefined) return laZonaDePrueba(peticion.resumen);
   const campos = Object.keys((peticion.forma?.['properties'] as object | undefined) ?? {});
   const primero = primerProductoDelResumen(peticion.resumen);
+  // ── La Ampliación 3 · 2 (0153): las nóminas del mes, una por página. Con la gente de los
+  // ejemplos (Sara, por su DNI; Marcos, por su nombre) y una que no es de nadie.
+  if (campos.includes('nominas')) {
+    return JSON.stringify({
+      nominas: [
+        {
+          pagina: 1,
+          trabajador: 'SARA NUÑEZ',
+          dni: '12345678-Z',
+          mes: '2026-10',
+          bruto: 1780,
+          neto: 1512.34,
+          categoria: 'Camarera de primera',
+          convenio: 'Hostelería de Madrid',
+        },
+        {
+          pagina: 2,
+          trabajador: 'Marcos Vega Ruiz',
+          dni: '',
+          mes: '2026-10',
+          bruto: 2150,
+          neto: 1783.2,
+          categoria: 'Cocinero',
+          convenio: '',
+        },
+        {
+          pagina: 3,
+          trabajador: 'J. Aramendi',
+          dni: '99999999R',
+          mes: '2026-10',
+          bruto: 1420,
+          neto: 1236.6,
+          categoria: '',
+          convenio: '',
+        },
+      ],
+    });
+  }
   // ── La Ampliación 3 (0153): un contrato de trabajo, con la página de cada cosa ──
   if (campos.includes('incorporacion')) {
     return JSON.stringify({

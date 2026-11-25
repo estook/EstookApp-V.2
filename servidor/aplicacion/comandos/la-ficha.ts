@@ -265,7 +265,7 @@ export function esDeEsaPersona(
 }
 
 /** La persona, si es de esta organización. Si no, como si no existiera. */
-async function laPersona(
+export async function laPersona(
   contexto: Contexto,
   personaId: string,
   organizacionId: string,
@@ -284,7 +284,7 @@ async function laPersona(
   return persona;
 }
 
-async function quePuedaRellenarla(
+export async function quePuedaRellenarla(
   contexto: Contexto,
   personaId: string,
   organizacionId: string,

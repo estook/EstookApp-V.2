@@ -398,7 +398,7 @@ describe('lo construido y lo que llega', () => {
     expect(laAppParaElLocal(laApp('almacen'), ['carta/menus'])).toBe(laApp('almacen'));
   });
 
-  it('Equipo tiene sus cuatro destinos construidos, y el horario no es uno de ellos', () => {
+  it('Equipo tiene sus cinco destinos construidos, y el horario no es uno de ellos', () => {
     // Personas la trajo M4. Resumen y Fichajes, M6½: con los fichajes ya se puede
     // contestar quién está y cuántas horas lleva cada uno. Horarios lo trajo H2 (0069)
     // y se fue a Calendario › Turnos con el repaso del 10-oct (0082): un solo sitio.
@@ -406,8 +406,10 @@ describe('lo construido y lo que llega', () => {
     expect(destinosConstruidos(laApp('equipo')).map((d) => d.id)).toEqual([
       'resumen',
       'personas',
+      // Nóminas, la Ampliación 3 · 2 (0153): solo para quien lleva los datos del equipo.
+      'nominas',
       'fichajes',
-      // Y el quinto, Incidencias, el repaso del 9-oct (0081).
+      // E Incidencias, el repaso del 9-oct (0081).
       'incidencias',
     ]);
   });

@@ -171,3 +171,47 @@ export function esUnDniValido(dni: string): boolean {
   const numero = Number(prefijo === '' ? cifras : `${String('XYZ'.indexOf(prefijo))}${cifras}`);
   return 'TRWAGMYFPDXBNJZSQVHLCKE'[numero % 23] === letra;
 }
+
+// ── Las nóminas (la Ampliación 3 · 2) ────────────────────────────────────────
+
+const MESES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+] as const;
+
+/** «2026-11» o «2026-11-01» → «noviembre de 2026». */
+export function mesEnLetra(mes: string): string {
+  const ano = mes.slice(0, 4);
+  const numero = Number(mes.slice(5, 7));
+  return `${MESES[numero - 1] ?? mes} de ${ano}`;
+}
+
+/** El mes de antes de un día, «AAAA-MM»: la gestoría manda las nóminas del mes que acaba. */
+export function elMesPasado(hoy: string): string {
+  const ano = Number(hoy.slice(0, 4));
+  const mes = Number(hoy.slice(5, 7));
+  return mes === 1 ? `${String(ano - 1)}-12` : `${String(ano)}-${String(mes - 1).padStart(2, '0')}`;
+}
+
+/** Si un texto es un mes «AAAA-MM» de verdad. */
+export function esUnMes(texto: string): boolean {
+  const m = /^(\d{4})-(\d{2})$/.exec(texto);
+  if (m === null) return false;
+  const numero = Number(m[2]);
+  return numero >= 1 && numero <= 12 && Number(m[1]) >= 2000;
+}
+
+/** El DNI tal como se compara: sin espacios, puntos ni guiones, y en mayúsculas. */
+export function dniLimpio(dni: string): string {
+  return dni.replace(/[\s.-]/g, '').toUpperCase();
+}

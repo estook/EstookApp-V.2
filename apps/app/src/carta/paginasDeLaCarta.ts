@@ -374,4 +374,82 @@ export async function textoDeCadaPagina(fichero: File, tope: number): Promise<st
   return letras < LETRAS_DE_UN_PDF_CON_TEXTO ? null : paginas;
 }
 
+/**
+ * Las páginas para **guardarlas** en un PDF propio (las nóminas, 0153): JPEG a 1400 px de ancho,
+ * que se lee bien impreso en A4, con su tamaño. Del PDF, todas hasta `tope`; de cada foto, una.
+ */
+export async function paginasParaGuardar(
+  ficheros: readonly File[],
+  tope: number,
+): Promise<readonly { jpeg: Uint8Array; ancho: number; alto: number }[]> {
+  const ANCHO = 1400;
+  const comoJpeg = (lienzo: HTMLCanvasElement) => {
+    let direccion = lienzo.toDataURL('image/jpeg', 0.82);
+    for (const calidad of [0.72, 0.62]) {
+      if (pesa(direccion) <= 900 * 1024) break;
+      direccion = lienzo.toDataURL('image/jpeg', calidad);
+    }
+    const texto = atob(direccion.slice(direccion.indexOf(',') + 1));
+    const jpeg = new Uint8Array(texto.length);
+    for (let i = 0; i < texto.length; i++) jpeg[i] = texto.charCodeAt(i);
+    return { jpeg, ancho: lienzo.width, alto: lienzo.height };
+  };
+  const paginas: { jpeg: Uint8Array; ancho: number; alto: number }[] = [];
+  for (const fichero of ficheros) {
+    if (paginas.length >= tope) break;
+    if (esPdf(fichero)) {
+      const [pdfjs, trabajador] = await Promise.all([
+        import('pdfjs-dist'),
+        import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
+      ]);
+      pdfjs.GlobalWorkerOptions.workerSrc = trabajador.default;
+      let documento;
+      try {
+        documento = await pdfjs.getDocument({ data: new Uint8Array(await fichero.arrayBuffer()) })
+          .promise;
+      } catch {
+        throw new NoSeHaPodidoLeer(`«${fichero.name}» no se ha podido abrir. ¿Tiene contraseña?`);
+      }
+      const cuantas = Math.min(documento.numPages, tope - paginas.length);
+      for (let numero = 1; numero <= cuantas; numero++) {
+        const pagina = await documento.getPage(numero);
+        const tal = pagina.getViewport({ scale: 1 });
+        const vista = pagina.getViewport({ scale: ANCHO / tal.width });
+        const { lienzo, pincel } = lienzoEnBlanco(
+          Math.trunc(vista.width),
+          Math.trunc(vista.height),
+        );
+        await pagina.render({ canvas: lienzo, canvasContext: pincel, viewport: vista }).promise;
+        paginas.push(comoJpeg(lienzo));
+        pagina.cleanup();
+      }
+      await documento.destroy();
+    } else if (fichero.type.startsWith('image/')) {
+      paginas.push(comoJpeg(await lienzoDeLaFoto(fichero)));
+    } else {
+      throw new NoSeHaPodidoLeer(`«${fichero.name}» no es un PDF ni una foto.`);
+    }
+  }
+  if (paginas.length === 0) throw new NoSeHaPodidoLeer('No hay ninguna página que guardar.');
+  return paginas;
+}
+
+/** Cuántas páginas tiene un PDF, sin pintarlas. */
+export async function cuantasPaginas(fichero: File): Promise<number> {
+  const [pdfjs, trabajador] = await Promise.all([
+    import('pdfjs-dist'),
+    import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
+  ]);
+  pdfjs.GlobalWorkerOptions.workerSrc = trabajador.default;
+  try {
+    const documento = await pdfjs.getDocument({ data: new Uint8Array(await fichero.arrayBuffer()) })
+      .promise;
+    const n = documento.numPages;
+    await documento.destroy();
+    return n;
+  } catch {
+    throw new NoSeHaPodidoLeer(`«${fichero.name}» no se ha podido abrir. ¿Tiene contraseña?`);
+  }
+}
+
 export { esPdf };

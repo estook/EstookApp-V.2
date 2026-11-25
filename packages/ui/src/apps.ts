@@ -506,6 +506,17 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         queContesta: '¿Quién tiene acceso, con qué rol, y quién no ha entrado?',
         vistas: vistas('Con acceso', 'Sin entrar todavía', 'Retirados'),
       },
+      {
+        // **La Ampliación 3 · 2 (0153).** Las nóminas del equipo, mes a mes, y «Subir las
+        // nóminas del mes» con el PDF de la gestoría. Solo de quien lleva los datos del
+        // equipo: un jefe de sala lleva a su gente sin ver lo que cobra.
+        id: 'nominas',
+        nombre: 'Nóminas',
+        icono: IconoDocumento,
+        queContesta: '¿Qué nómina tiene cada uno, y a quién le falta la de este mes?',
+        vistas: [],
+        permiso: 'dato.datos_del_equipo',
+      },
       // Aquí estaba **Horarios** (H2 · 0069). Desde el repaso del 10-oct (0082) el
       // horario vive solo en Calendario › Turnos, y el Resumen lleva a él.
       {

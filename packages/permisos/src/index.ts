@@ -346,6 +346,8 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   // Al gerente (E3, 0152): quien lleva los Ajustes del TPV y ve las ventas. Gerente, area manager y
   // dirección; no el jefe de sala, que es quien cierra.
   'caja.descuadre': ['accion.ajustes_del_tpv', 'dato.ventas'],
+  // La nómina es de la propia persona (0153): le llega a ella, y a nadie más.
+  'nomina.subida': [],
 };
 
 export function puedeRecibirElAviso(

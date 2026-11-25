@@ -648,6 +648,9 @@ export function Esqueleto() {
           alIrAMiAcceso={() => {
             navegar('/ajustes/cuenta#mi-acceso');
           }}
+          alIrAMiFicha={() => {
+            navegar('/mi-ficha');
+          }}
           alCambiarDeLocal={(id) => {
             void cambiarDeLocal(id);
           }}

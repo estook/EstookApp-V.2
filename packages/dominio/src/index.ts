@@ -884,6 +884,7 @@ export {
   avisoDeCaducidad,
   avisoDeEntrasEnUnRato,
   avisoDeFichajeApuntado,
+  avisoDeNominaSubida,
   avisoDeConfirmar,
   avisoDeFichajeCorregido,
   avisoDeFichajeSinApuntar,
@@ -1579,6 +1580,10 @@ export {
   cuantoLleva,
   dniEscondido,
   esUnDniValido,
+  mesEnLetra,
+  elMesPasado,
+  esUnMes,
+  dniLimpio,
 } from './ficha.ts';
 export type {
   TipoDeContrato,

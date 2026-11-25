@@ -3552,6 +3552,19 @@ Las pruebas: `la-ficha-del-trabajador.prueba.ts` contra la base (también un cam
 a pelo), `ficha.prueba.ts` del dominio, `degradados.prueba.ts` de la interfaz y la de pantalla de la ficha, que
 la rellena a mano.
 
+### La Ampliación 3 · 2 · Las nóminas
+
+_25 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), sección 14 (migración 0128).
+Con ella, **la Ampliación 3 entera**:
+
+- **Equipo › Nóminas**, mes a mes, con a quién le falta; y **«Subir las nóminas del mes»**: Fogón lee el PDF de
+  la gestoría, Estook casa cada página por el DNI o el nombre y lo que no sabe lo pregunta.
+- **Cada nómina, sola en su ficha**: el móvil hace un PDF con sus páginas; el PDF entero no se guarda nunca.
+- **Mi ficha**, para cada trabajador, con sus nóminas para ver y descargar; y el aviso «Tu nómina ya está».
+
+Las pruebas: `las-nominas.prueba.ts` contra la base, `pdfDeImagenes.prueba.ts` de la app, `avisos.prueba.ts`
+y `apps.prueba.ts`, y la de pantalla de Nóminas y Mi ficha.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

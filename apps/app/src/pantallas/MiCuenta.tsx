@@ -1,5 +1,6 @@
 import {
   IconoAjustes,
+  IconoFicha,
   IconoLocal,
   IconoPersona,
   IconoSalir,
@@ -39,12 +40,15 @@ export function MiCuenta({
   alCerrar,
   alIrAAjustes,
   alIrAMiAcceso,
+  alIrAMiFicha,
   alCambiarDeLocal,
 }: {
   readonly abierta: boolean;
   readonly alCerrar: () => void;
   readonly alIrAAjustes: () => void;
   readonly alIrAMiAcceso: () => void;
+  /** Mi ficha (0153): sus nóminas, sus vacaciones y su contrato. */
+  readonly alIrAMiFicha: () => void;
   readonly alCambiarDeLocal: (id: string) => void;
 }) {
   const { yo, salir } = usarSesion();
@@ -117,6 +121,15 @@ export function MiCuenta({
         <section className="flex flex-col gap-e1">
           <p className="text-secundario font-medium text-texto-suave">Tu cuenta</p>
 
+          <Fila
+            icono={<IconoFicha size={18} />}
+            titulo="Mi ficha"
+            detalle="Mis nóminas, mis vacaciones y mi contrato"
+            alPulsar={() => {
+              alCerrar();
+              alIrAMiFicha();
+            }}
+          />
           <Fila
             icono={<IconoPersona size={18} />}
             titulo="Mi acceso"

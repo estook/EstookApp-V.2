@@ -211,6 +211,8 @@ test('Ajustes → Avisos: este móvil, la columna «Móvil» y cuándo suena', a
   const lucia = await alguienNuevo(page.request, `${info.project.name}-ajustes`, true);
   await entrarCon(page, lucia.token ?? '', 'ajustes/avisos');
   await expect(page.getByRole('heading', { name: /^Este (móvil|ordenador)$/ })).toBeVisible();
+  // «Notificaciones» va plegado (la Ampliación, 0153, arreglo 3): se abre para ver lo que llega.
+  await page.locator('summary', { hasText: 'Notificaciones' }).click();
   await expect(page.getByText('Móvil', { exact: true }).first()).toBeVisible();
 
   // De fábrica, «entras en cinco minutos» suena en el móvil; se apaga con un toque.
@@ -222,6 +224,8 @@ test('Ajustes → Avisos: este móvil, la columna «Móvil» y cuándo suena', a
   expect((await guardado).status()).toBe(200);
   await expect(entras).not.toBeChecked();
   await recargarSinQueSeCaiga(page);
+  // Al recargar, «Notificaciones» vuelve plegado (0153).
+  await page.locator('summary', { hasText: 'Notificaciones' }).click();
   await expect(
     page.getByRole('switch', { name: 'Entras en cinco minutos: en el móvil' }),
   ).not.toBeChecked();

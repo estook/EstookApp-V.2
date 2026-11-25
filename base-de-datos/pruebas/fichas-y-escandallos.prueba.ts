@@ -441,6 +441,16 @@ describe('vincular lo que se vende tal cual', () => {
     expect((await laFicha(rosa, { plato_id: lata })).escandallo?.costeCentimos).toBe(50);
   });
 
+  it('lo que se vende tal cual se monta solo: fuera de las cifras de Escandallos (0153)', async () => {
+    const fichas = losDatos<{
+      platos: { id: string; seMontaSolo?: boolean }[];
+      cifras: { platos: number };
+    }>(await api.consultar(rosa, 'mis_fichas'));
+    expect(fichas.platos.find((p) => p.id === lata)?.seMontaSolo).toBe(true);
+    // Sigue en la lista, para la Carta, pero no cuenta en las cifras de Escandallos.
+    expect(fichas.cifras.platos).toBe(fichas.platos.filter((p) => p.seMontaSolo !== true).length);
+  });
+
   it('lo que va en kilos también se vincula, diciendo cuánto lleva la ración', async () => {
     // Hasta la lección 190 solo valían las unidades: el entrecot, el pescado entero o el
     // helado, que en el Almacén van en gramos, no salían.

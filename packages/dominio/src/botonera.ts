@@ -257,6 +257,31 @@ const ES_CAFE =
   /^(cafe|cafes|cortado|carajillo|capuchino|cappuccino|descafeinado|expreso|espresso|americano|leche manchada|infusion|infusiones|te|poleo|poleo menta|rooibos|chocolate caliente|cola cao|colacao)( |$)/;
 const DE_CAFES = /(cafe|infusion)/;
 
+/** Si un plato es un café o una infusión, por su nombre o por su sección («Cafés e infusiones»). */
+export function esUnCafe(plato: string, seccion: string | null): boolean {
+  const limpio = sinAcentos(plato).trim().replace(/\s+/g, ' ');
+  return ES_CAFE.test(limpio) || DE_CAFES.test(sinAcentos(seccion ?? ''));
+}
+
+/**
+ * **Lo que no se escandalla a mano** (la Ampliación, 0153, arreglo 2; Richi: «café y bebidas tipo
+ * Coca-Cola… ¿qué sentido tiene?»): lo que se vende tal cual (una lata, una cerveza, el pan) y, en una
+ * sección de bebidas, lo que tiene un solo ingrediente (la copa de vino, la caña) o es un café. Por
+ * dentro siguen con su receta, que es la que resta del almacén al cobrar; solo salen de Escandallos.
+ * Un cóctel hecho a mano (mojito) tiene varios ingredientes y sigue ahí.
+ */
+export function seMontaSolo(plato: {
+  readonly nombre: string;
+  readonly seccion: string | null;
+  readonly deBebidas: boolean;
+  readonly talCual: boolean;
+  readonly ingredientes: number;
+}): boolean {
+  if (plato.talCual) return true;
+  if (!plato.deBebidas) return false;
+  return plato.ingredientes <= 1 || esUnCafe(plato.nombre, plato.seccion);
+}
+
 /** Si un plato es el pan o el agua de la mesa, por su nombre. */
 export function esPanOAgua(nombre: string): boolean {
   const limpio = sinAcentos(nombre).trim().replace(/\s+/g, ' ');

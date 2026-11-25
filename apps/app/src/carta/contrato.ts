@@ -69,6 +69,8 @@ export interface UnPlato {
   readonly precios: Readonly<Partial<Record<CanalDeVenta, number>>>;
   readonly foto: string | null;
   readonly miniatura: string | null;
+  /** La foto es la del producto del almacén: el plato no tiene una suya (0153). Una API de antes no lo dice. */
+  readonly fotoDelAlmacen?: boolean;
   readonly orden: number;
   readonly activo: boolean;
   readonly version: number;

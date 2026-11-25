@@ -301,6 +301,8 @@ describe('Ajustes del TPV › Cocina y barra', () => {
       // Lo de la sala (0132): de fábrica tacha la cocina, y «¿Cuenta?» a los 15.
       camarerosMarcan: false,
       minutosParaLaCuenta: 15,
+      // Y al abrir una mesa (0153): de fábrica, preguntar cómo sale la cocina.
+      comoSaleLaCocina: 'preguntar',
     });
     expect((await laPantalla()).ajustes).toEqual({ avisoMin: 8, tardeMin: 15, suena: false });
     // En la tablet de la sala no: los ajustes, en la caja (0115).

@@ -356,13 +356,17 @@ describe('lo construido y lo que llega', () => {
 
   it('la Carta se ve sin pestañas: «Agotados» solo si hay alguno, y en rojo (0146)', () => {
     const carta = laApp('carta').destinos.find((d) => d.id === 'carta');
-    expect(carta?.vistas.map((v) => v.id)).toEqual(['por-secciones', 'agotados']);
+    expect(carta?.vistas.map((v) => v.id)).toEqual(['por-secciones', 'bebidas', 'agotados']);
     if (carta === undefined) return;
     // Sin agotados se ve una sola, y una pestaña sola no se enseña (0143).
     expect(vistasQueSeEnsenan(carta, 'por-secciones', []).map((v) => v.nombre)).toEqual(['Carta']);
     const conAgotados = vistasQueSeEnsenan(carta, 'por-secciones', ['agotados']);
     expect(conAgotados.map((v) => v.nombre)).toEqual(['Carta', 'Agotados']);
     expect(conAgotados[1]?.enRojo).toBe(true);
+    // «Bebidas» (0153), igual: solo si hay alguna y quien la ve ve costes.
+    expect(
+      vistasQueSeEnsenan(carta, 'por-secciones', ['bebidas', 'agotados']).map((v) => v.nombre),
+    ).toEqual(['Carta', 'Bebidas', 'Agotados']);
   });
 
   it('Escandallos tiene su resumen, sus escandallos y sus fichas técnicas (0090)', () => {

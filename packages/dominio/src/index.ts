@@ -1233,6 +1233,8 @@ export {
   esElPan,
   esPanOAgua,
   laPaginaDeSiempre,
+  esUnCafe,
+  seMontaSolo,
   loQueProponeElNombre,
   loQueValeEnElBoton,
 } from './botonera.ts';

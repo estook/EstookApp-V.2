@@ -101,6 +101,43 @@ describe('la foto de un producto', () => {
     expect(segundas.every((c) => c.endsWith('.jpg'))).toBe(true);
   });
 
+  it('el plato que se vende tal cual, sin foto suya, enseña la del producto (0153)', async () => {
+    const productoId = await unProductoDe(rosa, 'Cola de la foto');
+    losDatos(
+      await api.ejecutar(rosa, 'poner_foto_de_producto', {
+        producto_id: productoId,
+        tipo: 'image/webp',
+        foto: WEBP,
+        miniatura: WEBP,
+      }),
+    );
+    const [plato] = losDatos<{ creados: { platoId: string }[] }>(
+      await api.ejecutar(rosa, 'crear_platos', {
+        seccion_id: null,
+        platos: [{ nombre: 'Cola de la foto', precio_centimos: 280, producto_id: productoId }],
+      }),
+    ).creados;
+    const elDeLaCarta = async () =>
+      losDatos<{
+        platos: { id: string; miniatura: string | null; fotoDelAlmacen?: boolean }[];
+      }>(await api.consultar(rosa, 'mi_carta')).platos.find((p) => p.id === plato?.platoId);
+    const conLaDelProducto = await elDeLaCarta();
+    expect(conLaDelProducto?.miniatura).toMatch(/^data:image\/webp;base64,/);
+    expect(conLaDelProducto?.fotoDelAlmacen).toBe(true);
+    // Con foto suya, manda la suya.
+    losDatos(
+      await api.ejecutar(rosa, 'poner_foto_de_plato', {
+        plato_id: plato?.platoId,
+        tipo: 'image/jpeg',
+        foto: JPG,
+        miniatura: JPG,
+      }),
+    );
+    const conLaSuya = await elDeLaCarta();
+    expect(conLaSuya?.miniatura).toMatch(/^data:image\/jpeg;base64,/);
+    expect(conLaSuya?.fotoDelAlmacen).toBeUndefined();
+  });
+
   it('al quitarla no queda nada en el almacén, y la ficha vuelve a no tenerla', async () => {
     const productoId = await unProductoDe(rosa, 'Pimiento de la foto');
     losDatos(

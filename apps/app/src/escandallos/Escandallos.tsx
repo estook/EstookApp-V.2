@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   UNIDADES_DE_USO,
@@ -91,7 +91,15 @@ export function Escandallos({
 }) {
   const consulta = usarLectura<MisFichas>('mis_fichas');
   const abierta = usarAbiertoEnLaDireccion('ficha');
-  const datos = consulta.data;
+  // **Lo que se monta solo, fuera** (la Ampliación, 0153, arreglo 2): lo que se vende tal cual y las
+  // bebidas de un ingrediente o los cafés no se escandallan; su margen está en Carta › Bebidas.
+  const datos = useMemo(
+    () =>
+      consulta.data === undefined
+        ? undefined
+        : { ...consulta.data, platos: consulta.data.platos.filter((p) => p.seMontaSolo !== true) },
+    [consulta.data],
+  );
   /** Lo recién elegido o creado en «Añadir»: se abre con su editor ya abierto. */
   const [recien, setRecien] = useState<string | null>(null);
 

@@ -227,6 +227,22 @@ async function losAjustesDelBloqueo(
   };
 }
 
+export type ComoSaleLaCocina = 'preguntar' | 'pases' | 'junto';
+
+/** **Cómo sale la cocina al abrir una mesa** (la Ampliación, 0153); sin fila, preguntar. */
+export async function comoSaleLaCocina(
+  contexto: Contexto,
+  localId: string,
+): Promise<ComoSaleLaCocina> {
+  const filas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ como_sale_la_cocina: ComoSaleLaCocina }[]>`
+      select como_sale_la_cocina from estook.ajustes_del_tpv where local_id = ${localId}::uuid
+    `,
+  );
+  return filas[0]?.como_sale_la_cocina ?? 'preguntar';
+}
+
 /** Lo que enseña el aparato antes de que nadie entre, y lo que necesita para trabajar. */
 export interface ElAparatoPorDentro {
   readonly terminalId: string;
@@ -237,6 +253,8 @@ export interface ElAparatoPorDentro {
   readonly cajon: string | null;
   readonly local: { readonly id: string; readonly nombre: string };
   readonly bloqueo: AjustesDelBloqueo;
+  /** Al abrir una mesa (0153): preguntar, o siempre por pases, o siempre todo junto. */
+  readonly comoSaleLaCocina: ComoSaleLaCocina;
   /** «Fichados ahora: Sara · Rosa», en la pantalla del PIN. */
   readonly fichados: readonly {
     readonly nombre: string;
@@ -320,7 +338,7 @@ async function elAparatoPorDentro(
   aparato: AparatoDelTpv,
   laLlave: string,
 ): Promise<ElAparatoPorDentro> {
-  const [fichados, bloqueo, mesas, caja, pendientes] = await Promise.all([
+  const [fichados, bloqueo, mesas, caja, pendientes, comoSale] = await Promise.all([
     contexto.sql<{ nombre: string; desde: Date }[]>`
       select nombre, desde from estook.fichados_en_el_aparato(${await huellaDeToken(laLlave)})
        order by desde
@@ -367,6 +385,7 @@ async function elAparatoPorDentro(
               from estook.los_cobros_pendientes_de_la_caja(${aparato.localId}::uuid)
           `,
         ),
+    comoSaleLaCocina(contexto, aparato.localId),
   ]);
   return {
     terminalId: aparato.terminalId,
@@ -380,6 +399,7 @@ async function elAparatoPorDentro(
     cajon: aparato.nombreDelCajon,
     local: { id: aparato.localId, nombre: aparato.nombreDelLocal },
     bloqueo,
+    comoSaleLaCocina: comoSale,
     fichados: fichados.map((f) => ({
       nombre: f.nombre,
       iniciales: inicialesDe(f.nombre),

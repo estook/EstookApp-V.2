@@ -11,6 +11,8 @@ import { firmarLasFotos, laFirmada } from '../fotos-firmadas.ts';
 import { losCanalesDelLocal, type UnCanal } from '../canales-del-local.ts';
 import { elLibroDelLocal, elVinculado, laRacionDelVinculo, type ElLibro } from '../escandallos.ts';
 import { losAgotadosDelLocal, type ElAgotado } from '../agotados.ts';
+import { comoLista } from '../listas.ts';
+import { enNombreDelSistema } from '../pago.ts';
 
 export { losCanalesDelLocal };
 export type { UnCanal };
@@ -50,6 +52,8 @@ export interface UnPlato {
   readonly precios: Readonly<Partial<Record<CanalDeVenta, number>>>;
   readonly foto: string | null;
   readonly miniatura: string | null;
+  /** La foto es la del producto del almacén, porque el plato no tiene una suya (0153). */
+  readonly fotoDelAlmacen?: boolean;
   readonly orden: number;
   readonly activo: boolean;
   readonly version: number;
@@ -134,6 +138,36 @@ interface FilaDePlato {
 }
 
 /**
+ * **La foto del producto del almacén** (la Ampliación, 0153, arreglo 1): un plato que se vende tal
+ * cual (una Coca-Cola, una cerveza) y no tiene foto propia enseña la del producto, en la carta y en
+ * Estook TPV. Si se le pone una, manda la suya. Se lee como el sistema porque solo son las fotos, y
+ * quien toma nota no lleva Almacén.
+ */
+async function lasFotosDelAlmacen(
+  contexto: Contexto,
+  localId: string,
+  platos: readonly string[],
+): Promise<ReadonlyMap<string, { foto_clave: string; miniatura_clave: string | null }>> {
+  if (platos.length === 0) return new Map();
+  const filas = await enNombreDelSistema(
+    contexto,
+    () => contexto.sql<{ plato_id: string; foto_clave: string; miniatura_clave: string | null }[]>`
+      select distinct on (r.plato_id)
+             r.plato_id::text as plato_id, pr.foto_clave, pr.miniatura_clave
+        from estook.receta r
+        join estook.plato pl on pl.id = r.plato_id and pl.local_id = ${localId}::uuid
+        join estook.linea_de_receta l on l.receta_id = r.id
+        join estook.producto pr on pr.id = l.producto_id and pr.local_id = ${localId}::uuid
+       where r.tal_cual
+         and pr.foto_clave is not null
+         and r.plato_id = any (${comoLista(platos)}::text::uuid[])
+       order by r.plato_id
+    `,
+  );
+  return new Map(filas.map((f) => [f.plato_id, f]));
+}
+
+/**
  * Los platos del local, con lo que su receta dice de ellos: si está desgranado, si se
  * vende tal cual un producto y los alérgenos que trae (0087). `libro` se pasa si ya se
  * ha leído (Escandallos lo lee con costes); si no, se lee aquí, sin ellos.
@@ -160,13 +194,20 @@ export async function losPlatos(
     libro === undefined ? elLibroDelLocal(contexto, localId, false) : Promise.resolve(libro),
     losAgotadosDelLocal(contexto, localId),
   ]);
-  const firmadas = await firmarLasFotos(
+  const delAlmacen = await lasFotosDelAlmacen(
     contexto,
-    filas.flatMap((f) => [f.foto_clave, f.miniatura_clave]),
+    localId,
+    filas.filter((f) => f.foto_clave === null).map((f) => f.id),
   );
+  const firmadas = await firmarLasFotos(contexto, [
+    ...filas.flatMap((f) => [f.foto_clave, f.miniatura_clave]),
+    ...[...delAlmacen.values()].flatMap((d) => [d.foto_clave, d.miniatura_clave]),
+  ]);
   return filas.map((f) => {
     const receta = elLibro.recetaDelPlato.get(f.id);
     const vinculado = elVinculado(receta);
+    // **Sin foto propia, la del producto del almacén** que se vende tal cual (0153, arreglo 1).
+    const delProducto = f.foto_clave === null ? delAlmacen.get(f.id) : undefined;
     return {
       id: f.id,
       seccionId: f.seccion_id,
@@ -174,8 +215,9 @@ export async function losPlatos(
       descripcion: f.descripcion,
       precioCentimos: f.precio_centimos,
       precios: f.precios ?? {},
-      foto: laFirmada(firmadas, f.foto_clave),
-      miniatura: laFirmada(firmadas, f.miniatura_clave),
+      foto: laFirmada(firmadas, f.foto_clave ?? delProducto?.foto_clave ?? null),
+      miniatura: laFirmada(firmadas, f.miniatura_clave ?? delProducto?.miniatura_clave ?? null),
+      ...(delProducto === undefined ? {} : { fotoDelAlmacen: true }),
       orden: f.orden,
       activo: f.activo,
       version: f.version,

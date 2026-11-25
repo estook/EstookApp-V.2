@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { Boton, Campo, ErrorEnCristiano, Hoja } from '@estook/ui';
 import { IconoJuntar, IconoPases, type Icono } from '@estook/iconos';
-import { usarAcciones } from '../ganchos/usarLaSala.ts';
+import { usarAbrirLaMesa } from '../ganchos/usarAbrirLaMesa.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import type { MesaDelPlano } from '../datos/tipos.ts';
-import { irALaMesa } from '../navegar.ts';
 import { laHoraDeHoy, losCuartosDeAhora } from '../logica/texto.ts';
 
 /**
@@ -30,35 +28,6 @@ export function AbrirMesa({
   ) : (
     <AbrirUnaMesa mesa={mesa} alCerrar={alCerrar} />
   );
-}
-
-/** Lo que dice el servidor al abrir: entra en la cuenta, o en la de quien la abrió antes. */
-function usarAbrir(cuentaId: string, que: string) {
-  const ejecutar = usarAcciones();
-  const [abriendo, setAbriendo] = useState(false);
-  const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
-  async function abrir(entrada: Record<string, unknown>) {
-    setAbriendo(true);
-    setFallo(null);
-    const hecho = await ejecutar<{ cuentaId: string }>('abrir_mesa', entrada, cuentaId, {
-      que,
-      cuentaId,
-      respuesta: { cuentaId },
-    });
-    setAbriendo(false);
-    if (hecho.ok) {
-      irALaMesa(hecho.datos.cuentaId);
-      return;
-    }
-    // Otro la abrió antes: se entra en la suya, que es la misma mesa.
-    const suya = hecho.error.detalle?.['cuentaId'];
-    if (hecho.error.codigo === 'ya_hecho' && typeof suya === 'string') {
-      irALaMesa(suya);
-      return;
-    }
-    setFallo(hecho.error);
-  }
-  return { abrir, abriendo, fallo };
 }
 
 /** Hasta cuántos llega el deslizador; más, escribiendo el número. */
@@ -86,10 +55,10 @@ function AbrirUnaMesa({
   const [cuantos, setCuantos] = useState(COMENSALES_DE_ENTRADA);
   const [escribiendo, setEscribiendo] = useState(false);
   const [paso, setPaso] = useState<'cuantos' | 'como'>('cuantos');
-  const { abrir, abriendo, fallo } = usarAbrir(cuentaId, `Mesa ${mesa.nombre} · abierta`);
+  const { abrir, abriendo, fallo } = usarAbrirLaMesa(cuentaId, `Mesa ${mesa.nombre} · abierta`);
   const siempre = aparato.comoSaleLaCocina ?? 'preguntar';
   const poner = (n: number) => {
-    setCuantos(Math.min(99, Math.max(1, Math.round(n))));
+    setCuantos(Math.min(99, Math.max(1, n)));
   };
   const abrirCon = (porPases: boolean) => {
     void abrir({ cuenta_id: cuentaId, mesa_id: mesa.id, personas: cuantos, por_pases: porPases });
@@ -301,7 +270,7 @@ function AbrirSinMesa({ alCerrar }: { readonly alCerrar: () => void }) {
   /** Lo de llevar, para cuándo: nulo, para ya. */
   const [paraLas, setParaLas] = useState<Date | null>(null);
   const [programando, setProgramando] = useState(false);
-  const { abrir, abriendo, fallo } = usarAbrir(
+  const { abrir, abriendo, fallo } = usarAbrirLaMesa(
     cuentaId,
     `${tipo === 'barra' ? 'Barra' : 'Para llevar'} · abierta`,
   );

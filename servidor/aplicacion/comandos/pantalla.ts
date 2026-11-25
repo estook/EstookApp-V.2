@@ -4,7 +4,13 @@ import { tocarElServicio } from '../al-segundo.ts';
 import { comando, consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { laBarraDelLocal, laCocinaDelLocal, type SalidaLaCocina } from '../consultas/sala.ts';
 import { apuntarEnLaMesa, elLocalDelServicio, lasCuentas } from '../sala.ts';
-import { elAparatoDeLaLlave, soloEnLaCaja, type AparatoDelTpv } from './aparatos.ts';
+import {
+  comoSaleLaCocina,
+  elAparatoDeLaLlave,
+  soloEnLaCaja,
+  type AparatoDelTpv,
+  type ComoSaleLaCocina,
+} from './aparatos.ts';
 import { destacharEnElLocal, tacharEnElLocal, type DondeSeTacha } from './cocina.ts';
 import { loDelLocalParaImprimir, type DondeSale } from '../impresion.ts';
 
@@ -191,10 +197,12 @@ export interface LaCocinaYLaBarra {
   readonly camarerosMarcan: boolean;
   /** Los minutos de «¿Cuenta?» (0131, 0132). */
   readonly minutosParaLaCuenta: number;
+  /** Al abrir una mesa (0153): preguntar, o siempre por pases, o siempre todo junto. */
+  readonly comoSaleLaCocina: ComoSaleLaCocina;
 }
 
 async function losDeLaCocina(contexto: Contexto, localId: string): Promise<LaCocinaYLaBarra> {
-  const [filas, local] = await Promise.all([
+  const [filas, local, comoSale] = await Promise.all([
     contexto.sql<
       {
         aviso_min: number;
@@ -208,6 +216,7 @@ async function losDeLaCocina(contexto: Contexto, localId: string): Promise<LaCoc
         from estook.la_cocina_del_local(${localId}::uuid)
     `,
     loDelLocalParaImprimir(contexto, localId),
+    comoSaleLaCocina(contexto, localId),
   ]);
   const fila = filas[0];
   if (fila === undefined || local === null) throw new FalloDeAplicacion('local_ajeno');
@@ -219,6 +228,7 @@ async function losDeLaCocina(contexto: Contexto, localId: string): Promise<LaCoc
     barraSaleEn: local.barraSaleEn,
     camarerosMarcan: fila.camareros_marcan,
     minutosParaLaCuenta: fila.minutos_para_la_cuenta,
+    comoSaleLaCocina: comoSale,
   };
 }
 
@@ -250,6 +260,8 @@ const entradaCocinaYBarra = z
       .min(TOPES_DE_LOS_MINUTOS_PARA_LA_CUENTA.minimo)
       .max(TOPES_DE_LOS_MINUTOS_PARA_LA_CUENTA.maximo)
       .optional(),
+    /** Al abrir una mesa (0153). Sin él (un TPV de antes), se queda como estaba. */
+    como_sale_la_cocina: z.enum(['preguntar', 'pases', 'junto']).optional(),
   })
   .strict()
   .refine((e) => e.tarde_min > e.aviso_min, {
@@ -279,6 +291,19 @@ export const guardarLaCocinaYLaBarra = comando<
         ${entrada.camareros_marcan ?? null}, ${entrada.minutos_para_la_cuenta ?? null}::smallint
       )
     `;
+    if (entrada.como_sale_la_cocina !== undefined) {
+      // En los ajustes del TPV, como el bloqueo: los cambia quien tiene `accion.ajustes_del_tpv`.
+      await contexto.sql`
+        insert into estook.ajustes_del_tpv (local_id, como_sale_la_cocina, cambiado_por, cambiado_en)
+        values (${localId}::uuid, ${entrada.como_sale_la_cocina}, ${contexto.personaId}::uuid,
+                ${contexto.ahora.toISOString()}::timestamptz)
+        on conflict (local_id) do update
+          set como_sale_la_cocina = excluded.como_sale_la_cocina,
+              cambiado_por = excluded.cambiado_por,
+              cambiado_en = excluded.cambiado_en
+      `;
+      await tocarElServicio(contexto, localId);
+    }
     return losDeLaCocina(contexto, localId);
   },
 });

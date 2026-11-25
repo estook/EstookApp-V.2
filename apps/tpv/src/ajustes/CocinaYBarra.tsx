@@ -16,7 +16,19 @@ interface LaCocinaYLaBarra {
   /** Los minutos de «¿Cuenta?» (0132). Una API de antes no lo dice. */
   readonly minutosParaLaCuenta?: number;
   readonly cocinaSaleEn?: 'pantalla' | 'papel' | 'las_dos';
+  /** Al abrir una mesa (0153). Una API de antes no lo dice: no se enseña. */
+  readonly comoSaleLaCocina?: 'preguntar' | 'pases' | 'junto';
 }
+
+const COMO_SALE: readonly {
+  valor: 'preguntar' | 'pases' | 'junto';
+  texto: string;
+  frase: string;
+}[] = [
+  { valor: 'preguntar', texto: 'Preguntar', frase: 'Cada vez, al abrir' },
+  { valor: 'pases', texto: 'Por pases', frase: 'Siempre: el 2.º espera' },
+  { valor: 'junto', texto: 'Todo junto', frase: 'Siempre: sale a la vez' },
+];
 
 /**
  * **Ajustes del TPV › Cocina y barra** (T4 · 1, decisión 0116; Anexo 3.2 y 11.13): a los
@@ -25,6 +37,9 @@ interface LaCocinaYLaBarra {
  *
  * Y lo de la sala (R2 · 2, 0132): **si los camareros también marcan lo servido** (apagado de
  * fábrica: tacha la cocina) y **a los cuántos minutos una mesa sale en «¿Cuenta?»**.
+ *
+ * Y **cómo sale la cocina al abrir una mesa** (la Ampliación, 0153): preguntar cada vez, o, si el local
+ * siempre va igual, no preguntar; la ventana de abrir mesa se salta entonces su segundo paso.
  */
 export function CocinaYBarra() {
   const { cliente } = usarSesion();
@@ -57,6 +72,9 @@ export function CocinaYBarra() {
       ...(nuevos.minutosParaLaCuenta === undefined
         ? {}
         : { minutos_para_la_cuenta: nuevos.minutosParaLaCuenta }),
+      ...(nuevos.comoSaleLaCocina === undefined
+        ? {}
+        : { como_sale_la_cocina: nuevos.comoSaleLaCocina }),
     });
     setOcupado(false);
     if (!respuesta.ok) {
@@ -149,6 +167,52 @@ export function CocinaYBarra() {
             ocupado={ocupado}
             alCambiar={(minutosParaLaCuenta) => void guardar({ ...ajustes, minutosParaLaCuenta })}
           />
+        </section>
+      )}
+
+      {/* Al abrir una mesa (0153). Una API de antes no lo dice: no se enseña. */}
+      {ajustes.comoSaleLaCocina !== undefined && (
+        <section className="flex flex-col gap-e3 rounded-mayor bg-superficie p-e5">
+          <span className="text-seccion font-bold">Al abrir una mesa, cómo sale la cocina</span>
+          <span className="text-secundario text-texto-tenue">
+            Si siempre vais igual, no se pregunta y abrir una mesa cuesta un toque menos.
+          </span>
+          <div
+            role="radiogroup"
+            aria-label="Al abrir una mesa, cómo sale la cocina"
+            className="grid grid-cols-3 gap-e2"
+          >
+            {COMO_SALE.map((o) => (
+              <button
+                key={o.valor}
+                type="button"
+                role="radio"
+                aria-checked={ajustes.comoSaleLaCocina === o.valor}
+                disabled={ocupado}
+                onClick={() => {
+                  void guardar({ ...ajustes, comoSaleLaCocina: o.valor });
+                }}
+                className={[
+                  'flex min-h-toque-cocina flex-col items-start justify-center rounded-grande px-e3 py-e2 text-left',
+                  ajustes.comoSaleLaCocina === o.valor
+                    ? 'bg-texto text-superficie'
+                    : 'border border-borde bg-fondo text-texto',
+                ].join(' ')}
+              >
+                <span className="font-bold">{o.texto}</span>
+                <span
+                  className={[
+                    'text-secundario',
+                    ajustes.comoSaleLaCocina === o.valor
+                      ? 'text-superficie/80'
+                      : 'text-texto-suave',
+                  ].join(' ')}
+                >
+                  {o.frase}
+                </span>
+              </button>
+            ))}
+          </div>
         </section>
       )}
 

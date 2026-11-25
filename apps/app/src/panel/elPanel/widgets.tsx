@@ -1141,7 +1141,9 @@ function usarLaSemanaQueSeVende() {
 function LoQueMasSale() {
   const consulta = usarLaSemanaQueSeVende();
   const datos = consulta.data;
-  const platos = (datos?.platos ?? []).filter((p) => p.uds > 0);
+  // **Solo platos** (la Ampliación, 0153, arreglo 2.1; Richi: «las bebidas no son platos»): las bebidas
+  // se ven en Servicio › Información, con «Bebida».
+  const platos = (datos?.platos ?? []).filter((p) => p.uds > 0 && !p.bebida);
   const totalUds = platos.reduce((s, p) => s + p.uds, 0);
   const tres = platos.slice(0, 3);
   const secciones = new Map((datos?.secciones ?? []).map((s) => [s.nombre, s]));

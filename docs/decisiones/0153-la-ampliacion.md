@@ -324,7 +324,38 @@ Con la maqueta aprobada («Aprobada, empieza», 24-nov), en `ampliacion-1-los-fa
 9. **«Notificaciones»** va en un plegable con el resumen «Campana, móvil y correo»; Ajustes › Avisos dice
    «Notificaciones, este móvil y cuándo suena».
 
-## 11 · Lo que se toca en los documentos
+## 11 · Lo que se construyó en la Ampliación 2 (25-nov)
+
+En `ampliacion-2-el-comandero-y-la-carta`, **con la migración 0126**. Las pruebas para Richi, en
+[sus pasos](../pasos/pasos-de-la-ampliacion-2.md) (la 34).
+
+- **La venta rápida en el comandero**: el rayo en la pantalla del PIN y arriba; tarjeta y Bizum se cobran
+  ahí; el efectivo se deja para la caja («A la caja») y la venta queda hecha en el comandero.
+- **Abrir una mesa, en medio y en dos pasos**: el número grande que se toca para escribir, el deslizador de
+  1 a 20 con «−» y «+», y dos cuadrados que abren la mesa. **Y el ajuste** «Al abrir una mesa, cómo sale la
+  cocina» en Ajustes del TPV › Cocina y barra: preguntar (de fábrica), siempre por pases o siempre todo
+  junto; si no se pregunta, la ventana se salta el segundo paso.
+- **La foto del almacén**: el plato que se vende tal cual y no tiene foto propia enseña la del producto, en
+  la carta y en Estook TPV; en su ficha, «Es la foto del producto del almacén» y «Poner la suya».
+- **Escandallos sin lo que se monta solo** (lo tal cual, y en una sección de bebidas lo de un ingrediente o
+  los cafés), fuera de la lista y de sus cifras. **Carta › Bebidas**, una pestaña nueva que sale solo a quien
+  ve costes y si hay algo: de dónde viene, coste, precio y lo que deja.
+- **«Lo que más sale» del Panel, solo platos**. Servicio › Información ya separaba comida y bebida.
+
+**Lo que decidió la IA al construirla**, para que Richi lo sepa:
+
+1. **La ventana nace con 2 comensales**, para que abrir siga costando tres toques (mesa, «Siguiente», «Por
+   pases»), los mismos que antes (Anexo 10.3).
+2. **El ajuste de cómo sale la cocina** va en Cocina y barra, con migración (0126), y el aparato lo lee en su
+   latido: tarda como mucho un minuto en llegar a los demás aparatos.
+3. **Qué es una bebida**, para Escandallos: lo dice el nombre de su sección («Bebidas», «Vinos», «Cafés»…),
+   como lo propone la botonera; la marca de la carta se quitó en la 0086. Una bebida de **varios**
+   ingredientes que no es café (un cóctel) sigue en Escandallos.
+4. **La foto del producto se lee como el sistema**, porque quien toma nota no lleva Almacén; solo son las
+   fotos.
+5. **«Bebidas más vendidas»** no se hace aparte: Servicio › Información ya tiene «Bebida».
+
+## 12 · Lo que se toca en los documentos
 
 - **Plan:** la cabecera de D con la Ampliación; las fichas de M13 y M14 con lo de Richi; la ficha
   nueva de M32; el número de módulos.

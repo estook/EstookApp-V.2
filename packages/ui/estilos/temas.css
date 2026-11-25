@@ -66,6 +66,16 @@
     --degradado-historial: linear-gradient(135deg, #0e8f86 0%, #0c7a72 60%, #0a645e 100%);
     --degradado-incidencias: linear-gradient(135deg, #e0414f 0%, #cc2f52 55%, #ad2149 100%);
     --degradado-fechas: linear-gradient(135deg, #7a5af0 0%, #6744e0 55%, #5433c4 100%);
+    /*
+     * **Las zonas del horario** (la Ampliación 4, 0153; maqueta, «Turnos, rehecho»): la sala en
+     * verde, la cocina en ámbar —con su texto oscuro, que en ámbar el blanco no se lee— y el
+     * resto del equipo en violeta. Y el de Fogón, que es el suyo de siempre: naranja, rosa, violeta.
+     */
+    --degradado-sala: linear-gradient(135deg, #16935f 0%, #0f7d51 55%, #0b6644 100%);
+    --degradado-cocina: linear-gradient(135deg, #ffd36e 0%, #ffab2e 55%, #f08a00 100%);
+    --texto-sobre-cocina: #3a2400;
+    --degradado-resto: linear-gradient(135deg, #7a5af0 0%, #6744e0 55%, #5433c4 100%);
+    --degradado-fogon: linear-gradient(120deg, #e0560f 0%, #c2255c 50%, #6741d9 100%);
     --sombra-baldosa: 0 12px 24px -16px rgba(17, 28, 31, 0.65);
   }
 

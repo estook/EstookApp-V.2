@@ -135,8 +135,8 @@ test('se monta, se publica, lo ve el equipo y sale en PDF', async ({ page }, inf
   expect(suyo?.titulo).toMatch(/^Tu horario de la semana del /);
   expect(suyo?.detalle).toBe('Martes 12:00–16:00.');
 
-  // ── Lo que ve el equipo, y en PDF ───────────────────────────────────────────
-  await page.getByRole('tab', { name: 'Lo que ve el equipo' }).click();
+  // ── Publicado (antes «Lo que ve el equipo», 0153), y en PDF ────────────────
+  await page.getByRole('tab', { name: 'Publicado' }).click();
   await expect(page.getByRole('heading', { name: 'El de todos' })).toBeVisible();
   await elegirElDia(page, `martes ${String(martes.numero)}`);
   await expect(

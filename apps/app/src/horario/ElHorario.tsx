@@ -11,7 +11,17 @@ import {
   type Centimos,
 } from '@estook/dominio';
 import { puedeEditar } from '@estook/permisos';
-import { IconoFlechaDerecha, IconoFlechaIzquierda } from '@estook/iconos';
+import {
+  IconoAtencion,
+  IconoHistorial,
+  IconoDinero,
+  IconoFlechaDerecha,
+  IconoFlechaIzquierda,
+  IconoFogon,
+  IconoPalmera,
+  IconoReloj,
+} from '@estook/iconos';
+import { Baldosa } from '../equipo/ficha/Baldosas.tsx';
 import {
   Aviso,
   Boton,
@@ -32,6 +42,7 @@ import { CuadranteConFogon } from './CuadranteConFogon.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import type { FogonYYo } from '../fogon/contrato.ts';
 import { LaSemana, MiSemana } from './LaSemana.tsx';
+import { estiloDeLaZona } from './zonas.ts';
 import { conQuienCoincide, fraseDeLoPublicado, loDelDia, type LoPublicado } from './cuentas.ts';
 import {
   nombreCorto,
@@ -45,7 +56,8 @@ import {
  *
  * Una sola pantalla, con dos caras:
  *
- *   · **Lo que ve el equipo**: lo publicado, de todos o solo lo mío, y por zona.
+ *   · **Publicado** (antes «Lo que ve el equipo»; Richi, 25-nov: «sencillo y que se entienda»):
+ *     lo publicado, de todos o solo lo mío, y por zona.
  *     Cualquiera del local lo ve —en un bar el horario está en la pared—, con horas y
  *     nunca con euros. Se toca un turno y dice con quién coincide.
  *   · **Montarlo**, para quien lleva el horario: el borrador, que no ve nadie más,
@@ -82,12 +94,12 @@ export function ElHorario({
         <div
           role="tablist"
           aria-label="Qué horario ver"
-          className="grid w-full max-w-md grid-cols-2 gap-e1 rounded-medio bg-borde/40 p-e1"
+          className="grid w-full max-w-sm grid-cols-2 gap-e1 rounded-[14px] bg-borde/40 p-e1"
         >
           {(
             [
               ['montar', 'Montarlo'],
-              ['ver', 'Lo que ve el equipo'],
+              ['ver', 'Publicado'],
             ] as const
           ).map(([valor, texto]) => (
             <button
@@ -99,9 +111,9 @@ export function ElHorario({
                 setCara(valor);
               }}
               className={clases(
-                'min-h-toque rounded-medio text-cuerpo',
+                'min-h-toque rounded-[11px] text-cuerpo',
                 cara === valor
-                  ? 'bg-superficie font-medium text-texto shadow-s1'
+                  ? 'bg-superficie font-semibold text-texto shadow-s1'
                   : 'text-texto-suave hover:text-texto',
               )}
             >
@@ -131,6 +143,18 @@ export function ElHorario({
 
 // ── Cabecera: la semana y cómo moverse ───────────────────────────────────────
 
+/** «23 – 29 de noviembre», o «30 nov – 6 dic» si cambia de mes: la semana, como se dice. */
+function laSemanaEnLetra(lunes: string): string {
+  const desde = new Date(`${lunes}T12:00:00Z`);
+  const hasta = new Date(desde.getTime() + 6 * 86_400_000);
+  const mes = (d: Date, como: 'long' | 'short') =>
+    d.toLocaleDateString('es-ES', { month: como, timeZone: 'UTC' }).replace('.', '');
+  if (desde.getUTCMonth() === hasta.getUTCMonth()) {
+    return `${String(desde.getUTCDate())} – ${String(hasta.getUTCDate())} de ${mes(desde, 'long')}`;
+  }
+  return `${String(desde.getUTCDate())} ${mes(desde, 'short')} – ${String(hasta.getUTCDate())} ${mes(hasta, 'short')}`;
+}
+
 function LaCabecera({
   lunes,
   semana,
@@ -147,11 +171,15 @@ function LaCabecera({
   const esta = lunesDe(fechaOperativa(hoy));
   return (
     <header className="flex flex-wrap items-center justify-between gap-e3">
-      <div className="min-w-0">
-        <p className="flex flex-wrap items-center gap-e2 text-secundario text-texto-suave">
-          <span>La semana {semana}</span>
-          {estado}
-        </p>
+      <div className="flex min-w-0 flex-wrap items-center gap-e2">
+        <h2
+          className="text-[1.2rem] font-extrabold tracking-[-0.02em]"
+          title={`La semana ${semana}`}
+        >
+          {laSemanaEnLetra(lunes)}
+        </h2>
+        {lunes === esta && <Etiqueta tono="info">Esta semana</Etiqueta>}
+        {estado}
       </div>
       <div className="flex items-center gap-e1">
         <Boton
@@ -275,10 +303,10 @@ function VerElHorario({
                     setSoloElMio(valor);
                   }}
                   className={clases(
-                    'min-h-toque rounded-medio px-e3 text-secundario',
+                    'min-h-toque rounded-[11px] px-e3 text-secundario',
                     soloElMio === valor
-                      ? 'bg-texto font-medium text-superficie'
-                      : 'bg-fondo text-texto-suave',
+                      ? 'bg-charcoal font-semibold text-white'
+                      : 'bg-fondo text-texto-suave hover:text-texto',
                   )}
                 >
                   {texto}
@@ -300,12 +328,19 @@ function VerElHorario({
                       setZona(z);
                     }}
                     className={clases(
-                      'min-h-[2.25rem] rounded-redondo px-e3 text-secundario',
+                      'inline-flex min-h-[2.25rem] items-center gap-e1 rounded-redondo px-e3 text-secundario',
                       zona === z
-                        ? 'bg-naranja-suave font-medium text-texto'
-                        : 'bg-fondo text-texto-suave',
+                        ? 'bg-charcoal font-semibold text-white'
+                        : 'bg-fondo text-texto-suave hover:text-texto',
                     )}
                   >
+                    {z !== 'todas' && (
+                      <i
+                        aria-hidden
+                        className="block size-[10px] rounded-[3px]"
+                        style={{ background: estiloDeLaZona(z).background }}
+                      />
+                    )}
                     {z === 'todas'
                       ? 'Todas'
                       : z === 'sala'
@@ -322,6 +357,7 @@ function VerElHorario({
                 dias={datos.dias}
                 hoy={datos.hoy}
                 turnos={mios}
+                zona={datos.personas.find((p) => p.personaId === datos.yo)?.zona ?? 'otros'}
                 alTocar={(fecha) => {
                   setMirando({ personaId: datos.yo, fecha });
                 }}
@@ -504,6 +540,16 @@ function MontarElHorario({
   const minutosTotales = datos.personas.reduce((suma, p) => suma + p.minutos, 0);
   const rojos = datos.avisos.filter((a) => a.nivel === 'rojo').length;
   const salen = new Set(datos.turnos.map((t) => t.personaId)).size;
+  const deVacaciones = datos.personas.filter((p) =>
+    datos.turnos.some((t) => t.personaId === p.personaId && t.tipo === 'vacaciones'),
+  );
+  const horasPorZona = (['sala', 'cocina', 'otros'] as const)
+    .map((z) => {
+      const m = datos.personas.filter((p) => p.zona === z).reduce((suma, p) => suma + p.minutos, 0);
+      return m === 0 ? '' : `${comoSeLeenLasHoras(m)} ${z === 'otros' ? 'el resto' : z}`;
+    })
+    .filter((t) => t !== '')
+    .join(' · ');
 
   async function hacer(que: 'copiar' | 'publicar', reemplazar: boolean): Promise<void> {
     setHaciendo(que);
@@ -574,66 +620,37 @@ function MontarElHorario({
         estado={<Etiqueta tono={estado.tono}>{estado.texto}</Etiqueta>}
       />
 
-      <section aria-label="Cómo va la semana" className="grid grid-cols-2 gap-e2 md:grid-cols-4">
-        <LaCifra
-          nombre="Horas de la semana"
-          valor={comoSeLeenLasHoras(minutosTotales)}
-          debajo={`${String(salen)} ${salen === 1 ? 'persona' : 'personas'}`}
-        />
-        {datos.coste !== undefined && (
-          <>
-            <LaCifra
-              nombre="Lo que cuesta"
-              valor={conSimbolo(datos.coste.totalCentimos as Centimos)}
-              debajo={
-                datos.coste.sinSueldo === 0
-                  ? 'Con los sueldos puestos'
-                  : `${String(datos.coste.sinSueldo)} sin sueldo puesto: no suman`
-              }
-            />
-            <LaCifra
-              nombre="Sobre lo previsto"
-              valor={
-                datos.coste.parteDePersonal === null
-                  ? '—'
-                  : comoPorcentaje(datos.coste.parteDePersonal)
-              }
-              debajo={
-                datos.coste.ventasPrevistasCentimos === null
-                  ? 'Todavía no se sabe: faltan cajas'
-                  : `De ${conSimbolo(datos.coste.ventasPrevistasCentimos as Centimos)} previstos`
-              }
-            />
-          </>
-        )}
-        <LaCifra
-          nombre="Para mirar"
-          valor={datos.avisos.length === 0 ? 'Nada' : String(datos.avisos.length)}
-          debajo={
-            rojos === 0
-              ? datos.avisos.length === 0
-                ? 'Todo en orden'
-                : 'En ámbar'
-              : `${String(rojos)} en rojo`
-          }
-          tono={rojos > 0 ? 'mal' : datos.avisos.length > 0 ? 'atencion' : undefined}
-        />
-      </section>
-
-      <Botones>
-        <Boton
-          tono="principal"
-          disabled={datos.estado === 'nueva' || datos.estado === 'publicada'}
-          cargando={haciendo === 'publicar'}
-          textoCargando="Publicando"
+      {/* Lo que hacer: publicar, en el verde de lo que está listo; Fogón, en sus colores. */}
+      <div className="flex flex-wrap items-center gap-e2">
+        <BotonDeColor
+          fondo="var(--degradado-contrato)"
+          sombra="rgba(15, 125, 81, 0.55)"
+          disabled={datos.estado === 'nueva' || datos.estado === 'publicada' || haciendo !== null}
           onClick={() => {
             setPreguntando('publicar');
           }}
         >
-          {datos.estado === 'con_cambios' ? 'Publicar los cambios' : 'Publicar'}
-        </Boton>
+          {haciendo === 'publicar'
+            ? 'Publicando…'
+            : datos.estado === 'con_cambios'
+              ? 'Publicar los cambios'
+              : 'Publicar'}
+        </BotonDeColor>
+        {!hayAlgo && fogon.data?.habla === true && (
+          <BotonDeColor
+            fondo="var(--degradado-fogon)"
+            sombra="rgba(194, 37, 92, 0.5)"
+            icono={<IconoFogon size={16} />}
+            onClick={() => {
+              setConFogon(true);
+            }}
+          >
+            Hacer el cuadrante con Fogón
+          </BotonDeColor>
+        )}
         <Boton
           tono="secundario"
+          icono={<IconoHistorial size={16} />}
           cargando={haciendo === 'copiar'}
           textoCargando="Copiando"
           onClick={() => {
@@ -643,17 +660,95 @@ function MontarElHorario({
         >
           Copiar la semana anterior
         </Boton>
-        {!hayAlgo && fogon.data?.habla === true && (
-          <Boton
-            tono="secundario"
-            onClick={() => {
-              setConFogon(true);
-            }}
-          >
-            Hacerlo con Fogón
-          </Boton>
+      </div>
+
+      <section aria-label="Cómo va la semana" className="grid grid-cols-2 gap-e2 md:grid-cols-4">
+        <Baldosa
+          degradado="horas"
+          icono={(t) => <IconoReloj size={t} />}
+          etiqueta="Horas de la semana"
+          valor={minutosTotales === 0 ? '0 h' : comoSeLeenLasHoras(minutosTotales)}
+          detalle={horasPorZona || `${String(salen)} ${salen === 1 ? 'persona' : 'personas'}`}
+        />
+        {datos.coste !== undefined && (
+          <Baldosa
+            degradado="oscuro"
+            icono={(t) => <IconoDinero size={t} />}
+            etiqueta="Lo que cuesta"
+            valor={conSimbolo(datos.coste.totalCentimos as Centimos)}
+            detalle={
+              datos.coste.parteDePersonal !== null
+                ? `${comoPorcentaje(datos.coste.parteDePersonal)} de lo previsto`
+                : datos.coste.sinSueldo === 0
+                  ? 'Solo lo ves tú'
+                  : `${String(datos.coste.sinSueldo)} sin sueldo puesto`
+            }
+          />
         )}
-      </Botones>
+        <Baldosa
+          degradado="vacaciones"
+          icono={(t) => <IconoPalmera size={t} />}
+          etiqueta="De vacaciones"
+          valor={
+            deVacaciones.length === 0
+              ? 'Nadie'
+              : deVacaciones.length === 1
+                ? '1 persona'
+                : `${String(deVacaciones.length)} personas`
+          }
+          detalle={
+            deVacaciones.length === 0
+              ? 'Toda la semana, todos'
+              : deVacaciones.map((p) => p.nombre).join(', ')
+          }
+        />
+        <Baldosa
+          degradado={rojos > 0 ? 'incidencias' : datos.avisos.length > 0 ? 'horas' : 'contrato'}
+          icono={(t) => <IconoAtencion size={t} />}
+          etiqueta="Para mirar"
+          valor={datos.avisos.length === 0 ? 'Nada' : String(datos.avisos.length)}
+          detalle={
+            rojos === 0
+              ? datos.avisos.length === 0
+                ? 'Todo en orden'
+                : 'En ámbar'
+              : `${String(rojos)} en rojo`
+          }
+        />
+      </section>
+
+      {/* Arriba, solo lo que importa (la maqueta): las tres primeras, con su color. */}
+      {datos.avisos.length > 0 && (
+        <div className="flex flex-wrap gap-e2" aria-label="Lo primero que mirar">
+          {[...datos.avisos]
+            .sort((a, b) => (a.nivel === b.nivel ? 0 : a.nivel === 'rojo' ? -1 : 1))
+            .slice(0, 3)
+            .map((a) => {
+              const quien = datos.personas.find((p) => p.personaId === a.personaId);
+              return (
+                <span
+                  key={`${a.personaId}-${a.que}-${a.dia ?? ''}`}
+                  className="inline-flex items-center gap-e2 rounded-[12px] bg-superficie py-[6px] pl-[6px] pr-e3 text-[0.78rem] font-bold [box-shadow:var(--sombra-tarjeta)]"
+                >
+                  <span
+                    aria-hidden
+                    className="grid size-6 place-items-center rounded-[8px] text-white"
+                    style={{
+                      background:
+                        a.nivel === 'rojo'
+                          ? 'var(--degradado-incidencias)'
+                          : 'var(--degradado-horas)',
+                    }}
+                  >
+                    <IconoAtencion size={13} />
+                  </span>
+                  {quien === undefined ? '' : `${nombreCorto(quien)}: `}
+                  {a.texto}
+                </span>
+              );
+            })}
+        </div>
+      )}
 
       {conFogon && (
         <CuadranteConFogon
@@ -683,8 +778,8 @@ function MontarElHorario({
 
       {datos.avisos.length > 0 && (
         <details className="rounded-mayor border border-borde bg-superficie px-e4 py-e3">
-          <summary className="cursor-pointer font-medium">
-            Lo que hay que mirar antes de publicar ({datos.avisos.length})
+          <summary className="cursor-pointer font-semibold">
+            Todo lo que hay que mirar antes de publicar ({datos.avisos.length})
           </summary>
           <ul className="mt-e3 flex flex-col gap-e2">
             {datos.avisos.map((a) => {
@@ -901,29 +996,32 @@ function MontarElHorario({
   );
 }
 
-function LaCifra({
-  nombre,
-  valor,
-  debajo,
-  tono,
+/** Un botón con su degradado (la maqueta): publicar en verde, Fogón en sus colores. */
+function BotonDeColor({
+  fondo,
+  sombra,
+  icono,
+  disabled = false,
+  onClick,
+  children,
 }: {
-  readonly nombre: string;
-  readonly valor: string;
-  readonly debajo: string;
-  readonly tono?: 'mal' | 'atencion' | undefined;
+  readonly fondo: string;
+  readonly sombra: string;
+  readonly icono?: ReactNode;
+  readonly disabled?: boolean;
+  readonly onClick: () => void;
+  readonly children: ReactNode;
 }) {
   return (
-    <div className="rounded-mayor border border-borde bg-superficie px-e4 py-e3 [box-shadow:var(--sombra-tarjeta)]">
-      <p className="text-etiqueta text-texto-suave">{nombre}</p>
-      <p
-        className={clases(
-          'text-cifra-media tabular-nums',
-          tono === 'mal' ? 'text-mal' : tono === 'atencion' ? 'text-atencion' : 'text-texto',
-        )}
-      >
-        {valor}
-      </p>
-      <p className="text-etiqueta text-texto-suave">{debajo}</p>
-    </div>
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="inline-flex min-h-toque items-center gap-e2 rounded-[12px] px-e4 text-cuerpo font-extrabold text-white transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100"
+      style={{ background: fondo, boxShadow: `0 10px 20px -12px ${sombra}` }}
+    >
+      {icono}
+      {children}
+    </button>
   );
 }

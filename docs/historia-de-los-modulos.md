@@ -3565,6 +3565,15 @@ Con ella, **la Ampliación 3 entera**:
 Las pruebas: `las-nominas.prueba.ts` contra la base, `pdfDeImagenes.prueba.ts` de la app, `avisos.prueba.ts`
 y `apps.prueba.ts`, y la de pantalla de Nóminas y Mi ficha.
 
+### La Ampliación 4 · 1 · El horario, rehecho
+
+_25 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), sección 15 (sin migración):
+Calendario › Turnos como en la maqueta. **«Publicado»** en vez de «Lo que ve el equipo»; la semana en
+grande; publicar en verde y Fogón en sus colores; baldosas de color; la rejilla con cada zona en su color, los
+partidos en dos bloques, las vacaciones como banda azul, las horas frente al contrato y «Quiénes hay»; y en
+el móvil, el día por horas y «Solo el mío» en tarjetas. Las pruebas: `degradados.prueba.ts` y las de pantalla
+del horario y de Fogón, con el recorrido nuevo.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

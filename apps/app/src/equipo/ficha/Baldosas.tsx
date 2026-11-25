@@ -15,14 +15,14 @@ import { fechaCorta } from './comoSeLee.ts';
  * fondo, es lo que hace que no parezcan cajas planas.
  */
 
-function Baldosa({
+export function Baldosa({
   degradado,
   icono,
   etiqueta,
   valor,
   detalle,
 }: {
-  readonly degradado: DegradadoDeTipo;
+  readonly degradado: DegradadoDeTipo | 'oscuro';
   readonly icono: (tamano: number) => ReactNode;
   readonly etiqueta: string;
   readonly valor: string;
@@ -32,7 +32,12 @@ function Baldosa({
     <div
       data-baldosa={etiqueta}
       className="relative grid min-h-[104px] content-start gap-[3px] overflow-hidden rounded-[18px] p-e3 text-white [box-shadow:var(--sombra-baldosa)]"
-      style={{ background: `var(--degradado-${degradado})` }}
+      style={{
+        background:
+          degradado === 'oscuro'
+            ? 'linear-gradient(135deg, #3b4a52, #111c1f)'
+            : `var(--degradado-${degradado})`,
+      }}
     >
       <span aria-hidden className="absolute -bottom-3 -right-2 opacity-20">
         {icono(72)}

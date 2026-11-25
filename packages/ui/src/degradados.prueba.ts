@@ -34,21 +34,46 @@ const DEGRADADOS = [...TEMAS.matchAll(/--degradado-([a-z]+):\s*linear-gradient\(
 );
 
 describe('los degradados de cada tipo de cosa', () => {
-  it('están los seis de la ficha', () => {
+  it('están los de la ficha y los del horario', () => {
     expect(DEGRADADOS.map((d) => d.nombre).sort()).toEqual([
+      'cocina',
       'contrato',
       'fechas',
+      'fogon',
       'historial',
       'horas',
       'incidencias',
+      'resto',
+      'sala',
       'vacaciones',
     ]);
   });
 
-  it.each(DEGRADADOS)('el blanco se lee sobre todo el de «$nombre»', ({ colores }) => {
-    expect(colores.length).toBeGreaterThanOrEqual(2);
-    for (const color of colores) {
-      expect(contrasteConElBlanco(color), color).toBeGreaterThanOrEqual(3);
+  // La cocina va en ámbar con su texto oscuro (`--texto-sobre-cocina`): en ámbar el blanco
+  // no se lee. Su texto es pequeño (la hora de un turno), así que pide 4,5:1.
+  const OSCURO = /--texto-sobre-cocina:\s*(#[0-9a-fA-F]{6})/.exec(TEMAS)?.[1] ?? '#000000';
+  function contraste(a: string, b: string): number {
+    const [claro, oscuro] = [luminancia(a), luminancia(b)].sort((x, y) => y - x) as [
+      number,
+      number,
+    ];
+    return (claro + 0.05) / (oscuro + 0.05);
+  }
+
+  it.each(DEGRADADOS.filter((d) => d.nombre !== 'cocina'))(
+    'el blanco se lee sobre todo el de «$nombre»',
+    ({ colores }) => {
+      expect(colores.length).toBeGreaterThanOrEqual(2);
+      for (const color of colores) {
+        expect(contrasteConElBlanco(color), color).toBeGreaterThanOrEqual(3);
+      }
+    },
+  );
+
+  it('el texto oscuro se lee sobre todo el ámbar de la cocina', () => {
+    const cocina = DEGRADADOS.find((d) => d.nombre === 'cocina');
+    for (const color of cocina?.colores ?? []) {
+      expect(contraste(color, OSCURO), color).toBeGreaterThanOrEqual(4.5);
     }
   });
 });

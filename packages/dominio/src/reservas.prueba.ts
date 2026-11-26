@@ -4,6 +4,7 @@ import {
   DURACIONES_DE_FABRICA,
   abreEseDia,
   cabeEnElCuarto,
+  elTextoSobreElColor,
   elCodigoDeLaReserva,
   hastaCuandoConfirmar,
   laReservaDeLaDireccion,
@@ -88,6 +89,14 @@ describe('las horas', () => {
       ]),
     ).toEqual([0, 2, 3, 4, 5, 6]);
     expect(losDiasQueAbre([cena])).toEqual([0, 1, 2, 3, 4, 5, 6]);
+  });
+
+  it('el texto sobre el color del local: blanco si se lee bien, oscuro en los claros', () => {
+    expect(elTextoSobreElColor('#11804f')).toBe('#ffffff');
+    expect(elTextoSobreElColor('#c2410c')).toBe('#ffffff');
+    expect(elTextoSobreElColor('#5433c4')).toBe('#ffffff');
+    expect(elTextoSobreElColor('#ffd04a')).toBe('#1d2a2e');
+    expect(elTextoSobreElColor('#ffffff')).toBe('#1d2a2e');
   });
 });
 

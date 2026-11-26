@@ -78,6 +78,9 @@ export const LosCobros = perezosa(
   async () => (await import('../servicio/LosCobros.tsx')).LosCobros,
 );
 // P3 (0142): lo que vende cada uno, y sus objetivos.
+// La Ampliación 5 · 2 (0153): Servicio › Reservas.
+export const Reservas = perezosa(async () => (await import('../servicio/Reservas.tsx')).Reservas);
+
 export const Empleados = perezosa(
   async () => (await import('../servicio/Empleados.tsx')).Empleados,
 );

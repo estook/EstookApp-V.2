@@ -32,7 +32,9 @@ alter table estook.reserva
 alter table estook.mesa drop column por_internet;
 
 alter table estook.ajuste_de_reservas
+  drop constraint ajuste_de_reservas_antelacion_web,
   drop constraint ajuste_de_reservas_minutos_para_confirmar,
+  drop column antelacion_web,
   drop column minutos_para_confirmar,
   drop column pedir_que_confirmen,
   drop column avisar_por_correo;

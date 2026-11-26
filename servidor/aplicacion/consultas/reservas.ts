@@ -13,7 +13,9 @@ import {
 } from '../reservas.ts';
 
 /**
- * Las reservas, leídas en Estook TPV (la Ampliación 5 · 1, 0153; migración 0132).
+ * Las reservas, leídas en Estook TPV (la Ampliación 5 · 1, 0153; migración 0132) **y en Estook, en Servicio ›
+ * Reservas** (5 · 2, Richi, 26-nov: «así el gerente puede vigilar las reservas»): las dos primeras, con la
+ * sesión de una persona o en un aparato; son de Estook TPV, y Estook TPV es de Pro.
  *
  *   las_reservas              las de un día (hoy, si no se dice), con sus mesas: la pantalla de
  *                             Reservas, el plano que marca lo reservado y los avisos
@@ -65,7 +67,8 @@ export const lasReservas = consulta<{ dia?: string | undefined }, LasReservas>({
   nombre: 'las_reservas',
   entrada: z.object({ dia: fecha.optional() }).strict(),
   exige: 'accion.tomar_nota',
-  enElTpv: 'solo',
+  enElTpv: 'tambien',
+  deEstookTpv: true,
 
   async ejecutar(contexto, entrada) {
     const localId = elLocalDelServicio(contexto);
@@ -183,6 +186,8 @@ export interface LosAjustesDeReservas {
   readonly avisarPorCorreo: boolean;
   readonly pedirQueConfirmen: boolean;
   readonly minutosParaConfirmar: number;
+  /** Hasta cuántos minutos antes se reserva por la web. */
+  readonly antelacionWeb: number;
   /** `estook.com/reservar/<esto>`: la dirección de la carta del local. Nula si no tiene. */
   readonly direccion: string | null;
 }
@@ -191,7 +196,8 @@ export const losAjustesDeReservasConsulta = consulta<Record<string, never>, LosA
   nombre: 'los_ajustes_de_reservas',
   entrada: z.object({}).strict(),
   exige: 'accion.ajustes_del_tpv',
-  enElTpv: 'solo',
+  enElTpv: 'tambien',
+  deEstookTpv: true,
 
   async ejecutar(contexto) {
     const localId = elLocalDelServicio(contexto);
@@ -213,6 +219,7 @@ export const losAjustesDeReservasConsulta = consulta<Record<string, never>, LosA
       avisarPorCorreo: ajustes.avisarPorCorreo,
       pedirQueConfirmen: ajustes.pedirQueConfirmen,
       minutosParaConfirmar: ajustes.minutosParaConfirmar,
+      antelacionWeb: ajustes.antelacionWeb,
       direccion: local?.direccion ?? null,
     };
   },

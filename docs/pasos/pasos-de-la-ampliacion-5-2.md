@@ -9,40 +9,51 @@
 - Las reservas encendidas en la caja de IKATZ (la prueba 41) y la sala dibujada.
 - Tu móvil, como si fueras un cliente, y un correo tuyo a mano.
 
-## 1 · El enlace y las opciones (en la caja, con tu PIN)
+## 1 · Los ajustes (en la caja, con tu PIN)
 
-1. **Engranaje › Reservas**, abajo del todo, **«Por internet»**: sale **«Tu web de reservas»** con
-   `estook.com/reservar/…`. Toca **«Copiar el enlace»**: debe decir **«Copiado»**.
-2. Marca **«Avisar al cliente por correo»** y **«Pedir que confirmen»**. Sale **«Confirmar hasta»** con **30 min**.
-   **Guardar**.
-3. En **«Los servicios»**, cada uno lleva **L M X J V S D**: si algún día no abrís, tócalo (queda tachado) y **Guardar**.
-4. **Engranaje › La sala y las mesas**: toca la barra o una mesa que no quieras dar por internet y, abajo, en **«En la
-   web de reservas»**, elige **«No sale»**.
+1. **Engranaje › Reservas**. De arriba abajo: la tarjeta violeta con el interruptor encendido, **«Tu web de
+   reservas»** con `estook.com/reservar/…` y **«Copiar el enlace»** (al tocarlo dice **«Copiado ✓»**), **«Cuándo se
+   reserva»**, **«Las mesas»** y **«Avisos al cliente»**.
+2. En **«Cuándo se reserva»**, cada servicio lleva **L M X J V S D**: si algún día no abrís, tócalo (queda tachado).
+   Debajo, **«Por internet, hasta cuánto antes»**: elige el que uséis (de fábrica, **2 h**).
+3. En **«Avisos al cliente»**, marca **«Avisar por correo»** y **«Pedir que confirmen»** (30 minutos).
+4. Al cambiar algo sale abajo **«Tienes cambios sin guardar»** con **Guardar**. Tócalo: sale **«Guardado»**.
+5. En **«Las mesas»**, toca **«Qué mesas se juntan y cuáles salen en la web»**: en el editor, toca la barra y elige
+   **«No sale»**.
 
 ## 2 · Reservar como un cliente (en tu móvil)
 
-1. Abre el enlace que copiaste (pégatelo por WhatsApp). Sale **«Reserva tu mesa»** con el nombre de IKATZ en violeta.
-2. Toca **2**, **Hoy** (o mañana) y una hora de la cena. Solo salen horas con mesa libre y **a partir de dos horas
-   desde ahora** (para antes, se llama).
-3. Pon tu nombre, tu teléfono y **tu correo**, y **Reservar**. Debe salir **«Reserva hecha»** con **tu código de 4
-   cifras** y **«Confírmala antes de las …»** (30 minutos antes de tu hora).
-4. En tu correo llega **«Tu reserva en IKATZ»** con el día, la hora, el código y el botón **«Confirmar o cancelar»**.
-5. **En la caja**, sin tocar nada, sale el aviso **«Reserva nueva · web»** y tu reserva en Reservas, con **«web»**.
-   La mesa no es nunca la que quitaste en el paso 1.4.
-6. Si tachaste un día en el paso 1.3, en la web sale **«Cerrado»** y no se puede elegir.
+1. Abre el enlace que copiaste (pégatelo por WhatsApp). Arriba, **«¿Ya tienes reserva aquí?»** con dos botones
+   grandes, **Confirmarla** (verde) y **Cancelarla** (rojo).
+2. Toca **2**, un día y una hora. Solo salen horas con mesa libre y a partir de lo que elegiste en el paso 1.2. El día
+   que no abrís sale **«Cerrado»**.
+3. Pon tu nombre, tu teléfono y tu correo, y **Reservar**. Sale **«Reserva hecha»** con el día y la hora, y
+   **«Confírmala antes de las …»**. **No sale ningún código.**
+4. En tu correo llega **«Tu reserva en IKATZ»** con el botón **«Confirmar o cancelar»**.
+5. **En la caja**, sin tocar nada, sale **«Reserva nueva · web»** y tu reserva en Reservas con **«web»**. Nunca en la
+   barra.
 
 ## 3 · Confirmar y cancelar (en tu móvil)
 
-1. En el correo, toca **«Confirmar o cancelar»**: se abre tu reserva. **No se confirma sola**: toca **«Confirmo que
-   vamos»**. Debe decir **«Reserva confirmada»**, y en la caja, **«web · confirmó»**.
-2. Abre otra vez el enlace de reservar y toca **«Ya tengo reserva»**: con tu teléfono (con o sin +34) y el código, sale
-   tu reserva.
-3. Toca **«Cancelar la reserva»** › **«Sí, cancelarla»**. Debe decir **«Reserva cancelada»**. En la caja, el aviso
-   **«Cancelada · …»** y en la lista **«La canceló»**; la mesa queda libre.
+1. En el correo, toca **«Confirmar o cancelar»**: se abre tu reserva sin teclear nada. Toca **«Sí, confirmo que
+   vamos»**: dice **«¡Confirmada! Te esperamos»**, y en la caja, **«web · confirmó»**.
+2. Abre otra vez el enlace de reservar, toca **Cancelarla** y escribe tu teléfono (con o sin +34): sale tu reserva con
+   tu nombre de pila. Toca **«Sí, cancelar esta reserva»** (rojo): dice **«Reserva cancelada»**.
+3. En la caja, el aviso **«Cancelada · …»** y en la lista **«La canceló»**; la mesa queda libre. A tu correo llega
+   **«Has cancelado tu reserva en IKATZ»**.
 
-## 4 · La que no se confirma (opcional, tarda)
+## 4 · En Estook (el móvil o el ordenador, con tu cuenta)
 
-1. Haz otra reserva para dentro de dos horas y pico y **no la confirmes**.
+1. **Servicio › Reservas**: arriba, la tarjeta violeta **«Tu web de reservas»** con el enlace; debajo, las reservas del
+   día con cuántas son, los comensales y cuántas por internet. Las flechas cambian de día.
+2. Toca **«¿Tienes web propia? Pon tus reservas en ella»**: elige **«Un botón «Reservar mesa»»** o **«Dentro de tu
+   página»**, y un color (de entrada, el de vuestra marca). La muestra cambia con el color.
+3. **«Copiar el código»** y pégalo en vuestra web (en Wix o WordPress, en un bloque de «HTML»). Sale el botón o las
+   reservas con vuestro color, y abajo solo **«Reservas con estook.com»**. Reserva desde ahí: llega a la caja igual.
+
+## 5 · La que no se confirma (opcional, tarda)
+
+1. Haz otra reserva y **no la confirmes**.
 2. Pasada la hora de «Confírmala antes de las …», en la caja sale **«Cancelada · …»** con **«No confirmó a tiempo»**, en
    la lista **«Se canceló sola»**, y a tu correo llega que se ha cancelado.
 

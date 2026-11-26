@@ -239,10 +239,38 @@ export function telefonoLimpio(telefono: string): string {
 // ── La web de reservas (la Ampliación 5 · 2, 0153) ───────────────────────────
 
 /**
- * **Por la web se reserva hasta dos horas antes** (maqueta aprobada, Ajustes › Reservas: «Hasta 2 h antes · 60
- * días vista»). Más cerca, se llama: el camarero sí reserva al momento.
+ * **Hasta cuánto antes se reserva por la web: lo elige cada local** (Richi, 26-nov: «¿y si ellos sí lo
+ * permiten? ¿generalizas con todos?»). De fábrica, dos horas, como la maqueta aprobada. El camarero, en el
+ * TPV, reserva al momento.
  */
 export const ANTELACION_DE_LA_WEB = 120;
+export const ANTELACIONES_DE_LA_WEB: readonly number[] = [15, 30, 60, 120, 240, 1440];
+
+/** «15 min», «1 h», «1 día». */
+export function laAntelacionEnLetra(minutos: number): string {
+  if (minutos >= 1440) return minutos === 1440 ? '1 día' : `${String(minutos / 1440)} días`;
+  if (minutos >= 60) return `${String(minutos / 60)} h`;
+  return `${String(minutos)} min`;
+}
+
+/**
+ * **El texto que se lee sobre un color** («#c2410c» → blanco; «#ffd04a» → oscuro): **blanco siempre que se lea
+ * bien** (contraste de 4,5 a 1 como poco, la regla de la WCAG), que es como se ve un botón de marca; oscuro solo
+ * sobre los colores claros. Para el color que elige cada local para su web de reservas.
+ */
+export function elTextoSobreElColor(color: string): '#ffffff' | '#1d2a2e' {
+  const canal = (i: number) => {
+    const c = parseInt(color.slice(1 + i * 2, 3 + i * 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const luz = 0.2126 * canal(0) + 0.7152 * canal(1) + 0.0722 * canal(2);
+  return 1.05 / (luz + 0.05) >= 4.5 ? '#ffffff' : '#1d2a2e';
+}
+
+/** El nombre de pila, para enseñar una reserva buscada por teléfono: «Ane Prueba» → «Ane». */
+export function soloElNombre(nombre: string): string {
+  return nombre.trim().split(/\s+/)[0] ?? '';
+}
 
 /** Cuántos días por delante ofrece la web: dos meses. En el TPV se reserva hasta con un año. */
 export const DIAS_QUE_OFRECE_LA_WEB = 60;

@@ -572,7 +572,7 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
     icono: IconoServicio,
     acento: 'var(--color-app-servicio)',
     forma: 'panel',
-    queHace: 'El día a día: la jornada, los empleados, el reparto y el APPCC',
+    queHace: 'El día a día: la jornada, los empleados, las reservas, el reparto y el APPCC',
     destinos: [
       {
         id: 'jornada',
@@ -613,6 +613,15 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         nombre: 'Empleados',
         icono: IconoEquipo,
         queContesta: '¿Quién vende más, por hora, y cómo va cada uno con su objetivo?',
+        vistas: [],
+      },
+      {
+        // **La Ampliación 5 · 2 (0153)**: las reservas de cada día, para vigilarlas (Richi, 26-nov), y la
+        // web de reservas del local con el código para su propia web. Se ponen y se sientan en Estook TPV.
+        id: 'reservas',
+        nombre: 'Reservas',
+        icono: IconoCalendario,
+        queContesta: '¿Quién viene hoy, a qué hora y en qué mesa?',
         vistas: [],
       },
       // **Ventas sale de Servicio** (0145; Richi, 10-nov): Tickets y facturas vive en Negocio › Ventas,

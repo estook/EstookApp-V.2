@@ -45,7 +45,7 @@ function boton(texto: string, enlace: string, color: string): string {
   return `<a href="${escapar(enlace)}" style="display:inline-block;margin:0 8px 8px 0;padding:12px 20px;border-radius:10px;background:${color};color:#ffffff;font-weight:700;text-decoration:none">${escapar(texto)}</a>`;
 }
 
-/** La caja con la reserva: el día, la hora, cuántos y el código. */
+/** La caja con la reserva: el día, la hora y cuántos. El código va solo dentro del enlace. */
 function laCaja(r: LoDeLaReserva): string {
   return [
     '<table role="presentation" style="width:100%;border-collapse:collapse;background:#f1effe;border-radius:12px">',
@@ -53,7 +53,6 @@ function laCaja(r: LoDeLaReserva): string {
     `<div style="font-size:14px;color:#5433c4;font-weight:700">${escapar(r.dia)}</div>`,
     `<div style="font-size:30px;font-weight:800">${escapar(r.hora)}</div>`,
     `<div>${escapar(r.nombre)} · ${String(r.comensales)} ${r.comensales === 1 ? 'persona' : 'personas'}</div>`,
-    `<div style="margin-top:6px">Código <strong style="letter-spacing:.15em">${escapar(r.codigo)}</strong></div>`,
     '</td></tr></table>',
   ].join('');
 }
@@ -86,7 +85,6 @@ export function correoDeLaReserva(r: LoDeLaReserva): CorreoParaMandar {
       `Hola, ${r.nombre}:`,
       '',
       `Tienes reserva en ${r.local} el ${r.dia.toLowerCase()} a las ${r.hora}, para ${String(r.comensales)}.`,
-      `Tu código es ${r.codigo}.`,
       ...(confirmar === null ? [] : ['', confirmar]),
       '',
       `Para confirmarla o cancelarla: ${r.enlace}`,
@@ -101,7 +99,7 @@ export function correoDeLaReserva(r: LoDeLaReserva): CorreoParaMandar {
         r.enlace,
         '#5433c4',
       ),
-      'Si no la has hecho tú, no hagas nada: sin tu teléfono y el código nadie puede tocarla.',
+      'Para confirmarla o cancelarla, toca el botón o entra en la web de reservas con tu teléfono.',
     ]),
   };
 }
@@ -156,6 +154,43 @@ export function correoDeCanceladaSola(
         `Tu reserva del ${r.dia.toLowerCase()} a las ${r.hora} se ha cancelado porque no se confirmó a tiempo, y la mesa ha quedado libre.`,
       ),
       boton('Mirar si queda mesa', r.reservar, '#5433c4'),
+    ]),
+  };
+}
+
+/** La ha cancelado el cliente en la web: se le confirma, y si no fue él, sabe a quién llamar. */
+export function correoDeCanceladaPorTi(r: {
+  readonly para: string;
+  readonly local: string;
+  readonly nombre: string;
+  readonly dia: string;
+  readonly hora: string;
+  readonly comensales: number;
+  readonly telefono: string | null;
+  readonly reservar: string;
+}): CorreoParaMandar {
+  const siNoFuiste =
+    r.telefono === null
+      ? `Si no la has cancelado tú, llama a ${r.local}.`
+      : `Si no la has cancelado tú, llama a ${r.local} al ${r.telefono}.`;
+  return {
+    para: r.para,
+    asunto: `Has cancelado tu reserva en ${r.local}`,
+    texto: [
+      `Hola, ${r.nombre}:`,
+      '',
+      `Tu reserva del ${r.dia.toLowerCase()} a las ${r.hora}, para ${String(r.comensales)}, está cancelada.`,
+      siNoFuiste,
+      '',
+      `Para reservar otro día: ${r.reservar}`,
+    ].join('\n'),
+    html: envolver(r.local, [
+      `Hola, ${escapar(r.nombre)}:`,
+      escapar(
+        `Tu reserva del ${r.dia.toLowerCase()} a las ${r.hora}, para ${String(r.comensales)}, está cancelada.`,
+      ),
+      escapar(siNoFuiste),
+      boton('Reservar otro día', r.reservar, '#5433c4'),
     ]),
   };
 }

@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import {
-  ANTELACION_DE_LA_WEB,
   COMENSALES_DE_LA_WEB,
+  laAntelacionEnLetra,
+  soloElNombre,
   DIAS_QUE_OFRECE_LA_WEB,
   abreEseDia,
   cabeEnElCuarto,
@@ -27,9 +28,11 @@ import {
   loOcupado,
   losQueEmpiezan,
 } from '../reservas.ts';
+import { correoDeCanceladaPorTi } from '../correos-de-reservas.ts';
 import {
   cancelarLaReserva,
   comoElSistema,
+  enlaceDeReservar,
   elDiaEnLetra,
   elLocalDeLaWeb,
   gastarUnIntento,
@@ -45,7 +48,8 @@ import {
  *   horas_en_la_web          las horas con mesa de verdad para tantos un día: solo las mesas que salen por
  *                            internet, y sin pasar del tope de comensales del cuarto de hora
  *   reservar_en_la_web       la reserva, con su código de 4 cifras
- *   mi_reserva_en_la_web     «Ya tengo reserva»: con el teléfono y el código (o desde el correo)
+ *   mis_reservas_en_la_web   «Confirmar» o «Cancelar» mi reserva: con su teléfono, las que vienen
+ *   mi_reserva_en_la_web     el enlace del correo: la reserva, con su código escondido en el enlace
  *   confirmar_mi_reserva     «Confirmo que vamos»
  *   cancelar_mi_reserva      «Cancelar la reserva»: la mesa queda libre y se avisa a quien espera
  *   avisame_si_se_libera     un día lleno: se le escribe si se libera una mesa (si el local avisa por correo)
@@ -129,7 +133,7 @@ export const laWebDeReservas = consulta<{ direccion: string }, LaWebDeReservas>(
       ultimoDia: masDias(hoy, DIAS_QUE_OFRECE_LA_WEB),
       comensalesMax: COMENSALES_DE_LA_WEB,
       abre: losDiasQueAbre(local.ajustes.servicios),
-      antelacion: ANTELACION_DE_LA_WEB,
+      antelacion: local.ajustes.antelacionWeb,
       avisaPorCorreo: local.ajustes.avisarPorCorreo,
       pideQueConfirmen: local.ajustes.pedirQueConfirmen,
       minutosParaConfirmar: local.ajustes.minutosParaConfirmar,
@@ -175,7 +179,7 @@ export const horasEnLaWeb = consulta<
     const nada = { dia: entrada.dia, servicios: [], lleno: false, noCaben: false };
     const abiertos = local.ajustes.servicios.filter((s) => abreEseDia(s, entrada.dia));
     if (abiertos.length === 0) return { ...nada, cerrado: true, tarde: false };
-    const margen = contexto.ahora.getTime() + ANTELACION_DE_LA_WEB * 60_000;
+    const margen = contexto.ahora.getTime() + local.ajustes.antelacionWeb * 60_000;
     const quedaAlguna = abiertos.some((s) =>
       lasHorasDelServicio(s).some(
         (h) => cuandoEmpieza(entrada.dia, h, local.zona).getTime() >= margen,
@@ -193,7 +197,7 @@ export const horasEnLaWeb = consulta<
       comensales,
       null,
       true,
-      ANTELACION_DE_LA_WEB,
+      local.ajustes.antelacionWeb,
     );
     // La web no pasa del tope: es el camarero quien decide si mete a alguien más.
     const servicios = libres.servicios.map((s) => ({
@@ -233,11 +237,11 @@ export type EntradaReservarEnLaWeb = z.infer<typeof entradaReservarEnLaWeb>;
 
 export interface LaReservaDeLaWeb {
   readonly id: string;
-  readonly codigo: string;
   readonly dia: string;
   readonly diaEnLetra: string;
   readonly hora: string;
   readonly comensales: number;
+  /** Solo el nombre de pila: quien busca por un teléfono no ve más que eso. */
   readonly nombre: string;
   readonly estado: 'reservada' | 'sentada' | 'cancelada' | 'no_vino';
   readonly confirmada: boolean;
@@ -290,10 +294,10 @@ export const reservarEnLaWeb = comando<
       });
     }
     const empieza = cuandoEmpieza(entrada.dia, entrada.hora, local.zona);
-    if (empieza.getTime() < contexto.ahora.getTime() + ANTELACION_DE_LA_WEB * 60_000) {
+    if (empieza.getTime() < contexto.ahora.getTime() + local.ajustes.antelacionWeb * 60_000) {
       throw new FalloDeAplicacion('faltan_datos', {
         campos: ['hora'],
-        porque: 'Por aquí se reserva hasta dos horas antes. Para antes, llámales.',
+        porque: `Por aquí se reserva hasta ${laAntelacionEnLetra(local.ajustes.antelacionWeb)} antes. Para antes, llámales.`,
       });
     }
 
@@ -368,9 +372,9 @@ export const reservarEnLaWeb = comando<
   },
 });
 
-// ═══ «Ya tengo reserva» ═══════════════════════════════════════════════════════
+// ═══ «Confirmar» y «Cancelar» ═════════════════════════════════════════════════
 
-/** La reserva tal como la ve su dueño en la web: sin el teléfono ni el correo. */
+/** La reserva tal como la ve su dueño en la web: sin el teléfono, el correo ni el apellido. */
 async function laReservaDeLaWeb(
   contexto: Contexto,
   local: ElLocalDeLaWeb,
@@ -379,7 +383,6 @@ async function laReservaDeLaWeb(
   const [r] = await contexto.sql<
     {
       id: string;
-      codigo: string;
       dia: string;
       hora: string;
       empieza: Date;
@@ -389,7 +392,7 @@ async function laReservaDeLaWeb(
       confirmada_en: Date | null;
     }[]
   >`
-    select id::text as id, codigo, to_char(dia, 'YYYY-MM-DD') as dia, to_char(hora, 'HH24:MI') as hora,
+    select id::text as id, to_char(dia, 'YYYY-MM-DD') as dia, to_char(hora, 'HH24:MI') as hora,
            empieza, comensales, nombre, estado, confirmada_en
       from estook.reserva where id = ${id}::uuid and local_id = ${local.id}::uuid
   `;
@@ -397,12 +400,11 @@ async function laReservaDeLaWeb(
   const confirmada = r.confirmada_en !== null;
   return {
     id: r.id,
-    codigo: r.codigo,
     dia: r.dia,
     diaEnLetra: elDiaEnLetra(r.dia),
     hora: r.hora,
     comensales: r.comensales,
-    nombre: r.nombre,
+    nombre: soloElNombre(r.nombre),
     estado: r.estado,
     confirmada,
     confirmarAntesDe:
@@ -416,63 +418,102 @@ async function laReservaDeLaWeb(
   };
 }
 
+/** Las nueve últimas cifras: «+34 600 111 222» y «600111222» son el mismo teléfono. */
+const lasCifras = (telefono: string) => telefono.replace(/\D/g, '').slice(-9);
+
+const noHay = () =>
+  new FalloDeAplicacion(
+    'no_existe',
+    {
+      porque:
+        'Con ese teléfono no hay ninguna reserva para estos días. Mira que sea el que diste al reservar, o llámales.',
+    },
+    // El intento gastado se queda: así no se pueden ir probando teléfonos.
+    { conservarLoHecho: true },
+  );
+
+/**
+ * **Sus reservas, con su teléfono** (Richi, 26-nov: «con el número de teléfono ya se debería hacer; la gente
+ * no va por ahí apuntándose códigos»): las que vienen y siguen en pie, de hoy en adelante. Gasta un intento
+ * siempre, con su tope por dirección, y enseña solo el nombre de pila, el día, la hora y cuántos.
+ */
+export const misReservasEnLaWeb = comando<
+  { direccion: string; telefono: string },
+  { readonly reservas: readonly LaReservaDeLaWeb[] }
+>({
+  nombre: 'mis_reservas_en_la_web',
+  entrada: z.object({ direccion, telefono }).strict(),
+  sinSesion: true,
+  sinRecordar: true,
+
+  async ejecutar(contexto, entrada) {
+    await comoElSistema(contexto);
+    const local = await elLocalDeLaWeb(contexto, entrada.direccion);
+    await gastarUnIntento(contexto, 'buscar');
+    const cifras = lasCifras(entrada.telefono);
+    if (cifras.length < 6) throw noHay();
+    const hoy = fechaEnElLocal(contexto.ahora, local.zona);
+    const filas = await contexto.sql<{ id: string }[]>`
+      select id::text as id from estook.reserva
+       where local_id = ${local.id}::uuid and estado = 'reservada' and dia >= ${hoy}::date
+         and right(regexp_replace(telefono, '\D', '', 'g'), 9) = ${cifras}
+       order by empieza
+       limit 5
+    `;
+    const reservas: LaReservaDeLaWeb[] = [];
+    for (const f of filas) {
+      const r = await laReservaDeLaWeb(contexto, local, f.id);
+      if (r !== null) reservas.push(r);
+    }
+    if (reservas.length === 0) throw noHay();
+    return { reservas };
+  },
+});
+
+/**
+ * **Una reserva, para confirmarla o cancelarla**: con su teléfono (desde la web) o con el enlace del correo,
+ * que lleva su código detrás de la almohadilla y no hace falta teclear.
+ */
 const entradaDeMiReserva = z
   .object({
     direccion,
-    codigo,
-    /** Con su teléfono, desde «Ya tengo reserva»… */
+    reserva_id: z.string().uuid(),
     telefono: telefono.optional(),
-    /** …o con el id, desde el enlace del correo. */
-    reserva_id: z.string().uuid().optional(),
+    codigo: codigo.optional(),
   })
   .strict()
-  .refine((e) => e.telefono !== undefined || e.reserva_id !== undefined, {
+  .refine((e) => e.telefono !== undefined || e.codigo !== undefined, {
     message: 'Hace falta el teléfono o el enlace del correo.',
   });
 type EntradaDeMiReserva = z.infer<typeof entradaDeMiReserva>;
 
-/**
- * **Su reserva, con su teléfono y su código**: la que viene antes de las que aún pueden servir. Gasta un
- * intento siempre, y si no casa el intento queda: no se dice si es el teléfono o el código lo que está mal.
- * **El teléfono se compara por sus nueve últimas cifras**: «+34 600 111 222» y «600111222» son el mismo.
- */
 async function suReserva(
   contexto: Contexto,
   entrada: EntradaDeMiReserva,
-): Promise<{ local: ElLocalDeLaWeb; reserva: LaReservaDeLaWeb }> {
+): Promise<{ local: ElLocalDeLaWeb; reserva: LaReservaDeLaWeb; correo: string | null }> {
   await comoElSistema(contexto);
   const local = await elLocalDeLaWeb(contexto, entrada.direccion);
   await gastarUnIntento(contexto, 'buscar');
-  const hoy = fechaEnElLocal(contexto.ahora, local.zona);
-  const cifras =
-    entrada.telefono === undefined ? null : entrada.telefono.replace(/\D/g, '').slice(-9);
-  const [fila] = await contexto.sql<{ id: string }[]>`
-    select id::text as id from estook.reserva
-     where local_id = ${local.id}::uuid and codigo = ${entrada.codigo}
-       and (${entrada.reserva_id ?? null}::uuid is null or id = ${entrada.reserva_id ?? null}::uuid)
+  const cifras = entrada.telefono === undefined ? null : lasCifras(entrada.telefono);
+  const [fila] = await contexto.sql<{ id: string; correo: string | null }[]>`
+    select id::text as id, correo from estook.reserva
+     where local_id = ${local.id}::uuid and id = ${entrada.reserva_id}::uuid
+       and (${entrada.codigo ?? null}::text is null or codigo = ${entrada.codigo ?? null})
        and (${cifras}::text is null
             or right(regexp_replace(telefono, '\D', '', 'g'), 9) = ${cifras})
-       and dia >= ${masDias(hoy, -1)}::date
-     order by (estado = 'reservada') desc, empieza
-     limit 1
   `;
   const reserva = fila === undefined ? null : await laReservaDeLaWeb(contexto, local, fila.id);
-  if (reserva === null) {
-    throw new FalloDeAplicacion(
-      'no_existe',
-      {
-        porque:
-          'Con ese teléfono y ese código no hay ninguna reserva. Míralo en el correo o llámales.',
-      },
-      { conservarLoHecho: true },
-    );
-  }
-  return { local, reserva };
+  if (fila === undefined || reserva === null) throw noHay();
+  return { local, reserva, correo: fila.correo };
 }
 
-export const miReservaEnLaWeb = comando<EntradaDeMiReserva, LaReservaDeLaWeb>({
+/** El enlace del correo: la reserva, para enseñarla (sin confirmar ni cancelar nada). */
+export const miReservaEnLaWeb = comando<
+  { direccion: string; reserva_id: string; codigo: string },
+  LaReservaDeLaWeb
+>({
   nombre: 'mi_reserva_en_la_web',
-  entrada: entradaDeMiReserva,
+  entrada: z.object({ direccion, reserva_id: z.string().uuid(), codigo }).strict(),
   sinSesion: true,
   sinRecordar: true,
 
@@ -508,6 +549,10 @@ export const confirmarMiReserva = comando<EntradaDeMiReserva, LaReservaDeLaWeb>(
   },
 });
 
+/**
+ * **Cancelar**: suelta la mesa, avisa a la sala y a quien espera ese día. Y si el local avisa por correo, **le
+ * llega a quien reservó que se ha cancelado**: si no fue él (alguien que sabía su teléfono), se entera y llama.
+ */
 export const cancelarMiReserva = comando<EntradaDeMiReserva, LaReservaDeLaWeb>({
   nombre: 'cancelar_mi_reserva',
   entrada: entradaDeMiReserva,
@@ -515,12 +560,28 @@ export const cancelarMiReserva = comando<EntradaDeMiReserva, LaReservaDeLaWeb>({
   sinRecordar: true,
 
   async ejecutar(contexto, entrada) {
-    const { reserva } = await suReserva(contexto, entrada);
+    const { local, reserva, correo } = await suReserva(contexto, entrada);
     if (reserva.estado === 'cancelada') return reserva;
     if (reserva.estado !== 'reservada') {
       throw new FalloDeAplicacion('ya_hecho', { porque: 'Esa reserva ya no se puede cancelar.' });
     }
     await cancelarLaReserva(contexto, reserva.id, { estado: 'cancelada', por: 'cliente' });
+    if (local.ajustes.avisarPorCorreo && correo !== null && contexto.correo !== null) {
+      await contexto.correo
+        .mandar(
+          correoDeCanceladaPorTi({
+            para: correo,
+            local: local.nombre,
+            nombre: reserva.nombre,
+            dia: reserva.diaEnLetra,
+            hora: reserva.hora,
+            comensales: reserva.comensales,
+            telefono: local.telefono,
+            reservar: enlaceDeReservar(local.direccion),
+          }),
+        )
+        .catch(() => undefined);
+    }
     return { ...reserva, estado: 'cancelada', confirmarAntesDe: null };
   },
 });

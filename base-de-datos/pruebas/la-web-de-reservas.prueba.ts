@@ -54,11 +54,12 @@ interface HorasDeLaWeb {
   servicios: { nombre: string; horas: string[] }[];
   lleno: boolean;
   noCaben: boolean;
+  cerrado: boolean;
+  tarde: boolean;
 }
 
 interface SuReserva {
   id: string;
-  codigo: string;
   dia: string;
   hora: string;
   comensales: number;
@@ -285,15 +286,39 @@ describe('las horas de la web', () => {
     losDatos(await api.ejecutar(rosaTpv, 'guardar_ajustes_de_reservas', AJUSTES));
   });
 
-  it('por la web, hasta dos horas antes: a las 21:00 ya no queda nada para hoy', async () => {
+  it('hasta cuánto antes se reserva lo elige el local: dos horas de fábrica', async () => {
     reloj = new Date('2026-12-01T20:00:00Z'); // las 21:00 en Madrid; la última hora, las 22:30
     try {
       expect(await lasHorasDeLaWeb(2)).toMatchObject({ tarde: true, lleno: false });
       expect(
         elFallo(await reservarEnLaWeb({ hora: '22:30', nombre: 'Ane', correo: 'a@b.com' })),
       ).toBe('faltan_datos');
+      // El local lo deja hasta media hora antes: a las 21:00 ya salen las 21:30.
+      losDatos(
+        await api.ejecutar(rosaTpv, 'guardar_ajustes_de_reservas', {
+          ...AJUSTES,
+          antelacion_web: 30,
+        }),
+      );
+      const web = await lasHorasDeLaWeb(2);
+      expect(web.tarde).toBe(false);
+      expect(web.servicios[0]?.horas[0]).toBe('21:30');
+      expect(
+        elFallo(
+          await api.ejecutar(rosaTpv, 'guardar_ajustes_de_reservas', {
+            ...AJUSTES,
+            antelacion_web: 45,
+          }),
+        ),
+      ).toBe('faltan_datos');
     } finally {
       reloj = LAS_CUATRO;
+      losDatos(
+        await api.ejecutar(rosaTpv, 'guardar_ajustes_de_reservas', {
+          ...AJUSTES,
+          antelacion_web: 120,
+        }),
+      );
     }
   });
 
@@ -331,13 +356,13 @@ describe('reservar en la web', () => {
     expect(elFallo(await reservarEnLaWeb({ hora: '21:00', nombre: 'Ane' }))).toBe('faltan_datos');
   });
 
-  it('la reserva sale con su código, en una mesa de la web, y llega el correo', async () => {
+  it('la reserva sale en una mesa de la web, y llega el correo con su enlace', async () => {
     const id = crypto.randomUUID();
     laDeAne = losDatos<SuReserva>(
       await reservarEnLaWeb({
         id,
         hora: '21:00',
-        nombre: 'Ane',
+        nombre: 'Ane Prueba',
         correo: 'ane@correo-de-prueba.com',
         nota: 'Una trona',
       }),
@@ -345,17 +370,17 @@ describe('reservar en la web', () => {
     expect(laDeAne).toMatchObject({
       id,
       hora: '21:00',
+      nombre: 'Ane',
       estado: 'reservada',
       confirmada: false,
       confirmarAntesDe: '20:30',
       local: 'Bar Centro',
     });
-    expect(laDeAne.codigo).toMatch(/^\d{4}$/);
+    // El código ya no se enseña: va solo dentro del enlace del correo.
+    expect(Object.keys(laDeAne)).not.toContain('codigo');
     const [elCorreo] = losCorreosA('ane@correo-de-prueba.com');
-    expect(elCorreo?.texto).toContain(laDeAne.codigo);
     expect(elCorreo?.texto).toContain('20:30');
-    // El enlace lleva el id y el código detrás de la almohadilla, nunca el teléfono.
-    expect(elCorreo?.texto).toContain(`#/mi-reserva?r=${id}&c=${laDeAne.codigo}`);
+    expect(elCorreo?.texto).toMatch(new RegExp(`#/mi-reserva\\?r=${id}&c=\\d{4}`));
     expect(elCorreo?.texto).not.toContain('600');
 
     const enElTpv = (await lasDelTpv()).find((r) => r.id === id);
@@ -368,61 +393,74 @@ describe('reservar en la web', () => {
       await reservarEnLaWeb({
         id: laDeAne.id,
         hora: '21:00',
-        nombre: 'Ane',
+        nombre: 'Ane Prueba',
         correo: 'ane@correo-de-prueba.com',
       }),
     );
-    expect(otra.codigo).toBe(laDeAne.codigo);
+    expect(otra.id).toBe(laDeAne.id);
     expect(losCorreosA('ane@correo-de-prueba.com')).toHaveLength(1);
-    expect((await lasDelTpv()).filter((r) => r.nombre === 'Ane')).toHaveLength(1);
+    expect((await lasDelTpv()).filter((r) => r.nombre === 'Ane Prueba')).toHaveLength(1);
   });
 
-  it('solo la ve quien da su teléfono y su código', async () => {
+  it('con su teléfono, sin código, salen sus reservas (y nada más)', async () => {
+    expect(elFallo(await desdeLaWeb('mis_reservas_en_la_web', { telefono: '699 999 999' }))).toBe(
+      'no_existe',
+    );
+    const { reservas } = losDatos<{ reservas: (SuReserva & Record<string, unknown>)[] }>(
+      await desdeLaWeb('mis_reservas_en_la_web', { telefono: '+34 600111222' }),
+    );
+    expect(reservas.map((r) => r.id)).toEqual([laDeAne.id]);
+    expect(reservas[0]?.nombre).toBe('Ane');
+    expect(Object.keys(reservas[0] ?? {})).not.toContain('telefono');
+    expect(Object.keys(reservas[0] ?? {})).not.toContain('correo');
+    // Un teléfono que no es el suyo no confirma ni cancela la de otro.
     expect(
       elFallo(
-        await desdeLaWeb('mi_reserva_en_la_web', {
-          codigo: laDeAne.codigo,
+        await desdeLaWeb('cancelar_mi_reserva', {
+          reserva_id: laDeAne.id,
           telefono: '699 999 999',
         }),
       ),
     ).toBe('no_existe');
-    const vista = losDatos<SuReserva & Record<string, unknown>>(
-      await desdeLaWeb('mi_reserva_en_la_web', {
-        codigo: laDeAne.codigo,
-        telefono: '+34 600111222',
-      }),
-    );
-    expect(vista).toMatchObject({ id: laDeAne.id, nombre: 'Ane' });
-    expect(Object.keys(vista)).not.toContain('telefono');
-    expect(Object.keys(vista)).not.toContain('correo');
   });
 
-  it('probar códigos tiene tope por dirección', async () => {
+  it('el enlace del correo abre la reserva con su código escondido; otro código, no', async () => {
+    const [fila] = await comoDuena<{ codigo: string }>(
+      `select codigo from estook.reserva where id = $1`,
+      [laDeAne.id],
+    );
+    losDatos(
+      await desdeLaWeb('mi_reserva_en_la_web', {
+        reserva_id: laDeAne.id,
+        codigo: fila?.codigo,
+      }),
+    );
+    const otro = fila?.codigo === '0000' ? '0001' : '0000';
+    expect(
+      elFallo(await desdeLaWeb('mi_reserva_en_la_web', { reserva_id: laDeAne.id, codigo: otro })),
+    ).toBe('no_existe');
+  });
+
+  it('probar teléfonos tiene tope por dirección', async () => {
     let fallo: string | null = null;
     for (let i = 0; i < 21 && fallo !== 'demasiados_intentos'; i += 1) {
       fallo = elFallo(
         await desdeLaWeb(
-          'mi_reserva_en_la_web',
-          { codigo: String(1000 + i), telefono: '600 111 222' },
+          'mis_reservas_en_la_web',
+          { telefono: `600 000 ${String(100 + i)}` },
           '10.9.9.9',
         ),
       );
     }
     expect(fallo).toBe('demasiados_intentos');
     // Desde otra dirección, sigue.
-    losDatos(
-      await desdeLaWeb(
-        'mi_reserva_en_la_web',
-        { codigo: laDeAne.codigo, telefono: '600 111 222' },
-        '10.0.0.2',
-      ),
-    );
+    losDatos(await desdeLaWeb('mis_reservas_en_la_web', { telefono: '600 111 222' }, '10.0.0.2'));
   });
 
-  it('confirmar: la sala la ve confirmada', async () => {
+  it('confirmar con el teléfono: la sala la ve confirmada', async () => {
     const confirmada = losDatos<SuReserva>(
       await desdeLaWeb('confirmar_mi_reserva', {
-        codigo: laDeAne.codigo,
+        telefono: '600 111 222',
         reserva_id: laDeAne.id,
       }),
     );
@@ -451,7 +489,7 @@ describe('el reloj', () => {
       canceladaPor: 'sin_confirmar',
       mesas: [],
     });
-    expect(lasDeHoy.find((r) => r.nombre === 'Ane')?.estado).toBe('reservada');
+    expect(lasDeHoy.find((r) => r.nombre === 'Ane Prueba')?.estado).toBe('reservada');
     expect(losCorreosA('mikel@correo-de-prueba.com')).toHaveLength(2);
   });
 
@@ -477,7 +515,7 @@ describe('el reloj', () => {
     reloj = LAS_CUATRO;
     const deJon = losCorreosA('jon@correo-de-prueba.com');
     expect(deJon).toHaveLength(2);
-    expect(deJon[1]?.texto).toContain(laDeJon.codigo);
+    expect(deJon[1]?.texto).toContain(`r=${laDeJon.id}`);
   });
 });
 
@@ -510,13 +548,9 @@ describe('cancelar y «Avísame si se libera»', () => {
 
   it('cancelar desde la web suelta la mesa, avisa a la sala y a quien espera', async () => {
     const laDeArana = (await lasDelTpv(VIERNES)).find((r) => r.nombre === 'Familia Arana');
-    const [codigo] = await comoDuena<{ codigo: string }>(
-      `select codigo from estook.reserva where id = $1`,
-      [laDeArana?.id],
-    );
     const cancelada = losDatos<SuReserva>(
       await desdeLaWeb('cancelar_mi_reserva', {
-        codigo: codigo?.codigo,
+        telefono: '600 111 222',
         reserva_id: laDeArana?.id,
       }),
     );
@@ -533,24 +567,24 @@ describe('cancelar y «Avísame si se libera»', () => {
     // Una vez: si se libera otra, ya no se le vuelve a escribir.
     const otraVez = losDatos<SuReserva>(
       await desdeLaWeb('cancelar_mi_reserva', {
-        codigo: codigo?.codigo,
+        telefono: '600 111 222',
         reserva_id: laDeArana?.id,
       }),
     );
     expect(otraVez.estado).toBe('cancelada');
     expect(losCorreosA('leire@correo-de-prueba.com')).toHaveLength(1);
+    // A quien reservó le llega que se ha cancelado (una vez): si no fue él, sabe a quién llamar.
+    const aArana = losCorreosA('arana@correo-de-prueba.com');
+    expect(aArana).toHaveLength(2);
+    expect(aArana[1]?.asunto).toContain('Has cancelado');
   });
 
   it('una cancelada ya no se confirma', async () => {
     const laDeMikel = (await lasDelTpv()).find((r) => r.nombre === 'Mikel');
-    const [codigo] = await comoDuena<{ codigo: string }>(
-      `select codigo from estook.reserva where id = $1`,
-      [laDeMikel?.id],
-    );
     expect(
       elFallo(
         await desdeLaWeb('confirmar_mi_reserva', {
-          codigo: codigo?.codigo,
+          telefono: '600 111 222',
           reserva_id: laDeMikel?.id,
         }),
       ),
@@ -563,7 +597,7 @@ describe('cada local lo suyo', () => {
     const [otro] = await comoDuena<{ direccion: string }>(
       `select direccion_de_la_carta as direccion from estook.local where codigo = 'casa-lola'`,
     );
-    const laDeAne = (await lasDelTpv()).find((r) => r.nombre === 'Ane');
+    const laDeAne = (await lasDelTpv()).find((r) => r.nombre === 'Ane Prueba');
     const [codigo] = await comoDuena<{ codigo: string }>(
       `select codigo from estook.reserva where id = $1`,
       [laDeAne?.id],

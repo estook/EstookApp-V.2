@@ -40,6 +40,7 @@ import {
   TicketsYFacturas,
   LosCobros,
   PorProducto,
+  Reservas,
   Ventas,
 } from './lasPantallas.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
@@ -334,6 +335,8 @@ function Contenido({
     return <Informacion />;
   }
   if (app.id === 'servicio' && destino.id === 'empleados') return <Empleados />;
+  // La Ampliación 5 · 2 (0153): las reservas del día y la web de reservas del local.
+  if (app.id === 'servicio' && destino.id === 'reservas') return <Reservas />;
   // Negocio › Ventas en tres (0145): los cobros uno a uno, lo emitido con su estado ante Hacienda
   // (T6 · 2 · 1, 0136; antes en Servicio) y el Resumen.
   if (app.id === 'negocio' && destino.id === 'ventas' && vista?.id === 'cobros') {

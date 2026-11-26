@@ -183,6 +183,7 @@ import {
   horasEnLaWeb,
   laWebDeReservas,
   miReservaEnLaWeb,
+  misReservasEnLaWeb,
   reservarEnLaWeb,
 } from './comandos/reservar-en-la-web.ts';
 import { elHorario, elHorarioEnBorrador, elHorarioEnPdf } from './consultas/horario.ts';
@@ -994,6 +995,7 @@ export const catalogo = {
     // La Ampliación 5 · 2 (0153): reservar, buscar, confirmar y cancelar en la web, y «Avísame».
     [reservarEnLaWeb.nombre]: reservarEnLaWeb,
     [miReservaEnLaWeb.nombre]: miReservaEnLaWeb,
+    [misReservasEnLaWeb.nombre]: misReservasEnLaWeb,
     [confirmarMiReserva.nombre]: confirmarMiReserva,
     [cancelarMiReserva.nombre]: cancelarMiReserva,
     [avisameSiSeLibera.nombre]: avisameSiSeLibera,

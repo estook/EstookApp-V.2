@@ -729,6 +729,8 @@ export interface LosAjustesDeReservas {
   readonly avisarPorCorreo?: boolean;
   readonly pedirQueConfirmen?: boolean;
   readonly minutosParaConfirmar?: number;
+  /** Hasta cuántos minutos antes se reserva por la web (5 · 2). */
+  readonly antelacionWeb?: number;
   /** `estook.com/reservar/<esto>`; nula si el local no tiene dirección de carta. */
   readonly direccion?: string | null;
 }

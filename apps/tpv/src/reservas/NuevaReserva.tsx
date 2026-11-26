@@ -194,6 +194,11 @@ export function NuevaReserva({
           </div>
         </section>
 
+        {horas.data !== undefined && horas.data.servicios.length === 0 && (
+          <p className="text-secundario text-texto-suave">
+            Ese día no hay ningún servicio: el local cierra (Ajustes › Reservas).
+          </p>
+        )}
         {(horas.data?.servicios ?? []).map((s) => (
           <section key={s.nombre} className="flex flex-col gap-e2">
             <h3 className="text-etiqueta font-bold uppercase tracking-wide text-texto-suave">

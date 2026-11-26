@@ -176,6 +176,15 @@ import {
   lasReservas,
   losAjustesDeReservasConsulta,
 } from './consultas/reservas.ts';
+import {
+  avisameSiSeLibera,
+  cancelarMiReserva,
+  confirmarMiReserva,
+  horasEnLaWeb,
+  laWebDeReservas,
+  miReservaEnLaWeb,
+  reservarEnLaWeb,
+} from './comandos/reservar-en-la-web.ts';
 import { elHorario, elHorarioEnBorrador, elHorarioEnPdf } from './consultas/horario.ts';
 import {
   copiarLaSemanaAnterior,
@@ -785,6 +794,9 @@ export const catalogo = {
     [lasReservas.nombre]: lasReservas,
     [horasParaReservar.nombre]: horasParaReservar,
     [losAjustesDeReservasConsulta.nombre]: losAjustesDeReservasConsulta,
+    // La Ampliación 5 · 2 (0153): la web de reservas de cada local, sin sesión.
+    [laWebDeReservas.nombre]: laWebDeReservas,
+    [horasEnLaWeb.nombre]: horasEnLaWeb,
     [elAparatoParaFichar.nombre]: elAparatoParaFichar,
 
     // ── T1 · La puerta de Estook TPV (0107) ────────────────────────────────
@@ -979,6 +991,12 @@ export const catalogo = {
     [cancelarReserva.nombre]: cancelarReserva,
     [guardarAjustesDeReservas.nombre]: guardarAjustesDeReservas,
     [juntarMesasParaReservas.nombre]: juntarMesasParaReservas,
+    // La Ampliación 5 · 2 (0153): reservar, buscar, confirmar y cancelar en la web, y «Avísame».
+    [reservarEnLaWeb.nombre]: reservarEnLaWeb,
+    [miReservaEnLaWeb.nombre]: miReservaEnLaWeb,
+    [confirmarMiReserva.nombre]: confirmarMiReserva,
+    [cancelarMiReserva.nombre]: cancelarMiReserva,
+    [avisameSiSeLibera.nombre]: avisameSiSeLibera,
     // El repaso del 9-oct (0081): el horario de siempre se fue; se justifica la falta.
     [justificarIncidencia.nombre]: justificarIncidencia,
     [quitarJustificacion.nombre]: quitarJustificacion,

@@ -1187,6 +1187,14 @@ function PanelDeLaMesa({
         }}
       />
       {mesa.forma !== 'taburete' && <SeJuntaCon mesa={mesa} otras={otras} />}
+      {mesa.forma !== 'taburete' && (
+        <PorInternet
+          puesta={mesa.porInternet !== false}
+          alCambiar={(puesta) => {
+            alCambiar({ por_internet: puesta });
+          }}
+        />
+      )}
       <div className="flex gap-e2">
         <BotonSuave onClick={alDuplicar}>Duplicar</BotonSuave>
         <BotonSuave onClick={alQuitar} desactivado={mesa.abierta}>
@@ -1496,6 +1504,46 @@ function SeJuntaCon({
               {o.nombre}
             </BotonSuave>
           ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * **Si sale en la web de reservas** (la Ampliación 5 · 2, 0153): la barra o la mesa del rincón se quedan para
+ * quien llega o para el teléfono. Solo con las reservas encendidas.
+ */
+function PorInternet({
+  puesta,
+  alCambiar,
+}: {
+  readonly puesta: boolean;
+  readonly alCambiar: (puesta: boolean) => void;
+}) {
+  const lo = usarLosAjustesDeReservas();
+  if (lo.data === undefined || !lo.data.encendidas) return null;
+  return (
+    <div className="flex flex-col gap-e2">
+      <span className="text-secundario font-semibold text-texto-tenue">En la web de reservas</span>
+      <div role="radiogroup" aria-label="En la web de reservas" className="grid grid-cols-2 gap-e1">
+        <BotonSuave
+          radio
+          puesto={puesta}
+          onClick={() => {
+            alCambiar(true);
+          }}
+        >
+          Sale
+        </BotonSuave>
+        <BotonSuave
+          radio
+          puesto={!puesta}
+          onClick={() => {
+            alCambiar(false);
+          }}
+        >
+          No sale
+        </BotonSuave>
       </div>
     </div>
   );

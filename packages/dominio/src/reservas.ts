@@ -20,6 +20,35 @@ export interface ServicioDeReservas {
   readonly desde: string;
   /** «22:30»: la última. */
   readonly hasta: string;
+  /**
+   * **Los días de la semana que abre** (0 domingo … 6 sábado; maqueta aprobada: «Cerrado: domingo noche y
+   * lunes»). Sin decirlo, todos: Estook no supone qué días cierra cada local.
+   */
+  readonly dias?: readonly number[];
+}
+
+/** Los días, como se leen en España: de lunes a domingo, con su letra. */
+export const DIAS_PARA_RESERVAR: readonly { readonly dia: number; readonly letra: string }[] = [
+  { dia: 1, letra: 'L' },
+  { dia: 2, letra: 'M' },
+  { dia: 3, letra: 'X' },
+  { dia: 4, letra: 'J' },
+  { dia: 5, letra: 'V' },
+  { dia: 6, letra: 'S' },
+  { dia: 0, letra: 'D' },
+];
+
+/** Si un servicio abre un día («2026-11-30»): sin días, todos. */
+export function abreEseDia(servicio: ServicioDeReservas, dia: string): boolean {
+  if (servicio.dias === undefined) return true;
+  return servicio.dias.includes(new Date(`${dia}T12:00:00Z`).getUTCDay());
+}
+
+/** Los días de la semana que abre algún servicio: los que la web ofrece. */
+export function losDiasQueAbre(servicios: readonly ServicioDeReservas[]): readonly number[] {
+  const abre = new Set<number>();
+  for (const s of servicios) for (const d of s.dias ?? [0, 1, 2, 3, 4, 5, 6]) abre.add(d);
+  return [...abre].sort((a, b) => a - b);
 }
 
 /** De fábrica: 1–2, 3–4, 5–6 y 7 o más comensales, en minutos. */
@@ -108,7 +137,18 @@ export function esUnServicio(valor: unknown): valor is ServicioDeReservas {
     typeof s['hasta'] === 'string' &&
     hora.test(s['desde']) &&
     hora.test(s['hasta']) &&
-    s['desde'] <= s['hasta']
+    s['desde'] <= s['hasta'] &&
+    (s['dias'] === undefined || sonDiasBien(s['dias']))
+  );
+}
+
+function sonDiasBien(dias: unknown): boolean {
+  return (
+    Array.isArray(dias) &&
+    dias.length >= 1 &&
+    dias.length <= 7 &&
+    new Set(dias).size === dias.length &&
+    dias.every((d) => Number.isInteger(d) && (d as number) >= 0 && (d as number) <= 6)
   );
 }
 
@@ -195,3 +235,59 @@ export function telefonoLimpio(telefono: string): string {
     ? `+${limpio.slice(1).replace(/\+/g, '')}`
     : limpio.replace(/\+/g, '');
 }
+
+// ── La web de reservas (la Ampliación 5 · 2, 0153) ───────────────────────────
+
+/**
+ * **Por la web se reserva hasta dos horas antes** (maqueta aprobada, Ajustes › Reservas: «Hasta 2 h antes · 60
+ * días vista»). Más cerca, se llama: el camarero sí reserva al momento.
+ */
+export const ANTELACION_DE_LA_WEB = 120;
+
+/** Cuántos días por delante ofrece la web: dos meses. En el TPV se reserva hasta con un año. */
+export const DIAS_QUE_OFRECE_LA_WEB = 60;
+
+/** Hasta cuántos reserva la web; más, por teléfono, que un grupo grande se habla. */
+export const COMENSALES_DE_LA_WEB = 12;
+
+/**
+ * **Lo que puede pedir cada dirección en una hora** (como «Pide tu factura», 0141): reservar, buscar su
+ * reserva (un código que no casa gasta uno, así no se pueden ir probando) y «Avísame si se libera».
+ */
+export const INTENTOS_DE_LA_WEB_DE_RESERVAS = {
+  reservar: 10,
+  buscar: 20,
+  avisame: 5,
+} as const;
+export type ClaseDeIntentoDeReserva = keyof typeof INTENTOS_DE_LA_WEB_DE_RESERVAS;
+
+/** `estook.com/reservar/ikatz` → «ikatz». Nula si la dirección no es de reservar. */
+export function laReservaDeLaDireccion(camino: string): { readonly direccion: string } | null {
+  const encontrada = /^\/reservar\/([^/?#]+)\/?$/i.exec(camino);
+  if (encontrada === null) return null;
+  try {
+    return { direccion: decodeURIComponent(encontrada[1] ?? '').toLowerCase() };
+  } catch {
+    return { direccion: (encontrada[1] ?? '').toLowerCase() };
+  }
+}
+
+/** Un código de 4 cifras, con un número al azar que da el que llama (de 0 a 1). */
+export function elCodigoDeLaReserva(azar: number): string {
+  return String(Math.floor(azar * 10_000) % 10_000).padStart(4, '0');
+}
+
+/**
+ * **Hasta cuándo se confirma** (Richi, 24-nov, pregunta 9): X minutos antes de la hora de la reserva, no
+ * desde que se reserva, «que pueden reservar un día o dos antes». Una de las 21:15 con 30 minutos: hasta
+ * las 20:45.
+ */
+export function hastaCuandoConfirmar(empieza: Date, minutos: number): Date {
+  return new Date(empieza.getTime() - minutos * 60_000);
+}
+
+/**
+ * **Cuándo sale el recordatorio** del día antes: a las 12:00 del día anterior en el reloj del local; si se
+ * reserva más tarde que eso, al momento (lo decide quien lo programa).
+ */
+export const HORA_DEL_RECORDATORIO = '12:00';

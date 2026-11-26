@@ -376,6 +376,8 @@ export const entradaCambiarMesa = z
     ancho: medida.nullable().optional(),
     fondo: medida.nullable().optional(),
     giro: giro.optional(),
+    /** Si sale en la web de reservas (la Ampliación 5 · 2, 0153). */
+    por_internet: z.boolean().optional(),
   })
   .strict();
 export type EntradaCambiarMesa = z.infer<typeof entradaCambiarMesa>;
@@ -417,7 +419,8 @@ export const cambiarMesa = comando<EntradaCambiarMesa, { mesaId: string }>({
              y = ${caja.y},
              ancho = ${ancho === null ? null : caja.ancho}::smallint,
              fondo = ${fondo === null ? null : caja.fondo}::smallint,
-             giro = coalesce(${entrada.giro ?? null}::smallint, giro)
+             giro = coalesce(${entrada.giro ?? null}::smallint, giro),
+             por_internet = coalesce(${entrada.por_internet ?? null}::boolean, por_internet)
        where id = ${mesa.id}::uuid
     `.catch((e: unknown) => yaExiste(e, 'una mesa'));
     await anotar(contexto, 'cambiar', 'mesa', mesa.id, localId, {

@@ -10,6 +10,7 @@ import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { tocarElServicio } from '../al-segundo.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { elLocalDelServicio } from '../sala.ts';
+import { cancelarLaReserva } from '../reservas-web.ts';
 import {
   cuandoEmpieza,
   lasDuraciones,
@@ -221,13 +222,8 @@ export const cancelarReserva = comando<
     }
     const estado = entrada.no_vino === true ? 'no_vino' : 'cancelada';
     if (antes.estado !== 'reservada') return { estado: antes.estado };
-    await contexto.sql`
-      update estook.reserva
-         set estado = ${estado}, cancelada_en = ${contexto.ahora.toISOString()}::timestamptz
-       where id = ${entrada.reserva_id}::uuid
-    `;
-    await contexto.sql`delete from estook.reserva_de_mesa where reserva_id = ${entrada.reserva_id}::uuid`;
-    await tocarElServicio(contexto, localId);
+    // Como la web (5 · 2): suelta sus mesas, avisa a los aparatos y a quien espera mesa ese día.
+    await cancelarLaReserva(contexto, entrada.reserva_id, { estado, por: 'local' });
     return { estado };
   },
 });
@@ -235,7 +231,13 @@ export const cancelarReserva = comando<
 // ═══ Los ajustes ══════════════════════════════════════════════════════════════
 
 const servicio = z
-  .object({ nombre: z.string().trim().min(1).max(20), desde: cuarto, hasta: cuarto })
+  .object({
+    nombre: z.string().trim().min(1).max(20),
+    desde: cuarto,
+    hasta: cuarto,
+    /** Los días que abre (0 domingo … 6 sábado). Sin decirlo, todos. */
+    dias: z.array(z.number().int().min(0).max(6)).min(1).max(7).optional(),
+  })
   .strict();
 
 export const entradaAjustesDeReservas = z
@@ -245,6 +247,10 @@ export const entradaAjustesDeReservas = z
     duraciones: z.array(z.number().int().min(30).max(360)).length(4),
     tope_por_cuarto: z.number().int().min(1).max(500).nullable(),
     liberar_tras: z.number().int().min(5).max(120),
+    /** La web de reservas (5 · 2). Sin decirlo, como estaban. */
+    avisar_por_correo: z.boolean().optional(),
+    pedir_que_confirmen: z.boolean().optional(),
+    minutos_para_confirmar: z.number().int().min(15).max(60).optional(),
   })
   .strict();
 export type EntradaAjustesDeReservas = z.infer<typeof entradaAjustesDeReservas>;
@@ -265,14 +271,25 @@ export const guardarAjustesDeReservas = comando<EntradaAjustesDeReservas, { guar
     }
     await contexto.sql`
       insert into estook.ajuste_de_reservas
-        (local_id, encendidas, servicios, duraciones, tope_por_cuarto, liberar_tras)
+        (local_id, encendidas, servicios, duraciones, tope_por_cuarto, liberar_tras,
+         avisar_por_correo, pedir_que_confirmen, minutos_para_confirmar)
       values (${localId}::uuid, ${entrada.encendidas}, ${JSON.stringify(entrada.servicios)}::text::jsonb,
               ${`{${entrada.duraciones.join(',')}}`}::smallint[], ${entrada.tope_por_cuarto},
-              ${entrada.liberar_tras})
+              ${entrada.liberar_tras}, ${entrada.avisar_por_correo ?? false},
+              ${entrada.pedir_que_confirmen ?? false}, ${entrada.minutos_para_confirmar ?? 30})
       on conflict (local_id) do update
          set encendidas = excluded.encendidas, servicios = excluded.servicios,
              duraciones = excluded.duraciones, tope_por_cuarto = excluded.tope_por_cuarto,
-             liberar_tras = excluded.liberar_tras
+             liberar_tras = excluded.liberar_tras,
+             avisar_por_correo = case when ${entrada.avisar_por_correo !== undefined}
+                                      then excluded.avisar_por_correo
+                                      else estook.ajuste_de_reservas.avisar_por_correo end,
+             pedir_que_confirmen = case when ${entrada.pedir_que_confirmen !== undefined}
+                                        then excluded.pedir_que_confirmen
+                                        else estook.ajuste_de_reservas.pedir_que_confirmen end,
+             minutos_para_confirmar = case when ${entrada.minutos_para_confirmar !== undefined}
+                                           then excluded.minutos_para_confirmar
+                                           else estook.ajuste_de_reservas.minutos_para_confirmar end
     `;
     await tocarElServicio(contexto, localId);
     return { guardado: true };

@@ -40,6 +40,7 @@ import { correoDelChatParaMandar } from './correos.ts';
 import { comoLista } from './listas.ts';
 import { irAlPedido } from './lo-que-avisa.ts';
 import { aparte, comoSiFuera } from './lo-que-avisa-el-reloj.ts';
+import { cancelarSiNoConfirmo, recordarLaReserva } from './reservas-web.ts';
 
 /**
  * Lo que va al móvil (I · decisión 0070).
@@ -1068,7 +1069,9 @@ interface Programado {
     | 'pedido.no_llega'
     | 'chat.confirmar'
     | 'calendario.recordatorio'
-    | 'calendario.nota';
+    | 'calendario.nota'
+    | 'reserva.sin_confirmar'
+    | 'reserva.recordatorio';
   readonly clave: string;
   readonly cuando: Date;
   readonly organizacion_id: string;
@@ -1284,7 +1287,11 @@ export async function hacerLoProgramado(contexto: Contexto): Promise<number> {
               ? (c: Contexto) => recordarQueConfirme(c, programado)
               : p.tipo === 'calendario.recordatorio' || p.tipo === 'calendario.nota'
                 ? (c: Contexto) => loDelCalendario(c, programado)
-                : (c: Contexto) => elPedidoQueNoLlega(c, programado);
+                : p.tipo === 'reserva.sin_confirmar'
+                  ? (c: Contexto) => cancelarSiNoConfirmo(c, programado.clave)
+                  : p.tipo === 'reserva.recordatorio'
+                    ? (c: Contexto) => recordarLaReserva(c, programado.clave)
+                    : (c: Contexto) => elPedidoQueNoLlega(c, programado);
       const hecho = await aparte(contexto, `avisar al móvil (${p.tipo})`, hacer);
       if (hecho !== null) hechos += hecho;
     }
@@ -1303,4 +1310,9 @@ export async function limpiarLoDelMovil(contexto: Contexto): Promise<void> {
   // Un cifrado se acepta hasta una semana (seAceptaLoHecho): pasado eso no vale, y su
   // número ya no hace falta para impedir que se repita.
   await contexto.sql`delete from estook.cifrado_usado where usado_en < now() - interval '8 days'`;
+  // Los intentos de la web de reservas solo cuentan la última hora, y una dirección de internet es un
+  // dato personal: pasada la hora, fuera (0153), aunque nadie más haya reservado.
+  await contexto.sql`
+    delete from estook.intento_en_la_web_de_reservas where en < now() - interval '1 hour'
+  `;
 }

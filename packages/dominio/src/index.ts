@@ -1631,5 +1631,21 @@ export {
   cabeEnElCuarto,
   lasMesasEnLetra,
   telefonoLimpio,
+  DIAS_QUE_OFRECE_LA_WEB,
+  ANTELACION_DE_LA_WEB,
+  DIAS_PARA_RESERVAR,
+  abreEseDia,
+  losDiasQueAbre,
+  COMENSALES_DE_LA_WEB,
+  INTENTOS_DE_LA_WEB_DE_RESERVAS,
+  laReservaDeLaDireccion,
+  elCodigoDeLaReserva,
+  hastaCuandoConfirmar,
+  HORA_DEL_RECORDATORIO,
 } from './reservas.ts';
-export type { ServicioDeReservas, MesaParaReservar, TramoOcupado } from './reservas.ts';
+export type {
+  ServicioDeReservas,
+  MesaParaReservar,
+  TramoOcupado,
+  ClaseDeIntentoDeReserva,
+} from './reservas.ts';

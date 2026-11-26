@@ -621,6 +621,59 @@ sorpresas: si la mesa está reservada, te lo dice»).
    «habitual», «Alergia» y «Grupo» en la lista y que la alergia pase sola a la mesa al sentarla, porque salen de la
    ficha del cliente.
 
+## 20 · Lo que se construyó en la Ampliación 5 · 2 · La web de reservas y los correos (26-nov)
+
+Migración **0133**. Lo que pide la sección 6 para la web, con las respuestas de Richi del 24-nov (preguntas 3, 4 y 9).
+
+- **La web, `estook.com/reservar/<dirección>`**: la misma dirección que su carta. En Ajustes del TPV › Reservas sale
+  con **«Copiar el enlace»**, para su web, Instagram, Google y WhatsApp. En una sola página: **cuántos sois** (de 1 a
+  12), **el día** (dos semanas a la vista y «Otro día», hasta dos meses), **las horas que tienen mesa de verdad**, por
+  servicio, y **nombre, teléfono, correo** (si el local avisa por correo) **y una nota**. Sale su reserva con **el
+  código de 4 cifras**. En violeta y con degradado, como las reservas del TPV. Sin cuentas, **sin cookies** y sin
+  guardar nada en el navegador.
+- **Solo las mesas que el local ofrece por internet**: cada mesa, **«Sale» o «No sale»** en el editor de la sala (de
+  fábrica, sale). **La web nunca pasa del tope de comensales del cuarto de hora**: eso lo decide el camarero.
+- **Los días que abre cada servicio** (la maqueta aprobada: «Cerrado: domingo noche y lunes»), que faltaban en la 5 · 1:
+  en Ajustes del TPV › Reservas, cada servicio con **L M X J V S D**; de fábrica, todos. Un día que no abre ningún
+  servicio sale en la web como **«Cerrado»** y no se reserva, ni en la web ni en el TPV.
+- **«Ya tengo reserva»**: con su teléfono y su código la ve, **la confirma o la cancela**. El enlace del correo abre lo
+  mismo; **confirmar y cancelar se hacen tocando en la página**, nunca solo por abrir el enlace (los correos los abren
+  a veces los antivirus).
+- **«Avisar al cliente por correo»** (apagado de fábrica): el correo con su reserva y el botón **«Confirmar o
+  cancelar»**; **el recordatorio a las 12:00 del día antes**; el correo si se cancela sola; y **«Avísame si se
+  libera»** con el día lleno: si alguien cancela, se escribe a quien lo pidió. Por Resend, como el resto.
+- **«Pedir que confirmen»** (apagado de fábrica; de 15 a 60 minutos antes de la hora, 30 de fábrica): la página y el
+  correo dicen hasta qué hora; **si no confirma, el reloj la cancela sola**, suelta la mesa y la sala lo ve con su aviso.
+- **En el TPV**: la reserva de la web llega al segundo con **«Reserva nueva · web»**; en la lista, «web · confirmó»; la
+  que cancela el cliente o se cancela sola avisa («La canceló el cliente · mesa libre») y queda como **«La canceló»** o
+  **«Se canceló sola»**.
+- **La seguridad**: la web entra como el sistema solo dentro de su petición; **enseña horas libres, nunca quién ha
+  reservado**; una reserva **solo con su teléfono y su código**; **topes por dirección y hora** (reservar 10, buscar 20,
+  «Avísame» 5) que cuentan también lo que falla; y **ninguna respuesta se guarda** para repetirla. Probado en
+  `la-web-de-reservas.prueba.ts` (20 pruebas contra la base, con el reloj y el correo de mentira).
+
+**Lo que decidió la IA al construirla**, para que Richi lo sepa:
+
+1. **El recordatorio sale a las 12:00 del día antes.** Si se reserva más tarde (el mismo día o la víspera por la tarde),
+   el correo de la reserva, con su botón, hace de recordatorio: es el «al momento» de la sección 6.
+2. **Reservar ya dentro del plazo de confirmar es venir**: esa reserva queda confirmada sola.
+3. **La web no pasa del tope de comensales**; el camarero sí puede, con su aviso.
+4. **Un grupo que no cabe nunca** en las mesas de internet no ve «Avísame si se libera», que nunca llegaría: ve
+   «llámales» con el teléfono del local.
+5. **Por la web, de 1 a 12 personas, hasta dos meses vista y hasta dos horas antes** (la maqueta: «Hasta 2 h antes ·
+   60 días vista»); para más o para antes, llamar. El camarero sí reserva al momento. Hoy, ya tarde, la web lo dice
+   en vez de ofrecer «Avísame».
+6. **El teléfono se compara por sus nueve últimas cifras**: «+34 600 111 222» y «600111222» son el mismo.
+7. **«Avísame si se libera»** escribe una sola vez a todos los apuntados de ese día, sin guardarles la mesa: el primero
+   que reserva, se la queda. Pedirlo dos veces no apunta dos veces.
+8. **Las direcciones de internet de los intentos se borran a la hora** (lo hace el reloj): solo sirven para los topes.
+9. **La página de reservas sí la guardan los buscadores**, porque es la del local y le trae clientes; la de la factura,
+   no.
+10. **Todas las mesas salen por internet de fábrica**; se quitan una a una en el editor.
+11. **La casilla de las ofertas solo sale cuando se pide el correo**: sin correo no hay por dónde mandarlas.
+12. **La política de privacidad dice ya qué se hace con los datos de quien reserva o pide su factura**: el responsable es
+    el local y Estook los trata por su encargo.
+
 ## 12 · Lo que se toca en los documentos
 
 - **Plan:** la cabecera de D con la Ampliación; las fichas de M13 y M14 con lo de Richi; la ficha

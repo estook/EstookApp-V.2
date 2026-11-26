@@ -1,3 +1,4 @@
+import { DIAS_PARA_RESERVAR } from '@estook/dominio';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
@@ -14,6 +15,10 @@ import { Casilla, Minutos } from './PinYBloqueo.tsx';
  * (comida, cena) con sus horas, **cuánto dura una mesa** según los que son —y lo que duran de verdad,
  * cuando hay cuentas cobradas de sobra—, el tope de comensales por cuarto de hora y a los cuántos
  * minutos de retraso se libera la mesa. Las mesas que se juntan se marcan en el editor de la sala.
+ *
+ * **Por internet** (la Ampliación 5 · 2): el enlace de su web de reservas, para copiarlo en su web, Instagram,
+ * Google y WhatsApp; **«Avisar al cliente por correo»** y **«Pedir que confirmen»**, las dos apagadas de
+ * fábrica (Richi, 24-nov).
  */
 
 const TAMANOS = ['De 1 a 2', 'De 3 a 4', 'De 5 a 6', '7 o más'] as const;
@@ -46,6 +51,13 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
   const [conTope, setConTope] = useState(ajustes.topePorCuarto !== null);
   const [tope, setTope] = useState(ajustes.topePorCuarto ?? 20);
   const [liberarTras, setLiberarTras] = useState(ajustes.liberarTras);
+  const [avisarPorCorreo, setAvisarPorCorreo] = useState(ajustes.avisarPorCorreo === true);
+  const [pedirQueConfirmen, setPedirQueConfirmen] = useState(ajustes.pedirQueConfirmen === true);
+  const [minutosParaConfirmar, setMinutosParaConfirmar] = useState(
+    ajustes.minutosParaConfirmar ?? 30,
+  );
+  const [copiado, setCopiado] = useState(false);
+  const enlace = ajustes.direccion == null ? null : `estook.com/reservar/${ajustes.direccion}`;
   const [guardando, setGuardando] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
   const [guardado, setGuardado] = useState(false);
@@ -60,6 +72,9 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
       duraciones,
       tope_por_cuarto: conTope ? tope : null,
       liberar_tras: liberarTras,
+      avisar_por_correo: avisarPorCorreo,
+      pedir_que_confirmen: pedirQueConfirmen,
+      minutos_para_confirmar: minutosParaConfirmar,
     });
     setGuardando(false);
     if (!respuesta.ok) {
@@ -111,56 +126,75 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
       <section className="flex flex-col gap-e3">
         <h2 className="text-seccion font-bold">Los servicios</h2>
         <p className="text-secundario text-texto-tenue">
-          De la primera hora a la que se reserva a la última, cada cuarto de hora.
+          De la primera hora a la que se reserva a la última, cada cuarto de hora, y los días que
+          abre.
         </p>
         {servicios.map((s, i) => (
-          <div key={i} className="flex flex-wrap items-center gap-e2">
-            <input
-              aria-label="Nombre del servicio"
-              value={s.nombre}
-              maxLength={20}
-              onChange={(e) => {
-                cambiarServicio(i, { nombre: e.currentTarget.value });
-              }}
-              className="min-h-toque w-36 rounded-grande border border-borde bg-fondo px-e3 font-bold"
-            />
-            <span className="text-texto-suave">de</span>
-            <select
-              aria-label={`${s.nombre}: desde`}
-              value={s.desde}
-              onChange={(e) => {
-                cambiarServicio(i, { desde: e.currentTarget.value });
-              }}
-              className="min-h-toque rounded-grande border border-borde bg-fondo px-e3 tabular-nums"
-            >
-              {CUARTOS.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-            <span className="text-texto-suave">a</span>
-            <select
-              aria-label={`${s.nombre}: hasta`}
-              value={s.hasta}
-              onChange={(e) => {
-                cambiarServicio(i, { hasta: e.currentTarget.value });
-              }}
-              className="min-h-toque rounded-grande border border-borde bg-fondo px-e3 tabular-nums"
-            >
-              {CUARTOS.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-            {servicios.length > 1 && (
-              <Boton
-                tono="texto"
-                tamano="s"
-                onClick={() => {
-                  setServicios((antes) => antes.filter((_, j) => j !== i));
+          <div key={i} className="flex flex-col gap-e2 rounded-grande border border-borde p-e3">
+            <div className="flex flex-wrap items-center gap-e2">
+              <input
+                aria-label="Nombre del servicio"
+                value={s.nombre}
+                maxLength={20}
+                onChange={(e) => {
+                  cambiarServicio(i, { nombre: e.currentTarget.value });
                 }}
+                className="min-h-toque w-36 rounded-grande border border-borde bg-fondo px-e3 font-bold"
+              />
+              <span className="text-texto-suave">de</span>
+              <select
+                aria-label={`${s.nombre}: desde`}
+                value={s.desde}
+                onChange={(e) => {
+                  cambiarServicio(i, { desde: e.currentTarget.value });
+                }}
+                className="min-h-toque rounded-grande border border-borde bg-fondo px-e3 tabular-nums"
               >
-                Quitar
-              </Boton>
-            )}
+                {CUARTOS.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+              <span className="text-texto-suave">a</span>
+              <select
+                aria-label={`${s.nombre}: hasta`}
+                value={s.hasta}
+                onChange={(e) => {
+                  cambiarServicio(i, { hasta: e.currentTarget.value });
+                }}
+                className="min-h-toque rounded-grande border border-borde bg-fondo px-e3 tabular-nums"
+              >
+                {CUARTOS.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+              {servicios.length > 1 && (
+                <Boton
+                  tono="texto"
+                  tamano="s"
+                  onClick={() => {
+                    setServicios((antes) => antes.filter((_, j) => j !== i));
+                  }}
+                >
+                  Quitar
+                </Boton>
+              )}
+            </div>
+            <LosDias
+              servicio={s.nombre}
+              dias={s.dias ?? TODOS_LOS_DIAS}
+              alCambiar={(dias) => {
+                // Los siete es «todos»: se guarda sin días, como de fábrica.
+                setServicios((antes) =>
+                  antes.map((otro, j) => {
+                    if (j !== i) return otro;
+                    const { nombre, desde, hasta } = otro;
+                    return dias.length === 7
+                      ? { nombre, desde, hasta }
+                      : { nombre, desde, hasta, dias };
+                  }),
+                );
+              }}
+            />
           </div>
         ))}
         {servicios.length < 4 && (
@@ -238,6 +272,66 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
         />
       </section>
 
+      <section className="flex flex-col gap-e3">
+        <h2 className="text-seccion font-bold">Por internet</h2>
+        {enlace === null ? (
+          <p className="text-secundario text-texto-tenue">
+            La web de reservas usa la dirección de la carta del local, y este local aún no la tiene.
+          </p>
+        ) : (
+          <div className="flex flex-wrap items-center gap-e3 rounded-grande border border-borde bg-fondo p-e3">
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="font-bold">Tu web de reservas</span>
+              <span className="truncate text-secundario text-texto-tenue">
+                {enlace} · para tu web, Instagram, Google y WhatsApp
+              </span>
+            </span>
+            <Boton
+              tono="secundario"
+              tamano="s"
+              onClick={() => {
+                // Sin conexión segura el navegador no deja copiar: entonces el enlace se ve igual.
+                if (!('clipboard' in navigator)) return;
+                void navigator.clipboard.writeText(`https://${enlace}`).then(
+                  () => {
+                    setCopiado(true);
+                  },
+                  () => undefined,
+                );
+              }}
+            >
+              {copiado ? 'Copiado' : 'Copiar el enlace'}
+            </Boton>
+          </div>
+        )}
+        <Casilla
+          titulo="Avisar al cliente por correo"
+          frase="Su reserva con el código, el recordatorio del día antes y «Avísame si se libera». Pide su correo al reservar."
+          puesta={avisarPorCorreo}
+          ocupado={guardando}
+          alCambiar={setAvisarPorCorreo}
+        />
+        <Casilla
+          titulo="Pedir que confirmen"
+          frase="Si no confirma antes de la hora que digas, se cancela sola y la mesa queda libre."
+          puesta={pedirQueConfirmen}
+          ocupado={guardando}
+          alCambiar={setPedirQueConfirmen}
+        />
+        {pedirQueConfirmen && (
+          <Minutos
+            titulo="Confirmar hasta"
+            frase="Estos minutos antes de la hora de la reserva: una de las 21:15 con 30, hasta las 20:45."
+            valor={minutosParaConfirmar}
+            desde={15}
+            hasta={60}
+            paso={5}
+            ocupado={guardando}
+            alCambiar={setMinutosParaConfirmar}
+          />
+        )}
+      </section>
+
       <p className="text-secundario text-texto-tenue">
         Las mesas que se juntan para una reserva grande (la 7 con la 8) se marcan en{' '}
         <button
@@ -249,7 +343,8 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
         >
           La sala y las mesas
         </button>
-        : toca una mesa y elige con cuál se junta.
+        : toca una mesa y elige con cuál se junta, y si sale en la web de reservas (la barra o la
+        del rincón, mejor para quien llega).
       </p>
 
       <div>
@@ -319,6 +414,55 @@ function CuantoDura({
           +
         </button>
       </span>
+    </div>
+  );
+}
+
+const TODOS_LOS_DIAS: readonly number[] = [0, 1, 2, 3, 4, 5, 6];
+
+/**
+ * **Los días que abre cada servicio** (maqueta aprobada: «Cerrado: domingo noche y lunes»): L M X J V S D, y los que
+ * se apagan no se reservan ni en el TPV ni en la web. Siempre queda uno.
+ */
+function LosDias({
+  servicio,
+  dias,
+  alCambiar,
+}: {
+  readonly servicio: string;
+  readonly dias: readonly number[];
+  readonly alCambiar: (dias: number[]) => void;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label={`${servicio}: los días que abre`}
+      className="flex flex-wrap gap-e1"
+    >
+      {DIAS_PARA_RESERVAR.map(({ dia, letra }) => {
+        const abre = dias.includes(dia);
+        return (
+          <button
+            key={dia}
+            type="button"
+            aria-pressed={abre}
+            aria-label={`${letra}: ${abre ? 'abre' : 'cerrado'}`}
+            disabled={abre && dias.length === 1}
+            onClick={() => {
+              alCambiar(
+                abre ? dias.filter((d) => d !== dia) : [...dias, dia].sort((a, b) => a - b),
+              );
+            }}
+            className={`grid size-[40px] place-items-center rounded-redondo text-secundario font-bold transition-colors ${
+              abre
+                ? 'bg-texto text-fondo'
+                : 'border border-borde text-texto-tenue line-through decoration-2'
+            }`}
+          >
+            {letra}
+          </button>
+        );
+      })}
     </div>
   );
 }

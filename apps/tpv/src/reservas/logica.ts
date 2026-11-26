@@ -66,7 +66,7 @@ export function susMesas(reserva: UnaReserva): string {
 
 export interface AvisoDeReserva {
   readonly id: string;
-  readonly que: 'nueva' | 'llegan' | 'retraso';
+  readonly que: 'nueva' | 'llegan' | 'retraso' | 'cancelada';
   readonly reserva: UnaReserva;
 }
 
@@ -82,6 +82,17 @@ export function losAvisosDeLasReservas(
 ): readonly AvisoDeReserva[] {
   const avisos: AvisoDeReserva[] = [];
   for (const r of reservas) {
+    // La que canceló el cliente en la web o se canceló sola por no confirmar (5 · 2): su primer cuarto
+    // de hora, para que la sala sepa que esa mesa ha quedado libre.
+    if (
+      r.estado === 'cancelada' &&
+      (r.canceladaPor === 'cliente' || r.canceladaPor === 'sin_confirmar') &&
+      r.canceladaEn != null &&
+      ahora - Date.parse(r.canceladaEn) < 15 * MINUTO
+    ) {
+      avisos.push({ id: `reserva:cancelada:${r.id}`, que: 'cancelada', reserva: r });
+      continue;
+    }
     if (r.estado !== 'reservada') continue;
     const faltan = minutosHasta(r, ahora);
     if (faltan <= -liberarTras) {

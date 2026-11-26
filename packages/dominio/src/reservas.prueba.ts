@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   CUENTAS_PARA_APRENDER,
   DURACIONES_DE_FABRICA,
+  abreEseDia,
   cabeEnElCuarto,
+  elCodigoDeLaReserva,
+  hastaCuandoConfirmar,
+  laReservaDeLaDireccion,
   cuantoDura,
   elCuartoDe,
   esUnServicio,
@@ -10,6 +14,7 @@ import {
   lasDuracionesReales,
   lasHorasDelServicio,
   lasMesasEnLetra,
+  losDiasQueAbre,
   telefonoLimpio,
 } from './reservas.ts';
 
@@ -62,6 +67,27 @@ describe('las horas', () => {
     expect(esUnServicio({ nombre: 'Cena', desde: '20:10', hasta: '22:30' })).toBe(false);
     expect(esUnServicio({ nombre: 'Cena', desde: '23:00', hasta: '22:30' })).toBe(false);
     expect(esUnServicio({ nombre: '', desde: '20:00', hasta: '22:30' })).toBe(false);
+  });
+
+  it('los días que abre: sin decirlo, todos; cerrado lunes, el lunes no hay', () => {
+    const cena = { nombre: 'Cena', desde: '20:00', hasta: '22:30' };
+    const sinLunes = { ...cena, dias: [0, 2, 3, 4, 5, 6] };
+    expect(esUnServicio(sinLunes)).toBe(true);
+    expect(esUnServicio({ ...cena, dias: [] })).toBe(false);
+    expect(esUnServicio({ ...cena, dias: [1, 1] })).toBe(false);
+    expect(esUnServicio({ ...cena, dias: [7] })).toBe(false);
+    // El 30-nov-2026 es lunes y el 1-dic, martes.
+    expect(abreEseDia(cena, '2026-11-30')).toBe(true);
+    expect(abreEseDia(sinLunes, '2026-11-30')).toBe(false);
+    expect(abreEseDia(sinLunes, '2026-12-01')).toBe(true);
+    // Comida de martes a domingo y cena solo el fin de semana: abre de martes a domingo.
+    expect(
+      losDiasQueAbre([
+        { ...cena, nombre: 'Comida', dias: [0, 2, 3, 4, 5, 6] },
+        { ...cena, dias: [5, 6] },
+      ]),
+    ).toEqual([0, 2, 3, 4, 5, 6]);
+    expect(losDiasQueAbre([cena])).toEqual([0, 1, 2, 3, 4, 5, 6]);
   });
 });
 
@@ -121,5 +147,25 @@ describe('lo demás', () => {
     expect(lasMesasEnLetra(['8', '7'])).toBe('7 + 8');
     expect(telefonoLimpio('600 12 34 56')).toBe('600123456');
     expect(telefonoLimpio('+34 600-123-456')).toBe('+34600123456');
+  });
+});
+
+describe('la web de reservas (5 · 2)', () => {
+  it('la dirección de reservar, y nada más', () => {
+    expect(laReservaDeLaDireccion('/reservar/IKATZ')).toEqual({ direccion: 'ikatz' });
+    expect(laReservaDeLaDireccion('/reservar/bar-centro/')).toEqual({ direccion: 'bar-centro' });
+    expect(laReservaDeLaDireccion('/reservar/')).toBeNull();
+    expect(laReservaDeLaDireccion('/carta/ikatz')).toBeNull();
+  });
+
+  it('el código, siempre de 4 cifras', () => {
+    expect(elCodigoDeLaReserva(0)).toBe('0000');
+    expect(elCodigoDeLaReserva(0.4821)).toBe('4821');
+    expect(elCodigoDeLaReserva(0.99999)).toBe('9999');
+  });
+
+  it('se confirma hasta X minutos antes de la hora, no desde que se reserva', () => {
+    const a_las_2115 = new Date('2026-11-28T20:15:00Z');
+    expect(hastaCuandoConfirmar(a_las_2115, 30).toISOString()).toBe('2026-11-28T19:45:00.000Z');
   });
 });

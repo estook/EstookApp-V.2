@@ -63,6 +63,17 @@ export function Privacidad() {
         </p>
       </Apartado>
 
+      <Apartado titulo="Los datos de quien reserva o pide su factura">
+        <p>
+          Cuando alguien reserva en la web de reservas de un local o pide allí su factura, lo que
+          escribe (su nombre, su teléfono, su correo y lo que quiera contar al local) es de ese
+          local: el local es el responsable y Estook lo trata por su encargo, solo para esa reserva
+          o esa factura. Solo se le escribe por lo suyo; las novedades y ofertas del local, solo si
+          marca su casilla. Esas páginas no usan cookies ni guardan nada en el navegador, y la
+          dirección IP solo se usa para limitar los intentos de la última hora.
+        </p>
+      </Apartado>
+
       <Apartado titulo="Quién nos ayuda a darte el servicio">
         <p>Usamos estos proveedores, cada uno solo para lo suyo:</p>
         <Lista>

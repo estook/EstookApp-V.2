@@ -26,6 +26,8 @@ export interface MesaDibujada {
   /** Si se estiró a mano: «Volver al tamaño de 4 plazas» lo quita. */
   readonly estirada: boolean;
   readonly giro: number;
+  /** Si sale en la web de reservas (la Ampliación 5 · 2, 0153). */
+  readonly porInternet: boolean;
 }
 
 export interface CosaDibujada {
@@ -58,6 +60,7 @@ interface FilaDeMesa {
   ancho: number | null;
   fondo: number | null;
   giro: number;
+  por_internet: boolean;
 }
 
 /** Las salas del local con lo dibujado en cada una, en el orden de sus pestañas. */
@@ -72,7 +75,8 @@ export async function lasSalasDibujadas(
        order by orden, nombre
     `,
     contexto.sql<FilaDeMesa[]>`
-      select id::text as id, zona_id::text as zona_id, nombre, plazas, forma, x, y, ancho, fondo, giro
+      select id::text as id, zona_id::text as zona_id, nombre, plazas, forma, x, y, ancho, fondo, giro,
+             por_internet
         from estook.mesa
        where local_id = ${localId}::uuid and archivada_en is null
        order by nombre
@@ -129,6 +133,7 @@ function laMesaDibujada(m: FilaDeMesa): MesaDibujada {
     fondo: m.fondo ?? propio.fondo,
     estirada: m.ancho !== null || m.fondo !== null,
     giro: m.giro,
+    porInternet: m.por_internet,
   };
 }
 

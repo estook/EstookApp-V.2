@@ -3605,6 +3605,14 @@ motor de reservas (`reservas.ts`), la restricción de exclusión que impide dos 
 que se juntan. Las pruebas: `reservas.prueba.ts`, `las-reservas.prueba.ts` contra la base (dos aparatos a la vez) y
 `logica.prueba.ts` del TPV.
 
+### La Ampliación 5 · 2 · La web de reservas y los correos
+
+_26 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), sección 20 (migración 0133): la web de
+reservas de cada local (`apps/carta/src/Reservar.tsx`, en `estook.com/reservar/<dirección>`), sus siete operaciones sin
+sesión (`comandos/reservar-en-la-web.ts`), los correos (`correos-de-reservas.ts`), el reloj que cancela la que no se
+confirma y manda el recordatorio, y en el TPV las mesas que salen por internet, el enlace para copiar y los avisos de
+la que se cancela. La prueba: `la-web-de-reservas.prueba.ts`, contra la base.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

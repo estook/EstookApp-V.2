@@ -1,6 +1,6 @@
 # Pasos · La Ampliación 5 · 2 · La web de reservas
 
-> Lo que hay que probar después de fusionar, **migrar la 0133** y **desplegar la API** (antes, la 5 · 1 y su 0132).
+> Lo que hay que probar después de fusionar, **migrar** (de la 0132 a la 0134) y **desplegar la API**.
 > La decisión, en la [0153](../decisiones/0153-la-ampliacion.md), secciones 6 y 20. Cuando acabes, di en el chat «la
 > 42, bien» o en qué paso falla.
 

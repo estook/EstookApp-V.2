@@ -24,14 +24,10 @@ alter table estook.ajuste_de_reservas
   add column avisar_por_correo      boolean   not null default false,
   add column pedir_que_confirmen    boolean   not null default false,
   add column minutos_para_confirmar smallint  not null default 30,
-  add column antelacion_web         smallint  not null default 120,
-  add constraint ajuste_de_reservas_minutos_para_confirmar check (minutos_para_confirmar between 15 and 60),
-  add constraint ajuste_de_reservas_antelacion_web check (antelacion_web in (15, 30, 60, 120, 240, 1440));
+  add constraint ajuste_de_reservas_minutos_para_confirmar check (minutos_para_confirmar between 15 and 60);
 
 comment on column estook.ajuste_de_reservas.avisar_por_correo is
   'Al cliente que reserva: el correo con su reserva, el recordatorio del día antes y «Avísame si se libera» (0153). Apagado de fábrica.';
-comment on column estook.ajuste_de_reservas.antelacion_web is
-  'Hasta cuántos minutos antes de la hora se reserva por la web: lo elige cada local (Richi, 26-nov: «¿y si ellos sí lo permiten?»). Dos horas de fábrica, como la maqueta.';
 comment on column estook.ajuste_de_reservas.pedir_que_confirmen is
   'Si no confirma `minutos_para_confirmar` antes de la hora, la reserva se cancela sola y la mesa queda libre (0153). Apagado de fábrica.';
 

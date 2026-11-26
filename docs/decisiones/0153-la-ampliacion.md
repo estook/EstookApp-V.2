@@ -636,8 +636,9 @@ sorpresas: si la mesa está reservada, te lo dice»).
 
 ## 20 · Lo que se construyó en la Ampliación 5 · 2 · La web de reservas y los correos (26-nov)
 
-Migración **0133**. Lo que pide la sección 6 para la web, con las respuestas de Richi del 24-nov (preguntas 3, 4 y 9) y
-lo que pidió el 26-nov al verla (puntos 10 a 13 de la sección 9).
+Migraciones **0133** (#209) y **0134** (hasta cuánto antes, lo que pidió Richi al verla, en su propio PR). Lo que pide
+la sección 6 para la web, con las respuestas de Richi del 24-nov (preguntas 3, 4 y 9) y lo que pidió el 26-nov al verla
+(puntos 10 a 13 de la sección 9).
 
 - **La web, `estook.com/reservar/<dirección>`**: la misma dirección que su carta. En una sola página: **cuántos sois**
   (de 1 a 12), **el día** (dos semanas a la vista y «Otro día», hasta dos meses; si hoy ya es tarde, abre en el

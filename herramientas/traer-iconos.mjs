@@ -261,6 +261,11 @@ const ICONOS = {
   'tree-palm': 'Palmera',
   'id-card': 'Ficha',
   briefcase: 'Maletin',
+  // La Ampliación 4 · 3 (0153): el calendario del equipo, cada tipo con su icono (Richi, 24-nov).
+  sparkles: 'Limpieza',
+  'shield-check': 'Inspeccion',
+  'graduation-cap': 'Formacion',
+  'sticky-note': 'Nota',
 };
 
 async function traer(nombre) {

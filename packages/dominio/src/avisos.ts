@@ -76,6 +76,9 @@ export const TIPOS_DE_AVISO = [
   // ── La Ampliación 4 · 2 (decisión 0153) ─────────────────────────────────
   'vacaciones.pedidas',
   'vacaciones.respondidas',
+  // ── La Ampliación 4 · 3 (decisión 0153) ─────────────────────────────────
+  'calendario.recordatorio',
+  'calendario.nota',
 ] as const;
 
 export type TipoDeAviso = (typeof TIPOS_DE_AVISO)[number];
@@ -468,6 +471,26 @@ export const COMO_ES_EL_AVISO: Readonly<Record<TipoDeAviso, ComoEsElAviso>> = {
   'vacaciones.respondidas': {
     nombre: 'Te responden a tus vacaciones',
     explica: 'Cuando te aprueban, te rechazan o te proponen otras fechas para tus vacaciones.',
+    grupo: 'Equipo',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: true,
+  },
+  // El calendario del equipo (la Ampliación 4 · 3, 0153): el día de lo que ponen el gerente y los
+  // jefes, a la hora de su aviso y cada día si dura varios; y las notas de cada uno, a quien la
+  // apuntó. A la campana y al móvil, como todo lo del equipo.
+  'calendario.recordatorio': {
+    nombre: 'Lo del calendario del equipo',
+    explica:
+      'El día de una limpieza, una inspección o una formación que te toca, a la hora de su aviso.',
+    grupo: 'Equipo',
+    deTuEquipo: false,
+    correoDeFabrica: false,
+    movilDeFabrica: true,
+  },
+  'calendario.nota': {
+    nombre: 'Tus notas',
+    explica: 'El aviso de una nota tuya del Calendario, el día y a la hora que pusiste.',
     grupo: 'Equipo',
     deTuEquipo: false,
     correoDeFabrica: false,
@@ -977,6 +1000,32 @@ export function avisoDeFichajeSinApuntar(
  * «Tu nómina de noviembre ya está» (la Ampliación 3 · 2, 0153). Sin importes: el aviso sale
  * en la pantalla del móvil, que ve cualquiera que esté al lado.
  */
+/**
+ * «Hoy: Limpieza a fondo» (el calendario del equipo, 0153). El detalle dice la hora y, si dura
+ * varios días, cuál es: «A las 9:00 · día 2 de 3 · solo cocina».
+ */
+export function avisoDeRecordatorio(
+  titulo: string,
+  datos: {
+    readonly desde: string | null;
+    readonly diaDe: number;
+    readonly dias: number;
+    readonly para: 'Todos' | 'Solo sala' | 'Solo cocina';
+  },
+): LoQueDiceUnAviso {
+  const partes = [
+    datos.desde === null ? 'Todo el día' : `A las ${datos.desde.replace(/^0(\d)/, '$1')}`,
+    ...(datos.dias > 1 ? [`día ${String(datos.diaDe)} de ${String(datos.dias)}`] : []),
+    datos.para === 'Todos' ? 'para todos' : datos.para.toLowerCase(),
+  ];
+  return { titulo: `Hoy: ${titulo}`, detalle: partes.join(' · ') };
+}
+
+/** «Tu nota: Recoger el uniforme nuevo» (solo a quien la apuntó). */
+export function avisoDeTuNota(texto: string): LoQueDiceUnAviso {
+  return { titulo: `Tu nota: ${texto}`, detalle: 'La tienes en Calendario › Personal.' };
+}
+
 /** «Ane pide vacaciones del 2 al 8 de diciembre» (a quien las gestiona). */
 export function avisoDeVacacionesPedidas(
   nombre: string,

@@ -78,6 +78,15 @@
     --degradado-resto: linear-gradient(135deg, #7a5af0 0%, #6744e0 55%, #5433c4 100%);
     --degradado-fogon: linear-gradient(120deg, #c4470b 0%, #c2255c 50%, #6741d9 100%);
     /*
+     * **El calendario del equipo** (la Ampliación 4 · 3, 0153; maqueta, «Los colores, iguales en
+     * todas partes»): las limpiezas van en el turquesa del historial, las inspecciones en el coral
+     * de las incidencias, la formación y los avisos en rosa, y las notas de cada uno en amarillo,
+     * con su texto oscuro como la cocina.
+     */
+    --degradado-formacion: linear-gradient(135deg, #d0306f 0%, #c02470 55%, #9e1a63 100%);
+    --degradado-nota: linear-gradient(135deg, #ffe27a 0%, #ffd04a 55%, #f5b800 100%);
+    --texto-sobre-nota: #3a2c00;
+    /*
      * **El color base de cada degradado**: su tono más claro, que es donde va el texto (arriba a
      * la izquierda). Va debajo del degradado (`fondoDegradado`): es el fondo «de verdad» del texto
      * para quien lo mide, y lo que se ve si un navegador no pinta el degradado.
@@ -92,6 +101,8 @@
     --base-cocina: #ffd36e;
     --base-resto: #7a5af0;
     --base-fogon: #c4470b;
+    --base-formacion: #d0306f;
+    --base-nota: #ffe27a;
     --sombra-baldosa: 0 12px 24px -16px rgba(17, 28, 31, 0.65);
   }
 

@@ -532,6 +532,22 @@ export type {
 
 // ── M7 · el Calendario · los módulos publican, el Calendario pinta ───────────
 export { CAPAS, NOMBRE_DE_LA_CAPA, APP_DE_LA_CAPA, esCapa, desplegar } from './calendario.ts';
+export {
+  TIPOS_DE_RECORDATORIO,
+  esTipoDeRecordatorio,
+  NOMBRE_DEL_RECORDATORIO,
+  CAPA_DEL_RECORDATORIO,
+  PARA_QUIEN,
+  ROLES_PARA,
+  paraQuienDe,
+  PARA_QUIEN_EN_LETRA,
+  leToca,
+  cuantosDiasDura,
+  moverloAl,
+  caeEn,
+  comoAvisa,
+} from './calendario-del-equipo.ts';
+export type { TipoDeRecordatorio, ParaQuien } from './calendario-del-equipo.ts';
 export type { Capa, EventoGuardado, Ocurrencia } from './calendario.ts';
 
 // ── M7 · repaso · el IVA de compra, cómo se compra y el precio que se lee ────
@@ -887,6 +903,8 @@ export {
   avisoDeNominaSubida,
   avisoDeVacacionesPedidas,
   avisoDeVacacionesRespondidas,
+  avisoDeRecordatorio,
+  avisoDeTuNota,
   avisoDeConfirmar,
   avisoDeFichajeCorregido,
   avisoDeFichajeSinApuntar,

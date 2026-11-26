@@ -543,6 +543,43 @@ para esa petición, y la próxima vez manda otra vez el horario si lo hay; (2) l
 la pantalla dice que, si cae uno, se diga a quien las aprueba; (3) lo de algunos convenios provinciales de no
 empezar las vacaciones en un día de descanso no se construye: depende de cada convenio.
 
+## 18 · Lo que se construyó en la Ampliación 4 · 3 · El calendario del equipo (26-nov)
+
+Migración **0131**. Con la maqueta aprobada (pestaña 4: «Equipo en el móvil» y «En el PC, el mes entero y con
+sus capas»).
+
+- **Calendario › Equipo**: el gerente, los jefes y RRHH (quien edita el Calendario) ponen un día o un tramo
+  —una limpieza, una inspección, una formación o un aviso— **para todos, solo sala o solo cocina**, con o sin
+  hora, y con **aviso a la hora que se elija, cada día si dura varios**. El resto del equipo ve los que le
+  tocan: lo de cocina no le sale a la sala, y lo filtra la base (son avisos del Calendario con sus roles, la
+  capa `aviso` de la 0032).
+- **En el PC**, el mes con una píldora de color por cosa (lo de varios días, como una banda), la barra de la
+  izquierda con el mes pequeño, las capas con cuántas hay y «Próximos», Mes, Semana y Día, «Hoy», y
+  **arrastrar una píldora a otro día la mueve** (dura lo mismo). **En el móvil**, el mes con puntos de color,
+  el día tocado debajo en tarjetas, «Próximos» y el «+».
+- **Se abre en Equipo** para quien lo edita y **en Personal** para el resto (`entraQuienEdita`).
+- **Personal › «Tus notas y lo que viene»**: las notas de cada uno, en amarillo, con aviso si se quiere, que
+  **no ve nadie más, tampoco el gerente** (`nota_personal`, solo su dueño); y junto a ellas lo del equipo que le
+  toca en las dos semanas que vienen.
+- **Los avisos**: «Lo del calendario del equipo» y «Tus notas», a la campana y al móvil. El reloj los apunta cada
+  hora y, al llegar la hora, **vuelve a mirar** si sigue en pie (si se quitó o se movió, ya no avisa). Al
+  ponerlo, si el aviso cae antes del próximo latido, se apunta ya.
+- **Los colores** de la maqueta: limpiezas en turquesa, inspecciones en coral, formación y avisos en rosa
+  (nuevo), notas en amarillo con su texto oscuro (nuevo); los dos pasan la prueba de contraste.
+
+**Lo que decidió la IA al construirla**, para que Richi lo sepa:
+
+1. **La formación y los avisos van en la misma capa** («Formación y avisos», en rosa), como en la maqueta; las
+   reservas de grupo (violeta) llegarán con la Ampliación 5.
+2. **Un recordatorio dura un mes como mucho**, y no se ponen en días ya pasados.
+3. **El aviso de un recordatorio de varios días** sale una vez cada día, a la misma hora, y dice cuál es («día 2
+   de 3»).
+4. **Las notas son de un día**, con o sin hora de aviso; no se repiten.
+5. **Quien gestiona las vacaciones las pone desde Propuestas**, no desde Equipo: las vacaciones no salen en
+   Equipo (Richi, 24-nov) y así no hay dos sitios para lo mismo.
+6. **Lo que no entra todavía** (Plan, M14): las recurrencias, la suscripción de calendario, «solo lo mío» y la
+   historia del Tablón por días.
+
 ## 12 · Lo que se toca en los documentos
 
 - **Plan:** la cabecera de D con la Ampliación; las fichas de M13 y M14 con lo de Richi; la ficha

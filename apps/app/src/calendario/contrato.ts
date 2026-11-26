@@ -1,4 +1,10 @@
-import type { DiaDeLaSemana, SaldoDeVacaciones, VacacionesEn } from '@estook/dominio';
+import type {
+  DiaDeLaSemana,
+  ParaQuien,
+  SaldoDeVacaciones,
+  TipoDeRecordatorio,
+  VacacionesEn,
+} from '@estook/dominio';
 import type { Zona } from '../horario/contrato.ts';
 
 /**
@@ -78,4 +84,38 @@ export interface LasVacacionesDelEquipo {
     readonly vacacionesEn: VacacionesEn;
     readonly libra: SusDiasLibres | null;
   }[];
+}
+
+/** Un recordatorio del calendario del equipo (la Ampliación 4 · 3, 0153), tal cual lo da el servidor. */
+export interface UnRecordatorio {
+  readonly id: string;
+  readonly titulo: string;
+  readonly tipo: TipoDeRecordatorio;
+  readonly para: ParaQuien;
+  readonly dia: string;
+  readonly hastaEl: string | null;
+  readonly desde: string | null;
+  readonly avisaA: string | null;
+  readonly detalle: string | null;
+  readonly puestoPor: string | null;
+}
+
+export interface ElCalendarioDelEquipo {
+  readonly hoy: string;
+  readonly proximos: readonly UnRecordatorio[];
+  readonly puedePoner: boolean;
+  readonly recordatorios: readonly UnRecordatorio[];
+}
+
+export interface UnaNota {
+  readonly id: string;
+  readonly dia: string;
+  readonly texto: string;
+  readonly avisaA: string | null;
+}
+
+export interface MisNotas {
+  readonly hoy: string;
+  readonly notas: readonly UnaNota[];
+  readonly delEquipo: readonly UnRecordatorio[];
 }

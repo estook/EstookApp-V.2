@@ -17,12 +17,13 @@ import { usarLectura } from '../ganchos/usarLectura.ts';
 import { Baldosa } from '../equipo/ficha/Baldosas.tsx';
 import { comoSeLeenMinutos, type UnaPersona } from '../equipo/contrato.ts';
 import { PedirVacaciones } from './PedirVacaciones.tsx';
+import { TusNotas } from './TusNotas.tsx';
 import type { EstadoDeLaSolicitud, MisVacaciones, UnaSolicitud } from './contrato.ts';
 
 /**
  * Calendario › Personal (la Ampliación 4 · 2, 0153; maqueta, «Lo tuyo, en una pantalla que da gusto
  * abrir»). Lo de cada uno: **sus vacaciones** (lo que le queda, con la barra del año), **sus horas**,
- * **«Pedir vacaciones»** y sus peticiones con cómo van. **Si le proponen otras fechas, una tarjeta
+ * **«Pedir vacaciones»**, sus notas y lo del equipo que le toca (4 · 3), y sus peticiones con cómo van. **Si le proponen otras fechas, una tarjeta
  * azul arriba del todo** con Aceptar, Otras fechas y Rechazar (Richi, pregunta 8).
  */
 
@@ -259,6 +260,8 @@ export function Personal() {
             : `Puedes pedir ${diasEnLetra(Math.max(datos.sePuedenPedir, 0))} ${datos.vacacionesEn === 'naturales' ? 'días naturales' : 'días laborables'}.`}
         </span>
       </div>
+
+      <TusNotas />
 
       <section className="flex flex-col gap-e2">
         <h2 className="text-seccion font-semibold">Tus vacaciones</h2>

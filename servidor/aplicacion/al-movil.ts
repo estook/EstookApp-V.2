@@ -11,6 +11,11 @@ import {
   vistaPrevia,
   avisoDeCaducidad,
   avisoDeEntrasEnUnRato,
+  avisoDeTuNota,
+  avisoDeRecordatorio,
+  leToca,
+  PARA_QUIEN_EN_LETRA,
+  paraQuienDe,
   avisoDePedidoQueNoLlega,
   cuandoPuedeSonar,
   esCuandoSuena,
@@ -883,7 +888,126 @@ export async function programarLoDelMovil(
     await apuntar(p.local_id, null, 'pedido.no_llega', p.pedido_id, new Date(p.avisa_en));
   }
 
+  // El calendario del equipo (0131): cada recordatorio, a su hora de cada día; y las notas.
+  apuntados += await apuntarLoDelCalendario(contexto, desde, hasta, { deCuentas });
+
   return apuntados;
+}
+
+// ── El calendario del equipo (la Ampliación 4 · 3, 0131) ─────────────────────
+
+interface LoQueAvisaElCalendario {
+  readonly clase: 'recordatorio' | 'nota';
+  readonly id: string;
+  readonly local_id: string;
+  readonly organizacion_id: string;
+  readonly persona_id: string | null;
+  readonly dia: string;
+  readonly dia_de: number;
+  readonly dias: number;
+  readonly titulo: string;
+  readonly roles: string | null;
+  readonly desde: string | null;
+  readonly avisa_en: Date;
+}
+
+async function loQueAvisaElCalendario(
+  contexto: Contexto,
+  desde: Date,
+  hasta: Date,
+  uno?: { readonly id: string; readonly dia: string },
+): Promise<LoQueAvisaElCalendario[]> {
+  return contexto.sql<LoQueAvisaElCalendario[]>`
+    select clase, id::text as id, local_id::text as local_id,
+           organizacion_id::text as organizacion_id, persona_id::text as persona_id,
+           to_char(dia, 'YYYY-MM-DD') as dia, dia_de, dias, titulo,
+           array_to_string(roles, ',') as roles, desde, avisa_en
+      from estook.lo_que_avisa_el_calendario(
+        ${desde.toISOString()}::timestamptz, ${hasta.toISOString()}::timestamptz,
+        ${uno?.id ?? null}::uuid, ${uno?.dia ?? null}::date
+      )
+  `;
+}
+
+/**
+ * Apunta los avisos del calendario que tocan entre dos instantes: uno por recordatorio y día, y
+ * uno por nota. Ya dentro del sistema. Con `soloDe`, solo los de ese recordatorio o esa nota: es
+ * lo que se hace al ponerlo, por si su aviso cae antes del latido siguiente.
+ */
+export async function apuntarLoDelCalendario(
+  contexto: Contexto,
+  desde: Date,
+  hasta: Date,
+  filtro: { readonly deCuentas?: ReadonlySet<string>; readonly soloDe?: string },
+): Promise<number> {
+  let apuntados = 0;
+  for (const f of await loQueAvisaElCalendario(contexto, desde, hasta)) {
+    if (filtro.soloDe !== undefined && f.id !== filtro.soloDe) continue;
+    if (filtro.deCuentas !== undefined && !filtro.deCuentas.has(f.organizacion_id)) continue;
+    const tipo = f.clase === 'nota' ? 'calendario.nota' : 'calendario.recordatorio';
+    const filas = await contexto.sql<{ id: string }[]>`
+      insert into estook.al_movil_programado (local_id, persona_id, tipo, clave, cuando)
+      values (${f.local_id}, ${f.persona_id}, ${tipo}, ${`${f.id}:${f.dia}`},
+              ${new Date(f.avisa_en).toISOString()}::timestamptz)
+      on conflict (tipo, clave) do nothing
+      returning id::text as id
+    `;
+    apuntados += filas.length;
+  }
+  return apuntados;
+}
+
+/**
+ * Al llegar su hora: **se vuelve a leer**, por si se quitó, se movió de día o se le quitó el
+ * aviso. El recordatorio, a quien le toca por sus roles; la nota, a quien la apuntó.
+ */
+async function loDelCalendario(contexto: Contexto, p: Programado): Promise<number> {
+  const corte = p.clave.lastIndexOf(':');
+  const id = p.clave.slice(0, corte);
+  const dia = p.clave.slice(corte + 1);
+  const [f] = await loQueAvisaElCalendario(contexto, contexto.ahora, contexto.ahora, { id, dia });
+  if (f === undefined) return 0;
+  const roles = f.roles === null || f.roles === '' ? null : f.roles.split(',');
+  if (f.clase === 'nota') {
+    const ella = (await aQuien(contexto, f.local_id, 'calendario.nota')).filter(
+      (q) => q.personaId === f.persona_id,
+    );
+    return avisar(
+      contexto,
+      {
+        tipo: 'calendario.nota',
+        organizacionId: f.organizacion_id,
+        localId: f.local_id,
+        clave: p.clave,
+        texto: () => avisoDeTuNota(f.titulo),
+        ir: '/calendario/calendario/personal',
+        quien: null,
+      },
+      ella,
+    );
+  }
+  const quien = (await aQuien(contexto, f.local_id, 'calendario.recordatorio')).filter((q) =>
+    leToca(roles, q.rol),
+  );
+  return avisar(
+    contexto,
+    {
+      tipo: 'calendario.recordatorio',
+      organizacionId: f.organizacion_id,
+      localId: f.local_id,
+      clave: p.clave,
+      texto: () =>
+        avisoDeRecordatorio(f.titulo, {
+          desde: f.desde,
+          diaDe: f.dia_de,
+          dias: f.dias,
+          para: PARA_QUIEN_EN_LETRA[paraQuienDe(roles)] as 'Todos' | 'Solo sala' | 'Solo cocina',
+        }),
+      ir: '/calendario/calendario/equipo',
+      quien: null,
+    },
+    quien,
+  );
 }
 
 // ── 3 · Hacerlo cuando llega su hora ─────────────────────────────────────────
@@ -938,7 +1062,13 @@ interface Programado {
   readonly id: string;
   readonly local_id: string;
   readonly persona_id: string | null;
-  readonly tipo: 'turno.entras' | 'lote.caduca' | 'pedido.no_llega' | 'chat.confirmar';
+  readonly tipo:
+    | 'turno.entras'
+    | 'lote.caduca'
+    | 'pedido.no_llega'
+    | 'chat.confirmar'
+    | 'calendario.recordatorio'
+    | 'calendario.nota';
   readonly clave: string;
   readonly cuando: Date;
   readonly organizacion_id: string;
@@ -1152,7 +1282,9 @@ export async function hacerLoProgramado(contexto: Contexto): Promise<number> {
             ? (c: Contexto) => loQueCaduca(c, programado)
             : p.tipo === 'chat.confirmar'
               ? (c: Contexto) => recordarQueConfirme(c, programado)
-              : (c: Contexto) => elPedidoQueNoLlega(c, programado);
+              : p.tipo === 'calendario.recordatorio' || p.tipo === 'calendario.nota'
+                ? (c: Contexto) => loDelCalendario(c, programado)
+                : (c: Contexto) => elPedidoQueNoLlega(c, programado);
       const hecho = await aparte(contexto, `avisar al móvil (${p.tipo})`, hacer);
       if (hecho !== null) hechos += hecho;
     }

@@ -177,6 +177,17 @@ import {
   losAjustesDeReservasConsulta,
 } from './consultas/reservas.ts';
 import {
+  buscarAlCliente,
+  laFichaDelClienteConsulta,
+  losClientesDelLocal,
+} from './consultas/clientes-del-local.ts';
+import {
+  borrarAlCliente,
+  guardarAlCliente,
+  ponerEnEspera,
+  quitarDeEspera,
+} from './comandos/clientes-del-local.ts';
+import {
   avisameSiSeLibera,
   cancelarMiReserva,
   confirmarMiReserva,
@@ -795,6 +806,10 @@ export const catalogo = {
     [lasReservas.nombre]: lasReservas,
     [horasParaReservar.nombre]: horasParaReservar,
     [losAjustesDeReservasConsulta.nombre]: losAjustesDeReservasConsulta,
+    // La Ampliación 5 · 3 (0153): los clientes de cada local, por su teléfono.
+    [laFichaDelClienteConsulta.nombre]: laFichaDelClienteConsulta,
+    [buscarAlCliente.nombre]: buscarAlCliente,
+    [losClientesDelLocal.nombre]: losClientesDelLocal,
     // La Ampliación 5 · 2 (0153): la web de reservas de cada local, sin sesión.
     [laWebDeReservas.nombre]: laWebDeReservas,
     [horasEnLaWeb.nombre]: horasEnLaWeb,
@@ -992,6 +1007,11 @@ export const catalogo = {
     [cancelarReserva.nombre]: cancelarReserva,
     [guardarAjustesDeReservas.nombre]: guardarAjustesDeReservas,
     [juntarMesasParaReservas.nombre]: juntarMesasParaReservas,
+    // La Ampliación 5 · 3 (0153): los clientes y la lista de espera.
+    [guardarAlCliente.nombre]: guardarAlCliente,
+    [borrarAlCliente.nombre]: borrarAlCliente,
+    [ponerEnEspera.nombre]: ponerEnEspera,
+    [quitarDeEspera.nombre]: quitarDeEspera,
     // La Ampliación 5 · 2 (0153): reservar, buscar, confirmar y cancelar en la web, y «Avísame».
     [reservarEnLaWeb.nombre]: reservarEnLaWeb,
     [miReservaEnLaWeb.nombre]: miReservaEnLaWeb,

@@ -13,16 +13,23 @@ import {
 } from '@estook/ui';
 import {
   IconoAvisos,
+  IconoEquipo,
   IconoFormacion,
   IconoInspeccion,
   IconoLimpieza,
   IconoNota,
 } from '@estook/iconos';
-import { PARA_QUIEN_EN_LETRA, type TipoDeRecordatorio } from '@estook/dominio';
+import { PARA_QUIEN_EN_LETRA } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
-import type { MisNotas, UnaNota, UnRecordatorio } from './contrato.ts';
+import {
+  lasReservasEnElCalendario,
+  type MisNotas,
+  type TipoEnElCalendario,
+  type UnaNota,
+  type UnRecordatorio,
+} from './contrato.ts';
 
 /**
  * Tus notas y lo que viene, en Calendario › Personal (la Ampliación 4 · 3, 0153; maqueta, «Lo tuyo,
@@ -30,16 +37,18 @@ import type { MisNotas, UnaNota, UnRecordatorio } from './contrato.ts';
  *
  * **Las notas de cada uno, que no ve nadie más** (tampoco el gerente: lo dice la base), en amarillo,
  * con aviso a la hora que se quiera. Y junto a ellas, **lo del equipo que te toca** en las dos
- * semanas que vienen —la formación del jueves, la limpieza de la cocina—, con su color.
+ * semanas que vienen —la formación del jueves, la limpieza de la cocina—, con su color. Y las reservas
+ * de 12 o más (5 · 3), en violeta: la cocina abre aquí.
  */
 
 const DEL_EQUIPO: Readonly<
-  Record<TipoDeRecordatorio, { readonly degradado: NombreDeDegradado; readonly icono: ReactNode }>
+  Record<TipoEnElCalendario, { readonly degradado: NombreDeDegradado; readonly icono: ReactNode }>
 > = {
   limpieza: { degradado: 'historial', icono: <IconoLimpieza size={16} /> },
   inspeccion: { degradado: 'incidencias', icono: <IconoInspeccion size={16} /> },
   formacion: { degradado: 'formacion', icono: <IconoFormacion size={16} /> },
   otro: { degradado: 'formacion', icono: <IconoAvisos size={16} /> },
+  reserva: { degradado: 'fechas', icono: <IconoEquipo size={16} /> },
 };
 
 function elDiaCorto(fecha: string, hoy: string): string {
@@ -74,7 +83,7 @@ export function TusNotas() {
   // Lo del equipo que dura varios días sale desde hoy, no desde que empezó.
   const lista: LoQueViene[] = [
     ...datos.notas.map((nota) => ({ clase: 'nota' as const, dia: nota.dia, nota })),
-    ...datos.delEquipo.map((recordatorio) => ({
+    ...[...datos.delEquipo, ...lasReservasEnElCalendario(datos.reservas)].map((recordatorio) => ({
       clase: 'equipo' as const,
       dia: recordatorio.dia < hoy ? hoy : recordatorio.dia,
       recordatorio,
@@ -160,7 +169,9 @@ export function TusNotas() {
               <span className="min-w-0 flex-1">
                 <strong className="block truncate text-cuerpo">{cosa.recordatorio.titulo}</strong>
                 <span className="text-secundario text-texto-suave">
-                  Del equipo · {PARA_QUIEN_EN_LETRA[cosa.recordatorio.para].toLowerCase()}
+                  {cosa.recordatorio.tipo === 'reserva'
+                    ? `Reserva de grupo${cosa.recordatorio.desde === null ? '' : ` · a las ${sinCero(cosa.recordatorio.desde)}`}`
+                    : `Del equipo · ${PARA_QUIEN_EN_LETRA[cosa.recordatorio.para].toLowerCase()}`}
                 </span>
               </span>
               <span className="shrink-0 text-right text-secundario">

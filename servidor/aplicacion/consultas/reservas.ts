@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { ServicioDeReservas } from '@estook/dominio';
 import { consulta, FalloDeAplicacion } from '../contrato.ts';
 import { elLocalDelServicio } from '../sala.ts';
+import { lasMarcasDeLosClientes, type LasMarcasDelCliente } from '../clientes-del-local.ts';
 import {
   hoyEnElLocal,
   lasDuraciones,
@@ -51,6 +52,21 @@ export interface UnaReserva {
   /** Quién la canceló y cuándo: el TPV avisa de la que se canceló sola o canceló el cliente. */
   readonly canceladaPor: 'local' | 'cliente' | 'sin_confirmar' | null;
   readonly canceladaEn: string | null;
+  /**
+   * Su cliente, por su teléfono (5 · 3): lo que importa en servicio (VIP, habitual, sus alergias, las
+   * veces que no vino). Nulo en una reserva de un cliente borrado.
+   */
+  readonly cliente: LasMarcasDelCliente | null;
+}
+
+/** «En espera» (5 · 3): quien llega sin reservar y espera mesa. Solo las de hoy. */
+export interface UnoEnEspera {
+  readonly id: string;
+  readonly nombre: string;
+  readonly comensales: number;
+  readonly telefono: string | null;
+  readonly nota: string | null;
+  readonly llegoEn: string;
 }
 
 export interface LasReservas {
@@ -61,6 +77,8 @@ export interface LasReservas {
   readonly liberarTras: number;
   readonly servicios: readonly ServicioDeReservas[];
   readonly reservas: readonly UnaReserva[];
+  /** La lista de espera de ahora (vacía si el día no es hoy). */
+  readonly espera: readonly UnoEnEspera[];
 }
 
 export const lasReservas = consulta<{ dia?: string | undefined }, LasReservas>({
@@ -96,12 +114,13 @@ export const lasReservas = consulta<{ dia?: string | undefined }, LasReservas>({
             confirmada_en: Date | null;
             cancelada_por: UnaReserva['canceladaPor'];
             cancelada_en: Date | null;
+            cliente_id: string | null;
           }[]
         >`
           select r.id::text as id, to_char(r.hora, 'HH24:MI') as hora, r.empieza, r.acaba,
                  r.comensales, r.nombre, r.telefono, r.nota, r.origen, r.estado,
                  r.cuenta_id::text as cuenta_id, r.creada_en, r.creada_por::text as creada_por,
-                 r.confirmada_en, r.cancelada_por, r.cancelada_en,
+                 r.confirmada_en, r.cancelada_por, r.cancelada_en, r.cliente_id::text as cliente_id,
                  (select string_agg(m.id::text || ':' || m.nombre, '|' order by m.nombre)
                     from estook.reserva_de_mesa rm join estook.mesa m on m.id = rm.mesa_id
                    where rm.reserva_id = r.id) as mesas
@@ -111,6 +130,32 @@ export const lasReservas = consulta<{ dia?: string | undefined }, LasReservas>({
            limit 500
         `
       : [];
+    const marcas = await lasMarcasDeLosClientes(
+      contexto,
+      localId,
+      filas.flatMap((f) => (f.cliente_id === null ? [] : [f.cliente_id])),
+    );
+    // Quien espera ahora: lo de las últimas doce horas, por si alguien se queda sin quitar.
+    const espera =
+      ajustes.encendidas && dia === hoy
+        ? await contexto.sql<
+            {
+              id: string;
+              nombre: string;
+              comensales: number;
+              telefono: string | null;
+              nota: string | null;
+              llego_en: Date;
+            }[]
+          >`
+            select id::text as id, nombre, comensales, telefono, nota, llego_en
+              from estook.espera
+             where local_id = ${localId}::uuid and estado = 'esperando'
+               and llego_en > ${new Date(contexto.ahora.getTime() - 12 * 3_600_000).toISOString()}::timestamptz
+             order by llego_en
+             limit 100
+          `
+        : [];
     return {
       hoy,
       dia,
@@ -142,6 +187,15 @@ export const lasReservas = consulta<{ dia?: string | undefined }, LasReservas>({
         confirmada: f.confirmada_en !== null,
         canceladaPor: f.cancelada_por,
         canceladaEn: f.cancelada_en === null ? null : new Date(f.cancelada_en).toISOString(),
+        cliente: f.cliente_id === null ? null : (marcas.get(f.cliente_id) ?? null),
+      })),
+      espera: espera.map((e) => ({
+        id: e.id,
+        nombre: e.nombre,
+        comensales: e.comensales,
+        telefono: e.telefono,
+        nota: e.nota,
+        llegoEn: new Date(e.llego_en).toISOString(),
       })),
     };
   },

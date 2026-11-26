@@ -161,6 +161,9 @@ export function OpcionesDeLaMesa({
   const [texto, setTexto] = useState('');
   const alergias = cuenta.alergias ?? [];
   const [marcadas, setMarcadas] = useState<readonly string[]>(alergias);
+  // Guardarlas en la ficha de su cliente: solo con su sí (son datos de salud; Richi, 26-nov).
+  const [enSuFicha, setEnSuFicha] = useState(false);
+  const deSuReserva = cuenta.cliente ?? null;
   const esJefe = puedeEditar(yo.permisos, 'accion.quitar_de_cocina');
   const impresoras = usarLasImpresoras(usarAlSegundo());
   const [impreso, setImpreso] = useState<string | null>(null);
@@ -709,6 +712,24 @@ export function OpcionesDeLaMesa({
               );
             })}
           </div>
+          {deSuReserva !== null && marcadas.length > 0 && (
+            <label className="flex cursor-pointer items-center gap-e3 rounded-grande border border-borde bg-superficie p-e3">
+              <input
+                type="checkbox"
+                checked={enSuFicha}
+                onChange={(e) => {
+                  setEnSuFicha(e.target.checked);
+                }}
+                className="size-7 shrink-0 accent-naranja"
+              />
+              <span className="flex flex-col">
+                <span className="font-bold">Guardar en la ficha de {deSuReserva}</span>
+                <span className="text-secundario text-texto-suave">
+                  Pregúntale antes. La próxima vez que reserve, la mesa ya saldrá con su alergia.
+                </span>
+              </span>
+            </label>
+          )}
           <Botonera alVolver={volver}>
             <Boton
               tono="principal"
@@ -717,6 +738,9 @@ export function OpcionesDeLaMesa({
                 void hacer('cambiar_las_alergias', {
                   cuenta_id: cuenta.cuentaId,
                   alergenos: enSuOrden(marcadas),
+                  ...(deSuReserva !== null && enSuFicha && marcadas.length > 0
+                    ? { guardar_en_su_ficha: true }
+                    : {}),
                 });
               }}
             >

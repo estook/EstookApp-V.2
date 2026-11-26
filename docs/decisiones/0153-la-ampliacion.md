@@ -304,6 +304,19 @@ el color, en cada parte, en las pantallas que toque (sección 7).
     propia?»**: el código para ponerlas en su web, **eligiendo antes el color** para que encaje con su marca, sin logos
     y abajo solo «Reservas con estook.com».
 
+**26-nov, antes de la 5 · 3** (lo que no estaba claro de cómo trabaja un local, preguntado en llano; la sección 21 dice
+cómo quedó):
+
+14. **Sin «Cumpleaños»**: «que reserven normal, da igual si es cumpleaños o una reunión, al restaurante le da igual».
+15. **Sin la etiqueta «Grupo»** ni un número de grupo que elegir: «con saber los que vienen saben ya si son grupos o no;
+    son detalles que aumentan las cosas y letras para nada».
+16. **«Habitual» sale solo** con más de cinco visitas en menos de medio año; «si es innecesario se quita».
+17. **«No han venido» lo marca solo el camarero.** Y al acabar de reservar en la web, **un aviso que no se cierra hasta
+    pasados 3 o 4 segundos**, por puntos: que si tienen que cancelar, cancelen con tiempo; y, si el local pide que
+    confirmen, que confirmen X minutos antes, para que el restaurante no se colapse y se organice mejor.
+18. **Las alergias se guardan en la ficha solo si el cliente dice que sí** (la recomendada): son datos de salud (RGPD,
+    art. 9), y la maqueta las aprendía solas de la mesa.
+
 ## 10 · Lo que se construyó en la Ampliación 1 (25-nov)
 
 Con la maqueta aprobada («Aprobada, empieza», 24-nov), en `ampliacion-1-los-fallos`, **con la migración
@@ -702,6 +715,63 @@ la sección 6 para la web, con las respuestas de Richi del 24-nov (preguntas 3, 
     reservas siguen en el TPV; la web propia, en Estook.
 15. **La política de privacidad dice ya qué se hace con los datos de quien reserva o pide su factura**: el responsable es
     el local y Estook los trata por su encargo.
+
+## 21 · Lo que se construyó en la Ampliación 5 · 3 · Los clientes, la lista de espera y los que no vienen (27-nov)
+
+Migración **0135**, API 152/400. Lo que pide la sección 6 para los clientes y lo que la 5 · 1 dejó para aquí (sección
+19, punto 6), con las respuestas de Richi del 26-nov (puntos 14 a 18 de la sección 9).
+
+- **Cada reserva crea o encuentra a su cliente por su teléfono** (sus nueve últimas cifras, como la web): lo hace la base
+  al guardar la reserva, venga del TPV o de la web, y con las reservas que ya había se hicieron los suyos al migrar.
+  **Los clientes son de cada local** (`cliente_del_local`): otro local, aunque sea de la misma empresa, no los ve nunca;
+  lo dicen la base (las filas que ve cada uno) y la API (siempre con el local de la sesión).
+- **Su ficha se rellena sola**: las visitas (las reservas sentadas), la última, **lo que suele pedir** (los tres platos de
+  cocina que más piden sus mesas), las veces que **no vino** y el **gasto medio por persona** (lo que tomaron sus mesas
+  entre los que eran), este solo para quien ve las ventas. A mano, poco: **VIP**, una **nota** corta («trona») y **sus
+  alergias**.
+- **Las alergias, solo con su sí** (punto 18): en la mesa, al marcar la alergia, sale **«Guardar en la ficha de …»** sin
+  marcar («pregúntale antes»); en la ficha, lo mismo. **Las guardadas pasan solas a la mesa al sentarle**, en rojo en la
+  sala y en cocina, como si las hubiera marcado el camarero. El gluten dice también «celíaco».
+- **Las etiquetas**, junto al nombre en Reservas del TPV y de Estook: la alergia en rojo, **«2 sin venir»** en naranja,
+  **VIP** en violeta y **«Habitual»** en verde (más de cinco visitas en medio año, sola). Sin «Cumpleaños» ni «Grupo».
+- **«+ Reserva»**: con el teléfono entero, si ya ha reservado aquí sale su nombre, sus visitas y sus etiquetas (también
+  «2 sin venir»), y **«Poner «Ion Zabala»»** rellena el nombre.
+- **«En espera»** en Reservas del TPV (hoy): **«+ En espera»** con cuántos son, el nombre y, si quiere, el teléfono y una
+  nota; cada uno con lo que lleva esperando (en coral a los 20 minutos); **«Sentar»** abre una mesa libre con los que
+  son (primero las que caben con menos sillas vacías; **las que se reservan en menos de dos horas, al final y en
+  naranja con su hora**) y **«Se ha ido»**. Al segundo en todos los aparatos.
+- **Los que no vienen**: cuenta solo **«No han venido»** de la sala (punto 17). Y en la web, al acabar de reservar,
+  **«Gracias, … Una cosa antes de irte»**: 1 · si no podéis venir, cancelarla cuanto antes; 2 · (si el local pide que
+  confirmen) confírmala antes de las …, como muy tarde X minutos antes. **«Entendido» no se puede tocar en 4 segundos.**
+- **Calendario › Equipo**: las reservas de **12 o más** salen solas como **«Reserva de 14»** en violeta, con su capa
+  «Reservas de grupo» y en Próximos, **sin nombre ni teléfono**; no se mueven ni se cambian ahí. En Personal, en «Tus
+  notas y lo que viene», para la cocina.
+- **En Estook, Servicio › Reservas › Clientes**: todos los del local, los de la última visita primero, con buscador por
+  nombre o teléfono; su ficha, con VIP, alergias y nota; y **«Si te pide borrar sus datos»** (lo hace quien lleva los
+  Ajustes del TPV; también sin Pro, porque es un derecho del cliente).
+- Probado en `los-clientes-del-local.prueba.ts` (17 pruebas contra la base) y en `clientes-del-local.prueba.ts`.
+
+**Lo que decidió la IA al construirla**, para que Richi lo sepa:
+
+1. **«Más de cinco» es desde la sexta visita**, contada en los últimos 183 días.
+2. **«2 sin venir» no bloquea nada**: avisa al camarero al reservar y en la lista; la web no se lo dice al cliente.
+3. **Las reservas de 12 o más en el calendario**: el número de la 0153 (sección 5), fijo y sin ajuste (punto 15).
+4. **El gasto medio es por persona y con IVA**, con lo pedido en sus mesas cobradas (sin lo quitado); lo ve quien ve las
+   ventas, como el resto del dinero.
+5. **Lo que suele pedir son platos de cocina**: las bebidas no dicen nada de un cliente.
+6. **Al sentar una reserva, la mesa toma las alergias guardadas**; las que se marcan en la mesa se añaden a la ficha solo
+   con la casilla, y quitar una de la ficha se hace en la ficha.
+7. **El nombre del cliente es el de su última reserva**: si su pareja reserva con su teléfono, la reserva lleva el nombre
+   que dio, y la ficha, el último.
+8. **Borrar a un cliente**: fuera su ficha, y en sus reservas pasadas dejan de salir su nombre y su teléfono («Cliente
+   borrado»); si tiene una reserva por llegar, antes se cancela.
+9. **No se guarda a nadie para siempre** (RGPD, art. 5): el reloj borra cada hora la lista de espera de hace dos días y
+   **al cliente que lleva dos años sin reservar**. Sus reservas viejas se quedan, sin él.
+10. **«En espera» no apunta clientes**: es para quien llega sin reservar, y su teléfono, si lo da, solo sirve para
+    llamarle ese día.
+11. **Desde la 0119 toman nota todos, también la cocina**: los cocineros ven las reservas y los clientes como la sala. El
+    calendario usa una función aparte (sin nombre) porque lo ve también quien no lleva la sala.
+12. **El aviso «Antes de irte» sale una vez**, al reservar; no se guarda nada en el navegador para no repetirlo.
 
 ## 12 · Lo que se toca en los documentos
 

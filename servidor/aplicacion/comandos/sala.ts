@@ -147,6 +147,11 @@ export const entradaAbrirMesa = z
      * comensales si no se dicen otros, y la reserva pasa a «sentada».
      */
     reserva_id: id.optional(),
+    /**
+     * **Sentar a quien espera** (la Ampliación 5 · 3, 0153): la mesa se abre con los que son, y sale de
+     * la lista de espera.
+     */
+    espera_id: id.optional(),
   })
   .strict();
 export type EntradaAbrirMesa = z.infer<typeof entradaAbrirMesa>;
@@ -191,6 +196,11 @@ export const abrirMesa = comando<EntradaAbrirMesa, { cuentaId: string; yaEstaba:
     `;
     if (yaEstaba.length > 0) return { cuentaId: entrada.cuenta_id, yaEstaba: true };
 
+    if (entrada.espera_id !== undefined && entrada.reserva_id !== undefined) {
+      throw new FalloDeAplicacion('faltan_datos', {
+        porque: 'Se sienta una reserva o a quien espera, no las dos a la vez.',
+      });
+    }
     // Sentar una reserva: que sea de este local y siga esperando mesa.
     let deLaReserva: { comensales: number } | null = null;
     if (entrada.reserva_id !== undefined) {
@@ -217,6 +227,23 @@ export const abrirMesa = comando<EntradaAbrirMesa, { cuentaId: string; yaEstaba:
       }
       deLaReserva = { comensales: r.comensales };
     }
+    // Sentar a quien espera: que siga esperando en este local.
+    let deLaEspera: { comensales: number } | null = null;
+    if (entrada.espera_id !== undefined) {
+      const [e] = await contexto.sql<{ estado: string; comensales: number }[]>`
+        select estado, comensales from estook.espera
+         where id = ${entrada.espera_id}::uuid and local_id = ${localId}::uuid
+      `;
+      if (e === undefined) {
+        throw new FalloDeAplicacion('no_existe', { porque: 'No está en la lista de espera.' });
+      }
+      if (e.estado !== 'esperando') {
+        throw new FalloDeAplicacion('ya_hecho', {
+          porque: 'Ya no está esperando: abre la mesa sin la lista de espera.',
+        });
+      }
+      deLaEspera = { comensales: e.comensales };
+    }
 
     if (entrada.mesa_id !== undefined) {
       const mesa = await contexto.sql<{ id: string }[]>`
@@ -240,7 +267,7 @@ export const abrirMesa = comando<EntradaAbrirMesa, { cuentaId: string; yaEstaba:
       }
     }
 
-    const personas = entrada.personas ?? deLaReserva?.comensales ?? null;
+    const personas = entrada.personas ?? deLaReserva?.comensales ?? deLaEspera?.comensales ?? null;
     await contexto.sql`
       insert into estook.cuenta
         (id, local_id, tipo, mesa_id, nombre, personas, camarero_id, por_pases, abierta_en, abierta_por,
@@ -261,11 +288,32 @@ export const abrirMesa = comando<EntradaAbrirMesa, { cuentaId: string; yaEstaba:
                cuenta_id = ${entrada.cuenta_id}::uuid
          where id = ${entrada.reserva_id}::uuid
       `;
+      // **Su alergia, sola a la mesa** (5 · 3): la que guardó su cliente, con su sí, una vez anterior.
+      // Sale en rojo en la sala y en cocina como si la hubiera marcado el camarero ahora.
+      await contexto.sql`
+        insert into estook.alergeno_de_la_cuenta (cuenta_id, local_id, alergeno, marcado_por, marcado_en)
+        select ${entrada.cuenta_id}::uuid, ${localId}::uuid, a, ${contexto.personaId}::uuid,
+               ${contexto.ahora.toISOString()}::timestamptz
+          from estook.reserva r
+          join estook.cliente_del_local c on c.id = r.cliente_id
+         cross join unnest(c.alergenos) as a
+         where r.id = ${entrada.reserva_id}::uuid
+        on conflict (cuenta_id, alergeno) do nothing
+      `;
+    }
+    if (entrada.espera_id !== undefined) {
+      await contexto.sql`
+        update estook.espera
+           set estado = 'sentado', cuenta_id = ${entrada.cuenta_id}::uuid,
+               resuelta_en = ${contexto.ahora.toISOString()}::timestamptz
+         where id = ${entrada.espera_id}::uuid
+      `;
     }
     await avisar(contexto, localId, 'abrir_mesa', entrada.cuenta_id, {
       tipo,
       personas,
       ...(entrada.reserva_id === undefined ? {} : { reserva_id: entrada.reserva_id }),
+      ...(entrada.espera_id === undefined ? {} : { espera_id: entrada.espera_id }),
       por_pases: porPases,
       ...(paraLas === null ? {} : { para_las: paraLas.toISOString() }),
     });
@@ -1543,12 +1591,25 @@ export const yaVoy = comando<{ cuenta_id: string }, { cuentaId: string }>({
  * que lo lleva, la sala avisa; y en cocina y en la barra sale en rojo, sin confirmar nada.
  */
 export const cambiarLasAlergias = comando<
-  { cuenta_id: string; alergenos: (typeof ALERGENOS)[number][] },
+  {
+    cuenta_id: string;
+    alergenos: (typeof ALERGENOS)[number][];
+    guardar_en_su_ficha?: boolean | undefined;
+  },
   { alergias: string[] }
 >({
   nombre: 'cambiar_las_alergias',
   entrada: z
-    .object({ cuenta_id: id, alergenos: z.array(z.enum(ALERGENOS)).max(ALERGENOS.length) })
+    .object({
+      cuenta_id: id,
+      alergenos: z.array(z.enum(ALERGENOS)).max(ALERGENOS.length),
+      /**
+       * **Guardarlas en la ficha de su cliente** (la Ampliación 5 · 3): solo si la mesa es de una reserva
+       * y **el cliente ha dicho que sí** (son datos de salud, RGPD art. 9; Richi, 26-nov). La próxima vez
+       * pasan solas a la mesa. Se añaden; quitar una de la ficha se hace en la ficha.
+       */
+      guardar_en_su_ficha: z.boolean().optional(),
+    })
     .strict(),
   exige: 'accion.tomar_nota',
   enElTpv: 'solo',
@@ -1559,6 +1620,19 @@ export const cambiarLasAlergias = comando<
     const localId = elLocalDelServicio(contexto);
     const cuenta = await laCuentaAbierta(contexto, localId, entrada.cuenta_id);
     const nuevas = enSuOrden(entrada.alergenos);
+    if (entrada.guardar_en_su_ficha === true && nuevas.length > 0) {
+      await contexto.sql`
+        update estook.cliente_del_local c
+           set alergenos = array(
+                 select al.codigo from estook.alergeno al
+                  where al.codigo = any (c.alergenos || ${comoLista(nuevas)}::text::text[])
+                  order by al.orden
+               )
+          from estook.cuenta cu
+          join estook.reserva r on r.id = cu.reserva_id
+         where cu.id = ${cuenta.id}::uuid and c.id = r.cliente_id and c.local_id = ${localId}::uuid
+      `;
+    }
     if (nuevas.join() === cuenta.alergias.join()) return { alergias: nuevas };
     await contexto.sql`
       delete from estook.alergeno_de_la_cuenta

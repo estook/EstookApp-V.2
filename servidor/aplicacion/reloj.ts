@@ -21,6 +21,7 @@ import {
 } from './al-movil.ts';
 import { mandarLosCorreosDeLosAvisos } from './avisos.ts';
 import { hacerLaFotoDelUso } from './clientes.ts';
+import { limpiarLoDeLasReservas } from './clientes-del-local.ts';
 import { mandarElCorreoDelLunes, traerLoCobradoDeAntes } from './ventas.ts';
 import { loQueAvisaElReloj } from './lo-que-avisa-el-reloj.ts';
 import type { Contexto } from './contrato.ts';
@@ -234,6 +235,10 @@ export async function latir(
         ),
       )) ?? 0;
     await sinPararElReloj(contexto, 'limpiar lo del móvil', () => limpiarLoDelMovil(contexto));
+    // Cada hora, la lista de espera de hace dos días y los clientes que llevan dos años sin reservar (0135).
+    await sinPararElReloj(contexto, 'limpiar lo de las reservas', () =>
+      limpiarLoDeLasReservas(contexto),
+    );
     await sinPararElReloj(contexto, 'mandar lo del móvil', () => mandarLoDelMovil(contexto));
 
     // Cada hora, si algún documento fiscal lleva demasiado sin terminar (0138). Este latido no

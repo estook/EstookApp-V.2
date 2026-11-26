@@ -70,6 +70,10 @@ const SE_CIERRAN = [
   // Las reservas (la Ampliación 5 · 2, 0153), también en Servicio › Reservas: son de Pro, como el TPV.
   'las_reservas',
   'los_ajustes_de_reservas',
+  // Los clientes de cada local (la Ampliación 5 · 3, 0153): van con las reservas, de Pro.
+  'la_ficha_del_cliente',
+  'los_clientes_del_local',
+  'guardar_al_cliente',
 ].sort();
 
 /**
@@ -105,6 +109,8 @@ const SE_QUEDAN: Readonly<Record<string, string>> = {
   // Vincular ya mira el plan por dentro (0120): sin Pro no sale ningún código.
   sacar_codigo_desde_estook: 'mira el plan por dentro (0120)',
   vincular_el_primer_aparato: 'mira el plan por dentro (0120)',
+  // Un derecho del cliente que reservó (RGPD, art. 17): se cumple también sin Pro (5 · 3).
+  borrar_al_cliente: 'borrar a un cliente que lo pide (RGPD, art. 17)',
 };
 
 /** Una operación de Estook TPV que se puede llamar con la sesión de una persona desde Estook. */

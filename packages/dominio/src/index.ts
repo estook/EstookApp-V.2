@@ -1653,3 +1653,19 @@ export type {
   TramoOcupado,
   ClaseDeIntentoDeReserva,
 } from './reservas.ts';
+export {
+  VISITAS_DE_HABITUAL,
+  DIAS_DE_HABITUAL,
+  VECES_SIN_VENIR_PARA_MARCAR,
+  COMENSALES_DE_RESERVA_GRANDE,
+  esHabitual,
+  sinVenirMarca,
+  laAlergiaEnLetra,
+  lasEtiquetasDelCliente,
+  elGastoMedioPorPersona,
+} from './clientes-del-local.ts';
+export type {
+  TonoDeEtiqueta,
+  EtiquetaDelCliente,
+  LoQueMarcaAlCliente,
+} from './clientes-del-local.ts';

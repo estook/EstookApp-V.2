@@ -1,6 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import type { LasHorasParaReservar, LasReservas, LosAjustesDeReservas } from '../datos/tipos.ts';
+import type {
+  FichaDelCliente,
+  LasHorasParaReservar,
+  LasReservas,
+  LosAjustesDeReservas,
+  MarcasDelCliente,
+} from '../datos/tipos.ts';
 import { FalloDeLaSala, usarAlSegundo } from './usarLaSala.ts';
 import { guardarLaCopia, leerLaCopia } from '../sinInternet/laCopia.ts';
 
@@ -65,5 +71,33 @@ export function usarLosAjustesDeReservas() {
   return useQuery({
     queryKey: ['sala', 'los_ajustes_de_reservas'],
     queryFn: () => leer<LosAjustesDeReservas>(cliente, 'los_ajustes_de_reservas', {}),
+  });
+}
+
+/** La ficha de un cliente (5 · 3): al tocar una reserva. */
+export function usarLaFichaDelCliente(clienteId: string | null) {
+  const { cliente } = usarSesion();
+  return useQuery({
+    queryKey: ['sala', 'la_ficha_del_cliente', clienteId],
+    queryFn: () =>
+      leer<FichaDelCliente>(cliente, 'la_ficha_del_cliente', { cliente_id: clienteId ?? '' }),
+    enabled: clienteId !== null,
+  });
+}
+
+/** Quién es, al escribir el teléfono en «+ Reserva» (5 · 3): con el número entero. */
+export function usarElClienteDelTelefono(telefono: string) {
+  const { cliente } = usarSesion();
+  const cifras = telefono.replace(/\D/g, '');
+  return useQuery({
+    queryKey: ['sala', 'buscar_al_cliente', cifras.slice(-9)],
+    queryFn: () =>
+      leer<{ cliente: (MarcasDelCliente & { nombre: string }) | null }>(
+        cliente,
+        'buscar_al_cliente',
+        { telefono },
+      ),
+    enabled: cifras.length >= 9,
+    staleTime: 60_000,
   });
 }

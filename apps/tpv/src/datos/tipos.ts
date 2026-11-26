@@ -48,6 +48,8 @@ export interface CuentaEnElPlano {
   readonly cocinaLlamaEn: string | null;
   /** La alergia de la mesa (0117). Una API de antes no la dice. */
   readonly alergias?: readonly string[];
+  /** El cliente de su reserva (5 · 3): con él, la alergia se puede guardar en su ficha. */
+  readonly cliente?: string | null;
   readonly loSiguiente: LoSiguiente;
   /** Su camarero ha fichado la salida: «Ana ha fichado la salida» (Anexo 11.8). */
   readonly suCamareroSeHaIdo: boolean;
@@ -685,6 +687,41 @@ export interface UnaReserva {
   readonly confirmada?: boolean;
   readonly canceladaPor?: 'local' | 'cliente' | 'sin_confirmar' | null;
   readonly canceladaEn?: string | null;
+  /** Su cliente, por su teléfono (5 · 3). Una API de antes no lo dice. */
+  readonly cliente?: MarcasDelCliente | null;
+}
+
+/** Lo que importa en servicio de un cliente (5 · 3): VIP, habitual, sus alergias, las veces que no vino. */
+export interface MarcasDelCliente {
+  readonly id: string;
+  readonly vip: boolean;
+  readonly habitual: boolean;
+  readonly alergenos: readonly string[];
+  readonly vecesSinVenir: number;
+  readonly visitas: number;
+  readonly nota: string | null;
+}
+
+/** `la_ficha_del_cliente` (5 · 3). */
+export interface FichaDelCliente extends MarcasDelCliente {
+  readonly nombre: string;
+  readonly telefono: string;
+  readonly ultimaVisita: string | null;
+  readonly loQueSuelePedir: readonly string[];
+  /** En céntimos, con IVA; nulo si no se ven las ventas o aún no hay mesas cobradas. */
+  readonly gastoMedioPorPersona: number | null;
+  readonly veElGasto: boolean;
+  readonly reservasQueVienen: number;
+}
+
+/** «En espera» (5 · 3): quien llega sin reservar. */
+export interface UnoEnEspera {
+  readonly id: string;
+  readonly nombre: string;
+  readonly comensales: number;
+  readonly telefono: string | null;
+  readonly nota: string | null;
+  readonly llegoEn: string;
 }
 
 export interface ServicioDeReservas {
@@ -702,6 +739,8 @@ export interface LasReservas {
   readonly liberarTras: number;
   readonly servicios: readonly ServicioDeReservas[];
   readonly reservas: readonly UnaReserva[];
+  /** La lista de espera de ahora (5 · 3). Una API de antes no la dice. */
+  readonly espera?: readonly UnoEnEspera[];
 }
 
 export interface LasHorasParaReservar {

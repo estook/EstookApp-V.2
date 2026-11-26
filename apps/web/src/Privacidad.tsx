@@ -72,6 +72,12 @@ export function Privacidad() {
           marca su casilla. Esas páginas no usan cookies ni guardan nada en el navegador, y la
           dirección IP solo se usa para limitar los intentos de la última hora.
         </p>
+        <p>
+          Con cada reserva, el local guarda la ficha de ese cliente por su teléfono: las veces que
+          ha venido, lo que suele pedir y una nota. Sus alergias, solo si él dice que sí, para que
+          la próxima vez su mesa ya salga con ellas. Esa ficha es de ese local y ningún otro la ve;
+          se borra sola a los dos años de su última reserva, o antes si lo pide al local.
+        </p>
       </Apartado>
 
       <Apartado titulo="Quién nos ayuda a darte el servicio">

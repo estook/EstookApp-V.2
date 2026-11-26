@@ -86,11 +86,17 @@ export interface LasVacacionesDelEquipo {
   }[];
 }
 
+/**
+ * Lo que sale en el calendario del equipo: los recordatorios y, desde la 5 · 3, **las reservas de 12 o
+ * más** (que cocina lo sepa), que no se ponen ni se mueven aquí.
+ */
+export type TipoEnElCalendario = TipoDeRecordatorio | 'reserva';
+
 /** Un recordatorio del calendario del equipo (la Ampliación 4 · 3, 0153), tal cual lo da el servidor. */
 export interface UnRecordatorio {
   readonly id: string;
   readonly titulo: string;
-  readonly tipo: TipoDeRecordatorio;
+  readonly tipo: TipoEnElCalendario;
   readonly para: ParaQuien;
   readonly dia: string;
   readonly hastaEl: string | null;
@@ -105,6 +111,34 @@ export interface ElCalendarioDelEquipo {
   readonly proximos: readonly UnRecordatorio[];
   readonly puedePoner: boolean;
   readonly recordatorios: readonly UnRecordatorio[];
+  /** Las reservas de 12 o más (5 · 3). Una API de antes no las dice. */
+  readonly reservas?: readonly UnaReservaGrande[];
+}
+
+/** Una reserva de 12 o más: la hora y cuántos, sin nombre ni teléfono (5 · 3). */
+export interface UnaReservaGrande {
+  readonly id: string;
+  readonly dia: string;
+  readonly hora: string;
+  readonly comensales: number;
+}
+
+/** Las reservas grandes, pintadas como lo demás del calendario: «Reserva de 14», a su hora. */
+export function lasReservasEnElCalendario(
+  reservas: readonly UnaReservaGrande[] | undefined,
+): UnRecordatorio[] {
+  return (reservas ?? []).map((r) => ({
+    id: `reserva:${r.id}`,
+    titulo: `Reserva de ${String(r.comensales)}`,
+    tipo: 'reserva',
+    para: 'todos',
+    dia: r.dia,
+    hastaEl: null,
+    desde: r.hora,
+    avisaA: null,
+    detalle: 'Sale sola desde Reservas, para que cocina lo sepa.',
+    puestoPor: null,
+  }));
 }
 
 export interface UnaNota {
@@ -118,4 +152,6 @@ export interface MisNotas {
   readonly hoy: string;
   readonly notas: readonly UnaNota[];
   readonly delEquipo: readonly UnRecordatorio[];
+  /** Las reservas de 12 o más de las dos semanas que vienen (5 · 3). */
+  readonly reservas?: readonly UnaReservaGrande[];
 }

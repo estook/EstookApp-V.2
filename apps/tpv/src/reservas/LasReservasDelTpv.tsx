@@ -8,6 +8,8 @@ import { usarLasReservas } from '../ganchos/usarLasReservas.ts';
 import { irALaMesa } from '../navegar.ts';
 import type { MesaDelPlano, UnaReserva } from '../datos/tipos.ts';
 import { NuevaReserva } from './NuevaReserva.tsx';
+import { LaFichaDelCliente, LasEtiquetas } from './ElCliente.tsx';
+import { EnEspera } from './EnEspera.tsx';
 import { cuantoFalta, laReservaDeLaMesa, minutosHasta, susMesas } from './logica.ts';
 
 /**
@@ -15,6 +17,9 @@ import { cuantoFalta, laReservaDeLaMesa, minutosHasta, susMesas } from './logica
  * Tickets»): la noche de un vistazo —quién viene, a qué hora, cuántos y en qué mesa— y, en la tablet y la
  * caja, las mesas con lo reservado. **«Sentar»** abre la mesa con los comensales de la reserva y la une a
  * ella; **«+ Reserva»**, una nueva en cuatro toques. Al segundo en todos los aparatos, como la sala.
+ *
+ * **La 5 · 3**: junto a cada nombre, las etiquetas de su cliente (la alergia, «2 sin venir», VIP, habitual);
+ * al tocarla, su ficha; y debajo, **«En espera»**, la lista de quien llega sin reservar.
  */
 
 function masDias(fecha: string, dias: number): string {
@@ -208,6 +213,11 @@ export function LasReservasDelTpv() {
                         .filter((p) => p !== null && p !== '')
                         .join(' · ')}
                     </span>
+                    {!apagada && (
+                      <span className="mt-e1 block">
+                        <LasEtiquetas cliente={r.cliente} />
+                      </span>
+                    )}
                   </span>
                 </button>
                 {r.estado === 'sentada' && r.cuentaId !== null ? (
@@ -255,6 +265,16 @@ export function LasReservasDelTpv() {
           })
         )}
       </ul>
+
+      {datos !== undefined && elDia === hoy && (
+        <EnEspera
+          espera={datos.espera ?? []}
+          mesas={mesasDelPlano}
+          reservas={reservas}
+          liberarTras={datos.liberarTras}
+          alHacer={setNoticia}
+        />
+      )}
 
       <div className="flex justify-end">
         <Boton
@@ -384,6 +404,9 @@ export function LasReservasDelTpv() {
             </p>
             {abierta.nota !== null && (
               <p className="rounded-grande bg-fondo p-e3 text-secundario">{abierta.nota}</p>
+            )}
+            {abierta.cliente != null && (
+              <LaFichaDelCliente clienteId={abierta.cliente.id} alGuardar={setNoticia} />
             )}
             {abierta.estado === 'reservada' && (
               <div className="flex flex-col gap-e2">

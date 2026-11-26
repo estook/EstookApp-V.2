@@ -17,6 +17,7 @@ import {
 import {
   IconoAnadir,
   IconoAvisos,
+  IconoEquipo,
   IconoFlechaDerecha,
   IconoFlechaIzquierda,
   IconoFormacion,
@@ -36,7 +37,12 @@ import {
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
-import type { ElCalendarioDelEquipo, UnRecordatorio } from './contrato.ts';
+import {
+  lasReservasEnElCalendario,
+  type ElCalendarioDelEquipo,
+  type TipoEnElCalendario,
+  type UnRecordatorio,
+} from './contrato.ts';
 
 /**
  * Calendario › Equipo (la Ampliación 4 · 3, 0153; maqueta, pestaña 4, «Equipo en el móvil» y «En el
@@ -47,31 +53,40 @@ import type { ElCalendarioDelEquipo, UnRecordatorio } from './contrato.ts';
  * dentro de cada día, la barra de la izquierda con el mes pequeño, las capas y lo próximo, y
  * **arrastrar una píldora la lleva a otro día**. En el móvil, el mes con puntos de color, el día
  * tocado debajo en tarjetas y «Próximos». Las vacaciones de la gente no salen aquí (Richi, 24-nov).
+ * **Las reservas de 12 o más salen solas** (5 · 3), en violeta, para que cocina lo sepa: no se mueven
+ * ni se cambian aquí.
  */
 
 /** La capa de cada tipo: la formación y los avisos van juntos, como en la maqueta. */
-type Capa = 'limpieza' | 'inspeccion' | 'formacion';
-const CAPA_DE: Readonly<Record<TipoDeRecordatorio, Capa>> = {
+type Capa = 'limpieza' | 'inspeccion' | 'formacion' | 'reserva';
+const CAPA_DE: Readonly<Record<TipoEnElCalendario, Capa>> = {
   limpieza: 'limpieza',
   inspeccion: 'inspeccion',
   formacion: 'formacion',
   otro: 'formacion',
+  reserva: 'reserva',
 };
 const NOMBRE_DE_LA_CAPA: Readonly<Record<Capa, string>> = {
   limpieza: 'Limpiezas',
   inspeccion: 'Inspecciones',
   formacion: 'Formación y avisos',
+  reserva: 'Reservas de grupo',
 };
-const CAPAS: readonly Capa[] = ['limpieza', 'inspeccion', 'formacion'];
+const CAPAS: readonly Capa[] = ['limpieza', 'inspeccion', 'formacion', 'reserva'];
 
 const ESTILO: Readonly<
-  Record<TipoDeRecordatorio, { readonly degradado: NombreDeDegradado; readonly icono: ReactNode }>
+  Record<TipoEnElCalendario, { readonly degradado: NombreDeDegradado; readonly icono: ReactNode }>
 > = {
   limpieza: { degradado: 'historial', icono: <IconoLimpieza size={14} /> },
   inspeccion: { degradado: 'incidencias', icono: <IconoInspeccion size={14} /> },
   formacion: { degradado: 'formacion', icono: <IconoFormacion size={14} /> },
   otro: { degradado: 'formacion', icono: <IconoAvisos size={14} /> },
+  reserva: { degradado: 'fechas', icono: <IconoEquipo size={14} /> },
 };
+
+function elNombreDelTipo(tipo: TipoEnElCalendario): string {
+  return tipo === 'reserva' ? 'Reserva de grupo' : NOMBRE_DEL_RECORDATORIO[tipo];
+}
 
 const DIAS_DE_LA_SEMANA = ['L', 'M', 'X', 'J', 'V', 'S', 'D'] as const;
 const NOMBRES_DE_LA_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] as const;
@@ -196,13 +211,15 @@ export function Equipo() {
   const centro = mirando ?? hoy;
   const dias = losDiasDelMes(centro);
   const dia = elegido ?? hoy;
-  const visibles = datos.recordatorios.filter((r) => !apagadas.includes(CAPA_DE[r.tipo]));
+  const reservas = lasReservasEnElCalendario(datos.reservas);
+  const todos = [...datos.recordatorios, ...reservas];
+  const visibles = todos.filter((r) => !apagadas.includes(CAPA_DE[r.tipo]));
   const deUnDia = (fecha: string) => visibles.filter((r) => caeEn(r.dia, r.hastaEl, fecha));
-  const losProximos = datos.proximos
+  const losProximos = [...datos.proximos, ...reservas.filter((r) => r.dia >= hoy)]
+    .sort((a, b) => a.dia.localeCompare(b.dia) || (a.desde ?? '').localeCompare(b.desde ?? ''))
     .filter((r) => (r.hastaEl ?? r.dia) >= hoy && !apagadas.includes(CAPA_DE[r.tipo]))
     .slice(0, 5);
-  const cuantasHay = (capa: Capa) =>
-    datos.recordatorios.filter((r) => CAPA_DE[r.tipo] === capa).length;
+  const cuantasHay = (capa: Capa) => todos.filter((r) => CAPA_DE[r.tipo] === capa).length;
 
   function irA(fecha: string) {
     setElegido(fecha);
@@ -226,7 +243,7 @@ export function Equipo() {
     <div className="flex flex-wrap gap-e2" role="group" aria-label="Capas">
       {CAPAS.map((capa) => {
         const encendida = !apagadas.includes(capa);
-        const tipo: TipoDeRecordatorio = capa === 'formacion' ? 'formacion' : capa;
+        const tipo: TipoEnElCalendario = capa;
         return (
           <button
             key={capa}
@@ -410,7 +427,7 @@ export function Equipo() {
       {abierto !== null && (
         <ElRecordatorio
           recordatorio={abierto}
-          puedeCambiarlo={datos.puedePoner}
+          puedeCambiarlo={datos.puedePoner && abierto.tipo !== 'reserva'}
           alCerrar={() => {
             setAbierto(null);
           }}
@@ -608,7 +625,7 @@ function Pildora({
   return (
     <button
       type="button"
-      draggable={puedeMover}
+      draggable={puedeMover && r.tipo !== 'reserva'}
       onDragStart={(e) => {
         e.dataTransfer.setData('text/plain', r.id);
         e.dataTransfer.effectAllowed = 'move';
@@ -622,7 +639,7 @@ function Pildora({
         'flex min-h-[1.45rem] items-center gap-[4px] overflow-hidden px-[6px] text-left text-[0.72rem] font-semibold leading-tight text-white',
         empieza ? 'rounded-l-[8px]' : '-ml-[6px] pl-[12px]',
         acaba ? 'rounded-r-[8px]' : '-mr-[6px] pr-[12px]',
-        puedeMover && 'cursor-grab active:cursor-grabbing',
+        puedeMover && r.tipo !== 'reserva' && 'cursor-grab active:cursor-grabbing',
       )}
       style={fondoDegradado(ESTILO[r.tipo].degradado)}
     >
@@ -703,6 +720,7 @@ function ElMesPequeno({
 // ── Las tarjetas y lo próximo ────────────────────────────────────────────────
 
 function LoQueDice({ recordatorio: r }: { readonly recordatorio: UnRecordatorio }) {
+  if (r.tipo === 'reserva') return <>Reserva de grupo</>;
   const dias = cuantosDiasDura(r.dia, r.hastaEl);
   const partes = [
     PARA_QUIEN_EN_LETRA[r.para],
@@ -833,7 +851,7 @@ function ElRecordatorio({
             {ESTILO[r.tipo].icono}
           </span>
           <span>
-            <strong className="block text-cuerpo">{NOMBRE_DEL_RECORDATORIO[r.tipo]}</strong>
+            <strong className="block text-cuerpo">{elNombreDelTipo(r.tipo)}</strong>
             <span className="text-secundario">
               {r.hastaEl === null ? elDiaEnLetra(r.dia) : delAl(r.dia, r.hastaEl)}
               {r.desde === null ? ' · todo el día' : ` · ${sinCero(r.desde)}`}
@@ -841,10 +859,14 @@ function ElRecordatorio({
           </span>
         </div>
         <dl className="grid grid-cols-[auto_1fr] gap-x-e4 gap-y-e2 text-secundario">
-          <dt className="text-texto-suave">Para</dt>
-          <dd>{PARA_QUIEN_EN_LETRA[r.para]}</dd>
-          <dt className="text-texto-suave">Aviso</dt>
-          <dd>{comoAvisa(r.avisaA, dias)}</dd>
+          {r.tipo !== 'reserva' && (
+            <>
+              <dt className="text-texto-suave">Para</dt>
+              <dd>{PARA_QUIEN_EN_LETRA[r.para]}</dd>
+              <dt className="text-texto-suave">Aviso</dt>
+              <dd>{comoAvisa(r.avisaA, dias)}</dd>
+            </>
+          )}
           {r.puestoPor !== null && (
             <>
               <dt className="text-texto-suave">Lo puso</dt>
@@ -878,7 +900,9 @@ function PonerRecordatorio({
   readonly alGuardar: (entrada: Record<string, unknown>) => Promise<ErrorDeLaApi | null>;
 }) {
   const [titulo, setTitulo] = useState(recordatorio?.titulo ?? '');
-  const [tipo, setTipo] = useState<TipoDeRecordatorio>(recordatorio?.tipo ?? 'limpieza');
+  const [tipo, setTipo] = useState<TipoDeRecordatorio>(
+    recordatorio === null || recordatorio.tipo === 'reserva' ? 'limpieza' : recordatorio.tipo,
+  );
   const [para, setPara] = useState<ParaQuien>(recordatorio?.para ?? 'todos');
   const [dia, setDia] = useState(recordatorio?.dia ?? diaDeEntrada);
   const [hastaEl, setHastaEl] = useState(

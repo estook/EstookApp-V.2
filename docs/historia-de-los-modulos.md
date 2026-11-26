@@ -3615,6 +3615,16 @@ la que se cancela. Al verla, Richi pidió confirmar y cancelar solo con el telé
 Ajustes ordenados y **Servicio › Reservas** en Estook con el código para su propia web (`apps/carta/public/reservas.js`).
 La prueba: `la-web-de-reservas.prueba.ts`, contra la base.
 
+### La Ampliación 5 · 3 · Los clientes, la lista de espera y los que no vienen
+
+_27 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), sección 21 (migración 0135): cada
+reserva crea o encuentra a su cliente por su teléfono (`cliente_del_local`, de su local y de ningún otro); su ficha con
+lo que sabe el TPV (`clientes-del-local.ts`); VIP, nota y sus alergias solo con su sí, que pasan solas a la mesa al
+sentarle; las etiquetas en Reservas; «En espera» en el TPV (`EnEspera.tsx`); el aviso «Antes de irte» de la web
+(`AntesDeIrte.tsx`); las reservas de 12 o más en Calendario › Equipo (`las_reservas_grandes`); y en Estook, Servicio ›
+Reservas › Clientes (`LosClientes.tsx`). Richi quitó «Cumpleaños» y «Grupo». Las pruebas:
+`los-clientes-del-local.prueba.ts` contra la base y `clientes-del-local.prueba.ts` del dominio.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

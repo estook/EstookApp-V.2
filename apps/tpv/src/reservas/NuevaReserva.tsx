@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Boton, Campo, ErrorEnCristiano, Hoja, fondoDegradado } from '@estook/ui';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarAcciones } from '../ganchos/usarLaSala.ts';
-import { usarLasHoras } from '../ganchos/usarLasReservas.ts';
+import { usarElClienteDelTelefono, usarLasHoras } from '../ganchos/usarLasReservas.ts';
+import { LasEtiquetas } from './ElCliente.tsx';
 import type { UnaReserva } from '../datos/tipos.ts';
 
 /**
@@ -54,6 +55,8 @@ export function NuevaReserva({
   const [guardando, setGuardando] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
   const horas = usarLasHoras(dia, comensales, reserva?.id ?? null);
+  // **Quién es** (5 · 3): con el número entero, si ya ha reservado aquí, su nombre y sus marcas.
+  const elCliente = usarElClienteDelTelefono(telefono).data?.cliente ?? null;
 
   const todas = horas.data?.servicios.flatMap((s) => s.horas) ?? [];
   const laElegida = todas.find((h) => h.hora === hora);
@@ -290,9 +293,32 @@ export function NuevaReserva({
             }}
           />
         </div>
+        {elCliente !== null && (
+          <div className="flex flex-col gap-e1 rounded-grande bg-fondo p-e3">
+            <span className="flex flex-wrap items-center gap-e2">
+              <strong>
+                {elCliente.visitas === 0
+                  ? `Ya ha reservado aquí: ${elCliente.nombre}`
+                  : `${elCliente.nombre} · ${String(elCliente.visitas)} ${elCliente.visitas === 1 ? 'visita' : 'visitas'}`}
+              </strong>
+              <LasEtiquetas cliente={elCliente} />
+            </span>
+            {nombre.trim() === '' && (
+              <Boton
+                tono="texto"
+                tamano="s"
+                onClick={() => {
+                  setNombre(elCliente.nombre);
+                }}
+              >
+                Poner «{elCliente.nombre}»
+              </Boton>
+            )}
+          </div>
+        )}
         <Campo
           etiqueta="Una nota (opcional)"
-          ayuda="«Cumpleaños», «con carrito», «alergia a los frutos secos»…"
+          ayuda="«Con carrito», «en la terraza si se puede»…"
           value={nota}
           maxLength={200}
           onChange={(e) => {

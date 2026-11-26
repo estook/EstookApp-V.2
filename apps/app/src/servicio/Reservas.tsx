@@ -12,6 +12,7 @@ import {
 } from '@estook/ui';
 import { usarLectura } from '../ganchos/usarLectura.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
+import { LasEtiquetasDelCliente, LosClientes, type MarcasDelCliente } from './LosClientes.tsx';
 
 /**
  * **Servicio › Reservas** (la Ampliación 5 · 2, decisión 0153; Richi, 26-nov: «así el gerente puede vigilar las
@@ -20,6 +21,8 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  * Arriba, **su web de reservas**: el enlace para copiar y **«¿Tienes web propia?»**, que da el código para
  * ponerlas dentro de ella —un botón «Reservar mesa» o las reservas en un hueco de su página— **con el color que
  * elija**, para que encaje con su marca. Sin logos: abajo, solo «Reservas con estook.com».
+ *
+ * Abajo, **los clientes** del local (la Ampliación 5 · 3): su ficha, con lo que sabe el TPV.
  */
 const ACENTO = 'var(--color-app-servicio)';
 
@@ -35,6 +38,8 @@ interface UnaReserva {
   readonly mesas: readonly { readonly id: string; readonly nombre: string }[];
   readonly confirmada?: boolean;
   readonly canceladaPor?: 'local' | 'cliente' | 'sin_confirmar' | null;
+  /** Su cliente (5 · 3). Una API de antes no lo dice. */
+  readonly cliente?: MarcasDelCliente | null;
 }
 
 interface LasReservas {
@@ -203,6 +208,8 @@ export function Reservas() {
           Para poner, cambiar o sentar una reserva: Estook TPV › Reservas.
         </p>
       </section>
+
+      <LosClientes />
     </div>
   );
 }
@@ -264,6 +271,7 @@ function LaReserva({ r }: { readonly r: UnaReserva }) {
           {r.mesas.length === 0 ? 'Sin mesa' : `Mesa ${r.mesas.map((m) => m.nombre).join(' + ')}`}
           {r.nota !== null ? ` · ${r.nota}` : ''}
         </span>
+        {!fuera && <LasEtiquetasDelCliente cliente={r.cliente} />}
       </span>
       <span className="flex shrink-0 flex-col items-end gap-e1">
         {r.origen === 'web' && (

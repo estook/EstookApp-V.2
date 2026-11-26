@@ -20,6 +20,10 @@ import { elReloj } from './equipo.ts';
  *
  * Las vacaciones de la gente **no salen en Equipo** (Richi, 24-nov): cada uno ve las suyas en
  * Personal, y quien las gestiona, en Propuestas.
+ *
+ * **Las reservas de 12 o más salen solas** (la Ampliación 5 · 3, 0153, sección 5), para que cocina lo
+ * sepa: solo el día, la hora y cuántos, sin nombre ni teléfono (quien ve el calendario no tiene por qué
+ * llevar la sala). Las da la base (`las_reservas_grandes`, 0135).
  */
 
 const fecha = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -94,6 +98,28 @@ async function losRecordatorios(
   return filas.map(comoRecordatorio);
 }
 
+/** Una reserva de 12 o más: la hora y cuántos, nada de quién. */
+export interface UnaReservaGrande {
+  readonly id: string;
+  readonly dia: string;
+  readonly hora: string;
+  readonly comensales: number;
+}
+
+async function lasReservasGrandes(
+  contexto: Contexto,
+  localId: string,
+  desde: string,
+  hasta: string,
+): Promise<UnaReservaGrande[]> {
+  const filas = await contexto.sql<{ id: string; dia: string; hora: string; comensales: number }[]>`
+    select id::text as id, to_char(dia, 'YYYY-MM-DD') as dia, to_char(hora, 'HH24:MI') as hora,
+           comensales
+      from estook.las_reservas_grandes(${localId}::uuid, ${desde}::date, ${hasta}::date)
+  `;
+  return filas.map((f) => ({ id: f.id, dia: f.dia, hora: f.hora, comensales: f.comensales }));
+}
+
 async function hoyEnElLocal(contexto: Contexto, localId: string): Promise<string> {
   const reloj = await elReloj(contexto, localId);
   return fechaOperativa(reloj.jornada);
@@ -112,6 +138,8 @@ export interface ElCalendarioDelEquipo {
   /** Si puede poner, cambiar y mover recordatorios: quien edita el Calendario. */
   readonly puedePoner: boolean;
   readonly recordatorios: readonly UnRecordatorio[];
+  /** Las reservas de 12 o más de esos días (5 · 3). */
+  readonly reservas: readonly UnaReservaGrande[];
 }
 
 /** El mes que pinta la pantalla: de su primer lunes, seis semanas. */
@@ -152,6 +180,7 @@ export const elCalendarioDelEquipo = consulta<
       hoy,
       puedePoner: puede[0]?.si === true,
       recordatorios: await losRecordatorios(contexto, localId, desde, hasta, false),
+      reservas: await lasReservasGrandes(contexto, localId, desde, hasta),
       proximos: (await losRecordatorios(contexto, localId, hoy, masDias(hoy, 42), false)).slice(
         0,
         30,
@@ -175,6 +204,8 @@ export interface MisNotas {
   readonly notas: readonly UnaNota[];
   /** Lo del equipo que me toca en las dos semanas que vienen (la cata de hoy, la limpieza…). */
   readonly delEquipo: readonly UnRecordatorio[];
+  /** Las reservas de 12 o más de las dos semanas que vienen (5 · 3): la cocina abre en Personal. */
+  readonly reservas: readonly UnaReservaGrande[];
 }
 
 export const misNotas = consulta<Record<string, never>, MisNotas>({
@@ -204,6 +235,10 @@ export const misNotas = consulta<Record<string, never>, MisNotas>({
       delEquipo:
         veElCalendario[0]?.si === true
           ? await losRecordatorios(contexto, localId, hoy, masDias(hoy, 14), true)
+          : [],
+      reservas:
+        veElCalendario[0]?.si === true
+          ? await lasReservasGrandes(contexto, localId, hoy, masDias(hoy, 14))
           : [],
     };
   },

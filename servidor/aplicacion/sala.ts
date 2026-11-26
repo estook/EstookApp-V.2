@@ -52,6 +52,8 @@ export interface FilaDeCuenta {
   readonly alergias: readonly string[];
   /** Lo de llevar programado (0121): para cuándo lo quiere el cliente. */
   readonly para_las: string | null;
+  /** El nombre del cliente de su reserva (5 · 3), si se sentó con una: para «Guardar en su ficha». */
+  readonly cliente: string | null;
 }
 
 export interface FilaDeLinea {
@@ -117,7 +119,10 @@ export async function lasCuentas(
            to_char(c.cocina_llama_en at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as cocina_llama_en,
            coalesce((select array_agg(a.alergeno) from estook.alergeno_de_la_cuenta a
                       where a.cuenta_id = c.id), '{}') as alergias,
-           to_char(c.para_las at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as para_las
+           to_char(c.para_las at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as para_las,
+           (select cl.nombre from estook.reserva r
+              join estook.cliente_del_local cl on cl.id = r.cliente_id
+             where r.id = c.reserva_id) as cliente
       from estook.cuenta c
       left join estook.mesa m on m.id = c.mesa_id
       left join estook.persona p on p.id = c.camarero_id

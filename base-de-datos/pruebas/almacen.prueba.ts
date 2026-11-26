@@ -805,6 +805,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'dar_la_facturacion',
       'dar_un_permiso_de_los_documentos',
       'direccion_libre_para_la_carta',
+      // La Ampliación 5 · 3 (0135): al guardar una reserva, crea o encuentra a su cliente.
+      'el_cliente_de_la_reserva',
       'el_cliente_por_su_numero',
       'el_plan_de',
       'el_plato_entra_en_la_botonera',
@@ -831,6 +833,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'las_lineas_vendidas',
       'las_mesas_del_servicio',
       'las_pausas',
+      // La Ampliación 5 · 3 (0135): las reservas de 12 o más, sin nombre, para el calendario.
+      'las_reservas_grandes',
       'lleva_la_facturacion',
       'lo_gastado_en_fogon',
       // La Ampliación 4 · 3 (0131): lo que avisa el calendario, para el reloj. Solo al sistema.

@@ -133,6 +133,8 @@ export interface CuentaEnElPlano {
   readonly cocinaLlamaEn: string | null;
   /** La alergia de la mesa (0117): «⚠ Gluten» en el plano y en sus opciones. */
   readonly alergias: readonly string[];
+  /** El cliente de su reserva (5 · 3): con él, la alergia se puede guardar en su ficha. */
+  readonly cliente: string | null;
   readonly loSiguiente: LoSiguiente;
   /** Su camarero ha fichado la salida: «Ana ha fichado la salida» (Anexo 11.8). */
   readonly suCamareroSeHaIdo: boolean;
@@ -326,6 +328,7 @@ function enElPlano(
     conPrisa: cuenta.con_prisa,
     cocinaLlamaEn: cuenta.cocina_llama_en,
     alergias: cuenta.alergias,
+    cliente: cuenta.cliente,
     loSiguiente,
     suCamareroSeHaIdo: cuenta.camarero_id !== null && seHanIdo.has(cuenta.camarero_id),
     comoVa,

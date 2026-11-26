@@ -16,6 +16,7 @@ import {
   laAntelacionEnLetra,
 } from '@estook/dominio';
 import { Boton, Campo, Cargando, ErrorEnCristiano, fondoDegradado, Logo } from '@estook/ui';
+import { AntesDeIrte } from './AntesDeIrte.tsx';
 
 /**
  * **La web de reservas de cada local** (la Ampliación 5 · 2, decisión 0153, secciones 6 y 20).
@@ -185,6 +186,8 @@ export function Reservar({ direccion }: { readonly direccion: string }) {
   const [sinEnlace, setSinEnlace] = useState(false);
   /** «Confirmar» o «Cancelar» mi reserva, con el teléfono. */
   const [conTelefono, setConTelefono] = useState<'confirmar' | 'cancelar' | null>(null);
+  /** «Antes de irte» (5 · 3): al acabar de reservar, una vez. */
+  const [recienHecha, setRecienHecha] = useState<SuReserva | null>(null);
   const principal = useRef<HTMLElement>(null);
 
   const acento = useMemo<ElAcento>(
@@ -340,9 +343,20 @@ export function Reservar({ direccion }: { readonly direccion: string }) {
                   cliente={cliente}
                   alHecha={(reserva, telefono) => {
                     setSuya({ reserva, llave: { telefono } });
+                    setRecienHecha(reserva);
                   }}
                 />
               </>
+            )}
+            {recienHecha !== null && (
+              <AntesDeIrte
+                nombre={recienHecha.nombre}
+                confirmarAntesDe={recienHecha.confirmarAntesDe}
+                minutosParaConfirmar={web.minutosParaConfirmar}
+                alCerrar={() => {
+                  setRecienHecha(null);
+                }}
+              />
             )}
           </>
         )}

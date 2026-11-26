@@ -1052,6 +1052,9 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         // Servicio › Reservas (el gerente las vigila y saca el código de su web).
         'las_reservas',
         'los_ajustes_de_reservas',
+        // La Ampliación 5 · 3 (0153): la ficha del cliente y apuntarle VIP, alergias o una nota.
+        'la_ficha_del_cliente',
+        'guardar_al_cliente',
       ].sort(),
     );
     const solo = operaciones.filter((o) => o.enElTpv === 'solo').map((o) => o.nombre);
@@ -1173,6 +1176,10 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'cancelar_reserva',
         'guardar_ajustes_de_reservas',
         'juntar_mesas_para_reservas',
+        // La Ampliación 5 · 3 (0153): buscar al cliente al reservar, y la lista de espera.
+        'buscar_al_cliente',
+        'poner_en_espera',
+        'quitar_de_espera',
       ].sort(),
     );
   });

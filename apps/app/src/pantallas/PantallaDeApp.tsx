@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { appsVisibles, puedeVer } from '@estook/permisos';
+import { appsVisibles, puedeEditar, puedeVer } from '@estook/permisos';
 import {
   EstrellaDeLasApps,
   acentoParaTexto,
@@ -124,7 +124,8 @@ export function PantallaDeApp() {
   const vista =
     destino.vistas.length === 0
       ? undefined
-      : (destino.vistas.find((v) => v.id === idDeLaVista) ?? dondeEntraEnElDestino(destino));
+      : (destino.vistas.find((v) => v.id === idDeLaVista) ??
+        dondeEntraEnElDestino(destino, (permiso) => puedeEditar(permisos, permiso)));
 
   // Un destino con vistas siempre tiene una en la direccion: asi el enlace se
   // puede copiar y compartir, y volver atras devuelve a la vista de antes.
@@ -319,7 +320,7 @@ function Contenido({
   // H2 (0069): el horario, en un solo sitio desde el repaso del 10-oct (0082). Lo ve
   // todo el equipo, y quien lo publica tiene además «Montarlo».
   if (app.id === 'calendario' && destino.id === 'turnos') return <ElHorario conTitulo={false} />;
-  // La Ampliación 4 · 2 (0153): Personal y Propuestas; Equipo llega con la 4 · 3.
+  // La Ampliación 4 (0153): Equipo (4 · 3), Personal y Propuestas (4 · 2).
   if (app.id === 'calendario' && destino.id === 'calendario' && vista?.modulo === undefined) {
     return <Calendario vista={vista?.id ?? 'personal'} />;
   }

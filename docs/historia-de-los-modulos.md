@@ -3589,6 +3589,14 @@ vacaciones de días laborables ya no se quita el domingo para todos; no cuentan 
 sacados de su horario publicado (`losDiasQueSueleLibrar`) o marcados al pedir, y cada petición guarda con
 cuáles se contó. Las pruebas: `ficha.prueba.ts` y `las-vacaciones.prueba.ts` contra la base.
 
+### La Ampliación 4 · 3 · El calendario del equipo
+
+_26 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), sección 18 (migración 0131):
+Calendario › Equipo con los recordatorios para todos, sala o cocina y su aviso cada día (mes, semana y día,
+capas, «Próximos» y arrastrar para mover), y en Personal las notas de cada uno, que no ve nadie más. Los avisos
+los apunta el reloj del móvil (`lo_que_avisa_el_calendario`). Las pruebas: `el-calendario-del-equipo.prueba.ts`
+contra la base, `degradados.prueba.ts` y las de las apps.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

@@ -113,6 +113,12 @@ export interface Vista {
    */
   readonly soloSiTieneAlgo?: true;
   /**
+   * **Se entra por ella solo si se puede editar este permiso** (la Ampliación 4 · 3, 0153): el
+   * Calendario se abre en Equipo para el gerente y los jefes, y en Personal para el equipo. Sin
+   * él, se entra por la siguiente construida.
+   */
+  readonly entraQuienEdita?: Permiso;
+  /**
    * **En rojo** (Richi, 11-nov; 0146, 1.5): «Agotados» solo sale si hay algún plato agotado, y
    * entonces en rojo, para que se vea que algo no se puede vender.
    */
@@ -199,7 +205,6 @@ export interface App {
 export const MODULOS: Readonly<Record<string, string>> = {
   M6: 'M6 · Almacén',
   M9: 'M9 · Escandallos',
-  M14: 'M14 · Calendario',
   M16: 'M16 · Servicio, APPCC y trazabilidad',
   M29: 'M29 · Canales de reparto e integraciones',
 };
@@ -455,10 +460,11 @@ const CATALOGO: Record<AppDeLaRueda, App> = {
         icono: IconoCalendario,
         queContesta: '¿Qué pasa hoy, esta semana y este mes?',
         // **La Ampliación 4 (0153).** Equipo (los recordatorios del equipo, la 4 · 3),
-        // Personal (lo de cada uno, con sus vacaciones) y Propuestas (las vacaciones de su gente,
-        // solo para quien las gestiona). Se entra por la primera construida: Personal.
+        // Personal (lo de cada uno, con sus vacaciones y sus notas) y Propuestas (las vacaciones de
+        // su gente, solo para quien las gestiona). Se entra en Equipo quien edita el Calendario
+        // (el gerente y los jefes) y en Personal el resto (Richi, 24-nov).
         vistas: [
-          { id: 'equipo', nombre: 'Equipo', modulo: 'M14' },
+          { id: 'equipo', nombre: 'Equipo', entraQuienEdita: 'app.calendario' },
           { id: 'personal', nombre: 'Personal' },
           { id: 'propuestas', nombre: 'Propuestas', permiso: 'accion.gestionar_vacaciones' },
         ],
@@ -835,8 +841,22 @@ export function vistasQueSeEnsenan(
   );
 }
 
-export function dondeEntraEnElDestino(destino: Destino): Vista | undefined {
-  return vistasConstruidas(destino)[0] ?? destino.vistas[0];
+export function dondeEntraEnElDestino(
+  destino: Destino,
+  puedeEditarlo?: (permiso: Permiso) => boolean,
+): Vista | undefined {
+  const construidas = vistasConstruidas(destino).filter(
+    (v) => v.entraQuienEdita === undefined || puedeEditarlo?.(v.entraQuienEdita) === true,
+  );
+  return construidas[0] ?? vistasConstruidas(destino)[0] ?? destino.vistas[0];
+}
+
+/**
+ * Si la vista de entrada depende de quién entra (`entraQuienEdita`): entonces la dirección del
+ * destino **no nombra vista**, y es la pantalla, que sabe quién entra, la que la elige.
+ */
+export function entraSegunQuien(destino: Destino): boolean {
+  return destino.vistas.some((v) => v.entraQuienEdita !== undefined);
 }
 
 export function destinoPorId(app: App, id: string): Destino | undefined {
@@ -847,7 +867,8 @@ export function destinoPorId(app: App, id: string): Destino | undefined {
 export function rutaDe(app: App, destino?: Destino, vista?: Vista): string {
   const elDestino = destino ?? dondeEntra(app);
   if (elDestino === undefined) return `/${app.id}`;
-  const laVista = vista ?? dondeEntraEnElDestino(elDestino);
+  const laVista =
+    vista ?? (entraSegunQuien(elDestino) ? undefined : dondeEntraEnElDestino(elDestino));
   return laVista === undefined
     ? `/${app.id}/${elDestino.id}`
     : `/${app.id}/${elDestino.id}/${laVista.id}`;

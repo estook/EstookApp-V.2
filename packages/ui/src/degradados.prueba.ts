@@ -40,18 +40,25 @@ describe('los degradados de cada tipo de cosa', () => {
       'contrato',
       'fechas',
       'fogon',
+      'formacion',
       'historial',
       'horas',
       'incidencias',
+      'nota',
       'resto',
       'sala',
       'vacaciones',
     ]);
   });
 
-  // La cocina va en ámbar con su texto oscuro (`--texto-sobre-cocina`): en ámbar el blanco
-  // no se lee. Su texto es pequeño (la hora de un turno), así que pide 4,5:1.
-  const OSCURO = /--texto-sobre-cocina:\s*(#[0-9a-fA-F]{6})/.exec(TEMAS)?.[1] ?? '#000000';
+  // La cocina va en ámbar y las notas en amarillo, con su texto oscuro (`--texto-sobre-…`): ahí el
+  // blanco no se lee. Su texto es pequeño (la hora de un turno), así que pide 4,5:1.
+  const CON_TEXTO_OSCURO = ['cocina', 'nota'];
+  function suOscuro(nombre: string): string {
+    return (
+      new RegExp(`--texto-sobre-${nombre}:\\s*(#[0-9a-fA-F]{6})`).exec(TEMAS)?.[1] ?? '#000000'
+    );
+  }
   function contraste(a: string, b: string): number {
     const [claro, oscuro] = [luminancia(a), luminancia(b)].sort((x, y) => y - x) as [
       number,
@@ -60,7 +67,7 @@ describe('los degradados de cada tipo de cosa', () => {
     return (claro + 0.05) / (oscuro + 0.05);
   }
 
-  it.each(DEGRADADOS.filter((d) => d.nombre !== 'cocina'))(
+  it.each(DEGRADADOS.filter((d) => !CON_TEXTO_OSCURO.includes(d.nombre)))(
     'el blanco se lee sobre todo el de «$nombre»',
     ({ colores }) => {
       expect(colores.length).toBeGreaterThanOrEqual(2);
@@ -78,10 +85,11 @@ describe('los degradados de cada tipo de cosa', () => {
     },
   );
 
-  it('el texto oscuro se lee sobre todo el ámbar de la cocina', () => {
-    const cocina = DEGRADADOS.find((d) => d.nombre === 'cocina');
-    for (const color of cocina?.colores ?? []) {
-      expect(contraste(color, OSCURO), color).toBeGreaterThanOrEqual(4.5);
+  it.each(CON_TEXTO_OSCURO)('el texto oscuro se lee sobre todo el de «%s»', (nombre) => {
+    const degradado = DEGRADADOS.find((d) => d.nombre === nombre);
+    expect(degradado?.colores.length ?? 0).toBeGreaterThanOrEqual(2);
+    for (const color of degradado?.colores ?? []) {
+      expect(contraste(color, suOscuro(nombre)), color).toBeGreaterThanOrEqual(4.5);
     }
   });
 });

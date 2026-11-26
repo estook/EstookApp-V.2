@@ -40,7 +40,8 @@ export type DegradadoDeTipo =
   'vacaciones' | 'horas' | 'contrato' | 'historial' | 'incidencias' | 'fechas';
 
 /** Todos los degradados: los de cada tipo de cosa, las zonas del horario y el de Fogón. */
-export type NombreDeDegradado = DegradadoDeTipo | 'sala' | 'cocina' | 'resto' | 'fogon';
+export type NombreDeDegradado =
+  DegradadoDeTipo | 'sala' | 'cocina' | 'resto' | 'fogon' | 'formacion' | 'nota';
 
 export function Plegable({
   titulo,

@@ -157,6 +157,14 @@ import {
   retirarVacaciones,
 } from './comandos/vacaciones.ts';
 import { lasVacacionesDelEquipo, misVacaciones } from './consultas/vacaciones.ts';
+import {
+  moverRecordatorio,
+  ponerMiNota,
+  ponerRecordatorio,
+  quitarMiNota,
+  quitarRecordatorio,
+} from './comandos/el-calendario-del-equipo.ts';
+import { elCalendarioDelEquipo, misNotas } from './consultas/el-calendario-del-equipo.ts';
 import { elHorario, elHorarioEnBorrador, elHorarioEnPdf } from './consultas/horario.ts';
 import {
   copiarLaSemanaAnterior,
@@ -759,6 +767,9 @@ export const catalogo = {
     // La Ampliación 4 · 2 · Las vacaciones (0153): las mías, y las de mi gente con sus coincidencias.
     [misVacaciones.nombre]: misVacaciones,
     [lasVacacionesDelEquipo.nombre]: lasVacacionesDelEquipo,
+    // La Ampliación 4 · 3 · El calendario del equipo (0153): los recordatorios y mis notas.
+    [elCalendarioDelEquipo.nombre]: elCalendarioDelEquipo,
+    [misNotas.nombre]: misNotas,
     [elAparatoParaFichar.nombre]: elAparatoParaFichar,
 
     // ── T1 · La puerta de Estook TPV (0107) ────────────────────────────────
@@ -942,6 +953,12 @@ export const catalogo = {
     [responderVacaciones.nombre]: responderVacaciones,
     [contestarLaPropuesta.nombre]: contestarLaPropuesta,
     [retirarVacaciones.nombre]: retirarVacaciones,
+    // La Ampliación 4 · 3 (0153): los recordatorios del equipo y las notas de cada uno.
+    [ponerRecordatorio.nombre]: ponerRecordatorio,
+    [moverRecordatorio.nombre]: moverRecordatorio,
+    [quitarRecordatorio.nombre]: quitarRecordatorio,
+    [ponerMiNota.nombre]: ponerMiNota,
+    [quitarMiNota.nombre]: quitarMiNota,
     // El repaso del 9-oct (0081): el horario de siempre se fue; se justifica la falta.
     [justificarIncidencia.nombre]: justificarIncidencia,
     [quitarJustificacion.nombre]: quitarJustificacion,

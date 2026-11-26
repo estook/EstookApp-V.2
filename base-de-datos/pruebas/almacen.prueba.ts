@@ -833,6 +833,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'las_pausas',
       'lleva_la_facturacion',
       'lo_gastado_en_fogon',
+      // La Ampliación 4 · 3 (0131): lo que avisa el calendario, para el reloj. Solo al sistema.
+      'lo_que_avisa_el_calendario',
       'lo_que_hacen_los_clientes',
       'lo_que_he_vendido',
       'locales_revisados_de_noche',

@@ -289,6 +289,9 @@ describe('los avisos al móvil (I · 0070)', () => {
       // La Ampliación 4 · 2 (0153): las vacaciones, pedidas y respondidas.
       'vacaciones.pedidas',
       'vacaciones.respondidas',
+      // La Ampliación 4 · 3 (0153): el día de lo del calendario del equipo, y tus notas.
+      'calendario.recordatorio',
+      'calendario.nota',
     ]);
   });
 

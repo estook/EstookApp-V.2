@@ -353,6 +353,10 @@ export const LO_QUE_PIDE_EL_AVISO: Readonly<Record<TipoDeAviso, readonly Permiso
   // Las vacaciones (0153): las pedidas, a quien las gestiona; la respuesta, a la persona.
   'vacaciones.pedidas': ['accion.gestionar_vacaciones'],
   'vacaciones.respondidas': [],
+  // El calendario del equipo (0153): a quien le toca por sus roles (lo mira el reloj), y la nota,
+  // a quien la apuntó.
+  'calendario.recordatorio': ['app.calendario'],
+  'calendario.nota': [],
 };
 
 export function puedeRecibirElAviso(

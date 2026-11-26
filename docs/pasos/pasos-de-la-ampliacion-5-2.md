@@ -15,19 +15,21 @@
    `estook.com/reservar/…`. Toca **«Copiar el enlace»**: debe decir **«Copiado»**.
 2. Marca **«Avisar al cliente por correo»** y **«Pedir que confirmen»**. Sale **«Confirmar hasta»** con **30 min**.
    **Guardar**.
-3. **Engranaje › La sala y las mesas**: toca la barra o una mesa que no quieras dar por internet y, abajo, en **«En la
+3. En **«Los servicios»**, cada uno lleva **L M X J V S D**: si algún día no abrís, tócalo (queda tachado) y **Guardar**.
+4. **Engranaje › La sala y las mesas**: toca la barra o una mesa que no quieras dar por internet y, abajo, en **«En la
    web de reservas»**, elige **«No sale»**.
 
 ## 2 · Reservar como un cliente (en tu móvil)
 
 1. Abre el enlace que copiaste (pégatelo por WhatsApp). Sale **«Reserva tu mesa»** con el nombre de IKATZ en violeta.
-2. Toca **2**, **Hoy** (o mañana) y una hora de la cena que falte **más de una hora**. Solo salen horas con mesa
-   libre. (Si falta menos de lo que diste para confirmar, la reserva queda confirmada sola.)
+2. Toca **2**, **Hoy** (o mañana) y una hora de la cena. Solo salen horas con mesa libre y **a partir de dos horas
+   desde ahora** (para antes, se llama).
 3. Pon tu nombre, tu teléfono y **tu correo**, y **Reservar**. Debe salir **«Reserva hecha»** con **tu código de 4
    cifras** y **«Confírmala antes de las …»** (30 minutos antes de tu hora).
 4. En tu correo llega **«Tu reserva en IKATZ»** con el día, la hora, el código y el botón **«Confirmar o cancelar»**.
 5. **En la caja**, sin tocar nada, sale el aviso **«Reserva nueva · web»** y tu reserva en Reservas, con **«web»**.
-   La mesa no es nunca la que quitaste en el paso 1.3.
+   La mesa no es nunca la que quitaste en el paso 1.4.
+6. Si tachaste un día en el paso 1.3, en la web sale **«Cerrado»** y no se puede elegir.
 
 ## 3 · Confirmar y cancelar (en tu móvil)
 
@@ -40,7 +42,7 @@
 
 ## 4 · La que no se confirma (opcional, tarda)
 
-1. Haz otra reserva para dentro de una hora y **no la confirmes**.
+1. Haz otra reserva para dentro de dos horas y pico y **no la confirmes**.
 2. Pasada la hora de «Confírmala antes de las …», en la caja sale **«Cancelada · …»** con **«No confirmó a tiempo»**, en
    la lista **«Se canceló sola»**, y a tu correo llega que se ha cancelado.
 

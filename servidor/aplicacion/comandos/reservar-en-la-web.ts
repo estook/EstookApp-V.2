@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import {
+  ANTELACION_DE_LA_WEB,
   COMENSALES_DE_LA_WEB,
   DIAS_QUE_OFRECE_LA_WEB,
+  abreEseDia,
   cabeEnElCuarto,
   cuantoDura,
   elCodigoDeLaReserva,
@@ -11,6 +13,7 @@ import {
   horaEnElLocal,
   laMejorMesa,
   lasHorasDelServicio,
+  losDiasQueAbre,
   telefonoLimpio,
 } from '@estook/dominio';
 import { tocarElServicio } from '../al-segundo.ts';
@@ -97,6 +100,10 @@ export interface LaWebDeReservas {
   readonly hoy: string;
   readonly ultimoDia: string;
   readonly comensalesMax: number;
+  /** Los días de la semana que abre (0 domingo … 6 sábado): los demás salen como «Cerrado». */
+  readonly abre: readonly number[];
+  /** Hasta cuántos minutos antes se reserva por aquí. */
+  readonly antelacion: number;
   /** Si pide el correo (el local avisa por correo) y si funciona «Avísame si se libera». */
   readonly avisaPorCorreo: boolean;
   /** Si hay que confirmarla, y cuántos minutos antes de la hora. */
@@ -121,6 +128,8 @@ export const laWebDeReservas = consulta<{ direccion: string }, LaWebDeReservas>(
       hoy,
       ultimoDia: masDias(hoy, DIAS_QUE_OFRECE_LA_WEB),
       comensalesMax: COMENSALES_DE_LA_WEB,
+      abre: losDiasQueAbre(local.ajustes.servicios),
+      antelacion: ANTELACION_DE_LA_WEB,
       avisaPorCorreo: local.ajustes.avisarPorCorreo,
       pideQueConfirmen: local.ajustes.pedirQueConfirmen,
       minutosParaConfirmar: local.ajustes.minutosParaConfirmar,
@@ -138,6 +147,10 @@ export interface LasHorasDeLaWeb {
    * juntan): no se ofrece «Avísame», que nunca llegaría; se dice que llamen.
    */
   readonly noCaben: boolean;
+  /** Ese día el local no abre (ningún servicio de ese día de la semana). */
+  readonly cerrado: boolean;
+  /** Ese día abre, pero ya no queda ninguna hora con las dos horas de margen: hoy, ya tarde. */
+  readonly tarde: boolean;
 }
 
 export const horasEnLaWeb = consulta<
@@ -159,11 +172,29 @@ export const horasEnLaWeb = consulta<
       });
     }
     queElDiaSePueda(entrada.dia, fechaEnElLocal(contexto.ahora, local.zona));
+    const nada = { dia: entrada.dia, servicios: [], lleno: false, noCaben: false };
+    const abiertos = local.ajustes.servicios.filter((s) => abreEseDia(s, entrada.dia));
+    if (abiertos.length === 0) return { ...nada, cerrado: true, tarde: false };
+    const margen = contexto.ahora.getTime() + ANTELACION_DE_LA_WEB * 60_000;
+    const quedaAlguna = abiertos.some((s) =>
+      lasHorasDelServicio(s).some(
+        (h) => cuandoEmpieza(entrada.dia, h, local.zona).getTime() >= margen,
+      ),
+    );
+    if (!quedaAlguna) return { ...nada, cerrado: false, tarde: true };
     const { mesas, juntables } = await lasMesasDelLocal(contexto, local.id, true);
     const noCaben =
       laMejorMesa({ mesas, juntables, ocupados: [], comensales, desde: 0, hasta: 1 }) === null;
-    if (noCaben) return { dia: entrada.dia, servicios: [], lleno: true, noCaben };
-    const libres = await lasHorasLibres(contexto, local.id, entrada.dia, comensales, null, true);
+    if (noCaben) return { ...nada, lleno: true, noCaben, cerrado: false, tarde: false };
+    const libres = await lasHorasLibres(
+      contexto,
+      local.id,
+      entrada.dia,
+      comensales,
+      null,
+      true,
+      ANTELACION_DE_LA_WEB,
+    );
     // La web no pasa del tope: es el camarero quien decide si mete a alguien más.
     const servicios = libres.servicios.map((s) => ({
       nombre: s.nombre,
@@ -174,6 +205,8 @@ export const horasEnLaWeb = consulta<
       servicios,
       lleno: servicios.every((s) => s.horas.length === 0),
       noCaben: false,
+      cerrado: false,
+      tarde: false,
     };
   },
 });
@@ -246,17 +279,21 @@ export const reservarEnLaWeb = comando<
     }
     const hoy = fechaEnElLocal(contexto.ahora, local.zona);
     queElDiaSePueda(entrada.dia, hoy);
-    if (!local.ajustes.servicios.some((s) => lasHorasDelServicio(s).includes(entrada.hora))) {
+    if (
+      !local.ajustes.servicios.some(
+        (s) => abreEseDia(s, entrada.dia) && lasHorasDelServicio(s).includes(entrada.hora),
+      )
+    ) {
       throw new FalloDeAplicacion('faltan_datos', {
         campos: ['hora'],
-        porque: 'A esa hora no se reserva.',
+        porque: 'Ese día, a esa hora, no se reserva.',
       });
     }
     const empieza = cuandoEmpieza(entrada.dia, entrada.hora, local.zona);
-    if (empieza.getTime() < contexto.ahora.getTime() + 15 * 60_000) {
+    if (empieza.getTime() < contexto.ahora.getTime() + ANTELACION_DE_LA_WEB * 60_000) {
       throw new FalloDeAplicacion('faltan_datos', {
         campos: ['hora'],
-        porque: 'Esa hora ya está muy cerca. Elige otra o llámales.',
+        porque: 'Por aquí se reserva hasta dos horas antes. Para antes, llámales.',
       });
     }
 

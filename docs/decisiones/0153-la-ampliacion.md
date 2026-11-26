@@ -633,6 +633,9 @@ Migración **0133**. Lo que pide la sección 6 para la web, con las respuestas d
   guardar nada en el navegador.
 - **Solo las mesas que el local ofrece por internet**: cada mesa, **«Sale» o «No sale»** en el editor de la sala (de
   fábrica, sale). **La web nunca pasa del tope de comensales del cuarto de hora**: eso lo decide el camarero.
+- **Los días que abre cada servicio** (la maqueta aprobada: «Cerrado: domingo noche y lunes»), que faltaban en la 5 · 1:
+  en Ajustes del TPV › Reservas, cada servicio con **L M X J V S D**; de fábrica, todos. Un día que no abre ningún
+  servicio sale en la web como **«Cerrado»** y no se reserva, ni en la web ni en el TPV.
 - **«Ya tengo reserva»**: con su teléfono y su código la ve, **la confirma o la cancela**. El enlace del correo abre lo
   mismo; **confirmar y cancelar se hacen tocando en la página**, nunca solo por abrir el enlace (los correos los abren
   a veces los antivirus).
@@ -657,8 +660,9 @@ Migración **0133**. Lo que pide la sección 6 para la web, con las respuestas d
 3. **La web no pasa del tope de comensales**; el camarero sí puede, con su aviso.
 4. **Un grupo que no cabe nunca** en las mesas de internet no ve «Avísame si se libera», que nunca llegaría: ve
    «llámales» con el teléfono del local.
-5. **Por la web, de 1 a 12 personas, hasta dos meses vista y con un cuarto de hora de margen** como poco; para más,
-   llamar.
+5. **Por la web, de 1 a 12 personas, hasta dos meses vista y hasta dos horas antes** (la maqueta: «Hasta 2 h antes ·
+   60 días vista»); para más o para antes, llamar. El camarero sí reserva al momento. Hoy, ya tarde, la web lo dice
+   en vez de ofrecer «Avísame».
 6. **El teléfono se compara por sus nueve últimas cifras**: «+34 600 111 222» y «600111222» son el mismo.
 7. **«Avísame si se libera»** escribe una sola vez a todos los apuntados de ese día, sin guardarles la mesa: el primero
    que reserva, se la queda. Pedirlo dos veces no apunta dos veces.

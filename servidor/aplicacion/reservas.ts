@@ -9,6 +9,7 @@ import {
   instanteEnElLocal,
   laMejorMesa,
   lasDuracionesReales,
+  abreEseDia,
   lasHorasDelServicio,
   type MesaParaReservar,
   type ServicioDeReservas,
@@ -277,6 +278,8 @@ export async function lasHorasLibres(
   comensales: number,
   menosLaReserva: string | null,
   soloPorInternet = false,
+  /** Desde cuántos minutos de ahora: un cuarto de hora en el TPV; dos horas en la web. */
+  antelacion = 15,
 ): Promise<LasHorasDeUnDia> {
   const ajustes = await losAjustesDeReservas(contexto, localId);
   const zona = await laZonaHoraria(contexto, localId);
@@ -294,34 +297,37 @@ export async function lasHorasLibres(
     ajustes.liberarTras,
   );
   const empiezan = await losQueEmpiezan(contexto, localId, dia, menosLaReserva);
-  const desdeYa = contexto.ahora.getTime() + 15 * 60_000;
+  const desdeYa = contexto.ahora.getTime() + antelacion * 60_000;
   return {
     dia,
     duracion,
-    servicios: ajustes.servicios.map((s) => ({
-      nombre: s.nombre,
-      horas: lasHorasDelServicio(s)
-        .map((hora) => ({ hora, empieza: cuandoEmpieza(dia, hora, zona).getTime() }))
-        .filter((h) => h.empieza >= desdeYa)
-        .map(({ hora, empieza }) => {
-          const mejor = laMejorMesa({
-            mesas,
-            juntables,
-            ocupados,
-            comensales,
-            desde: empieza,
-            hasta: empieza + duracion * 60_000,
-          });
-          return {
-            hora,
-            mesas: mejor === null ? null : mejor.map((m) => ({ id: m.id, nombre: m.nombre })),
-            pasaDelTope: !cabeEnElCuarto(
-              ajustes.topePorCuarto,
-              empiezan.get(elCuartoDe(hora)) ?? 0,
+    // Solo los servicios que abren ese día de la semana: un día que cierra no tiene horas.
+    servicios: ajustes.servicios
+      .filter((s) => abreEseDia(s, dia))
+      .map((s) => ({
+        nombre: s.nombre,
+        horas: lasHorasDelServicio(s)
+          .map((hora) => ({ hora, empieza: cuandoEmpieza(dia, hora, zona).getTime() }))
+          .filter((h) => h.empieza >= desdeYa)
+          .map(({ hora, empieza }) => {
+            const mejor = laMejorMesa({
+              mesas,
+              juntables,
+              ocupados,
               comensales,
-            ),
-          };
-        }),
-    })),
+              desde: empieza,
+              hasta: empieza + duracion * 60_000,
+            });
+            return {
+              hora,
+              mesas: mejor === null ? null : mejor.map((m) => ({ id: m.id, nombre: m.nombre })),
+              pasaDelTope: !cabeEnElCuarto(
+                ajustes.topePorCuarto,
+                empiezan.get(elCuartoDe(hora)) ?? 0,
+                comensales,
+              ),
+            };
+          }),
+      })),
   };
 }

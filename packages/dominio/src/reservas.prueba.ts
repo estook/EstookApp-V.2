@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CUENTAS_PARA_APRENDER,
   DURACIONES_DE_FABRICA,
+  abreEseDia,
   cabeEnElCuarto,
   elCodigoDeLaReserva,
   hastaCuandoConfirmar,
@@ -13,6 +14,7 @@ import {
   lasDuracionesReales,
   lasHorasDelServicio,
   lasMesasEnLetra,
+  losDiasQueAbre,
   telefonoLimpio,
 } from './reservas.ts';
 
@@ -65,6 +67,27 @@ describe('las horas', () => {
     expect(esUnServicio({ nombre: 'Cena', desde: '20:10', hasta: '22:30' })).toBe(false);
     expect(esUnServicio({ nombre: 'Cena', desde: '23:00', hasta: '22:30' })).toBe(false);
     expect(esUnServicio({ nombre: '', desde: '20:00', hasta: '22:30' })).toBe(false);
+  });
+
+  it('los días que abre: sin decirlo, todos; cerrado lunes, el lunes no hay', () => {
+    const cena = { nombre: 'Cena', desde: '20:00', hasta: '22:30' };
+    const sinLunes = { ...cena, dias: [0, 2, 3, 4, 5, 6] };
+    expect(esUnServicio(sinLunes)).toBe(true);
+    expect(esUnServicio({ ...cena, dias: [] })).toBe(false);
+    expect(esUnServicio({ ...cena, dias: [1, 1] })).toBe(false);
+    expect(esUnServicio({ ...cena, dias: [7] })).toBe(false);
+    // El 30-nov-2026 es lunes y el 1-dic, martes.
+    expect(abreEseDia(cena, '2026-11-30')).toBe(true);
+    expect(abreEseDia(sinLunes, '2026-11-30')).toBe(false);
+    expect(abreEseDia(sinLunes, '2026-12-01')).toBe(true);
+    // Comida de martes a domingo y cena solo el fin de semana: abre de martes a domingo.
+    expect(
+      losDiasQueAbre([
+        { ...cena, nombre: 'Comida', dias: [0, 2, 3, 4, 5, 6] },
+        { ...cena, dias: [5, 6] },
+      ]),
+    ).toEqual([0, 2, 3, 4, 5, 6]);
+    expect(losDiasQueAbre([cena])).toEqual([0, 1, 2, 3, 4, 5, 6]);
   });
 });
 

@@ -25,6 +25,8 @@ interface LaWeb {
   readonly hoy: string;
   readonly ultimoDia: string;
   readonly comensalesMax: number;
+  /** Los días de la semana que abre (0 domingo … 6 sábado). */
+  readonly abre: readonly number[];
   readonly avisaPorCorreo: boolean;
   readonly pideQueConfirmen: boolean;
   readonly minutosParaConfirmar: number;
@@ -35,6 +37,8 @@ interface LasHoras {
   readonly servicios: readonly { readonly nombre: string; readonly horas: readonly string[] }[];
   readonly lleno: boolean;
   readonly noCaben: boolean;
+  readonly cerrado: boolean;
+  readonly tarde: boolean;
 }
 
 interface SuReserva {
@@ -257,8 +261,14 @@ function LaReserva({
   readonly cliente: Cliente;
   readonly alHecha: (reserva: SuReserva) => void;
 }) {
+  const abreEse = (d: string) => web.abre.includes(new Date(`${d}T12:00:00Z`).getUTCDay());
   const [comensales, setComensales] = useState(2);
-  const [dia, setDia] = useState(web.hoy);
+  // El primer día que abre: si hoy cierra, mañana (o el siguiente).
+  const [dia, setDia] = useState(
+    () =>
+      Array.from({ length: DIAS_A_LA_VISTA }, (_, i) => masDias(web.hoy, i)).find(abreEse) ??
+      web.hoy,
+  );
   const [horas, setHoras] = useState<LasHoras | null>(null);
   const [errorDeHoras, setErrorDeHoras] = useState<ErrorDeLaApi | null>(null);
   const [hora, setHora] = useState<string | null>(null);
@@ -405,18 +415,20 @@ function LaReserva({
         >
           {dias.map((d) => {
             const corto = elDiaCorto(d, web.hoy);
+            const abre = abreEse(d);
             return (
               <Ficha
                 key={d}
                 ancha
                 puesta={d === dia}
-                etiqueta={elDiaLargo(d, web.hoy)}
+                apagada={!abre}
+                etiqueta={abre ? elDiaLargo(d, web.hoy) : `${elDiaLargo(d, web.hoy)}: cerrado`}
                 alTocar={() => {
                   setDia(d);
                 }}
               >
                 <span className="text-etiqueta font-bold capitalize">{corto.arriba}</span>
-                <span className="text-etiqueta opacity-80">{corto.abajo}</span>
+                <span className="text-etiqueta opacity-80">{abre ? corto.abajo : 'Cerrado'}</span>
               </Ficha>
             );
           })}
@@ -441,6 +453,19 @@ function LaReserva({
           <ErrorEnCristiano error={errorDeHoras} />
         ) : horas === null ? (
           <Cargando que="las horas" lineas={2} />
+        ) : horas.cerrado || horas.tarde ? (
+          <div className="flex flex-col gap-e1 rounded-grande bg-fondo p-e4">
+            <p className="font-semibold text-texto">
+              {horas.cerrado
+                ? `${elDiaLargo(dia, web.hoy).replace(/^./, (c) => c.toUpperCase())} ${web.nombre} no abre.`
+                : 'Por aquí ya no se puede reservar para hoy.'}
+            </p>
+            <p className="text-secundario text-texto-suave">
+              {horas.cerrado
+                ? 'Elige otro día.'
+                : `Se reserva hasta dos horas antes${web.telefono !== null ? `: llámales al ${web.telefono}` : ''}, o elige otro día.`}
+            </p>
+          </div>
         ) : horas.lleno ? (
           <Lleno
             web={web}
@@ -1073,12 +1098,15 @@ function Ficha({
   puesta,
   etiqueta,
   ancha = false,
+  apagada = false,
   alTocar,
   children,
 }: {
   readonly puesta: boolean;
   readonly etiqueta: string;
   readonly ancha?: boolean;
+  /** Un día que el local cierra: se ve, tachado y sin poder elegirse. */
+  readonly apagada?: boolean;
   readonly alTocar: () => void;
   readonly children: ReactNode;
 }) {
@@ -1088,13 +1116,16 @@ function Ficha({
       role="radio"
       aria-checked={puesta}
       aria-label={etiqueta}
+      disabled={apagada}
       onClick={alTocar}
       className={`flex shrink-0 flex-col items-center justify-center rounded-medio border font-semibold tabular-nums transition-[transform,box-shadow] active:scale-[0.97] ${
         ancha ? 'min-w-[68px] px-e3 py-e2' : 'min-h-[44px] min-w-[52px] px-e3'
       } ${
         puesta
           ? 'border-transparent text-white shadow-[0_8px_18px_-10px_rgba(103,68,224,0.8)]'
-          : 'border-borde bg-superficie text-texto hover:border-borde-fuerte'
+          : apagada
+            ? 'border-dashed border-borde bg-transparent text-texto-tenue'
+            : 'border-borde bg-superficie text-texto hover:border-borde-fuerte'
       }`}
       style={puesta ? fondoDegradado('fechas') : undefined}
     >

@@ -691,6 +691,8 @@ export interface ServicioDeReservas {
   readonly nombre: string;
   readonly desde: string;
   readonly hasta: string;
+  /** Los días que abre (0 domingo … 6 sábado). Sin decirlo, todos. */
+  readonly dias?: readonly number[];
 }
 
 export interface LasReservas {

@@ -262,6 +262,41 @@ describe('las horas de la web', () => {
     expect((await lasHorasDeLaWeb(2)).lleno).toBe(false);
   });
 
+  it('el día que el local no abre, la web lo dice y no deja reservar', async () => {
+    // El 1-dic es martes: la cena, de miércoles a domingo.
+    const sinMartes = {
+      ...AJUSTES,
+      servicios: [{ nombre: 'Cena', desde: '20:00', hasta: '22:30', dias: [0, 3, 4, 5, 6] }],
+    };
+    losDatos(await api.ejecutar(rosaTpv, 'guardar_ajustes_de_reservas', sinMartes));
+    const web = losDatos<{ abre: number[] }>(
+      await api.consultar(null, 'la_web_de_reservas', { direccion }),
+    );
+    expect(web.abre).toEqual([0, 3, 4, 5, 6]);
+    expect(await lasHorasDeLaWeb(2)).toMatchObject({ cerrado: true, lleno: false, servicios: [] });
+    expect(
+      elFallo(await reservarEnLaWeb({ hora: '21:00', nombre: 'Ane', correo: 'a@b.com' })),
+    ).toBe('faltan_datos');
+    // Y en el TPV tampoco salen horas ese día.
+    const delTpv = losDatos<{ servicios: unknown[] }>(
+      await api.consultar(saraTpv, 'horas_para_reservar', { dia: HOY, comensales: '2' }),
+    );
+    expect(delTpv.servicios).toEqual([]);
+    losDatos(await api.ejecutar(rosaTpv, 'guardar_ajustes_de_reservas', AJUSTES));
+  });
+
+  it('por la web, hasta dos horas antes: a las 21:00 ya no queda nada para hoy', async () => {
+    reloj = new Date('2026-12-01T20:00:00Z'); // las 21:00 en Madrid; la última hora, las 22:30
+    try {
+      expect(await lasHorasDeLaWeb(2)).toMatchObject({ tarde: true, lleno: false });
+      expect(
+        elFallo(await reservarEnLaWeb({ hora: '22:30', nombre: 'Ane', correo: 'a@b.com' })),
+      ).toBe('faltan_datos');
+    } finally {
+      reloj = LAS_CUATRO;
+    }
+  });
+
   it('ni días pasados ni más de dos meses vista, ni más de doce', async () => {
     expect(
       elFallo(

@@ -231,7 +231,13 @@ export const cancelarReserva = comando<
 // ═══ Los ajustes ══════════════════════════════════════════════════════════════
 
 const servicio = z
-  .object({ nombre: z.string().trim().min(1).max(20), desde: cuarto, hasta: cuarto })
+  .object({
+    nombre: z.string().trim().min(1).max(20),
+    desde: cuarto,
+    hasta: cuarto,
+    /** Los días que abre (0 domingo … 6 sábado). Sin decirlo, todos. */
+    dias: z.array(z.number().int().min(0).max(6)).min(1).max(7).optional(),
+  })
   .strict();
 
 export const entradaAjustesDeReservas = z

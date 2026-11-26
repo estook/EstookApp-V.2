@@ -14,7 +14,14 @@ const MESAS = `${PREFIJO}mesas`;
 const UNA_MESA_DURA_MS = 16 * 60 * 60 * 1000;
 const MESAS_COMO_MUCHO = 80;
 
-export type LoQueSeGuarda = 'aparato' | 'el_plano' | 'la_carta' | 'impresoras' | 'la_cocina';
+export type LoQueSeGuarda =
+  | 'aparato'
+  | 'el_plano'
+  | 'la_carta'
+  | 'impresoras'
+  | 'la_cocina'
+  // Las reservas de hoy (la Ampliación 5 · 1, 0153): sin internet se ven las guardadas.
+  | 'las_reservas';
 
 export function guardarLaCopia(que: LoQueSeGuarda, datos: unknown): void {
   try {

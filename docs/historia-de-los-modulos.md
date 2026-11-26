@@ -3597,6 +3597,14 @@ capas, «Próximos» y arrastrar para mover), y en Personal las notas de cada un
 los apunta el reloj del móvil (`lo_que_avisa_el_calendario`). Las pruebas: `el-calendario-del-equipo.prueba.ts`
 contra la base, `degradados.prueba.ts` y las de las apps.
 
+### La Ampliación 5 · 1 · Las reservas: el motor y la sala
+
+_26 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), sección 19 (migración 0132): el
+motor de reservas (`reservas.ts`), la restricción de exclusión que impide dos reservas en la misma mesa y tramo,
+«Reservas» en Estook TPV con «Sentar», el plano con lo reservado, sus avisos, Ajustes del TPV › Reservas y las mesas
+que se juntan. Las pruebas: `reservas.prueba.ts`, `las-reservas.prueba.ts` contra la base (dos aparatos a la vez) y
+`logica.prueba.ts` del TPV.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

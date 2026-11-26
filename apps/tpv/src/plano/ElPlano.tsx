@@ -78,6 +78,18 @@ export function ElPlano() {
     reservas.data?.encendidas === true
       ? laReservaDeLaMesa(reservas.data.reservas, m.id, ahora, reservas.data.liberarTras)
       : null;
+  // Una reserva de dos mesas juntas, ya sentada en una: la otra va «con» ella, no libre.
+  const juntaCon = (m: MesaDelPlano): string | null => {
+    if (m.cuenta !== null || reservas.data?.encendidas !== true) return null;
+    const sentada = reservas.data.reservas.find(
+      (r) => r.estado === 'sentada' && r.cuentaId !== null && r.mesas.some((x) => x.id === m.id),
+    );
+    if (sentada === undefined) return null;
+    const conLa = (plano.data?.zonas ?? [])
+      .flatMap((z) => z.mesas)
+      .find((x) => x.id !== m.id && x.cuenta?.cuentaId === sentada.cuentaId);
+    return conLa?.nombre ?? null;
+  };
   const [opciones, setOpciones] = useState<string | null>(null);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
 
@@ -280,6 +292,7 @@ export function ElPlano() {
                         key={m.id}
                         mesa={m}
                         reserva={deLaMesa(m)}
+                        juntaCon={juntaCon(m)}
                         enElPlano
                         elegida={ancho && opciones !== null && m.cuenta?.cuentaId === opciones}
                         alTocar={() => {
@@ -300,6 +313,7 @@ export function ElPlano() {
                         key={m.id}
                         mesa={m}
                         reserva={deLaMesa(m)}
+                        juntaCon={juntaCon(m)}
                         enElPlano={false}
                         alTocar={() => {
                           if (m.cuenta === null) setAbriendo(m);

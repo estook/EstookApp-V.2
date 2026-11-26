@@ -185,7 +185,7 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
           Con unas cuantas cuentas cobradas de cada tamaño, Estook usa lo que duran de verdad.
         </p>
         {TAMANOS.map((t, i) => (
-          <Minutos
+          <CuantoDura
             key={t}
             titulo={t}
             frase={
@@ -194,9 +194,6 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
                 : 'Todavía con esta: faltan cuentas cobradas de este tamaño.'
             }
             valor={duraciones[i] ?? 90}
-            desde={30}
-            hasta={360}
-            paso={15}
             ocupado={guardando}
             alCambiar={(v) => {
               setDuraciones((antes) => antes.map((d, j) => (j === i ? v : d)));
@@ -268,6 +265,60 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
           Guardar
         </Boton>
       </div>
+    </div>
+  );
+}
+
+/** Lo que dura una mesa, de cuarto en cuarto de hora y dicho en horas: «1 h 45». */
+function CuantoDura({
+  titulo,
+  frase,
+  valor,
+  ocupado,
+  alCambiar,
+}: {
+  readonly titulo: string;
+  readonly frase: string;
+  readonly valor: number;
+  readonly ocupado: boolean;
+  readonly alCambiar: (minutos: number) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-e4">
+      <span className="flex min-w-[12rem] flex-1 flex-col">
+        <span className="font-bold">{titulo}</span>
+        <span className="text-secundario text-texto-tenue">{frase}</span>
+      </span>
+      <span className="flex items-center gap-e2">
+        <button
+          type="button"
+          aria-label={`${titulo}: un cuarto de hora menos`}
+          disabled={ocupado || valor <= 30}
+          onClick={() => {
+            alCambiar(Math.max(30, valor - 15));
+          }}
+          className="size-12 rounded-grande bg-charcoal text-pantalla font-bold disabled:opacity-50"
+        >
+          −
+        </button>
+        <span
+          className="w-28 whitespace-nowrap text-center text-pantalla font-bold tabular-nums"
+          aria-live="polite"
+        >
+          {enHoras(valor)}
+        </span>
+        <button
+          type="button"
+          aria-label={`${titulo}: un cuarto de hora más`}
+          disabled={ocupado || valor >= 360}
+          onClick={() => {
+            alCambiar(Math.min(360, valor + 15));
+          }}
+          className="size-12 rounded-grande bg-charcoal text-pantalla font-bold disabled:opacity-50"
+        >
+          +
+        </button>
+      </span>
     </div>
   );
 }

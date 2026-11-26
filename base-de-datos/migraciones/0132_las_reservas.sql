@@ -193,3 +193,32 @@ comment on column estook.cuenta.reserva_id is
   'La reserva que se sentó en esta mesa (0153): «Sentar» la une, y su ticket queda unido a ella.';
 
 create unique index cuenta_una_por_reserva on estook.cuenta (reserva_id) where reserva_id is not null;
+
+-- Cuando la mesa de una reserva se cobra, se anula o se junta con otra, **sus mesas quedan libres para
+-- otras reservas**: el tramo previsto ya no hace falta. Con privilegio, porque quien cobra en la caja no
+-- tiene por qué llevar las reservas; solo toca las filas de esa reserva.
+create function estook.soltar_las_mesas_de_la_reserva()
+returns trigger
+language plpgsql
+security definer
+set search_path = estook, pg_catalog, pg_temp
+as $$
+begin
+  if new.reserva_id is not null
+     and (new.liberada_en is not null or new.anulada_en is not null)
+     and old.liberada_en is null and old.anulada_en is null then
+    delete from estook.reserva_de_mesa where reserva_id = new.reserva_id;
+  end if;
+  return new;
+end;
+$$;
+
+comment on function estook.soltar_las_mesas_de_la_reserva() is
+  'Al cobrar, anular o juntar la cuenta de una reserva sentada, suelta sus mesas para otras reservas (0153).';
+
+revoke all on function estook.soltar_las_mesas_de_la_reserva() from public;
+grant execute on function estook.soltar_las_mesas_de_la_reserva() to estook_api;
+
+create trigger cuenta_suelta_las_mesas_de_su_reserva
+  after update of liberada_en, anulada_en on estook.cuenta
+  for each row execute function estook.soltar_las_mesas_de_la_reserva();

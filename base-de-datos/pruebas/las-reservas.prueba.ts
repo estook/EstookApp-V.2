@@ -18,7 +18,7 @@ let base: BaseDePrueba;
 let api: ApiDePrueba;
 const alSegundo = alSegundoDeMentira();
 /** Martes 1-dic-2026, a las 16:00 en Madrid. */
-const reloj = new Date('2026-12-01T15:00:00Z');
+let reloj = new Date('2026-12-01T15:00:00Z');
 const HOY = '2026-12-01';
 
 const ROSA = 'rosa@ejemplo.estook.com'; // gerente de Bar Centro: los ajustes y el plano
@@ -27,6 +27,8 @@ const SARA = 'sara@ejemplo.estook.com'; // camarera: reserva y sienta
 let rosaTpv: string;
 let saraTpv: string;
 const mesa: Record<string, string> = {};
+let salon: string;
+let laCuentaDeJon: string;
 
 interface Horas {
   duracion: number;
@@ -88,7 +90,7 @@ beforeAll(async () => {
   ).llave;
   saraTpv = await enUnAparato(tablet, SARA);
 
-  const salon = losDatos<{ zonaId: string }>(
+  salon = losDatos<{ zonaId: string }>(
     await api.ejecutar(rosaTpv, 'crear_zona_de_sala', { nombre: 'Salón' }),
   ).zonaId;
   for (const [nombre, plazas, x] of [
@@ -213,6 +215,7 @@ describe('en servicio', () => {
     );
     const jon = lo.reservas.find((r) => r.nombre === 'Jon Etxabe');
     const cuentaId = crypto.randomUUID();
+    laCuentaDeJon = cuentaId;
     losDatos(
       await api.ejecutar(saraTpv, 'abrir_mesa', {
         cuenta_id: cuentaId,
@@ -262,5 +265,50 @@ describe('en servicio', () => {
     expect(aLas(await lasHoras(2), '21:00')?.pasaDelTope).toBe(true);
     expect(aLas(await lasHoras(2), '20:30')?.pasaDelTope).toBe(false);
     losDatos(await reservar(saraTpv, { hora: '21:00', comensales: 2, nombre: 'Laura' }));
+  });
+});
+
+describe('las mesas que se sueltan', () => {
+  it('al liberar la mesa de una reserva sentada, sus mesas quedan libres para otras', async () => {
+    losDatos(await api.ejecutar(saraTpv, 'liberar_mesa', { cuenta_id: laCuentaDeJon }));
+    const { rows } = await base.bd.query<{ cuantas: number }>(
+      `select count(*)::int as cuantas from estook.reserva_de_mesa rm
+         join estook.cuenta c on c.reserva_id = rm.reserva_id where c.id = $1`,
+      [laCuentaDeJon],
+    );
+    expect(rows[0]?.cuantas).toBe(0);
+  });
+
+  it('la mesa de quien no llega se libera a los minutos del local, y su reserva sigue', async () => {
+    mesa['9'] = losDatos<{ mesaId: string }>(
+      await api.ejecutar(rosaTpv, 'crear_mesa', { zona_id: salon, nombre: '9', x: 700, y: 200 }),
+    ).mesaId;
+    losDatos(await api.ejecutar(rosaTpv, 'cambiar_mesa', { mesa_id: mesa['9'], plazas: 2 }));
+    losDatos(
+      await reservar(saraTpv, { hora: '20:00', comensales: 2, nombre: 'Ane', mesas: [mesa['9']] }),
+    );
+    // A tiempo todavía: la 9 es suya.
+    expect(
+      elFallo(
+        await reservar(saraTpv, {
+          hora: '20:30',
+          comensales: 2,
+          nombre: 'Unai',
+          mesas: [mesa['9']],
+        }),
+      ),
+    ).toBe('ya_hecho');
+    // A las 20:20 lleva 20 minutos de retraso, y el local libera a los 15.
+    reloj = new Date('2026-12-01T19:20:00Z');
+    losDatos(
+      await reservar(saraTpv, { hora: '20:30', comensales: 2, nombre: 'Unai', mesas: [mesa['9']] }),
+    );
+    const lo = losDatos<{ reservas: { nombre: string; estado: string; mesas: unknown[] }[] }>(
+      await api.consultar(saraTpv, 'las_reservas', {}),
+    );
+    expect(lo.reservas.find((x) => x.nombre === 'Ane')).toMatchObject({
+      estado: 'reservada',
+      mesas: [],
+    });
   });
 });

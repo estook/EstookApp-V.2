@@ -870,6 +870,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'renombrar_desde_el_admin',
       'sembrar_categorias',
       'sesion_activa',
+      // La Ampliación 5 · 1 (0132): al cobrar la mesa de una reserva, suelta sus mesas.
+      'soltar_las_mesas_de_la_reserva',
       'suscripcion_al_crear_organizacion',
       'terminal_por_llave',
       'tiene_como_volver_a_entrar',

@@ -59,11 +59,13 @@ export function LasReservasDelTpv() {
     setHaciendo(r.id);
     setFallo(null);
     const cuentaId = crypto.randomUUID();
-    const hecho = await ejecutar<{ cuentaId: string }>('abrir_mesa', {
-      cuenta_id: cuentaId,
-      mesa_id: mesa.id,
-      reserva_id: r.id,
-    });
+    // Como abrir una mesa en el plano: **también sin internet**, que sube al volver (T5 · 2 · 1).
+    const hecho = await ejecutar<{ cuentaId: string }>(
+      'abrir_mesa',
+      { cuenta_id: cuentaId, mesa_id: mesa.id, reserva_id: r.id },
+      cuentaId,
+      { que: `Mesa ${mesa.nombre} · ${r.nombre}`, cuentaId, respuesta: { cuentaId } },
+    );
     setHaciendo(null);
     if (hecho.ok) {
       irALaMesa(hecho.datos.cuentaId);
@@ -193,7 +195,10 @@ export function LasReservasDelTpv() {
                       {[
                         r.mesas.length === 0 ? 'Sin mesa' : `Mesa ${susMesas(r)}`,
                         r.origen === 'web' ? 'web' : null,
-                        esHoy && espera ? cuantoFalta(r, ahora).toLowerCase() : null,
+                        // Lo que falta, solo cuando importa: la hora ya está a la izquierda.
+                        esHoy && espera && minutosHasta(r, ahora) <= 90
+                          ? cuantoFalta(r, ahora).toLowerCase()
+                          : null,
                         r.nota,
                       ]
                         .filter((p) => p !== null && p !== '')
@@ -214,6 +219,12 @@ export function LasReservasDelTpv() {
                 ) : apagada ? (
                   <span className="text-etiqueta font-bold text-texto-suave">
                     {r.estado === 'no_vino' ? 'No vino' : 'Cancelada'}
+                  </span>
+                ) : esHoy && r.mesas.length === 0 ? (
+                  // Llegaron tarde y su mesa se liberó (los minutos del local): se les sienta en una
+                  // libre desde la sala, o «No han venido».
+                  <span className="text-right text-etiqueta font-bold text-texto-suave">
+                    Mesa liberada
                   </span>
                 ) : esHoy ? (
                   <Boton
@@ -281,32 +292,40 @@ export function LasReservasDelTpv() {
                             (x) => x.estado === 'reservada' && x.mesas.some((y) => y.id === m.id),
                           ) ?? null);
                     const abiertaYa = m.cuenta !== null && elDia === hoy;
+                    // Ocupada manda: se ve ocupada, con la hora de su siguiente reserva aparte.
+                    const enVioleta = r !== null && !abiertaYa;
                     return (
                       <div
                         key={m.id}
                         className={[
                           'flex min-h-[5.2rem] flex-col justify-between rounded-mayor border p-e3',
-                          r !== null
+                          enVioleta
                             ? 'border-transparent text-white'
                             : abiertaYa
                               ? 'border-borde bg-superficie'
                               : 'border-dashed border-borde bg-fondo text-texto-suave',
                         ].join(' ')}
-                        style={r !== null ? fondoDegradado('fechas') : undefined}
+                        style={enVioleta ? fondoDegradado('fechas') : undefined}
                       >
                         <span className="flex items-center justify-between gap-e1">
                           <strong className="text-seccion">{m.nombre}</strong>
                           {r !== null && (
-                            <span className="rounded-redondo bg-white/25 px-e2 text-etiqueta font-bold tabular-nums">
+                            <span
+                              className={[
+                                'rounded-redondo px-e2 text-etiqueta font-bold tabular-nums',
+                                enVioleta ? 'bg-white/25' : 'text-white',
+                              ].join(' ')}
+                              style={enVioleta ? undefined : fondoDegradado('fechas')}
+                            >
                               {r.hora}
                             </span>
                           )}
                         </span>
                         <span className="truncate text-secundario font-semibold">
-                          {r !== null
-                            ? `${String(r.comensales)} · ${r.nombre}`
-                            : abiertaYa
-                              ? 'Ocupada'
+                          {abiertaYa
+                            ? 'Ocupada'
+                            : r !== null
+                              ? `${String(r.comensales)} · ${r.nombre}`
                               : 'Libre'}
                         </span>
                       </div>

@@ -153,13 +153,17 @@ export async function loOcupado(
   hasta: Date,
   duraciones: readonly number[],
   menosLaReserva: string | null,
+  liberarTras: number,
 ): Promise<TramoOcupado[]> {
+  // Sin las de quien no llega: pasados los minutos del local, su mesa cuenta como libre (0153).
   const reservas = await contexto.sql<{ mesa_id: string; desde: Date; hasta: Date }[]>`
-    select mesa_id::text as mesa_id, lower(tramo) as desde, upper(tramo) as hasta
-      from estook.reserva_de_mesa
-     where local_id = ${localId}::uuid
-       and tramo && tstzrange(${desde.toISOString()}::timestamptz, ${hasta.toISOString()}::timestamptz)
-       and (${menosLaReserva}::uuid is null or reserva_id <> ${menosLaReserva}::uuid)
+    select rm.mesa_id::text as mesa_id, lower(rm.tramo) as desde, upper(rm.tramo) as hasta
+      from estook.reserva_de_mesa rm
+      join estook.reserva r on r.id = rm.reserva_id
+     where rm.local_id = ${localId}::uuid
+       and rm.tramo && tstzrange(${desde.toISOString()}::timestamptz, ${hasta.toISOString()}::timestamptz)
+       and (${menosLaReserva}::uuid is null or rm.reserva_id <> ${menosLaReserva}::uuid)
+       and not (r.estado = 'reservada' and r.empieza < ${elLimiteDelRetraso(contexto, liberarTras).toISOString()}::timestamptz)
   `;
   const abiertas = await contexto.sql<
     { mesa_id: string; abierta_en: Date; personas: number | null }[]
@@ -181,6 +185,30 @@ export async function loOcupado(
       return { mesaId: c.mesa_id, desde: abierta, hasta: Math.max(suele, ahora + 15 * 60_000) };
     }),
   ];
+}
+
+/** Hasta cuándo se espera a quien no llega: antes de esta hora, su mesa ya está libre. */
+export function elLimiteDelRetraso(contexto: Contexto, liberarTras: number): Date {
+  return new Date(contexto.ahora.getTime() - liberarTras * 60_000);
+}
+
+/**
+ * **Liberar la mesa de quien no llega** (0153): pasados los minutos del local, sus mesas se sueltan para
+ * que otra reserva pueda ocuparlas. La reserva sigue ahí, «reservada» y sin mesa: si llegan tarde, se les
+ * sienta en otra; si no, «No han venido». Se hace al reservar, que es cuando hace falta la mesa.
+ */
+export async function liberarLasDeQuienNoLlega(
+  contexto: Contexto,
+  localId: string,
+  liberarTras: number,
+): Promise<void> {
+  await contexto.sql`
+    delete from estook.reserva_de_mesa rm
+     using estook.reserva r
+     where r.id = rm.reserva_id and rm.local_id = ${localId}::uuid
+       and r.estado = 'reservada'
+       and r.empieza < ${elLimiteDelRetraso(contexto, liberarTras).toISOString()}::timestamptz
+  `;
 }
 
 /** Los comensales que ya empiezan en cada cuarto de hora de un día, para el tope. */
@@ -244,6 +272,7 @@ export async function lasHorasLibres(
     new Date(empiezaElDia.getTime() + 36 * 3_600_000),
     duraciones,
     menosLaReserva,
+    ajustes.liberarTras,
   );
   const empiezan = await losQueEmpiezan(contexto, localId, dia, menosLaReserva);
   const desdeYa = contexto.ahora.getTime() + 15 * 60_000;

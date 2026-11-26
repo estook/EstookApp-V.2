@@ -15,6 +15,7 @@ import {
   lasDuraciones,
   lasMesasDelLocal,
   laZonaHoraria,
+  liberarLasDeQuienNoLlega,
   loOcupado,
   losAjustesDeReservas,
   queEstenEncendidas,
@@ -129,7 +130,15 @@ export const ponerReserva = comando<
       }
       lasMesas = [...new Set(entrada.mesas)];
     } else {
-      const ocupados = await loOcupado(contexto, localId, empieza, acaba, duraciones, entrada.id);
+      const ocupados = await loOcupado(
+        contexto,
+        localId,
+        empieza,
+        acaba,
+        duraciones,
+        entrada.id,
+        ajustes.liberarTras,
+      );
       const mejor = laMejorMesa({
         mesas,
         juntables,
@@ -147,6 +156,8 @@ export const ponerReserva = comando<
       lasMesas = mejor.map((m) => m.id);
     }
 
+    // Las mesas de quien no ha llegado a tiempo se sueltan ya: si no, la base no dejaría ocuparlas.
+    await liberarLasDeQuienNoLlega(contexto, localId, ajustes.liberarTras);
     const organizacionId = laOrganizacionDeLaSesion(contexto);
     if (antes === null) {
       await contexto.sql`

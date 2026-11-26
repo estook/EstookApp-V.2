@@ -1144,6 +1144,14 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         // R3 · 2 · 1 (0152): entregar la caja y repartir las propinas, en la caja.
         'entregar_la_caja',
         'repartir_las_propinas',
+        // La Ampliación 5 · 1 (0153): las reservas, sobre el mismo plano que cobra.
+        'las_reservas',
+        'horas_para_reservar',
+        'los_ajustes_de_reservas',
+        'poner_reserva',
+        'cancelar_reserva',
+        'guardar_ajustes_de_reservas',
+        'juntar_mesas_para_reservas',
       ].sort(),
     );
   });

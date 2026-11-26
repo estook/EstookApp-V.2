@@ -2,6 +2,7 @@ import type { CuentaEnElPlano } from '../datos/tipos.ts';
 import type { ComoEstanLasImpresoras } from '../ganchos/usarLaSala.ts';
 import { HORAS_PARA_AVISAR, llevaDemasiado } from '../logica/comoVaLaMesa.ts';
 import { cuantoLlevan, eurosConSimbolo } from '../logica/texto.ts';
+import { minutosHasta, susMesas, type AvisoDeReserva } from '../reservas/logica.ts';
 
 /**
  * **Los avisos del TPV** (el rediseño, entrega 2 · 2, decisión 0148; maqueta aprobada el 18-nov):
@@ -15,10 +16,13 @@ import { cuantoLlevan, eurosConSimbolo } from '../logica/texto.ts';
  *   · **mesa abierta más de 6 horas** (rojo), solo al encargado: «Ver»
  *   · **retirar** (ámbar, E2, 0152), solo en la caja y a quien la lleva: el cajón pasa de la cifra del
  *     local; «Retirar» abre el cajón ya rellenado para la caja fuerte
+ *   · **las reservas** (violeta, la Ampliación 5 · 1, 0153): una nueva de la web o de otro aparato,
+ *     «llegan en 10 minutos» y «llevan 15 de retraso»; «Ver» abre Reservas
  *
  * Cálculo puro: qué avisos hay ahora y en qué orden. Pintarlos, sonar y vibrar es de `LosAvisos`.
  */
-export type ClaseDeAviso = 'cocina' | 'efectivo' | 'impresora' | 'seis_horas' | 'retirar';
+export type ClaseDeAviso =
+  'cocina' | 'efectivo' | 'impresora' | 'seis_horas' | 'retirar' | 'reserva';
 
 export type LoQueHace =
   | { readonly tipo: 'ya_voy'; readonly cuentaId: string }
@@ -42,6 +46,7 @@ export function losAvisosDeAhora({
   enLaCaja,
   esEncargado,
   retirar,
+  reservas = [],
 }: {
   readonly cuentas: readonly CuentaEnElPlano[];
   readonly impresoras: ComoEstanLasImpresoras['avisos'];
@@ -56,6 +61,8 @@ export function losAvisosDeAhora({
     readonly desde: number;
     readonly vez: number;
   } | null;
+  /** Los de las reservas (0153), ya contados (`losAvisosDeLasReservas`), con la hora de ahora. */
+  readonly reservas?: readonly (AvisoDeReserva & { readonly ahora: number })[];
 }): readonly AvisoDelTpv[] {
   const cocina = cuentas
     .filter((c) => c.cocinaLlamaEn !== null)
@@ -128,7 +135,30 @@ export function losAvisosDeAhora({
         ]
       : [];
 
-  return [...cocina, ...efectivo, ...fuerte, ...papel, ...seis];
+  const deReservas = reservas.map((a): AvisoDelTpv => {
+    const r = a.reserva;
+    const quien = `${r.nombre} · ${String(r.comensales)}`;
+    const mesas = r.mesas.length === 0 ? 'sin mesa' : `Mesa ${susMesas(r)}`;
+    const faltan = minutosHasta(r, a.ahora);
+    return {
+      id: a.id,
+      clase: 'reserva',
+      titulo:
+        a.que === 'nueva'
+          ? `Reserva nueva · ${r.hora} ${quien}`
+          : a.que === 'llegan'
+            ? `Llegan en ${String(Math.max(faltan, 1))}' · ${quien}`
+            : `Llevan ${String(-faltan)}' de retraso · ${quien}`,
+      detalle:
+        a.que === 'retraso'
+          ? `${mesas} · si no vienen, libérala`
+          : `${mesas}${r.origen === 'web' ? ' · web' : ''}`,
+      boton: { texto: 'Ver', hace: { tipo: 'ir', donde: 'reservas' } },
+      mio: false,
+    };
+  });
+
+  return [...cocina, ...efectivo, ...fuerte, ...deReservas, ...papel, ...seis];
 }
 
 /** Los que salen arriba: como mucho tres, sin los que se han quitado de la vista. */

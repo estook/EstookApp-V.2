@@ -77,7 +77,7 @@ Cobrar lo puede hacer Estook con **Estook TPV** —sala, cocina, cobro y tickets
 
 **Lo que Estook hace:** controlar el género y las compras, calcular el coste real de cada plato, montar y analizar la carta, organizar el calendario del local, cuadrar el equipo y sus horas, llevar el APPCC, tomar nota, mandar a cocina, cobrar y emitir tickets y facturas con VeriFactu si el local usa Estook TPV —o leer las ventas de su TPV si sigue con el suyo— para cerrar el círculo, agregar los canales de reparto, generar documentos profesionales y explicarlo todo con Fogón.
 
-**Lo que Estook no hace, y es una decisión firme:** tocar el dinero —ni pasarela de pago ni datos de tarjeta: la tarjeta la cobra el datáfono del banco del local o su proveedor de pagos, a su nombre—, hacer nóminas, llevar reservas o guardar datos de clientes finales más allá de los que exige una factura que el propio cliente pide.
+**Lo que Estook no hace, y es una decisión firme:** tocar el dinero —ni pasarela de pago ni datos de tarjeta: la tarjeta la cobra el datáfono del banco del local o su proveedor de pagos, a su nombre—, hacer nóminas o guardar datos de clientes finales más allá de los que exige una factura que el propio cliente pide **y los de quien reserva en ese local** (las reservas sí, desde el 24-nov-2026, M32; [0153](../decisiones/0153-la-ampliacion.md)).
 
 > **Estook cobra desde la versión 1.2.** El local elige entre tres formas de que entren sus ventas: **cobrar con Estook TPV**, que es la principal; **conectar su TPV**; o **apuntarlo a mano**. Lo que no se mueve es que **Estook nunca tiene el dinero en la mano**, y que la facturación vive aislada del resto y cumple VeriFactu al pie de la letra. Todo lo del cobro, en el **Anexo TPV y facturación**.
 

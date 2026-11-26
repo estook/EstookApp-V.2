@@ -1,4 +1,5 @@
 import {
+  IconoCalendario,
   IconoAgotado,
   IconoAjustes,
   IconoAparatos,
@@ -45,7 +46,8 @@ export type Dibujo =
   | 'declaracion'
   | 'persona'
   | 'tema'
-  | 'salir';
+  | 'salir'
+  | 'reservas';
 
 const DE_LUCIDE: Readonly<Record<Dibujo, IconoDeLucide>> = {
   ajustes: IconoAjustes,
@@ -65,6 +67,7 @@ const DE_LUCIDE: Readonly<Record<Dibujo, IconoDeLucide>> = {
   persona: IconoPersona,
   tema: IconoSol,
   salir: IconoSalir,
+  reservas: IconoCalendario,
 };
 
 export function Icono({ dibujo, lado = 24 }: { readonly dibujo: Dibujo; readonly lado?: number }) {

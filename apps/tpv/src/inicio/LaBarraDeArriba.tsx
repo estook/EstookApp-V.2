@@ -1,6 +1,7 @@
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { inicialesDe } from '@estook/dominio';
 import {
+  IconoCalendario,
   IconoCandado,
   IconoCuenta,
   IconoParaLlevar,
@@ -14,6 +15,7 @@ import { escucharLaDireccion, irA, irAlPlano, laDireccion } from '../navegar.ts'
 import { ElSimbolo, Icono } from '../iconos.tsx';
 import { BotonDeLaCaja } from '../caja/BotonDeLaCaja.tsx';
 import { BotonDeLaCampana } from '../avisos/LosAvisos.tsx';
+import { usarLasReservas } from '../ganchos/usarLasReservas.ts';
 
 /**
  * **Arriba, siempre** (la entrada nueva, maqueta 1; rehecha en el rediseño, 0148, con la maqueta
@@ -22,7 +24,8 @@ import { BotonDeLaCampana } from '../avisos/LosAvisos.tsx';
  *   · a la izquierda, **el símbolo de Estook** (Richi: «en vez de la E, el logo de la marca, tiene
  *     más sentido») y el local, que **devuelven a la sala desde cualquier sitio**
  *   · en medio, **los iconos de cada sitio**: la sala, para llevar y los tickets, con su nombre
- *     debajo. La venta rápida, el reparto y las reservas entran aquí el día que existan
+ *     debajo; la venta rápida (0148) y **las reservas**, a la derecha de Tickets (0153), si el local
+ *     las tiene encendidas. El reparto, el día que exista
  *   · a la derecha, lo de todos los días: **la caja** (0144) y **Fichar en naranja** (0115), solo
  *     en la caja; **la campana** de los avisos (0148); **el engranaje**, en todos (0143); y quién
  *     está, que **bloquea** de un toque. En el móvil de la sala, lo suyo va en la barra de abajo
@@ -51,7 +54,14 @@ export function LaBarraDeArriba({
   const factura =
     puedeEditar(yo.permisos, 'accion.factura_de_un_ticket') ||
     puedeEditar(yo.permisos, 'accion.factura_a_mano');
-  const enLaSala = titulo === undefined && direccion !== 'llevar' && direccion !== 'rapida';
+  // Las reservas (la Ampliación 5 · 1, 0153): solo salen si el local las encendió.
+  const reservas = usarLasReservas(undefined, tomaNota);
+  const conReservas = tomaNota && reservas.data?.encendidas === true;
+  const enLaSala =
+    titulo === undefined &&
+    direccion !== 'llevar' &&
+    direccion !== 'rapida' &&
+    direccion !== 'reservas';
   return (
     <header className="flex flex-wrap items-center gap-e3 border-b border-borde bg-superficie px-e4 py-e2 md:flex-nowrap md:px-e5">
       <button
@@ -117,6 +127,16 @@ export function LaBarraDeArriba({
             puesto={direccion === 'facturas'}
             onClick={() => {
               irA('facturas');
+            }}
+          />
+        )}
+        {conReservas && (
+          <DondeIr
+            icono={IconoCalendario}
+            texto="Reservas"
+            puesto={direccion === 'reservas'}
+            onClick={() => {
+              irA('reservas');
             }}
           />
         )}

@@ -13,7 +13,9 @@ import {
   IconoReloj,
   type Icono,
 } from '@estook/iconos';
-import type { CuentaEnElPlano, EstadoDeLaMesa, MesaDelPlano } from '../datos/tipos.ts';
+import { fondoDegradado } from '@estook/ui';
+import { abrirlaPisaLaReserva } from '../reservas/logica.ts';
+import type { CuentaEnElPlano, EstadoDeLaMesa, MesaDelPlano, UnaReserva } from '../datos/tipos.ts';
 import {
   HORAS_PARA_AVISAR,
   laPalabra,
@@ -198,11 +200,20 @@ function Exclamacion() {
 
 export function MesaEnElPlano({
   mesa,
+  reserva = null,
+  juntaCon = null,
   enElPlano,
   elegida = false,
   alTocar,
 }: {
   readonly mesa: MesaDelPlano;
+  /**
+   * **La reserva que la espera** (la Ampliación 5 · 1, 0153): si está libre, su hora en violeta y quién
+   * viene. Abrirla avisa, sin bloquear.
+   */
+  readonly reserva?: UnaReserva | null;
+  /** La mesa con la que se juntó para una reserva ya sentada: «Con la 7», en vez de «Libre». */
+  readonly juntaCon?: string | null;
   /** En la tablet va donde se dibujó; en el móvil, en su casilla de la cuadrícula. */
   readonly enElPlano: boolean;
   /** La que está abierta en la columna de la derecha (0148): se marca para no perderla. */
@@ -214,7 +225,14 @@ export function MesaEnElPlano({
   const pequena = mesa.forma === 'taburete';
   const seHaIdo = cuenta?.suCamareroSeHaIdo === true;
   const demasiado = llevaDemasiado(cuenta);
-  const linea = comoVaLaMesa(mesa);
+  const reservada = cuenta === null && reserva !== null;
+  // Quién viene, solo en las dos horas de antes: a mediodía, la mesa de la cena sigue «Libre».
+  const pronto = reservada && abrirlaPisaLaReserva(reserva, Date.now());
+  const linea = pronto
+    ? `${String(reserva.comensales)} · ${reserva.nombre}`
+    : cuenta === null && juntaCon !== null
+      ? `Con la ${juntaCon}`
+      : comoVaLaMesa(mesa);
   const minutos = cuenta === null ? null : losMinutos(mesa.estado, cuenta);
   // El efectivo que espera en la caja (0145): se ve desde lejos, en la misma mesa.
   const enCaja = (cuenta?.pendientes ?? []).length > 0;
@@ -222,6 +240,7 @@ export function MesaEnElPlano({
     enCaja ? 'cobro pendiente en la caja' : null,
     seHaIdo ? `${cuenta.camarero ?? 'su camarero'} ha fichado la salida` : null,
     demasiado ? `lleva más de ${String(HORAS_PARA_AVISAR)} horas abierta` : null,
+    reservada ? `reservada a las ${reserva.hora}` : null,
   ].filter((a) => a !== null);
 
   const boton = (
@@ -256,6 +275,14 @@ export function MesaEnElPlano({
         >
           <span className="text-pantalla font-bold leading-none">{mesa.nombre}</span>
           {cuenta !== null && !pequena && <Pastilla cuenta={cuenta} />}
+          {reservada && (
+            <span
+              className="shrink-0 rounded-redondo px-e1 text-etiqueta font-bold leading-snug tabular-nums text-white"
+              style={fondoDegradado('fechas')}
+            >
+              {reserva.hora}
+            </span>
+          )}
         </span>
         {!pequena && (
           <span

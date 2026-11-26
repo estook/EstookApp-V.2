@@ -142,6 +142,11 @@ export const entradaAbrirMesa = z
     por_pases: z.boolean().optional(),
     /** Lo de llevar, programado (0121): para cuándo lo quiere el cliente. */
     para_las: z.string().datetime().optional(),
+    /**
+     * **Sentar una reserva** (la Ampliación 5 · 1, 0153): la mesa se abre unida a ella, con sus
+     * comensales si no se dicen otros, y la reserva pasa a «sentada».
+     */
+    reserva_id: id.optional(),
   })
   .strict();
 export type EntradaAbrirMesa = z.infer<typeof entradaAbrirMesa>;
@@ -186,6 +191,33 @@ export const abrirMesa = comando<EntradaAbrirMesa, { cuentaId: string; yaEstaba:
     `;
     if (yaEstaba.length > 0) return { cuentaId: entrada.cuenta_id, yaEstaba: true };
 
+    // Sentar una reserva: que sea de este local y siga esperando mesa.
+    let deLaReserva: { comensales: number } | null = null;
+    if (entrada.reserva_id !== undefined) {
+      if (tipo !== 'mesa') {
+        throw new FalloDeAplicacion('faltan_datos', {
+          porque: 'Una reserva se sienta en una mesa.',
+        });
+      }
+      const reserva = await contexto.sql<{ estado: string; comensales: number }[]>`
+        select estado, comensales from estook.reserva
+         where id = ${entrada.reserva_id}::uuid and local_id = ${localId}::uuid
+      `;
+      const r = reserva[0];
+      if (r === undefined) {
+        throw new FalloDeAplicacion('no_existe', { porque: 'Esa reserva no está.' });
+      }
+      if (r.estado !== 'reservada') {
+        throw new FalloDeAplicacion('ya_hecho', {
+          porque:
+            r.estado === 'sentada'
+              ? 'Esa reserva ya está sentada.'
+              : 'Esa reserva está cancelada: abre la mesa sin ella.',
+        });
+      }
+      deLaReserva = { comensales: r.comensales };
+    }
+
     if (entrada.mesa_id !== undefined) {
       const mesa = await contexto.sql<{ id: string }[]>`
         select id::text as id from estook.mesa
@@ -208,21 +240,32 @@ export const abrirMesa = comando<EntradaAbrirMesa, { cuentaId: string; yaEstaba:
       }
     }
 
+    const personas = entrada.personas ?? deLaReserva?.comensales ?? null;
     await contexto.sql`
       insert into estook.cuenta
         (id, local_id, tipo, mesa_id, nombre, personas, camarero_id, por_pases, abierta_en, abierta_por,
-         para_las)
+         para_las, reserva_id)
       values (
         ${entrada.cuenta_id}::uuid, ${localId}::uuid, ${tipo},
-        ${entrada.mesa_id ?? null}::uuid, ${entrada.nombre ?? null}, ${entrada.personas ?? null},
+        ${entrada.mesa_id ?? null}::uuid, ${entrada.nombre ?? null}, ${personas},
         ${contexto.personaId}::uuid, ${porPases},
         ${contexto.ahora.toISOString()}::timestamptz, ${contexto.personaId}::uuid,
-        ${paraLas === null ? null : paraLas.toISOString()}::timestamptz
+        ${paraLas === null ? null : paraLas.toISOString()}::timestamptz,
+        ${entrada.reserva_id ?? null}::uuid
       )
     `;
+    if (entrada.reserva_id !== undefined) {
+      await contexto.sql`
+        update estook.reserva
+           set estado = 'sentada', sentada_en = ${contexto.ahora.toISOString()}::timestamptz,
+               cuenta_id = ${entrada.cuenta_id}::uuid
+         where id = ${entrada.reserva_id}::uuid
+      `;
+    }
     await avisar(contexto, localId, 'abrir_mesa', entrada.cuenta_id, {
       tipo,
-      personas: entrada.personas ?? null,
+      personas,
+      ...(entrada.reserva_id === undefined ? {} : { reserva_id: entrada.reserva_id }),
       por_pases: porPases,
       ...(paraLas === null ? {} : { para_las: paraLas.toISOString() }),
     });

@@ -580,6 +580,47 @@ sus capas»).
 6. **Lo que no entra todavía** (Plan, M14): las recurrencias, la suscripción de calendario, «solo lo mío» y la
    historia del Tablón por días.
 
+## 19 · Lo que se construyó en la Ampliación 5 · 1 · Las reservas: el motor y la sala (26-nov)
+
+Migración **0132**. Con la maqueta aprobada (pestaña 5: «Reservas en el TPV, a la derecha de Tickets» y «Sin
+sorpresas: si la mesa está reservada, te lo dice»).
+
+- **El motor** (`packages/dominio/src/reservas.ts`): servicios con horas cada cuarto de hora; **cuánto dura una mesa**
+  según los que son (de fábrica 1 h 30 · 1 h 45 · 2 h · 2 h 30) y, con doce cuentas cobradas de un tamaño en las
+  últimas ocho semanas, **la mediana de lo que duran de verdad**; **la mesa la pone Estook**: la libre que deja menos
+  sillas vacías o, si ninguna cabe, **dos que se juntan** (solo las que el local marca en el editor de la sala); y el
+  **tope de comensales por cuarto de hora**, que avisa y no impide al camarero.
+- **Nunca dos reservas en la misma mesa y tramo: lo impide la base**, con una restricción de exclusión sobre el tramo
+  de cada mesa (`reserva_de_mesa`, `btree_gist`). Probado con dos aparatos a la vez: entra una y la otra recibe «esa
+  mesa acaba de reservarse». El id nace en el aparato: repetir no duplica.
+- **En Estook TPV**: «Reservas» a la derecha de Tickets (caja, comandero y móvil), solo si el local las enciende; la
+  lista del día con «Sentar», y en la tablet y la caja las mesas con lo reservado; **«+ Reserva» en cuatro toques**
+  (cuántos, el día, la hora —solo las que tienen mesa— y nombre con teléfono). **El plano marca cada mesa reservada
+  con su hora en violeta**; abrir una que se reserva en menos de dos horas **avisa y propone otra libre, sin
+  bloquear**; **«Sentar»** abre la mesa con sus comensales sin preguntar y deja la cuenta unida a la reserva
+  (`cuenta.reserva_id`). Los avisos violetas: **reserva nueva** (de otro aparato), **llegan en 10 minutos** y **llevan
+  15 de retraso**.
+- **Ajustes del TPV › Reservas**: encenderlas, los servicios, lo que dura una mesa (con lo real al lado), el tope y a
+  los cuántos minutos se libera la mesa de quien no llega. **Las mesas que se juntan**, en el editor de la sala.
+- **Sin internet**, las reservas de hoy guardadas en el aparato se ven y se sientan; reservar necesita conexión.
+
+**Lo que decidió la IA al construirla**, para que Richi lo sepa:
+
+1. **Liberar la mesa de quien no llega**: pasados los minutos del local (15 de fábrica), su mesa cuenta como libre
+   para otras reservas, pero **la reserva no se borra**: sigue «reservada» y sin mesa, por si llegan tarde; «No han
+   venido» la cierra.
+2. **Al cobrar, anular o juntar la mesa de una reserva sentada**, sus mesas quedan libres para otras reservas aunque
+   no haya pasado el tramo previsto (lo hace la base, con una función con privilegio: quien cobra no tiene por qué
+   llevar las reservas).
+3. **En el plano, el nombre de quien viene sale en las dos horas de antes**; antes, «Libre» con la hora al lado: a
+   mediodía, la mesa de la cena sigue libre para la comida.
+4. **Lo reservado y lo abierto, juntos**: una mesa abierta ocupa, para las reservas, lo que suele durar una mesa de
+   esos comensales (y como poco el cuarto de hora que viene).
+5. **Las reservas las ve y las pone quien toma nota**; las enciende quien lleva los Ajustes del TPV (Roles).
+6. **De la maqueta queda para la 5 · 3**: «En espera» (la lista de quien llega sin reservar), las etiquetas de
+   «habitual», «Alergia» y «Grupo» en la lista y que la alergia pase sola a la mesa al sentarla, porque salen de la
+   ficha del cliente.
+
 ## 12 · Lo que se toca en los documentos
 
 - **Plan:** la cabecera de D con la Ampliación; las fichas de M13 y M14 con lo de Richi; la ficha

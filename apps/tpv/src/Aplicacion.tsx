@@ -20,6 +20,7 @@ import { escucharLaDireccion, laDireccion } from './navegar.ts';
 import { ContextoAlSegundo, usarEscucharAlSegundo } from './ganchos/usarLaSala.ts';
 import { usarSesion } from './sesion/Sesion.tsx';
 import { LosAvisos } from './avisos/LosAvisos.tsx';
+import { LasReservasDelTpv } from './reservas/LasReservasDelTpv.tsx';
 
 /**
  * Estook TPV (T1 · La puerta, decisión 0107): **una aplicación aparte**, en
@@ -97,6 +98,9 @@ function Dentro() {
     // **La venta rápida** (0148), en la caja y en el comandero (la Ampliación, 0153, fallo 3): en el
     // comandero, el efectivo se deja para la caja, como al cobrar en la mesa (0145).
     pantalla = <LaVentaRapida />;
+  } else if (direccion === 'reservas') {
+    // **Las reservas** (la Ampliación 5 · 1, 0153): en la caja, el comandero y el móvil.
+    pantalla = <LasReservasDelTpv />;
   } else if (mesa !== undefined) pantalla = <LaMesa key={mesa} cuentaId={mesa} />;
   // Lo demás, también `#/inicio` de antes, es la sala.
   else pantalla = <ElPlano />;

@@ -165,6 +165,17 @@ import {
   quitarRecordatorio,
 } from './comandos/el-calendario-del-equipo.ts';
 import { elCalendarioDelEquipo, misNotas } from './consultas/el-calendario-del-equipo.ts';
+import {
+  cancelarReserva,
+  guardarAjustesDeReservas,
+  juntarMesasParaReservas,
+  ponerReserva,
+} from './comandos/reservas.ts';
+import {
+  horasParaReservar,
+  lasReservas,
+  losAjustesDeReservasConsulta,
+} from './consultas/reservas.ts';
 import { elHorario, elHorarioEnBorrador, elHorarioEnPdf } from './consultas/horario.ts';
 import {
   copiarLaSemanaAnterior,
@@ -770,6 +781,10 @@ export const catalogo = {
     // La Ampliación 4 · 3 · El calendario del equipo (0153): los recordatorios y mis notas.
     [elCalendarioDelEquipo.nombre]: elCalendarioDelEquipo,
     [misNotas.nombre]: misNotas,
+    // La Ampliación 5 · 1 · Las reservas (0153): las de un día, las horas libres y los ajustes.
+    [lasReservas.nombre]: lasReservas,
+    [horasParaReservar.nombre]: horasParaReservar,
+    [losAjustesDeReservasConsulta.nombre]: losAjustesDeReservasConsulta,
     [elAparatoParaFichar.nombre]: elAparatoParaFichar,
 
     // ── T1 · La puerta de Estook TPV (0107) ────────────────────────────────
@@ -959,6 +974,11 @@ export const catalogo = {
     [quitarRecordatorio.nombre]: quitarRecordatorio,
     [ponerMiNota.nombre]: ponerMiNota,
     [quitarMiNota.nombre]: quitarMiNota,
+    // La Ampliación 5 · 1 (0153): reservar, cancelar, los ajustes y las mesas que se juntan.
+    [ponerReserva.nombre]: ponerReserva,
+    [cancelarReserva.nombre]: cancelarReserva,
+    [guardarAjustesDeReservas.nombre]: guardarAjustesDeReservas,
+    [juntarMesasParaReservas.nombre]: juntarMesasParaReservas,
     // El repaso del 9-oct (0081): el horario de siempre se fue; se justifica la falta.
     [justificarIncidencia.nombre]: justificarIncidencia,
     [quitarJustificacion.nombre]: quitarJustificacion,

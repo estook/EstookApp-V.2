@@ -67,6 +67,9 @@ const SE_CIERRAN = [
   'destachar',
   'todo_fuera',
   'recuperar',
+  // Las reservas (la Ampliación 5 · 2, 0153), también en Servicio › Reservas: son de Pro, como el TPV.
+  'las_reservas',
+  'los_ajustes_de_reservas',
 ].sort();
 
 /**

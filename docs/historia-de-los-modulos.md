@@ -3611,7 +3611,9 @@ _26 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), s
 reservas de cada local (`apps/carta/src/Reservar.tsx`, en `estook.com/reservar/<dirección>`), sus siete operaciones sin
 sesión (`comandos/reservar-en-la-web.ts`), los correos (`correos-de-reservas.ts`), el reloj que cancela la que no se
 confirma y manda el recordatorio, y en el TPV las mesas que salen por internet, el enlace para copiar y los avisos de
-la que se cancela. La prueba: `la-web-de-reservas.prueba.ts`, contra la base.
+la que se cancela. Al verla, Richi pidió confirmar y cancelar solo con el teléfono, el margen de cada local, los
+Ajustes ordenados y **Servicio › Reservas** en Estook con el código para su propia web (`apps/carta/public/reservas.js`).
+La prueba: `la-web-de-reservas.prueba.ts`, contra la base.
 
 ---
 

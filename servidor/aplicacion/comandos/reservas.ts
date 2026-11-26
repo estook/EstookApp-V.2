@@ -5,6 +5,8 @@ import {
   fechaEnElLocal,
   laMejorMesa,
   telefonoLimpio,
+  ANTELACION_DE_LA_WEB,
+  ANTELACIONES_DE_LA_WEB,
 } from '@estook/dominio';
 import { laOrganizacionDeLaSesion } from '../alta.ts';
 import { tocarElServicio } from '../al-segundo.ts';
@@ -251,6 +253,12 @@ export const entradaAjustesDeReservas = z
     avisar_por_correo: z.boolean().optional(),
     pedir_que_confirmen: z.boolean().optional(),
     minutos_para_confirmar: z.number().int().min(15).max(60).optional(),
+    /** Hasta cuántos minutos antes se reserva por la web. */
+    antelacion_web: z
+      .number()
+      .int()
+      .refine((m) => ANTELACIONES_DE_LA_WEB.includes(m))
+      .optional(),
   })
   .strict();
 export type EntradaAjustesDeReservas = z.infer<typeof entradaAjustesDeReservas>;
@@ -272,11 +280,12 @@ export const guardarAjustesDeReservas = comando<EntradaAjustesDeReservas, { guar
     await contexto.sql`
       insert into estook.ajuste_de_reservas
         (local_id, encendidas, servicios, duraciones, tope_por_cuarto, liberar_tras,
-         avisar_por_correo, pedir_que_confirmen, minutos_para_confirmar)
+         avisar_por_correo, pedir_que_confirmen, minutos_para_confirmar, antelacion_web)
       values (${localId}::uuid, ${entrada.encendidas}, ${JSON.stringify(entrada.servicios)}::text::jsonb,
               ${`{${entrada.duraciones.join(',')}}`}::smallint[], ${entrada.tope_por_cuarto},
               ${entrada.liberar_tras}, ${entrada.avisar_por_correo ?? false},
-              ${entrada.pedir_que_confirmen ?? false}, ${entrada.minutos_para_confirmar ?? 30})
+              ${entrada.pedir_que_confirmen ?? false}, ${entrada.minutos_para_confirmar ?? 30},
+              ${entrada.antelacion_web ?? ANTELACION_DE_LA_WEB})
       on conflict (local_id) do update
          set encendidas = excluded.encendidas, servicios = excluded.servicios,
              duraciones = excluded.duraciones, tope_por_cuarto = excluded.tope_por_cuarto,
@@ -289,7 +298,10 @@ export const guardarAjustesDeReservas = comando<EntradaAjustesDeReservas, { guar
                                         else estook.ajuste_de_reservas.pedir_que_confirmen end,
              minutos_para_confirmar = case when ${entrada.minutos_para_confirmar !== undefined}
                                            then excluded.minutos_para_confirmar
-                                           else estook.ajuste_de_reservas.minutos_para_confirmar end
+                                           else estook.ajuste_de_reservas.minutos_para_confirmar end,
+             antelacion_web = case when ${entrada.antelacion_web !== undefined}
+                                   then excluded.antelacion_web
+                                   else estook.ajuste_de_reservas.antelacion_web end
     `;
     await tocarElServicio(contexto, localId);
     return { guardado: true };

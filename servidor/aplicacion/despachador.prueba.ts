@@ -479,6 +479,7 @@ describe('las puertas se cierran solas', () => {
         'la_web_de_reservas',
         'horas_en_la_web',
         'reservar_en_la_web',
+        'mis_reservas_en_la_web',
         'mi_reserva_en_la_web',
         'confirmar_mi_reserva',
         'cancelar_mi_reserva',
@@ -868,6 +869,7 @@ describe('los secretos no se guardan para repetirlos', () => {
       'llamar_al_camarero',
       'mandar_otra_vez_mi_factura',
       'mi_reserva_en_la_web',
+      'mis_reservas_en_la_web',
       'pedir_mi_factura',
       'preparar_el_aparato_sin_conexion',
       'probar_mi_movil',
@@ -1046,6 +1048,10 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         // Cómo factura el local (0127): también en los Ajustes del TPV, con el permiso del alta.
         'mi_facturacion',
         'elegir_la_modalidad',
+        // La Ampliación 5 · 2 (0153): las reservas del día y sus ajustes, también en Estook, en
+        // Servicio › Reservas (el gerente las vigila y saca el código de su web).
+        'las_reservas',
+        'los_ajustes_de_reservas',
       ].sort(),
     );
     const solo = operaciones.filter((o) => o.enElTpv === 'solo').map((o) => o.nombre);
@@ -1162,9 +1168,7 @@ describe('la puerta de Estook TPV (T1, 0107)', () => {
         'entregar_la_caja',
         'repartir_las_propinas',
         // La Ampliación 5 · 1 (0153): las reservas, sobre el mismo plano que cobra.
-        'las_reservas',
         'horas_para_reservar',
-        'los_ajustes_de_reservas',
         'poner_reserva',
         'cancelar_reserva',
         'guardar_ajustes_de_reservas',

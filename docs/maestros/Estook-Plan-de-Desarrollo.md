@@ -304,7 +304,7 @@ Así la regla de profundidad sigue intacta: **app → destino → ficha**, tres 
 | Carta       | Carta · Canales · Menús · Análisis                    |
 | Calendario  | Calendario · Turnos                                   |
 | Equipo      | Resumen · Personas · Nóminas · Fichajes · Incidencias |
-| Servicio    | Jornadas · Empleados · Delivery · APPCC               |
+| Servicio    | Jornadas · Empleados · Reservas · Delivery · APPCC    |
 | Negocio     | Ventas · Informes · Reseñas                           |
 
 Y sus vistas, donde las hay:
@@ -1046,7 +1046,7 @@ _Añadido el 6 de noviembre de 2026 ([0134](../decisiones/0134-estook-tpv-para-a
 - **5 · 2 · La web:** `estook.com/reservar/<local>`, que solo ofrece horas con mesa de verdad; **nombre y teléfono obligatorios**; al reservar, la reserva con su código de 4 cifras; **«Ya tengo reserva»**, con el teléfono y el código, para confirmarla o cancelarla. **«Avisar al cliente por correo»** (apagado de fábrica): la reserva, el recordatorio del día antes con «Confirmo» y «Cancelar», y «Avísame si se libera». **«Pedir que confirmen»** (apagado de fábrica): si no la confirma X minutos antes de la hora (de 15 a 60, 30 de fábrica), se cancela sola y la mesa queda libre.
 - **5 · 3 · Clientes, lista de espera y los que no vienen:** el cliente por su teléfono, con visitas, gasto medio, etiquetas y **alergias que pasan solas a la mesa**; la lista de espera de quien llega sin reservar, con el tiempo estimado; los que no vienen, apuntados.
 
-**La 5 · 1, construida el 26-nov** ([0153](../decisiones/0153-la-ampliacion.md), sección 19; migración 0132): el motor, la restricción de la base que impide dos reservas en la misma mesa y tramo, «Reservas» en el TPV con «Sentar», el plano con lo reservado, los avisos, Ajustes del TPV › Reservas y las mesas que se juntan en el editor. **La 5 · 2, construida el 26-nov** (sección 20; migración 0133): la web de reservas de cada local con su código de 4 cifras, «Ya tengo reserva» para confirmar o cancelar, solo las mesas que salen por internet y sin pasar del tope, y los correos (la reserva, el recordatorio, la que se cancela sola y «Avísame si se libera»). **Falta la 5 · 3 (clientes, lista de espera y los que no vienen).**
+**La 5 · 1, construida el 26-nov** ([0153](../decisiones/0153-la-ampliacion.md), sección 19; migración 0132): el motor, la restricción de la base que impide dos reservas en la misma mesa y tramo, «Reservas» en el TPV con «Sentar», el plano con lo reservado, los avisos, Ajustes del TPV › Reservas y las mesas que se juntan en el editor. **La 5 · 2, construida el 26-nov** (sección 20; migración 0133): la web de reservas de cada local, con «Confirmarla» y «Cancelarla» arriba que solo piden el teléfono; solo las mesas que salen por internet, los días que abre y hasta cuánto antes elija el local; los correos; Ajustes › Reservas ordenados; y en Estook, **Servicio › Reservas** con «¿Tienes web propia?», el código para ponerlas en su web con su color. **Falta la 5 · 3 (clientes, lista de espera y los que no vienen).**
 
 **Qué NO entra (todavía).** La garantía con tarjeta (cuando haya proveedor de cobro, T8) · SMS y WhatsApp (M25) · el botón «Reservar» dentro de Google, que exige ser socio de Google (de 12 a 16 semanas de alta).
 

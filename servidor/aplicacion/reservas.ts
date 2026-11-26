@@ -10,6 +10,7 @@ import {
   laMejorMesa,
   lasDuracionesReales,
   abreEseDia,
+  ANTELACION_DE_LA_WEB,
   lasHorasDelServicio,
   type MesaParaReservar,
   type ServicioDeReservas,
@@ -35,6 +36,8 @@ export interface AjustesDeReservas {
   /** Si no confirma `minutosParaConfirmar` antes de la hora, se cancela sola (5 · 2). */
   readonly pedirQueConfirmen: boolean;
   readonly minutosParaConfirmar: number;
+  /** Hasta cuántos minutos antes se reserva por la web: lo elige el local. */
+  readonly antelacionWeb: number;
 }
 
 const DE_FABRICA: AjustesDeReservas = {
@@ -49,6 +52,7 @@ const DE_FABRICA: AjustesDeReservas = {
   avisarPorCorreo: false,
   pedirQueConfirmen: false,
   minutosParaConfirmar: 30,
+  antelacionWeb: ANTELACION_DE_LA_WEB,
 };
 
 export async function losAjustesDeReservas(
@@ -65,11 +69,12 @@ export async function losAjustesDeReservas(
       avisar_por_correo: boolean;
       pedir_que_confirmen: boolean;
       minutos_para_confirmar: number;
+      antelacion_web: number;
     }[]
   >`
     select encendidas, servicios, array_to_string(duraciones, ',') as duraciones,
            tope_por_cuarto, liberar_tras, avisar_por_correo, pedir_que_confirmen,
-           minutos_para_confirmar
+           minutos_para_confirmar, antelacion_web
       from estook.ajuste_de_reservas where local_id = ${localId}::uuid
   `;
   const f = filas[0];
@@ -86,6 +91,7 @@ export async function losAjustesDeReservas(
     avisarPorCorreo: f.avisar_por_correo,
     pedirQueConfirmen: f.pedir_que_confirmen,
     minutosParaConfirmar: f.minutos_para_confirmar,
+    antelacionWeb: f.antelacion_web,
   };
 }
 

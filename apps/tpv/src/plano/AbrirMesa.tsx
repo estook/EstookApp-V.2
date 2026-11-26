@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Boton, Campo, ErrorEnCristiano, Hoja } from '@estook/ui';
+import { Boton, Campo, ErrorEnCristiano, Hoja, fondoDegradado } from '@estook/ui';
 import { IconoJuntar, IconoPases, type Icono } from '@estook/iconos';
 import { usarAbrirLaMesa } from '../ganchos/usarAbrirLaMesa.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
-import type { MesaDelPlano } from '../datos/tipos.ts';
+import type { MesaDelPlano, UnaReserva } from '../datos/tipos.ts';
+import { abrirlaPisaLaReserva, cuantoFalta } from '../reservas/logica.ts';
 import { laHoraDeHoy, losCuartosDeAhora } from '../logica/texto.ts';
 
 /**
@@ -17,16 +18,30 @@ import { laHoraDeHoy, losCuartosDeAhora } from '../logica/texto.ts';
  */
 export function AbrirMesa({
   mesa,
+  reserva = null,
+  otraLibre = null,
+  alIrAOtra,
   alCerrar,
 }: {
   /** Nula: en barra o para llevar, sin mesa. */
   readonly mesa: MesaDelPlano | null;
+  /** La reserva que espera esta mesa (la Ampliación 5 · 1, 0153): abrirla avisa, sin bloquear. */
+  readonly reserva?: UnaReserva | null;
+  /** Otra mesa libre y sin reserva, para proponerla. */
+  readonly otraLibre?: MesaDelPlano | null;
+  readonly alIrAOtra?: (mesa: MesaDelPlano) => void;
   readonly alCerrar: () => void;
 }) {
   return mesa === null ? (
     <AbrirSinMesa alCerrar={alCerrar} />
   ) : (
-    <AbrirUnaMesa mesa={mesa} alCerrar={alCerrar} />
+    <AbrirUnaMesa
+      mesa={mesa}
+      reserva={reserva}
+      otraLibre={otraLibre}
+      alIrAOtra={alIrAOtra}
+      alCerrar={alCerrar}
+    />
   );
 }
 
@@ -45,16 +60,25 @@ const COMENSALES_DE_ENTRADA = 2;
  */
 function AbrirUnaMesa({
   mesa,
+  reserva,
+  otraLibre,
+  alIrAOtra,
   alCerrar,
 }: {
   readonly mesa: MesaDelPlano;
+  readonly reserva: UnaReserva | null;
+  readonly otraLibre: MesaDelPlano | null;
+  readonly alIrAOtra: ((mesa: MesaDelPlano) => void) | undefined;
   readonly alCerrar: () => void;
 }) {
   const { aparato } = usarSesion();
   const [cuentaId] = useState(() => crypto.randomUUID());
   const [cuantos, setCuantos] = useState(COMENSALES_DE_ENTRADA);
   const [escribiendo, setEscribiendo] = useState(false);
-  const [paso, setPaso] = useState<'cuantos' | 'como'>('cuantos');
+  // **Si la mesa está reservada pronto, primero se dice** (0153): no bloquea, propone.
+  const [paso, setPaso] = useState<'reservada' | 'cuantos' | 'como'>(() =>
+    abrirlaPisaLaReserva(reserva, Date.now()) ? 'reservada' : 'cuantos',
+  );
   const { abrir, abriendo, fallo } = usarAbrirLaMesa(cuentaId, `Mesa ${mesa.nombre} · abierta`);
   const siempre = aparato.comoSaleLaCocina ?? 'preguntar';
   const poner = (n: number) => {
@@ -63,6 +87,64 @@ function AbrirUnaMesa({
   const abrirCon = (porPases: boolean) => {
     void abrir({ cuenta_id: cuentaId, mesa_id: mesa.id, personas: cuantos, por_pases: porPases });
   };
+  const sentarLaReserva = () => {
+    if (reserva === null) return;
+    void abrir({
+      cuenta_id: cuentaId,
+      mesa_id: mesa.id,
+      reserva_id: reserva.id,
+      ...(siempre === 'preguntar' ? {} : { por_pases: siempre === 'pases' }),
+    });
+  };
+
+  if (paso === 'reservada' && reserva !== null) {
+    return (
+      <Hoja
+        abierta
+        enMedio
+        alCerrar={alCerrar}
+        titulo={`Mesa ${mesa.nombre} · reservada a las ${reserva.hora}`}
+      >
+        <div className="flex flex-col gap-e3 pt-e2">
+          <div className="rounded-grande p-e4 text-white" style={fondoDegradado('fechas')}>
+            <strong className="block text-seccion">
+              {reserva.nombre}, {reserva.comensales}{' '}
+              {reserva.comensales === 1 ? 'persona' : 'personas'}
+            </strong>
+            <span className="text-secundario">{cuantoFalta(reserva, Date.now())}.</span>
+            {reserva.nota !== null && (
+              <span className="mt-e1 block text-secundario">{reserva.nota}</span>
+            )}
+          </div>
+          {fallo !== null && <ErrorEnCristiano error={fallo} />}
+          <Boton tono="principal" tamano="l" ancho cargando={abriendo} onClick={sentarLaReserva}>
+            Es {reserva.nombre.split(' ')[0]}: sentar su reserva
+          </Boton>
+          {otraLibre !== null && alIrAOtra !== undefined && (
+            <Boton
+              tono="secundario"
+              tamano="l"
+              ancho
+              onClick={() => {
+                alIrAOtra(otraLibre);
+              }}
+            >
+              Sentarlos en la {otraLibre.nombre} (libre)
+            </Boton>
+          )}
+          <Boton
+            tono="texto"
+            ancho
+            onClick={() => {
+              setPaso('cuantos');
+            }}
+          >
+            Abrir la {mesa.nombre} igualmente
+          </Boton>
+        </div>
+      </Hoja>
+    );
+  }
 
   return (
     <Hoja

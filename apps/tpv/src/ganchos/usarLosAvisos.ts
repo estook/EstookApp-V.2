@@ -1,9 +1,11 @@
-import { useMemo, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { puedeEditar } from '@estook/permisos';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarAlSegundo, usarElPlano, usarLasImpresoras } from './usarLaSala.ts';
 import { usarLaCaja } from './usarLaCaja.ts';
 import { losAvisosDeAhora, type AvisoDelTpv } from '../avisos/losAvisos.ts';
+import { losAvisosDeLasReservas } from '../reservas/logica.ts';
+import { usarLasReservas } from './usarLasReservas.ts';
 
 /**
  * **Los avisos y la campana** (el rediseño, entrega 2 · 2, 0148): qué avisos hay ahora para quien
@@ -59,6 +61,18 @@ export function usarLosAvisos(): readonly AvisoDelTpv[] {
   const caja = usarLaCaja();
   const retirar = aparato.funcion === 'caja' ? (caja.data?.retirar ?? null) : null;
   const turnoId = caja.data?.abierta?.turnoId ?? null;
+  // Las reservas de hoy (la Ampliación 5 · 1, 0153); y la hora, cada medio minuto, para que «llegan
+  // en 10 minutos» y «llevan retraso» salgan solos aunque no cambie nada más.
+  const reservas = usarLasReservas(undefined, tomaNota);
+  const [ahora, setAhora] = useState(() => Date.now());
+  useEffect(() => {
+    const reloj = window.setInterval(() => {
+      setAhora(Date.now());
+    }, 30_000);
+    return () => {
+      window.clearInterval(reloj);
+    };
+  }, []);
   return useMemo(() => {
     const datos = plano.data;
     const cuentas =
@@ -76,6 +90,21 @@ export function usarLosAvisos(): readonly AvisoDelTpv[] {
       enLaCaja: aparato.funcion === 'caja',
       esEncargado: puedeEditar(yo.permisos, 'accion.quitar_de_cocina'),
       retirar: retirar === null || turnoId === null ? null : { ...retirar, turnoId },
+      reservas:
+        reservas.data?.encendidas === true
+          ? losAvisosDeLasReservas(reservas.data.reservas, ahora, reservas.data.liberarTras).map(
+              (a) => ({ ...a, ahora }),
+            )
+          : [],
     });
-  }, [plano.data, impresoras.data, aparato.funcion, yo.permisos, retirar, turnoId]);
+  }, [
+    plano.data,
+    impresoras.data,
+    aparato.funcion,
+    yo.permisos,
+    retirar,
+    turnoId,
+    reservas.data,
+    ahora,
+  ]);
 }

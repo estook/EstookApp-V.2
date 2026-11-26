@@ -658,3 +658,64 @@ export interface LaPantallaDeCocina {
   readonly esperando: readonly TarjetaDeCocina[];
   readonly fuera: readonly TarjetaDeCocina[];
 }
+
+// ── La Ampliación 5 · 1 · Las reservas (0153): `las_reservas` y `horas_para_reservar` ──
+
+export type EstadoDeLaReserva = 'reservada' | 'sentada' | 'cancelada' | 'no_vino';
+
+export interface UnaReserva {
+  readonly id: string;
+  readonly dia: string;
+  readonly hora: string;
+  readonly empieza: string;
+  readonly acaba: string;
+  readonly comensales: number;
+  readonly nombre: string;
+  readonly telefono: string;
+  readonly nota: string | null;
+  readonly origen: 'tpv' | 'web';
+  readonly estado: EstadoDeLaReserva;
+  readonly mesas: readonly { readonly id: string; readonly nombre: string }[];
+  readonly cuentaId: string | null;
+  readonly creadaEn: string;
+  readonly esMia: boolean;
+}
+
+export interface ServicioDeReservas {
+  readonly nombre: string;
+  readonly desde: string;
+  readonly hasta: string;
+}
+
+export interface LasReservas {
+  readonly hoy: string;
+  readonly dia: string;
+  readonly encendidas: boolean;
+  readonly liberarTras: number;
+  readonly servicios: readonly ServicioDeReservas[];
+  readonly reservas: readonly UnaReserva[];
+}
+
+export interface LasHorasParaReservar {
+  readonly dia: string;
+  readonly duracion: number;
+  readonly servicios: readonly {
+    readonly nombre: string;
+    readonly horas: readonly {
+      readonly hora: string;
+      readonly mesas: readonly { readonly id: string; readonly nombre: string }[] | null;
+      readonly pasaDelTope: boolean;
+    }[];
+  }[];
+}
+
+export interface LosAjustesDeReservas {
+  readonly encendidas: boolean;
+  readonly servicios: readonly ServicioDeReservas[];
+  readonly duraciones: readonly number[];
+  readonly reales: readonly number[];
+  readonly aprendidas: readonly boolean[];
+  readonly topePorCuarto: number | null;
+  readonly liberarTras: number;
+  readonly juntables: readonly { readonly a: string; readonly b: string }[];
+}

@@ -16,6 +16,8 @@ import { elPase } from '../logica/laCuenta.ts';
 import { escucharLaDireccion, irA, irALaMesa, laDireccion } from '../navegar.ts';
 import { LaColumnaAhora, cuantoPideAhora } from './LaColumnaAhora.tsx';
 import { LOS_COLORES_DE_LA_SALA } from './losColores.ts';
+import { usarLasReservas } from '../ganchos/usarLasReservas.ts';
+import { laReservaDeLaMesa } from '../reservas/logica.ts';
 import { AbrirMesa } from './AbrirMesa.tsx';
 import { LaFranjaSinInternet } from '../sinInternet/LaFranjaSinInternet.tsx';
 import { LaFranjaDeLaCaja } from '../sinInternet/LaFranjaDeLaCaja.tsx';
@@ -69,6 +71,13 @@ export function ElPlano() {
   const [zonaElegida, setZonaElegida] = useState<string | null>(null);
   const soloMias = usarSoloMias(aparato.esPersonal);
   const [abriendo, setAbriendo] = useState<MesaDelPlano | 'barra' | null>(null);
+  // Las reservas de hoy (la Ampliación 5 · 1, 0153): cada mesa libre con reserva lleva su hora.
+  const reservas = usarLasReservas();
+  const ahora = Date.now();
+  const deLaMesa = (m: MesaDelPlano) =>
+    reservas.data?.encendidas === true
+      ? laReservaDeLaMesa(reservas.data.reservas, m.id, ahora, reservas.data.liberarTras)
+      : null;
   const [opciones, setOpciones] = useState<string | null>(null);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
 
@@ -270,6 +279,7 @@ export function ElPlano() {
                       <MesaEnElPlano
                         key={m.id}
                         mesa={m}
+                        reserva={deLaMesa(m)}
                         enElPlano
                         elegida={ancho && opciones !== null && m.cuenta?.cuentaId === opciones}
                         alTocar={() => {
@@ -289,6 +299,7 @@ export function ElPlano() {
                       <MesaEnElPlano
                         key={m.id}
                         mesa={m}
+                        reserva={deLaMesa(m)}
                         enElPlano={false}
                         alTocar={() => {
                           if (m.cuenta === null) setAbriendo(m);
@@ -372,7 +383,27 @@ export function ElPlano() {
 
       {abriendo !== null && (
         <AbrirMesa
+          key={abriendo === 'barra' ? 'barra' : abriendo.id}
           mesa={abriendo === 'barra' ? null : abriendo}
+          reserva={abriendo === 'barra' ? null : deLaMesa(abriendo)}
+          otraLibre={
+            abriendo === 'barra'
+              ? null
+              : (datos.zonas
+                  .flatMap((z) => z.mesas)
+                  .filter(
+                    (m) =>
+                      m.id !== abriendo.id &&
+                      m.cuenta === null &&
+                      m.forma !== 'taburete' &&
+                      m.plazas >= Math.min(abriendo.plazas, 2) &&
+                      deLaMesa(m) === null,
+                  )
+                  .sort((a, b) => a.plazas - b.plazas || porSuNombre(a, b))[0] ?? null)
+          }
+          alIrAOtra={(m) => {
+            setAbriendo(m);
+          }}
           alCerrar={() => {
             setAbriendo(null);
           }}

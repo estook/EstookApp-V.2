@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PGlite } from '@electric-sql/pglite';
 import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
+import { btree_gist } from '@electric-sql/pglite/contrib/btree_gist';
 import { sembrarAcceso, type LoQueSeSembro } from '../semillas/acceso.ts';
 
 /**
@@ -71,7 +72,7 @@ export async function levantarBase(): Promise<BaseDePrueba> {
   // `unaccent` no existe en PGlite, y por eso `estook.sin_acentos` se escribio
   // con `translate` (decision 0009): asi el buscador se prueba de verdad en las
   // tres capas, y no solo a mano contra Supabase.
-  const bd = new PGlite({ extensions: { pg_trgm } });
+  const bd = new PGlite({ extensions: { pg_trgm, btree_gist } });
 
   await bd.exec(CONTROL);
   for (const { sql } of await migraciones()) await bd.exec(sql);

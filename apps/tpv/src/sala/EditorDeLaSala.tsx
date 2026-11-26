@@ -19,6 +19,7 @@ import {
 import { Cargando, ErrorEnCristiano, Hoja } from '@estook/ui';
 import type { CosaDibujada, ElPlanoParaDibujar } from '../datos/tipos.ts';
 import { FalloDeLaSala, usarAcciones, type Resultado } from '../ganchos/usarLaSala.ts';
+import { usarLosAjustesDeReservas } from '../ganchos/usarLasReservas.ts';
 import { irAlPlano } from '../navegar.ts';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { enderezar, estiloEnElPlano, redondeoDeLaForma } from '../plano/dibujo.tsx';
@@ -869,6 +870,9 @@ export function EditorDeLaSala() {
                 <PanelDeLaMesa
                   key={mesaElegida.id}
                   mesa={mesaElegida}
+                  otras={sala.mesas.filter(
+                    (m) => m.id !== mesaElegida.id && m.forma !== 'taburete',
+                  )}
                   alCambiar={(cambios) => void cambiarLaMesa(mesaElegida, cambios)}
                   alDuplicar={() => void duplicar({ tipo: 'mesa', id: mesaElegida.id })}
                   alQuitar={() => void quitar([{ tipo: 'mesa', id: mesaElegida.id }])}
@@ -1070,11 +1074,14 @@ function LaPaleta<T extends FormaDeMesa | CosaDeLaSala>({
 
 function PanelDeLaMesa({
   mesa,
+  otras,
   alCambiar,
   alDuplicar,
   alQuitar,
 }: {
   readonly mesa: MesaParaDibujar;
+  /** Las otras mesas de la sala, para elegir con cuáles se junta (reservas, 0153). */
+  readonly otras: readonly MesaParaDibujar[];
   readonly alCambiar: (cambios: Record<string, unknown>) => void;
   readonly alDuplicar: () => void;
   readonly alQuitar: () => void;
@@ -1179,6 +1186,7 @@ function PanelDeLaMesa({
           alCambiar({ giro });
         }}
       />
+      {mesa.forma !== 'taburete' && <SeJuntaCon mesa={mesa} otras={otras} />}
       <div className="flex gap-e2">
         <BotonSuave onClick={alDuplicar}>Duplicar</BotonSuave>
         <BotonSuave onClick={alQuitar} desactivado={mesa.abierta}>
@@ -1438,5 +1446,57 @@ function SoloEnLaTablet() {
       </p>
       <BotonSuave onClick={irAlPlano}>Volver a las mesas</BotonSuave>
     </main>
+  );
+}
+
+/**
+ * **Con qué mesas se junta, para las reservas** (la Ampliación 5 · 1, 0153): «las mesas se juntan solo si
+ * las marcas en el editor de la sala (la 7 con la 8)». Solo sale con las reservas encendidas. Un toque
+ * junta o separa; Estook solo junta para una reserva las parejas marcadas aquí.
+ */
+function SeJuntaCon({
+  mesa,
+  otras,
+}: {
+  readonly mesa: MesaParaDibujar;
+  readonly otras: readonly MesaParaDibujar[];
+}) {
+  const lo = usarLosAjustesDeReservas();
+  const ejecutar = usarAcciones();
+  const [haciendo, setHaciendo] = useState<string | null>(null);
+  if (lo.data === undefined || !lo.data.encendidas || otras.length === 0) return null;
+  const juntas = new Set(
+    lo.data.juntables.flatMap((j) => (j.a === mesa.id ? [j.b] : j.b === mesa.id ? [j.a] : [])),
+  );
+  return (
+    <div className="flex flex-col gap-e2">
+      <span className="text-secundario font-semibold text-texto-tenue">
+        Para reservas grandes, se junta con
+      </span>
+      <div className="flex flex-wrap gap-e1">
+        {[...otras]
+          .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { numeric: true }))
+          .map((o) => (
+            <BotonSuave
+              key={o.id}
+              radio
+              puesto={juntas.has(o.id)}
+              desactivado={haciendo !== null}
+              onClick={() => {
+                setHaciendo(o.id);
+                void ejecutar('juntar_mesas_para_reservas', {
+                  mesa_a: mesa.id,
+                  mesa_b: o.id,
+                  juntas: !juntas.has(o.id),
+                }).then(() => {
+                  setHaciendo(null);
+                });
+              }}
+            >
+              {o.nombre}
+            </BotonSuave>
+          ))}
+      </div>
+    </div>
   );
 }

@@ -39,6 +39,7 @@ import { writeFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { comoPostgres, elSqlDePglite } from './el-sql-de-pglite.mjs';
 import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
+import { btree_gist } from '@electric-sql/pglite/contrib/btree_gist';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -77,7 +78,7 @@ async function ficheros(carpeta, filtro) {
   return Promise.all(nombres.map((n) => readFile(join(RAIZ, carpeta, n), 'utf8')));
 }
 
-const bd = new PGlite({ extensions: { pg_trgm } });
+const bd = new PGlite({ extensions: { pg_trgm, btree_gist } });
 await bd.exec(CONTROL);
 for (const sql of await ficheros(
   'migraciones',

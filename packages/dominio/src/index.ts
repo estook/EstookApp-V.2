@@ -1618,3 +1618,18 @@ export type {
   SaldoDeVacaciones,
   DiaDelHorario,
 } from './ficha.ts';
+export {
+  DURACIONES_DE_FABRICA,
+  CUENTAS_PARA_APRENDER,
+  elTramoDeTamano,
+  cuantoDura,
+  lasDuracionesReales,
+  lasHorasDelServicio,
+  esUnServicio,
+  elCuartoDe,
+  laMejorMesa,
+  cabeEnElCuarto,
+  lasMesasEnLetra,
+  telefonoLimpio,
+} from './reservas.ts';
+export type { ServicioDeReservas, MesaParaReservar, TramoOcupado } from './reservas.ts';

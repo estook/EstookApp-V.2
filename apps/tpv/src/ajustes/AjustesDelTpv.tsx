@@ -12,6 +12,8 @@ import { IconoEnSuColor, type Dibujo, type Tono } from '../iconos.tsx';
 import type { LaBotonera, LosAparatos as LosAparatosDeLaApi } from '../datos/tipos.ts';
 import { LosAparatos } from './LosAparatos.tsx';
 import { PinYBloqueo } from './PinYBloqueo.tsx';
+import { LasReservasEnAjustes } from './LasReservasEnAjustes.tsx';
+import { usarLasReservas } from '../ganchos/usarLasReservas.ts';
 import { CocinaYBarra } from './CocinaYBarra.tsx';
 import { ImpresorasYCajon } from './ImpresorasYCajon.tsx';
 import { LaCajaEnAjustes } from './LaCajaEnAjustes.tsx';
@@ -53,6 +55,7 @@ const GRUPOS = ['El local', 'El dinero'] as const;
 const DE_AQUI_DENTRO: readonly string[] = [
   'productos',
   'cocina',
+  'reservas',
   'aparatos',
   'impresoras',
   'caja',
@@ -104,6 +107,15 @@ function losApartados(permisos: Parameters<typeof puedeEditar>[0]): Apartado[] {
             tono: 'ambar',
             grupo: 'El local',
             ir: 'ajustes/cocina',
+          },
+          // Las reservas (la Ampliación 5 · 1, 0153): apagadas de fábrica.
+          {
+            id: 'reservas',
+            nombre: 'Reservas',
+            dibujo: 'reservas',
+            tono: 'azul',
+            grupo: 'El local',
+            ir: 'ajustes/reservas',
           },
         ] as const)
       : []),
@@ -292,6 +304,8 @@ export function AjustesDelTpv({ direccion }: { readonly direccion: string }) {
             <PinYBloqueo />
           ) : elegido === 'cocina' ? (
             <CocinaYBarra />
+          ) : elegido === 'reservas' ? (
+            <LasReservasEnAjustes />
           ) : elegido === 'impresoras' ? (
             <ImpresorasYCajon />
           ) : elegido === 'caja' ? (
@@ -428,6 +442,7 @@ function ComoEsta({ id }: { readonly id: string }) {
   if (id === 'sala') return <LaSala />;
   if (id === 'productos') return <LosProductos />;
   if (id === 'cocina') return <LaCocina />;
+  if (id === 'reservas') return <ComoVanLasReservas />;
   if (id === 'aparatos') return <LosAparatosDelLocal />;
   if (id === 'impresoras') return <LasImpresorasDelLocal />;
   if (id === 'caja') return <>Quién la abre, el recuento y las formas de pago</>;
@@ -595,4 +610,10 @@ function ElBloqueo() {
   const { aparato } = usarSesion();
   const minutos = aparato.bloqueo.minutos;
   return <>Se bloquea {minutos === 1 ? 'al minuto' : `a los ${String(minutos)} min`}</>;
+}
+
+function ComoVanLasReservas() {
+  const lo = usarLasReservas();
+  if (lo.data === undefined) return <>Apagadas de fábrica</>;
+  return <>{lo.data.encendidas ? 'Encendidas' : 'Apagadas'}</>;
 }

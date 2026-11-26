@@ -4,6 +4,7 @@ import {
   IconoAvisos,
   IconoBien,
   IconoCaja,
+  IconoCalendario,
   IconoCerrar,
   IconoDinero,
   IconoImprimir,
@@ -39,6 +40,7 @@ const COMO_SE_VE: Readonly<
   impresora: { icono: IconoImprimir, color: 'bg-mal-suave text-mal' },
   seis_horas: { icono: IconoAtencion, color: 'bg-mal-suave text-mal' },
   retirar: { icono: IconoCaja, color: 'bg-mesa-te-toca text-sobre-mesa-te-toca' },
+  reserva: { icono: IconoCalendario, color: 'bg-[var(--base-fechas)] text-white' },
 };
 
 /** Los avisos apilados y la hoja de la campana. Va una vez, para todo lo de la sala. */

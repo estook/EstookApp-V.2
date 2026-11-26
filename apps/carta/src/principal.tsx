@@ -2,9 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { crearRegistro, resolverEntorno } from '@estook/utiles';
 import { arrancarObservabilidad } from '@estook/utiles/observabilidad';
-import { laFacturaDeLaDireccion } from '@estook/dominio';
+import { laFacturaDeLaDireccion, laReservaDeLaDireccion } from '@estook/dominio';
 import { LaCarta } from './LaCarta.tsx';
 import { PideTuFactura } from './PideTuFactura.tsx';
+import { Reservar } from './Reservar.tsx';
 import './estilos.css';
 
 const entorno = resolverEntorno(import.meta.env);
@@ -23,8 +24,10 @@ const raiz = document.getElementById('raiz');
 if (!raiz) throw new Error('Falta el elemento #raiz en index.html');
 
 // **Esta aplicación es la que sirve lo que no es un fichero** (`publicar.yml`): la carta de un local
-// y la página con la que el cliente pide su factura (T6 · 2 · 3, 0141).
+// la página con la que el cliente pide su factura (T6 · 2 · 3, 0141) y la web de reservas del local (la
+// Ampliación 5 · 2, 0153). La de reservas sí la pueden guardar los buscadores: es la del local.
 const laFactura = laFacturaDeLaDireccion(window.location.pathname);
+const laReserva = laReservaDeLaDireccion(window.location.pathname);
 if (laFactura !== null) {
   // El código abre una puerta: la dirección no la tiene que guardar ningún buscador.
   const noLaGuardes = document.createElement('meta');
@@ -35,6 +38,12 @@ if (laFactura !== null) {
 
 createRoot(raiz).render(
   <StrictMode>
-    {laFactura === null ? <LaCarta /> : <PideTuFactura codigoInicial={laFactura.codigo} />}
+    {laFactura !== null ? (
+      <PideTuFactura codigoInicial={laFactura.codigo} />
+    ) : laReserva !== null ? (
+      <Reservar direccion={laReserva.direccion} />
+    ) : (
+      <LaCarta />
+    )}
   </StrictMode>,
 );

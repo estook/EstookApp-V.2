@@ -473,6 +473,16 @@ describe('las puertas se cierran solas', () => {
         // 0124 · la caja de centro recoge con su llave, y solo si ya hace de centro, las huellas
         // de los PIN de su local, para comprobarlos sin internet. Nunca un PIN.
         'los_pin_del_centro',
+        // La Ampliación 5 · 2 (0153) · la web de reservas de cada local: quien reserva no ha entrado
+        // en ningún sitio. Ve las horas libres, nunca quién ha reservado; su reserva solo con su
+        // teléfono y su código, y lo que busca o escribe cada dirección tiene tope por hora.
+        'la_web_de_reservas',
+        'horas_en_la_web',
+        'reservar_en_la_web',
+        'mi_reserva_en_la_web',
+        'confirmar_mi_reserva',
+        'cancelar_mi_reserva',
+        'avisame_si_se_libera',
         // 0109 · recuperar el acceso, que se pide precisamente sin haber entrado: el
         // enlace al correo (diez por hora desde una dirección, y no dice si un correo
         // existe) y lo que se hace con él, que vale por su token, de un uso.
@@ -833,13 +843,18 @@ describe('los secretos no se guardan para repetirlos', () => {
     // T6 · 2 · 2 · 1 (0137) · comprobar al cliente, por lo mismo que un NIF.
     // T6 · 2 · 3 (0141) · «Pide tu factura»: sin sesión no hay de quién recordar nada, y lo que no
     // debe hacerse dos veces lo para el canje, con el candado del ticket.
+    // La Ampliación 5 · 2 (0153) · la web de reservas, por lo mismo: la reserva no se duplica por su
+    // id, confirmar y cancelar los para el estado, y «Avísame» no apunta dos veces el mismo correo.
     expect(sinRecordar).toEqual([
       'abrir_pide_tu_factura',
       'apuntar_lo_impreso',
+      'avisame_si_se_libera',
       'bloquear',
+      'cancelar_mi_reserva',
       'comprobar_al_cliente',
       'comprobar_en_pide_tu_factura',
       'comprobar_un_nif',
+      'confirmar_mi_reserva',
       'descargar_mi_ticket',
       'destachar_en_la_pantalla',
       'el_modelo_para_firmar',
@@ -852,11 +867,13 @@ describe('los secretos no se guardan para repetirlos', () => {
       'leer_el_canal',
       'llamar_al_camarero',
       'mandar_otra_vez_mi_factura',
+      'mi_reserva_en_la_web',
       'pedir_mi_factura',
       'preparar_el_aparato_sin_conexion',
       'probar_mi_movil',
       'quien_ficha_aqui',
       'quien_ficha_en_la_caja',
+      'reservar_en_la_web',
       'sigo_aqui',
       'tachar_en_la_pantalla',
       'ya_me_ha_llegado',

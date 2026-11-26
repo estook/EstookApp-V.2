@@ -100,8 +100,9 @@ export async function elLocalDeLaWeb(
 
 /**
  * **Gasta un intento de esa dirección, o dice que no quedan**: reservar, buscar su reserva y «Avísame si se
- * libera», cada cosa con su tope por hora. El intento queda aunque lo que venga después falle: un código
- * que no casa también cuenta, y así no se pueden ir probando los diez mil.
+ * libera», cada cosa con su tope por hora. El intento queda aunque lo que venga después falle (quien busca
+ * lanza su fallo con `conservarLoHecho`): un código que no casa también cuenta, y así no se pueden ir
+ * probando los diez mil. Lo de hace más de una hora se borra: una dirección de internet es un dato personal.
  */
 export async function gastarUnIntento(
   contexto: Contexto,
@@ -109,6 +110,9 @@ export async function gastarUnIntento(
 ): Promise<void> {
   const direccion = contexto.desde ?? 'sin-direccion';
   const haceUnaHora = new Date(contexto.ahora.getTime() - 3_600_000).toISOString();
+  await contexto.sql`
+    delete from estook.intento_en_la_web_de_reservas where en < ${haceUnaHora}::timestamptz
+  `;
   const [fila] = await contexto.sql<{ van: number }[]>`
     select count(*)::int as van from estook.intento_en_la_web_de_reservas
      where direccion = ${direccion} and clase = ${clase} and en > ${haceUnaHora}::timestamptz

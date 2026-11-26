@@ -17,13 +17,13 @@ import { laPoliticaDeSeguridad } from '../../herramientas/politica-de-seguridad.
 const RAIZ = fileURLToPath(new URL('../../', import.meta.url));
 
 /**
- * **`/factura` también en el ordenador** (T6 · 2 · 3, 0141). En estook.com la sirve la `404.html`, que es
+ * **`/factura` y `/reservar` también en el ordenador** (T6 · 2 · 3, 0141; la Ampliación 5 · 2, 0153). En estook.com la sirve la `404.html`, que es
  * esta aplicación (`publicar.yml`). Aquí, que `vite` solo sirve lo que cuelga de `/carta/`, se hace lo
  * mismo a mano: si no, la página no se podría ni probar ni abrir en local.
  */
 function laPaginaDeLaFactura(base: string): Plugin {
   const aLaCarta: Connect.NextHandleFunction = (pedido, _respuesta, seguir) => {
-    if (/^\/factura(\/|\?|$)/.test(pedido.url ?? '')) pedido.url = base;
+    if (/^\/(factura|reservar)(\/|\?|$)/.test(pedido.url ?? '')) pedido.url = base;
     seguir();
   };
   return {

@@ -28,9 +28,12 @@ function envolver(local: string, parrafos: readonly string[]): string {
     )
     .join('');
   return [
-    '<!doctype html><html lang="es"><body style="margin:0;padding:24px;background:#f5f3ef;',
+    // Con su ancho de móvil: sin esto, el navegador del móvil lo pinta a 980 y hay que ampliar.
+    '<!doctype html><html lang="es"><head><meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width,initial-scale=1"></head>',
+    '<body style="margin:0;padding:16px;background:#f5f3ef;',
     'font-family:Montserrat,Helvetica,Arial,sans-serif;color:#1d2a2e;font-size:16px;line-height:1.5">',
-    '<div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:12px;padding:32px">',
+    '<div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:12px;padding:24px">',
     `<p style="margin:0 0 24px;font-weight:700;font-size:20px">${escapar(local)}</p>`,
     cuerpo,
     '<p style="margin:24px 0 0;color:#6b7478;font-size:13px">Reserva hecha con Estook · estook.com</p>',

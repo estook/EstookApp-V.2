@@ -111,7 +111,7 @@ create table estook.intento_en_la_web_de_reservas (
 );
 
 comment on table estook.intento_en_la_web_de_reservas is
-  'Lo que pide cada dirección en la web de reservas, para frenar a quien pruebe códigos o reserve sin parar (0153). Se borra a la semana.';
+  'Lo que pide cada dirección en la web de reservas, para frenar a quien pruebe códigos o reserve sin parar (0153). Lo de hace más de una hora se borra al apuntar otro: una dirección es un dato personal.';
 
 create index intento_en_la_web_de_reservas_por_direccion
   on estook.intento_en_la_web_de_reservas (direccion, clase, en);

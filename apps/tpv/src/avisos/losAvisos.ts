@@ -156,8 +156,8 @@ export function losAvisosDeAhora({
           ? `${mesas} · si no vienen, libérala`
           : a.que === 'cancelada'
             ? r.canceladaPor === 'sin_confirmar'
-              ? 'No la confirmó a tiempo: su mesa queda libre'
-              : 'La ha cancelado el cliente: su mesa queda libre'
+              ? 'No confirmó a tiempo · mesa libre'
+              : 'La canceló el cliente · mesa libre'
             : `${mesas}${r.origen === 'web' ? ' · web' : ''}`,
       boton: { texto: 'Ver', hace: { tipo: 'ir', donde: 'reservas' } },
       mio: false,

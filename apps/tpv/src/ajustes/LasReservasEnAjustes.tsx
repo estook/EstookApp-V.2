@@ -256,8 +256,7 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
         <h2 className="text-seccion font-bold">Por internet</h2>
         {enlace === null ? (
           <p className="text-secundario text-texto-tenue">
-            Para tener la web de reservas, el local necesita su dirección de la carta: se pone en
-            Estook › Ajustes › La carta.
+            La web de reservas usa la dirección de la carta del local, y este local aún no la tiene.
           </p>
         ) : (
           <div className="flex flex-wrap items-center gap-e3 rounded-grande border border-borde bg-fondo p-e3">
@@ -271,9 +270,14 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
               tono="secundario"
               tamano="s"
               onClick={() => {
-                void navigator.clipboard?.writeText(`https://${enlace}`).then(() => {
-                  setCopiado(true);
-                });
+                // Sin conexión segura el navegador no deja copiar: entonces el enlace se ve igual.
+                if (!('clipboard' in navigator)) return;
+                void navigator.clipboard.writeText(`https://${enlace}`).then(
+                  () => {
+                    setCopiado(true);
+                  },
+                  () => undefined,
+                );
               }}
             >
               {copiado ? 'Copiado' : 'Copiar el enlace'}
@@ -306,10 +310,6 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
             alCambiar={setMinutosParaConfirmar}
           />
         )}
-        <p className="text-secundario text-texto-tenue">
-          Las mesas que no quieras ofrecer por internet (la barra, la del rincón) se quitan en La
-          sala y las mesas.
-        </p>
       </section>
 
       <p className="text-secundario text-texto-tenue">
@@ -323,7 +323,8 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
         >
           La sala y las mesas
         </button>
-        : toca una mesa y elige con cuál se junta.
+        : toca una mesa y elige con cuál se junta, y si sale en la web de reservas (la barra o la
+        del rincón, mejor para quien llega).
       </p>
 
       <div>

@@ -50,13 +50,18 @@ import {
  * **Lo que se cuenta es solo lo justo**: las horas libres, nunca quién ha reservado; y una reserva solo a quien
  * da su teléfono y su código. Lo que escribe o busca cada dirección tiene tope por hora (0133, E). Reservar,
  * buscar y cambiar son comandos: el teléfono y el código viajan en el cuerpo, no en una dirección.
+ *
+ * **Ninguno guarda su respuesta para repetirla** (`sinRecordar`), como «Pide tu factura»: sin sesión no hay de
+ * quién recordar nada, y guardarla guardaría el código en una tabla. Repetir cada uno ya es lo mismo: la
+ * reserva por su id, que nace en el navegador; confirmar y cancelar, por el estado; y «Avísame», que no
+ * apunta dos veces al mismo correo el mismo día.
  */
 
 const direccion = z
   .string()
   .trim()
   .min(1)
-  .max(60)
+  .max(80)
   .regex(/^[a-z0-9-]+$/i);
 const fecha = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const cuarto = z.string().regex(/^([01]\d|2[0-3]):(00|15|30|45)$/);
@@ -128,6 +133,11 @@ export interface LasHorasDeLaWeb {
   readonly servicios: readonly { readonly nombre: string; readonly horas: readonly string[] }[];
   /** Si ese día no queda ninguna hora para tantos: sale «Avísame si se libera». */
   readonly lleno: boolean;
+  /**
+   * Si tantos no caben **nunca** en las mesas que el local ofrece por internet (ni juntando las que se
+   * juntan): no se ofrece «Avísame», que nunca llegaría; se dice que llamen.
+   */
+  readonly noCaben: boolean;
 }
 
 export const horasEnLaWeb = consulta<
@@ -149,6 +159,10 @@ export const horasEnLaWeb = consulta<
       });
     }
     queElDiaSePueda(entrada.dia, fechaEnElLocal(contexto.ahora, local.zona));
+    const { mesas, juntables } = await lasMesasDelLocal(contexto, local.id, true);
+    const noCaben =
+      laMejorMesa({ mesas, juntables, ocupados: [], comensales, desde: 0, hasta: 1 }) === null;
+    if (noCaben) return { dia: entrada.dia, servicios: [], lleno: true, noCaben };
     const libres = await lasHorasLibres(contexto, local.id, entrada.dia, comensales, null, true);
     // La web no pasa del tope: es el camarero quien decide si mete a alguien más.
     const servicios = libres.servicios.map((s) => ({
@@ -159,6 +173,7 @@ export const horasEnLaWeb = consulta<
       dia: entrada.dia,
       servicios,
       lleno: servicios.every((s) => s.horas.length === 0),
+      noCaben: false,
     };
   },
 });
@@ -205,6 +220,7 @@ export const reservarEnLaWeb = comando<
   nombre: 'reservar_en_la_web',
   entrada: entradaReservarEnLaWeb,
   sinSesion: true,
+  sinRecordar: true,
 
   async ejecutar(contexto, entrada) {
     await comoElSistema(contexto);
@@ -380,7 +396,8 @@ type EntradaDeMiReserva = z.infer<typeof entradaDeMiReserva>;
 
 /**
  * **Su reserva, con su teléfono y su código**: la que viene antes de las que aún pueden servir. Gasta un
- * intento siempre: si no casa, no se dice si es el teléfono o el código lo que está mal.
+ * intento siempre, y si no casa el intento queda: no se dice si es el teléfono o el código lo que está mal.
+ * **El teléfono se compara por sus nueve últimas cifras**: «+34 600 111 222» y «600111222» son el mismo.
  */
 async function suReserva(
   contexto: Contexto,
@@ -390,22 +407,28 @@ async function suReserva(
   const local = await elLocalDeLaWeb(contexto, entrada.direccion);
   await gastarUnIntento(contexto, 'buscar');
   const hoy = fechaEnElLocal(contexto.ahora, local.zona);
-  const tel = entrada.telefono === undefined ? null : telefonoLimpio(entrada.telefono);
+  const cifras =
+    entrada.telefono === undefined ? null : entrada.telefono.replace(/\D/g, '').slice(-9);
   const [fila] = await contexto.sql<{ id: string }[]>`
     select id::text as id from estook.reserva
      where local_id = ${local.id}::uuid and codigo = ${entrada.codigo}
        and (${entrada.reserva_id ?? null}::uuid is null or id = ${entrada.reserva_id ?? null}::uuid)
-       and (${tel}::text is null or telefono = ${tel})
+       and (${cifras}::text is null
+            or right(regexp_replace(telefono, '\D', '', 'g'), 9) = ${cifras})
        and dia >= ${masDias(hoy, -1)}::date
      order by (estado = 'reservada') desc, empieza
      limit 1
   `;
   const reserva = fila === undefined ? null : await laReservaDeLaWeb(contexto, local, fila.id);
   if (reserva === null) {
-    throw new FalloDeAplicacion('no_existe', {
-      porque:
-        'Con ese teléfono y ese código no hay ninguna reserva. Míralo en el correo o llámales.',
-    });
+    throw new FalloDeAplicacion(
+      'no_existe',
+      {
+        porque:
+          'Con ese teléfono y ese código no hay ninguna reserva. Míralo en el correo o llámales.',
+      },
+      { conservarLoHecho: true },
+    );
   }
   return { local, reserva };
 }
@@ -425,6 +448,7 @@ export const confirmarMiReserva = comando<EntradaDeMiReserva, LaReservaDeLaWeb>(
   nombre: 'confirmar_mi_reserva',
   entrada: entradaDeMiReserva,
   sinSesion: true,
+  sinRecordar: true,
 
   async ejecutar(contexto, entrada) {
     const { local, reserva } = await suReserva(contexto, entrada);
@@ -451,6 +475,7 @@ export const cancelarMiReserva = comando<EntradaDeMiReserva, LaReservaDeLaWeb>({
   nombre: 'cancelar_mi_reserva',
   entrada: entradaDeMiReserva,
   sinSesion: true,
+  sinRecordar: true,
 
   async ejecutar(contexto, entrada) {
     const { reserva } = await suReserva(contexto, entrada);
@@ -488,6 +513,7 @@ export const avisameSiSeLibera = comando<
     })
     .strict(),
   sinSesion: true,
+  sinRecordar: true,
 
   async ejecutar(contexto, entrada) {
     await comoElSistema(contexto);
@@ -499,12 +525,18 @@ export const avisameSiSeLibera = comando<
     }
     await gastarUnIntento(contexto, 'avisame');
     queElDiaSePueda(entrada.dia, fechaEnElLocal(contexto.ahora, local.zona));
+    // Pedirlo dos veces (dos toques, la red) no apunta dos veces ni manda dos correos.
     await contexto.sql`
       insert into estook.aviso_si_se_libera
         (organizacion_id, local_id, dia, comensales, nombre, telefono, correo)
-      values (${local.organizacionId}::uuid, ${local.id}::uuid, ${entrada.dia}::date,
-              ${entrada.comensales}, ${entrada.nombre}, ${telefonoLimpio(entrada.telefono)},
-              ${entrada.correo})
+      select ${local.organizacionId}::uuid, ${local.id}::uuid, ${entrada.dia}::date,
+             ${entrada.comensales}, ${entrada.nombre}, ${telefonoLimpio(entrada.telefono)},
+             ${entrada.correo}
+       where not exists (
+         select 1 from estook.aviso_si_se_libera
+          where local_id = ${local.id}::uuid and dia = ${entrada.dia}::date
+            and lower(correo) = lower(${entrada.correo}) and avisado_en is null
+       )
     `;
     return { apuntado: true };
   },

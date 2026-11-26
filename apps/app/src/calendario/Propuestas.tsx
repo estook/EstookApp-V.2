@@ -13,7 +13,7 @@ import {
   fondoDegradado,
 } from '@estook/ui';
 import { IconoAtencion, IconoPalmera } from '@estook/iconos';
-import { delAl, diasEnLetra } from '@estook/dominio';
+import { delAl, diasDeLaSemanaEnLetra, diasEnLetra } from '@estook/dominio';
 import type { ErrorDeLaApi } from '@estook/cliente-api';
 import { usarSesion } from '../sesion/Sesion.tsx';
 import { usarLectura } from '../ganchos/usarLectura.ts';
@@ -142,6 +142,7 @@ export function Propuestas() {
                 </strong>
                 <span className="text-secundario text-texto-suave">
                   {p.rolNombre} · {diasEnLetra(p.dias)} {p.dias === 1 ? 'día' : 'días'}
+                  {p.libra === null ? '' : ` sin sus libres (${diasDeLaSemanaEnLetra(p.libra)})`}
                   {p.leQuedarian === null ? '' : ` · le quedarían ${diasEnLetra(p.leQuedarian)}`}
                 </span>
               </span>
@@ -236,7 +237,8 @@ export function Propuestas() {
       {proponiendo !== null && (
         <PedirVacaciones
           hoy={datos.hoy}
-          vacacionesEn="naturales"
+          cuenta={{ vacacionesEn: 'naturales', libra: null }}
+          libraFija={proponiendo.libra}
           sePuedenPedir={null}
           titulo={`Otras fechas para ${proponiendo.nombre}`}
           boton="Proponérselas"
@@ -282,7 +284,7 @@ export function Propuestas() {
       {poniendo && (
         <PedirVacaciones
           hoy={datos.hoy}
-          vacacionesEn="naturales"
+          cuenta={{ vacacionesEn: 'naturales', libra: null }}
           sePuedenPedir={null}
           titulo="Poner vacaciones"
           boton="Ponérselas"
@@ -290,15 +292,18 @@ export function Propuestas() {
           personas={datos.equipo.map((e) => ({
             personaId: e.personaId,
             nombre: `${e.nombre} ${e.apellidos ?? ''}`.trim(),
+            vacacionesEn: e.vacacionesEn,
+            libra: e.libra,
           }))}
           alCerrar={() => {
             setPoniendo(false);
           }}
-          alEnviar={async ({ desde, hasta, personaId }) => {
+          alEnviar={async ({ desde, hasta, personaId, libra }) => {
             const respuesta = await cliente.ejecutar('pedir_vacaciones', {
               desde,
               hasta,
               ...(personaId === null ? {} : { persona_id: personaId }),
+              ...(libra === null ? {} : { libra: [...libra] }),
             });
             if (!respuesta.ok) return respuesta.error;
             setPoniendo(false);

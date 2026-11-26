@@ -281,7 +281,7 @@ export function Personal() {
       {pidiendo !== null && (
         <PedirVacaciones
           hoy={datos.hoy}
-          vacacionesEn={datos.vacacionesEn}
+          cuenta={{ vacacionesEn: datos.vacacionesEn, libra: datos.libra }}
           sePuedenPedir={datos.sePuedenPedir}
           titulo="Pedir vacaciones"
           boton="Pedirlas"
@@ -290,11 +290,12 @@ export function Personal() {
           alCerrar={() => {
             setPidiendo(null);
           }}
-          alEnviar={async ({ desde, hasta, texto }) => {
+          alEnviar={async ({ desde, hasta, texto, libra }) => {
             const respuesta = await cliente.ejecutar('pedir_vacaciones', {
               desde,
               hasta,
               ...(texto === null ? {} : { nota: texto }),
+              ...(libra === null ? {} : { libra: [...libra] }),
             });
             if (!respuesta.ok) return respuesta.error;
             setPidiendo(null);

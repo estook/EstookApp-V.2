@@ -1,4 +1,4 @@
-import type { SaldoDeVacaciones, VacacionesEn } from '@estook/dominio';
+import type { DiaDeLaSemana, SaldoDeVacaciones, VacacionesEn } from '@estook/dominio';
 import type { Zona } from '../horario/contrato.ts';
 
 /**
@@ -8,6 +8,15 @@ import type { Zona } from '../horario/contrato.ts';
 
 export type EstadoDeLaSolicitud =
   'pedida' | 'aprobada' | 'rechazada' | 'contrapropuesta' | 'retirada';
+
+/**
+ * Los días que suele librar alguien, para contar sus vacaciones en laborables (0130): de su horario
+ * publicado o de lo último que dijo.
+ */
+export interface SusDiasLibres {
+  readonly dias: readonly DiaDeLaSemana[];
+  readonly de: 'horario' | 'escrito';
+}
 
 export interface UnaSolicitud {
   readonly id: string;
@@ -21,6 +30,9 @@ export interface UnaSolicitud {
   readonly propuestaHasta: string | null;
   readonly decididaPor: string | null;
   readonly pedidaEn: string;
+  /** En laborables, los días que libra con los que se contó; nulo en naturales. */
+  readonly libra: readonly DiaDeLaSemana[] | null;
+  readonly libraDe: 'horario' | 'escrito' | 'antes' | null;
 }
 
 export interface MisVacaciones {
@@ -29,6 +41,7 @@ export interface MisVacaciones {
   readonly saldo: SaldoDeVacaciones | null;
   readonly pedidas: number;
   readonly sePuedenPedir: number | null;
+  readonly libra: SusDiasLibres | null;
   readonly solicitudes: readonly UnaSolicitud[];
   readonly gestiona: boolean;
 }
@@ -62,5 +75,7 @@ export interface LasVacacionesDelEquipo {
     readonly personaId: string;
     readonly nombre: string;
     readonly apellidos: string | null;
+    readonly vacacionesEn: VacacionesEn;
+    readonly libra: SusDiasLibres | null;
   }[];
 }

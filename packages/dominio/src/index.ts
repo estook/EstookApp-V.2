@@ -1587,6 +1587,8 @@ export {
   esUnMes,
   dniLimpio,
   diasDeVacaciones,
+  diasDeLaSemanaEnLetra,
+  losDiasQueSueleLibrar,
   loDeUnAno,
   delAl,
 } from './ficha.ts';
@@ -1596,4 +1598,5 @@ export type {
   VacacionesEn,
   PaginaDeDonde,
   SaldoDeVacaciones,
+  DiaDelHorario,
 } from './ficha.ts';

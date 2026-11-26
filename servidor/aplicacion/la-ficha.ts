@@ -85,11 +85,12 @@ export async function loGastadoDeVacaciones(
   personaId: string,
   organizacionId: string,
   hoy: string,
-  en: VacacionesEn,
 ): Promise<{ disfrutadas: number; porDisfrutar: number }> {
   const ano = Number(hoy.slice(0, 4));
-  const filas = await contexto.sql<{ desde: string; hasta: string }[]>`
-    select to_char(desde, 'YYYY-MM-DD') as desde, to_char(hasta, 'YYYY-MM-DD') as hasta
+  // Cada una, con los días que libraba cuando se pidió (0130): nulo es en naturales.
+  const filas = await contexto.sql<{ desde: string; hasta: string; libra: string | null }[]>`
+    select to_char(desde, 'YYYY-MM-DD') as desde, to_char(hasta, 'YYYY-MM-DD') as hasta,
+           array_to_string(libra, ',') as libra
       from estook.solicitud_de_vacaciones
      where persona_id = ${personaId} and organizacion_id = ${organizacionId}
        and estado = 'aprobada'
@@ -98,7 +99,8 @@ export async function loGastadoDeVacaciones(
   let disfrutadas = 0;
   let porDisfrutar = 0;
   for (const f of filas) {
-    const lo = loDeUnAno(f.desde, f.hasta, ano, hoy, en);
+    const libra = f.libra === null || f.libra === '' ? null : f.libra.split(',').map(Number);
+    const lo = loDeUnAno(f.desde, f.hasta, ano, hoy, libra);
     disfrutadas += lo.disfrutadas;
     porDisfrutar += lo.porDisfrutar;
   }
@@ -285,11 +287,11 @@ export async function laFichaDe(
   }
 
   // Lo disfrutado y lo aprobado por disfrutar este año, de sus vacaciones aprobadas (la
-  // Ampliación 4 · 2): lo cuenta Estook con lo que dice la ficha, naturales o laborables.
+  // Ampliación 4 · 2): lo cuenta Estook, cada una como se contó al pedirla (0130).
   const gastado =
     laboral === null
       ? { disfrutadas: 0, porDisfrutar: 0 }
-      : await loGastadoDeVacaciones(contexto, personaId, organizacionId, hoy, laboral.vacacionesEn);
+      : await loGastadoDeVacaciones(contexto, personaId, organizacionId, hoy);
   const vacaciones =
     laboral === null
       ? null

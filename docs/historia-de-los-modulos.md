@@ -3582,6 +3582,13 @@ Calendario › Personal (pedir con el saldo de la ficha, la tarjeta azul de la c
 restan del saldo; Fogón no pone a nadie de vacaciones; el permiso «Gestionar vacaciones». Las pruebas:
 `las-vacaciones.prueba.ts` contra la base, `avisos.prueba.ts`, `apps.prueba.ts` y las de pantalla del esqueleto.
 
+### Los laborables, con los días que libra cada uno
+
+_26 de noviembre de 2026._ Decisión [0153](decisiones/0153-la-ampliacion.md), sección 17 (migración 0130): en
+vacaciones de días laborables ya no se quita el domingo para todos; no cuentan los días que libra cada uno,
+sacados de su horario publicado (`losDiasQueSueleLibrar`) o marcados al pedir, y cada petición guarda con
+cuáles se contó. Las pruebas: `ficha.prueba.ts` y `las-vacaciones.prueba.ts` contra la base.
+
 ---
 
 ## Apéndice · el primer despliegue y lo que enseñó

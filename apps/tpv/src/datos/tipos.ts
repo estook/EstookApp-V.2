@@ -97,6 +97,8 @@ export interface MesaDibujada {
   /** Estirada a mano: «Volver al tamaño de sus plazas» lo quita. */
   readonly estirada: boolean;
   readonly giro: number;
+  /** Si sale en la web de reservas (5 · 2). Una API de antes no lo dice: sí. */
+  readonly porInternet?: boolean;
 }
 
 /** Lo que hay en la sala y no se abre: la barra, una pared, una planta… */
@@ -679,6 +681,10 @@ export interface UnaReserva {
   readonly cuentaId: string | null;
   readonly creadaEn: string;
   readonly esMia: boolean;
+  /** La web de reservas (5 · 2): si la confirmó, y quién la canceló y cuándo. */
+  readonly confirmada?: boolean;
+  readonly canceladaPor?: 'local' | 'cliente' | 'sin_confirmar' | null;
+  readonly canceladaEn?: string | null;
 }
 
 export interface ServicioDeReservas {
@@ -718,4 +724,9 @@ export interface LosAjustesDeReservas {
   readonly topePorCuarto: number | null;
   readonly liberarTras: number;
   readonly juntables: readonly { readonly a: string; readonly b: string }[];
+  readonly avisarPorCorreo?: boolean;
+  readonly pedirQueConfirmen?: boolean;
+  readonly minutosParaConfirmar?: number;
+  /** `estook.com/reservar/<esto>`; nula si el local no tiene dirección de carta. */
+  readonly direccion?: string | null;
 }

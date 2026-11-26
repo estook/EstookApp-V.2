@@ -148,11 +148,17 @@ export function losAvisosDeAhora({
           ? `Reserva nueva · ${r.hora} ${quien}`
           : a.que === 'llegan'
             ? `Llegan en ${String(Math.max(faltan, 1))}' · ${quien}`
-            : `Llevan ${String(-faltan)}' de retraso · ${quien}`,
+            : a.que === 'cancelada'
+              ? `Cancelada · ${r.hora} ${quien}`
+              : `Llevan ${String(-faltan)}' de retraso · ${quien}`,
       detalle:
         a.que === 'retraso'
           ? `${mesas} · si no vienen, libérala`
-          : `${mesas}${r.origen === 'web' ? ' · web' : ''}`,
+          : a.que === 'cancelada'
+            ? r.canceladaPor === 'sin_confirmar'
+              ? 'No la confirmó a tiempo: su mesa queda libre'
+              : 'La ha cancelado el cliente: su mesa queda libre'
+            : `${mesas}${r.origen === 'web' ? ' · web' : ''}`,
       boton: { texto: 'Ver', hace: { tipo: 'ir', donde: 'reservas' } },
       mio: false,
     };

@@ -14,6 +14,10 @@ import { Casilla, Minutos } from './PinYBloqueo.tsx';
  * (comida, cena) con sus horas, **cuánto dura una mesa** según los que son —y lo que duran de verdad,
  * cuando hay cuentas cobradas de sobra—, el tope de comensales por cuarto de hora y a los cuántos
  * minutos de retraso se libera la mesa. Las mesas que se juntan se marcan en el editor de la sala.
+ *
+ * **Por internet** (la Ampliación 5 · 2): el enlace de su web de reservas, para copiarlo en su web, Instagram,
+ * Google y WhatsApp; **«Avisar al cliente por correo»** y **«Pedir que confirmen»**, las dos apagadas de
+ * fábrica (Richi, 24-nov).
  */
 
 const TAMANOS = ['De 1 a 2', 'De 3 a 4', 'De 5 a 6', '7 o más'] as const;
@@ -46,6 +50,13 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
   const [conTope, setConTope] = useState(ajustes.topePorCuarto !== null);
   const [tope, setTope] = useState(ajustes.topePorCuarto ?? 20);
   const [liberarTras, setLiberarTras] = useState(ajustes.liberarTras);
+  const [avisarPorCorreo, setAvisarPorCorreo] = useState(ajustes.avisarPorCorreo === true);
+  const [pedirQueConfirmen, setPedirQueConfirmen] = useState(ajustes.pedirQueConfirmen === true);
+  const [minutosParaConfirmar, setMinutosParaConfirmar] = useState(
+    ajustes.minutosParaConfirmar ?? 30,
+  );
+  const [copiado, setCopiado] = useState(false);
+  const enlace = ajustes.direccion == null ? null : `estook.com/reservar/${ajustes.direccion}`;
   const [guardando, setGuardando] = useState(false);
   const [fallo, setFallo] = useState<ErrorDeLaApi | null>(null);
   const [guardado, setGuardado] = useState(false);
@@ -60,6 +71,9 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
       duraciones,
       tope_por_cuarto: conTope ? tope : null,
       liberar_tras: liberarTras,
+      avisar_por_correo: avisarPorCorreo,
+      pedir_que_confirmen: pedirQueConfirmen,
+      minutos_para_confirmar: minutosParaConfirmar,
     });
     setGuardando(false);
     if (!respuesta.ok) {
@@ -236,6 +250,66 @@ function ElFormulario({ ajustes }: { readonly ajustes: LosAjustesDeReservas }) {
           ocupado={guardando}
           alCambiar={setLiberarTras}
         />
+      </section>
+
+      <section className="flex flex-col gap-e3">
+        <h2 className="text-seccion font-bold">Por internet</h2>
+        {enlace === null ? (
+          <p className="text-secundario text-texto-tenue">
+            Para tener la web de reservas, el local necesita su dirección de la carta: se pone en
+            Estook › Ajustes › La carta.
+          </p>
+        ) : (
+          <div className="flex flex-wrap items-center gap-e3 rounded-grande border border-borde bg-fondo p-e3">
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="font-bold">Tu web de reservas</span>
+              <span className="truncate text-secundario text-texto-tenue">
+                {enlace} · para tu web, Instagram, Google y WhatsApp
+              </span>
+            </span>
+            <Boton
+              tono="secundario"
+              tamano="s"
+              onClick={() => {
+                void navigator.clipboard?.writeText(`https://${enlace}`).then(() => {
+                  setCopiado(true);
+                });
+              }}
+            >
+              {copiado ? 'Copiado' : 'Copiar el enlace'}
+            </Boton>
+          </div>
+        )}
+        <Casilla
+          titulo="Avisar al cliente por correo"
+          frase="Su reserva con el código, el recordatorio del día antes y «Avísame si se libera». Pide su correo al reservar."
+          puesta={avisarPorCorreo}
+          ocupado={guardando}
+          alCambiar={setAvisarPorCorreo}
+        />
+        <Casilla
+          titulo="Pedir que confirmen"
+          frase="Si no confirma antes de la hora que digas, se cancela sola y la mesa queda libre."
+          puesta={pedirQueConfirmen}
+          ocupado={guardando}
+          alCambiar={setPedirQueConfirmen}
+        />
+        {pedirQueConfirmen && (
+          <Minutos
+            titulo="Confirmar hasta"
+            frase="Estos minutos antes de la hora de la reserva: una de las 21:15 con 30, hasta las 20:45."
+            valor={minutosParaConfirmar}
+            desde={15}
+            hasta={60}
+            paso={5}
+            ocupado={guardando}
+            alCambiar={setMinutosParaConfirmar}
+          />
+        )}
+        <p className="text-secundario text-texto-tenue">
+          Las mesas que no quieras ofrecer por internet (la barra, la del rincón) se quitan en La
+          sala y las mesas.
+        </p>
       </section>
 
       <p className="text-secundario text-texto-tenue">

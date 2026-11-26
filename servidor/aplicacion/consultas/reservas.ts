@@ -44,6 +44,11 @@ export interface UnaReserva {
   readonly creadaEn: string;
   /** Si la puso quien mira: «reserva nueva» avisa de las de otros. */
   readonly esMia: boolean;
+  /** Si el cliente la confirmó en la web (5 · 2). */
+  readonly confirmada: boolean;
+  /** Quién la canceló y cuándo: el TPV avisa de la que se canceló sola o canceló el cliente. */
+  readonly canceladaPor: 'local' | 'cliente' | 'sin_confirmar' | null;
+  readonly canceladaEn: string | null;
 }
 
 export interface LasReservas {
@@ -85,11 +90,15 @@ export const lasReservas = consulta<{ dia?: string | undefined }, LasReservas>({
             creada_en: Date;
             creada_por: string | null;
             mesas: string | null;
+            confirmada_en: Date | null;
+            cancelada_por: UnaReserva['canceladaPor'];
+            cancelada_en: Date | null;
           }[]
         >`
           select r.id::text as id, to_char(r.hora, 'HH24:MI') as hora, r.empieza, r.acaba,
                  r.comensales, r.nombre, r.telefono, r.nota, r.origen, r.estado,
                  r.cuenta_id::text as cuenta_id, r.creada_en, r.creada_por::text as creada_por,
+                 r.confirmada_en, r.cancelada_por, r.cancelada_en,
                  (select string_agg(m.id::text || ':' || m.nombre, '|' order by m.nombre)
                     from estook.reserva_de_mesa rm join estook.mesa m on m.id = rm.mesa_id
                    where rm.reserva_id = r.id) as mesas
@@ -127,6 +136,9 @@ export const lasReservas = consulta<{ dia?: string | undefined }, LasReservas>({
         cuentaId: f.cuenta_id,
         creadaEn: new Date(f.creada_en).toISOString(),
         esMia: f.creada_por !== null && f.creada_por === contexto.personaId,
+        confirmada: f.confirmada_en !== null,
+        canceladaPor: f.cancelada_por,
+        canceladaEn: f.cancelada_en === null ? null : new Date(f.cancelada_en).toISOString(),
       })),
     };
   },
@@ -167,6 +179,12 @@ export interface LosAjustesDeReservas {
   readonly topePorCuarto: number | null;
   readonly liberarTras: number;
   readonly juntables: readonly { readonly a: string; readonly b: string }[];
+  /** La web de reservas (5 · 2): avisar por correo, pedir que confirmen y su enlace. */
+  readonly avisarPorCorreo: boolean;
+  readonly pedirQueConfirmen: boolean;
+  readonly minutosParaConfirmar: number;
+  /** `estook.com/reservar/<esto>`: la dirección de la carta del local. Nula si no tiene. */
+  readonly direccion: string | null;
 }
 
 export const losAjustesDeReservasConsulta = consulta<Record<string, never>, LosAjustesDeReservas>({
@@ -180,6 +198,9 @@ export const losAjustesDeReservasConsulta = consulta<Record<string, never>, LosA
     const ajustes = await losAjustesDeReservas(contexto, localId);
     const reales = await lasDuraciones(contexto, localId, ajustes.duraciones);
     const { juntables } = await lasMesasDelLocal(contexto, localId);
+    const [local] = await contexto.sql<{ direccion: string | null }[]>`
+      select direccion_de_la_carta as direccion from estook.local where id = ${localId}::uuid
+    `;
     return {
       encendidas: ajustes.encendidas,
       servicios: ajustes.servicios,
@@ -189,6 +210,10 @@ export const losAjustesDeReservasConsulta = consulta<Record<string, never>, LosA
       topePorCuarto: ajustes.topePorCuarto,
       liberarTras: ajustes.liberarTras,
       juntables: juntables.map(([a, b]) => ({ a, b })),
+      avisarPorCorreo: ajustes.avisarPorCorreo,
+      pedirQueConfirmen: ajustes.pedirQueConfirmen,
+      minutosParaConfirmar: ajustes.minutosParaConfirmar,
+      direccion: local?.direccion ?? null,
     };
   },
 });

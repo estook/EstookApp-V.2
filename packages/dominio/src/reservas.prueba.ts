@@ -3,6 +3,9 @@ import {
   CUENTAS_PARA_APRENDER,
   DURACIONES_DE_FABRICA,
   cabeEnElCuarto,
+  elCodigoDeLaReserva,
+  hastaCuandoConfirmar,
+  laReservaDeLaDireccion,
   cuantoDura,
   elCuartoDe,
   esUnServicio,
@@ -121,5 +124,25 @@ describe('lo demás', () => {
     expect(lasMesasEnLetra(['8', '7'])).toBe('7 + 8');
     expect(telefonoLimpio('600 12 34 56')).toBe('600123456');
     expect(telefonoLimpio('+34 600-123-456')).toBe('+34600123456');
+  });
+});
+
+describe('la web de reservas (5 · 2)', () => {
+  it('la dirección de reservar, y nada más', () => {
+    expect(laReservaDeLaDireccion('/reservar/IKATZ')).toEqual({ direccion: 'ikatz' });
+    expect(laReservaDeLaDireccion('/reservar/bar-centro/')).toEqual({ direccion: 'bar-centro' });
+    expect(laReservaDeLaDireccion('/reservar/')).toBeNull();
+    expect(laReservaDeLaDireccion('/carta/ikatz')).toBeNull();
+  });
+
+  it('el código, siempre de 4 cifras', () => {
+    expect(elCodigoDeLaReserva(0)).toBe('0000');
+    expect(elCodigoDeLaReserva(0.4821)).toBe('4821');
+    expect(elCodigoDeLaReserva(0.99999)).toBe('9999');
+  });
+
+  it('se confirma hasta X minutos antes de la hora, no desde que se reserva', () => {
+    const a_las_2115 = new Date('2026-11-28T20:15:00Z');
+    expect(hastaCuandoConfirmar(a_las_2115, 30).toISOString()).toBe('2026-11-28T19:45:00.000Z');
   });
 });

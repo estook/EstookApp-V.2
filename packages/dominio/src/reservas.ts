@@ -195,3 +195,53 @@ export function telefonoLimpio(telefono: string): string {
     ? `+${limpio.slice(1).replace(/\+/g, '')}`
     : limpio.replace(/\+/g, '');
 }
+
+// ── La web de reservas (la Ampliación 5 · 2, 0153) ───────────────────────────
+
+/** Cuántos días por delante ofrece la web: dos meses. En el TPV se reserva hasta con un año. */
+export const DIAS_QUE_OFRECE_LA_WEB = 60;
+
+/** Hasta cuántos reserva la web; más, por teléfono, que un grupo grande se habla. */
+export const COMENSALES_DE_LA_WEB = 12;
+
+/**
+ * **Lo que puede pedir cada dirección en una hora** (como «Pide tu factura», 0141): reservar, buscar su
+ * reserva (un código que no casa gasta uno, así no se pueden ir probando) y «Avísame si se libera».
+ */
+export const INTENTOS_DE_LA_WEB_DE_RESERVAS = {
+  reservar: 10,
+  buscar: 20,
+  avisame: 5,
+} as const;
+export type ClaseDeIntentoDeReserva = keyof typeof INTENTOS_DE_LA_WEB_DE_RESERVAS;
+
+/** `estook.com/reservar/ikatz` → «ikatz». Nula si la dirección no es de reservar. */
+export function laReservaDeLaDireccion(camino: string): { readonly direccion: string } | null {
+  const encontrada = /^\/reservar\/([^/?#]+)\/?$/i.exec(camino);
+  if (encontrada === null) return null;
+  try {
+    return { direccion: decodeURIComponent(encontrada[1] ?? '').toLowerCase() };
+  } catch {
+    return { direccion: (encontrada[1] ?? '').toLowerCase() };
+  }
+}
+
+/** Un código de 4 cifras, con un número al azar que da el que llama (de 0 a 1). */
+export function elCodigoDeLaReserva(azar: number): string {
+  return String(Math.floor(azar * 10_000) % 10_000).padStart(4, '0');
+}
+
+/**
+ * **Hasta cuándo se confirma** (Richi, 24-nov, pregunta 9): X minutos antes de la hora de la reserva, no
+ * desde que se reserva, «que pueden reservar un día o dos antes». Una de las 21:15 con 30 minutos: hasta
+ * las 20:45.
+ */
+export function hastaCuandoConfirmar(empieza: Date, minutos: number): Date {
+  return new Date(empieza.getTime() - minutos * 60_000);
+}
+
+/**
+ * **Cuándo sale el recordatorio** del día antes: a las 12:00 del día anterior en el reloj del local; si se
+ * reserva más tarde que eso, al momento (lo decide quien lo programa).
+ */
+export const HORA_DEL_RECORDATORIO = '12:00';

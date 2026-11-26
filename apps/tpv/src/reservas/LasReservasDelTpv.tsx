@@ -194,7 +194,11 @@ export function LasReservasDelTpv() {
                     <span className="block truncate text-secundario text-texto-suave">
                       {[
                         r.mesas.length === 0 ? 'Sin mesa' : `Mesa ${susMesas(r)}`,
-                        r.origen === 'web' ? 'web' : null,
+                        r.origen === 'web'
+                          ? r.confirmada === true
+                            ? 'web · confirmó'
+                            : 'web'
+                          : null,
                         // Lo que falta, solo cuando importa: la hora ya está a la izquierda.
                         esHoy && espera && minutosHasta(r, ahora) <= 90
                           ? cuantoFalta(r, ahora).toLowerCase()
@@ -218,7 +222,13 @@ export function LasReservasDelTpv() {
                   </Boton>
                 ) : apagada ? (
                   <span className="text-etiqueta font-bold text-texto-suave">
-                    {r.estado === 'no_vino' ? 'No vino' : 'Cancelada'}
+                    {r.estado === 'no_vino'
+                      ? 'No vino'
+                      : r.canceladaPor === 'sin_confirmar'
+                        ? 'Se canceló sola'
+                        : r.canceladaPor === 'cliente'
+                          ? 'La canceló'
+                          : 'Cancelada'}
                   </span>
                 ) : esHoy && r.mesas.length === 0 ? (
                   // Llegaron tarde y su mesa se liberó (los minutos del local): se les sienta en una

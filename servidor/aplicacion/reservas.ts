@@ -29,6 +29,11 @@ export interface AjustesDeReservas {
   readonly duraciones: readonly number[];
   readonly topePorCuarto: number | null;
   readonly liberarTras: number;
+  /** Al cliente que reserva por la web: su reserva, el recordatorio y «Avísame si se libera» (5 · 2). */
+  readonly avisarPorCorreo: boolean;
+  /** Si no confirma `minutosParaConfirmar` antes de la hora, se cancela sola (5 · 2). */
+  readonly pedirQueConfirmen: boolean;
+  readonly minutosParaConfirmar: number;
 }
 
 const DE_FABRICA: AjustesDeReservas = {
@@ -40,6 +45,9 @@ const DE_FABRICA: AjustesDeReservas = {
   duraciones: DURACIONES_DE_FABRICA,
   topePorCuarto: null,
   liberarTras: 15,
+  avisarPorCorreo: false,
+  pedirQueConfirmen: false,
+  minutosParaConfirmar: 30,
 };
 
 export async function losAjustesDeReservas(
@@ -53,10 +61,14 @@ export async function losAjustesDeReservas(
       duraciones: string;
       tope_por_cuarto: number | null;
       liberar_tras: number;
+      avisar_por_correo: boolean;
+      pedir_que_confirmen: boolean;
+      minutos_para_confirmar: number;
     }[]
   >`
     select encendidas, servicios, array_to_string(duraciones, ',') as duraciones,
-           tope_por_cuarto, liberar_tras
+           tope_por_cuarto, liberar_tras, avisar_por_correo, pedir_que_confirmen,
+           minutos_para_confirmar
       from estook.ajuste_de_reservas where local_id = ${localId}::uuid
   `;
   const f = filas[0];
@@ -70,6 +82,9 @@ export async function losAjustesDeReservas(
     duraciones: f.duraciones.split(',').map(Number),
     topePorCuarto: f.tope_por_cuarto,
     liberarTras: f.liberar_tras,
+    avisarPorCorreo: f.avisar_por_correo,
+    pedirQueConfirmen: f.pedir_que_confirmen,
+    minutosParaConfirmar: f.minutos_para_confirmar,
   };
 }
 
@@ -125,13 +140,16 @@ export function cuandoEmpieza(dia: string, hora: string, zona: string): Date {
 export async function lasMesasDelLocal(
   contexto: Contexto,
   localId: string,
+  soloPorInternet = false,
 ): Promise<{
   readonly mesas: readonly MesaParaReservar[];
   readonly juntables: readonly (readonly [string, string])[];
 }> {
+  // La web solo ofrece las mesas que el local deja salir por internet (5 · 2); el TPV, todas.
   const mesas = await contexto.sql<MesaParaReservar[]>`
     select id::text as id, nombre, plazas from estook.mesa
      where local_id = ${localId}::uuid and archivada_en is null
+       and (not ${soloPorInternet} or por_internet)
      order by nombre
   `;
   const juntables = await contexto.sql<{ a: string; b: string }[]>`
@@ -258,12 +276,13 @@ export async function lasHorasLibres(
   dia: string,
   comensales: number,
   menosLaReserva: string | null,
+  soloPorInternet = false,
 ): Promise<LasHorasDeUnDia> {
   const ajustes = await losAjustesDeReservas(contexto, localId);
   const zona = await laZonaHoraria(contexto, localId);
   const { duraciones } = await lasDuraciones(contexto, localId, ajustes.duraciones);
   const duracion = cuantoDura(comensales, duraciones);
-  const { mesas, juntables } = await lasMesasDelLocal(contexto, localId);
+  const { mesas, juntables } = await lasMesasDelLocal(contexto, localId, soloPorInternet);
   const empiezaElDia = cuandoEmpieza(dia, '00:00', zona);
   const ocupados = await loOcupado(
     contexto,

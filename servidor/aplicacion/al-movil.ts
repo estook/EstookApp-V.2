@@ -1310,4 +1310,9 @@ export async function limpiarLoDelMovil(contexto: Contexto): Promise<void> {
   // Un cifrado se acepta hasta una semana (seAceptaLoHecho): pasado eso no vale, y su
   // número ya no hace falta para impedir que se repita.
   await contexto.sql`delete from estook.cifrado_usado where usado_en < now() - interval '8 days'`;
+  // Los intentos de la web de reservas solo cuentan la última hora, y una dirección de internet es un
+  // dato personal: pasada la hora, fuera (0153), aunque nadie más haya reservado.
+  await contexto.sql`
+    delete from estook.intento_en_la_web_de_reservas where en < now() - interval '1 hour'
+  `;
 }

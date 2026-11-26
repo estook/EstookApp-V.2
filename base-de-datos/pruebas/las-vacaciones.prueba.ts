@@ -11,6 +11,8 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
  *   · a cada uno le llega su aviso, y a nadie más
  *   · aprobadas, salen en Turnos y restan del saldo de la ficha; Fogón no pone a nadie de vacaciones
  *   · un cocinero no ve las vacaciones de la camarera
+ *   · en laborables no cuentan los días que suele librar: de su horario publicado o, si no, los que
+ *     dice (Richi, 26-nov; migración 0130), y cada petición guarda con cuáles se contó
  */
 let base: BaseDePrueba;
 let api: ApiDePrueba;
@@ -39,7 +41,7 @@ async function idDe(correo: string): Promise<string> {
   return fila?.id ?? '';
 }
 
-function unaFicha(vacacionesAlAno: number) {
+function unaFicha(vacacionesAlAno: number, en: 'naturales' | 'laborables' = 'naturales') {
   return {
     origen: 'a_mano',
     laboral: {
@@ -50,7 +52,7 @@ function unaFicha(vacacionesAlAno: number) {
       categoria: null,
       convenio: null,
       vacaciones_al_ano: vacacionesAlAno,
-      vacaciones_en: 'naturales',
+      vacaciones_en: en,
       pendientes_anteriores: 0,
     },
   };
@@ -298,5 +300,119 @@ describe('ponérselas y retirarlas', () => {
     expect(
       elFallo(await api.ejecutar(sara, 'retirar_vacaciones', { solicitud_id: laDeSara })),
     ).toBe('ya_hecho');
+  });
+});
+
+describe('en laborables, sin los días que libra (Richi, 26-nov; 0130)', () => {
+  async function laFila(id: string) {
+    const [fila] = await comoDuena<{ dias: string; libra: string | null; libra_de: string | null }>(
+      `select dias::text as dias, array_to_string(libra, ',') as libra, libra_de
+         from estook.solicitud_de_vacaciones where id = $1`,
+      [id],
+    );
+    return fila;
+  }
+
+  it('sin horario publicado, se le pregunta qué días libra; y con ellos, no cuentan', async () => {
+    losDatos(
+      await api.ejecutar(rosa, 'guardar_la_ficha_del_trabajador', {
+        persona_id: marcosId,
+        ...unaFicha(30, 'laborables'),
+      }),
+    );
+    const suyas = losDatos<{ vacacionesEn: string; libra: unknown }>(
+      await api.consultar(marcos, 'mis_vacaciones', {}),
+    );
+    expect(suyas).toMatchObject({ vacacionesEn: 'laborables', libra: null });
+    expect(
+      elFallo(
+        await api.ejecutar(marcos, 'pedir_vacaciones', {
+          desde: '2026-12-14',
+          hasta: '2026-12-20',
+        }),
+      ),
+    ).toBe('faltan_datos');
+
+    // Libra lunes y martes: del lunes 14 al domingo 20 son 5 días, no 6 (quitar el domingo).
+    const pedida = losDatos<{ solicitudId: string; dias: number }>(
+      await api.ejecutar(marcos, 'pedir_vacaciones', {
+        desde: '2026-12-14',
+        hasta: '2026-12-20',
+        libra: [2, 1],
+      }),
+    );
+    expect(pedida.dias).toBe(5);
+    expect(await laFila(pedida.solicitudId)).toEqual({
+      dias: '5.0',
+      libra: '1,2',
+      libra_de: 'escrito',
+    });
+
+    // Lo que dijo se recuerda la próxima vez.
+    const otraVez = losDatos<{ libra: { dias: number[]; de: string } | null }>(
+      await api.consultar(marcos, 'mis_vacaciones', {}),
+    );
+    expect(otraVez.libra).toEqual({ dias: [1, 2], de: 'escrito' });
+  });
+
+  it('con horario publicado, lo saca de ahí: quien libra domingo y lunes, no cuenta esos días', async () => {
+    const [donde] = await comoDuena<{ local_id: string; organizacion_id: string }>(
+      `select local_id::text as local_id, organizacion_id::text as organizacion_id
+         from estook.solicitud_de_vacaciones where persona_id = $1 limit 1`,
+      [marcosId],
+    );
+    // Tres semanas publicadas: trabaja de martes a sábado.
+    for (const lunes of ['2026-11-02', '2026-11-09', '2026-11-16']) {
+      const [semana] = await comoDuena<{ id: string }>(
+        `insert into estook.semana_de_horario (organizacion_id, local_id, lunes, publicada_en, veces_publicada)
+         values ($1, $2, $3::date, now(), 1) returning id::text as id`,
+        [donde?.organizacion_id, donde?.local_id, lunes],
+      );
+      for (let d = 1; d <= 5; d += 1) {
+        await comoDuena(
+          `insert into estook.turno_publicado (semana_id, local_id, persona_id, dia, tipo, entra, sale)
+           values ($1, $2, $3, $4::date + $5::int, 'trabajo', '12:00', '20:00')`,
+          [semana?.id, donde?.local_id, marcosId, lunes, d],
+        );
+      }
+    }
+
+    const suyas = losDatos<{ libra: { dias: number[]; de: string } | null }>(
+      await api.consultar(marcos, 'mis_vacaciones', {}),
+    );
+    expect(suyas.libra).toEqual({ dias: [1, 7], de: 'horario' });
+
+    // Del lunes 1 al domingo 7 de febrero: 5 días.
+    const pedida = losDatos<{ solicitudId: string; dias: number }>(
+      await api.ejecutar(marcos, 'pedir_vacaciones', { desde: '2027-02-01', hasta: '2027-02-07' }),
+    );
+    expect(pedida.dias).toBe(5);
+    expect(await laFila(pedida.solicitudId)).toEqual({
+      dias: '5.0',
+      libra: '1,7',
+      libra_de: 'horario',
+    });
+
+    // Quien se las pone ve lo mismo en Propuestas, y la petición dice sin qué días se contó.
+    const lo = losDatos<{
+      equipo: { personaId: string; vacacionesEn: string; libra: { dias: number[] } | null }[];
+      pendientes: { id: string; libra: number[] | null; libraDe: string | null }[];
+    }>(await api.consultar(rosa, 'las_vacaciones_del_equipo', {}));
+    expect(lo.equipo.find((p) => p.personaId === marcosId)).toMatchObject({
+      vacacionesEn: 'laborables',
+      libra: { dias: [1, 7] },
+    });
+    expect(lo.pendientes.find((p) => p.id === pedida.solicitudId)).toMatchObject({
+      libra: [1, 7],
+      libraDe: 'horario',
+    });
+  });
+
+  it('las ya aprobadas se quedan como se contaron, aunque cambie su ficha', async () => {
+    // Las del 7 al 9 de diciembre se le pusieron en naturales: siguen siendo 3 días.
+    const ficha = losDatos<{
+      ficha: { vacaciones: { aprobadas: number } | null };
+    }>(await api.consultar(rosa, 'una_persona', { persona_id: marcosId })).ficha;
+    expect(ficha.vacaciones?.aprobadas).toBe(3);
   });
 });

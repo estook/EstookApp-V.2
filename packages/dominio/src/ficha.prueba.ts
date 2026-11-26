@@ -2,10 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
   cuantoLleva,
   diaDelAno,
+  diasDeLaSemanaEnLetra,
+  diasDeVacaciones,
   diasEnLetra,
   dniEscondido,
   elSaldoDeVacaciones,
   esUnDniValido,
+  loDeUnAno,
+  losDiasQueSueleLibrar,
+  type DiaDelHorario,
 } from './ficha.ts';
 
 describe('el saldo de vacaciones (0153, sección 4: lo calcula Estook, nunca la IA)', () => {
@@ -118,5 +123,93 @@ describe('lo demás de la ficha', () => {
     expect(esUnDniValido('X1234567L')).toBe(true);
     expect(esUnDniValido('Y1234567X')).toBe(true);
     expect(esUnDniValido('1234')).toBe(false);
+  });
+});
+
+describe('los días de vacaciones que cuentan (Richi, 26-nov: naturales todo; laborables, sin sus descansos)', () => {
+  it('los días que libra, como se leen', () => {
+    expect(diasDeLaSemanaEnLetra([2, 1])).toBe('lunes y martes');
+    expect(diasDeLaSemanaEnLetra([1, 2, 7])).toBe('lunes, martes y domingo');
+    expect(diasDeLaSemanaEnLetra([3])).toBe('miércoles');
+  });
+
+  it('en naturales cuenta todo, también el día libre que cae dentro', () => {
+    // Del lunes 30 de noviembre al domingo 13 de diciembre: dos semanas.
+    expect(diasDeVacaciones('2026-11-30', '2026-12-13', null)).toBe(14);
+  });
+
+  it('en laborables no cuentan los días que esa persona suele librar, sean los que sean', () => {
+    // Laura libra lunes y martes: dos semanas son 10 días, no 12 (lo que contaba quitar el domingo).
+    expect(diasDeVacaciones('2026-11-30', '2026-12-13', [1, 2])).toBe(10);
+    // Quien libra el domingo y el lunes, igual de días, distintos.
+    expect(diasDeVacaciones('2026-11-30', '2026-12-13', [7, 1])).toBe(10);
+    // Unas fechas que son solo sus días libres no cuentan nada.
+    expect(diasDeVacaciones('2026-11-30', '2026-12-01', [1, 2])).toBe(0);
+  });
+
+  it('lo ya disfrutado y lo que queda, con los días que libraba al pedirlas', () => {
+    expect(loDeUnAno('2026-11-30', '2026-12-13', 2026, '2026-12-07', [1, 2])).toEqual({
+      disfrutadas: 5,
+      porDisfrutar: 5,
+    });
+  });
+});
+
+describe('qué días suele librar alguien, sacado de su horario publicado', () => {
+  /** Semanas desde el lunes dado en las que trabaja los días de `trabaja` (1 = lunes). */
+  function semanas(lunes: readonly string[], trabaja: readonly number[][]): DiaDelHorario[] {
+    const dias: DiaDelHorario[] = [];
+    lunes.forEach((l, i) => {
+      for (let d = 1; d <= 7; d += 1) {
+        const dia = new Date(Date.parse(`${l}T12:00:00Z`) + (d - 1) * 86_400_000)
+          .toISOString()
+          .slice(0, 10);
+        dias.push({ dia, tipo: (trabaja[i] ?? []).includes(d) ? 'trabajo' : 'libre' });
+      }
+    });
+    return dias;
+  }
+  const tres = ['2026-11-02', '2026-11-09', '2026-11-16'];
+
+  it('quien trabaja de miércoles a domingo, libra lunes y martes', () => {
+    const horario = semanas(tres, [
+      [3, 4, 5, 6, 7],
+      [3, 4, 5, 6, 7],
+      [3, 4, 5, 6, 7],
+    ]);
+    expect(losDiasQueSueleLibrar(horario)).toEqual([1, 2]);
+  });
+
+  it('una semana distinta no cambia la costumbre', () => {
+    const horario = semanas(tres, [
+      [3, 4, 5, 6, 7],
+      [1, 4, 5, 6, 7],
+      [3, 4, 5, 6, 7],
+    ]);
+    expect(losDiasQueSueleLibrar(horario)).toEqual([1, 2]);
+  });
+
+  it('si los descansos cambian cada semana, no hay costumbre: se le pregunta', () => {
+    const horario = semanas(tres, [
+      [3, 4, 5, 6, 7],
+      [1, 2, 5, 6, 7],
+      [1, 2, 3, 4, 7],
+    ]);
+    expect(losDiasQueSueleLibrar(horario)).toBeNull();
+  });
+
+  it('con una sola semana no se sabe, y la semana con vacaciones no cuenta', () => {
+    expect(losDiasQueSueleLibrar(semanas(['2026-11-02'], [[3, 4, 5, 6, 7]]))).toBeNull();
+    const conVacaciones = semanas(tres, [[3, 4, 5, 6, 7], [3, 4, 5, 6, 7], []]).map((d) =>
+      d.dia >= '2026-11-16' ? { ...d, tipo: 'vacaciones' as const } : d,
+    );
+    expect(losDiasQueSueleLibrar(conVacaciones)).toEqual([1, 2]);
+    expect(
+      losDiasQueSueleLibrar(
+        semanas(tres, [[3, 4, 5, 6, 7], [], []]).map((d) =>
+          d.dia >= '2026-11-09' ? { ...d, tipo: 'vacaciones' as const } : d,
+        ),
+      ),
+    ).toBeNull();
   });
 });

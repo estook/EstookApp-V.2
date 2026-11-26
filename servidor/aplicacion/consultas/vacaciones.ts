@@ -1,9 +1,14 @@
 import { z } from 'zod';
-import type { SaldoDeVacaciones, VacacionesEn } from '@estook/dominio';
+import type { DiaDeLaSemana, SaldoDeVacaciones, VacacionesEn } from '@estook/dominio';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { consulta, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import { elEquipoDelHorario, type Zona } from '../horario.ts';
-import { hoyEnElLocal, laFichaDeSusVacaciones } from '../vacaciones.ts';
+import {
+  hoyEnElLocal,
+  laFichaDeSusVacaciones,
+  susDiasLibres,
+  type SusDiasLibres,
+} from '../vacaciones.ts';
 
 /**
  * Las vacaciones, leídas (la Ampliación 4 · 2, decisión 0153).
@@ -25,6 +30,9 @@ export interface UnaSolicitud {
   readonly propuestaHasta: string | null;
   readonly decididaPor: string | null;
   readonly pedidaEn: string;
+  /** En laborables, los días que libra con los que se contó (0130); nulo en naturales. */
+  readonly libra: readonly DiaDeLaSemana[] | null;
+  readonly libraDe: 'horario' | 'escrito' | 'antes' | null;
 }
 
 interface FilaDeSolicitud {
@@ -40,6 +48,8 @@ interface FilaDeSolicitud {
   propuesta_hasta: string | null;
   decidida_por: string | null;
   pedida_en: string;
+  libra: string | null;
+  libra_de: UnaSolicitud['libraDe'];
 }
 
 function comoSolicitud(f: FilaDeSolicitud): UnaSolicitud {
@@ -55,6 +65,11 @@ function comoSolicitud(f: FilaDeSolicitud): UnaSolicitud {
     propuestaHasta: f.propuesta_hasta,
     decididaPor: f.decidida_por,
     pedidaEn: f.pedida_en,
+    libra:
+      f.libra === null || f.libra === ''
+        ? null
+        : f.libra.split(',').map((d) => Number(d) as DiaDeLaSemana),
+    libraDe: f.libra_de,
   };
 }
 
@@ -69,7 +84,8 @@ async function lasSolicitudes(
            to_char(s.propuesta_desde, 'YYYY-MM-DD') as propuesta_desde,
            to_char(s.propuesta_hasta, 'YYYY-MM-DD') as propuesta_hasta,
            p.nombre as decidida_por,
-           to_char(s.pedida_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as pedida_en
+           to_char(s.pedida_en, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as pedida_en,
+           array_to_string(s.libra, ',') as libra, s.libra_de
       from estook.solicitud_de_vacaciones s
       left join estook.persona p on p.id = s.decidida_por
      where (${donde.persona ?? null}::uuid is null or s.persona_id = ${donde.persona ?? null}::uuid)
@@ -90,6 +106,11 @@ export interface MisVacaciones {
   readonly pedidas: number;
   /** Lo que se puede pedir todavía: lo disponible menos lo pedido. Nulo sin ficha. */
   readonly sePuedenPedir: number | null;
+  /**
+   * En laborables, los días que suele librar: de su horario publicado o de lo último que dijo.
+   * Nulo en naturales, o si no se sabe (entonces la pantalla se los pregunta).
+   */
+  readonly libra: SusDiasLibres | null;
   readonly solicitudes: readonly UnaSolicitud[];
   /** Si gestiona las de alguien: para enseñarle Propuestas. */
   readonly gestiona: boolean;
@@ -118,6 +139,10 @@ export const misVacaciones = consulta<Record<string, never>, MisVacaciones>({
       saldo: ficha.saldo,
       pedidas: ficha.pedidas,
       sePuedenPedir: ficha.sePuedenPedir,
+      libra:
+        ficha.vacacionesEn === 'laborables'
+          ? await susDiasLibres(contexto, contexto.personaId, organizacionId, hoy)
+          : null,
       solicitudes: filas.map(comoSolicitud),
       gestiona: gestiona[0]?.si === true,
     };
@@ -156,11 +181,13 @@ export interface LasVacacionesDelEquipo {
     readonly nombre: string;
     readonly zona: Zona;
   })[];
-  /** A quién puede ponerle vacaciones: su gente. */
+  /** A quién puede ponerle vacaciones: su gente, con cómo se cuentan las suyas. */
   readonly equipo: readonly {
     readonly personaId: string;
     readonly nombre: string;
     readonly apellidos: string | null;
+    readonly vacacionesEn: VacacionesEn;
+    readonly libra: SusDiasLibres | null;
   }[];
 }
 
@@ -195,6 +222,12 @@ export const lasVacacionesDelEquipo = consulta<Record<string, never>, LasVacacio
       suyos.has(p.personaId),
     );
     const deQuien = new Map(equipo.map((p) => [p.personaId, p] as const));
+    // Cómo se cuentan las de cada uno, para ponérselas: lo dice su ficha.
+    const fichas = await contexto.sql<{ persona_id: string; vacaciones_en: VacacionesEn }[]>`
+      select persona_id::text as persona_id, vacaciones_en from estook.ficha_laboral
+       where organizacion_id = ${organizacionId}
+    `;
+    const enQue = new Map(fichas.map((f) => [f.persona_id, f.vacaciones_en] as const));
 
     const filas = (
       await lasSolicitudes(contexto, { local: localId, estados: ['pedida', 'aprobada'] })
@@ -283,11 +316,21 @@ export const lasVacacionesDelEquipo = consulta<Record<string, never>, LasVacacio
           nombre: deQuien.get(f.persona_id)?.nombre ?? 'Alguien',
           zona: deQuien.get(f.persona_id)?.zona ?? 'otros',
         })),
-      equipo: equipo.map((p) => ({
-        personaId: p.personaId,
-        nombre: p.nombre,
-        apellidos: p.apellidos,
-      })),
+      equipo: await Promise.all(
+        equipo.map(async (p) => {
+          const vacacionesEn = enQue.get(p.personaId) ?? 'naturales';
+          return {
+            personaId: p.personaId,
+            nombre: p.nombre,
+            apellidos: p.apellidos,
+            vacacionesEn,
+            libra:
+              vacacionesEn === 'laborables'
+                ? await susDiasLibres(contexto, p.personaId, organizacionId, hoy)
+                : null,
+          };
+        }),
+      ),
     };
   },
 });

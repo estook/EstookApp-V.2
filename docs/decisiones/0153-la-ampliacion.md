@@ -503,11 +503,45 @@ Richi, en [sus pasos](../pasos/pasos-de-la-ampliacion-4-2.md) (la 38).
    que mandan menos que él. Nadie contesta las suyas.
 3. **Las vacaciones en Turnos no se guardan en el horario**: se leen de las aprobadas cada vez, así que aprobar
    o no lo cambia solo. Desde el turno no se quitan («Aprobadas en el Calendario»).
-4. **Laborables son todos menos el domingo** (el sábado es laborable); los festivos de cada sitio, Estook todavía
-   no los sabe, y se dice en la pantalla.
+4. ~~**Laborables son todos menos el domingo**~~: **estaba mal y lo corrigió Richi el 26-nov** (sección 17).
+   Cada restaurante descansa distinto.
 5. **«Otras fechas» de la persona** retira la propuesta y abre «Pedir vacaciones»: es una petición nueva.
 6. **Los dos meses de la ley avisan y no impiden**, como las coincidencias: decide el responsable.
 7. **Lo que ya tenía apartado una petición** no cuenta dos veces al aceptar otras fechas.
+
+## 17 · Los laborables, con los días que libra cada uno (26-nov, migración 0130)
+
+**Lo que pasaba:** en «días laborables» Estook descontaba todos los días menos el domingo. Una regla de la IA, y
+mala: los restaurantes abren y descansan distinto. Una camarera que libra lunes y martes y pide dos semanas
+gastaba 12 días cuando son 10.
+
+**Lo que se le explicó a Richi** (Estatuto, art. 38: mínimo 30 días **naturales**; casi todos los convenios de
+hostelería dan 30 o 31 naturales; el Supremo, 12-11-2025, dice que unas vacaciones en laborables puestas sobre
+días de descanso «vacían de contenido» el derecho): en naturales cuenta todo; en laborables, contarlo todo
+quita días al trabajador.
+
+**Lo que decidió Richi:** en **naturales**, todo cuenta, también el día libre que cae dentro (ya era así, y la
+ficha viene en naturales de fábrica). En **laborables**, «tenemos los horarios»: si están publicados, Estook saca
+de ahí qué días suele librar y lo dice; si no, se deja escribir.
+
+**Lo que se construyó:**
+
+- **De dónde salen los días que libra**: de sus semanas publicadas (siete atrás, esta y la que viene, en todos los
+  locales de la empresa). Libra un día si lo trabajó en menos de la mitad de las semanas; hacen falta dos semanas
+  y se saltan las que tienen vacaciones o baja. Si sus descansos cambian cada semana no hay costumbre, y se
+  pregunta. Sin horario, lo último que dijo.
+- **«Pedir vacaciones»** (Calendario › Personal, y «Poner vacaciones» en Propuestas): en laborables, «Según tu
+  horario, libras lunes y martes: esos días no cuentan», con «Cambiar»; si no se sabe, los siete días para
+  marcarlos. En naturales no sale nada nuevo.
+- **Cada petición guarda con qué días libres se contó** (`libra` y `libra_de`): un horario nuevo no cambia lo ya
+  pedido o aprobado. Las pedidas antes, en laborables, se quedan sin el domingo, como se contaron.
+- **En Propuestas**, cada petición dice «10 días sin sus libres (lunes y martes)», y las otras fechas que se
+  proponen se cuentan con esos mismos días.
+
+**Lo que decidió la IA al construirlo**, para que Richi lo sepa: (1) si se escriben los días libres, valen esos
+para esa petición, y la próxima vez manda otra vez el horario si lo hay; (2) los festivos siguen sin saberse:
+la pantalla dice que, si cae uno, se diga a quien las aprueba; (3) lo de algunos convenios provinciales de no
+empezar las vacaciones en un día de descanso no se construye: depende de cada convenio.
 
 ## 12 · Lo que se toca en los documentos
 

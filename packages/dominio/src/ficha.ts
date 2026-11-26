@@ -1,3 +1,5 @@
+import type { DiaDeLaSemana } from './el-panel.ts';
+
 /**
  * La ficha del trabajador (la Ampliación 3, decisión 0153, sección 4; Plan, M13).
  *
@@ -222,30 +224,105 @@ function masUnDia(fecha: string, dias: number): string {
   return new Date(aMediodia(fecha) + dias * UN_DIA_MS).toISOString().slice(0, 10);
 }
 
+/** El día de la semana de una fecha, del 1 (lunes) al 7 (domingo): el 30-nov-2026, el 1. */
+function elDiaDeLaSemana(fecha: string): DiaDeLaSemana {
+  const deJs = new Date(aMediodia(fecha)).getUTCDay();
+  return (deJs === 0 ? 7 : deJs) as DiaDeLaSemana;
+}
+
+const NOMBRES_DE_LOS_DIAS = [
+  'lunes',
+  'martes',
+  'miércoles',
+  'jueves',
+  'viernes',
+  'sábado',
+  'domingo',
+] as const;
+
+/** «lunes», «lunes y martes», «lunes, martes y domingo». */
+export function diasDeLaSemanaEnLetra(dias: readonly number[]): string {
+  const nombres = [...dias].sort((a, b) => a - b).map((d) => NOMBRES_DE_LOS_DIAS[d - 1] ?? '');
+  if (nombres.length <= 1) return nombres[0] ?? '';
+  return `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1] ?? ''}`;
+}
+
 /**
- * Los días de vacaciones que cuenta un tramo, **como diga su ficha**: naturales (todos) o
- * laborables. Los laborables son todos menos el domingo: el sábado es laborable (Estatuto de los
- * Trabajadores) y los festivos de cada sitio Estook todavía no los sabe; se dice en la pantalla.
+ * Los días de vacaciones que cuenta un tramo (decidido por Richi el 26-nov, 0153, sección 17):
+ *
+ * - **En naturales** (`libra` nulo) cuentan todos, también el día libre que cae dentro.
+ * - **En laborables**, cuentan todos **menos los días que esa persona suele librar** (`libra`),
+ *   que salen de su horario publicado o los dice ella. Cada local descansa distinto: no hay un
+ *   día que sea de descanso para todos. Los festivos de cada sitio, Estook todavía no los sabe.
  */
-export function diasDeVacaciones(desde: string, hasta: string, en: VacacionesEn): number {
+export function diasDeVacaciones(
+  desde: string,
+  hasta: string,
+  libra: readonly number[] | null,
+): number {
   if (hasta < desde) return 0;
   let dias = 0;
   for (let dia = desde; dia <= hasta; dia = masUnDia(dia, 1)) {
-    if (en === 'naturales' || new Date(aMediodia(dia)).getUTCDay() !== 0) dias += 1;
+    if (libra === null || !libra.includes(elDiaDeLaSemana(dia))) dias += 1;
   }
   return dias;
 }
 
+/** Un día del horario publicado de una persona, lo justo para saber qué días suele librar. */
+export interface DiaDelHorario {
+  readonly dia: string;
+  readonly tipo: 'trabajo' | 'libre' | 'vacaciones' | 'baja';
+}
+
+/**
+ * **Qué días suele librar** alguien, sacado de sus semanas publicadas (Richi, 26-nov: «si están
+ * puestos los horarios, se sale de ahí»).
+ *
+ * Solo cuentan las semanas en las que trabajó y que no tienen vacaciones ni baja (esas semanas no
+ * dicen cómo descansa). Un día de la semana es de los que libra si lo trabajó en menos de la mitad
+ * de esas semanas. Hacen falta **dos semanas** como poco; y si los días que salen no casan con
+ * cuántos libra de media cada semana (descansos que cambian cada semana), no hay costumbre que
+ * leer: se devuelve nulo y se le pregunta a la persona.
+ */
+export function losDiasQueSueleLibrar(
+  horario: readonly DiaDelHorario[],
+): readonly DiaDeLaSemana[] | null {
+  const porSemana = new Map<string, { trabaja: Set<DiaDeLaSemana>; ausente: boolean }>();
+  for (const d of horario) {
+    const dia = elDiaDeLaSemana(d.dia);
+    const lunes = masUnDia(d.dia, 1 - dia);
+    const semana = porSemana.get(lunes) ?? { trabaja: new Set<DiaDeLaSemana>(), ausente: false };
+    if (d.tipo === 'trabajo') semana.trabaja.add(dia);
+    if (d.tipo === 'vacaciones' || d.tipo === 'baja') semana.ausente = true;
+    porSemana.set(lunes, semana);
+  }
+  const semanas = [...porSemana.values()].filter((s) => !s.ausente && s.trabaja.size > 0);
+  if (semanas.length < 2) return null;
+
+  const libra: DiaDeLaSemana[] = [];
+  for (let d = 1; d <= 7; d += 1) {
+    const dia = d as DiaDeLaSemana;
+    const trabajadas = semanas.filter((s) => s.trabaja.has(dia)).length;
+    if (trabajadas * 2 < semanas.length) libra.push(dia);
+  }
+  const deMedia = semanas.reduce((suma, s) => suma + (7 - s.trabaja.size), 0) / semanas.length;
+  if (libra.length === 0 || libra.length === 7 || Math.abs(libra.length - deMedia) >= 1) {
+    return null;
+  }
+  return libra;
+}
+
 /**
  * Lo de unas vacaciones que cae en un año, partido en **lo ya disfrutado** (antes de hoy) y **lo
- * aprobado por disfrutar** (de hoy en adelante): lo que resta del saldo de la ficha.
+ * aprobado por disfrutar** (de hoy en adelante): lo que resta del saldo de la ficha. Con los días
+ * que libraba **cuando las pidió**: un horario nuevo no cambia lo ya aprobado.
  */
 export function loDeUnAno(
   desde: string,
   hasta: string,
   ano: number,
   hoy: string,
-  en: VacacionesEn,
+  libra: readonly number[] | null,
 ): { readonly disfrutadas: number; readonly porDisfrutar: number } {
   const inicio = `${String(ano)}-01-01`;
   const fin = `${String(ano)}-12-31`;
@@ -254,8 +331,8 @@ export function loDeUnAno(
   if (b < a) return { disfrutadas: 0, porDisfrutar: 0 };
   const ayer = masUnDia(hoy, -1);
   return {
-    disfrutadas: a <= ayer ? diasDeVacaciones(a, b < ayer ? b : ayer, en) : 0,
-    porDisfrutar: b >= hoy ? diasDeVacaciones(a > hoy ? a : hoy, b, en) : 0,
+    disfrutadas: a <= ayer ? diasDeVacaciones(a, b < ayer ? b : ayer, libra) : 0,
+    porDisfrutar: b >= hoy ? diasDeVacaciones(a > hoy ? a : hoy, b, libra) : 0,
   };
 }
 

@@ -1,15 +1,12 @@
 import { z } from 'zod';
-import {
-  avisoDeVacacionesPedidas,
-  avisoDeVacacionesRespondidas,
-  delAl,
-  diasDeVacaciones,
-} from '@estook/dominio';
+import { avisoDeVacacionesPedidas, avisoDeVacacionesRespondidas, delAl } from '@estook/dominio';
 import { elLocalDeLaSesion, laOrganizacionDeLaSesion } from '../alta.ts';
 import { avisar } from '../avisos.ts';
 import { comando, FalloDeAplicacion, type Contexto } from '../contrato.ts';
 import {
   avisarALaPersona,
+  comoLista,
+  conQueDiasLibres,
   hoyEnElLocal,
   laFichaDeSusVacaciones,
   queNoSePisen,
@@ -25,6 +22,10 @@ import {
  *   responder_vacaciones      quien las gestiona: aprobar, proponer otras fechas o rechazar
  *   contestar_la_propuesta    la persona, a otras fechas que le proponen: aceptarlas o no
  *   retirar_vacaciones        la persona retira las que pidió y aún no le han contestado
+ *
+ * **Cómo se cuentan los días** (Richi, 26-nov; 0130): en naturales, todos; en laborables, todos
+ * menos los que esa persona suele librar, que salen de su horario publicado o se escriben al pedir.
+ * Cada petición guarda con qué días libres se contó.
  *
  * Lo que se mira siempre: **que no se pidan más días de los que hay** (el saldo de la ficha, menos
  * lo pedido y sin contestar), que no se pisen con otras suyas, y que no sean del pasado. Quién
@@ -68,6 +69,8 @@ interface LaSolicitud {
   readonly estado: string;
   readonly propuesta_desde: string | null;
   readonly propuesta_hasta: string | null;
+  readonly dias: string;
+  readonly libra: string | null;
 }
 
 async function laSolicitud(contexto: Contexto, id: string): Promise<LaSolicitud> {
@@ -76,7 +79,8 @@ async function laSolicitud(contexto: Contexto, id: string): Promise<LaSolicitud>
            organizacion_id::text as organizacion_id,
            to_char(desde, 'YYYY-MM-DD') as desde, to_char(hasta, 'YYYY-MM-DD') as hasta, estado,
            to_char(propuesta_desde, 'YYYY-MM-DD') as propuesta_desde,
-           to_char(propuesta_hasta, 'YYYY-MM-DD') as propuesta_hasta
+           to_char(propuesta_hasta, 'YYYY-MM-DD') as propuesta_hasta,
+           dias::text as dias, array_to_string(libra, ',') as libra
       from estook.solicitud_de_vacaciones where id = ${id}
   `;
   const s = filas[0];
@@ -112,6 +116,11 @@ export const entradaPedirVacaciones = z
     nota: z.string().trim().min(1).max(300).optional(),
     /** Para ponérselas a alguien de tu gente: quedan aprobadas. Sin esto, las pides tú. */
     persona_id: z.string().uuid().optional(),
+    /**
+     * En laborables, los días que suele librar (1 = lunes … 7 = domingo), si se escriben o se
+     * corrigen al pedir. Sin esto, los que sabe Estook de su horario. En naturales no se usa.
+     */
+    libra: z.array(z.number().int().min(1).max(7)).min(1).max(6).optional(),
   })
   .strict();
 export type EntradaPedirVacaciones = z.infer<typeof entradaPedirVacaciones>;
@@ -137,16 +146,25 @@ export const pedirVacaciones = comando<
     }
     fechasBuenas(entrada.desde, entrada.hasta, hoy);
     const ficha = await laFichaDeSusVacaciones(contexto, personaId, organizacionId, hoy);
-    const dias = quePuedaPedirlas(ficha, entrada.desde, entrada.hasta);
+    const libres = await conQueDiasLibres(
+      contexto,
+      ficha,
+      personaId,
+      organizacionId,
+      hoy,
+      entrada.libra,
+    );
+    const dias = quePuedaPedirlas(ficha, entrada.desde, entrada.hasta, libres.libra);
     await queNoSePisen(contexto, personaId, entrada.desde, entrada.hasta, null);
 
     const estado = seLasPone ? 'aprobada' : 'pedida';
     const filas = await contexto.sql<{ id: string }[]>`
       insert into estook.solicitud_de_vacaciones
-        (organizacion_id, local_id, persona_id, desde, hasta, dias, estado, nota, pedida_por,
-         decidida_por, decidida_en)
+        (organizacion_id, local_id, persona_id, desde, hasta, dias, libra, libra_de, estado, nota,
+         pedida_por, decidida_por, decidida_en)
       values (${organizacionId}, ${localId}, ${personaId}, ${entrada.desde}::date,
-              ${entrada.hasta}::date, ${dias}, ${estado}, ${entrada.nota ?? null},
+              ${entrada.hasta}::date, ${dias}, ${comoLista(libres.libra)}::smallint[], ${libres.de},
+              ${estado}, ${entrada.nota ?? null},
               ${contexto.personaId},
               ${seLasPone ? contexto.personaId : null},
               ${seLasPone ? contexto.ahora.toISOString() : null}::timestamptz)
@@ -322,9 +340,16 @@ export const contestarLaPropuesta = comando<EntradaContestarLaPropuesta, { estad
     const hoy = await hoyEnElLocal(contexto, s.local_id);
     fechasBuenas(s.propuesta_desde, s.propuesta_hasta, hoy);
     const ficha = await laFichaDeSusVacaciones(contexto, s.persona_id, s.organizacion_id, hoy);
-    // Lo que ya tenía apartado esta misma petición no cuenta dos veces.
-    const yaApartado = diasDeVacaciones(s.desde, s.hasta, ficha.vacacionesEn);
-    const dias = quePuedaPedirlas(ficha, s.propuesta_desde, s.propuesta_hasta, yaApartado);
+    // Con los mismos días libres con los que se pidió; y lo que ya tenía apartado esta misma
+    // petición no cuenta dos veces.
+    const libra = s.libra === null || s.libra === '' ? null : s.libra.split(',').map(Number);
+    const dias = quePuedaPedirlas(
+      ficha,
+      s.propuesta_desde,
+      s.propuesta_hasta,
+      libra,
+      Number(s.dias),
+    );
     await queNoSePisen(contexto, s.persona_id, s.propuesta_desde, s.propuesta_hasta, s.id);
     await contexto.sql`
       update estook.solicitud_de_vacaciones

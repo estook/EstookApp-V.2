@@ -229,6 +229,23 @@ export function lasMesasEnLetra(nombres: readonly string[]): string {
 }
 
 /** El teléfono como se guarda y se compara: solo cifras, y el «+» delante si lo llevaba. */
+/**
+ * **Un teléfono para leerlo y marcarlo**: los nueve números de España en grupos, «672 29 62 26», y con su
+ * prefijo si lo lleva, «+34 672 29 62 26». Lo que no es así se deja como está.
+ */
+export function elTelefonoParaLeer(telefono: string): string {
+  const cifras = telefono.replace(/\D/g, '');
+  const nueve =
+    cifras.length === 9
+      ? cifras
+      : cifras.length === 11 && cifras.startsWith('34')
+        ? cifras.slice(2)
+        : null;
+  if (nueve === null) return telefono.trim();
+  const leido = `${nueve.slice(0, 3)} ${nueve.slice(3, 5)} ${nueve.slice(5, 7)} ${nueve.slice(7)}`;
+  return cifras.length === 11 ? `+34 ${leido}` : leido;
+}
+
 export function telefonoLimpio(telefono: string): string {
   const limpio = telefono.replace(/[^\d+]/g, '');
   return limpio.startsWith('+')

@@ -1631,6 +1631,7 @@ export {
   cabeEnElCuarto,
   lasMesasEnLetra,
   telefonoLimpio,
+  elTelefonoParaLeer,
   DIAS_QUE_OFRECE_LA_WEB,
   ANTELACION_DE_LA_WEB,
   ANTELACIONES_DE_LA_WEB,

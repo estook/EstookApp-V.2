@@ -518,12 +518,13 @@ AHORA       LA AMPLIACIÓN (0153, propuesta, con su maqueta para aprobar):
             → 1 · Los fallos del servicio → 2 · El comandero y la carta
             → 3 · La ficha del trabajador (M13, adelantado) → 4 · Calendario y vacaciones (M14)
             → 5 · Las reservas (M32, en tres entregas)
-ESTOOK TPV  → R3 · 2 · 2 · Los descuentos → lo que queda de T7 (sin internet en las nativas,
-              las ventas de hoy, la venta rápida, Informes y Empleados con lo cobrado)
+            → AUDITORÍA 3 (la Ampliación entera y la caja, antes del siguiente módulo; Richi, 27-nov)
+ESTOOK TPV  → lo que queda de T7 (sin internet en las nativas, las ventas de hoy, cobrar lo de
+              llevar sin internet, Informes y Empleados con lo cobrado). R3 · 2 · 2 · Los
+              descuentos, aplazados (Richi, 27-nov: por ahora, el descuento va en el precio)
             → T6 · 3 · NO VERI*FACTU → T8 · Android (con el proveedor de cobro decidido)
             → AUDITORÍA 2 → M29 · Uber Eats (cuando den el acceso)
 PERSONAS    → (M13 y M14, en la Ampliación) → M15 · Fichajes → M16b · APPCC
-            → AUDITORÍA 3 (lo de M13 y M14 se audita al acabar la Ampliación 4)
 LA CARTA    → M12 y M11 · La carta online y la carta para imprimir
 ESENCIAL    → M18 · Traer los datos de otro TPV
 EL NEGOCIO  → M21 · La exportación → M22 · Fogón 2 → M23 · Reseñas → M25 · Avisos

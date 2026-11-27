@@ -773,6 +773,24 @@ Migración **0135**, API 152/400. Lo que pide la sección 6 para los clientes y 
     calendario usa una función aparte (sin nombre) porque lo ve también quien no lleva la sala.
 12. **El aviso «Antes de irte» sale una vez**, al reservar; no se guarda nada en el navegador para no repetirlo.
 
+## 22 · El teléfono del local, el suyo (27-nov, migración 0136)
+
+Richi fue a reservar en la web de IKATZ y le dijo «llámales al 628 74 94 14»: es el teléfono de un **Burger King de Las
+Rozas**. No salía del código: la ficha de Google de IKATZ en Estook está unida a ese Burger King, y la web de reservas
+(y la carta del QR) ponían **el teléfono y la dirección de Google por delante** de los que escribió el local. Mío.
+
+- **Manda lo que pone el local** en Ajustes; lo de Google, solo si el local no lo ha puesto (la carta del QR, en la
+  0136; la web de reservas y sus correos, en `reservas-web.ts`).
+- **«Contacto»** abajo en la web de reservas (Richi: «pon contacto y el teléfono para que llamen al local»): «¿Dudas,
+  más de 12 personas o algo especial? Llama a …» y un botón grande **«Llamar al …»**.
+- El teléfono se enseña en grupos para leerlo y marcarlo: «672 29 62 26».
+- **Falta de Richi**: volver a unir la ficha de Google de IKATZ a la suya; la valoración, el horario y el mapa de la carta
+  siguen saliendo del Burger King hasta entonces.
+- Probado en `el-telefono-del-local.prueba.ts`.
+
+**Y los descuentos (R3 · 2 · 2), aplazados** (Richi, 27-nov): por ahora, el local pone el descuento en el precio. La
+maqueta sigue aprobada. Lo siguiente, la Auditoría 3 de toda la Ampliación y la caja, antes del siguiente módulo.
+
 ## 12 · Lo que se toca en los documentos
 
 - **Plan:** la cabecera de D con la Ampliación; las fichas de M13 y M14 con lo de Richi; la ficha

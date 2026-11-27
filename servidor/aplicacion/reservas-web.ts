@@ -1,5 +1,6 @@
 import {
   HORA_DEL_RECORDATORIO,
+  elTelefonoParaLeer,
   INTENTOS_DE_LA_WEB_DE_RESERVAS,
   fechaOperativa,
   hastaCuandoConfirmar,
@@ -65,7 +66,7 @@ export async function elLocalDeLaWeb(
     }[]
   >`
     select id::text as id, organizacion_id::text as organizacion_id, nombre, poblacion,
-           coalesce(google_telefono, telefono) as telefono, color_de_marca as color, zona_horaria
+           coalesce(telefono, google_telefono) as telefono, color_de_marca as color, zona_horaria
       from estook.local
      where direccion_de_la_carta = ${direccion.toLowerCase()} and activo
   `;
@@ -91,7 +92,7 @@ export async function elLocalDeLaWeb(
     direccion: direccion.toLowerCase(),
     nombre: l.nombre,
     poblacion: l.poblacion,
-    telefono: l.telefono,
+    telefono: l.telefono === null ? null : elTelefonoParaLeer(l.telefono),
     color: l.color,
     zona: l.zona_horaria,
     ajustes,

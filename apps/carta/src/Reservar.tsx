@@ -361,6 +361,8 @@ export function Reservar({ direccion }: { readonly direccion: string }) {
           </>
         )}
 
+        {web !== null && web.telefono !== null && <Contacto web={web} />}
+
         {incrustada ? (
           <footer className="flex justify-center pt-e3 text-etiqueta text-texto-tenue">
             <a
@@ -382,6 +384,40 @@ export function Reservar({ direccion }: { readonly direccion: string }) {
         )}
       </main>
     </Acento.Provider>
+  );
+}
+
+// ═══ Contacto ═════════════════════════════════════════════════════════════════
+
+/**
+ * **Contacto** (Richi, 27-nov: «en la página de reservas pon contacto y el teléfono para que llamen al local»): el
+ * teléfono del local, el que puso en Ajustes, con un botón grande para llamar. Siempre a la vista, abajo.
+ */
+function Contacto({ web }: { readonly web: LaWeb }) {
+  const acento = useContext(Acento);
+  if (web.telefono === null) return null;
+  return (
+    <section
+      aria-labelledby="contacto"
+      className="flex flex-col gap-e3 rounded-[20px] border border-borde bg-superficie p-e4"
+    >
+      <div className="flex flex-col gap-e1">
+        <h2 id="contacto" className="text-seccion font-bold">
+          Contacto
+        </h2>
+        <p className="text-secundario text-texto-suave">
+          ¿Dudas, más de 12 personas o algo especial? Llama a {web.nombre}
+          {web.poblacion !== null ? `, en ${web.poblacion}` : ''}.
+        </p>
+      </div>
+      <a
+        href={`tel:${web.telefono.replace(/\s/g, '')}`}
+        className="flex min-h-[3.5rem] items-center justify-center gap-e2 rounded-[16px] px-e4 text-[1.15rem] font-bold tabular-nums"
+        style={{ ...acento.fondo, color: acento.texto }}
+      >
+        Llamar al {web.telefono}
+      </a>
+    </section>
   );
 }
 

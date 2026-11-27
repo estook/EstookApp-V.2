@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CUENTAS_PARA_APRENDER,
+  elTelefonoParaLeer,
   DURACIONES_DE_FABRICA,
   abreEseDia,
   cabeEnElCuarto,
@@ -176,5 +177,13 @@ describe('la web de reservas (5 · 2)', () => {
   it('se confirma hasta X minutos antes de la hora, no desde que se reserva', () => {
     const a_las_2115 = new Date('2026-11-28T20:15:00Z');
     expect(hastaCuandoConfirmar(a_las_2115, 30).toISOString()).toBe('2026-11-28T19:45:00.000Z');
+  });
+});
+
+describe('el teléfono para leerlo (27-nov)', () => {
+  it('los nueve números en grupos, con su prefijo si lo lleva', () => {
+    expect(elTelefonoParaLeer('672296226')).toBe('672 29 62 26');
+    expect(elTelefonoParaLeer('+34 672296226')).toBe('+34 672 29 62 26');
+    expect(elTelefonoParaLeer(' 01 23 ')).toBe('01 23');
   });
 });

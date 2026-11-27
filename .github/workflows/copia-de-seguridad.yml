@@ -9,7 +9,8 @@ name: Copia de seguridad
 #
 # ── Qué hace, cada lunes de madrugada ────────────────────────────────────────
 #
-#   1. Vuelca la base (`estook` y `plataforma`) con `pg_dump`.
+#   1. Vuelca la base con `pg_dump`: todas las partes que crean las migraciones
+#      (`estook`, `plataforma` y `facturacion`), leídas de ellas.
 #   2. **La restaura en una base de prueba, aquí mismo, y cuenta lo que hay.** Una
 #      copia que no se ha restaurado no es una copia: es un fichero.
 #   3. Copia los ficheros del almacén (logos, fotos, cartas), si está su clave.
@@ -105,9 +106,18 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p copia
+          # Las partes de la base son las que crean las migraciones, no una lista a mano:
+          # la lista fija solo tenía `estook` y `plataforma`, y se dejaba fuera `facturacion`
+          # (los tickets y las facturas, desde la 0106). La Auditoría 3, 27-nov.
+          esquemas=$(ls base-de-datos/migraciones/*.sql | grep -v '[.]revertir[.]sql$' \
+            | xargs grep -hoiE 'create schema( if not exists)? [a-z_]+' | awk '{print $NF}' | sort -u)
+          echo "Las partes que se copian: $(echo $esquemas)"
+          for imprescindible in estook plataforma facturacion; do
+            echo "$esquemas" | grep -qx "$imprescindible"
+          done
           docker run --rm mirror.gcr.io/library/postgres:17 \
             pg_dump "$URL_DE_LA_COPIA" --format=custom --no-owner --no-privileges \
-              --schema=estook --schema=plataforma > copia/base.dump
+              $(for e in $esquemas; do printf -- '--schema=%s ' "$e"; done) > copia/base.dump
           test -s copia/base.dump
           echo "La base, volcada: $(du -h copia/base.dump | cut -f1)"
 
@@ -156,7 +166,9 @@ jobs:
               union all
               select 'personas: ' || count(*) from estook.persona
               union all
-              select 'movimientos del almacén: ' || count(*) from estook.movimiento_de_stock" | tee copia/lo-que-hay.txt
+              select 'movimientos del almacén: ' || count(*) from estook.movimiento_de_stock
+              union all
+              select 'tickets y facturas: ' || count(*) from facturacion.documento" | tee copia/lo-que-hay.txt
           # Sin organizaciones, la copia no vale: algo se ha volcado mal.
           grep -q '^organizaciones: [1-9]' copia/lo-que-hay.txt
           {

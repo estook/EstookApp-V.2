@@ -15,11 +15,11 @@ ninguna copia**: el plan gratuito de Supabase no las hace.
 
 ## Qué se copia, y dónde queda
 
-| Qué                                     | Cómo                                                                              | Dónde queda                                                                           |
-| --------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| **La base** (`estook` y `plataforma`)   | `pg_dump`, cada lunes a las 03:23 UTC, con el flujo «Copia de seguridad»          | GitHub → Actions → la vuelta → «copia-de-seguridad»                                   |
-| **Los ficheros** (logos, fotos, cartas) | `herramientas/copia-de-los-ficheros.mjs`, en el mismo flujo, si está su clave     | Dentro del mismo fichero cifrado                                                      |
-| **Comprobación**                        | La copia **se restaura sola en una base de prueba** en el mismo paso, y se cuenta | El resumen de la vuelta: migraciones, organizaciones, locales, personas y movimientos |
+| Qué                                                  | Cómo                                                                              | Dónde queda                                                                           |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **La base** (`estook`, `plataforma` y `facturacion`) | `pg_dump`, cada lunes a las 03:23 UTC, con el flujo «Copia de seguridad»          | GitHub → Actions → la vuelta → «copia-de-seguridad»                                   |
+| **Los ficheros** (logos, fotos, cartas)              | `herramientas/copia-de-los-ficheros.mjs`, en el mismo flujo, si está su clave     | Dentro del mismo fichero cifrado                                                      |
+| **Comprobación**                                     | La copia **se restaura sola en una base de prueba** en el mismo paso, y se cuenta | El resumen de la vuelta: migraciones, organizaciones, locales, personas y movimientos |
 
 - **Todo sale cifrado** (AES-256 con `CLAVE_DE_LA_COPIA`), porque el repositorio es
   público. **Sin esa contraseña la copia no se abre**: Richi la guarda también en su

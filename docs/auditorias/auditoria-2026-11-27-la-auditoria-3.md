@@ -232,6 +232,13 @@ Sigue sin haber ninguna copia (0065, aplazada a la mudanza). Desde la Ampliació
 nóminas y DNI** de personas, y las reservas de los clientes. Perderlos ya no es perder una prueba. La copia
 semanal está escrita y **no cuesta nada**. Es de Richi decidir (apartado 15).
 
+**Encendida el 27-nov (Richi puso los secretos).** La primera vuelta de verdad cayó al restaurarla, y al arreglarlo
+salió algo peor: **la copia se dejaba fuera la facturación** (`facturacion`, los tickets y las facturas desde la
+0106), porque volcaba una lista fija de dos partes de la base. Arreglado en la rama `la-copia-que-se-restaura`: las
+partes salen de las migraciones, las extensiones de la base de producción, y se crea el rol de la API antes de
+restaurar. Lanzada desde la rama, **en verde**: 139 migraciones, 10 organizaciones, 49 tickets y facturas y 90
+ficheros de 5 cubos, cifrada.
+
 ### 7.1 · Lo que está bien
 
 Las cinco puertas del despachador en un solo sitio; la sesión del admin con doble factor y nivel mirados en
@@ -426,6 +433,10 @@ Cada parte en su rama y su pull request, con su prueba vista fallar sin el arreg
   (`estook.es_de_toda_la_organizacion`). En la app, Ajustes › Organización solo sale a quien es de toda la empresa.
   «Lo cambió otra persona» ya no se dice a quien no tiene permiso (7.2) y la regla mira si el puesto sigue vivo
   (7.6). Su prueba, `lo-grave-de-la-auditoria-3.prueba.ts`, **vista fallar sin el arreglo** (5 de 7).
+- **El doble factor** (rama `el-doble-factor-que-se-exigio`, migración **0138**, #216): 16.4 arreglado.
+- **RRHH lleva la ficha de todos menos la del propietario** (rama `rrhh-lleva-la-ficha`, migración **0139**, #217):
+  lo pidió Richi el 27-nov.
+- **La copia de seguridad** (rama `la-copia-que-se-restaura`): M6. Encendida, y ya lleva la facturación.
 - **Lo que he decidido yo, para que lo sepas:** entre iguales tampoco se ve lo privado (dos gerentes no se ven el
   DNI ni la nómina); y las dos funciones nuevas leen con privilegio, por la misma razón que las de antes, y están
   en la lista cerrada que vigila su prueba.
@@ -474,7 +485,7 @@ cobrado menos lo devuelto, o las dos cosas.
 El Panel cuenta con IVA (57,00 €) y «Por producto» sin IVA (51,82 €). Las dos cosas son correctas, pero la persona
 no sabe cuál está mirando. **Propuesta:** que cada cifra diga «con IVA» o «sin IVA», o elegir una para toda la app.
 
-### 16.4 · Medio · El doble factor se sigue pidiendo cuando la empresa deja de exigirlo — **lo vio Richi; comprobado en el código y en producción**
+### 16.4 · Medio · El doble factor se sigue pidiendo cuando la empresa deja de exigirlo — **lo vio Richi; comprobado en el código y en producción; arreglado (0138, #216)**
 
 El doble factor es de cada persona. Cuando la empresa lo exige, cada uno lo activa en su cuenta; si luego la
 empresa lo quita, la persona lo sigue teniendo activado y Estook se lo sigue pidiendo

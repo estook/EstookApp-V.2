@@ -112,6 +112,22 @@ export const invitarPersona = comando<EntradaInvitar, SalidaInvitar>({
     // es normal, y quien lo invita no podrá después retirárselo, que es lo justo.
     await exigirQueNoDeMasDeLoQueTiene(sql, entrada.organizacion_id, sesion.personaId, entrada.rol);
 
+    // ── Un puesto de toda la empresa o de un área, solo lo da quien es de toda ella ──
+    //
+    // La Auditoría 3 (0137): una gerente de un local creaba un RRHH o una gestoría para todos los
+    // locales de la cadena. Lo para también la política de `membresia`; aquí se dice bien.
+    if (alcance !== 'local') {
+      const [suya] = await sql<{ es: boolean }[]>`
+        select estook.es_de_toda_la_organizacion(${entrada.organizacion_id}::uuid) as es
+      `;
+      if (suya?.es !== true) {
+        throw new FalloDeAplicacion('sin_permiso', {
+          porque:
+            'Un puesto de toda la empresa o de un área lo da quien la lleva entera: la dirección, el administrador de la cuenta o RRHH.',
+        });
+      }
+    }
+
     // ── ¿Existe ya ese correo? ───────────────────────────────────────────────
     //
     // Sin correo no hay nada que buscar: es siempre una persona nueva. Dos personas

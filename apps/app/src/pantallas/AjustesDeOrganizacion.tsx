@@ -20,7 +20,7 @@ import { usarSesion } from '../sesion/Sesion.tsx';
  *
  * Solo sale a quien puede tocarlo. Y eso **no es lo que protege**: lo protege la
  * politica de M1 sobre `estook.organizacion`, que exige `app.ajustes` en
- * `ver_y_editar`. Esconder un boton no protege nada (principio 7); esto es para
+ * `ver_y_editar` y un puesto de toda la organizacion (0137). Esconder un boton no protege nada (principio 7); esto es para
  * que a quien no puede no se le ensene un boton que le va a decir que no.
  */
 export function AjustesDeOrganizacion() {
@@ -38,7 +38,9 @@ export function AjustesDeOrganizacion() {
   const organizacion = yo?.organizacion ?? null;
 
   if (organizacion === null) return null;
-  if (!puedeEditar(permisos, 'app.ajustes')) return null;
+  // Lo de toda la empresa, solo a quien la lleva entera (la Auditoría 3, 0137): una gerente de un local
+  // ya no renombra la cadena ni le cambia el doble factor a todos.
+  if (organizacion.alcance !== 'organizacion' || !puedeEditar(permisos, 'app.ajustes')) return null;
 
   async function exigirDobleFactor(exigir: boolean) {
     if (organizacion === null) return;

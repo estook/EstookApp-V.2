@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { comando, FalloDeAplicacion } from '../contrato.ts';
 
+/** Lo de toda la empresa (0137): solo quien tiene un puesto de toda ella. */
+const SOLO_QUIEN_LLEVA_LA_EMPRESA =
+  'Lo de toda la empresa lo cambia quien la lleva entera: la dirección o el administrador de la cuenta.';
+
 /**
  * Lo que la organizacion decide sobre el acceso (M4).
  *
@@ -48,12 +52,16 @@ export const exigirDobleFactor = comando<
       const existe = await sql<{ version: number }[]>`
         select version from estook.organizacion where id = ${entrada.organizacion_id}
       `;
-      if (existe[0]) {
+      // Se ve y no se cambia: otra versión es que la cambió otra persona; la misma, que no se puede
+      // (la Auditoría 3: decía «lo cambió otra persona» a quien no tenía permiso).
+      if (existe[0] && existe[0].version !== entrada.version) {
         throw new FalloDeAplicacion('lo_cambio_otra_persona', {
           version_actual: existe[0].version,
         });
       }
-      throw new FalloDeAplicacion('sin_permiso');
+      throw new FalloDeAplicacion('sin_permiso', {
+        porque: SOLO_QUIEN_LLEVA_LA_EMPRESA,
+      });
     }
 
     // A cuanta gente le va a caer encima. Se devuelve para poder decirlo antes de
@@ -143,12 +151,12 @@ export const ponerCorreoDeRecuperacion = comando<
       const existe = await sql<{ version: number }[]>`
         select version from estook.organizacion where id = ${entrada.organizacion_id}
       `;
-      if (existe[0]) {
+      if (existe[0] && existe[0].version !== entrada.version) {
         throw new FalloDeAplicacion('lo_cambio_otra_persona', {
           version_actual: existe[0].version,
         });
       }
-      throw new FalloDeAplicacion('sin_permiso');
+      throw new FalloDeAplicacion('sin_permiso', { porque: SOLO_QUIEN_LLEVA_LA_EMPRESA });
     }
 
     // El correo **no** se escribe en la auditoria: es un dato de contacto y la
@@ -214,7 +222,7 @@ export const cambiarNombreDelNegocio = comando<
       if (actual !== undefined && actual !== entrada.version) {
         throw new FalloDeAplicacion('lo_cambio_otra_persona', { version_actual: actual });
       }
-      throw new FalloDeAplicacion('sin_permiso');
+      throw new FalloDeAplicacion('sin_permiso', { porque: SOLO_QUIEN_LLEVA_LA_EMPRESA });
     }
 
     await sql`

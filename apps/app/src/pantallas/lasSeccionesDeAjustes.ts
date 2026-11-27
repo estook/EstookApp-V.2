@@ -206,6 +206,8 @@ export interface QuienMira {
   readonly tieneOrganizacion: boolean;
   /** Si lleva la suscripción (`quien_soy` → `cuenta.laLlevo`): es de la organización. */
   readonly llevaLaSuscripcion?: boolean;
+  /** Si tiene un puesto de toda la organización (`quien_soy` → `organizacion.alcance`, 0137). */
+  readonly deTodaLaOrganizacion?: boolean;
 }
 
 /**
@@ -221,6 +223,7 @@ export function seccionesQueVe({
   tieneLocal,
   tieneOrganizacion,
   llevaLaSuscripcion = false,
+  deTodaLaOrganizacion = false,
 }: QuienMira): readonly Seccion[] {
   const llevaElLocal = tieneLocal && puedeEditar(permisos, 'app.ajustes');
   return SECCIONES.filter((seccion) => {
@@ -235,7 +238,8 @@ export function seccionesQueVe({
     // La suscripción, quien lleva la facturación: lo mismo que pide `mi_suscripcion`, y
     // de la organización, que en la vista de cadena no hay local del que sacarlo.
     if (seccion.id === 'suscripcion') return tieneOrganizacion && llevaLaSuscripcion;
-    return tieneOrganizacion && puedeEditar(permisos, 'app.ajustes');
+    // Organización (el nombre y el doble factor de todos), quien la lleva entera (la Auditoría 3, 0137).
+    return tieneOrganizacion && deTodaLaOrganizacion && puedeEditar(permisos, 'app.ajustes');
   });
 }
 

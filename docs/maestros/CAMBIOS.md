@@ -5,6 +5,8 @@ anteriores vive aquí, de la más nueva a la más vieja ([0063](../decisiones/00
 Los textos de las versiones 1.1 a 1.3 son los que llevaba cada cabecera, tal cual: por eso
 hablan de «la Evolución» y de «Estook Enlace», que entonces se llamaban así.
 
+**El 27 de noviembre** ([la Auditoría 3](../auditorias/auditoria-2026-11-27-la-auditoria-3.md), sus graves), sin cambiar de versión: **Roles** dice que «su gente», en la ficha del trabajador, es quien manda menos (nunca hacia arriba ni entre iguales), y en 1.9 que lo de toda la organización —el nombre, el doble factor de todos, el correo de recuperación y dar puestos de toda ella o de un área— es solo de quien tiene un puesto de toda la organización. Lo decide la base (migración 0137).
+
 **El 22 de noviembre, por la noche** ([0151](../decisiones/0151-m20-2-lo-que-se-escapa.md)), sin cambiar de versión, **decidido con Richi** («no quiero sobrecargar la app»): M20 · 2 en pequeño. El **Plan** marca M20 · 1 en producción y M20 · 2 construido, y quita M20 · 2 del orden pendiente; el **Manifiesto** (el food cost, teórico y real) dice dónde salen los dos y que hasta tres puntos se da por bueno.
 
 **El 22 de noviembre, después** ([0150](../decisiones/0150-fuera-el-aprovechamiento.md)), sin cambiar de versión, **decidido por Richi**: fuera el aprovechamiento de toda la app. El **Manifiesto** (catálogo, ficha del producto y la fórmula del coste: `precio ÷ factor`), el **Plan** (M6 y M9) y la **Auditoría de flujos** (1.2, 2.2 pasa a «se cambia cuánto trae lo que se compra», el alta y su lista final) lo dicen; lo que se tira al limpiar es merma.

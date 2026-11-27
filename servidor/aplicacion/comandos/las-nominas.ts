@@ -12,7 +12,6 @@ import { avisar, quienesPuedenRecibir } from '../avisos.ts';
 import { comando, FalloDeAplicacion, falloQueSeGuarda, type Contexto } from '../contrato.ts';
 import { decodificar, esDeVerdadDeEseTipo } from '../ficheros.ts';
 import { elFogonDeLaSesion, leerElJson, pedirAFogon, type LoQueQueda } from '../fogon.ts';
-import { laAmplitud } from '../la-ficha.ts';
 import { esDeEsaPersona, laPersona, quePuedaRellenarla, TOPE_DEL_DOCUMENTO } from './la-ficha.ts';
 
 /**
@@ -167,7 +166,6 @@ async function laGenteParaLasNominas(
   organizacionId: string,
 ): Promise<(PersonaParaLaNomina & { readonly dni: string | null })[]> {
   if (contexto.personaId === null) return [];
-  const mia = await laAmplitud(contexto, contexto.personaId, organizacionId);
   const filas = await contexto.sql<
     {
       id: string;
@@ -190,11 +188,7 @@ async function laGenteParaLasNominas(
           where m.persona_id = p.id and m.organizacion_id = ${organizacionId}
             and m.revocada_en is null
        )
-       and (
-         select max(r.amplitud) from estook.membresia m join estook.rol r on r.codigo = m.rol
-          where m.persona_id = p.id and m.organizacion_id = ${organizacionId}
-            and m.revocada_en is null
-       ) < ${mia}
+       and estook.manda_mas_que(p.id, ${organizacionId}::uuid)
        and estook.la_lleva(p.id, ${organizacionId}::uuid, 'dato.datos_del_equipo', true)
      order by p.nombre, p.apellidos
   `;

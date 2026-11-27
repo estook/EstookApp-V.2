@@ -162,6 +162,7 @@ export function BuscadorUniversal({ abierto, alCerrar, apps }: BuscadorUniversal
         tieneLocal: yo?.local !== null && yo?.local !== undefined,
         tieneOrganizacion: yo?.organizacion !== null && yo?.organizacion !== undefined,
         llevaLaSuscripcion: yo?.cuenta?.laLlevo === true,
+        deTodaLaOrganizacion: yo?.organizacion?.alcance === 'organizacion',
       }).map((ajuste) => ({
         id: `ajuste-${ajuste.id}`,
         nombre: ajuste.nombre,

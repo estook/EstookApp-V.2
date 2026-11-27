@@ -120,6 +120,7 @@ export function Ajustes() {
     tieneLocal: yo?.local !== null && yo?.local !== undefined,
     tieneOrganizacion: yo?.organizacion !== null && yo?.organizacion !== undefined,
     llevaLaSuscripcion: yo?.cuenta?.laLlevo === true,
+    deTodaLaOrganizacion: yo?.organizacion?.alcance === 'organizacion',
   };
   const secciones = seccionesQueVe(quien);
   const encontrados = buscarAjustes(ajustesQueVe(quien), buscando);

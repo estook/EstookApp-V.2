@@ -813,6 +813,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'el_uso_de',
       'elegir_la_modalidad',
       'es_admin_o_el_sistema',
+      // La Auditoría 3 (0137): lo de toda la organización, solo para quien es de toda ella.
+      'es_de_toda_la_organizacion',
       'es_la_direccion_del_local',
       'es_la_pantalla_del_local',
       'es_una_caja_viva',
@@ -847,6 +849,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'los_cobros_pendientes_de_la_caja',
       'los_nombres_de_la_sala',
       'los_pin_del_centro',
+      // La Auditoría 3 (0137): la ficha privada, solo hacia abajo.
+      'manda_mas_que',
       'nivel_de_permiso',
       'nivel_de_permiso_en_organizacion',
       'organizaciones_visibles',

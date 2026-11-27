@@ -43,7 +43,7 @@ Las sondas se borraron al acabar: lo que vigilan entra como prueba de verdad con
 | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Grave**  | 3       | G1 · lo privado de la ficha se ve hacia arriba · G2 · la gerente de un local cambia la empresa entera · G3 · la gerente de un local da acceso a toda la cadena                                                                                                 |
 | **Medio**  | 6       | M1 · los topes por dirección se saltan · M2 · la prueba que ataca la API no ve el TPV ni los ficheros · M3 · Google y la posición de IKATZ · M4 · dependencias · M5 · el sí de las alergias no queda guardado · M6 · sin copia de seguridad, ahora con nóminas |
-| **Leve**   | 8       | 6.1, 7.2 a 7.6, 8.1 y 8.2                                                                                                                                                                                                                                      |
+| **Leve**   | 10      | 6.1, 6.3, 7.2 a 7.6, 8.1, 8.2 y 10.2                                                                                                                                                                                                                           |
 | **Mejora** | 10      | Apartado 12                                                                                                                                                                                                                                                    |
 
 **Hoy, en producción, G1 a G3 no le pasan a nadie de verdad** (leído en producción, sin nombres): no hay ninguna
@@ -170,6 +170,10 @@ en el código, conectar Google ya no copia teléfono, dirección ni posición si
 - **El navegador:** la sesión vive en el almacenamiento del navegador (normal en una app así, con la política de
   seguridad cerrando scripts de fuera); el TPV guarda las mesas para seguir sin internet, en el aparato del local.
 - **Los avisos al móvil** no llevan alergias ni datos de clientes.
+- **Cada aparato, a lo suyo** (comprobado en el código y en el catálogo): con PIN solo se entra en la caja y el
+  comandero (`comandos/aparatos.ts:1221`); la cocina y la barra trabajan con su llave y solo ven su pantalla, así
+  que no cobran, no abren caja ni facturan. De las 137 operaciones del TPV, 64 son solo de la caja, 3 de la caja y
+  el comandero, y las 70 restantes valen en esos dos; cada una pide además su permiso.
 
 ### M5 · Medio · El sí del cliente a guardar sus alergias no queda guardado — **leído en el código**
 
@@ -183,6 +187,14 @@ alergias.
 `servidor/infraestructura/fallos.ts:63-70` escribe en el registro el mensaje del error **sin limpiar** (lo limpio
 va solo a Sentry). Un choque de Postgres puede dejar ahí un correo («Key (correo)=(…)»). **Arreglo:** pasarlo por
 `sinDatosPersonales` también ahí.
+
+### 6.3 · Leve · El teléfono del cliente viaja en la dirección — **leído en el código**
+
+Las consultas van por `GET`, con lo que preguntan en la dirección (`packages/cliente-api/src/index.ts:337`; ninguna
+app las junta en el cuerpo), y `buscar_al_cliente` pregunta por el **teléfono** (Estook TPV, «+ Reserva»:
+`apps/tpv/src/ganchos/usarLasReservas.ts:93-101`). Las direcciones quedan en los registros de Supabase. Lo mismo, en
+menor medida, con lo que se busca en el chat (`buscar_en_el_chat`). **Arreglo:** que esas dos vayan en el cuerpo
+(como un comando que no se recuerda, igual que la web de reservas).
 
 ### 6.2 · Lo que pide la ley y aún no hay (ya sabido)
 
@@ -332,6 +344,14 @@ con su `expect`, también para DNI, sueldo, nóminas y alergias.
   en el barrido).
 - El redondeo de las devoluciones al 4 % (8.1).
 
+### 10.2 · Leve · Dos pruebas de pantalla chocan entre sí — **visto en GitHub, en la #213**
+
+`esqueleto.spec.ts:1176` (el periodo de la gráfica) entra con Rosa y le cambia el Panel; la misma prueba corre a la
+vez en los otros aparatos (escritorio, móvil, Safari) con la misma Rosa, y si una pone 7 días mientras otra mira
+los 30, falla. En la #213 (solo documentos) cayó dos veces seguidas en el móvil pequeño, y en local pasa. **No es
+un fallo de la app.** **Arreglo:** que cada aparato use su propia cuenta para lo que cambia el Panel, como ya hace
+`lo-que-se-ordena` con Luis.
+
 ---
 
 ## 11 · Los documentos (punto 9 de Richi)
@@ -391,11 +411,24 @@ con su `expect`, también para DNI, sueldo, nóminas y alergias.
 | --------------------------- | ------------------------------------------------------------------------------- | --------- |
 | **1 · Lo grave**            | G1, G2, G3, con 7.6 y el mensaje del doble factor (7.2), y sus pruebas          | Sí        |
 | **2 · La prueba que ataca** | M2 y 10.1: aparatos, servicio, ficheros, entre locales y los roles con `expect` | No        |
-| **3 · Lo medio**            | M1, M5, M3 (Google no copia), 6.1, 8.1, 8.2, `poner_en_la_carta` (7.2) y 9      | Sí        |
+| **3 · Lo medio**            | M1, M5, M3 (Google no copia), 6.1, 6.3, 8.1, 8.2, `poner_en_la_carta` (7.2) y 9 | Sí        |
 | **4 · Dependencias**        | M4                                                                              | No        |
 | **5 · Los documentos**      | D1 a D5                                                                         | No        |
 
 Cada parte en su rama y su pull request, con su prueba vista fallar sin el arreglo.
+
+## 14½ · Lo arreglado
+
+- **Parte 1 · Lo grave** (rama `auditoria-3-lo-grave`, migración **0137**): G1, G2 y G3. La ficha (lo privado, los
+  documentos y las condiciones) se ve y se rellena solo **hacia abajo**, con una sola regla en la base
+  (`estook.manda_mas_que`) que usan también el servidor y la subida de nóminas; lo de toda la organización y los
+  puestos de toda ella o de un área, solo quien tiene un puesto de toda la organización
+  (`estook.es_de_toda_la_organizacion`). En la app, Ajustes › Organización solo sale a quien es de toda la empresa.
+  «Lo cambió otra persona» ya no se dice a quien no tiene permiso (7.2) y la regla mira si el puesto sigue vivo
+  (7.6). Su prueba, `lo-grave-de-la-auditoria-3.prueba.ts`, **vista fallar sin el arreglo** (5 de 7).
+- **Lo que he decidido yo, para que lo sepas:** entre iguales tampoco se ve lo privado (dos gerentes no se ven el
+  DNI ni la nómina); y las dos funciones nuevas leen con privilegio, por la misma razón que las de antes, y están
+  en la lista cerrada que vigila su prueba.
 
 ## 15 · Lo que decide Richi
 
@@ -405,5 +438,8 @@ Cada parte en su rama y su pull request, con su prueba vista fallar sin el arreg
    una nómina), la 4 (borrar lo de los clientes que no vuelven) y la 6 (Google no copia nada). La 3 (doble factor
    obligatorio para quien ve datos del equipo) cambia cómo entran gerentes y dirección: solo si la quieres.
 3. **Las fichas del Plan en tres partes** (Hecho, Falta, Reglas): cambia la forma del maestro, no lo que dice.
+4. **RRHH y la ficha de gerentes y area managers.** Con la regla «solo hacia abajo», RRHH (que en Estook manda
+   menos que un gerente) no ve ni rellena la ficha de un gerente ni la de un area manager. Recomiendo que RRHH lleve
+   la de todos **menos la dirección**: es su trabajo.
 
 **Y un paso tuyo, sin decidir nada:** en Estook, Ajustes › el local, poner a mano dónde está IKATZ (M3).

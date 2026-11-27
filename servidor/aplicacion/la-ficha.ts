@@ -107,22 +107,6 @@ export async function loGastadoDeVacaciones(
   return { disfrutadas, porDisfrutar };
 }
 
-/** La amplitud de rol más alta de una persona en la organización: para «no hacia arriba». */
-export async function laAmplitud(
-  contexto: Contexto,
-  personaId: string,
-  organizacionId: string,
-): Promise<number> {
-  const filas = await contexto.sql<{ amplitud: number | null }[]>`
-    select max(r.amplitud) as amplitud
-      from estook.membresia m join estook.rol r on r.codigo = m.rol
-     where m.persona_id = ${personaId}
-       and m.organizacion_id = ${organizacionId}
-       and m.revocada_en is null
-  `;
-  return filas[0]?.amplitud ?? 0;
-}
-
 /**
  * Si quien pregunta puede rellenar la ficha de esa persona: tiene los datos del equipo
  * para editar, no es la suya, y no manda menos que ella (la regla del sueldo, 0027).
@@ -133,14 +117,14 @@ export async function puedeRellenarLaFicha(
   organizacionId: string,
 ): Promise<boolean> {
   if (contexto.personaId === null || contexto.personaId === personaId) return false;
-  const filas = await contexto.sql<{ lleva: boolean }[]>`
+  // La misma pregunta que hacen las políticas de la base (0137): la lleva y manda más que ella, con los
+  // puestos que siguen vivos. Una sola regla, en un solo sitio.
+  const filas = await contexto.sql<{ puede: boolean }[]>`
     select estook.la_lleva(${personaId}::uuid, ${organizacionId}::uuid,
-                           'dato.datos_del_equipo', true) as lleva
+                           'dato.datos_del_equipo', true)
+       and estook.manda_mas_que(${personaId}::uuid, ${organizacionId}::uuid) as puede
   `;
-  if (filas[0]?.lleva !== true) return false;
-  const mia = await laAmplitud(contexto, contexto.personaId, organizacionId);
-  const suya = await laAmplitud(contexto, personaId, organizacionId);
-  return mia > suya;
+  return filas[0]?.puede === true;
 }
 
 function numero(texto: string | null): number | null {
@@ -203,8 +187,9 @@ export async function laFichaDe(
   // políticas. Si no, ni se pregunta.
   const permiso = await contexto.sql<{ ve: boolean }[]>`
     select (${personaId}::uuid = estook.persona_actual()
-            or estook.la_lleva(${personaId}::uuid, ${organizacionId}::uuid,
-                               'dato.datos_del_equipo', false)) as ve
+            or (estook.la_lleva(${personaId}::uuid, ${organizacionId}::uuid,
+                                'dato.datos_del_equipo', false)
+                and estook.manda_mas_que(${personaId}::uuid, ${organizacionId}::uuid))) as ve
   `;
   const veLoPrivado = permiso[0]?.ve === true;
 

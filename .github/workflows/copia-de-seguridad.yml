@@ -114,11 +114,34 @@ jobs:
       - name: Restaurarla en una base de prueba y contar
         run: |
           set -euo pipefail
-          # Lo que la copia no lleva y la base de Supabase ya tiene: la extensión del
-          # buscador, que allí vive en `public`.
+          # Lo que la copia no lleva y la base de Supabase ya tiene (la Auditoría 3: la
+          # primera copia de verdad, el 27-nov, cayó aquí):
+          #   · las extensiones que allí viven en `public`. Se leen de la base, no de una
+          #     lista: la 0132 trajo `btree_gist` (las reservas que no se pisan) y la lista
+          #     fija solo tenía la del buscador. Las que solo existen en Supabase (pg_net)
+          #     se saltan: ninguna tabla de la copia depende de ellas.
+          #   · el rol de la API, `estook_api`, al que van dirigidas las políticas.
+          docker run --rm mirror.gcr.io/library/postgres:17 \
+            psql "$URL_DE_LA_COPIA" -At -v ON_ERROR_STOP=1 -c "
+              select e.extname from pg_extension e join pg_namespace n on n.oid = e.extnamespace
+               where n.nspname = 'public' order by 1" > extensiones.txt
+          echo "Extensiones de la base en public: $(tr '\n' ' ' < extensiones.txt)"
+          while read -r extension; do
+            [ -n "$extension" ] || continue
+            docker run --rm --network host -e PGPASSWORD=prueba mirror.gcr.io/library/postgres:17 \
+              psql -h localhost -p 5433 -U postgres -v ON_ERROR_STOP=1 -At -c "
+                do \$\$ begin
+                  if exists (select 1 from pg_available_extensions where name = '$extension') then
+                    execute format('create extension if not exists %I with schema public', '$extension');
+                  else
+                    raise notice 'La extensión % es de Supabase y no hace falta para restaurar', '$extension';
+                  end if;
+                end \$\$"
+          done < extensiones.txt
+          rm extensiones.txt
           docker run --rm --network host -e PGPASSWORD=prueba mirror.gcr.io/library/postgres:17 \
             psql -h localhost -p 5433 -U postgres -v ON_ERROR_STOP=1 \
-              -c 'create extension if not exists pg_trgm with schema public'
+              -c "do \$\$ begin create role estook_api nologin; exception when duplicate_object then null; end \$\$"
           docker run --rm --network host -e PGPASSWORD=prueba -v "$PWD/copia:/copia" mirror.gcr.io/library/postgres:17 \
             pg_restore -h localhost -p 5433 -U postgres -d postgres \
               --no-owner --no-privileges --exit-on-error /copia/base.dump

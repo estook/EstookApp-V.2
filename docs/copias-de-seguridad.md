@@ -30,13 +30,14 @@ ninguna copia**: el plan gratuito de Supabase no las hace.
 
 ## Lo que la copia no lleva, y dónde está
 
-| Qué                                              | Dónde vive                               | Qué hacer al restaurar                                                                                                                                         |
-| ------------------------------------------------ | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| El esquema                                       | En la propia copia, y en las migraciones | Nada                                                                                                                                                           |
-| Las extensiones (`pg_trgm`, `pg_cron`, `pg_net`) | En Supabase                              | En un proyecto nuevo, se crean antes de restaurar                                                                                                              |
-| El secreto del reloj                             | El Vault de Supabase                     | En un proyecto nuevo, se genera otro, se guarda en el Vault como `estook_reloj` y su huella en `plataforma.reloj`, como hace la parte E de la migración `0047` |
-| Los secretos de la API                           | Supabase → Edge Functions → Secrets      | Se vuelven a poner (`config/claves.md`)                                                                                                                        |
-| La programación del reloj (`pg_cron`)            | Supabase                                 | En un proyecto nuevo, se programa como en esa misma parte E                                                                                                    |
+| Qué                                                            | Dónde vive                               | Qué hacer al restaurar                                                                                                                                         |
+| -------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| El esquema                                                     | En la propia copia, y en las migraciones | Nada                                                                                                                                                           |
+| Las extensiones (`pg_trgm`, `btree_gist`, `pg_cron`, `pg_net`) | En Supabase                              | En un proyecto nuevo, se crean antes de restaurar                                                                                                              |
+| El rol de la API (`estook_api`)                                | En Supabase (migración `0006`)           | En una base nueva, se crea antes de restaurar: las políticas van dirigidas a él                                                                                |
+| El secreto del reloj                                           | El Vault de Supabase                     | En un proyecto nuevo, se genera otro, se guarda en el Vault como `estook_reloj` y su huella en `plataforma.reloj`, como hace la parte E de la migración `0047` |
+| Los secretos de la API                                         | Supabase → Edge Functions → Secrets      | Se vuelven a poner (`config/claves.md`)                                                                                                                        |
+| La programación del reloj (`pg_cron`)                          | Supabase                                 | En un proyecto nuevo, se programa como en esa misma parte E                                                                                                    |
 
 ## Restaurar, paso a paso
 
@@ -62,7 +63,8 @@ de prueba, se mira, y solo después sobre la de verdad.
    pg_restore --no-owner --no-privileges --exit-on-error -d "<dirección de la base de destino>" base.dump
    ```
 
-   En un proyecto de Supabase nuevo, antes: crear las extensiones del cuadro de arriba.
+   En un proyecto de Supabase nuevo, antes: crear las extensiones y el rol del cuadro de arriba
+   (el flujo de la copia lo hace solo en su base de prueba, cada lunes).
 
 5. **Subir los ficheros** a sus cubos, con la misma carpeta que tienen dentro de
    `ficheros/` (`marca`, `fotos-de-producto`, `cartas`).

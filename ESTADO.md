@@ -1,6 +1,6 @@
 # ESTADO DEL PROYECTO
 
-Última actualización: 27 de noviembre de 2026 · **En `main` todo hasta la #214**: 137 migraciones en la base y la API con 152 consultas y 400 comandos (`bd:comprobar` y `bd:comprobar-api`, 27-nov), **sin desplegar desde la #212**. Caja para Windows, 1.3.0. **La Ampliación** ([0153](docs/decisiones/0153-la-ampliacion.md)), en producción; los descuentos, aplazados. **La Auditoría 3** ([el informe](docs/auditorias/auditoria-2026-11-27-la-auditoria-3.md)): lo grave, fusionado (#214, 0137); el servicio entero (#215) y el doble factor que se exigió (#216, 0138), en sus PR. **Lo siguiente: el resto de sus arreglos**, y después M20C
+Última actualización: 27 de noviembre de 2026 · **En `main` todo hasta la #214**: 137 migraciones en la base y la API con 152 consultas y 400 comandos (`bd:comprobar` y `bd:comprobar-api`, 27-nov), **sin desplegar desde la #212**. Caja para Windows, 1.3.0. **La Ampliación** ([0153](docs/decisiones/0153-la-ampliacion.md)), en producción; los descuentos, aplazados. **La Auditoría 3** ([el informe](docs/auditorias/auditoria-2026-11-27-la-auditoria-3.md)): lo grave, fusionado (#214, 0137); el servicio entero (#215), fusionado; el doble factor que se exigió (#216, 0138) y RRHH con la ficha de todos (0139), en sus PR. **Lo siguiente: el resto de sus arreglos**, y después M20C
 
 > La memoria del proyecto. Se lee lo primero de cada sesión y se escribe lo último, **en el mismo pull request que el trabajo**.
 > **Nunca afirma algo que no sea cierto en ese momento**, **no pasa de 250 líneas** y ninguna línea de texto pasa de 700 caracteres
@@ -147,7 +147,7 @@ Siete cuentas (27-nov): `ikatz` (la de Richi, de la casa; 14 platos, Uber Eats a
 
 **Ahora:**
 
-1. **La Auditoría 3**: **desplegar la API** (lo grave, la #214, ya está fusionado y migrado); fusionar la #215 (el servicio entero) y la #216 (el doble factor), **migrar** (la 0138) y **desplegar la API** otra vez; luego la prueba 44. Siguen pendientes las pruebas 33 a 43 de la Ampliación, cada una con sus pasos en [`pruebas-pendientes.md`](docs/pruebas-pendientes.md).
+1. **La Auditoría 3**: **desplegar la API** (la #214 está fusionada y migrada); fusionar la #216 (el doble factor) y después la de RRHH, **migrar** (la 0138 y la 0139) y **desplegar la API** otra vez; luego la prueba 44. Siguen pendientes las pruebas 33 a 43 de la Ampliación, cada una con sus pasos en [`pruebas-pendientes.md`](docs/pruebas-pendientes.md).
 2. **La prueba 32 · R3 · 2 · 1** ([sus pasos](docs/pasos/pasos-de-r3-2-1-la-caja.md)), ya en producción; siguen pendientes de la **27** a la **31** de [`pruebas-pendientes.md`](docs/pruebas-pendientes.md).
 3. **Las pruebas pendientes, cuanto antes** ([`pruebas-pendientes.md`](docs/pruebas-pendientes.md)): la 2 y la 3, **bien** (14-nov); la 4 espera a la impresora; **quedan la 5 (sin internet) y la 6 (el local del amigo)**, y las importantes. Lo que salga se dice en el chat y se apunta ahí.
 4. **El cobro con tarjeta integrado** ([la investigación](docs/estook-tpv-android-y-el-cobro.md), apartado 10, con las preguntas para los correos en 10.6): Richi está escribiendo a todos. **La IA le avisa al llegar a T8**, y entonces se decide con quién se empieza y cuánto es el fijo por aparato.

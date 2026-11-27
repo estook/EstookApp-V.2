@@ -148,3 +148,54 @@ describe('G3 · los puestos de toda la empresa, solo los da quien es de toda ell
     );
   });
 });
+
+describe('RRHH lleva la ficha de todos, menos la del propietario (0139)', () => {
+  it('el RRHH de Grupo Costa ve la de la gerente y la del area manager; la de la dirección, no', async () => {
+    // El RRHH que dio de alta Elena en la prueba de arriba.
+    const rrhh = await idDe('rrhh.de.elena@ejemplo.estook.com');
+    const ve = async (de: string) =>
+      base.comoPersona(
+        rrhh,
+        async () =>
+          (
+            await base.bd.query<{ dni: string }>(
+              'select dni from estook.ficha_privada where persona_id = $1',
+              [await idDe(de)],
+            )
+          ).rows,
+      );
+    expect(await ve(VERA)).toEqual([{ dni: '12345678Z' }]);
+    expect(await ve(IGNACIO)).toEqual([{ dni: '12345678Z' }]);
+    expect(await ve(ELENA)).toEqual([]);
+  });
+
+  it('y un gerente sigue sin ver la de otro gerente', async () => {
+    // Vera, gerente de Bar Ribera, y un segundo gerente en el mismo local.
+    const ribera = await base.localPorCodigo('bar-ribera');
+    const [otro] = (
+      await base.bd.query<{ id: string }>(
+        `insert into estook.persona (correo, nombre, es_ejemplo)
+         values ('otro.gerente@ejemplo.estook.com', 'Otro', true) returning id::text as id`,
+      )
+    ).rows;
+    await base.bd.query(
+      `insert into estook.membresia (persona_id, organizacion_id, local_id, alcance, rol)
+       values ($1, $2, $3, 'local', 'gerente')`,
+      [otro?.id, org, ribera],
+    );
+    await base.bd.query(
+      `insert into estook.ficha_privada (persona_id, organizacion_id, dni) values ($1, $2, '87654321X')`,
+      [otro?.id, org],
+    );
+    const loQueVeVera = await base.comoPersona(
+      await idDe(VERA),
+      async () =>
+        (
+          await base.bd.query('select dni from estook.ficha_privada where persona_id = $1', [
+            otro?.id,
+          ])
+        ).rows,
+    );
+    expect(loQueVeVera).toEqual([]);
+  });
+});

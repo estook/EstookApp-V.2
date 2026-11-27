@@ -32,7 +32,12 @@ export type EntradaExigirDobleFactor = z.infer<typeof entradaExigirDobleFactor>;
 
 export const exigirDobleFactor = comando<
   EntradaExigirDobleFactor,
-  { readonly version: number; readonly aQuienLeFalta: number }
+  {
+    readonly version: number;
+    readonly aQuienLeFalta: number;
+    /** Al dejar de exigirlo (0138): a cuántos se les ha quitado porque lo activaron por obligación. */
+    readonly aQuienSeLeQuita: number;
+  }
 >({
   nombre: 'exigir_doble_factor',
   entrada: entradaExigirDobleFactor,
@@ -88,7 +93,20 @@ export const exigirDobleFactor = comando<
       )
     `;
 
-    return { version: cambiada.version, aQuienLeFalta: faltan[0]?.cuantas ?? 0 };
+    // Al dejar de exigirlo, a quien lo activó por obligación se le quita (0138): si no, se le seguía pidiendo.
+    const quitados = entrada.exigir
+      ? 0
+      : ((
+          await sql<{ quitados: number }[]>`
+            select estook.quitar_el_doble_factor_exigido(${entrada.organizacion_id}::uuid) as quitados
+          `
+        )[0]?.quitados ?? 0);
+
+    return {
+      version: cambiada.version,
+      aQuienLeFalta: faltan[0]?.cuantas ?? 0,
+      aQuienSeLeQuita: quitados,
+    };
   },
 });
 

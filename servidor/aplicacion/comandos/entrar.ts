@@ -227,7 +227,11 @@ export async function abrirLaSesion(
   // lo exija; si no, activarlo seria decorativo. Y a quien tiene que activarlo
   // y aun no lo ha hecho **se le deja entrar**: no podria activarlo desde
   // fuera, asi que exigirselo antes de entrar le dejaria fuera para siempre.
-  const faltaElCodigo = tieneDoble;
+  //
+  // **Salvo el del admin de Estook** (0138, lo vio Richi): quien lo tiene solo porque el admin lo exige no lo
+  // necesita en la app si su empresa no lo pide. En el admin se le sigue pidiendo siempre (`admin.ts`).
+  const soloPorElAdmin = tieneDoble && (await loTienePorElAdmin(contexto, quien.personaId));
+  const faltaElCodigo = tieneDoble && (exigeDoble || !soloPorElAdmin);
   const debeActivarlo = exigeDoble && !tieneDoble;
 
   // ── El aparato, antes de abrir la sesión ─────────────────────────────────
@@ -364,6 +368,14 @@ async function exigeDobleFactor(contexto: Contexto, organizaciones: string[]): P
      where o.id = any(${organizaciones}::uuid[])
   `;
   return filas[0]?.exige === true;
+}
+
+/** Si su doble factor se activó para el admin de Estook (0138). */
+async function loTienePorElAdmin(contexto: Contexto, personaId: string): Promise<boolean> {
+  const filas = await contexto.sql<{ por_el_admin: boolean }[]>`
+    select por_el_admin from estook.doble_factor where persona_id = ${personaId}
+  `;
+  return filas[0]?.por_el_admin === true;
 }
 
 export async function tieneDobleFactorConfirmado(

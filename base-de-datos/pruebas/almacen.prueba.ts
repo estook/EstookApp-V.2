@@ -872,6 +872,8 @@ describe('las tablas nuevas y la única puerta de atrás', () => {
       'quien_recibe',
       'quien_trabaja_ahora',
       'quien_ve_el_canal',
+      // La Auditoría 3 (0138): al dejar de exigir el doble factor, a quien lo activó por obligación.
+      'quitar_el_doble_factor_exigido',
       'quitar_la_empresa',
       'reconocer_dispositivo',
       'registro_pendiente_de',

@@ -518,7 +518,7 @@ Bandeja de incidencias **con contexto** (local, rol, pantalla y última acción,
 
 ## La ficha, las nóminas y las vacaciones (la Ampliación, 0153)
 
-_Lo decide la base de datos, no la pantalla (migraciones 0127 a 0129). **«Su gente» es quien manda menos que él** (la Auditoría 3, migración 0137): nunca hacia arriba ni entre iguales, como lo que cobra cada uno (1.10). Una gerente no ve la ficha de la dirección ni la de otra gerente; el area manager no ve la de la dirección._
+_Lo decide la base de datos, no la pantalla (migraciones 0127 a 0129). **«Su gente» es quien manda menos que él** (la Auditoría 3, migración 0137): nunca hacia arriba ni entre iguales, como lo que cobra cada uno (1.10). Una gerente no ve la ficha de la dirección ni la de otra gerente; el area manager no ve la de la dirección. **RRHH lleva la de todos menos la del propietario** (Richi, 27-nov; migración 0139)._
 
 | Qué                                                              | La propia persona   | Jefe de sala o de cocina                        | Gerente, dirección y RRHH                |
 | ---------------------------------------------------------------- | ------------------- | ----------------------------------------------- | ---------------------------------------- |

@@ -430,6 +430,64 @@ Cada parte en su rama y su pull request, con su prueba vista fallar sin el arreg
   DNI ni la nómina); y las dos funciones nuevas leen con privilegio, por la misma razón que las de antes, y están
   en la lista cerrada que vigila su prueba.
 
+## 16 · La segunda vuelta: un servicio entero, con la cuenta a mano (27-nov, tarde)
+
+Richi preguntó si la auditoría estaba acabada: no lo estaba. Faltaba un servicio de verdad de principio a fin, el
+almacén, los pesos y los informes con números a mano. Ahora hay una prueba que lo hace y se queda para siempre:
+`base-de-datos/pruebas/un-servicio-entero.prueba.ts`.
+
+**El servicio:** caja abierta con 150,00 € · mesa 1 con 2 hamburguesas (12,00) y 2 cañas (2,50) = 29,00 €, en
+efectivo con 50,00 · mesa 2 con 1 hamburguesa, 150 g de jamón a peso (90,00 €/kg) y 1 caña = 28,00 €, en tres
+partes · se devuelve una caña · se cierra la caja.
+
+| Lo que se comprueba                    | Cuenta a mano                                                 | Sale                   |
+| -------------------------------------- | ------------------------------------------------------------- | ---------------------- |
+| El cambio de la mesa 1                 | 50,00 − 29,00 = 21,00                                         | 21,00 ✔                |
+| El IVA del ticket de la mesa 1         | 29,00 / 1,10 = 26,36 de base y 2,64 de IVA                    | ✔                      |
+| La mesa llega a cocina al mandarla     | las hamburguesas, en la pantalla de cocina                    | ✔                      |
+| **El jamón a peso**                    | 150 g × 90,00 €/kg = 13,50                                    | 13,50 ✔                |
+| Las tres partes de la mesa 2           | 9,34 + 9,33 + 9,33 = 28,00, y cada ticket con su IVA cuadrado | ✔                      |
+| **El almacén baja lo justo**           | 3 × 180 g = 540 g de carne, 3 × 40 g = 120 g de cebolla       | ✔                      |
+| **El jamón baja por lo que pesó**      | el escandallo es el de 1 kg; se vendieron 150 g               | 150 g ✔                |
+| La devolución de una caña, en efectivo | −2,50: −2,27 de base y −0,23 de IVA; sale del cajón           | ✔                      |
+| Los cobros del día                     | 29,00 + 28,00 − 2,50 = 54,50; tarjeta 18,67                   | ✔                      |
+| El coste por producto                  | hamburguesa 2,24 €; jamón 150 g × 4 c/g = 6,00 €              | ✔                      |
+| **La caja, al cerrar**                 | 150,00 + 29,00 + 9,33 − 2,50 = 185,83 en el cajón             | 185,83, diferencia 0 ✔ |
+
+### 16.1 · Medio · «Lo vendido por producto» no resta lo devuelto ni lo anulado — **comprobado con la prueba**
+
+En Negocio › Ventas › Por producto salen **3 cañas** cuando se devolvió una: deberían ser 2. Cuenta lo que bajó del
+almacén (`servidor/aplicacion/consultas/lo-vendido.ts:87-96`, la tabla `linea_bajada`) y no mira las devoluciones
+ni los tickets anulados; «Cobros», sí. **Dos pantallas dan cifras distintas para el mismo día**, y el food cost
+sale más bajo de lo que es. La prueba que ya había lo daba por bueno («la anulada y la devuelta, cobradas igual»).
+Queda en la prueba nueva como **fallo conocido**: se pondrá en rojo el día que se arregle. **Arreglo:** restar lo
+devuelto y quitar lo anulado.
+
+### 16.2 · Leve · Las ventas del día no restan lo devuelto en el Panel ni en la lista de cierres
+
+«Cómo va hoy» del Panel dice ventas 57,00 € y efectivo 38,33 €, y la lista de cierres de caja dice 57,00 €: no
+restan los 2,50 devueltos. La Z de cada caja sí los guarda aparte y el cajón cuadra. **Arreglo:** que digan lo
+cobrado menos lo devuelto, o las dos cosas.
+
+### 16.3 · Mejora · Con IVA en un sitio y sin IVA en otro
+
+El Panel cuenta con IVA (57,00 €) y «Por producto» sin IVA (51,82 €). Las dos cosas son correctas, pero la persona
+no sabe cuál está mirando. **Propuesta:** que cada cifra diga «con IVA» o «sin IVA», o elegir una para toda la app.
+
+### 16.4 · Medio · El doble factor se sigue pidiendo cuando la empresa deja de exigirlo — **lo vio Richi; comprobado en el código y en producción**
+
+El doble factor es de cada persona. Cuando la empresa lo exige, cada uno lo activa en su cuenta; si luego la
+empresa lo quita, la persona lo sigue teniendo activado y Estook se lo sigue pidiendo
+(`servidor/aplicacion/comandos/entrar.ts:230`: se pide a quien lo tiene, lo exija o no la empresa). En IKATZ se
+exigió del 11 al 28 de octubre, y dos personas lo siguen teniendo. **Arreglo:** apuntar si cada uno lo activó porque
+era obligatorio; al quitar la obligación, a esos se les quita, y quien lo puso por su cuenta lo conserva.
+
+### 16.5 · Las pantallas
+
+Las recorren a fondo las pruebas de pantalla de GitHub (escritorio, móvil y Safari, en cuatro máquinas), en verde.
+En local abrí la app con un mes de datos: el Panel carga bien. El resto no lo pude recorrer de forma fiable con el
+navegador de pruebas, y no lo doy por mirado.
+
 ## 15 · Lo que decide Richi
 
 1. **La copia de seguridad semanal**: ¿se enciende ya, o sigue esperando a la mudanza? (M6). Recomiendo encenderla

@@ -12,6 +12,7 @@ import { elFallo, losDatos, montarLaApi, type ApiDePrueba } from './despachador.
 let base: BaseDePrueba;
 let api: ApiDePrueba;
 let org = '';
+let elenaId = '';
 
 const VERA = 'vera@ejemplo.estook.com'; // gerente de Bar Ribera
 const ELENA = 'elena@ejemplo.estook.com'; // dirección de Grupo Costa
@@ -20,11 +21,15 @@ const IGNACIO = 'ignacio@ejemplo.estook.com'; // area manager de Zona Norte
 const q = async <T = Record<string, unknown>>(t: string, p: unknown[] = []) =>
   (await base.bd.query<T>(t, p)).rows;
 const idDe = async (correo: string) =>
-  String((await q(`select id::text as id from estook.persona where correo = $1`, [correo]))[0]?.['id']);
+  String(
+    (await q(`select id::text as id from estook.persona where correo = $1`, [correo]))[0]?.['id'],
+  );
 
 async function laPrivadaQueVe(quien: string, de: string, local: string): Promise<unknown> {
   const token = await api.entrar(quien);
-  const localId = String((await q(`select id::text as id from estook.local where codigo = $1`, [local]))[0]?.['id']);
+  const localId = String(
+    (await q(`select id::text as id from estook.local where codigo = $1`, [local]))[0]?.['id'],
+  );
   losDatos(await api.ejecutar(token, 'cambiar_de_contexto', { local_id: localId }));
   const r = await api.consultar(token, 'una_persona', { persona_id: await idDe(de) });
   if (r.estado !== 'ok') return null;
@@ -34,7 +39,12 @@ async function laPrivadaQueVe(quien: string, de: string, local: string): Promise
 beforeAll(async () => {
   base = await levantarBase();
   api = montarLaApi(base.bd);
-  org = String((await q(`select id::text as id from estook.organizacion where codigo = 'grupo-costa'`))[0]?.['id']);
+  org = String(
+    (await q(`select id::text as id from estook.organizacion where codigo = 'grupo-costa'`))[0]?.[
+      'id'
+    ],
+  );
+  elenaId = await idDe(ELENA);
   for (const correo of [ELENA, IGNACIO, VERA]) {
     await q(
       `insert into estook.ficha_privada (persona_id, organizacion_id, dni, sueldo_centimos)
@@ -61,29 +71,36 @@ describe('G1 · la ficha privada, solo hacia abajo', () => {
 
   it('a pelo contra la base, la gerente no lee la fila de la dirección', async () => {
     const filas = await base.comoPersona(await idDe(VERA), () =>
-      q(`select dni from estook.ficha_privada where persona_id = $1`, [ELENA_ID]),
+      q(`select dni from estook.ficha_privada where persona_id = $1`, [elenaId]),
     );
     expect(filas).toEqual([]);
   });
-});
-
-let ELENA_ID = '';
-beforeAll(async () => {
-  ELENA_ID = await idDe(ELENA);
 });
 
 describe('G2 · lo de toda la empresa, solo quien es de toda ella', () => {
   for (const correo of [VERA, IGNACIO]) {
     it(`${correo.split('@')[0]} no renombra la empresa ni le cambia el doble factor`, async () => {
       const token = await api.entrar(correo);
-      const v = Number((await q(`select version from estook.organizacion where id = $1`, [org]))[0]?.['version']);
+      const v = Number(
+        (await q(`select version from estook.organizacion where id = $1`, [org]))[0]?.['version'],
+      );
       expect(
         elFallo(
-          await api.ejecutar(token, 'cambiar_nombre_del_negocio', { organizacion_id: org, nombre: 'Otra', version: v }),
+          await api.ejecutar(token, 'cambiar_nombre_del_negocio', {
+            organizacion_id: org,
+            nombre: 'Otra',
+            version: v,
+          }),
         ),
       ).toBe('sin_permiso');
       expect(
-        elFallo(await api.ejecutar(token, 'exigir_doble_factor', { organizacion_id: org, exigir: true, version: v })),
+        elFallo(
+          await api.ejecutar(token, 'exigir_doble_factor', {
+            organizacion_id: org,
+            exigir: true,
+            version: v,
+          }),
+        ),
       ).toBe('sin_permiso');
     });
   }
@@ -104,6 +121,19 @@ describe('G3 · los puestos de toda la empresa, solo los da quien es de toda ell
         ),
       ).toBe('sin_permiso');
     }
+  });
+
+  it('y en su lista de «Invitar» no salen', async () => {
+    const vera = losDatos<{ rolesQuePuedoDar: string[] }>(
+      await api.consultar(await api.entrar(VERA), 'quien_soy'),
+    ).rolesQuePuedoDar;
+    expect(vera).toContain('camarero');
+    expect(vera).not.toContain('rrhh');
+    expect(vera).not.toContain('gestoria');
+    const elena = losDatos<{ rolesQuePuedoDar: string[] }>(
+      await api.consultar(await api.entrar(ELENA), 'quien_soy'),
+    ).rolesQuePuedoDar;
+    expect(elena).toContain('rrhh');
   });
 
   it('la dirección sí', async () => {

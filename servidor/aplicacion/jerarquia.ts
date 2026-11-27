@@ -1,3 +1,4 @@
+import { ALCANCE_DEL_ROL, type Rol } from '@estook/dominio';
 import { FalloDeAplicacion, type Contexto } from './contrato.ts';
 
 /**
@@ -112,5 +113,14 @@ export async function rolesQuePuedeDar(
   const filas = await sql<{ codigo: string; amplitud: number }[]>`
     select codigo, amplitud::int as amplitud from estook.rol order by amplitud desc
   `;
-  return filas.filter((r) => estaPorEncima(mia, r.amplitud)).map((r) => r.codigo);
+  // Los puestos de toda la organización o de un área, solo quien es de toda ella (la Auditoría 3, 0137):
+  // lo dice la base, con la misma función que su política de `membresia`.
+  const [suya] = await sql<{ es: boolean }[]>`
+    select estook.es_de_toda_la_organizacion(${organizacionId}::uuid) as es
+  `;
+  const deTodaElla = suya?.es === true;
+  return filas
+    .filter((r) => estaPorEncima(mia, r.amplitud))
+    .filter((r) => deTodaElla || ALCANCE_DEL_ROL[r.codigo as Rol] === 'local')
+    .map((r) => r.codigo);
 }

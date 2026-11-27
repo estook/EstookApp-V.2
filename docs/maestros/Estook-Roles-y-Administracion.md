@@ -145,6 +145,9 @@ GESTORIA · Bar Centro
 - **Compras central:** Almacén y proveedores de todos los locales, contratos marco y la comparativa de precios entre locales. Nada de recetas ni de personal.
 - **RRHH:** Equipo y Calendario de todos los locales, con costes de personal. Sin acceso a materia prima ni a márgenes.
 - **Administrador de cuenta:** plan, facturación, licencias, altas de local y de personas. Sin acceso a la operación diaria, salvo que se le dé expresamente.
+
+**Lo de toda la organización es de quien tiene un puesto de toda ella** (la Auditoría 3, migración 0137): el nombre del negocio, exigir el doble factor a todos, el correo de recuperación y **dar un puesto de toda la organización o de un área** (RRHH, gestoría, chef corporativo, compras central, area manager). Una gerente o un area manager, aunque lleven Ajustes en su local, no lo cambian ni lo ven en Ajustes.
+
 - **Dirección o propietario:** todo, en todos los locales.
 
 ## 1.10 Las horas y lo que cobra cada uno
@@ -515,7 +518,7 @@ Bandeja de incidencias **con contexto** (local, rol, pantalla y última acción,
 
 ## La ficha, las nóminas y las vacaciones (la Ampliación, 0153)
 
-_Lo decide la base de datos, no la pantalla (migraciones 0127 a 0129)._
+_Lo decide la base de datos, no la pantalla (migraciones 0127 a 0129). **«Su gente» es quien manda menos que él** (la Auditoría 3, migración 0137): nunca hacia arriba ni entre iguales, como lo que cobra cada uno (1.10). Una gerente no ve la ficha de la dirección ni la de otra gerente; el area manager no ve la de la dirección._
 
 | Qué                                                              | La propia persona   | Jefe de sala o de cocina                        | Gerente, dirección y RRHH                |
 | ---------------------------------------------------------------- | ------------------- | ----------------------------------------------- | ---------------------------------------- |

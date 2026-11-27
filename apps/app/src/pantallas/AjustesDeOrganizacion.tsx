@@ -32,6 +32,7 @@ export function AjustesDeOrganizacion() {
   const [error, setError] = useState<ErrorDeLaApi | null>(null);
   const [cambiando, setCambiando] = useState(false);
   const [aQuienLeFalta, setAQuienLeFalta] = useState<number | null>(null);
+  const [aQuienSeLeQuita, setAQuienSeLeQuita] = useState<number | null>(null);
 
   // La version del control optimista: si otra persona lo cambia mientras esta
   // pantalla esta abierta, el servidor para y lo dice, en vez de pisarlo.
@@ -47,11 +48,14 @@ export function AjustesDeOrganizacion() {
     setCambiando(true);
     setError(null);
 
-    const respuesta = await cliente.ejecutar<{ aQuienLeFalta: number }>('exigir_doble_factor', {
-      organizacion_id: organizacion.id,
-      exigir,
-      version: organizacion.version,
-    });
+    const respuesta = await cliente.ejecutar<{ aQuienLeFalta: number; aQuienSeLeQuita: number }>(
+      'exigir_doble_factor',
+      {
+        organizacion_id: organizacion.id,
+        exigir,
+        version: organizacion.version,
+      },
+    );
 
     if (!respuesta.ok) {
       setError(respuesta.error);
@@ -61,6 +65,8 @@ export function AjustesDeOrganizacion() {
 
     // A cuanta gente le va a caer encima. Se dice antes de que empiecen a llamar.
     setAQuienLeFalta(exigir ? respuesta.datos.aQuienLeFalta : null);
+    // Y al quitarlo, a quién se le deja de pedir (0138): a quien lo activó porque era obligatorio.
+    setAQuienSeLeQuita(exigir ? null : respuesta.datos.aQuienSeLeQuita);
     await refrescar();
     setCambiando(false);
   }
@@ -170,6 +176,17 @@ export function AjustesDeOrganizacion() {
               <div className="mt-e2">
                 <Aviso tono="atencion" titulo={`Le falta a ${aQuienLeFalta} personas`}>
                   Mañana te van a preguntar. Merece la pena avisarlas antes.
+                </Aviso>
+              </div>
+            )}
+            {aQuienSeLeQuita !== null && aQuienSeLeQuita > 0 && (
+              <div className="mt-e2">
+                <Aviso
+                  tono="bien"
+                  titulo={`Se le deja de pedir a ${String(aQuienSeLeQuita)} ${aQuienSeLeQuita === 1 ? 'persona' : 'personas'}`}
+                >
+                  Lo activaron porque era obligatorio. Quien lo puso por su cuenta lo sigue
+                  teniendo.
                 </Aviso>
               </div>
             )}

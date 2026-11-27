@@ -118,9 +118,19 @@ export const confirmarDobleFactor = comando<
     const enClaro = codigosDeRespaldo();
     const derivados = await Promise.all(enClaro.map((c) => derivar(c)));
 
+    // Si lo activa porque alguna de sus organizaciones lo exige (0138): el día que deje de exigirlo, se le quita.
     await sql`
       update estook.doble_factor
-         set confirmado_en = now(), codigos_de_respaldo = ${derivados}
+         set confirmado_en = now(), codigos_de_respaldo = ${derivados},
+             por_obligacion = coalesce((
+               select bool_or(o.exige_doble_factor)
+                 from estook.membresia m
+                 join estook.organizacion o on o.id = m.organizacion_id
+                where m.persona_id = ${sesion.personaId}
+                  and (m.revocada_en is null or m.revocada_en > now())
+             ), false),
+             -- Activado para el admin (0138): en la app no se pide si la empresa no lo exige.
+             por_el_admin = ${sesion.paraAdmin === true}
        where persona_id = ${sesion.personaId}
     `;
 

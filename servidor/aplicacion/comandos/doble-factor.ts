@@ -130,7 +130,7 @@ export const confirmarDobleFactor = comando<
                   and (m.revocada_en is null or m.revocada_en > now())
              ), false),
              -- Activado para el admin (0138): en la app no se pide si la empresa no lo exige.
-             por_el_admin = ${sesion.paraAdmin === true}
+             por_el_admin = ${sesion.paraAdmin}
        where persona_id = ${sesion.personaId}
     `;
 
